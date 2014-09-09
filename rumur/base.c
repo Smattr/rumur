@@ -37,7 +37,7 @@ state_t *state_alloc(void) {
     return s;
 }
 
-void state_free(state *s) {
+void state_free(state_t *s) {
     state_clear(s);
     free(s);
 }
@@ -47,33 +47,30 @@ typedef struct {
     mpz_t size;
 } field_t;
 
-mpz_t state_read(state_t *s, const field_t f) {
+void state_read(mpz_t *result, state_t *s, const field_t f) {
     /* quotient = offset == 0 ? data : data / offset; */
     mpz_t quotient;
     if (mpz_cmp_ui(f.offset, 0) == 0) {
-        mpz_init_set(quotient, state->data);
+        mpz_init_set(quotient, s->data);
     } else {
         mpz_init(quotient);
         mpz_cdiv_q(quotient, s->data, f.offset);
     }
 
     /* remainder = quotient % size; */
-    mpz_t remainder;
-    mpz_mod(remainder, quotient, f.size);
+    mpz_mod(*result, quotient, f.size);
 
     mpz_clear(quotient);
-
-    return remainder;
 }
 
 void state_write(state_t *s, const field_t f, const mpz_t value) {
     /* upper = offset == 0 ? data : data / offset; */
     mpz_t upper;
     if (mpz_cmp_ui(f.offset, 0) == 0) {
-        mpz_init_set(upper, state->data);
+        mpz_init_set(upper, s->data);
     } else {
         mpz_init(upper);
-        mpz_cdiv_q(upper, state->data, f.offset);
+        mpz_cdiv_q(upper, s->data, f.offset);
     }
 
     /* upper = upper / size; */
@@ -122,13 +119,13 @@ typedef void (*handler_t)(violation_t *v);
 
 typedef struct {
     bool (*guard)(state_t *s);
-    state_t *(*apply)(state_t *s, handler_t *cb);
+    state_t *(*apply)(state_t *s, handler_t cb);
 } rule_t;
 
 rule_t rules[] = {
 };
 
-void dfs(state_t *s, unsigned int depth, handler_t *cb) {
+void dfs(state_t *s, unsigned int depth, handler_t cb) {
     if (depth == 0)
         return;
 
@@ -143,9 +140,9 @@ void dfs(state_t *s, unsigned int depth, handler_t *cb) {
     }
 }
 
-void check(unsigned int depth, handler_t *cb) {
+void check(unsigned int depth, handler_t cb) {
     state_t *s = xalloc(sizeof(*s));
-    init(s);
+    state_init(s);
     dfs(s, depth, cb);
 }
 
