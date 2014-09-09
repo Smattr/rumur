@@ -93,7 +93,7 @@ def p_typeExpr(t):
     elif t[1] == 'record':
         t[0] = Record(t[2])
     else:
-        assert t[1] == 'array':
+        assert t[1] == 'array'
         t[0] = Array(t[3], t[6])
 
 def p_vardecl(t):
