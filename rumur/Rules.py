@@ -38,12 +38,12 @@ def p_decl(t):
             | type typedecls
             | var vardecls'''
     if t[1] == 'const':
-        t[0] = Constdecls(t[2])
+        t[0] = t[2]
     elif t[1] == 'type':
-        t[0] = Typedecls(t[2])
+        t[0] = t[2]
     else:
         assert t[1] == 'var'
-        t[0] = Vardecls(t[2])
+        t[0] = t[2]
 
 def p_constdecls(t):
     '''constdecls :
