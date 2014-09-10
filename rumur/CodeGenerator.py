@@ -15,6 +15,16 @@ def generate(n):
     elif n.head == 'expr':
         if len(n.tail) == 1:
             return generate(n.tail[0])
+        elif n.tail[0].head == 'lbrace':
+            assert n.tail[2].head == 'rbrace'
+            inner = generate(n.tail[1])
+            return '(%(inner)s)' % locals()
+        elif n.tail[0].head == 'symbol':
+            assert n.tail[1].head == 'lbrace'
+            assert n.tail[3].head == 'rbrace'
+            callee = generate(n.tail[0])
+            parameters = generate(n.tail[2])
+            return '%(callee)s(%(parameters)s)' % locals()
         raise NotImplementedError
 
     elif n.head == 'integer_constant':
