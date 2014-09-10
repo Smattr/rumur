@@ -1,6 +1,6 @@
 def generate(n):
     if n.head == 'constdecl':
-        symbol = mangle(n.tail[0].tail[0])
+        symbol = generate(n.tail[0])
         value = hang(generate(n.tail[1]))
         return 'static mpz_t %(symbol)s;\n' \
                'static void %(symbol)s_init(void) __attribute__((constructor)) {\n' \
@@ -32,6 +32,9 @@ def generate(n):
 
     elif n.head == 'program':
         return concat(n.tail)
+
+    elif n.head == 'symbol':
+        return mangle(n.tail[0])
 
     else:
         raise NotImplementedError
