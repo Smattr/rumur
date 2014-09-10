@@ -67,35 +67,35 @@ decl: CONST (constdecl ';')*
     | VAR (vardecl ';')*
     ;
 
-constdecl: ID ':' expr;
+constdecl: symbol ':' expr;
 
-typedecl: ID ':' typeexpr;
+typedecl: symbol ':' typeexpr;
 
-typeexpr: ID
+typeexpr: symbol
         | expr '\.\.' expr
-        | ENUM '\{' ID (',' ID)* '\}'
+        | ENUM '\{' symbol (',' symbol)* '\}'
         | RECORD vardecl* endrecord
         | ARRAY '\[' typeexpr '\]' OF typeexpr
         ;
 
-vardecl: ID (',' ID)* ':' typeexpr;
+vardecl: symbol (',' symbol)* ':' typeexpr;
 
 procdecl: procedure
         | function
         ;
 
-procedure: PROCEDURE ID '\(' (formal (';' formal)* )? '\)' ';' (decl* BEGIN)? stmts? endprocedure ';';
+procedure: PROCEDURE symbol '\(' (formal (';' formal)* )? '\)' ';' (decl* BEGIN)? stmts? endprocedure ';';
 
-function: FUNCTION ID '\(' (formal (';' formal)* )? '\)' ':' typeexpr ';' (decl* BEGIN)? stmts? endfunction ';';
+function: FUNCTION symbol '\(' (formal (';' formal)* )? '\)' ':' typeexpr ';' (decl* BEGIN)? stmts? endfunction ';';
 
-formal: VAR? ID (',' ID)* ':' typeexpr;
+formal: VAR? symbol (',' symbol)* ':' typeexpr;
 
-designator: ID ('\.' ID | '\[' expr '\]')*;
+designator: symbol ('\.' symbol | '\[' expr '\]')*;
 
 expr: '\(' expr '\)'
     | designator
     | integer_constant
-    | ID '\(' actuals '\)'
+    | symbol '\(' actuals '\)'
     | FORALL quantifier DO expr endforall
     | EXISTS quantifier DO expr endexists
     | expr '\+' expr
@@ -146,17 +146,17 @@ switchstmt: SWITCH expr
 
 forstmt: FOR quantifier DO stmts? endfor;
 
-quantifier: ID ':' typeexpr
-          | ID ':=' expr TO expr (BY expr)?
+quantifier: symbol ':' typeexpr
+          | symbol ':=' expr TO expr (BY expr)?
           ;
 
 whilestmt: WHILE expr DO stmts? endwhile;
 
 aliasstmt: ALIAS alias (';' alias)* DO stmts? endalias;
 
-alias: ID ':' expr;
+alias: symbol ':' expr;
 
-proccall: ID '\(' expr (',' expr)* '\)';
+proccall: symbol '\(' expr (',' expr)* '\)';
 
 clearstmt: CLEAR designator;
 
@@ -200,6 +200,8 @@ ruleset: RULESET quantifier
          (';' quantifier)* DO rules? endruleset;
 
 aliasrule: ALIAS alias (';' alias)* DO rules? endalias;
+
+symbol: ID;
 
 // Irrelevant end-synonym handling
 
