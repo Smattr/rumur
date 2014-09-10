@@ -96,8 +96,8 @@ expr: lbrace expr rbrace
     | designator
     | integer_constant
     | symbol lbrace actuals rbrace
-    | FORALL quantifier DO expr endforall
-    | EXISTS quantifier DO expr endexists
+    | forall quantifier DO expr endforall
+    | exists quantifier DO expr endexists
     | expr add expr
     | expr sub expr
     | expr mul expr
@@ -261,6 +261,8 @@ WHITESPACE: '[ \t\n]+' (%ignore) ;
 
 lbrace: '\(';
 rbrace: '\)';
+forall: FORALL;
+exists: EXISTS;
 add: '\+';
 sub: '-';
 mul: '\*';
