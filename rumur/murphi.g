@@ -92,28 +92,28 @@ formal: VAR? symbol (',' symbol)* ':' typeexpr;
 
 designator: symbol ('\.' symbol | '\[' expr '\]')*;
 
-expr: '\(' expr '\)'
+expr: lbrace expr rbrace
     | designator
     | integer_constant
-    | symbol '\(' actuals '\)'
+    | symbol lbrace actuals rbrace
     | FORALL quantifier DO expr endforall
     | EXISTS quantifier DO expr endexists
-    | expr '\+' expr
-    | expr '-' expr
-    | expr '\*' expr
-    | expr '/' expr
-    | expr '%' expr
-    | '!' expr
-    | expr '\|' expr
-    | expr '&' expr
-    | expr '->' expr
-    | expr '<' expr
-    | expr '<=' expr
-    | expr '>' expr
-    | expr '>=' expr
-    | expr '=' expr
-    | expr '!=' expr
-    | expr '\?' expr ':' expr
+    | expr add expr
+    | expr sub expr
+    | expr mul expr
+    | expr div expr
+    | expr mod expr
+    | not expr
+    | expr or expr
+    | expr and expr
+    | expr implies expr
+    | expr lt expr
+    | expr lte expr
+    | expr gt expr
+    | expr gte expr
+    | expr eq expr
+    | expr neq expr
+    | expr question expr colon expr
     ;
 
 stmts: stmt (';' stmt?)*;
@@ -258,3 +258,23 @@ endruleset: ENDRULESET
           ;
 
 WHITESPACE: '[ \t\n]+' (%ignore) ;
+
+lbrace: '\(';
+rbrace: '\)';
+add: '\+';
+sub: '-';
+mul: '\*';
+div: '/';
+mod: '%';
+not: '!';
+or: '\|';
+and: '&';
+implies: '->';
+lt: '<';
+lte: '<=';
+gt: '>';
+gte: '>=';
+eq: '=';
+neq: '!=';
+question: '\?';
+colon: ':';
