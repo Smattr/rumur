@@ -105,6 +105,26 @@ def generate(n):
     elif n.head == 'symbol':
         return mangle(n.tail[0])
 
+    elif n.head == 'whilestmt':
+        expr = generate(n.tail[0])
+        if n.tail[1].head == 'stmts':
+            stmts = cat(n.tail[1].tail)
+        else:
+            stmts = ''
+        return 'while (({\n' \
+               '    mpz_t x = %(expr)s;\n' \
+               '    int r;\n' \
+               '    if (mpz_cmp_ui(x, 0) != 0) {\n' \
+               '      r = 1;\n' \
+               '    } else {\n' \
+               '      r = 0;\n' \
+               '    }\n' \
+               '    mpz_clear(x);\n' \
+               '    r;\n' \
+               '  })) {\n'
+               '  %(stmts)s\n' \
+               '}' % locals()
+
     else:
         raise NotImplementedError
 
@@ -184,6 +204,9 @@ def hol_operation(binder, quantifier, body):
 
 def concat(xs):
     return '\n\n'.join(map(generate, xs))
+
+def cat(xs):
+    return '\n'.join(map(generate, xs))
 
 def mangle(symbol):
     return 'user_%s' % symbol
