@@ -3,6 +3,55 @@
 #include <stdlib.h>
 #include <gmp.h>
 
+/* Some mpz functions that GMP does not seem to provide. */
+void mpz_lor(mpz_t dest, const mpz_t x, const mpz_t y) {
+    if (mpz_cmp_ui(x, 0) == 0) {
+        mpz_set(dest, y);
+    } else {
+        mpz_set(dest, x);
+    }
+}
+
+void mpz_land(mpz_t dest, const mpz_t x, const mpz_t y) {
+    if (mpz_cmp_ui(x, 0) == 0) {
+        mpz_set_ui(dest, 0);
+    } else {
+        mpz_set(dest, y);
+    }
+}
+
+void mpz_implies(mpz_t dest, const mpz_t x, const mpz_t y) {
+    if (mpz_cmp_ui(x, 0) != 0) {
+        mpz_set_ui(dest, 1);
+    } else {
+        mpz_set(dest, y);
+    }
+}
+
+void mpz_lt(mpz_t dest, const mpz_t x, const mpz_t y) {
+    mpz_set_si(dest, mpz_cmp(x, y) < 0);
+}
+
+void mpz_lte(mpz_t dest, const mpz_t x, const mpz_t y) {
+    mpz_set_si(dest, mpz_cmp(x, y) <= 0);
+}
+
+void mpz_gt(mpz_t dest, const mpz_t x, const mpz_t y) {
+    mpz_set_si(dest, mpz_cmp(x, y) > 0);
+}
+
+void mpz_gte(mpz_t dest, const mpz_t x, const mpz_t y) {
+    mpz_set_si(dest, mpz_cmp(x, y) >= 0);
+}
+
+void mpz_eq(mpz_t dest, const mpz_t x, const mpz_t y) {
+    mpz_set_si(dest, mpz_cmp(x, y) == 0);
+}
+
+void mpz_neq(mpz_t dest, const mpz_t x, const mpz_t y) {
+    mpz_set_si(dest, mpz_cmp(x, y) != 0);
+}
+
 void *xalloc(size_t size) {
     void *p = malloc(size);
     if (p == NULL) {
