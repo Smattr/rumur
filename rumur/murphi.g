@@ -73,9 +73,9 @@ typedecl: symbol ':' typeexpr;
 
 typeexpr: symbol
         | expr '\.\.' expr
-        | ENUM '\{' symbol (',' symbol)* '\}'
-        | RECORD vardecl* endrecord
-        | ARRAY '\[' typeexpr '\]' OF typeexpr
+        | enum '\{' symbol (',' symbol)* '\}'
+        | record vardecl* endrecord
+        | array '\[' typeexpr '\]' OF typeexpr
         ;
 
 vardecl: symbol (',' symbol)* ':' typeexpr;
@@ -256,6 +256,10 @@ endstartstate: ENDSTARTSTATE
 endruleset: ENDRULESET
           | END
           ;
+
+enum: ENUM;
+
+record: RECORD;
 
 WHITESPACE: '[ \t\n]+' (%ignore) ;
 

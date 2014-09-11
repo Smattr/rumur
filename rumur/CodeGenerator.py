@@ -1,3 +1,6 @@
+from functools import partial
+from Type import Array, Enum, Range, Record, Type
+
 def generate(env, n):
     if n.head == 'constdecl':
         symbol = generate(env, n.tail[0])
@@ -103,6 +106,12 @@ def generate(env, n):
     elif n.head == 'symbol':
         return mangle(n.tail[0])
 
+    elif n.head == 'typedecl':
+        symbol = generate(env, n.tail[0])
+        type = decode_type(env, n.tail[1])
+        env.typedef(symbol, type)
+        return '' # No code required
+
     elif n.head == 'whilestmt':
         expr = generate(env, n.tail[0])
         if n.tail[1].head == 'stmts':
@@ -195,6 +204,43 @@ def hol_operation(env, binder, quantifier, body):
            '  mpz_clear(%(increment)s);\n' \
            '  r;\n' \
            '})' % locals()
+
+def decode_type(env, typeexpr):
+    if typeexpr.tail[0].head == 'symbol':
+        symbol = generate(env, typeexpr.tail[0])
+        referent = env.lookup(symbol)
+        if referent is None:
+            raise Exception('type alias refers to non-existent type %s' % typeexpr.tail[0].head)
+        elif not isinstance(referent, Type):
+            raise Exception('type alias refers to %s which is not a type' % typeexpr.tail[0].head)
+        return referent
+
+    elif typeexpr.tail[0].head == 'expr':
+        # FIXME: Range actually expects constants as its limits
+        min = generate(env, typeexpr.tail[0])
+        max = generate(env, typeexpr.tail[1])
+        return Range(min, max)
+
+    elif typeexpr.tail[0].head == 'enum':
+        members = map(partial(generate, env), typeexpr.tail[1:])
+        return Enum(members)
+
+    elif typeexpr.tail[0].head == 'record':
+        members = {}
+        for vardecl in typeexpr.tail[1:-1]:
+            type = decode_type(env, vardecl.tail[-1])
+            for symbol in vardecl.tail[:-1]:
+                s = generate(env, symbol)
+                if s in members:
+                    raise Exception('duplicate record members %s given' % symbol.tail[0].head)
+                members[s] = type
+        return Record(members)
+
+    else:
+        assert typeexpr.tail[0].head == 'array'
+        index_type = decode_type(env, typeexpr.tail[1])
+        member_type = decode_type(env, typeexpr.tail[2])
+        return Array(index_type, member_type)
 
 def concat(env, xs):
     s = ''
