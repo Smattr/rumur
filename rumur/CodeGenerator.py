@@ -112,11 +112,7 @@ def generate(n):
         return 'while (({\n' \
                '    mpz_t x = %(expr)s;\n' \
                '    int r;\n' \
-               '    if (mpz_cmp_ui(x, 0) != 0) {\n' \
-               '      r = 1;\n' \
-               '    } else {\n' \
-               '      r = 0;\n' \
-               '    }\n' \
+               '    r = (mpz_cmp_ui(x, 0) != 0);\n' \
                '    mpz_clear(x);\n' \
                '    r;\n' \
                '  })) {\n'
