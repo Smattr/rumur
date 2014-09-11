@@ -24,17 +24,14 @@ class Environment(object):
             s = DirectSymbol(symbol, type)
         self.scopes[-1][symbol] = s
 
-    def lookup(self, expr):
-        raise NotImplementedError
+    def typedef(self, symbol, type):
+        assert len(self.scopes) > 0, 'declaring types before opening the global scope'
+        if symbol in self.scopes[-1]:
+            raise Exception('%s already declared in this scope' % symbol)
+        self.scopes[-1][symbol] = type
 
-    def typeof(self, expr):
-        data = self.lookup(expr)
-        if data is None:
-            return None
-        return data.type
-
-    def access(self, expr):
-        data = self.lookup(expr)
-        if data is None:
-            return None
-        return data.access
+    def lookup(self, symbol):
+        for scope in reversed(self.scopes):
+            if symbol in scope:
+                return scope[symbol]
+        return None
