@@ -101,6 +101,7 @@ def generate(env, n):
         return generate(env, n.tail[0])
 
     elif n.head == 'program':
+        env.new_scope()
         return concat(env, n.tail)
 
     elif n.head == 'symbol':
