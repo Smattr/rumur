@@ -115,7 +115,7 @@ def generate(n):
                '    r = (mpz_cmp_ui(x, 0) != 0);\n' \
                '    mpz_clear(x);\n' \
                '    r;\n' \
-               '  })) {\n'
+               '  })) {\n' \
                '  %(stmts)s\n' \
                '}' % locals()
 
