@@ -1,11 +1,12 @@
 from functools import partial
 from Access import DirectSymbol, StateSymbol
 from Type import Array, Enum, Range, Record, Type
+from MPZ import Literal, MPTerm
 
 def generate(env, n):
     if n.head == 'constdecl':
         symbol = generate(env, n.tail[0])
-        value = hang(generate(env, n.tail[1]))
+        value = hang(generate(env, n.tail[1]).to_mpz())
         return 'static mpz_t %(symbol)s;\n' \
                'static void %(symbol)s_init(void) __attribute__((constructor)) {\n' \
                '  write_direct(%(symbol)s, %(value)s);\n' \
@@ -15,76 +16,112 @@ def generate(env, n):
         return concat(env, n.tail)
 
     elif n.head == 'expr':
+        # NOTE: expr conversion returns an MPTerm, *not* a string
         if n.tail[0].head == 'lbrace':
             assert n.tail[2].head == 'rbrace'
-            inner = generate(env, n.tail[1])
-            return '(%(inner)s)' % locals()
+            return generate(env, n.tail[1])
+
         elif n.tail[0].head == 'integer_constant':
             return generate(env, n.tail[0])
+
         elif n.tail[0].head == 'symbol':
             assert n.tail[1].head == 'lbrace'
             assert n.tail[3].head == 'rbrace'
             callee = generate(env, n.tail[0])
             parameters = generate(env, n.tail[2])
-            return '%(callee)s(%(parameters)s)' % locals()
-        elif n.tail[0].head == 'forall':
-            return hol_operation(env, 'forall', n.tail[1], n.tail[2])
-        elif n.tail[0].head == 'exists':
-            return hol_operation(env, 'exists', n.tail[1], n.tail[2])
-        elif n.tail[1].head == 'add':
-            return binary_operation(env, 'mpz_add', n.tail[0], n.tail[2])
-        elif n.tail[1].head == 'sub':
-            return binary_operation(env, 'mpz_sub', n.tail[0], n.tail[2])
-        elif n.tail[1].head == 'mul':
-            return binary_operation(env, 'mpz_mul', n.tail[0], n.tail[2])
-        elif n.tail[1].head == 'div':
-            return binary_operation(env, 'mpz_div', n.tail[0], n.tail[2])
-        elif n.tail[1].head == 'mod':
-            return binary_operation(env, 'mpz_mod', n.tail[0], n.tail[2])
-        elif n.tail[0].head == 'not':
-            operand = generate(env, n.tail[1])
-            return '({\n' \
-                   '  mpz_t x = %(operand)s;\n' \
-                   '  if (mpz_cmp_ui(x, 0) == 0) {\n' \
-                   '    mpz_set_ui(x, 1);\n' \
-                   '  } else {\n' \
-                   '    mpz_set_ui(x, 0);\n' \
-                   '  }\n' \
+            code = '({\n' \
+                   '  mpz_t x;\n' \
+                   '  mpz_init_set(x, %(callee)s(%(parameters)s));\n' \
                    '  x;\n' \
                    '})' % locals()
+            return MPTerm(code)
+
+        elif n.tail[0].head == 'forall':
+            return hol_operation(env, 'forall', n.tail[1], n.tail[2])
+
+        elif n.tail[0].head == 'exists':
+            return hol_operation(env, 'exists', n.tail[1], n.tail[2])
+
+        elif n.tail[1].head == 'add':
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 + operand2
+
+        elif n.tail[1].head == 'sub':
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 - operand2
+
+        elif n.tail[1].head == 'mul':
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 * operand2
+
+        elif n.tail[1].head == 'div':
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 / operand2
+
+        elif n.tail[1].head == 'mod':
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 % operand2
+
+        elif n.tail[0].head == 'not':
+            operand = generate(env, n.tail[1])
+            return operand.invert()
+
         elif n.tail[1].head == 'or':
-            return binary_operation(env, 'mpz_lor', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 | operand2
+
         elif n.tail[1].head == 'and':
-            return binary_operation(env, 'mpz_land', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 & operand2
+
         elif n.tail[1].head =='implies':
-            return binary_operation(env, 'mpz_implies', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1.implies(operand2)
+
         elif n.tail[1].head == 'lt':
-            return binary_operation(env, 'mpz_lt', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 < operand2
+
         elif n.tail[1].head == 'lte':
-            return binary_operation(env, 'mpz_lte', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 <= operand2
+
         elif n.tail[1].head == 'gt':
-            return binary_operation(env, 'mpz_gt', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 > operand2
+
         elif n.tail[1].head == 'gte':
-            return binary_operation(env, 'mpz_gte', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 >= operand2
+
         elif n.tail[1].head == 'eq':
-            return binary_operation(env, 'mpz_eq', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 == operand2
+
         elif n.tail[1].head == 'neq':
-            return binary_operation(env, 'mpz_neq', n.tail[0], n.tail[2])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            return operand1 != operand2
+
         elif n.tail[1].head == 'question':
             operand1 = generate(env, n.tail[0])
             operand2 = generate(env, n.tail[2])
             operand3 = generate(env, n.tail[4])
-            return '({\n' \
-                   '  mpz_t x = %(operand1)s;\n' \
-                   '  mpz_t y = %(operand2)s;\n' \
-                   '  mpz_t z = %(operand3)s;\n' \
-                   '  if (mpz_cmp_ui(x, 0) == 0) {\n' \
-                   '    mpz_set(y, z);\n' \
-                   '  }\n' \
-                   '  mpz_clear(x);\n' \
-                   '  mpz_clear(z);\n' \
-                   '  y;\n' \
-                   '})' % locals()
+            return operand1.tricond(operand2, operand3)
+
         raise NotImplementedError
 
     elif n.head == 'function':
@@ -102,11 +139,7 @@ def generate(env, n):
 
     elif n.head == 'integer_constant':
         value = n.tail[0]
-        return '({\n' \
-               '  mpz_t x;\n' \
-               '  mpz_init_set_ui(x, %(value)s);\n' \
-               '  x;\n' \
-               '})' % locals()
+        return Literal(value)
 
     elif n.head == 'start':
         if len(n.tail) != 1:
@@ -132,7 +165,7 @@ def generate(env, n):
 
     elif n.head == 'putstmt':
         if n.tail[0].head == 'expr':
-            expr = generate(env, n.tail[0])
+            expr = generate(env, n.tail[0]).to_mpz()
             return 'do {\n' \
                    '  mpz_t x = %(expr)s;\n' \
                    '  gmp_printf("%%Zu", x);\n' \
@@ -147,7 +180,7 @@ def generate(env, n):
     elif n.head == 'returnstmt':
         code = ''
         if len(n.tail) > 0:
-            expr = generate(env, n.tail[0])
+            expr = generate(env, n.tail[0]).to_mpz()
             # Note that we assume the variable 'ret' is available.
             code += 'do {\n' \
                     '  mpz_t x = %(expr)s;\n' \
@@ -180,7 +213,7 @@ def generate(env, n):
         return code
 
     elif n.head == 'whilestmt':
-        expr = generate(env, n.tail[0])
+        expr = generate(env, n.tail[0]).to_mpz()
         if n.tail[1].head == 'stmts':
             stmts = cat(env, n.tail[1].tail)
         else:
@@ -197,17 +230,6 @@ def generate(env, n):
 
     else:
         raise NotImplementedError
-
-def binary_operation(env, op, x, y):
-    operand1 = generate(env, x)
-    operand2 = generate(env, y)
-    return '({\n' \
-           '  mpz_t x = %(operand1)s;\n' \
-           '  mpz_t y = %(operand2)s;\n' \
-           '  %(op)s(x, y);\n' \
-           '  mpz_clear(y);\n' \
-           '  x;\n' \
-           '})' % locals()
 
 def hol_operation(env, binder, quantifier, body):
 
@@ -244,7 +266,7 @@ def hol_operation(env, binder, quantifier, body):
     upper_init = hang(upper_init)
     increment_init = hang(increment_init)
 
-    expr = generate(env, body)
+    expr = generate(env, body).to_mpz()
 
     return '({\n' \
            '  mpz_t %(iterator)s;\n' \
@@ -293,11 +315,7 @@ def decode_type(env, typeexpr):
 
     elif typeexpr.tail[0].head == 'record':
         members = {}
-        offset = '({\n' \
-                 '  mpz_t x;\n' \
-                 '  mpz_init_set_ui(x, 1);\n' \
-                 '  x;\n' \
-                 '})'
+        offset = Literal(1)
         for vardecl in typeexpr.tail[1:-1]:
             type = decode_type(env, vardecl.tail[-1])
             cardinality = type.cardinality()
@@ -306,13 +324,7 @@ def decode_type(env, typeexpr):
                 if s in members:
                     raise Exception('duplicate record members %s given' % symbol.tail[0].head)
                 members[s] = (offset, type)
-                offset = '({\n' \
-                         '  mpz_t x = %(offset)s;\n' \
-                         '  mpz_t y = %(cardinality)s;\n' \
-                         '  mpz_mul(x, x, y);\n' \
-                         '  mpz_clear(y);\n' \
-                         '  x;\n' \
-                         '})' % locals()
+                offset *= cardinality
         return Record(members)
 
     else:
@@ -379,14 +391,9 @@ def pinpoint(env, designator):
         offset = sym.offset
     elif isinstance(sym, DirectSymbol):
         origin = root
-        offset = 1
+        offset = Literal(1)
     else:
         raise Exception('attempt to locate something that is not a variable reference')
-    offset = '({\n' \
-             '  mpz_t x;\n' \
-             '  mpz_init_set_ui(x, %d);\n' \
-             '  x;\n' \
-             '})' % offset
     active_type = sym.type
     for s in designator.tail[1:]:
         if s.head == 'symbol':
@@ -396,13 +403,7 @@ def pinpoint(env, designator):
             if member not in active_type.members:
                 raise Exception('access of non-existing record member %s' % s.tail[0])
             factor, active_type = active_type.members[member]
-            offset = '({\n' \
-                     '  mpz_t x = %(offset)s;\n' \
-                     '  mpz_t y = %(factor)s;\n' \
-                     '  mpz_mul(x, x, y);\n' \
-                     '  mpz_clear(y);\n' \
-                     '  x;\n' \
-                     '})' % locals()
+            offset *= factor
         else:
             assert s.head == 'expr'
             if not isinstance(active_type, Array):
@@ -410,14 +411,7 @@ def pinpoint(env, designator):
             expr = generate(env, s)
             member_cardinality = active_type.member_type.cardinality()
             active_type = active_type.member_type
-            offset = '({\n' \
-                     '  mpz_t x = %(offset)s;\n' \
-                     '  mpz_t y = %(expr)s;\n' \
-                     '  mpz_mul_ui(y, y, %(member_cardinality)d);\n' \
-                     '  mpz_mul(x, x, y);\n' \
-                     '  mpz_clear(y);\n' \
-                     '  x;\n' \
-                     '})' % locals()
+            offset *= member_cardinality * expr
     cardinality = active_type.cardinality()
     return origin, offset, cardinality
 

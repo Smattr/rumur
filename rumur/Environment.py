@@ -1,9 +1,10 @@
 from Access import StateSymbol, DirectSymbol
+from MPTerm import Literal
 
 class Environment(object):
     def __init__(self):
         self.scopes = []
-        self.global_scope_offset = 1
+        self.global_scope_offset = Literal(1)
 
     def new_scope(self):
         self.scopes.append({})
