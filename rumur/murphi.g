@@ -261,6 +261,8 @@ enum: ENUM;
 
 record: RECORD;
 
+array: ARRAY;
+
 WHITESPACE: '[ \t\n]+' (%ignore) ;
 
 lbrace: '\(';
