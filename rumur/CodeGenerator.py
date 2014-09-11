@@ -4,9 +4,7 @@ def generate(n):
         value = hang(generate(n.tail[1]))
         return 'static mpz_t %(symbol)s;\n' \
                'static void %(symbol)s_init(void) __attribute__((constructor)) {\n' \
-               '  mpz_t x = %(value)s;\n' \
-               '  mpz_init_set(%(symbol)s, x);\n' \
-               '  mpz_clear(x);\n' \
+               '  write_direct(%(symbol)s, %(value)s);\n' \
                '}' % locals()
 
     elif n.head == 'decl':
