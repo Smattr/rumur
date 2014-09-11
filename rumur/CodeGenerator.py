@@ -1,44 +1,44 @@
-def generate(n):
+def generate(env, n):
     if n.head == 'constdecl':
-        symbol = generate(n.tail[0])
-        value = hang(generate(n.tail[1]))
+        symbol = generate(env, n.tail[0])
+        value = hang(generate(env, n.tail[1]))
         return 'static mpz_t %(symbol)s;\n' \
                'static void %(symbol)s_init(void) __attribute__((constructor)) {\n' \
                '  write_direct(%(symbol)s, %(value)s);\n' \
                '}' % locals()
 
     elif n.head == 'decl':
-        return concat(n.tail)
+        return concat(env, n.tail)
 
     elif n.head == 'expr':
-        if len(n.tail) == 1:
-            return generate(n.tail[0])
-        elif n.tail[0].head == 'lbrace':
+        if n.tail[0].head == 'lbrace':
             assert n.tail[2].head == 'rbrace'
-            inner = generate(n.tail[1])
+            inner = generate(env, n.tail[1])
             return '(%(inner)s)' % locals()
+        elif n.tail[0].head == 'integer_constant':
+            return generate(env, n.tail[0])
         elif n.tail[0].head == 'symbol':
             assert n.tail[1].head == 'lbrace'
             assert n.tail[3].head == 'rbrace'
-            callee = generate(n.tail[0])
-            parameters = generate(n.tail[2])
+            callee = generate(env, n.tail[0])
+            parameters = generate(env, n.tail[2])
             return '%(callee)s(%(parameters)s)' % locals()
         elif n.tail[0].head == 'forall':
-            return hol_operation('forall', n.tail[1], n.tail[2])
+            return hol_operation(env, 'forall', n.tail[1], n.tail[2])
         elif n.tail[0].head == 'exists':
-            return hol_operation('exists', n.tail[1], n.tail[2])
+            return hol_operation(env, 'exists', n.tail[1], n.tail[2])
         elif n.tail[1].head == 'add':
-            return binary_operation('mpz_add', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_add', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'sub':
-            return binary_operation('mpz_sub', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_sub', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'mul':
-            return binary_operation('mpz_mul', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_mul', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'div':
-            return binary_operation('mpz_div', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_div', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'mod':
-            return binary_operation('mpz_mod', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_mod', n.tail[0], n.tail[2])
         elif n.tail[0].head == 'not':
-            operand = generate(n.tail[1])
+            operand = generate(env, n.tail[1])
             return '({\n' \
                    '  mpz_t x = %(operand)s;\n' \
                    '  if (mpz_cmp_ui(x, 0) == 0) {\n' \
@@ -49,27 +49,27 @@ def generate(n):
                    '  x;\n' \
                    '})' % locals()
         elif n.tail[1].head == 'or':
-            return binary_operation('mpz_lor', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_lor', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'and':
-            return binary_operation('mpz_land', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_land', n.tail[0], n.tail[2])
         elif n.tail[1].head =='implies':
-            return binary_operation('mpz_implies', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_implies', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'lt':
-            return binary_operation('mpz_lt', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_lt', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'lte':
-            return binary_operation('mpz_lte', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_lte', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'gt':
-            return binary_operation('mpz_gt', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_gt', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'gte':
-            return binary_operation('mpz_gte', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_gte', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'eq':
-            return binary_operation('mpz_eq', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_eq', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'neq':
-            return binary_operation('mpz_neq', n.tail[0], n.tail[2])
+            return binary_operation(env, 'mpz_neq', n.tail[0], n.tail[2])
         elif n.tail[1].head == 'question':
-            operand1 = generate(n.tail[0])
-            operand2 = generate(n.tail[2])
-            operand3 = generate(n.tail[4])
+            operand1 = generate(env, n.tail[0])
+            operand2 = generate(env, n.tail[2])
+            operand3 = generate(env, n.tail[4])
             return '({\n' \
                    '  mpz_t x = %(operand1)s;\n' \
                    '  mpz_t y = %(operand2)s;\n' \
@@ -95,18 +95,18 @@ def generate(n):
     elif n.head == 'start':
         if len(n.tail) != 1:
             raise Exception('multiple initial tokens')
-        return generate(n.tail[0])
+        return generate(env, n.tail[0])
 
     elif n.head == 'program':
-        return concat(n.tail)
+        return concat(env, n.tail)
 
     elif n.head == 'symbol':
         return mangle(n.tail[0])
 
     elif n.head == 'whilestmt':
-        expr = generate(n.tail[0])
+        expr = generate(env, n.tail[0])
         if n.tail[1].head == 'stmts':
-            stmts = cat(n.tail[1].tail)
+            stmts = cat(env, n.tail[1].tail)
         else:
             stmts = ''
         return 'while (({\n' \
@@ -122,9 +122,9 @@ def generate(n):
     else:
         raise NotImplementedError
 
-def binary_operation(op, x, y):
-    operand1 = generate(x)
-    operand2 = generate(y)
+def binary_operation(env, op, x, y):
+    operand1 = generate(env, x)
+    operand2 = generate(env, y)
     return '({\n' \
            '  mpz_t x = %(operand1)s;\n' \
            '  mpz_t y = %(operand2)s;\n' \
@@ -133,7 +133,7 @@ def binary_operation(op, x, y):
            '  x;\n' \
            '})' % locals()
 
-def hol_operation(binder, quantifier, body):
+def hol_operation(env, binder, quantifier, body):
 
     if binder == 'forall':
         initial_value = 1
@@ -145,20 +145,20 @@ def hol_operation(binder, quantifier, body):
         modifier = ''
         abort_value = 1
 
-    iterator = generate(quantifier.tail[0])
+    iterator = generate(env, quantifier.tail[0])
     if quantifier.tail[1].head == 'typeexpr':
         # First case of quantifier
         lower_init = 'mpz_init_set_ui(lower, 0);' #TODO
         upper_init = 'mpz_init_set_ui(upper, 0);' #TODO
         increment_init = 'mpz_init_set_ui(increment, 1);'
     else:
-        l = generate(quantifier.tail[1])
+        l = generate(env, quantifier.tail[1])
         lower_init = 'mpz_init_set(lower, %(l)s);' % locals()
-        u = generate(quantifier.tail[2])
+        u = generate(env, quantifier.tail[2])
         upper_init = 'mpz_init_set(upper, %(u)s);' % locals()
         if len(quantifier.tail) == 4:
             # We have an explicit step clause
-            i = generate(quantifier.tail[3])
+            i = generate(env, quantifier.tail[3])
             increment_init = 'mpz_init_set(increment, %(i)s);' % locals()
         else:
             increment_init = 'mpz_init_set_ui(increment, 1);'
@@ -168,7 +168,7 @@ def hol_operation(binder, quantifier, body):
     upper_init = hang(upper_init)
     increment_init = hang(increment_init)
 
-    expr = generate(body)
+    expr = generate(env, body)
 
     return '({\n' \
            '  mpz_t %(iterator)s;\n' \
@@ -196,11 +196,21 @@ def hol_operation(binder, quantifier, body):
            '  r;\n' \
            '})' % locals()
 
-def concat(xs):
-    return '\n\n'.join(map(generate, xs))
+def concat(env, xs):
+    s = ''
+    for x in xs:
+        s += '%s\n\n' % generate(env, x)
+    if s != '':
+        s = s[:-2]
+    return s
 
-def cat(xs):
-    return '\n'.join(map(generate, xs))
+def cat(env, xs):
+    s = ''
+    for x in xs:
+        s += '%s\n' % generate(env, x)
+    if s != '':
+        s = s[:-2]
+    return s
 
 def mangle(symbol):
     return 'user_%s' % symbol
