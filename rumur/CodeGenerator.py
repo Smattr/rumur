@@ -129,6 +129,34 @@ def generate(env, n):
         env.new_scope()
         return concat(env, n.tail)
 
+    elif n.head == 'putstmt':
+        if n.tail[0].head == 'expr':
+            expr = generate(env, n.tail[0])
+            return 'do {\n' \
+                   '  mpz_t x = %(expr)s;\n' \
+                   '  gmp_printf("%%Zu", x);\n' \
+                   '  mpz_clear(x);\n' \
+                   '} while (0);' % locals()
+        else:
+            assert n.tail[0].head == 'string'
+            s = n.tail[0].tail[0][1:-1] # strip quotes
+            # XXX: Escape this safely.
+            return 'printf("%%s", "%(s)s");' % locals()
+
+    elif n.head == 'returnstmt':
+        code = ''
+        if len(n.tail) > 0:
+            expr = generate(env, n.tail[0])
+            # Note that we assume the variable 'ret' is available.
+            code += 'do {\n' \
+                    '  mpz_t x = %(expr)s;\n' \
+                    '  mpz_set(ret, x);\n' \
+                    '  mpz_clear(x);\n' \
+                    '} while (0);\n' % locals()
+        # See make_function() for where this label is emitted.
+        code += 'goto coda;'
+        return code
+
     elif n.head == 'symbol':
         return mangle(n.tail[0])
 
