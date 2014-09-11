@@ -97,46 +97,34 @@ typedef struct {
 } field_t;
 
 /* This needs to be a macro so we can return an mpz_t. */
-#define read_direct(symbol) \
-    ({ \
-        mpz_t x; \
-        mpz_init_set(x, symbol); \
-        x; \
-    })
-
-void write_direct(mpz_t dest, mpz_t src) {
-    mpz_set(dest, src);
-    mpz_clear(src);
-}
-
-#define read_from_state(state, offset, cardinality) \
+#define r(root, offset, cardinality) \
     ({ \
         mpz_t x; \
         mpz_init(x); \
-        mpz_div_ui(x, state, offset); \
+        mpz_div_ui(x, root, offset); \
         mpz_mod_ui(x, x, cardinality); \
         x; \
     })
 
-void write_to_state(mpz_t state, unsigned int offset, unsigned int cardinality,
+void w(mpz_t root, unsigned int offset, unsigned int cardinality,
         mpz_t src) {
     mpz_mul_ui(src, src, offset);
 
-    /* lower = state % offset */
+    /* lower = root % offset */
     mpz_t lower;
     mpz_init(lower);
-    mpz_mod_ui(lower, state, offset);
+    mpz_mod_ui(lower, root, offset);
 
-    /* upper = state / (offset * cardinality) * (offset * cardinality) */
+    /* upper = root / (offset * cardinality) * (offset * cardinality) */
     mpz_t upper;
     mpz_init(upper);
-    mpz_div_ui(upper, state, offset * cardinality);
-    mpz_mul_ui(upper, state, offset * cardinality);
+    mpz_div_ui(upper, root, offset * cardinality);
+    mpz_mul_ui(upper, root, offset * cardinality);
 
-    /* state = upper + src + lower */
+    /* root = upper + src + lower */
     mpz_add(upper, upper, lower);
     mpz_add(upper, upper, src);
-    mpz_set(state, upper);
+    mpz_set(root, upper);
 
     mpz_clear(upper);
     mpz_clear(lower);
