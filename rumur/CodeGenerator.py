@@ -1,4 +1,5 @@
 from functools import partial
+from Access import DirectSymbol, StateSymbol
 from Type import Array, Enum, Range, Record, Type
 
 def generate(env, n):
@@ -357,6 +358,50 @@ def make_function(env, symbol, formals, return_type, decls, stmts):
            'coda:\n' \
            '  %(coda)s\n' \
            '}' % locals()
+
+def pinpoint(env, designator):
+    root = generate(env, designator.tail[0])
+    sym = env.lookup(root)
+    if isinstance(sym, StateSymbol):
+        origin = 'state'
+        offset = sym.offset
+    elif isinstance(sym, DirectSymbol):
+        origin = root
+        offset = 1
+    else:
+        raise Exception('attempt to locate something that is not a variable reference')
+    offset = '({\n' \
+             '  mpz_t x;\n' \
+             '  mpz_init_set_ui(x, %d);\n' \
+             '  x;\n' \
+             '})' % offset
+    active_type = sym.type
+    for s in designator.tail[1:]:
+        if s.head == 'symbol':
+            if not isinstance(active_type, Record):
+                raise Exception('accessing a member of something that is not a record')
+            member = generate(env, s)
+            if member not in active_type.members:
+                raise Exception('access of non-existing record member %s' % s.tail[0])
+            active_type = active_type.members[member]
+            # XXX: Update offset, but this is not currently tracked in Type.
+        else:
+            assert s.head == 'expr'
+            if not isinstance(active_type, Array):
+                raise Exception('accessing an index of something that is not an array')
+            expr = generate(env, s)
+            member_cardinality = active_type.member_type.cardinality()
+            active_type = active_type.member_type
+            offset = '({\n' \
+                     '  mpz_t x = %(offset)s;\n' \
+                     '  mpz_t y = %(expr)s;\n' \
+                     '  mpz_mul_ui(y, y, %(member_cardinality)d);\n' \
+                     '  mpz_mul(x, x, y);\n' \
+                     '  mpz_clear(y);\n' \
+                     '  x;\n' \
+                     '})' % locals()
+    cardinality = active_type.cardinality()
+    return origin, offset, cardinality
 
 def concat(env, xs):
     s = ''
