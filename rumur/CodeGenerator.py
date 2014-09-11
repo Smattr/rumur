@@ -86,6 +86,18 @@ def generate(env, n):
                    '})' % locals()
         raise NotImplementedError
 
+    elif n.head == 'function':
+        # The [1:-1] slices below are because we know the first and last token
+        # of a function production.
+        symbol = n.tail[0]
+        formals = filter(lambda x: x.head == 'formal', n.tail[1:-1])
+        typeexpr = filter(lambda x: x.head == 'typeexpr', n.tail[1:-1])
+        assert len(typeexpr) == 1
+        return_type = typeexpr[0]
+        decls = filter(lambda x: x.head == 'decl', n.tail[1:-1])
+        body = filter(lambda x: x.head == 'stmts', n.tail[1:-1])
+        stmts = body[0] if len(body) > 0 else None
+        return make_function(env, symbol, formals, return_type, decls, stmts)
 
     elif n.head == 'integer_constant':
         value = n.tail[0]
@@ -99,6 +111,19 @@ def generate(env, n):
         if len(n.tail) != 1:
             raise Exception('multiple initial tokens')
         return generate(env, n.tail[0])
+
+    elif n.head == 'procdecl':
+        return generate(env, n.tail[0])
+
+    elif n.head == 'procedure':
+        # See comments for 'function'
+        symbol = n.tail[0]
+        formals = filter(lambda x: x.head == 'formal', n.tail[1:-1])
+        return_type = None
+        decls = filter(lambda x: x.head == 'decl', n.tail[1:-1])
+        body = filter(lambda x: x.head == 'stmts', n.tail[1:-1])
+        stmts = body[0] if len(body) > 0 else None
+        return make_function(env, symbol, formals, return_type, decls, stmts)
 
     elif n.head == 'program':
         env.new_scope()
@@ -254,6 +279,56 @@ def decode_type(env, typeexpr):
         index_type = decode_type(env, typeexpr.tail[1])
         member_type = decode_type(env, typeexpr.tail[2])
         return Array(index_type, member_type)
+
+def make_function(env, symbol, formals, return_type, decls, stmts):
+    function = generate(env, symbol)
+    env.new_scope()
+    params = []
+    if return_type is not None:
+        params.append('mpz_t ret')
+    prelude = []
+    coda = []
+    for formal in formals:
+        if formal.tail[0].head == 'var':
+            writable = True
+            symbols = formal.tail[1:-1]
+        else:
+            writable = False
+            symbols = formal.tail[:-1]
+        type = decode_type(env, formal.tail[-1])
+        for s in symbols:
+            mangled = generate(env, s)
+            env.declare(mangled, type, None)
+            p = 'p_%s' % mangled
+            params.append('mpz_t %s' % p)
+            if writable:
+                prelude.append('mpz_t %(mangled)s = %(p)s;' % locals())
+            else:
+                prelude.append('mpz_t %s;' % mangled)
+                prelude.append('mpz_set(%(mangled)s, %(p)s);' % locals())
+                coda.append('mpz_clear(%s);' % mangled)
+
+    for decl in decls:
+        code = generate(env, decl)
+        # XXX: What happens if the decl calls mpz_init and we need to clear this later?
+        if code:
+            prelude.append(code)
+
+    if stmts is None:
+        body = ''
+    else:
+        body = generate(env, stmts)
+
+    prelude = '\n  '.join(prelude)
+    params = ', '.join(params)
+    coda = '\n  '.join(coda)
+    env.pop_scope()
+    return 'void %(function)s(%(params)s) {\n' \
+           '  %(prelude)s\n' \
+           '  %(body)s\n' \
+           'coda:\n' \
+           '  %(coda)s\n' \
+           '}' % locals()
 
 def concat(env, xs):
     s = ''

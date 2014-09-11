@@ -88,7 +88,7 @@ procedure: PROCEDURE symbol '\(' (formal (';' formal)* )? '\)' ';' (decl* BEGIN)
 
 function: FUNCTION symbol '\(' (formal (';' formal)* )? '\)' ':' typeexpr ';' (decl* BEGIN)? stmts? endfunction ';';
 
-formal: VAR? symbol (',' symbol)* ':' typeexpr;
+formal: var? symbol (',' symbol)* ':' typeexpr;
 
 designator: symbol ('\.' symbol | '\[' expr '\]')*;
 
@@ -262,6 +262,8 @@ enum: ENUM;
 record: RECORD;
 
 array: ARRAY;
+
+var: VAR;
 
 WHITESPACE: '[ \t\n]+' (%ignore) ;
 
