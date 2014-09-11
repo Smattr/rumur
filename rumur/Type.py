@@ -1,98 +1,81 @@
-import math
-
 class Type(object):
     def cardinality(self):
         raise NotImplementedError
-    def offset(self, path):
-        assert isinstance(path, list)
+    def subsumes(self, other):
         raise NotImplementedError
-    def terminal(self, path):
-        assert isinstance(path, list)
+    def __ge__(self, other):
+        return self.subsumes(other)
+    def equals(self, other):
         raise NotImplementedError
+    def __eq__(self, other):
+        return self.equals(other)
 
-class PrimitiveType(Type):
-    def offset(self, path):
-        assert isinstance(path, list)
-        if len(path) != 0:
-            raise ValueError
-        return 0
-    def terminal(self, path):
-        assert isinstance(path, list)
-        if len(path) != 0:
-            raise ValueError
-        return self
-
-class Boolean(PrimitiveType):
+class Enum(Type):
+    def __init__(self, members):
+        self.members = members
     def cardinality(self):
-        # True, False and Undefined
-        return 3
-boolean = Boolean()
+        return len(self.members) + 1
+    def subsumes(self, other):
+        if isinstance(other, Unconstrained):
+            return None
+        # In the case of a range, we can't just test the cardinality because
+        # the range may not start from 0.
+        return (isinstance(other, Enum) and \
+                len(other.members) <= len(self.members)) or \
+               (isinstance(other, Range) and \
+                other.min >= 0 and other.max < len(self.members))
+    def equals(self, other):
+        return isinstance(other, Enum) and \
+            len(self.members) == len(other.members)
 
-class Range(PrimitiveType):
-    def __init__(self, minimum, maximum):
-        assert isinstance(minimum, int)
-        self.minimum = minimum
-        assert isinstance(maximum, int)
-        assert maximum >= minimum
-        self.maximum = maximum
-    def cardinality(self):
-        return self.maximum - self.minimum + 1
+boolean = Enum(['false', 'true'])
 
-class Enum(PrimitiveType):
-    def __init__(self, values):
-        assert isinstance(values, list)
-        for v in values:
-            assert isinstance(v, str)
-        self.values = values
+class Range(Type):
+    def __init__(self, min, max):
+        self.min = min
+        self.max = max
     def cardinality(self):
-        return len(self.values)
+        return self.max - self.min + 2
+    def subsumes(self, other):
+        if isinstance(other, Unconstrained):
+            return None
+        return (isinstance(other, Range) and \
+                other.min >= self.min and other.max <= self.max) or \
+               (isinstance(other, Enum) and \
+                self.min <= 0 and self.max >= len(other.members) - 1)
+    def equals(self, other):
+        return isinstance(other, Range) and \
+            self.min == other.min and self.max == other.max
 
 class Array(Type):
-    def __init__(self, index_type, value_type):
-        assert isinstance(index_type, Type)
-        assert isinstance(value_type, Type)
-        if not isinstance(index_type, PrimitiveType):
-            raise TypeError
+    def __init__(self, index_type, member_type):
         self.index_type = index_type
-        self.value_type = value_type
+        self.member_type = member_type
     def cardinality(self):
-        return self.index_type.cardinality() * self.value_type.cardinality()
-    def offset(self, path):
-        assert isinstance(path, list)
-        if len(path) == 0:
-            return 0
-        assert isinstance(path[0], PathAtom)
-        if not isinstance(path[0], ArrayIndex):
-            raise TypeError
-        #XXX
-
-    def terminal(self, path):
-        assert isinstance(path, list)
-        if len(path) == 0:
-            return self
-
-class Alias(Type):
-    def __init__(self, referent):
-        assert isinstance(referent, Type):
-        self.referent = referent
-    def cardinality(self):
-        return self.referent.cardinality()
+        return (self.index_type.cardinality() - 1) * self.member_type.cardinality()
+    def subsumes(self, other):
+        return False
+    def equals(self, other):
+        return isinstance(other, Array) and \
+            self.index_type == other.index_type and \
+            self.member_type == other.member_type
 
 class Record(Type):
     def __init__(self, members):
-        assert isinstance(members, dict)
-        for m in members.values():
-            assert isinstance(m, Type)
         self.members = members
     def cardinality(self):
         return sum(map(Type.cardinality, self.members.values()))
+    def subsumes(self, other):
+        return False
+    def equals(self, other):
+        return isinstance(other, Record) and \
+            self.members == other.members
 
-class PathAtom(object):
-    def __init__(self, value):
-        self.value = value
-
-class ArrayIndex(PathAtom):
-    pass
-
-class RecordMember(PathAtom):
-    pass
+class Unconstrained(Type):
+    def cardinality(self):
+        raise TypeError
+    def subsumes(self, other):
+        return False
+    def equals(self, other):
+        return False
+unconstrained = Unconstrained()
