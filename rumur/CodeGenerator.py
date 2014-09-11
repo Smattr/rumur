@@ -112,6 +112,18 @@ def generate(env, n):
         env.typedef(symbol, type)
         return '' # No code required
 
+    elif n.head == 'vardecl':
+        code = ''
+        type = decode_type(env, n.tail[-1])
+        for s in n.tail[:-1]:
+            symbol = generate(env, s)
+            env.declare(symbol, type, None)
+            if not env.bare():
+                # We only need to generate code if this is not a state variable.
+                code += 'mpz_t %(symbol)s;\n' \
+                        'mpz_init(%(symbol)s);' % locals()
+        return code
+
     elif n.head == 'whilestmt':
         expr = generate(env, n.tail[0])
         if n.tail[1].head == 'stmts':

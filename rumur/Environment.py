@@ -35,3 +35,8 @@ class Environment(object):
             if symbol in scope:
                 return scope[symbol]
         return None
+
+    def bare(self):
+        '''Whether we're in the global scope (outside any procedure, rules,
+        etc.'''
+        return len(self.scopes) == 1
