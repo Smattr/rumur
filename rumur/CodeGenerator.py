@@ -294,13 +294,26 @@ def decode_type(env, typeexpr):
 
     elif typeexpr.tail[0].head == 'record':
         members = {}
+        offset = '({\n' \
+                 '  mpz_t x;\n' \
+                 '  mpz_init_set_ui(x, 1);\n' \
+                 '  x;\n' \
+                 '})'
         for vardecl in typeexpr.tail[1:-1]:
             type = decode_type(env, vardecl.tail[-1])
+            cardinality = type.cardinality()
             for symbol in vardecl.tail[:-1]:
                 s = generate(env, symbol)
                 if s in members:
                     raise Exception('duplicate record members %s given' % symbol.tail[0].head)
-                members[s] = type
+                members[s] = (offset, type)
+                offset = '({\n' \
+                         '  mpz_t x = %(offset)s;\n' \
+                         '  mpz_t y = %(cardinality)s;\n' \
+                         '  mpz_mul(x, x, y);\n' \
+                         '  mpz_clear(y);\n' \
+                         '  x;\n' \
+                         '})' % locals()
         return Record(members)
 
     else:
@@ -383,8 +396,14 @@ def pinpoint(env, designator):
             member = generate(env, s)
             if member not in active_type.members:
                 raise Exception('access of non-existing record member %s' % s.tail[0])
-            active_type = active_type.members[member]
-            # XXX: Update offset, but this is not currently tracked in Type.
+            factor, active_type = active_type.members[member]
+            offset = '({\n' \
+                     '  mpz_t x = %(offset)s;\n' \
+                     '  mpz_t y = %(factor)s;\n' \
+                     '  mpz_mul(x, x, y);\n' \
+                     '  mpz_clear(y);\n' \
+                     '  x;\n' \
+                     '})' % locals()
         else:
             assert s.head == 'expr'
             if not isinstance(active_type, Array):
