@@ -283,7 +283,6 @@ def decode_type(env, typeexpr):
         return referent
 
     elif typeexpr.tail[0].head == 'expr':
-        # FIXME: Range actually expects constants as its limits
         min = generate(env, typeexpr.tail[0])
         max = generate(env, typeexpr.tail[1])
         return Range(min, max)
