@@ -96,67 +96,51 @@ typedef struct {
     mpz_t size;
 } field_t;
 
-void state_read(mpz_t *result, state_t *s, const field_t f) {
-    /* quotient = offset == 0 ? data : data / offset; */
-    mpz_t quotient;
-    if (mpz_cmp_ui(f.offset, 0) == 0) {
-        mpz_init_set(quotient, s->data);
-    } else {
-        mpz_init(quotient);
-        mpz_cdiv_q(quotient, s->data, f.offset);
-    }
+/* This needs to be a macro so we can return an mpz_t. */
+#define read_direct(symbol) \
+    ({ \
+        mpz_t x; \
+        mpz_init_set(x, symbol); \
+        x; \
+    })
 
-    /* remainder = quotient % size; */
-    mpz_mod(*result, quotient, f.size);
-
-    mpz_clear(quotient);
+void write_direct(mpz_t dest, mpz_t src) {
+    mpz_set(dest, src);
+    mpz_clear(src);
 }
 
-void state_write(state_t *s, const field_t f, const mpz_t value) {
-    /* upper = offset == 0 ? data : data / offset; */
-    mpz_t upper;
-    if (mpz_cmp_ui(f.offset, 0) == 0) {
-        mpz_init_set(upper, s->data);
-    } else {
-        mpz_init(upper);
-        mpz_cdiv_q(upper, s->data, f.offset);
-    }
+#define read_from_state(state, offset, cardinality) \
+    ({ \
+        mpz_t x; \
+        mpz_init(x); \
+        mpz_div_ui(x, state, offset); \
+        mpz_mod_ui(x, x, cardinality); \
+        x; \
+    })
 
-    /* upper = upper / size; */
-    mpz_cdiv_q(upper, upper, f.size);
+void write_to_state(mpz_t state, unsigned int offset, unsigned int cardinality,
+        mpz_t src) {
+    mpz_mul_ui(src, src, offset);
 
-    /* lower = offset == 0 ? 0 : data % offset; */
+    /* lower = state % offset */
     mpz_t lower;
     mpz_init(lower);
-    if (mpz_cmp_ui(f.offset, 0) == 0) {
-        /* lower is already 0. */
-    } else {
-        mpz_mod(lower, s->data, f.offset);
-    }
+    mpz_mod_ui(lower, state, offset);
 
-    /* updated = upper; */
-    mpz_t updated;
-    mpz_init_set(updated, upper);
+    /* upper = state / (offset * cardinality) * (offset * cardinality) */
+    mpz_t upper;
+    mpz_init(upper);
+    mpz_div_ui(upper, state, offset * cardinality);
+    mpz_mul_ui(upper, state, offset * cardinality);
 
-    /* updated = updated * size + value; */
-    mpz_mul(updated, updated, f.size);
-    mpz_add(updated, updated, value);
+    /* state = upper + src + lower */
+    mpz_add(upper, upper, lower);
+    mpz_add(upper, upper, src);
+    mpz_set(state, upper);
 
-    /* updated = offset == 0 ? updated : updated * offset + lower; */
-    if (mpz_cmp_ui(f.offset, 0) == 0) {
-        /* nothing required */
-    } else {
-        mpz_mul(updated, updated, f.offset);
-        mpz_add(updated, updated, lower);
-    }
-
-    /* Update state */
-    mpz_set(s->data, updated);
-
-    /* clean up */
     mpz_clear(upper);
     mpz_clear(lower);
-    mpz_clear(updated);
+    mpz_clear(src);
 }
 
 typedef struct {
