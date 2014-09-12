@@ -1,5 +1,5 @@
 from Access import StateSymbol, DirectSymbol
-from MPTerm import Literal
+from MPZ import Literal
 
 class Environment(object):
     def __init__(self):
