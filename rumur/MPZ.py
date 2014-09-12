@@ -172,12 +172,12 @@ class Literal(MPTerm):
         self.value = value
 
     def to_ui(self):
-        return '%uU' % self.value
+        return '%uu' % self.value
 
     def to_mpz(self):
         return '({\n' \
                '  mpz_t x;\n' \
-               '  mpz_init_set_ui(x, %uU);\n' \
+               '  mpz_init_set_ui(x, %uu);\n' \
                '  x;\n' \
                '})' % self.value
 
