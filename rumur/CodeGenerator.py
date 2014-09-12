@@ -138,7 +138,7 @@ def generate(env, n):
         return make_function(env, symbol, formals, return_type, decls, stmts)
 
     elif n.head == 'integer_constant':
-        value = n.tail[0]
+        value = int(n.tail[0])
         return Literal(value)
 
     elif n.head == 'start':
