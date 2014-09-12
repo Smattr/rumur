@@ -205,7 +205,7 @@ def generate(env, n):
         type = decode_type(env, n.tail[-1])
         for s in n.tail[:-1]:
             symbol = generate(env, s)
-            env.declare(symbol, type, None)
+            env.declare(symbol, type)
             if not env.bare():
                 # We only need to generate code if this is not a state variable.
                 code += 'mpz_t %(symbol)s;\n' \
@@ -351,7 +351,7 @@ def make_function(env, symbol, formals, return_type, decls, stmts):
         type = decode_type(env, formal.tail[-1])
         for s in symbols:
             mangled = generate(env, s)
-            env.declare(mangled, type, None)
+            env.declare(mangled, type)
             p = 'p_%s' % mangled
             params.append('mpz_t %s' % p)
             if writable:
