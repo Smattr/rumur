@@ -5,6 +5,21 @@ class Environment(object):
     def __init__(self):
         self.scopes = []
         self.global_scope_offset = Literal(1)
+        # The state begins inaccessible and remains inaccessible in the first
+        # scope (the global scope). It is only accessible in child scopes when
+        # it is passed in as a parameter and then needs to be registered below.
+        self.state_variable = None
+
+    def register_state(self, symbol):
+        assert self.state_variable is None, \
+            'registering the state as \'%s\' while it is already accessible ' \
+            'as \'%s\'' % (symbol, self.state_variable)
+        self.state_variable = symbol
+
+    def deregister_state(self):
+        assert self.state_variable is not None, \
+            'deregistering the state when it is already inaccessible'
+        self.state_variable = None
 
     def new_scope(self):
         self.scopes.append({})

@@ -387,7 +387,10 @@ def pinpoint(env, designator):
     root = generate(env, designator.tail[0])
     sym = env.lookup(root)
     if isinstance(sym, StateSymbol):
-        origin = 'state'
+        assert env.state_variable is not None, \
+            'looking up \'%s\' which needs to be accessed through the state ' \
+            'in a context in which the state is unavailable'
+        origin = env.state_variable
         offset = sym.offset
     elif isinstance(sym, DirectSymbol):
         origin = root
