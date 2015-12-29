@@ -17,12 +17,8 @@ def to_code(node, lvalue=False):
         return itertools.chain(*[to_code(t) for t in node.tail])
 
     elif node.head == 'designator':
-
-        if lvalue:
-            # XXX
-            pass
-
-        else:
+        # XXX
+        pass
 
 
     elif node.head == 'expr':
