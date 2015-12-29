@@ -62,10 +62,10 @@ integer_constant: '\d+';
 
 program: decl* procdecl* rules*;
 
-decl: CONST (constdecl ';')*
-    | TYPE (typedecl ';')*
-    | VAR (vardecl ';')*
-    ;
+@decl: CONST (constdecl ';')*
+     | TYPE (typedecl ';')*
+     | VAR (vardecl ';')*
+     ;
 
 constdecl: symbol ':' expr;
 
@@ -80,9 +80,9 @@ typeexpr: symbol
 
 vardecl: symbol (',' symbol)* ':' typeexpr;
 
-procdecl: procedure
-        | function
-        ;
+@procdecl: procedure
+         | function
+         ;
 
 procedure: PROCEDURE symbol '\(' (formal (';' formal)* )? '\)' ';' (decl* BEGIN)? stmts? endprocedure ';';
 
@@ -118,31 +118,36 @@ expr: lbrace expr rbrace
 
 stmts: stmt (';' stmt?)*;
 
-stmt: assignment
-    | ifstmt
-    | switchstmt
-    | forstmt
-    | whilestmt
-    | aliasstmt
-    | proccall
-    | clearstmt
-    | errorstmt
-    | assertstmt
-    | putstmt
-    | returnstmt
-    ;
+@stmt: assignment
+     | ifstmt
+     | switchstmt
+     | forstmt
+     | whilestmt
+     | aliasstmt
+     | proccall
+     | clearstmt
+     | errorstmt
+     | assertstmt
+     | putstmt
+     | returnstmt
+     ;
 
 assignment: designator ':=' expr;
 
 ifstmt: IF expr THEN stmts?
-             (ELSIF expr THEN stmts?)*
-             (ELSE stmts?)?
+             (elsif expr THEN stmts?)*
+             (else stmts?)?
         endif;
 
+elsif: ELSIF;
+else: ELSE;
+
 switchstmt: SWITCH expr
-               (CASE expr (',' expr)* ':' stmts?)*
-               (ELSE stmts?)?
+               (case expr (',' expr)* ':' stmts?)*
+               (else stmts?)?
             endswitch;
+
+case: CASE;
 
 forstmt: FOR quantifier DO stmts? endfor;
 
@@ -176,12 +181,12 @@ actuals:
 
 rules: rule (';' rule)* ';'?;
 
-rule: simplerule
-    | startstate
-    | invariant
-    | ruleset
-    | aliasrule
-    ;
+@rule: simplerule
+     | startstate
+     | invariant
+     | ruleset
+     | aliasrule
+     ;
 
 simplerule: RULE string?
                (expr '==>')?
