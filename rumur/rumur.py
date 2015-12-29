@@ -38,7 +38,7 @@ def main():
         return -1
 
     # Transform the AST into an intermediate representation.
-    ir = to_ir(ast)
+    env, ir = to_ir(ast)
 
     ast = run_to_fixed_point(ast, constant_fold)
 

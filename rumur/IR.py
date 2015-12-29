@@ -1,6 +1,6 @@
 import abc, operator, six
 
-class Node(six.with_metaclass(object, abc.ABCMeta)):
+class Node(six.with_metaclass(abc.ABCMeta, object)):
 
     _fields = ()
     
@@ -32,7 +32,7 @@ class ConstDecl(Node):
         self.name = name
         self.expr = expr
 
-class Stmt(six.with_metaclass(Node, abc.ABCMeta)):
+class Stmt(six.with_metaclass(abc.ABCMeta, Node)):
     pass
 
 class Assignment(Stmt):
@@ -144,7 +144,7 @@ class Designator(Node):
     def __init__(self, *atoms):
         self.atoms = atoms
 
-class Method(six.with_metaclass(Node, abc.ABCMeta)):
+class Method(six.with_metaclass(abc.ABCMeta, Node)):
     def __init__(self, name, parameters, decls, stmts):
         self.name = name
         self.parameters = parameters
@@ -159,7 +159,7 @@ class Function(Method):
 class Procedure(Method):
     pass
 
-class TypeExpr(Node, metaclass=abc.ABCMeta):
+class TypeExpr(six.with_metaclass(abc.ABCMeta, Node)):
     pass
 
 class TypeRef(TypeExpr):
@@ -190,10 +190,10 @@ class Formal(Node):
         self.name = name
         self.typeexpr = typeexpr
 
-class Expr(Node, metaclass=abc.ABCMeta):
+class Expr(six.with_metaclass(abc.ABCMeta, Node)):
     pass
 
-class BinOp(six.with_metaclass(Expr, abc.ABCMeta)):
+class BinOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
     _fields = ('left', 'right')
 
@@ -289,7 +289,7 @@ class NEq(BinOp):
     def op(self):
         return operator.ne
 
-class UnaryOp(six.with_metaclass(Expr, abc.ABCMeta)):
+class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
     _fields = ('operand',)
 

@@ -1,10 +1,9 @@
 from Access import StateSymbol, DirectSymbol
-from MPZ import Literal
 
 class Environment(object):
     def __init__(self):
         self.scopes = []
-        self.global_scope_offset = Literal(1)
+        self.global_scope_offset = 1
         # The state begins inaccessible and remains inaccessible in the first
         # scope (the global scope). It is only accessible in child scopes when
         # it is passed in as a parameter and then needs to be registered below.
