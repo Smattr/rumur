@@ -1,6 +1,7 @@
 import argparse, sys
 from CodeGenerator import to_code
 from ConstantFolding import constant_fold
+from IRGenerator import to_ir
 from Parser import Parser
 
 def run_to_fixed_point(ast, *transformers):
@@ -36,11 +37,8 @@ def main():
         print >>sys.stderr, str(e)
         return -1
 
-    # At this point, a traditionally architected compiler would transform the
-    # AST into an intermediate representation. However, the target
-    # representation we are eventually going to lower to, C, corresponds quite
-    # well to the input language. So instead of using an IR, we just have
-    # optimisations operate directly on the AST.
+    # Transform the AST into an intermediate representation.
+    ir = to_ir(ast)
 
     ast = run_to_fixed_point(ast, constant_fold)
 
