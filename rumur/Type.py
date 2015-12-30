@@ -6,21 +6,13 @@ class Type(six.with_metaclass(abc.ABCMeta, object)):
     def cardinality(self):
         raise NotImplementedError
 
-class Constant(Type):
-
-    def __init__(self, value):
-        self.value = value
-
-    def cardinality(self):
-        return 1
-
 class Enum(Type):
 
     def __init__(self, members):
         self.members = members
 
     def cardinality(self):
-        return len(self.members)
+        return len(self.members) + 1
 
 boolean = Enum(['false', 'true'])
 
@@ -31,7 +23,7 @@ class Range(Type):
         self.max = max
 
     def cardinality(self):
-        return self.max - self.min + 1
+        return self.max - self.min + 2
 
 class Array(Type):
 
@@ -42,7 +34,7 @@ class Array(Type):
     def cardinality(self):
         index_card = self.index_type.cardinality();
         member_card = self.member_type.cardinality();
-        return index_card * member_card
+        return (index_card - 1) * member_card
 
 class Record(Type):
 
@@ -55,8 +47,3 @@ class Record(Type):
             member_card = v[1].cardinality()
             card *= member_card
         return card
-
-class Unconstrained(Type):
-    def cardinality(self):
-        raise TypeError
-unconstrained = Unconstrained()
