@@ -1,4 +1,5 @@
 from Access import StateSymbol, DirectSymbol
+from Type import Constant
 
 class Environment(object):
     def __init__(self):
@@ -32,6 +33,8 @@ class Environment(object):
         if symbol in self.scopes[-1]:
             raise Exception('%s already declared in this scope' % symbol)
         if len(self.scopes) == 1:
+            if isinstance(type, Constant):
+                # XXX
             # We're declaring a new global (i.e. part of the state)
             s = StateSymbol(symbol, type, self.global_scope_offset)
             self.global_scope_offset *= type.cardinality()

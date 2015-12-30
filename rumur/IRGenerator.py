@@ -2,11 +2,13 @@ from ConstantFolding import constant_fold
 from Environment import Environment
 from IR import AliasRule, Invariant, Lit, Method, Program, RuleSet, SimpleRule, StartState, TypeDecl, VarDecl
 from RumurError import RumurError
+from Type import Constant
 
 class Generator(object):
 
     def __init__(self):
         self.env = Environment()
+        self.env.new_scope()
 
     def to_ir(self, node):
 
@@ -18,8 +20,14 @@ class Generator(object):
             if not isinstance(expr, Lit):
                 raise RumurError('%s:%d: constant declaration is not constant' %
                     node.filename, node.lineno)
-            self.env.declare(name, expr)
+            type = Constant()
+            self.env.declare(name, type, expr)
             return None
+
+        elif node.head == 'expr':
+
+            if node.tail[0].head == 'integer_constant':
+                return Lit(int(str(node.tail[0].tail[0])))
 
         elif node.head == 'program':
             p = Program()
