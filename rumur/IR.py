@@ -27,15 +27,6 @@ class Node(six.with_metaclass(abc.ABCMeta, object)):
     def visit(self, visitor):
         return visitor(self)
 
-class ConstDecl(Node):
-
-    _fields = ('expr',)
-
-    def __init__(self, name, expr, node):
-        super(ConstDecl, self).__init__(node)
-        self.name = name
-        self.expr = expr
-
 class Stmt(six.with_metaclass(abc.ABCMeta, Node)):
     pass
 
@@ -46,119 +37,136 @@ class Assignment(Stmt):
         self.expr = expr
 
 class Branch(Node):
-    def __init__(self, cond, stmts):
+    def __init__(self, cond, stmts, node):
+        super(Branch, self).__init__(node)
         self.cond = cond
         self.stmts = stmts
 
 class IfStmt(Stmt):
-    def __init__(self, branches):
+    def __init__(self, branches, node):
+        super(IfStmt, self).__init__(node)
         self.branches = branches
 
 class Case(Node):
-    def __init__(self, expr, stmts):
+    def __init__(self, expr, stmts, node):
+        super(Case, self).__init__(node)
         self.expr = expr
         self.stmts = stmts
 
 class SwitchStmt(Stmt):
-    def __init__(self, expr, cases):
+    def __init__(self, expr, cases, node):
+        super(SwitchStmt, self).__init__(node)
         self.expr = expr
         self.cases = cases
 
 class ForStmt(Stmt):
-    def __init__(self, quantifier, stmts):
+    def __init__(self, quantifier, stmts, node):
+        super(ForStmt, self).__init__(node)
         self.quantifier = quantifier
         self.stmts = stmts
 
 class Quantifier(Node):
-    def __init__(self, symbol, typeexpr=None, lower=None, upper=None, step=None):
+    def __init__(self, symbol, typeexpr, lower, upper, step, node):
+        super(Quantifier, self).__init__(node)
         self.typeexpr = typeexpr
         self.lower = lower
         self.upper = upper
         self.step = step
 
 class WhileStmt(Stmt):
-    def __init__(self, expr, stmts):
+    def __init__(self, expr, stmts, node):
+        super(WhileStmt, self).__init__(node)
         self.expr = expr
         self.stmts = stmts
 
 class Alias(Node):
-    def __init__(self, symbol, expr):
+    def __init__(self, symbol, expr, node):
+        super(Alias, self).__init__(node)
         self.symbol = symbol
         self.expr = expr
 
 class AliasStmt(Stmt):
-    def __init__(self, aliases, stmts):
+    def __init__(self, aliases, stmts, node):
+        super(AliasStmt, self).__init__(node)
         self.aliases = aliases
         self.stmts = stmts
 
 class ProcCall(Stmt):
-    def __init__(self, symbol, exprs):
+    def __init__(self, symbol, exprs, node):
+        super(ProcCall, self).__init__(node)
         self.symbol = symbol
         self.exprs = exprs
 
 class ClearStmt(Stmt):
-    def __init__(self, designator):
+    def __init__(self, designator, node):
+        super(ClearStmt, self).__init__(node)
         self.designator = designator
 
 class ErrorStmt(Stmt):
-    def __init__(self, designator):
+    def __init__(self, designator, node):
+        super(ErrorStmt, self).__init__(node)
         self.designator = designator
 
 class AssertStmt(Stmt):
-    def __init__(self, expr, string):
+    def __init__(self, expr, string, node):
+        super(AssertStmt, self).__init__(node)
         self.expr = expr
         self.string = string
 
 class PutStmt(Stmt):
-    def __init__(self, arg):
+    def __init__(self, arg, node):
+        super(PutStmt, self).__init__(node)
         self.arg = arg
 
 class ReturnStmt(Stmt):
-    def __init__(self, value):
+    def __init__(self, value, node):
+        super(ReturnStmt, self).__init__(node)
         self.value = value
 
 class Invariant(Node):
-    def __init__(self, string, expr):
+    def __init__(self, string, expr, node):
+        super(Invariant, self).__init__(node)
         self.string = string
         self.expr = expr
 
 class StartState(Node):
-    def __init__(self, string, decls, stmts):
+    def __init__(self, string, decls, stmts, node):
+        super(StartState, self).__init__(node)
         self.string = string
         self.decls = decls
         self.stmts = stmts
 
 class SimpleRule(Node):
-    def __init__(self, string, expr, decls, stmts):
+    def __init__(self, string, expr, decls, stmts, node):
+        super(SimpleRule, self).__init__(node)
         self.string = string
         self.expr = expr
         self.decls = decls
         self.stmts = stmts
 
 class RuleSet(Node):
-    def __init__(self, quantifiers, rules):
+    def __init__(self, quantifiers, rules, node):
+        super(RuleSet, self).__init__(node)
         self.quantifiers = quantifiers
         self.rules = rules
 
 class AliasRule(Node):
-    def __init__(self, aliases, rules):
+    def __init__(self, aliases, rules, node):
+        super(AliasRule, self).__init__(node)
         self.aliases = aliases
         self.rules = rules
 
-class Designator(Node):
-    def __init__(self, *atoms):
-        self.atoms = atoms
-
 class Method(six.with_metaclass(abc.ABCMeta, Node)):
-    def __init__(self, name, parameters, decls, stmts):
+    def __init__(self, name, parameters, decls, stmts, node):
+        super(Method, self).__init__(node)
         self.name = name
         self.parameters = parameters
         self.decls = decls
         self.stmts = stmts
 
 class Function(Method):
-    def __init__(self, name, parameters, returntype, decls, stmts):
-        super(Function, self).__init__(name, parameters, decls, stmts)
+    def __init__(self, name, parameters, returntype, decls, stmts, node):
+        super(Function, self).__init__(name, parameters, decls, stmts, node)
         self.returntype = returntype
 
 class Procedure(Method):
@@ -166,10 +174,6 @@ class Procedure(Method):
 
 class TypeExpr(six.with_metaclass(abc.ABCMeta, Node)):
     pass
-
-class TypeRef(TypeExpr):
-    def __init__(self, symbol):
-        self.symbol = symbol
 
 class TypeRange(TypeExpr):
     def __init__(self, lower, upper, node):
@@ -183,7 +187,8 @@ class TypeEnum(TypeExpr):
         self.members = members
 
 class TypeRecord(TypeExpr):
-    def __init__(self, *vardecls):
+    def __init__(self, vardecls, node):
+        super(TypeRecord, self).__init__(node)
         self.vardecls = vardecls
 
 class TypeArray(TypeExpr):
@@ -193,7 +198,8 @@ class TypeArray(TypeExpr):
         self.member_type = member_type
 
 class Formal(Node):
-    def __init__(self, var, name, typeexpr):
+    def __init__(self, var, name, typeexpr, node):
+        super(Formal, self).__init__(node)
         self.var = var
         self.name = name
         self.typeexpr = typeexpr
@@ -331,7 +337,8 @@ class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
     _fields = ('operand',)
 
-    def __init__(self, operand):
+    def __init__(self, operand, node):
+        super(UnaryOp, self).__init__(node)
         self.operand = operand
 
     @abc.abstractproperty
@@ -362,7 +369,8 @@ class TriCond(Expr):
 
     _fields = ('cond', 'casetrue', 'casefalse')
 
-    def __init__(self, cond, casetrue, casefalse):
+    def __init__(self, cond, casetrue, casefalse, node):
+        super(TriCond, self).__init__(node)
         self.cond = cond
         self.casetrue = casetrue
         self.casefalse = casefalse
@@ -372,15 +380,11 @@ class TriCond(Expr):
         return self.casetrue.result_type
 
 class Program(Node):
-    def __init__(self):
+    def __init__(self, node):
+        super(Program, self).__init__(node)
         self.decls = []
         self.procs = []
         self.rules = []
-
-class TypeDecl(Node):
-    def __init__(self, name, typeexpr):
-        self.name = name
-        self.typeexpr = typeexpr
 
 class VarDecl(Node):
     def __init__(self, name, typeexpr):
