@@ -56,10 +56,10 @@ class Generator(object):
 
             elif node.tail[1].head == 'add':
                 left = self.to_ir(node.tail[0])
-                right = self.to_ir(node.tail[2])
                 if left.result_type is not int:
                     raise RumurError('%d: left operand to addition does '
                         'not evaluate to an integer' % lineno(node))
+                right = self.to_ir(node.tail[2])
                 if right.result_type is not int:
                     raise RumurError('%d: right operand to addition does '
                         'not evaluate to an integer' % lineno(node))
@@ -69,10 +69,10 @@ class Generator(object):
 
             elif node.tail[1].head == 'sub':
                 left = self.to_ir(node.tail[0])
-                right = self.to_ir(node.tail[2])
                 if left.result_type is not int:
                     raise RumurError('%d: left operand to subtraction does '
                         'not evaluate to an integer' % lineno(node))
+                right = self.to_ir(node.tail[2])
                 if right.result_type is not int:
                     raise RumurError('%d: right operand to subtraction does '
                         'not evaluate to an integer' % lineno(node))
@@ -82,7 +82,13 @@ class Generator(object):
 
             elif node.tail[1].head == 'div':
                 left = self.to_ir(node.tail[0])
+                if left.result_type is not int:
+                    raise RumurError('%d: left operand to division does '
+                        'not evaluate to an integer' % lineno(node))
                 right = self.to_ir(node.tail[2])
+                if right.result_type is not int:
+                    raise RumurError('%d: right operand to division does '
+                        'not evaluate to an integer' % lineno(node))
                 if isinstance(right, Lit) and right.value == 0:
                     # This is a division by zero, which is a runtime error.
                     # Optimise the numerator away entirely.
@@ -94,7 +100,13 @@ class Generator(object):
 
             elif node.tail[1].head == 'and':
                 left = self.to_ir(node.tail[0])
+                if left.result_type is not bool:
+                    raise RumurError('%d: left operand to and does '
+                        'not evaluate to a boolean' % lineno(node))
                 right = self.to_ir(node.tail[2])
+                if right.result_type is not bool:
+                    raise RumurError('%d: right operand to and does '
+                        'not evaluate to a boolean' % lineno(node))
                 if isinstance(left, Lit):
                     if left.value:
                         return right
@@ -107,6 +119,9 @@ class Generator(object):
 
             elif node.tail[0].head == 'not':
                 operand = self.to_ir(node.tail[1])
+                if operand.result_type is not bool:
+                    raise RumurError('%d: operand to not does '
+                        'not evaluate to a boolean' % lineno(node))
                 if isinstance(operand, Lit):
                     if operand.value:
                         return Lit(False, node)
@@ -119,6 +134,9 @@ class Generator(object):
             elif node.tail[1].head == 'eq':
                 left = self.to_ir(node.tail[0])
                 right = self.to_ir(node.tail[2])
+                if left.result_type is not right.result_type:
+                    raise RumurError('%d: equality comparison between '
+                        'expressions of differing types' % lineno(node))
                 if isinstance(left, Lit) and isinstance(right, Lit):
                     return Lit(left.value == right.value, node)
                 if isinstance(left, Lit) and left.result_type is bool:
