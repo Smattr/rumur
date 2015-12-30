@@ -3,6 +3,9 @@ import abc, operator, six
 class Node(six.with_metaclass(abc.ABCMeta, object)):
 
     _fields = ()
+
+    def __init__(self, node):
+        self.node = node
     
     def postorder(self, visitor):
         for field in self._fields:
@@ -28,7 +31,8 @@ class ConstDecl(Node):
 
     _fields = ('expr',)
 
-    def __init__(self, name, expr):
+    def __init__(self, name, expr, node):
+        super(ConstDecl, self).__init__(node)
         self.name = name
         self.expr = expr
 
@@ -36,7 +40,8 @@ class Stmt(six.with_metaclass(abc.ABCMeta, Node)):
     pass
 
 class Assignment(Stmt):
-    def __init__(self, designator, expr):
+    def __init__(self, designator, expr, node):
+        super(Assignment, self).__init__(node)
         self.designator = designator
         self.expr = expr
 
@@ -167,12 +172,14 @@ class TypeRef(TypeExpr):
         self.symbol = symbol
 
 class TypeRange(TypeExpr):
-    def __init__(self, lower, upper):
+    def __init__(self, lower, upper, node):
+        super(TypeRange, self).__init__(node)
         self.lower = lower
         self.upper = upper
 
 class TypeEnum(TypeExpr):
-    def __init__(self, *members):
+    def __init__(self, members, node):
+        super(TypeEnum, self).__init__(node)
         self.members = members
 
 class TypeRecord(TypeExpr):
@@ -180,9 +187,10 @@ class TypeRecord(TypeExpr):
         self.vardecls = vardecls
 
 class TypeArray(TypeExpr):
-    def __init__(self, size, membertype):
-        self.size = size
-        self.membertype = membertype
+    def __init__(self, index_type, member_type, node):
+        super(TypeArray, self).__init__(node)
+        self.index_type = index_type
+        self.member_type = member_type
 
 class Formal(Node):
     def __init__(self, var, name, typeexpr):
@@ -191,13 +199,15 @@ class Formal(Node):
         self.typeexpr = typeexpr
 
 class Expr(six.with_metaclass(abc.ABCMeta, Node)):
-    pass
+
+    result_type = None
 
 class BinOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
     _fields = ('left', 'right')
 
-    def __init__(self, left, right):
+    def __init__(self, left, right, node):
+        super(BinOp, self).__init__(node)
         self.left = left
         self.right = right
 
@@ -207,11 +217,15 @@ class BinOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
 class Add(BinOp):
 
+    result_type = int
+
     @property
     def op(self):
         return operator.add
 
 class Sub(BinOp):
+
+    result_type = int
 
     @property
     def op(self):
@@ -219,11 +233,15 @@ class Sub(BinOp):
 
 class Mul(BinOp):
 
+    result_type = int
+
     @property
     def op(self):
         return operator.mul
 
 class Div(BinOp):
+
+    result_type = int
 
     @property
     def op(self):
@@ -231,11 +249,15 @@ class Div(BinOp):
 
 class Mod(BinOp):
 
+    result_type = int
+
     @property
     def op(self):
         return operator.mod
 
 class Or(BinOp):
+
+    result_type = bool
 
     @property
     def op(self):
@@ -243,11 +265,15 @@ class Or(BinOp):
 
 class And(BinOp):
 
+    result_type = bool
+
     @property
     def op(self):
         return (lambda a, b: int(a and b))
 
 class Imp(BinOp):
+
+    result_type = bool
 
     @property
     def op(self):
@@ -255,11 +281,15 @@ class Imp(BinOp):
 
 class LT(BinOp):
 
+    result_type = bool
+
     @property
     def op(self):
         return operator.lt
 
 class LTE(BinOp):
+
+    result_type = bool
 
     @property
     def op(self):
@@ -267,11 +297,15 @@ class LTE(BinOp):
 
 class GT(BinOp):
 
+    result_type = bool
+
     @property
     def op(self):
         return operator.gt
 
 class GTE(BinOp):
+
+    result_type = bool
 
     @property
     def op(self):
@@ -279,11 +313,15 @@ class GTE(BinOp):
 
 class Eq(BinOp):
 
+    result_type = bool
+
     @property
     def op(self):
         return operator.eq
 
 class NEq(BinOp):
+
+    result_type = bool
 
     @property
     def op(self):
@@ -302,14 +340,23 @@ class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
 class Not(UnaryOp):
 
+    result_type = bool
+
     @property
     def op(self):
         return (lambda x: int(not x))
 
 class Lit(Expr):
 
-    def __init__(self, value):
+    def __init__(self, value, node):
+        super(Lit, self).__init__(node)
         self.value = value
+        
+    @property
+    def result_type(self):
+        if isinstance(self.value, bool):
+            return bool
+        return int
 
 class TriCond(Expr):
 
@@ -319,6 +366,10 @@ class TriCond(Expr):
         self.cond = cond
         self.casetrue = casetrue
         self.casefalse = casefalse
+
+    @property
+    def result_type(self):
+        return self.casetrue.result_type
 
 class Program(Node):
     def __init__(self):

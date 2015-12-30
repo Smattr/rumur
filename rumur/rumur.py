@@ -1,7 +1,8 @@
-import argparse, sys
+import argparse, logging, sys
 from CodeGenerator import to_code
 from ConstantFolding import constant_fold
 from IRGenerator import to_ir
+from Log import log
 from Parser import Parser
 
 def run_to_fixed_point(ast, *transformers):
@@ -22,6 +23,9 @@ def main():
     parser.add_argument('input', type=argparse.FileType('r'),
         help='input specification')
     opts = parser.parse_args()
+
+    # XXX
+    log.setLevel(logging.DEBUG)
 
     # Construct the parser.
     try:

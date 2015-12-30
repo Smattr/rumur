@@ -17,6 +17,7 @@ class Generator(object):
         if isinstance(ir, PutStmt):
             if isinstance(ir.arg, Expr):
                 # XXX
+                pass
             else:
                 assert isinstance(ir.arg, six.string_types)
                 return ['printf("%s", "', ir.arg, '");']
