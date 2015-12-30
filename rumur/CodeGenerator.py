@@ -6,81 +6,89 @@ def mangle(name):
 def bracket(term):
     return ['('] + term + [')']
 
-def to_code(node, lvalue=False):
+class Generator(object):
 
-    if node.head == 'constdecl':
-        name = str(node.tail[0])
-        expr = to_code(node.tail[1])
-        return ['static const mpz_class ', mangle(name), '='] + expr + [';']
+    def __init__(self, env):
+        self.env = env
 
-    elif node.head == 'decl':
-        return itertools.chain(*[to_code(t) for t in node.tail])
+    def to_code(self, node, lvalue=False):
 
-    elif node.head == 'designator':
-        # XXX
-        pass
+        if node.head == 'constdecl':
+            name = str(node.tail[0])
+            expr = self.to_code(node.tail[1])
+            return ['static const mpz_class ', mangle(name), '='] + expr + [';']
 
+        elif node.head == 'decl':
+            return itertools.chain(*[self.to_code(t) for t in node.tail])
 
-    elif node.head == 'expr':
-
-        if node.tail[0].head == 'lbrace':
-            assert node.tail[2].head == 'rbrace'
-            return ['('] + to_code(node.tail[1], lvalue) + [')']
-
-        elif node.tail[0].head == 'designator':
+        elif node.head == 'designator':
             # XXX
-            return to_code(node.tail[0])
-
-        elif node.tail[0].head == 'integer_constant':
-            return [str(node.tail[0])]
-
-        elif node.tail[0].head == 'symbol':
-            function = mangle(str(node.tail[0]))
-            parameters = to_code(node.tail[2])
-            return [function, '('] + parameters + [')']
-
-        elif node.tail[1].head == 'add':
-            return bracket(to_code(node.tail[0], lvalue)) + ['+'] + bracket(to_code(node.tail[2], lvalue))
-
-        elif node.tail[1].head == 'sub':
-            return bracket(to_code(node.tail[0], lvalue)) + ['-'] + bracket(to_code(node.tail[2], lvalue))
-
-    elif node.head == 'program':
-        return itertools.chain(*[to_code(t) for t in node.tail])
-
-    elif node.head == 'start':
-        return to_code(node.tail[0])
-
-    elif node.head == 'typedecl':
-
-        if node.tail[1].tail[0].head == 'expr':
-            lower_name = mangle('%s_MIN' % str(node.tail[0]))
-            upper_name = mangle('%s_MAX' % str(node.tail[0]))
-            lower_val = to_code(node.tail[1].tail[0])
-            upper_val = to_code(node.tail[1].tail[1])
-            return ['static const mpz_class ', lower_name, '='] + lower_val + \
-                [';static const mpz_class ', upper_name, '='] + upper_val + \
-                [';typedef mpz_class ', name, ';']
-
-        else:
-            name = mangle(str(node.tail[0]))
-            return ['typedef '] + to_code(node.tail[0]) + [' ', name, ';']
-
-    elif node.head == 'typeexpr':
-
-        if node.tail[0].head == 'symbol':
-            return [str(node.tail[0])]
-
-        elif node.tail[0].head == 'expr':
-            return ['mpz_class']
-
-        elif node.tail[0].head == 'enum':
-            members = itertools.chain(*[to_code(s) + [','] for s in node.tail[1:]])
-            return ['enum {'] + members + ['}']
-
-    raise NotImplementedError('code generation for %s (in `%s`)' % (node.head, node))
+            pass
 
 
+        elif node.head == 'expr':
+
+            if node.tail[0].head == 'lbrace':
+                assert node.tail[2].head == 'rbrace'
+                return ['('] + self.to_code(node.tail[1], lvalue) + [')']
+
+            elif node.tail[0].head == 'designator':
+                # XXX
+                return self.to_code(node.tail[0])
+
+            elif node.tail[0].head == 'integer_constant':
+                return [str(node.tail[0])]
+
+            elif node.tail[0].head == 'symbol':
+                function = mangle(str(node.tail[0]))
+                parameters = self.to_code(node.tail[2])
+                return [function, '('] + parameters + [')']
+
+            elif node.tail[1].head == 'add':
+                return bracket(self.to_code(node.tail[0], lvalue)) + ['+'] + bracket(self.to_code(node.tail[2], lvalue))
+
+            elif node.tail[1].head == 'sub':
+                return bracket(self.to_code(node.tail[0], lvalue)) + ['-'] + bracket(self.to_code(node.tail[2], lvalue))
+
+        elif node.head == 'program':
+            return itertools.chain(*[self.to_code(t) for t in node.tail])
+
+        elif node.head == 'start':
+            return self.to_code(node.tail[0])
+
+        elif node.head == 'typedecl':
+
+            if node.tail[1].tail[0].head == 'expr':
+                lower_name = mangle('%s_MIN' % str(node.tail[0]))
+                upper_name = mangle('%s_MAX' % str(node.tail[0]))
+                lower_val = self.to_code(node.tail[1].tail[0])
+                upper_val = self.to_code(node.tail[1].tail[1])
+                return ['static const mpz_class ', lower_name, '='] + lower_val + \
+                    [';static const mpz_class ', upper_name, '='] + upper_val + \
+                    [';typedef mpz_class ', name, ';']
+
+            else:
+                name = mangle(str(node.tail[0]))
+                return ['typedef '] + self.to_code(node.tail[0]) + [' ', name, ';']
+
+        elif node.head == 'typeexpr':
+
+            if node.tail[0].head == 'symbol':
+                return [str(node.tail[0])]
+
+            elif node.tail[0].head == 'expr':
+                return ['mpz_class']
+
+            elif node.tail[0].head == 'enum':
+                members = itertools.chain(*[self.to_code(s) + [','] for s in node.tail[1:]])
+                return ['enum {'] + members + ['}']
+
+        raise NotImplementedError('code generation for %s (in `%s`)' % (node.head, node))
+
+
+def to_code(env, ir):
+    g = Generator(env)
+    return g.to_code(ir)
 
 
 

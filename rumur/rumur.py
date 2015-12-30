@@ -53,7 +53,7 @@ def main():
 
     # print >>opts.output, code
 
-    opts.output.write(''.join(to_code(ast)))
+    opts.output.write(''.join(to_code(env, ast)))
 
     return 0
 
