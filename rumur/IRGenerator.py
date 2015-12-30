@@ -80,6 +80,19 @@ class Generator(object):
                     return Lit(left.value - right.value, node)
                 return Sub(left, right, node)
 
+            elif node.tail[1].head == 'mul':
+                left = self.to_ir(node.tail[0])
+                if left.result_type is not int:
+                    raise RumurError('%d: left operand to multiplication does '
+                        'not evaluate to an integer' % lineno(node))
+                right = self.to_ir(node.tail[2])
+                if right.result_type is not int:
+                    raise RumurError('%d: right operand to multiplication does '
+                        'not evaluate to an integer' % lineno(node))
+                if isinstance(left, Lit) and isinstance(right, Lit):
+                    return Lit(left.value * right.value, node)
+                return Mul(left, right, node)
+
             elif node.tail[1].head == 'div':
                 left = self.to_ir(node.tail[0])
                 if left.result_type is not int:
