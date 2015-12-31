@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, ForStmt, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -268,6 +268,22 @@ class Generator(object):
             elif node.tail[0].head == 'integer_constant':
                 return self.to_ir(node.tail[0])
 
+            elif node.tail[0].head == 'forall':
+                self.env.open_scope()
+                quan = self.to_ir(node.tail[1])
+                expr = self.to_ir(node.tail[2])
+                quantifier = (self.env.scope, quan)
+                self.env.close_scope()
+                return Forall(quantifier, expr, node)
+
+            elif node.tail[0].head == 'exists':
+                self.env.open_scope()
+                quan = self.to_ir(node.tail[1])
+                expr = self.to_ir(node.tail[2])
+                quantifier = (self.env.scope, quan)
+                self.env.close_scope()
+                return Exists(quantifier, expr, node)
+
         elif node.head == 'formal':
             if node.tail[0].head == 'var':
                 writable = True
@@ -285,13 +301,8 @@ class Generator(object):
             return None
 
         elif node.head == 'forstmt':
-            quan = self.to_ir(node.tail[0])
             self.env.open_scope()
-            if quan.typeexpr is None:
-                type = TypeRange(quan.lower, quan.upper, node.tail[0])
-            else:
-                type = quan.typeexpr
-            self.env.declare_var(quan.symbol, type, writable=False)
+            quan = self.to_ir(node.tail[0])
             if node.tail[1].head == 'stmts':
                 stmts = self.to_ir(node.tail[1])
             else:
@@ -358,7 +369,7 @@ class Generator(object):
                     return None
                 raise RumurError('%d: invariant is always false' %
                     lineno(node))
-            return Invairant(name, expr, node)
+            return Invariant(name, expr, node)
 
         elif node.head == 'proccall':
             symbol = self.to_ir(node.tail[0])
@@ -416,6 +427,7 @@ class Generator(object):
                 lower = None
                 upper = None
                 step = None
+                self.env.declare_var(symbol, typeexpr, writable=False)
             else:
                 typeexpr = None
                 lower = self.to_ir(node.tail[1])
@@ -438,6 +450,7 @@ class Generator(object):
                 else:
                     assert len(node.tail) == 3
                     step = Lit(1, node)
+                self.env.declare_var(symbol, TypeRange(lower, upper, None), writable=False)
             return Quantifier(symbol, typeexpr, lower, upper, step, node)
 
         elif node.head == 'simplerule':
@@ -558,4 +571,5 @@ class Generator(object):
 
 def to_ir(node):
     g = Generator()
-    return g.to_ir(node)
+    ir = g.to_ir(node)
+    return g.env, ir

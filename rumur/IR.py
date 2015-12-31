@@ -383,6 +383,23 @@ class TriCond(Expr):
     def result_type(self):
         return self.casetrue.result_type
 
+class HOLExpr(Expr):
+
+    _fields = ('quantifier', 'expr')
+
+    def __init__(self, quantifier, expr, node):
+        super(HOLExpr, self).__init__(node)
+        self.quantifier = quantifier
+        self.expr = expr
+
+    result_type = bool
+
+class Forall(HOLExpr):
+    pass
+
+class Exists(HOLExpr):
+    pass
+
 class Program(Node):
     def __init__(self, node):
         super(Program, self).__init__(node)
