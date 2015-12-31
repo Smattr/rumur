@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -85,7 +85,22 @@ class Generator(object):
         elif node.head == 'expr':
             if node.tail[0].head == 'expr1':
                 return self.to_ir(node.tail[0])
-            raise NotImplementedError
+            cond = self.to_ir(node.tail[0])
+            if cond.result_type is not bool:
+                raise RumurError('%d: tri-conditional condition does not '
+                    'evaluate to a boolean' % lineno(node))
+            casetrue = self.to_ir(node.tail[2])
+            casefalse = self.to_ir(node.tail[4])
+            if casetrue.result_type is not casefalse.result_type:
+                raise RumurError('%d: tri-conditional branches are not of the '
+                    'same type' % lineno(node))
+            if isinstance(cond, Lit):
+                if cond.value:
+                    return casetrue
+                return casefalse
+            if casetrue == casefalse:
+                return casetrue
+            return TriCond(cond, casetrue, casefalse, node)
 
         elif node.head == 'expr1':
             if node.tail[0].head == 'expr2':
