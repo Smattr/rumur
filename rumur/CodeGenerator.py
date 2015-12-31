@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, ErrorStmt, Expr, Imp, Or, PutStmt, ReturnStmt
+from IR import Add, And, AssertStmt, ErrorStmt, Expr, Imp, Or, Program, PutStmt, ReturnStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -42,6 +42,14 @@ class Generator(object):
 
         elif isinstance(ir, Or):
             return bracket(self.to_code(ir.left)) + ['||'] + bracket(self.to_code(ir.right))
+
+        elif isinstance(ir, Program):
+            generators = []
+            for p in ir.procs:
+                generators.append(self.to_code(p))
+            for r in ir.rules:
+                generators.append(self.to_code(r))
+            return itertools.chain(*generators)
 
         elif isinstance(ir, PutStmt):
             if isinstance(ir.arg, Expr):
