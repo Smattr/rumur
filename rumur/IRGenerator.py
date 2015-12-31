@@ -20,7 +20,7 @@ class Generator(object):
             return Assignment(designator, expr, node)
 
         elif node.head == 'constdecl':
-            name = str(node.tail[0].tail[0])
+            name = self.to_ir(node.tail[0])
             expr = self.to_ir(node.tail[1])
             if not isinstance(expr, Lit):
                 raise RumurError('%d: constant declaration is not constant' %
@@ -29,7 +29,7 @@ class Generator(object):
             return None
 
         elif node.head == 'designator':
-            root = str(node.tail[0].tail[0])
+            root = self.to_ir(node.tail[0])
             try:
                 value = self.env.lookup_var(root)
             except KeyError:
@@ -49,7 +49,7 @@ class Generator(object):
             result_type = value[0]
             for t in node.tail[1:]:
                 if t.head == 'symbol':
-                    sym = str(t.tail[0])
+                    sym = self.to_ir(t)
                     if not isinstance(result_type, TypeRecord):
                         raise RumurError('%d: %s is not a member of the '
                             'preceding expression' % (lineno(t), sym))
@@ -275,7 +275,7 @@ class Generator(object):
             typeexpr = self.to_ir(remaining[-1])
 
             for symbol in remaining[:-1]:
-                name = str(symbol.tail[0])
+                name = self.to_ir(symbol)
                 self.env.declare_var(name, typeexpr, writable)
 
             return None
@@ -324,11 +324,11 @@ class Generator(object):
             return Lit(int(str(node.tail[0])), node)
 
         elif node.head == 'proccall':
-            symbol = str(node.tail[0].tail)
+            symbol = self.to_ir(node.tail[0])
             return ProcCall(symbol, [self.to_ir(x) for x in node.tail[1:]], node)
 
         elif node.head == 'procedure':
-            name = str(node.tail[0].tail[0])
+            name = self.to_ir(node.tail[0])
             self.env.open_scope()
             remaining = node.tail[1:]
 
@@ -410,8 +410,11 @@ class Generator(object):
         elif node.head == 'string':
             return str(node.tail)[1:-1]
 
+        elif node.head == 'symbol':
+            return str(node.tail[0])
+
         elif node.head == 'typedecl':
-            name = str(node.tail[0].tail[0])
+            name = self.to_ir(node.tail[0])
             typeexpr = self.to_ir(node.tail[1])
             self.env.declare_type(name, typeexpr)
             return None
@@ -420,7 +423,7 @@ class Generator(object):
 
             if node.tail[0].head == 'symbol':
                 # Reference to previous type
-                name = str(node.tail[0].tail[0])
+                name = self.to_ir(node.tail[0])
                 try:
                     type = self.env.lookup_type(name)
                 except KeyError:
@@ -452,7 +455,7 @@ class Generator(object):
         elif node.head == 'vardecl':
             typeexpr = self.to_ir(node.tail[-1])
             for symbol in node.tail[:-1]:
-                name = str(symbol.tail[0])
+                name = self.to_ir(symbol)
                 self.env.declare_var(name, typeexpr, writable=True)
             return None
 
