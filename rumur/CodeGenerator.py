@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Expr, PutStmt
+from IR import Add, And, AssertStmt, ErrorStmt, Expr, Imp, Or, PutStmt, ReturnStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -7,15 +7,23 @@ def mangle(name):
 def bracket(term):
     return ['('] + term + [')']
 
+BASE, PROTOTYPES, FUNCTIONS = range(3)
+
 class Generator(object):
 
     def __init__(self, env):
         self.env = env
-        self.prototypes = []
+        self.sections = [[], [], []]
 
     def to_code(self, ir, lvalue=False):
 
-        if isinstance(ir, AssertStmt):
+        if isinstance(ir, Add):
+            return bracket(self.to_code(ir.left)) + ['+'] + bracket(self.to_code(ir.right))
+
+        elif isinstance(ir, And):
+            return bracket(self.to_code(ir.left)) + ['&&'] + bracket(self.to_code(ir.right))
+        
+        elif isinstance(ir, AssertStmt):
             if ir.string is None:
                 msg = '<unnamed>'
             else:
@@ -28,6 +36,12 @@ class Generator(object):
             else:
                 msg = ir.string
             return ['rumur_error("', msg, '");']
+
+        elif isinstance(ir, Imp):
+            return ['(!'] + bracket(self.to_code(ir.left)) + [')||'] + bracket(self.to_code(ir.right))
+
+        elif isinstance(ir, Or):
+            return bracket(self.to_code(ir.left)) + ['||'] + bracket(self.to_code(ir.right))
 
         elif isinstance(ir, PutStmt):
             if isinstance(ir.arg, Expr):
@@ -116,8 +130,8 @@ class Generator(object):
 
 def to_code(scope, ir):
     g = Generator(scope)
-    code = g.to_code(ir)
-    yield itertools.chain(g.prototypes, code)
+    g.to_code(ir)
+    yield itertools.chain(*g.sections)
 
 
 

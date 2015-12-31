@@ -61,6 +61,9 @@ def main():
 
     code = to_code(global_scope, ir)
 
+    for fragment in code:
+        opts.output.write(fragment)
+
     return 0
 
 if __name__ == '__main__':
