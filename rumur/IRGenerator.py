@@ -343,6 +343,23 @@ class Generator(object):
         elif node.head == 'integer_constant':
             return Lit(int(str(node.tail[0])), node)
 
+        elif node.head == 'invariant':
+            if node.tail[0].head == 'string':
+                name = self.to_ir(node.tail[0])
+            else:
+                name = None
+            expr = self.to_ir(node.tail[-1])
+            if expr.result_type is not bool:
+                raise RumurError('%d: invariant expression does not evaluate '
+                    'to a boolean' % lineno(node.tail[-1]))
+            if isinstance(expr, Lit):
+                if expr.value:
+                    # No need to emit this invariant; it's always true.
+                    return None
+                raise RumurError('%d: invariant is always false' %
+                    lineno(node))
+            return Invairant(name, expr, node)
+
         elif node.head == 'proccall':
             symbol = self.to_ir(node.tail[0])
             return ProcCall(symbol, [self.to_ir(x) for x in node.tail[1:]], node)
