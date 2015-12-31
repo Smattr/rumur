@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, Eq, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, ForStmt, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -18,6 +18,10 @@ class Generator(object):
             designator = self.to_ir(node.tail[0], lvalue=True)
             expr = self.to_ir(node.tail[1])
             return Assignment(designator, expr, node)
+
+        elif node.head == 'clearstmt':
+            designator = self.to_ir(node.tail[0], lvalue=True)
+            return ClearStmt(designator, node)
 
         elif node.head == 'constdecl':
             name = self.to_ir(node.tail[0])
@@ -280,6 +284,22 @@ class Generator(object):
 
             return None
 
+        elif node.head == 'forstmt':
+            quan = self.to_ir(node.tail[0])
+            self.env.open_scope()
+            if quan.typeexpr is None:
+                type = TypeRange(quan.lower, quan.upper, node.tail[0])
+            else:
+                type = quan.typeexpr
+            self.env.declare_var(quan.symbol, type, writable=False)
+            if node.tail[1].head == 'stmts':
+                stmts = self.to_ir(node.tail[1])
+            else:
+                stmts = []
+            quantifier = (self.env.scope, quan)
+            self.env.close_scope()
+            return ForStmt(quantifier, stmts, node)
+
         elif node.head == 'ifstmt':
             ifcond = self.to_ir(node.tail[0])
             if ifcond.result_type is not bool:
@@ -368,6 +388,40 @@ class Generator(object):
                 elif isinstance(x, (AliasRule, Invariant, RuleSet, SimpleRule, StartState)):
                     p.rules.append(x)
             return p
+
+        elif node.head == 'quantifier':
+            symbol = self.to_ir(node.tail[0])
+            if len(node.tail) == 2:
+                typeexpr = self.to_ir(node.tail[1])
+                if not isinstance(typeexpr, (TypeEnum, TypeRange)):
+                    raise RumurError('%d: type expression in for statement is '
+                        'not a simple type' % lineno(node.tail[1]))
+                lower = None
+                upper = None
+                step = None
+            else:
+                typeexpr = None
+                lower = self.to_ir(node.tail[1])
+                if lower.result_type is not int:
+                    raise RumurError('%d: lower bound in for statement is '
+                        'does not evaluate to an integer' % lineno(node.tail[1]))
+                upper = self.to_ir(node.tail[2])
+                if upper.result_type is not int:
+                    raise RumurError('%d: upper bound in for statement is '
+                        'does not evaluate to an integer' % lineno(node.tail[1]))
+                if len(node.tail) == 4:
+                    step = self.to_ir(node.tail[3])
+                    if step.result_type is not int:
+                        raise RumurError('%d: step in for statement is '
+                            'does not evaluate to an integer' %
+                            lineno(node.tail[3]))
+                    if not isinstance(step, Lit):
+                        raise RumurError('%d: step in for statement is not a '
+                            'constant expression' % lineno(node.tail[3]))
+                else:
+                    assert len(node.tail) == 3
+                    step = Lit(1, node)
+            return Quantifier(symbol, typeexpr, lower, upper, step, node)
 
         elif node.head == 'simplerule':
             remaining = node.tail

@@ -68,6 +68,7 @@ class ForStmt(Stmt):
 class Quantifier(Node):
     def __init__(self, symbol, typeexpr, lower, upper, step, node):
         super(Quantifier, self).__init__(node)
+        self.symbol = symbol
         self.typeexpr = typeexpr
         self.lower = lower
         self.upper = upper
