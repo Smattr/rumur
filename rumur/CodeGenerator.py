@@ -11,6 +11,7 @@ class Generator(object):
 
     def __init__(self, env):
         self.env = env
+        self.prototypes = []
 
     def to_code(self, ir, lvalue=False):
 
@@ -113,10 +114,11 @@ class Generator(object):
 
         raise NotImplementedError('code generation for %s' % str(type(ir)))
 
-
 def to_code(scope, ir):
     g = Generator(scope)
-    return g.to_code(ir)
+    code = g.to_code(ir)
+    yield itertools.chain(g.prototypes, code)
+
 
 
 
