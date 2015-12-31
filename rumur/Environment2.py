@@ -18,6 +18,15 @@ class Scope(object):
                 'same scope' % key)
         self.constants[key] = value
 
+    def declare_var(self, key, type):
+        if key in self.constants:
+            raise RumurError('%s conflicts with a constant declared in the '
+                'same scope' % key)
+        if key in self.vars:
+            raise RumurError('%s conflicts with a variable declared in the '
+                'same scope' % key)
+        self.vars[key] = type
+
     def lookup_var(self, key):
         try:
             return self.constants[key]
@@ -53,6 +62,11 @@ class Environment(object):
         assert len(self.scopes) >= 1
         log.debug('declaring constant %s' % key)
         self.scopes[-1].declare_constant(key, value)
+
+    def declare_var(self, key, type):
+        assert len(self.scopes) >= 1
+        log.debug('declaring var %s' % key)
+        self.scopes[-1].declare_var(key, type)
 
     def lookup_var(self, key):
         for scope in reversed(self.scopes):

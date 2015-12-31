@@ -226,6 +226,14 @@ class Generator(object):
                 member_type = self.to_ir(node.tail[2])
                 return TypeArray(index_type, member_type, node)
 
+        elif node.head == 'vardecl':
+            typeexpr = self.to_ir(node.tail[-1])
+            for symbol in node.tail[:-1]:
+                name = str(symbol.tail[0])
+                self.env.declare_var(name, typeexpr)
+            return None
+
+
         raise NotImplementedError('no IR equivalent of AST node %s (in `%s`)' % (node.head, node))
 
 def to_ir(node):
