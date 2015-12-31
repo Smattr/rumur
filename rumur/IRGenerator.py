@@ -572,4 +572,5 @@ class Generator(object):
 def to_ir(node):
     g = Generator()
     ir = g.to_ir(node)
-    return g.env, ir
+    assert len(g.env.scopes) == 1
+    return g.env.scope, ir
