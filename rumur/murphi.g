@@ -124,6 +124,9 @@ expr7: expr7 mul expr7
       | expr7 mod expr7
       | expr8
       ;
+/* XXX: The docs don't give a precedence for other operators, so just assume
+ * they're all the lowest precedence.
+ */
 expr8: lbrace expr rbrace
       | designator
       | integer_constant

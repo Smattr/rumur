@@ -262,7 +262,7 @@ class Generator(object):
                 return self.to_ir(node.tail[0], lvalue=False)
 
             elif node.tail[0].head == 'integer_constant':
-                return Lit(int(str(node.tail[0].tail[0])), node)
+                return self.to_ir(node.tail[0])
 
         elif node.head == 'formal':
             if node.tail[0].head == 'var':
@@ -319,6 +319,9 @@ class Generator(object):
                     # No need to parse the rest
                     break
             return IfStmt(branches, node)
+
+        elif node.head == 'integer_constant':
+            return Lit(int(str(node.tail[0])), node)
 
         elif node.head == 'proccall':
             symbol = str(node.tail[0].tail)
