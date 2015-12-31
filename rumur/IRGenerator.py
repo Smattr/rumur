@@ -401,6 +401,30 @@ class Generator(object):
         elif node.head == 'start':
             return self.to_ir(node.tail[0])
 
+        elif node.head == 'startstate':
+            remaining = node.tail
+
+            if remaining[0].head == 'string':
+                name = self.to_ir(node.tail[0])
+                remaining = remaining[1:]
+            else:
+                name = '<unnamed>'
+
+            self.env.open_scope()
+            while remaining[0].head in ('constdecl', 'typedecl', 'vardecl'):
+                self.to_ir(remaining[0])
+                remaining = remaining[1:]
+
+            if remaining[0].head == 'stmts':
+                stmts = self.to_ir(remaining[0])
+            else:
+                stmts = []
+
+            decls = self.env.scope
+            self.env.close_scope()
+
+            return StartState(name, decls, stmts, node)
+
         elif node.head == 'stmts':
             stmts = []
             for t in node.tail:
