@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -105,7 +105,23 @@ class Generator(object):
         elif node.head == 'expr1':
             if node.tail[0].head == 'expr2':
                 return self.to_ir(node.tail[0])
-            raise NotImplementedError
+            left = self.to_ir(node.tail[0])
+            if left.result_type is not bool:
+                raise RumurError('%d: left operand to implies does '
+                    'not evaluate to a boolean' % lineno(node))
+            right = self.to_ir(node.tail[2])
+            if right.result_type is not bool:
+                raise RumurError('%d: right operand to implies does '
+                    'not evaluate to a boolean' % lineno(node))
+            if isinstance(left, Lit):
+                if left.value:
+                    return right
+                return Lit(True, node)
+            if isinstance(right, Lit):
+                if right.value:
+                    return right
+                return left
+            return Imp(left, right, node)
 
         elif node.head == 'expr2':
             if node.tail[0].head == 'expr3':
