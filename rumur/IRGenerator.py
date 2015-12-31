@@ -65,6 +65,10 @@ class Generator(object):
                         'not evaluate to an integer' % lineno(node))
                 if isinstance(left, Lit) and isinstance(right, Lit):
                     return Lit(left.value + right.value, node)
+                if isinstance(left, Lit) and left.value == 0:
+                    return right
+                if isinstance(right, Lit) and right.value == 0:
+                    return left
                 return Add(left, right, node)
 
             elif node.tail[1].head == 'sub':
@@ -78,6 +82,8 @@ class Generator(object):
                         'not evaluate to an integer' % lineno(node))
                 if isinstance(left, Lit) and isinstance(right, Lit):
                     return Lit(left.value - right.value, node)
+                if isinstance(right, Lit) and right.value == 0:
+                    return left
                 return Sub(left, right, node)
 
             elif node.tail[1].head == 'mul':
@@ -91,6 +97,10 @@ class Generator(object):
                         'not evaluate to an integer' % lineno(node))
                 if isinstance(left, Lit) and isinstance(right, Lit):
                     return Lit(left.value * right.value, node)
+                if isinstance(left, Lit) and left.value == 1:
+                    return right
+                if isinstance(right, Lit) and right.value == 1:
+                    return left
                 return Mul(left, right, node)
 
             elif node.tail[1].head == 'div':
@@ -109,6 +119,8 @@ class Generator(object):
                 if isinstance(left, Lit) and isinstance(right, Lit):
                     assert right.value != 0
                     return Lit(left.value / right.value, node)
+                if isinstance(right, Lit) and right.value == 1:
+                    return left
                 return Div(left, right, node)
 
             elif node.tail[1].head == 'and':
