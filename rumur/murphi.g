@@ -92,29 +92,45 @@ formal: var? symbol (',' symbol)* ':' typeexpr;
 
 designator: symbol ('\.' symbol | '\[' expr '\]')*;
 
-expr: lbrace expr rbrace
-    | designator
-    | integer_constant
-    | symbol lbrace actuals rbrace
-    | forall quantifier DO expr endforall
-    | exists quantifier DO expr endexists
-    | expr add expr
-    | expr sub expr
-    | expr mul expr
-    | expr div expr
-    | expr mod expr
-    | not expr
-    | expr or expr
-    | expr and expr
-    | expr implies expr
-    | expr lt expr
-    | expr lte expr
-    | expr gt expr
-    | expr gte expr
-    | expr eq expr
-    | expr neq expr
-    | expr question expr colon expr
+expr: expr question expr colon expr
+    | expr1
     ;
+expr1: expr1 implies expr1
+      | expr2
+      ;
+expr2: expr2 or expr2
+      | expr3
+      ;
+expr3: expr3 and expr3
+      | expr4
+      ;
+expr4: not expr4
+      | expr5
+      ;
+expr5: expr5 lt expr5
+      | expr5 lte expr5
+      | expr5 eq expr5
+      | expr5 neq expr5
+      | expr5 gt expr5
+      | expr5 gte expr5
+      | expr6
+      ;
+expr6: expr6 add expr6
+      | expr6 sub expr6
+      | expr7
+      ;
+expr7: expr7 mul expr7
+      | expr7 div expr7
+      | expr7 mod expr7
+      | expr8
+      ;
+expr8: lbrace expr rbrace
+      | designator
+      | integer_constant
+      | symbol lbrace actuals rbrace
+      | forall quantifier DO expr endforall
+      | exists quantifier DO expr endexists
+      ;
 
 stmts: stmt (';' stmt?)*;
 
@@ -179,7 +195,7 @@ actuals:
        | expr (',' expr)*
        ;
 
-rules: rule (';' rule)* ';'?;
+@rules: rule (';' rule)* ';'?;
 
 @rule: simplerule
      | startstate

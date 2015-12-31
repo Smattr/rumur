@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, Eq, IfStmt, Invariant, Lit, Method, Not, Procedure, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, Eq, GT, IfStmt, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -75,18 +75,115 @@ class Generator(object):
             return VarRead(root, stems, result_type, node)
 
 
+        # When handling expressions in the following, we do some
+        # simplification and constant folding where obvious.
+
         elif node.head == 'expr':
+            if node.tail[0].head == 'expr1':
+                return self.to_ir(node.tail[0])
+            raise NotImplementedError
 
-            # When handling expressions in the following, we do some
-            # simplification and constant folding where obvious.
+        elif node.head == 'expr1':
+            if node.tail[0].head == 'expr2':
+                return self.to_ir(node.tail[0])
+            raise NotImplementedError
 
-            if node.tail[0].head == 'designator':
-                return self.to_ir(node.tail[0], lvalue=False)
+        elif node.head == 'expr2':
+            if node.tail[0].head == 'expr3':
+                return self.to_ir(node.tail[0])
+            raise NotImplementedError
 
-            elif node.tail[0].head == 'integer_constant':
-                return Lit(int(str(node.tail[0].tail[0])), node)
+        elif node.head == 'expr3':
+            if node.tail[0].head == 'expr4':
+                return self.to_ir(node.tail[0])
 
-            elif node.tail[1].head == 'add':
+            assert node.tail[1].head == 'and'
+            left = self.to_ir(node.tail[0])
+            if left.result_type is not bool:
+                raise RumurError('%d: left operand to and does '
+                    'not evaluate to a boolean' % lineno(node))
+            right = self.to_ir(node.tail[2])
+            if right.result_type is not bool:
+                raise RumurError('%d: right operand to and does '
+                    'not evaluate to a boolean' % lineno(node))
+            if isinstance(left, Lit):
+                if left.value:
+                    return right
+                return Lit(False, node)
+            if isinstance(right, Lit):
+                if right.value:
+                    return left
+                return Lit(False, node)
+            return And(left, right, node)
+
+        elif node.head == 'expr4':
+            if node.tail[0].head == 'expr5':
+                return self.to_ir(node.tail[0])
+
+            assert node.tail[0].head == 'not'
+            operand = self.to_ir(node.tail[1])
+            if operand.result_type is not bool:
+                raise RumurError('%d: operand to not does '
+                    'not evaluate to a boolean' % lineno(node))
+            if isinstance(operand, Lit):
+                if operand.value:
+                    return Lit(False, node)
+                return Lit(True, node)
+            if isinstance(operand, Not):
+                # !!X ==> X
+                return operand.operand
+            return Not(operand, node)
+
+        elif node.head == 'expr5':
+            if node.tail[0].head == 'expr6':
+                return self.to_ir(node.tail[0])
+
+            left = self.to_ir(node.tail[0])
+            right = self.to_ir(node.tail[2])
+
+            if node.tail[1].head == 'lt':
+                if left.result_type is not int:
+                    raise RumurError('%d: left operand to less than does '
+                        'not evaluate to an integer' % lineno(node))
+                if right.result_type is not int:
+                    raise RumurError('%d: right operand to less than does '
+                        'not evaluate to an integer' % lineno(node))
+                if isinstance(left, Lit) and isinstance(right, Lit):
+                    return Lit(left.value < right.value, node)
+                return LT(left, right, node)
+
+            elif node.tail[1].head == 'eq':
+                if left.result_type is not right.result_type:
+                    raise RumurError('%d: equality comparison between '
+                        'expressions of differing types' % lineno(node))
+                if isinstance(left, Lit) and isinstance(right, Lit):
+                    return Lit(left.value == right.value, node)
+                if isinstance(left, Lit) and left.result_type is bool:
+                    if left.value:
+                        return right
+                    return Not(right, node)
+                if isinstance(right, Lit) and right.result_type is bool:
+                    if right.value:
+                        return left
+                    return Not(left, node)
+                return Eq(left, right, node)
+
+            elif node.tail[1].head == 'gt':
+                if left.result_type is not int:
+                    raise RumurError('%d: left operand to greater than does '
+                        'not evaluate to an integer' % lineno(node))
+                if right.result_type is not int:
+                    raise RumurError('%d: right operand to greater than does '
+                        'not evaluate to an integer' % lineno(node))
+                if isinstance(left, Lit) and isinstance(right, Lit):
+                    return Lit(left.value > right.value, node)
+                return GT(left, right, node)
+
+        elif node.head == 'expr6':
+            if node.tail[0].head == 'expr7':
+                return self.to_ir(node.tail[0])
+
+            if node.tail[1].head == 'add':
                 left = self.to_ir(node.tail[0])
                 if left.result_type is not int:
                     raise RumurError('%d: left operand to addition does '
@@ -103,22 +200,26 @@ class Generator(object):
                     return left
                 return Add(left, right, node)
 
-            elif node.tail[1].head == 'sub':
-                left = self.to_ir(node.tail[0])
-                if left.result_type is not int:
-                    raise RumurError('%d: left operand to subtraction does '
-                        'not evaluate to an integer' % lineno(node))
-                right = self.to_ir(node.tail[2])
-                if right.result_type is not int:
-                    raise RumurError('%d: right operand to subtraction does '
-                        'not evaluate to an integer' % lineno(node))
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value - right.value, node)
-                if isinstance(right, Lit) and right.value == 0:
-                    return left
-                return Sub(left, right, node)
+            assert node.tail[1].head == 'sub'
+            left = self.to_ir(node.tail[0])
+            if left.result_type is not int:
+                raise RumurError('%d: left operand to subtraction does '
+                    'not evaluate to an integer' % lineno(node))
+            right = self.to_ir(node.tail[2])
+            if right.result_type is not int:
+                raise RumurError('%d: right operand to subtraction does '
+                    'not evaluate to an integer' % lineno(node))
+            if isinstance(left, Lit) and isinstance(right, Lit):
+                return Lit(left.value - right.value, node)
+            if isinstance(right, Lit) and right.value == 0:
+                return left
+            return Sub(left, right, node)
 
-            elif node.tail[1].head == 'mul':
+        elif node.head == 'expr7':
+            if node.tail[0].head == 'expr8':
+                return self.to_ir(node.tail[0])
+
+            if node.tail[1].head == 'mul':
                 left = self.to_ir(node.tail[0])
                 if left.result_type is not int:
                     raise RumurError('%d: left operand to multiplication does '
@@ -155,56 +256,13 @@ class Generator(object):
                     return left
                 return Div(left, right, node)
 
-            elif node.tail[1].head == 'and':
-                left = self.to_ir(node.tail[0])
-                if left.result_type is not bool:
-                    raise RumurError('%d: left operand to and does '
-                        'not evaluate to a boolean' % lineno(node))
-                right = self.to_ir(node.tail[2])
-                if right.result_type is not bool:
-                    raise RumurError('%d: right operand to and does '
-                        'not evaluate to a boolean' % lineno(node))
-                if isinstance(left, Lit):
-                    if left.value:
-                        return right
-                    return Lit(False, node)
-                if isinstance(right, Lit):
-                    if right.value:
-                        return left
-                    return Lit(False, node)
-                return And(left, right, node)
+        elif node.head == 'expr8':
 
-            elif node.tail[0].head == 'not':
-                operand = self.to_ir(node.tail[1])
-                if operand.result_type is not bool:
-                    raise RumurError('%d: operand to not does '
-                        'not evaluate to a boolean' % lineno(node))
-                if isinstance(operand, Lit):
-                    if operand.value:
-                        return Lit(False, node)
-                    return Lit(True, node)
-                if isinstance(operand, Not):
-                    # !!X ==> X
-                    return operand.operand
-                return Not(operand, node)
+            if node.tail[0].head == 'designator':
+                return self.to_ir(node.tail[0], lvalue=False)
 
-            elif node.tail[1].head == 'eq':
-                left = self.to_ir(node.tail[0])
-                right = self.to_ir(node.tail[2])
-                if left.result_type is not right.result_type:
-                    raise RumurError('%d: equality comparison between '
-                        'expressions of differing types' % lineno(node))
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value == right.value, node)
-                if isinstance(left, Lit) and left.result_type is bool:
-                    if left.value:
-                        return right
-                    return Not(right, node)
-                if isinstance(right, Lit) and right.result_type is bool:
-                    if right.value:
-                        return left
-                    return Not(left, node)
-                return Eq(left, right, node)
+            elif node.tail[0].head == 'integer_constant':
+                return Lit(int(str(node.tail[0].tail[0])), node)
 
         elif node.head == 'formal':
             if node.tail[0].head == 'var':
@@ -262,6 +320,10 @@ class Generator(object):
                     break
             return IfStmt(branches, node)
 
+        elif node.head == 'proccall':
+            symbol = str(node.tail[0].tail)
+            return ProcCall(symbol, [self.to_ir(x) for x in node.tail[1:]], node)
+
         elif node.head == 'procedure':
             name = str(node.tail[0].tail[0])
             self.env.open_scope()
@@ -294,7 +356,6 @@ class Generator(object):
 
             return Procedure(name, parameters, decls, stmts, node)
 
-
         elif node.head == 'program':
             p = Program(node)
             for t in node.tail:
@@ -305,6 +366,35 @@ class Generator(object):
                     p.rules.append(x)
             return p
 
+        elif node.head == 'simplerule':
+            remaining = node.tail
+
+            if remaining[0].head == 'string':
+                name = self.to_ir(remaining[0])
+                remaining = remaining[1:]
+            else:
+                name = '<unnamed>'
+
+            if remaining[0].head == 'expr':
+                guard = self.to_ir(remaining[0])
+                remaining = remaining[1:]
+            else:
+                guard = Lit(True, node)
+
+            self.env.open_scope()
+            while remaining[0].head in ('constdecl', 'typedecl', 'vardecl'):
+                self.to_ir(remaining[0])
+                remaining = remaining[1:]
+            decls = self.env.scope
+            self.env.close_scope()
+
+            if remaining[0].head == 'stmts':
+                stmts = self.to_ir(remaining[0])
+            else:
+                stmts = []
+
+            return SimpleRule(name, guard, decls, stmts, node)
+
         elif node.head == 'start':
             return self.to_ir(node.tail[0])
 
@@ -313,6 +403,9 @@ class Generator(object):
             for t in node.tail:
                 stmts.append(self.to_ir(t))
             return stmts
+
+        elif node.head == 'string':
+            return str(node.tail)[1:-1]
 
         elif node.head == 'typedecl':
             name = str(node.tail[0].tail[0])
@@ -360,8 +453,7 @@ class Generator(object):
                 self.env.declare_var(name, typeexpr, writable=True)
             return None
 
-
-        raise NotImplementedError('no IR equivalent of AST node %s (in `%s`)' % (node.head, node))
+        raise NotImplementedError('%d: no IR equivalent of AST node %s (in `%s`)' % (lineno(node), node.head, node))
 
 def to_ir(node):
     g = Generator()
