@@ -44,7 +44,7 @@ def main():
     # Transform the AST into an intermediate representation.
     global_scope, ir = to_ir(ast)
 
-    ast = run_to_fixed_point(ast, constant_fold)
+    #ast = run_to_fixed_point(ast, constant_fold)
 
     # program = lift(ast)
 
@@ -57,7 +57,9 @@ def main():
 
     # print >>opts.output, code
 
-    opts.output.write(''.join(to_code(env, ast)))
+    #opts.output.write(''.join(to_code(env, ast)))
+
+    code = to_code(global_scope, ir)
 
     return 0
 

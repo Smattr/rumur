@@ -14,13 +14,32 @@ class Generator(object):
 
     def to_code(self, ir, lvalue=False):
 
-        if isinstance(ir, PutStmt):
+        if isinstance(ir, AssertStmt):
+            if ir.string is None:
+                msg = '<unnamed>'
+            else:
+                msg = ir.string
+            return ['if(', self.to_code(ir.expr), '){rumur_error("', msg, '");}']
+
+        elif isinstance(ir, ErrorStmt):
+            if ir.string is None:
+                msg = '<unnamed>'
+            else:
+                msg = ir.string
+            return ['rumur_error("', msg, '");']
+
+        elif isinstance(ir, PutStmt):
             if isinstance(ir.arg, Expr):
                 # XXX
                 pass
             else:
                 assert isinstance(ir.arg, six.string_types)
                 return ['printf("%s", "', ir.arg, '");']
+
+        elif isinstance(ir, ReturnStmt):
+            if ir.value is None:
+                return ['return;']
+            return ['return ', self.to_code(ir.value), ';']
 
 #         if node.head == 'constdecl':
 #             name = str(node.tail[0])
@@ -95,8 +114,8 @@ class Generator(object):
         raise NotImplementedError('code generation for %s' % str(type(ir)))
 
 
-def to_code(env, ir):
-    g = Generator(env)
+def to_code(scope, ir):
+    g = Generator(scope)
     return g.to_code(ir)
 
 

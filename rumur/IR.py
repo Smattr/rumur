@@ -104,9 +104,9 @@ class ClearStmt(Stmt):
         self.designator = designator
 
 class ErrorStmt(Stmt):
-    def __init__(self, designator, node):
+    def __init__(self, string, node):
         super(ErrorStmt, self).__init__(node)
-        self.designator = designator
+        self.string = string
 
 class AssertStmt(Stmt):
     def __init__(self, expr, string, node):
