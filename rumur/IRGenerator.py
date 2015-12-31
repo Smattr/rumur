@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import AliasRule, And, Branch, Eq, IfStmt, Invariant, Lit, Method, Not, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, Eq, IfStmt, Invariant, Lit, Method, Not, Procedure, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -14,7 +14,12 @@ class Generator(object):
 
     def to_ir(self, node, lvalue=False):
 
-        if node.head == 'constdecl':
+        if node.head == 'assignment':
+            designator = self.to_ir(node.tail[0], lvalue=True)
+            expr = self.to_ir(node.tail[1])
+            return Assignment(designator, expr, node)
+
+        elif node.head == 'constdecl':
             name = str(node.tail[0].tail[0])
             expr = self.to_ir(node.tail[1])
             if not isinstance(expr, Lit):

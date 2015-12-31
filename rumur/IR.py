@@ -399,7 +399,10 @@ class VarRead(Expr):
         super(VarRead, self).__init__(node)
         self.root = root
         self.stems = stems
-        self.result_type = result_type
+        if isinstance(result_type, TypeRange):
+            self.result_type = int
+        else:
+            self.result_type = result_type
 
 class VarWrite(Node):
     def __init__(self, root, stems, node):
