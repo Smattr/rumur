@@ -18,14 +18,14 @@ class Scope(object):
                 'same scope' % key)
         self.constants[key] = value
 
-    def declare_var(self, key, type):
+    def declare_var(self, key, type, writable):
         if key in self.constants:
             raise RumurError('%s conflicts with a constant declared in the '
                 'same scope' % key)
         if key in self.vars:
             raise RumurError('%s conflicts with a variable declared in the '
                 'same scope' % key)
-        self.vars[key] = type
+        self.vars[key] = (type, writable)
 
     def lookup_var(self, key):
         try:
@@ -51,7 +51,6 @@ class Environment(object):
         self.declare_constant('true', True)
         self.declare_constant('false', False)
 
-
     def open_scope(self):
         self.scopes.append(Scope())
 
@@ -63,10 +62,10 @@ class Environment(object):
         log.debug('declaring constant %s' % key)
         self.scopes[-1].declare_constant(key, value)
 
-    def declare_var(self, key, type):
+    def declare_var(self, key, type, writable):
         assert len(self.scopes) >= 1
         log.debug('declaring var %s' % key)
-        self.scopes[-1].declare_var(key, type)
+        self.scopes[-1].declare_var(key, type, writable)
 
     def lookup_var(self, key):
         for scope in reversed(self.scopes):
@@ -89,3 +88,8 @@ class Environment(object):
             except KeyError:
                 pass
         raise KeyError(key)
+
+    @property
+    def scope(self):
+        assert len(self.scopes) >= 1
+        return self.scopes[-1]

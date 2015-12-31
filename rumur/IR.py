@@ -191,6 +191,9 @@ class TypeRecord(TypeExpr):
         super(TypeRecord, self).__init__(node)
         self.vardecls = vardecls
 
+    def lookup_var(self, key):
+        return self.vardecls.lookup_var(key)
+
 class TypeArray(TypeExpr):
     def __init__(self, index_type, member_type, node):
         super(TypeArray, self).__init__(node)
@@ -390,3 +393,16 @@ class VarDecl(Node):
     def __init__(self, name, typeexpr):
         self.name = name
         self.typeexpr = typeexpr
+
+class VarRead(Expr):
+    def __init__(self, root, stems, result_type, node):
+        super(VarRead, self).__init__(node)
+        self.root = root
+        self.stems = stems
+        self.result_type = result_type
+
+class VarWrite(Node):
+    def __init__(self, root, stems, node):
+        super(VarWrite, self).__init__(node)
+        self.root = root
+        self.stems = stems

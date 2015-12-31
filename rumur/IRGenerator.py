@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import AliasRule, And, Invariant, Lit, Method, Not, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarDecl
+from IR import AliasRule, And, Branch, Eq, IfStmt, Invariant, Lit, Method, Not, Program, RuleSet, SimpleRule, StartState, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -40,7 +40,34 @@ class Generator(object):
                     raise RumurError('%d: attempted assignment to a '
                         'constant' % lineno(node))
                 return Lit(value, node)
-            raise NotImplementedError
+            stems = []
+            result_type = value[0]
+            for t in node.tail[1:]:
+                if t.head == 'symbol':
+                    sym = str(t.tail[0])
+                    if not isinstance(result_type, TypeRecord):
+                        raise RumurError('%d: %s is not a member of the '
+                            'preceding expression' % (lineno(t), sym))
+                    try:
+                        member = result_type.lookup_var(sym)
+                    except KeyError:
+                        raise RumurError('%d: %s is not a member of the '
+                            'preceding expression' % (lineno(t), sym))
+                    result_type = member[0]
+                    stems.append(sym)
+                else:
+                    assert t.head == 'expr'
+                    if not isinstance(result_type, TypeArray):
+                        raise RumurError('%d: array index on a type that is '
+                            'not an array' % lineno(t))
+                    result_type = result_type.member_type
+                    stems.append(self.to_ir(t))
+            if lvalue:
+                if not value[1]:
+                    raise RumurError('%d: attempt to write to read-only '
+                        'variable' % lineno(node))
+                return VarWrite(root, stems, node)
+            return VarRead(root, stems, result_type, node)
 
 
         elif node.head == 'expr':
@@ -174,6 +201,95 @@ class Generator(object):
                     return Not(left, node)
                 return Eq(left, right, node)
 
+        elif node.head == 'formal':
+            if node.tail[0].head == 'var':
+                writable = True
+                remaining = node.tail[1:]
+            else:
+                writable = False
+                remaining = node.tail
+
+            typeexpr = self.to_ir(remaining[-1])
+
+            for symbol in remaining[:-1]:
+                name = str(symbol.tail[0])
+                self.env.declare_var(name, typeexpr, writable)
+
+            return None
+
+        elif node.head == 'ifstmt':
+            ifcond = self.to_ir(node.tail[0])
+            if ifcond.result_type is not bool:
+                raise RumurError('%d: expression in conditional does not '
+                    'evaluate to a boolean' % lineno(node.tail[0]))
+            if node.tail[1].head == 'stmts':
+                ifstmts = self.to_ir(node.tail[1])
+                remaining = node.tail[2:]
+            else:
+                ifstmts = []
+                remaining = node.tail[1:]
+            branches = [Branch(ifcond, ifstmts, node.tail[0])]
+            if isinstance(ifcond, Lit) and ifcond.value:
+                # No need to evaluate the parse the rest of the conditional
+                return IfStmt(branches, node)
+            while remaining[0].head in ('elsif', 'else'):
+                n = remaining[0]
+                if remaining[0].head == 'elsif':
+                    cond = self.to_ir(remaining[1])
+                    if cond.result_type is not bool:
+                        raise RumurError('%d: expression in conditional does not '
+                            'evaluate to a boolean' % lineno(remaining[1]))
+                    remaining = remaining[2:]
+                else:
+                    assert remaining[0].head == 'else'
+                    cond = None
+                    remaining = remaining[1:]
+                if remaining[0].head == 'stmts':
+                    stmts = self.to_ir(remaining[0])
+                    remaining = remaining[1:]
+                else:
+                    stmts = []
+                # Only append the conditional if it is not always-false
+                if not isinstance(cond, Lit) or not cond.value:
+                    branches.append(Branch(cond, stmts, n))
+                if isinstance(cond, Lit) and cond.value:
+                    # No need to parse the rest
+                    break
+            return IfStmt(branches, node)
+
+        elif node.head == 'procedure':
+            name = str(node.tail[0].tail[0])
+            self.env.open_scope()
+            remaining = node.tail[1:]
+
+            # Declare all the parameters
+            while remaining[0].head == 'formal':
+                self.to_ir(remaining[0])
+                remaining = remaining[1:]
+
+            # It's not clear to me whether it is legal for locals to shadow
+            # parameters, but we allow them to.
+            self.env.open_scope()
+
+            # Declare locals
+            while remaining[0].head in ('constdecl', 'typedecl', 'vardecl'):
+                self.to_ir(remaining[0])
+                remaining = remaining[1:]
+
+            if remaining[0].head == 'stmts':
+                stmts = self.to_ir(remaining[0])
+            else:
+                stmts = []
+
+            decls = self.env.scope
+            self.env.close_scope()
+
+            parameters = self.env.scope
+            self.env.close_scope()
+
+            return Procedure(name, parameters, decls, stmts, node)
+
+
         elif node.head == 'program':
             p = Program(node)
             for t in node.tail:
@@ -186,6 +302,12 @@ class Generator(object):
 
         elif node.head == 'start':
             return self.to_ir(node.tail[0])
+
+        elif node.head == 'stmts':
+            stmts = []
+            for t in node.tail:
+                stmts.append(self.to_ir(t))
+            return stmts
 
         elif node.head == 'typedecl':
             name = str(node.tail[0].tail[0])
@@ -230,7 +352,7 @@ class Generator(object):
             typeexpr = self.to_ir(node.tail[-1])
             for symbol in node.tail[:-1]:
                 name = str(symbol.tail[0])
-                self.env.declare_var(name, typeexpr)
+                self.env.declare_var(name, typeexpr, writable=True)
             return None
 
 
