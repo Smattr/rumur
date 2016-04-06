@@ -52,13 +52,17 @@ void mpz_neq(mpz_t dest, const mpz_t x, const mpz_t y) {
     mpz_set_si(dest, mpz_cmp(x, y) != 0);
 }
 
-static void auto_clear(void *mpz) {
+typedef struct {
+    mpz_t m;
+} st_t;
+
+static void auto_clear(void *st) {
     assert(mpz != NULL);
-    mpz_t *m = mpz;
-    mpz_clear(*m);
+    st_t *s = st;
+    mpz_clear(s->m);
 }
 
-#define temp_mpz_t __attribute__((cleanup(auto_clear))) mpz_t
+#define temp_st_t __attribute__((cleanup(auto_clear))) st_t
 
 void *xalloc(size_t size) {
     void *p = malloc(size);
