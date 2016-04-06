@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit
+from IR import Add, And, AssertStmt, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall
 
 # FIXME
 ULONG_MAX = 2 ** 64 - 1
@@ -80,6 +80,13 @@ class Generator(object):
 
         elif isinstance(ir, Or):
             return bracket(self.to_code(ir.left)) + ['||'] + bracket(self.to_code(ir.right))
+
+        elif isinstance(ir, ProcCall):
+            s = [mangle(ir.symbol), '(']
+            for expr in ir.exprs:
+                s += ['('] + self.to_code(expr) + ['),']
+            s += [');']
+            return s
 
         elif isinstance(ir, Procedure):
             s = ['void ', mangle(ir.name), '(']
