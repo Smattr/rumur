@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt
+from IR import Add, And, AssertStmt, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -29,6 +29,9 @@ class Generator(object):
             else:
                 msg = ir.string
             return ['if(', self.to_code(ir.expr), '){rumur_error("', msg, '");}']
+
+        elif isinstance(ir, Eq):
+            return ['mpz_cmp((', self.to_code(ir.left), '),(', self.to_code(ir.right), '))']
 
         elif isinstance(ir, ErrorStmt):
             if ir.string is None:
