@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, ErrorStmt, Expr, Imp, Or, Program, PutStmt, ReturnStmt
+from IR import Add, And, AssertStmt, ErrorStmt, Expr, Imp, Or, Procedure, Program, PutStmt, ReturnStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -42,6 +42,27 @@ class Generator(object):
 
         elif isinstance(ir, Or):
             return bracket(self.to_code(ir.left)) + ['||'] + bracket(self.to_code(ir.right))
+
+        elif isinstance(ir, Procedure):
+            s = ['void ', mangle(ir.name), '(']
+
+            # The scope for procedure parameters should contain only variables.
+            assert len(ir.parameters.constants) == 0
+            assert len(ir.parameters.types) == 0
+
+            for name, (typ, writable) in ir.parameters.vars.items():
+                s += ['' if writable else 'const ', 'mpz_t ', mangle(name), ',']
+
+            s += ['){']
+            for name, value in ir.decls.constants.items():
+                s += ['mpz_t ', mangle(name), ';mpz_init_set_ui(', mangle(name), ',', str(value), ');']
+            for name, (typ, writable) in ir.decls.vars.items():
+                s += ['mpz_t ', mangle(name), ';mpz_init(', mangle(name), ');']
+
+            for stmt in ir.stmts:
+                s += self.to_code(stmt)
+            s += ['}']
+            return s
 
         elif isinstance(ir, Program):
             generators = []
