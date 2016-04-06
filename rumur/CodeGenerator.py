@@ -27,7 +27,7 @@ class Generator(object):
             return self.binop(ir, 'mpz_add')
 
         elif isinstance(ir, And):
-            return self.binop(ir, 'mpz_land')
+            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))&&(!!mpz_cmp_ui(_t2,0));})']
         
         elif isinstance(ir, AssertStmt):
             if ir.string is None:
@@ -48,7 +48,13 @@ class Generator(object):
             return s
 
         elif isinstance(ir, Eq):
-            return self.binop(ir, 'mpz_eq')
+            if ir.left.result_type != ir.right.result_type:
+                raise RumurError('comparison between expressions of mismatched type')
+            elif ir.left.result_type == bool:
+                return ['(', self.to_code(ir.left), '==', self.to_code(ir.right), ')']
+            else:
+                assert ir.left.result_type == int
+                return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';mpz_cmp(_t1,_t2)==0;})']
 
         elif isinstance(ir, ErrorStmt):
             if ir.string is None:
@@ -74,7 +80,7 @@ class Generator(object):
             return s
 
         elif isinstance(ir, Imp):
-            return self.binop(ir, 'mpz_imp')
+            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui(_t2,0));})']
 
         elif isinstance(ir, Lit):
             if ir.value > ULONG_MAX:
@@ -82,7 +88,7 @@ class Generator(object):
             return ['%dul' % ir.value]
 
         elif isinstance(ir, Or):
-            return self.binop(ir, 'mpz_land')
+            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui);})']
 
         elif isinstance(ir, ProcCall):
             s = [mangle(ir.symbol), '(']
