@@ -1,3 +1,4 @@
+import collections
 from IR import Lit, TypeEnum
 from Log import log
 from RumurError import RumurError
@@ -5,9 +6,9 @@ from RumurError import RumurError
 class Scope(object):
 
     def __init__(self):
-        self.constants = {}
-        self.types = {}
-        self.vars = {}
+        self.constants = collections.OrderedDict()
+        self.types = collections.OrderedDict()
+        self.vars = collections.OrderedDict()
 
     def declare_constant(self, key, value):
         if key in self.constants:
