@@ -1,9 +1,6 @@
 import itertools, six
 from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall
 
-# FIXME
-ULONG_MAX = 2 ** 64 - 1
-
 def mangle(name):
     return 'model_%s' % name
 
@@ -73,9 +70,7 @@ class Generator(object):
             return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui(_t2,0));})']
 
         elif isinstance(ir, Lit):
-            if ir.value > ULONG_MAX:
-                raise RumurError('value of literal too large to fit in an unsigned long')
-            return ['%dul' % ir.value]
+            return ['({mpz_t _t1;int _t2=mpz_set_str(_t1,"', str(ir.value), '",10);assert(_t2==0);_t1;})']
 
         elif isinstance(ir, Or):
             return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui);})']
@@ -128,6 +123,7 @@ class Generator(object):
         elif isinstance(ir, ReturnStmt):
             if ir.value is None:
                 return ['return;']
+            # XXX: If this is returning an mpz_t, this will be a problem.
             return ['return ', self.to_code(ir.value), ';']
 
         elif isinstance(ir, VarRead):
