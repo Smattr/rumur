@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, ErrorStmt, Expr, Imp, Or, Procedure, Program, PutStmt, ReturnStmt
+from IR import Add, And, AssertStmt, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -36,6 +36,22 @@ class Generator(object):
             else:
                 msg = ir.string
             return ['rumur_error("', msg, '");']
+
+        elif isinstance(ir, IfStmt):
+            s = []
+            for index, branch in enumerate(ir.branches):
+                if index == 0:
+                    s += ['if']
+                elif branch.cond is not None:
+                    s += ['else if']
+                else:
+                    s += ['else']
+
+                if branch.cond is not None:
+                    s += ['(', self.to_code(branch.cond), ')']
+
+                s += ['{'] + [self.to_code(stmt) for stmt in branch.stmts] + ['}']
+            return s
 
         elif isinstance(ir, Imp):
             return ['(!'] + bracket(self.to_code(ir.left)) + [')||'] + bracket(self.to_code(ir.right))
