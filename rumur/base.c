@@ -20,7 +20,7 @@ void mpz_land(mpz_t dest, const mpz_t x, const mpz_t y) {
     }
 }
 
-void mpz_implies(mpz_t dest, const mpz_t x, const mpz_t y) {
+void mpz_imp(mpz_t dest, const mpz_t x, const mpz_t y) {
     if (mpz_cmp_ui(x, 0) != 0) {
         mpz_set_ui(dest, 1);
     } else {

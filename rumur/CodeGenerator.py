@@ -74,7 +74,7 @@ class Generator(object):
             return s
 
         elif isinstance(ir, Imp):
-            return ['(!'] + bracket(self.to_code(ir.left)) + [')||'] + bracket(self.to_code(ir.right))
+            return self.binop(ir, 'mpz_imp')
 
         elif isinstance(ir, Lit):
             if ir.value > ULONG_MAX:
@@ -82,7 +82,7 @@ class Generator(object):
             return ['%dul' % ir.value]
 
         elif isinstance(ir, Or):
-            return bracket(self.to_code(ir.left)) + ['||'] + bracket(self.to_code(ir.right))
+            return self.binop(ir, 'mpz_land')
 
         elif isinstance(ir, ProcCall):
             s = [mangle(ir.symbol), '(']
