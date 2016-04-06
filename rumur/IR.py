@@ -422,8 +422,14 @@ class VarRead(Expr):
         else:
             self.result_type = result_type
 
+class StateRead(VarRead):
+    pass
+
 class VarWrite(Node):
     def __init__(self, root, stems, node):
         super(VarWrite, self).__init__(node)
         self.root = root
         self.stems = stems
+
+class StateWrite(VarWrite):
+    pass

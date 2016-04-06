@@ -69,9 +69,9 @@ class Environment(object):
         self.scopes[-1].declare_var(key, type, writable)
 
     def lookup_var(self, key):
-        for scope in reversed(self.scopes):
+        for index, scope in enumerate(reversed(self.scopes)):
             try:
-                return scope.lookup_var(key)
+                return scope.lookup_var(key), index == len(self.scopes) - 1
             except KeyError:
                 pass
         raise KeyError(key)

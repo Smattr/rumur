@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -35,7 +35,7 @@ class Generator(object):
         elif node.head == 'designator':
             root = self.to_ir(node.tail[0])
             try:
-                value = self.env.lookup_var(root)
+                value, in_state = self.env.lookup_var(root)
             except KeyError:
                 raise RumurError('%d: designator %s refers to an '
                     'undefined variable' % (lineno(node),
@@ -75,7 +75,11 @@ class Generator(object):
                 if not value[1]:
                     raise RumurError('%d: attempt to write to read-only '
                         'variable' % lineno(node))
+                if in_state:
+                    return StateWrite(root, stems, node)
                 return VarWrite(root, stems, node)
+            if in_state:
+                return StateRead(root, stems, result_type, node)
             return VarRead(root, stems, result_type, node)
 
 
