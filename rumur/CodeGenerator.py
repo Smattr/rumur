@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT
 
 def mangle(name):
     return 'model_%s' % name
@@ -71,6 +71,9 @@ class Generator(object):
 
         elif isinstance(ir, Lit):
             return ['({mpz_t _t1;int _t2=mpz_init_set_str(_t1,"', str(ir.value), '",10);assert(_t2==0);_t1;})']
+
+        elif isinstance(ir, LT):
+            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';mpz_cmp(_t1,_t2)<0;})']
 
         elif isinstance(ir, Or):
             return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui);})']
