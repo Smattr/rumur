@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt
+from IR import Add, And, AssertStmt, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead
 
 def mangle(name):
     return 'model_%s' % name
@@ -103,6 +103,10 @@ class Generator(object):
             if ir.value is None:
                 return ['return;']
             return ['return ', self.to_code(ir.value), ';']
+
+        elif isinstance(ir, VarRead):
+            return [mangle(ir.root)]
+            #TODO: stems
 
         raise NotImplementedError('code generation for %s' % str(type(ir)))
 
