@@ -18,13 +18,16 @@ class Generator(object):
         self.env = env
         self.sections = [[], [], []]
 
+    def binop(self, ir, func):
+        return ['({mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';', func, '(_t1,_t1,_t2);_t1;})']
+
     def to_code(self, ir, lvalue=False):
 
         if isinstance(ir, Add):
-            return bracket(self.to_code(ir.left)) + ['+'] + bracket(self.to_code(ir.right))
+            return self.binop(ir, 'mpz_add')
 
         elif isinstance(ir, And):
-            return bracket(self.to_code(ir.left)) + ['&&'] + bracket(self.to_code(ir.right))
+            return self.binop(ir, 'mpz_and')
         
         elif isinstance(ir, AssertStmt):
             if ir.string is None:
@@ -45,7 +48,7 @@ class Generator(object):
             return s
 
         elif isinstance(ir, Eq):
-            return ['mpz_cmp((', self.to_code(ir.left), '),(', self.to_code(ir.right), '))']
+            return self.binop(ir, 'mpz_eq')
 
         elif isinstance(ir, ErrorStmt):
             if ir.string is None:
