@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, AssertStmt, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall
 
 # FIXME
 ULONG_MAX = 2 ** 64 - 1
@@ -26,13 +26,6 @@ class Generator(object):
         elif isinstance(ir, And):
             return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))&&(!!mpz_cmp_ui(_t2,0));})']
         
-        elif isinstance(ir, AssertStmt):
-            if ir.string is None:
-                msg = '<unnamed>'
-            else:
-                msg = ir.string
-            return ['if(', self.to_code(ir.expr), '){rumur_error("', msg, '");}']
-
         elif isinstance(ir, Assignment):
             s = ['mpz_set_ui(']
             if isinstance(ir.designator, StateWrite):

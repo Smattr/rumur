@@ -108,12 +108,6 @@ class ErrorStmt(Stmt):
         super(ErrorStmt, self).__init__(node)
         self.string = string
 
-class AssertStmt(Stmt):
-    def __init__(self, expr, string, node):
-        super(AssertStmt, self).__init__(node)
-        self.expr = expr
-        self.string = string
-
 class PutStmt(Stmt):
     def __init__(self, arg, node):
         super(PutStmt, self).__init__(node)
