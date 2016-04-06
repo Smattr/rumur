@@ -1,5 +1,8 @@
 import itertools, six
-from IR import Add, And, AssertStmt, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite
+from IR import Add, And, AssertStmt, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit
+
+# FIXME
+ULONG_MAX = 2 ** 64 - 1
 
 def mangle(name):
     return 'model_%s' % name
@@ -69,6 +72,11 @@ class Generator(object):
 
         elif isinstance(ir, Imp):
             return ['(!'] + bracket(self.to_code(ir.left)) + [')||'] + bracket(self.to_code(ir.right))
+
+        elif isinstance(ir, Lit):
+            if ir.value > ULONG_MAX:
+                raise RumurError('value of literal too large to fit in an unsigned long')
+            return ['%dul' % ir.value]
 
         elif isinstance(ir, Or):
             return bracket(self.to_code(ir.left)) + ['||'] + bracket(self.to_code(ir.right))
