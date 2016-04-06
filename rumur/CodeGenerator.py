@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -52,6 +52,25 @@ class Generator(object):
             else:
                 msg = ir.string
             return ['rumur_error("', msg, '");']
+
+        elif isinstance(ir, ForStmt):
+            scope, quan = ir.quantifier
+            s = []
+            if quan.typeexpr is not None:
+                raise NotImplementedError
+            else:
+                assert quan.lower is not None
+                assert quan.upper is not None
+                s += ['for(temp_st_t ', mangle(quan.symbol), '='] + self.to_code(quan.lower) + [';({temp_st_t _t='] + self.to_code(quan.upper) + [';mpz_cmp(', mangle(quan.symbol), '.m,_t.m)>=0;});']
+                if quan.step is None:
+                    s += ['mpz_add_ui(', mangle(quan.symbol), '.m,1)']
+                else:
+                    s += ['({temp_st_t _t='] + self.to_code(quan.step) + [';mpz_add(', mangle(quan.symbol), '.m,_t.m);})']
+                s += ['){']
+                for stmt in ir.stmts:
+                    s += self.to_code(stmt)
+                s += ['}']
+                return s
 
         elif isinstance(ir, IfStmt):
             s = []
