@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState
 
 def mangle(name):
     return 'model_%s' % name
@@ -143,6 +143,20 @@ class Generator(object):
                 s += ['bool guard', str(index), '(const state_t s){return ', self.to_code(ir.expr), ';}']
 
             s += ['void rule', str(index), '(state_t s){']
+            for name, value in ir.decls.constants.items():
+                s += ['temp_mpz_t ', mangle(name), ';do{int _t=mpz_init_set_str(', mangle(name), ',"', str(value), '",10);assert(_t==0);}while(0);']
+            for name, (typ, writable) in ir.decls.vars.items():
+                assert writable
+                s += ['temp_mpz_t ', mangle(name), ';mpz_init(', mangle(name), ');']
+
+            for stmt in ir.stmts:
+                s += self.to_code(stmt)
+
+            s += ['}']
+            return s
+
+        elif isinstance(ir, StartState):
+            s = ['static const char*start_state_name="', ir.string, '";void start(state_t s){']
             for name, value in ir.decls.constants.items():
                 s += ['temp_mpz_t ', mangle(name), ';do{int _t=mpz_init_set_str(', mangle(name), ',"', str(value), '",10);assert(_t==0);}while(0);']
             for name, (typ, writable) in ir.decls.vars.items():
