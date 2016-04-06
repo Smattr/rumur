@@ -118,11 +118,12 @@ class Generator(object):
 
         elif isinstance(ir, PutStmt):
             if isinstance(ir.arg, Expr):
-                # XXX
-                pass
-            else:
-                assert isinstance(ir.arg, six.string_types)
-                return ['printf("%s", "', ir.arg, '");']
+                if ir.arg.result_type == bool:
+                    return ['printf(', self.to_code(ir.arg), '?"true":"false");']
+                assert ir.arg.result_type == int
+                return ['do{temp_mpz_t _t=', self.to_code(ir.arg), ';mpz_out_str(stdout,10,_t);}while(0);']
+            assert isinstance(ir.arg, six.string_types)
+            return ['printf("%s","', ir.arg, '");']
 
         elif isinstance(ir, ReturnStmt):
             if ir.value is None:
