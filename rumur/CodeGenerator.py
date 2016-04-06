@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -33,6 +33,9 @@ class Generator(object):
                 # TODO: stems
             s += [',('] + self.to_code(ir.expr) + ['));']
             return s
+
+        elif isinstance(ir, ClearStmt):
+            return ['mpz_set_ui(', ir.designator, ',0);']
 
         elif isinstance(ir, Eq):
             if ir.left.result_type != ir.right.result_type:
