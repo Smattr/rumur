@@ -13,7 +13,7 @@ class Generator(object):
         self.sections = [[], [], [], []]
 
     def binop(self, ir, func):
-        return ['({mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';', func, '(_t1,_t1,_t2);_t1;})']
+        return ['({mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';', func, '(_t1,_t1,_t2);_t1;})']
 
     def to_code(self, ir, lvalue=False):
 
@@ -21,7 +21,7 @@ class Generator(object):
             return self.binop(ir, 'mpz_add')
 
         elif isinstance(ir, And):
-            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))&&(!!mpz_cmp_ui(_t2,0));})']
+            return ['({temp_mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';(!!mpz_cmp_ui(_t1,0))&&(!!mpz_cmp_ui(_t2,0));})']
         
         elif isinstance(ir, Assignment):
             s = ['mpz_set_ui(']
@@ -31,17 +31,17 @@ class Generator(object):
                 assert isinstance(ir.designator, VarWrite)
                 s += [mangle(ir.designator.root)]
                 # TODO: stems
-            s += [',(', self.to_code(ir.expr), '));']
+            s += [',('] + self.to_code(ir.expr) + ['));']
             return s
 
         elif isinstance(ir, Eq):
             if ir.left.result_type != ir.right.result_type:
                 raise RumurError('comparison between expressions of mismatched type')
             elif ir.left.result_type == bool:
-                return ['(', self.to_code(ir.left), '==', self.to_code(ir.right), ')']
+                return ['('] + self.to_code(ir.left) + ['=='] + self.to_code(ir.right) + [')']
             else:
                 assert ir.left.result_type == int
-                return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';mpz_cmp(_t1,_t2)==0;})']
+                return ['({temp_mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1,_t2)==0;})']
 
         elif isinstance(ir, ErrorStmt):
             if ir.string is None:
@@ -61,25 +61,28 @@ class Generator(object):
                     s += ['else']
 
                 if branch.cond is not None:
-                    s += ['(', self.to_code(branch.cond), ')']
+                    s += ['('] + self.to_code(branch.cond) + [')']
 
-                s += ['{'] + [self.to_code(stmt) for stmt in branch.stmts] + ['}']
+                s += ['{']
+                for stmt in branch.stmts:
+                    s += self.to_code(stmt)
+                s += ['}']
             return s
 
         elif isinstance(ir, GT):
-            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';mpz_cmp(_t1,_t2)>0;})']
+            return ['({temp_mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1,_t2)>0;})']
 
         elif isinstance(ir, Imp):
-            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui(_t2,0));})']
+            return ['({temp_mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';(!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui(_t2,0));})']
 
         elif isinstance(ir, Lit):
             return ['({mpz_t _t1;int _t2=mpz_init_set_str(_t1,"', str(ir.value), '",10);assert(_t2==0);_t1;})']
 
         elif isinstance(ir, LT):
-            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';mpz_cmp(_t1,_t2)<0;})']
+            return ['({temp_mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1,_t2)<0;})']
 
         elif isinstance(ir, Or):
-            return ['({temp_mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';(!!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui);})']
+            return ['({temp_mpz_t _t1='] + self.to_code(ir.left) + [';temp_mpz_t _t2='] + self.to_code(ir.right) + [';(!!mpz_cmp_ui(_t1,0))||(!!mpz_cmp_ui);})']
 
         elif isinstance(ir, ProcCall):
             s = [mangle(ir.symbol), '(']
@@ -121,9 +124,9 @@ class Generator(object):
         elif isinstance(ir, PutStmt):
             if isinstance(ir.arg, Expr):
                 if ir.arg.result_type == bool:
-                    return ['printf(', self.to_code(ir.arg), '?"true":"false");']
+                    return ['printf('] + self.to_code(ir.arg) + ['?"true":"false");']
                 assert ir.arg.result_type == int
-                return ['do{temp_mpz_t _t=', self.to_code(ir.arg), ';mpz_out_str(stdout,10,_t);}while(0);']
+                return ['do{temp_mpz_t _t='] + self.to_code(ir.arg) + [';mpz_out_str(stdout,10,_t);}while(0);']
             assert isinstance(ir.arg, six.string_types)
             return ['printf("%s","', ir.arg, '");']
 
@@ -131,7 +134,7 @@ class Generator(object):
             if ir.value is None:
                 return ['return;']
             # XXX: If this is returning an mpz_t, this will be a problem.
-            return ['return ', self.to_code(ir.value), ';']
+            return ['return '] + self.to_code(ir.value) + [';']
 
         elif isinstance(ir, SimpleRule):
             index = len(self.sections[RULES])
@@ -140,7 +143,7 @@ class Generator(object):
             s = []
 
             if ir.expr is not None:
-                s += ['bool guard', str(index), '(const state_t s){return ', self.to_code(ir.expr), ';}']
+                s += ['bool guard', str(index), '(const state_t s){return '] + self.to_code(ir.expr) + [';}']
 
             s += ['void rule', str(index), '(state_t s){']
             for name, value in ir.decls.constants.items():
