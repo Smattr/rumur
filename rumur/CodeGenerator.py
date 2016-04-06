@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt, TypeRange
 
 def mangle(name):
     return 'model_%s' % name
@@ -56,7 +56,13 @@ class Generator(object):
         elif isinstance(ir, ForStmt):
             scope, quan = ir.quantifier
             s = []
-            if quan.typeexpr is not None:
+            if isinstance(quan.typeexpr, TypeRange):
+                s += ['for(temp_st_t ', mangle(quan.symbol), '='] + self.to_code(quan.typeexpr.lower) + [';({temp_st_t _t='] + self.to_code(quan.typeexpr.upper) + [';mpz_cmp(', mangle(quan.symbol), '.m,_t.m)>=0;});mpz_add_ui(', mangle(quan.symbol), '.m,1)){']
+                for stmt in ir.stmts:
+                    s += self.to_code(stmt)
+                s += ['}']
+                return s
+            elif quan.typeexpr is not None:
                 raise NotImplementedError
             else:
                 assert quan.lower is not None
