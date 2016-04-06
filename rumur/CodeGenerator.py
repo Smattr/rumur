@@ -7,9 +7,6 @@ ULONG_MAX = 2 ** 64 - 1
 def mangle(name):
     return 'model_%s' % name
 
-def bracket(term):
-    return ['('] + term + [')']
-
 BASE, PROTOTYPES, FUNCTIONS = range(3)
 
 class Generator(object):
