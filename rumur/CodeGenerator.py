@@ -94,8 +94,9 @@ class Generator(object):
 
             s += ['){']
             for name, value in ir.decls.constants.items():
-                s += ['mpz_t ', mangle(name), ';mpz_init_set_ui(', mangle(name), ',', str(value), ');']
+                s += ['mpz_t ', mangle(name), ';do{int _t=mpz_init_set_str(', mangle(name), ',"', str(value), '",10);assert(_t==0);}while(0);']
             for name, (typ, writable) in ir.decls.vars.items():
+                assert writable
                 s += ['mpz_t ', mangle(name), ';mpz_init(', mangle(name), ');']
 
             for stmt in ir.stmts:
