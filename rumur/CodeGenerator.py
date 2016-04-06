@@ -1,16 +1,16 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall
+from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule
 
 def mangle(name):
     return 'model_%s' % name
 
-BASE, PROTOTYPES, FUNCTIONS = range(3)
+BASE, PROTOTYPES, FUNCTIONS, RULES = range(4)
 
 class Generator(object):
 
     def __init__(self, env):
         self.env = env
-        self.sections = [[], [], []]
+        self.sections = [[], [], [], []]
 
     def binop(self, ir, func):
         return ['({mpz_t _t1=', self.to_code(ir.left), ';temp_mpz_t _t2=', self.to_code(ir.right), ';', func, '(_t1,_t1,_t2);_t1;})']
@@ -126,6 +126,28 @@ class Generator(object):
                 return ['return;']
             # XXX: If this is returning an mpz_t, this will be a problem.
             return ['return ', self.to_code(ir.value), ';']
+
+        elif isinstance(ir, SimpleRule):
+            index = len(self.sections[RULES])
+            self.sections[RULES].extend(
+                ['{"', ir.string, '",', 'NULL' if ir.expr is None else 'guard%d' % index, ',rule', str(index), '},'])
+            s = []
+
+            if ir.expr is not None:
+                s += ['bool guard', str(index), '(const state_t s){return ', self.to_code(ir.expr), ';}']
+
+            s += ['void rule', str(index), '(state_t s){']
+            for name, value in ir.decls.constants.items():
+                s += ['temp_mpz_t ', mangle(name), ';do{int _t=mpz_init_set_str(', mangle(name), ',"', str(value), '",10);assert(_t==0);}while(0);']
+            for name, (typ, writable) in ir.decls.vars.items():
+                assert writable
+                s += ['temp_mpz_t ', mangle(name), ';mpz_init(', mangle(name), ');']
+
+            for stmt in ir.stmts:
+                s += self.to_code(stmt)
+
+            s += ['}']
+            return s
 
         elif isinstance(ir, VarRead):
             return [mangle(ir.root)]
