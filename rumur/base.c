@@ -52,6 +52,14 @@ void mpz_neq(mpz_t dest, const mpz_t x, const mpz_t y) {
     mpz_set_si(dest, mpz_cmp(x, y) != 0);
 }
 
+static void auto_clear(void *mpz) {
+    assert(mpz != NULL);
+    mpz_t *m = mpz;
+    mpz_clear(*m);
+}
+
+#define temp_mpz_t __attribute__((cleanup(auto_clear))) mpz_t
+
 void *xalloc(size_t size) {
     void *p = malloc(size);
     if (p == NULL) {
