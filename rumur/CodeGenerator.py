@@ -27,7 +27,7 @@ class Generator(object):
             return self.binop(ir, 'mpz_add')
 
         elif isinstance(ir, And):
-            return self.binop(ir, 'mpz_and')
+            return self.binop(ir, 'mpz_land')
         
         elif isinstance(ir, AssertStmt):
             if ir.string is None:
