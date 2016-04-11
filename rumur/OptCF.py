@@ -67,7 +67,7 @@ def _fold(e):
             return e.casetrue
         return e.casefalse
 
-    return expr
+    return e
 
 def constant_fold(ast):
     return ast.postorder(_fold)
