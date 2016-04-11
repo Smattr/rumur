@@ -14,16 +14,13 @@ class Generator(object):
         self.env = env
         self.sections = [[], [], [], []]
 
-    def binop(self, ir, func):
-        return ['({st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';', func, '(_t1.m,_t1.m,_t2.m);_t1;})']
-
     def to_code(self, ir, lvalue=False):
 
         if isinstance(ir, Add):
-            return self.binop(ir, 'mpz_add')
+            return ['st_add('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, And):
-            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';(!!mpz_cmp_ui(_t1.m,0))&&(!!mpz_cmp_ui(_t2.m,0));})']
+            return ['('] + self.to_code(ir.left) + ['&&'] + self.to_code(ir.right) + [')']
         
         elif isinstance(ir, Assignment):
             s = ['mpz_set_ui(']
@@ -43,7 +40,7 @@ class Generator(object):
             return ['('] + self.to_code(ir.left) + ['=='] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, IntEq):
-            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1.m,_t2.m)==0;})']
+            return ['st_eq('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, ErrorStmt):
             if ir.string is None:
@@ -97,19 +94,19 @@ class Generator(object):
             return s
 
         elif isinstance(ir, GT):
-            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1.m,_t2.m)>0;})']
+            return ['st_gt('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, Imp):
-            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';(!mpz_cmp_ui(_t1.m,0))||(!!mpz_cmp_ui(_t2.m,0));})']
+            return ['st_imp('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, Lit):
-            return ['({st_t _t1;int _t2=mpz_init_set_str(_t1.m,"', str(ir.value), '",10);assert(_t2==0);_t1;})']
+            return ['st_new(', str(ir.value), ')']
 
         elif isinstance(ir, LT):
-            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1.m,_t2.m)<0;})']
+            return ['st_lt('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, Or):
-            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';(!!mpz_cmp_ui(_t1.m,0))||(!!mpz_cmp_ui(_t2.m,0));})']
+            return ['('] + self.to_code(ir.left) + ['||'] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, ProcCall):
             s = [mangle(ir.symbol), '(']
