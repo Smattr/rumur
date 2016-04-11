@@ -6,11 +6,6 @@ from IR import Add, And, BoolEq, BoolNEq, Div, GT, GTE, Imp, IntEq, IntNEq, Lit,
     Mul, Not, Or, Sub, TriCond
 from RumurError import RumurError
 
-# XXX: Clagged from IRGenerator
-def lineno(stree):
-    stree.calc_position()
-    return stree.min_line
-
 def _fold(e):
 
     if isinstance(e, Add) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
@@ -39,7 +34,7 @@ def _fold(e):
 
     if isinstance(e, Div) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
         if e.right.value == 0:
-            raise RumurError('%d: division by zero' % lineno(e.node))
+            raise RumurError('division by zero', e.node)
         return Lit(e.left // e.right, e.node)
 
     if isinstance(e, Div) and isinstance(e.right, Lit) and e.right.value == 1:
@@ -47,7 +42,7 @@ def _fold(e):
 
     if isinstance(e, Mod) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
         if e.right.value == 0:
-            raise RumurError('%d: modulo by zero' % lineno(e.node))
+            raise RumurError('modulo by zero', e.node)
         return Lit(e.left % e.right, e.node)
 
     if isinstance(e, Mod) and isinstance(e.right, Lit) and e.right.value == 1:

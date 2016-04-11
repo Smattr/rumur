@@ -1,9 +1,9 @@
 import argparse, logging, sys
 from CodeGenerator import to_code
-from ConstantFolding import constant_fold
 from IRGenerator import to_ir
 from Log import log
 from Parser import Parser
+from OptCF import constant_fold
 from OptSR import strength_reduce
 
 def run_to_fixed_point(ast, *transformers):
@@ -48,6 +48,7 @@ def main():
     # Run optimisations.
     OPT_PIPELINE = [
         strength_reduce,
+        constant_fold,
     ]
 
     for p in OPT_PIPELINE:
