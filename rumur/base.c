@@ -3,6 +3,33 @@
 #include <stdlib.h>
 #include <gmp.h>
 
+typedef trace_ {
+    st_t state;
+    struct trace_ *previous;
+} trace_t;
+
+static void rumur_error(trace_t *trace, const char *message) {
+    fprintf(stderr, "%s\n", message);
+    /* Walk back through the trace, flipping the pointers so we can then iterate forwards. */
+    trace_t *p = trace, *q = NULL;
+    for (;;) {
+        if (p == NULL)
+            break;
+        trace_t *t = p->previous;
+        p->previous = q;
+        q = p;
+        p = t;
+    }
+    /* Trace is now a forwards linked-list starting at q. */
+    fprintf(stderr, "violating trace:\n");
+    for (; q != NULL; q = q->previous) {
+        st_fputs(stderr, q->state);
+    }
+    exit(EXIT_FAILURE);
+}
+
+
+
 void *xalloc(size_t size) {
     void *p = malloc(size);
     if (p == NULL) {
