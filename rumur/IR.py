@@ -176,11 +176,8 @@ class TypeExpr(six.with_metaclass(abc.ABCMeta, Node)):
 class TypeRange(TypeExpr):
     def __init__(self, lower, upper, node):
         super(TypeRange, self).__init__(node)
-        # XXX: We really need to support folding arbitrary constant exprs here.
-        assert isinstance(lower, Lit)
-        self.lower = lower.value
-        assert isinstance(upper, Lit)
-        self.upper = upper.value
+        self.lower = lower
+        self.upper = upper
 
     def cardinality(self):
         return self.upper - self.lower + 2

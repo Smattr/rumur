@@ -1,4 +1,4 @@
-from ConstantFolding import constant_fold
+from OptCF import constant_fold
 from Environment2 import Environment
 from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite, TypeConstant, Mul, Guard
 from RumurError import RumurError
@@ -570,15 +570,16 @@ class Generator(object):
 
             elif node.tail[0].head == 'expr':
                 # X..Y
-                lower = self.to_ir(node.tail[0])
+                # We eagerly constant fold the bounds to allow use of more complicated expressions.
+                lower = constant_fold(self.to_ir(node.tail[0]))
                 if not isinstance(lower, Lit):
                     raise RumurError('%d: lower bound of range type is not '
                         'constant' % lineno(node))
-                upper = self.to_ir(node.tail[1])
+                upper = constant_fold(self.to_ir(node.tail[1]))
                 if not isinstance(upper, Lit):
                     raise RumurError('%d: upper bound of range type is not '
                         'constant' % lineno(node))
-                return TypeRange(lower, upper, node)
+                return TypeRange(lower.value, upper.value, node)
 
             elif node.tail[0].head == 'array':
                 # array[X] of Y
