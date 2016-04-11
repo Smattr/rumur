@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite, TypeConstant
 from RumurError import RumurError
 
 def lineno(stree):
@@ -35,22 +35,23 @@ class Generator(object):
         elif node.head == 'designator':
             root = self.to_ir(node.tail[0])
             try:
-                value, in_state = self.env.lookup_var(root)
+                var = self.env.lookup_var(root)
             except KeyError:
                 raise RumurError('%d: designator %s refers to an '
                     'undefined variable' % (lineno(node),
                     root))
-            if isinstance(value, (int, bool)):
-                # This reference is to a constant
+            if isinstance(var.typ, TypeConstant):
                 if len(node.tail) > 1:
                     raise RumurError('%d: excess qualifiers after '
                         'reference to a constant' % lineno(node))
                 if lvalue:
                     raise RumurError('%d: attempted assignment to a '
                         'constant' % lineno(node))
-                return Lit(value, node)
+                return Lit(var.typ.value, node)
             stems = []
-            result_type = value[0]
+            result_type = var.typ
+            offset = 0
+            # XXX: need to rewrite all this.
             for t in node.tail[1:]:
                 if t.head == 'symbol':
                     sym = self.to_ir(t)
@@ -62,7 +63,7 @@ class Generator(object):
                     except KeyError:
                         raise RumurError('%d: %s is not a member of the '
                             'preceding expression' % (lineno(t), sym))
-                    result_type = member[0]
+                    result_type = member.typ
                     stems.append(sym)
                 else:
                     assert t.head == 'expr'
