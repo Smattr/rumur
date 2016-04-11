@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, Eq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite
 from RumurError import RumurError
 
 def lineno(stree):
@@ -195,17 +195,10 @@ class Generator(object):
                 if left.result_type is not right.result_type:
                     raise RumurError('%d: equality comparison between '
                         'expressions of differing types' % lineno(node))
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value == right.value, node)
-                if isinstance(left, Lit) and left.result_type is bool:
-                    if left.value:
-                        return right
-                    return Not(right, node)
-                if isinstance(right, Lit) and right.result_type is bool:
-                    if right.value:
-                        return left
-                    return Not(left, node)
-                return Eq(left, right, node)
+                if left.result_type == bool:
+                    return BoolEq(left, right, node)
+                assert left.result_type == int
+                return IntEq(left, right, bool)
 
             elif node.tail[1].head == 'gt':
                 if left.result_type is not int:

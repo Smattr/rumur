@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, Eq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt, TypeRange, Stmt
+from IR import Add, And, Assignment, BoolEq, IntEq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt, TypeRange, Stmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -39,14 +39,11 @@ class Generator(object):
         elif isinstance(ir, ClearStmt):
             return ['mpz_set_ui(', ir.designator, '.m,0);']
 
-        elif isinstance(ir, Eq):
-            if ir.left.result_type != ir.right.result_type:
-                raise RumurError('comparison between expressions of mismatched type')
-            elif ir.left.result_type == bool:
-                return ['('] + self.to_code(ir.left) + ['=='] + self.to_code(ir.right) + [')']
-            else:
-                assert ir.left.result_type == int
-                return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1.m,_t2.m)==0;})']
+        elif isinstance(ir, BoolEq):
+            return ['('] + self.to_code(ir.left) + ['=='] + self.to_code(ir.right) + [')']
+
+        elif isinstance(ir, IntEq):
+            return ['({temp_st_t _t1='] + self.to_code(ir.left) + [';temp_st_t _t2='] + self.to_code(ir.right) + [';mpz_cmp(_t1.m,_t2.m)==0;})']
 
         elif isinstance(ir, ErrorStmt):
             if ir.string is None:

@@ -263,14 +263,21 @@ class GTE(BinOp):
 
     result_type = bool
 
-class Eq(BinOp):
+class BoolEq(BinOp):
 
     result_type = bool
 
-class NEq(BinOp):
+class IntEq(BinOp):
 
     result_type = bool
 
+class BoolNEq(BinOp):
+
+    result_type = bool
+
+class IntNEq(BinOp):
+
+    result_type = bool
 
 class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
