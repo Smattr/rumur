@@ -113,14 +113,14 @@ class Generator(object):
             assert len(ir.parameters.constants) == 0
             assert len(ir.parameters.types) == 0
 
-            for name, (typ, writable) in ir.parameters.vars.items():
-                s += ['' if writable else 'const ', 'st_t ', mangle(name), ',']
+            for name, var in ir.parameters.vars.items():
+                s += ['' if var.writable else 'const ', 'st_t ', mangle(name), ',']
 
             s += ['){']
-            for name, value in ir.decls.constants.items():
-                s += ['st_t ', mangle(name), ';do{int _t=mpz_init_set_str(', mangle(name), '.m,"', str(value), '",10);assert(_t==0);}while(0);']
-            for name, (typ, writable) in ir.decls.vars.items():
-                assert writable
+            for name, var in ir.decls.constants.items():
+                s += ['st_t ', mangle(name), ';do{int _t=mpz_init_set_str(', mangle(name), '.m,"', str(var.typ.value), '",10);assert(_t==0);}while(0);']
+            for name, var in ir.decls.vars.items():
+                assert var.writable
                 s += ['st_t ', mangle(name), ';mpz_init(', mangle(name), '.m);']
 
             for stmt in ir.stmts:
