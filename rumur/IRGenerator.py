@@ -1,6 +1,6 @@
 from ConstantFolding import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite, TypeConstant
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite, TypeConstant, Mul, Guard
 from RumurError import RumurError
 
 def lineno(stree):
@@ -50,8 +50,7 @@ class Generator(object):
                 return Lit(var.typ.value, node)
             stems = []
             result_type = var.typ
-            offset = 0
-            # XXX: need to rewrite all this.
+            offset = Lit(1, node)
             for t in node.tail[1:]:
                 if t.head == 'symbol':
                     sym = self.to_ir(t)
@@ -63,25 +62,26 @@ class Generator(object):
                     except KeyError:
                         raise RumurError('%d: %s is not a member of the '
                             'preceding expression' % (lineno(t), sym))
+                    assert member.offsetof is not None
+                    offset = Mul(offset, Lit(member.offsetof, node))
                     result_type = member.typ
-                    stems.append(sym)
                 else:
                     assert t.head == 'expr'
                     if not isinstance(result_type, TypeArray):
                         raise RumurError('%d: array index on a type that is '
                             'not an array' % lineno(t))
+                    offset = Mul(offset, Guard(self.to_ir(t), 0, result_type.index_type.cardinality() - 2, node), node)
                     result_type = result_type.member_type
-                    stems.append(self.to_ir(t))
             if lvalue:
-                if not value[1]:
+                if not var.writable:
                     raise RumurError('%d: attempt to write to read-only '
                         'variable' % lineno(node))
-                if in_state:
-                    return StateWrite(root, stems, node)
-                return VarWrite(root, stems, node)
-            if in_state:
-                return StateRead(root, stems, result_type, node)
-            return VarRead(root, stems, result_type, node)
+                if var.offsetof is not None:
+                    return StateWrite(root, offset, result_type, node)
+                return VarWrite(root, offset, result_type, node)
+            if var.offsetof is not None:
+                return StateRead(root, offset, result_type, node)
+            return VarRead(root, offset, result_type, node)
 
 
         # When handling expressions in the following, we do some

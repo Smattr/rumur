@@ -176,8 +176,11 @@ class TypeExpr(six.with_metaclass(abc.ABCMeta, Node)):
 class TypeRange(TypeExpr):
     def __init__(self, lower, upper, node):
         super(TypeRange, self).__init__(node)
-        self.lower = lower
-        self.upper = upper
+        # XXX: We really need to support folding arbitrary constant exprs here.
+        assert isinstance(lower, Lit)
+        self.lower = lower.value
+        assert isinstance(upper, Lit)
+        self.upper = upper.value
 
     def cardinality(self):
         return self.upper - self.lower + 2
@@ -366,6 +369,16 @@ class Forall(HOLExpr):
 class Exists(HOLExpr):
     pass
 
+class Guard(Expr):
+
+    def __init__(self, child, lower, upper, node):
+        super(Guard, self).__init__(node)
+        self.child = child
+        self.lower = lower
+        self.upper = upper
+
+    result_type = int
+
 class Program(Node):
     def __init__(self, node):
         super(Program, self).__init__(node)
@@ -379,10 +392,10 @@ class VarDecl(Node):
         self.typeexpr = typeexpr
 
 class VarRead(Expr):
-    def __init__(self, root, stems, result_type, node):
+    def __init__(self, root, offset, result_type, node):
         super(VarRead, self).__init__(node)
         self.root = root
-        self.stems = stems
+        self.offset = offset
         if isinstance(result_type, TypeRange):
             self.result_type = int
         else:
@@ -392,10 +405,11 @@ class StateRead(VarRead):
     pass
 
 class VarWrite(Node):
-    def __init__(self, root, stems, node):
+    def __init__(self, root, offset, result_type, node):
         super(VarWrite, self).__init__(node)
         self.root = root
-        self.stems = stems
+        self.offset = offset
+        self.result_type = result_type
 
 class StateWrite(VarWrite):
     pass

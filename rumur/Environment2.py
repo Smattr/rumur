@@ -104,7 +104,7 @@ class Environment(object):
         self.declare_constant('false', False)
 
     def open_scope(self):
-        self.scopes.append(Scope())
+        self.scopes.append(BasicScope())
 
     def open_ordered_scope(self):
         self.scopes.append(OrderedScope())
