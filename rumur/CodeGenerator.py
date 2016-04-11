@@ -36,9 +36,6 @@ class Generator(object):
         elif isinstance(ir, ClearStmt):
             return ['mpz_set_ui(', ir.designator, '.m,0);']
 
-        elif isinstance(ir, BoolEq):
-            return ['('] + self.to_code(ir.left) + ['=='] + self.to_code(ir.right) + [')']
-
         elif isinstance(ir, IntEq):
             return ['st_eq('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
@@ -92,12 +89,6 @@ class Generator(object):
                     s += self.to_code(stmt)
                 s += ['}']
             return s
-
-        elif isinstance(ir, GT):
-            return ['st_gt('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
-
-        elif isinstance(ir, Imp):
-            return ['st_imp('] + self.to_code(ir.left) + [','] + self.to_code(ir.right) + [')']
 
         elif isinstance(ir, Lit):
             return ['st_new(', str(ir.value), ')']
@@ -200,58 +191,6 @@ class Generator(object):
             #TODO: stems
 
         raise NotImplementedError('code generation for %s' % str(type(ir)))
-
-    def from_expr(self, e):
-        assert isinstance(e, Expr)
-
-        if isinstance(e, Add):
-            ltyp, l = self.from_expr(e.left)
-            assert ltyp == MPZ
-            rtyp, r = self.from_expr(e.right)
-            assert rtyp == MPZ
-            return MPZ, '({mpz _t1=%s;temp_mpz _t2=%s;mpz_add(_t1.m,_t1.m,_t2.m);_t1;})' % (l, r)
-
-        elif isinstance(e, And):
-            ltyp, l = self.from_expr(e.left)
-            assert ltyp == BOOL
-            rtyp, r = self.from_expr(e.right)
-            assert rtyp == BOOL
-            return BOOL, '(%s&&%s)' % (l, r)
-
-        elif isinstance(e, Eq):
-            ltyp, l = self.from_expr(e.left)
-            rtyp, r = self.from_expr(e.right)
-            assert ltyp == rtyp
-            if ltyp == MPZ:
-                return BOOL, '({temp_mpz _t1=%s;temp_mpz _t2=%s;mpz_cmp(_t1.m,_t2.m)==0;})' % (l, r)
-            return BOOL, '(%s==%s)' % (l, r)
-
-        elif isinstance(e, GT):
-            ltyp, l = self.from_expr(e.left)
-            assert ltyp == MPZ
-            rtyp, r = self.from_expr(e.right)
-            assert rtyp == MPZ
-            return BOOL, '({temp_mpz _t1=%s;temp_mpz _t2=%s;mpz_cmp(_t1.m,_t2.m)>0;})' % (l, r)
-
-        elif isinstance(e, Lit):
-            return MPZ, '({mpz _t;mpz_init_set_str(_t.m,"%s",10);_t;})' % e.value
-
-        raise NotImplementedError('code generation for %s' % str(type(e)))
-
-    def from_stmt(self, s):
-        assert isinstance(s, Stmt)
-
-        if isinstance(s, PutStmt):
-            if isinstance(s.arg, Expr):
-                t, v = self.from_expr(s.arg)
-                if t == BOOL:
-                    return 'printf(%s?"true":"false");' % v
-                assert t == MPZ
-                return 'do{temp_st_t _t=%s;mpz_out_str(stdout,10,_t.m);}while(0);' % v
-            assert isinstance(s.arg, six.string_types)
-            return 'fputs("%s",stdout);' % s.arg
-
-        raise NotImplementedError('code generation for %s' % str(type(e)))
 
 def to_code(scope, ir):
     g = Generator(scope)
