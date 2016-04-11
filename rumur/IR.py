@@ -11,6 +11,12 @@ class Node(six.with_metaclass(abc.ABCMeta, object)):
                 item = value.postorder(visitor)
                 if item is not value:
                     setattr(self, field, item)
+            elif isinstance(value, (list, tuple)):
+                for i in range(len(value)):
+                    if isinstance(value[i], Node):
+                        item = value[i].postorder(visitor)
+                        if item is not value[i]:
+                            value[i] = item
         return visitor(self)
 
     def preorder(self, visitor):
@@ -20,6 +26,12 @@ class Node(six.with_metaclass(abc.ABCMeta, object)):
                 item = value.preorder(visitor)
                 if item is not value:
                     setattr(me, field, item)
+            elif isinstance(value, (list, tuple)):
+                for i in range(len(value)):
+                    if isinstance(value[i], Node):
+                        item = value[i].preorder(visitor)
+                        if item is not value[i]:
+                            value[i] = item
         return me
 
     def visit(self, visitor):
