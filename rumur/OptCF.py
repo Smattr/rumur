@@ -38,26 +38,8 @@ def _fold(e):
     if isinstance(e, And) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
         return Lit(e.left and e.right, e.node)
 
-    if isinstance(e, Imp) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
-        return Lit(not e.left or e.right, e.node)
-
     if isinstance(e, LT) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
         return Lit(e.left < e.right, e.node)
-
-    if isinstance(e, LTE) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
-        return Lit(e.left <= e.right, e.node)
-
-    if isinstance(e, GT) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
-        return Lit(e.left > e.right, e.node)
-
-    if isinstance(e, GTE) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
-        return Lit(e.left >= e.right, e.node)
-
-    if isinstance(e, (BoolEq, IntEq)) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
-        return Lit(e.left == e.right, e.node)
-
-    if isinstance(e, (BoolNEq, IntNEq)) and isinstance(e.left, Lit) and isinstance(e.right, Lit):
-        return Lit(e.left != e.right, e.node)
 
     if isinstance(e, Not) and isinstance(e.operand, Lit):
         return Lit(not e.operand, e.node)
