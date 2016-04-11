@@ -2,26 +2,24 @@ import abc, six
 
 class Node(six.with_metaclass(abc.ABCMeta, object)):
 
-    _fields = ()
-
     def __init__(self, node):
         self.node = node
     
     def postorder(self, visitor):
-        for field in self._fields:
-            assert hasattr(self, field)
-            item = getattr(self, field).postorder(visitor)
-            if item is not getattr(self, field):
-                setattr(self, field, item)
+        for field, value in self.__dict__.items():
+            if isinstance(value, Node):
+                item = value.postorder(visitor)
+                if item is not value:
+                    setattr(self, field, item)
         return visitor(self)
 
     def preorder(self, visitor):
         me = visitor(self)
-        for field in me._fields:
-            assert hasattr(me, field)
-            item = getattr(me, field).preorder(visitor)
-            if item is not getattr(me, field):
-                setattr(me, field, item)
+        for field, value in me.__dict__.items():
+            if isinstance(value, Node):
+                item = value.preorder(visitor)
+                if item is not value:
+                    setattr(me, field, item)
         return me
 
     def visit(self, visitor):
@@ -240,8 +238,6 @@ class Expr(six.with_metaclass(abc.ABCMeta, Node)):
 
 class BinOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
-    _fields = ('left', 'right')
-
     def __init__(self, left, right, node):
         super(BinOp, self).__init__(node)
         self.left = left
@@ -313,8 +309,6 @@ class IntNEq(BinOp):
 
 class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
-    _fields = ('operand',)
-
     def __init__(self, operand, node):
         super(UnaryOp, self).__init__(node)
         self.operand = operand
@@ -337,8 +331,6 @@ class Lit(Expr):
 
 class TriCond(Expr):
 
-    _fields = ('cond', 'casetrue', 'casefalse')
-
     def __init__(self, cond, casetrue, casefalse, node):
         super(TriCond, self).__init__(node)
         self.cond = cond
@@ -350,8 +342,6 @@ class TriCond(Expr):
         return self.casetrue.result_type
 
 class HOLExpr(Expr):
-
-    _fields = ('quantifier', 'expr')
 
     def __init__(self, quantifier, expr, node):
         super(HOLExpr, self).__init__(node)
