@@ -10,7 +10,7 @@ class Node(six.with_metaclass(abc.ABCMeta, object)):
     def postorder(self, visitor):
         for field in self._fields:
             assert hasattr(self, field)
-            item = getattr(self, field).preorder(visitor)
+            item = getattr(self, field).postorder(visitor)
             if item is not getattr(self, field):
                 setattr(self, field, item)
         return visitor(self)
@@ -19,7 +19,7 @@ class Node(six.with_metaclass(abc.ABCMeta, object)):
         me = visitor(self)
         for field in me._fields:
             assert hasattr(me, field)
-            item = getattr(me, field).postorder(visitor)
+            item = getattr(me, field).preorder(visitor)
             if item is not getattr(me, field):
                 setattr(me, field, item)
         return me
