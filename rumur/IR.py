@@ -168,7 +168,10 @@ class Procedure(Method):
     pass
 
 class TypeExpr(six.with_metaclass(abc.ABCMeta, Node)):
-    pass
+
+    @abc.abstractmethod
+    def cardinality(self):
+        raise NotImplementedError
 
 class TypeRange(TypeExpr):
     def __init__(self, lower, upper, node):
@@ -176,15 +179,28 @@ class TypeRange(TypeExpr):
         self.lower = lower
         self.upper = upper
 
+    def cardinality(self):
+        return self.upper - self.lower + 2
+
 class TypeEnum(TypeExpr):
     def __init__(self, members, node):
         super(TypeEnum, self).__init__(node)
         self.members = members
 
+    def cardinality(self):
+        return len(self.members) + 1
+
 class TypeRecord(TypeExpr):
     def __init__(self, vardecls, node):
         super(TypeRecord, self).__init__(node)
         self.vardecls = vardecls
+
+    def cardinality(self):
+        card = 1
+        for v in self.vardecls.values():
+            member_card = v.typeexpr.cardinality()
+            card *= member_card
+        return card
 
     def lookup_var(self, key):
         return self.vardecls.lookup_var(key)
@@ -194,6 +210,22 @@ class TypeArray(TypeExpr):
         super(TypeArray, self).__init__(node)
         self.index_type = index_type
         self.member_type = member_type
+
+    def cardinality(self):
+        index_card = self.index_type.cardinality();
+        member_card = self.member_type.cardinality();
+        return (index_card - 1) * member_card
+
+class TypeConstant(TypeExpr):
+    '''
+    Artificial type of a literal.
+    '''
+
+    def __init__(self, value):
+        self.value = value
+
+    def cardinality(self):
+        return 1
 
 class Formal(Node):
     def __init__(self, var, name, typeexpr, node):
