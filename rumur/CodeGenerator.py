@@ -50,25 +50,25 @@ class Generator(object):
             scope, quan = ir.quantifier
             s = []
             if isinstance(quan.typeexpr, TypeRange):
-                s += ['for(temp_st_t ', mangle(quan.symbol), '='] + self.to_code(quan.typeexpr.lower) + [';({temp_st_t _t='] + self.to_code(quan.typeexpr.upper) + [';mpz_cmp(', mangle(quan.symbol), '.m,_t.m)>=0;});mpz_add_ui(', mangle(quan.symbol), '.m,1)){']
+                s += ['for(temp_st_t ', mangle(quan.symbol), '=st_new(', str(quan.typeexpr.lower), ');;st_inc(', mangle(quan.symbol), ')){']
                 for stmt in ir.stmts:
                     s += self.to_code(stmt)
-                s += ['}']
+                s += ['if(st_eq(', mangle(quan.symbol), ',', str(quan.typeexpr.upper), '){break;}}']
                 return s
             elif quan.typeexpr is not None:
                 raise NotImplementedError
             else:
                 assert quan.lower is not None
                 assert quan.upper is not None
-                s += ['for(temp_st_t ', mangle(quan.symbol), '='] + self.to_code(quan.lower) + [';({temp_st_t _t='] + self.to_code(quan.upper) + [';mpz_cmp(', mangle(quan.symbol), '.m,_t.m)>=0;});']
+                s += ['for(temp_st_t ', mangle(quan.symbol), '=st_new(', str(quan.lower), ');;', mangle(quan.symbol), '=st_add(', mangle(quan.symbol), ',stnew(']
                 if quan.step is None:
-                    s += ['mpz_add_ui(', mangle(quan.symbol), '.m,1)']
+                    s.append('1')
                 else:
-                    s += ['({temp_st_t _t='] + self.to_code(quan.step) + [';mpz_add(', mangle(quan.symbol), '.m,_t.m);})']
-                s += ['){']
+                    s.append(str(quan.step))
+                s += ['))){']
                 for stmt in ir.stmts:
                     s += self.to_code(stmt)
-                s += ['}']
+                s += ['if(st_eq(', mangle(quan.symbol), ',', str(quan.upper), '){break;}}']
                 return s
 
         elif isinstance(ir, IfStmt):
