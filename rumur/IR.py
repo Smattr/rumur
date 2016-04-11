@@ -1,4 +1,4 @@
-import abc, operator, six
+import abc, six
 
 class Node(six.with_metaclass(abc.ABCMeta, object)):
 
@@ -215,121 +215,62 @@ class BinOp(six.with_metaclass(abc.ABCMeta, Expr)):
         self.left = left
         self.right = right
 
-    @abc.abstractproperty
-    def op(self):
-        raise NotImplementedError
-
 class Add(BinOp):
 
     result_type = int
-
-    @property
-    def op(self):
-        return operator.add
 
 class Sub(BinOp):
 
     result_type = int
 
-    @property
-    def op(self):
-        return operator.sub
-
 class Mul(BinOp):
 
     result_type = int
-
-    @property
-    def op(self):
-        return operator.mul
 
 class Div(BinOp):
 
     result_type = int
 
-    @property
-    def op(self):
-        return operator.floordiv
-
 class Mod(BinOp):
 
     result_type = int
-
-    @property
-    def op(self):
-        return operator.mod
 
 class Or(BinOp):
 
     result_type = bool
 
-    @property
-    def op(self):
-        return (lambda a, b: int(a or b))
-
 class And(BinOp):
 
     result_type = bool
-
-    @property
-    def op(self):
-        return (lambda a, b: int(a and b))
 
 class Imp(BinOp):
 
     result_type = bool
 
-    @property
-    def op(self):
-        return (lambda a, b: int((not a) or b))
-
 class LT(BinOp):
 
     result_type = bool
-
-    @property
-    def op(self):
-        return operator.lt
 
 class LTE(BinOp):
 
     result_type = bool
 
-    @property
-    def op(self):
-        return operator.lte
-
 class GT(BinOp):
 
     result_type = bool
-
-    @property
-    def op(self):
-        return operator.gt
 
 class GTE(BinOp):
 
     result_type = bool
 
-    @property
-    def op(self):
-        return operator.gte
-
 class Eq(BinOp):
 
     result_type = bool
-
-    @property
-    def op(self):
-        return operator.eq
 
 class NEq(BinOp):
 
     result_type = bool
 
-    @property
-    def op(self):
-        return operator.ne
 
 class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
@@ -339,17 +280,9 @@ class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
         super(UnaryOp, self).__init__(node)
         self.operand = operand
 
-    @abc.abstractproperty
-    def op(self):
-        raise NotImplementedError
-
 class Not(UnaryOp):
 
     result_type = bool
-
-    @property
-    def op(self):
-        return (lambda x: int(not x))
 
 class Lit(Expr):
 
