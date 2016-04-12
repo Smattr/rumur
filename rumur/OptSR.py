@@ -5,8 +5,9 @@ This is not so much an optimisation as a simplification. It allows passes that r
 omit cases to deal with non-core IR entities.
 '''
 
-from IR import And, BoolEq, BoolNEq, Branch, ErrorStmt, Exists, Forall, GT, GTE, IfStmt, Imp, \
-    IntEq, IntNEq, Invariant, LT, LTE, Not, Or, SimpleRule, SwitchStmt
+from IR import And, Assignment, Bool, BoolEq, BoolNEq, Branch, ClearStmt, Designator, ErrorStmt, \
+    Exists, Forall, ForStmt, GT, GTE, IfStmt, Imp, IntEq, IntNEq, Invariant, Lit, LT, LTE, Not, \
+    Or, Quantifier, SimpleRule, SwitchStmt, TypeArray, TypeEnum, TypeRange, TypeRecord
 from Log import log
 
 def _reduce(n):
@@ -62,6 +63,35 @@ def _reduce(n):
         log.debug('simplifying invariant')
         return SimpleRule(n.string, Not(n.expr, n.node), [],
             [ErrorStmt('Invariant violated: %s' % n.string, n.node)], n.node)
+
+    if isinstance(n, ClearStmt):
+        log.debug('simplifying ClearStmt')
+
+        def clear(d, counter):
+            t = d.result_type
+            if t is Bool:
+                return Assignment(d, Lit(False, n.node), n.node)
+            elif isinstance(t, TypeRange):
+                return Assignment(d, Lit(t.lower, n.node), n.node)
+            elif isinstance(t, TypeEnum):
+                return Assignment(d, Designator(False, t.members[0], [], t, n.node), n.node)
+            elif isinstance(t, TypeRecord):
+                stmts = []
+                for field, var in t.vardecls.vars.items():
+                    child = Designator(d.in_state, d.root, d.stems + [field], var.typ, n.node)
+                    stmts.append(clear(child, counter))
+                return IfStmt([Branch(Lit(True, n.node), stmts, n.node)], n.node)
+            else:
+                assert isinstance(t, TypeArray)
+                loop_var_name = '_%d' % counter
+                counter += 1
+                loop_var_ref = Designator(False, loop_var_name, [], t.index_type, n.node)
+                child = Designator(d.in_state, d.root, d.stems + [loop_var_ref], t.member_type, n.node)
+                stmt = clear(child, counter)
+                quan = Quantifier(loop_var_name, t.index_type, None, None, None, n.node)
+                return ForStmt(quan, [stmt], n.node)
+
+        return clear(n.designator, 1)
 
     return n
 
