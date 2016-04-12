@@ -142,7 +142,7 @@ class Generator(object):
                 if left.result_type == bool:
                     return BoolEq(left, right, node)
                 assert left.result_type == int
-                return IntEq(left, right, bool)
+                return IntEq(left, right, node)
 
             elif node.tail[1].head == 'gt':
                 if left.result_type is not int:
