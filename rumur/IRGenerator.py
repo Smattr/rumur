@@ -1,6 +1,6 @@
 from OptCF import constant_fold
 from Environment2 import Environment
-from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, VarRead, VarWrite, StateRead, StateWrite, TypeConstant, Mul, Guard
+from IR import Add, AliasRule, And, Assignment, Branch, ClearStmt, BoolEq, IntEq, Exists, Forall, ForStmt, GT, IfStmt, Imp, Invariant, Lit, LT, Method, Not, ProcCall, Procedure, Program, Quantifier, RuleSet, SimpleRule, StartState, Sub, TriCond, TypeArray, TypeEnum, TypeRange, TypeConstant, Mul, Guard, Designator, Bool
 from RumurError import RumurError
 
 class Generator(object):
@@ -33,6 +33,8 @@ class Generator(object):
                 var = self.env.lookup_var(root)
             except KeyError:
                 raise RumurError('designator %s refers to an undefined variable' % root, node)
+            if lvalue and not var.writable:
+                raise RumurError('attempt to write to read-only variable', node)
             if isinstance(var.typ, TypeConstant):
                 if len(node.tail) > 1:
                     raise RumurError('excess qualifiers after reference to a constant', node)
@@ -41,7 +43,6 @@ class Generator(object):
                 return Lit(var.typ.value, node)
             stems = []
             result_type = var.typ
-            offset = Lit(1, node)
             for t in node.tail[1:]:
                 if t.head == 'symbol':
                     sym = self.to_ir(t)
@@ -51,31 +52,21 @@ class Generator(object):
                         member = result_type.lookup_var(sym)
                     except KeyError:
                         raise RumurError('%s is not a member of the preceding expression' % sym, t)
-                    assert member.offsetof is not None
-                    offset = Mul(offset, Lit(member.offsetof, node))
+                    stems.append(sym)
                     result_type = member.typ
                 else:
                     assert t.head == 'expr'
                     if not isinstance(result_type, TypeArray):
                         raise RumurError('array index on a type that is not an array', t)
-                    offset = Mul(offset, Guard(self.to_ir(t), 0, result_type.index_type.cardinality() - 2, node), node)
+                    stems.append(self.to_ir(t))
                     result_type = result_type.member_type
-            if lvalue:
-                if not var.writable:
-                    raise RumurError('attempt to write to read-only variable', node)
-                if var.offsetof is not None:
-                    return StateWrite(root, offset, result_type, node)
-                return VarWrite(root, offset, result_type, node)
-            if var.offsetof is not None:
-                return StateRead(root, offset, result_type, node)
-            return VarRead(root, offset, result_type, node)
-
+            return Designator(var.offsetof is not None, root, stems, result_type, node)
 
         elif node.head == 'expr':
             if node.tail[0].head == 'expr1':
                 return self.to_ir(node.tail[0])
             cond = self.to_ir(node.tail[0])
-            if cond.result_type is not bool:
+            if cond.result_type is not Bool:
                 raise RumurError('tri-conditional condition does not evaluate to a boolean', node)
             casetrue = self.to_ir(node.tail[2])
             casefalse = self.to_ir(node.tail[4])
@@ -87,10 +78,10 @@ class Generator(object):
             if node.tail[0].head == 'expr2':
                 return self.to_ir(node.tail[0])
             left = self.to_ir(node.tail[0])
-            if left.result_type is not bool:
+            if left.result_type is not Bool:
                 raise RumurError('left operand to implies does not evaluate to a boolean', node)
             right = self.to_ir(node.tail[2])
-            if right.result_type is not bool:
+            if right.result_type is not Bool:
                 raise RumurError('right operand to implies does not evaluate to a boolean', node)
             return Imp(left, right, node)
 
@@ -105,10 +96,10 @@ class Generator(object):
 
             assert node.tail[1].head == 'and'
             left = self.to_ir(node.tail[0])
-            if left.result_type is not bool:
+            if left.result_type is not Bool:
                 raise RumurError('left operand to and does not evaluate to a boolean', node)
             right = self.to_ir(node.tail[2])
-            if right.result_type is not bool:
+            if right.result_type is not Bool:
                 raise RumurError('right operand to and does not evaluate to a boolean', node)
             return And(left, right, node)
 
@@ -118,7 +109,7 @@ class Generator(object):
 
             assert node.tail[0].head == 'not'
             operand = self.to_ir(node.tail[1])
-            if operand.result_type is not bool:
+            if operand.result_type is not Bool:
                 raise RumurError('operand to not does not evaluate to a boolean', node)
             return Not(operand, node)
 
@@ -130,24 +121,24 @@ class Generator(object):
             right = self.to_ir(node.tail[2])
 
             if node.tail[1].head == 'lt':
-                if left.result_type is not int:
+                if not isinstance(left.result_type, TypeRange):
                     raise RumurError('left operand to less than does not evaluate to an integer', node)
-                if right.result_type is not int:
+                if not isinstance(right.result_type, TypeRange):
                     raise RumurError('right operand to less than does not evaluate to an integer', node)
                 return LT(left, right, node)
 
             elif node.tail[1].head == 'eq':
                 if left.result_type is not right.result_type:
                     raise RumurError('equality comparison between expressions of differing types', node)
-                if left.result_type == bool:
+                if left.result_type is Bool:
                     return BoolEq(left, right, node)
-                assert left.result_type == int
+                assert isinstance(left.result_type, TypeRange)
                 return IntEq(left, right, node)
 
             elif node.tail[1].head == 'gt':
-                if left.result_type is not int:
+                if not isinstance(left.result_type, TypeRange):
                     raise RumurError('left operand to greater than does not evaluate to an integer', node)
-                if right.result_type is not int:
+                if not isinstance(right.result_type, TypeRange):
                     raise RumurError('right operand to greater than does not evaluate to an integer', node)
                 return GT(left, right, node)
 
@@ -157,19 +148,19 @@ class Generator(object):
 
             if node.tail[1].head == 'add':
                 left = self.to_ir(node.tail[0])
-                if left.result_type is not int:
+                if not isinstance(left.result_type, TypeRange):
                     raise RumurError('left operand to addition does not evaluate to an integer', node)
                 right = self.to_ir(node.tail[2])
-                if right.result_type is not int:
+                if not isinstance(right.result_type, TypeRange):
                     raise RumurError('right operand to addition does not evaluate to an integer', node)
                 return Add(left, right, node)
 
             assert node.tail[1].head == 'sub'
             left = self.to_ir(node.tail[0])
-            if left.result_type is not int:
+            if not isinstance(left.result_type, TypeRange):
                 raise RumurError('left operand to subtraction does not evaluate to an integer', node)
             right = self.to_ir(node.tail[2])
-            if right.result_type is not int:
+            if not isinstance(right.result_type, TypeRange):
                 raise RumurError('right operand to subtraction does not evaluate to an integer', node)
             return Sub(left, right, node)
 
@@ -179,19 +170,19 @@ class Generator(object):
 
             if node.tail[1].head == 'mul':
                 left = self.to_ir(node.tail[0])
-                if left.result_type is not int:
+                if not isinstance(left.result_type, TypeRange):
                     raise RumurError('left operand to multiplication does not evaluate to an integer', node)
                 right = self.to_ir(node.tail[2])
-                if right.result_type is not int:
+                if not isinstance(right.result_type, TypeRange):
                     raise RumurError('right operand to multiplication does not evaluate to an integer', node)
                 return Mul(left, right, node)
 
             elif node.tail[1].head == 'div':
                 left = self.to_ir(node.tail[0])
-                if left.result_type is not int:
+                if not isinstance(left.result_type, TypeRange):
                     raise RumurError('left operand to division does not evaluate to an integer', node)
                 right = self.to_ir(node.tail[2])
-                if right.result_type is not int:
+                if not isinstance(right.result_type, TypeRange):
                     raise RumurError('right operand to division does not evaluate to an integer', node)
                 return Div(left, right, node)
 
@@ -248,7 +239,7 @@ class Generator(object):
 
         elif node.head == 'ifstmt':
             ifcond = self.to_ir(node.tail[0])
-            if ifcond.result_type is not bool:
+            if ifcond.result_type is not Bool:
                 raise RumurError('expression in conditional does not evaluate to a boolean', node.tail[0])
             if node.tail[1].head == 'stmts':
                 ifstmts = self.to_ir(node.tail[1])
@@ -264,7 +255,7 @@ class Generator(object):
                 n = remaining[0]
                 if remaining[0].head == 'elsif':
                     cond = self.to_ir(remaining[1])
-                    if cond.result_type is not bool:
+                    if cond.result_type is not Bool:
                         raise RumurError('expression in conditional does not evaluate to a boolean', remaining[1])
                     remaining = remaining[2:]
                 else:
@@ -288,7 +279,7 @@ class Generator(object):
             else:
                 name = None
             expr = self.to_ir(node.tail[-1])
-            if expr.result_type is not bool:
+            if expr.result_type is not Bool:
                 raise RumurError('invariant expression does not evaluate to a boolean', node.tail[-1])
             return Invariant(name, expr, node)
 
@@ -351,14 +342,14 @@ class Generator(object):
             else:
                 typeexpr = None
                 lower = self.to_ir(node.tail[1])
-                if lower.result_type is not int:
+                if not isinstance(lower.result_type, TypeRange):
                     raise RumurError('lower bound in for statement is does not evaluate to an integer', node.tail[1])
                 upper = self.to_ir(node.tail[2])
-                if upper.result_type is not int:
+                if not isinstance(upper.result_type, TypeRange):
                     raise RumurError('upper bound in for statement is does not evaluate to an integer', node.tail[1])
                 if len(node.tail) == 4:
                     step = self.to_ir(node.tail[3])
-                    if step.result_type is not int:
+                    if not isinstance(step.result_type, TypeRange):
                         raise RumurError('step in for statement is does not evaluate to an integer', node.tail[3])
                     if not isinstance(step, Lit):
                         raise RumurError('step in for statement is not a constant expression', node.tail[3])

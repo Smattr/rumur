@@ -1,5 +1,5 @@
 import itertools, six
-from IR import Add, And, Assignment, BoolEq, IntEq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, VarRead, VarWrite, StateRead, StateWrite, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt, TypeRange, Stmt
+from IR import Add, And, Assignment, BoolEq, IntEq, ErrorStmt, Expr, IfStmt, Imp, Or, Procedure, Program, PutStmt, ReturnStmt, Lit, ProcCall, SimpleRule, LT, GT, StartState, ClearStmt, ForStmt, TypeRange, Stmt
 
 def mangle(name):
     return 'model_%s' % name
@@ -23,15 +23,8 @@ class Generator(object):
             return ['('] + self.to_code(ir.left) + ['&&'] + self.to_code(ir.right) + [')']
         
         elif isinstance(ir, Assignment):
-            s = ['mpz_set_ui(']
-            if isinstance(ir.designator, StateWrite):
-                raise NotImplementedError
-            else:
-                assert isinstance(ir.designator, VarWrite)
-                s += [mangle(ir.designator.root)]
-                # TODO: stems
-            s += [',('] + self.to_code(ir.expr) + ['));']
-            return s
+            # TODO
+            pass
 
         elif isinstance(ir, ClearStmt):
             return ['mpz_set_ui(', ir.designator, '.m,0);']
@@ -185,10 +178,6 @@ class Generator(object):
 
             s += ['}']
             return s
-
-        elif isinstance(ir, VarRead):
-            return [mangle(ir.root)]
-            #TODO: stems
 
         raise NotImplementedError('code generation for %s' % str(type(ir)))
 

@@ -256,70 +256,131 @@ class BinOp(six.with_metaclass(abc.ABCMeta, Expr)):
         super(BinOp, self).__init__(node)
         self.left = left
         self.right = right
+        self._result_type = None
 
 class Add(BinOp):
 
-    result_type = int
+    @property
+    def result_type(self):
+        if self._result_type is None:
+            self._result_type = TypeRange(
+                self.left.result_type.lower + self.right.result_type.lower,
+                self.left.result_type.upper + self.right.result_type.upper, self.node)
+        return self._result_type
 
 class Sub(BinOp):
 
-    result_type = int
+    @property
+    def result_type(self):
+        if self._result_type is None:
+            self._result_type = TypeRange(
+                self.left.result_type.lower - self.right.result_type.upper,
+                self.left.result_type.upper - self.right.result_type.lower, self.node)
+        return self._result_type
 
 class Mul(BinOp):
 
-    result_type = int
+    @property
+    def result_type(self):
+        if self._result_type is None:
+            lower = min(
+                self.left.result_type.lower * self.right.result_type.lower,
+                self.left.result_type.lower * self.right.result_type.upper,
+                self.left.result_type.upper * self.right.result_type.lower,
+                self.left.result_type.upper * self.right.result_type.upper)
+            upper = max(
+                self.left.result_type.lower * self.right.result_type.lower,
+                self.left.result_type.lower * self.right.result_type.upper,
+                self.left.result_type.upper * self.right.result_type.lower,
+                self.left.result_type.upper * self.right.result_type.upper)
+            self._result_type = TypeRange(lower, upper, self.node)
+        return self._result_type
 
 class Div(BinOp):
 
-    result_type = int
+    @property
+    def result_type(self):
+        if self._result_type is None:
+            extents = []
+            if self.right.result_type.lower == 0:
+                if self.right.result_type.upper != 0:
+                    extents.extend([self.left.result_type.lower, self.left.result_type.upper])
+            else:
+                extents.extend([self.left.result_type.lower // self.right.result_type.lower,
+                                self.left.result_type.upper // self.right.result_type.lower])
+            if self.right.result_type.upper == 0:
+                if self.right.result_type.lower != 0:
+                    extents.extend([-self.left.result_type.lower, -self.left.result_type.upper])
+            else:
+                extents.extend([self.left.result_type.lower // self.right.result_type.upper,
+                                self.left.result_type.upper // self.right.result_type.upper])
+            self._result_type = TypeRange(min(extents), max(extents), self.node)
+        return self._result_type
 
 class Mod(BinOp):
 
-    result_type = int
+    @property
+    def result_type(self):
+        if self._result_type is None:
+            extents = []
+            if self.right.result_type.lower == 0:
+                if self.right.result_type.upper != 0:
+                    extents.extend([self.left.result_type.lower, self.left.result_type.upper])
+            else:
+                extents.extend([self.left.result_type.lower % self.right.result_type.lower,
+                                self.left.result_type.upper % self.right.result_type.lower])
+            if self.right.result_type.upper == 0:
+                if self.right.result_type.lower != 0:
+                    extents.extend([-self.left.result_type.lower, -self.left.result_type.upper])
+            else:
+                extents.extend([self.left.result_type.lower % self.right.result_type.upper,
+                                self.left.result_type.upper % self.right.result_type.upper])
+            self._result_type = TypeRange(min(extents), max(extents), self.node)
+        return self._result_type
 
 class Or(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class And(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class Imp(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class LT(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class LTE(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class GT(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class GTE(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class BoolEq(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class IntEq(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class BoolNEq(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class IntNEq(BinOp):
 
-    result_type = bool
+    result_type = Bool
 
 class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
@@ -329,7 +390,7 @@ class UnaryOp(six.with_metaclass(abc.ABCMeta, Expr)):
 
 class Not(UnaryOp):
 
-    result_type = bool
+    result_type = Bool
 
 class Lit(Expr):
 
@@ -340,8 +401,8 @@ class Lit(Expr):
     @property
     def result_type(self):
         if isinstance(self.value, bool):
-            return bool
-        return int
+            return Bool
+        return TypeRange(self.value, self.value, self.node)
 
 class TriCond(Expr):
 
@@ -362,7 +423,7 @@ class HOLExpr(Expr):
         self.quantifier = quantifier
         self.expr = expr
 
-    result_type = bool
+    result_type = Bool
 
 class Forall(HOLExpr):
     pass
@@ -377,8 +438,15 @@ class Guard(Expr):
         self.child = child
         self.lower = lower
         self.upper = upper
+        self._result_type = None
 
-    result_type = int
+    @property
+    def result_type(self):
+        if self._result_type is None:
+            self._result_type = TypeRange(
+                max(self.child.result_type.lower, self.lower),
+                min(self.child.result_type.upper, self.upper), self.node)
+        return self._result_type
 
 class Program(Node):
     def __init__(self, node):
@@ -392,25 +460,10 @@ class VarDecl(Node):
         self.name = name
         self.typeexpr = typeexpr
 
-class VarRead(Expr):
-    def __init__(self, root, offset, result_type, node):
-        super(VarRead, self).__init__(node)
+class Designator(Node):
+    def __init__(self, in_state, root, stems, result_type, node):
+        super(Designator, self).__init__(node)
+        self.in_state = in_state
         self.root = root
-        self.offset = offset
-        if isinstance(result_type, TypeRange):
-            self.result_type = int
-        else:
-            self.result_type = result_type
-
-class StateRead(VarRead):
-    pass
-
-class VarWrite(Node):
-    def __init__(self, root, offset, result_type, node):
-        super(VarWrite, self).__init__(node)
-        self.root = root
-        self.offset = offset
+        self.stems = stems
         self.result_type = result_type
-
-class StateWrite(VarWrite):
-    pass
