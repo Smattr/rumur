@@ -4,6 +4,7 @@ from IRGenerator import to_ir
 from Log import log
 from Parser import Parser
 from OptCF import constant_fold
+from OptDCE import eliminate_dead_code
 from OptSR import strength_reduce
 
 def run_to_fixed_point(ast, *transformers):
@@ -49,6 +50,7 @@ def main():
     OPT_PIPELINE = [
         strength_reduce,
         constant_fold,
+        eliminate_dead_code,
     ]
 
     for p in OPT_PIPELINE:
