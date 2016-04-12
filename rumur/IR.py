@@ -200,6 +200,8 @@ class TypeEnum(TypeExpr):
     def cardinality(self):
         return len(self.members) + 1
 
+Bool = TypeEnum(('false', 'true'), None)
+
 class TypeRecord(TypeExpr):
     def __init__(self, vardecls, node):
         super(TypeRecord, self).__init__(node)

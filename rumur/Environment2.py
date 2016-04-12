@@ -1,5 +1,5 @@
 import abc, collections, six
-from IR import TypeConstant, Lit, TypeEnum
+from IR import Bool, TypeConstant, Lit, TypeEnum
 from Log import log
 from RumurError import RumurError
 
@@ -99,7 +99,7 @@ class Environment(object):
     def __init__(self):
         self.scopes = []
         self.scopes.append(StateScope())
-        self.declare_type('boolean', TypeEnum(('false', 'true'), None))
+        self.declare_type('boolean', Bool)
         self.declare_constant('true', True)
         self.declare_constant('false', False)
 
