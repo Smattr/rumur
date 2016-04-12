@@ -71,9 +71,6 @@ class Generator(object):
             return VarRead(root, offset, result_type, node)
 
 
-        # When handling expressions in the following, we do some
-        # simplification and constant folding where obvious.
-
         elif node.head == 'expr':
             if node.tail[0].head == 'expr1':
                 return self.to_ir(node.tail[0])
@@ -84,12 +81,6 @@ class Generator(object):
             casefalse = self.to_ir(node.tail[4])
             if casetrue.result_type is not casefalse.result_type:
                 raise RumurError('tri-conditional branches are not of the same type', node)
-            if isinstance(cond, Lit):
-                if cond.value:
-                    return casetrue
-                return casefalse
-            if casetrue == casefalse:
-                return casetrue
             return TriCond(cond, casetrue, casefalse, node)
 
         elif node.head == 'expr1':
@@ -101,14 +92,6 @@ class Generator(object):
             right = self.to_ir(node.tail[2])
             if right.result_type is not bool:
                 raise RumurError('right operand to implies does not evaluate to a boolean', node)
-            if isinstance(left, Lit):
-                if left.value:
-                    return right
-                return Lit(True, node)
-            if isinstance(right, Lit):
-                if right.value:
-                    return right
-                return left
             return Imp(left, right, node)
 
         elif node.head == 'expr2':
@@ -127,14 +110,6 @@ class Generator(object):
             right = self.to_ir(node.tail[2])
             if right.result_type is not bool:
                 raise RumurError('right operand to and does not evaluate to a boolean', node)
-            if isinstance(left, Lit):
-                if left.value:
-                    return right
-                return Lit(False, node)
-            if isinstance(right, Lit):
-                if right.value:
-                    return left
-                return Lit(False, node)
             return And(left, right, node)
 
         elif node.head == 'expr4':
@@ -145,13 +120,6 @@ class Generator(object):
             operand = self.to_ir(node.tail[1])
             if operand.result_type is not bool:
                 raise RumurError('operand to not does not evaluate to a boolean', node)
-            if isinstance(operand, Lit):
-                if operand.value:
-                    return Lit(False, node)
-                return Lit(True, node)
-            if isinstance(operand, Not):
-                # !!X ==> X
-                return operand.operand
             return Not(operand, node)
 
         elif node.head == 'expr5':
@@ -166,8 +134,6 @@ class Generator(object):
                     raise RumurError('left operand to less than does not evaluate to an integer', node)
                 if right.result_type is not int:
                     raise RumurError('right operand to less than does not evaluate to an integer', node)
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value < right.value, node)
                 return LT(left, right, node)
 
             elif node.tail[1].head == 'eq':
@@ -183,8 +149,6 @@ class Generator(object):
                     raise RumurError('left operand to greater than does not evaluate to an integer', node)
                 if right.result_type is not int:
                     raise RumurError('right operand to greater than does not evaluate to an integer', node)
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value > right.value, node)
                 return GT(left, right, node)
 
         elif node.head == 'expr6':
@@ -198,12 +162,6 @@ class Generator(object):
                 right = self.to_ir(node.tail[2])
                 if right.result_type is not int:
                     raise RumurError('right operand to addition does not evaluate to an integer', node)
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value + right.value, node)
-                if isinstance(left, Lit) and left.value == 0:
-                    return right
-                if isinstance(right, Lit) and right.value == 0:
-                    return left
                 return Add(left, right, node)
 
             assert node.tail[1].head == 'sub'
@@ -213,10 +171,6 @@ class Generator(object):
             right = self.to_ir(node.tail[2])
             if right.result_type is not int:
                 raise RumurError('right operand to subtraction does not evaluate to an integer', node)
-            if isinstance(left, Lit) and isinstance(right, Lit):
-                return Lit(left.value - right.value, node)
-            if isinstance(right, Lit) and right.value == 0:
-                return left
             return Sub(left, right, node)
 
         elif node.head == 'expr7':
@@ -230,12 +184,6 @@ class Generator(object):
                 right = self.to_ir(node.tail[2])
                 if right.result_type is not int:
                     raise RumurError('right operand to multiplication does not evaluate to an integer', node)
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    return Lit(left.value * right.value, node)
-                if isinstance(left, Lit) and left.value == 1:
-                    return right
-                if isinstance(right, Lit) and right.value == 1:
-                    return left
                 return Mul(left, right, node)
 
             elif node.tail[1].head == 'div':
@@ -245,15 +193,6 @@ class Generator(object):
                 right = self.to_ir(node.tail[2])
                 if right.result_type is not int:
                     raise RumurError('right operand to division does not evaluate to an integer', node)
-                if isinstance(right, Lit) and right.value == 0:
-                    # This is a division by zero, which is a runtime error.
-                    # Optimise the numerator away entirely.
-                    return Div(Lit(0, node), right, node)
-                if isinstance(left, Lit) and isinstance(right, Lit):
-                    assert right.value != 0
-                    return Lit(left.value / right.value, node)
-                if isinstance(right, Lit) and right.value == 1:
-                    return left
                 return Div(left, right, node)
 
         elif node.head == 'expr8':
@@ -337,12 +276,7 @@ class Generator(object):
                     remaining = remaining[1:]
                 else:
                     stmts = []
-                # Only append the conditional if it is not always-false
-                if not isinstance(cond, Lit) or not cond.value:
-                    branches.append(Branch(cond, stmts, n))
-                if isinstance(cond, Lit) and cond.value:
-                    # No need to parse the rest
-                    break
+                branches.append(Branch(cond, stmts, n))
             return IfStmt(branches, node)
 
         elif node.head == 'integer_constant':
@@ -356,11 +290,6 @@ class Generator(object):
             expr = self.to_ir(node.tail[-1])
             if expr.result_type is not bool:
                 raise RumurError('invariant expression does not evaluate to a boolean', node.tail[-1])
-            if isinstance(expr, Lit):
-                if expr.value:
-                    # No need to emit this invariant; it's always true.
-                    return None
-                raise RumurError('invariant is always false', node)
             return Invariant(name, expr, node)
 
         elif node.head == 'proccall':
