@@ -29,6 +29,7 @@
      */
 %code requires {
 
+    #include "Decl.h"
     #include "Model.h"
 
     /* Forward declare the scanner class that Flex will produce for us. */
@@ -42,7 +43,11 @@
      */
 %code {
 
+    #include <algorithm>
     #include <iostream>
+    #include <iterator>
+    #include <utility>
+    #include <vector>
 
     /* Redirect yylex to call our derived scanner. */
     #ifdef yylex
@@ -72,13 +77,44 @@
      */
 %parse-param { rumur::Model *&output }
 
+%token COLON
+%token CONST
+%token <std::string> ID
 %token <std::string> NUMBER
+%token TYPE
+%token VAR
+
+%type <rumur::Decl*> constdecl
+%type <std::vector<rumur::Decl*>> constdecls
+%type <std::vector<rumur::Decl*>> decl
+%type <std::vector<rumur::Decl*>> decls
 
 %%
 
-model: NUMBER {
-    std::cout << "number is: " << $1 << "\n";
-    output = nullptr;
+model: decls {
+    output = new Model(std::move($1));
+};
+
+decls: decls decl {
+    $$ = $1;
+    std::copy($2.begin(), $2.end(), std::back_inserter($1));
+} | {
+    /* nothing required */
+};
+
+decl: CONST constdecls {
+    $$ = $2;
+};
+
+constdecls: constdecls constdecl {
+    $$ = $1;
+    $$.push_back($2);
+} | {
+    /* nothing required */
+};
+
+constdecl: ID COLON NUMBER {
+    $$ = new rumur::ConstDecl($1, Number($3));
 };
 
 %%

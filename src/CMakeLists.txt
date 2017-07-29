@@ -20,7 +20,10 @@ set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-sign-compar
 set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-register)
 
 add_executable(rumur
+    Decl.cc
     main.cc
+    Model.cc
+    Number.cc
     ${FLEX_lexer_OUTPUTS}
     ${BISON_parser_OUTPUTS})
 target_include_directories(rumur

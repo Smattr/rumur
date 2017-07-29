@@ -41,6 +41,27 @@
     return rumur::parser::token::NUMBER;
 }
 
+const {
+    return rumur::parser::token::CONST;
+}
+
+type {
+    return rumur::parser::token::TYPE;
+}
+
+var {
+    return rumur::parser::token::VAR;
+}
+
+[[:alpha:][_[:alnum:]]* {
+    lval->build<std::string>(YYText());
+    return rumur::parser::token::ID;
+}
+
+":" {
+    return rumur::parser::token::COLON;
+}
+
 "--" {
     BEGIN(SC_COMMENT);
 }
