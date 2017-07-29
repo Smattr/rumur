@@ -31,6 +31,7 @@
 
     #include "Decl.h"
     #include "Model.h"
+    #include "Symtab.h"
 
     /* Forward declare the scanner class that Flex will produce for us. */
     namespace rumur {
