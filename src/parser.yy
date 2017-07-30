@@ -89,6 +89,7 @@
 %type <std::vector<rumur::Decl*>> constdecls
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
+%type <rumur::Number*> number
 
 %%
 
@@ -114,9 +115,13 @@ constdecls: constdecls constdecl {
     /* nothing required */
 };
 
-constdecl: ID COLON NUMBER {
-    $$ = new rumur::ConstDecl($1, Number($3));
+constdecl: ID COLON number {
+    $$ = new rumur::ConstDecl($1, $3);
 };
+
+number: NUMBER {
+    $$ = new rumur::Number($1);
+}
 
 %%
 

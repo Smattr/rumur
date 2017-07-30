@@ -21,9 +21,11 @@ class ConstDecl : public Decl {
 
   public:
 
-    Number value;
+    Number *value;
 
-    ConstDecl(const std::string &name, const Number &value);
+    ConstDecl(const std::string &name, Number *value);
+
+    ~ConstDecl();
 
 };
 
