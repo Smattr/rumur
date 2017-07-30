@@ -11,8 +11,8 @@ class Number {
 
     int64_t value;
 
-    Number(const std::string &value);
-    Number(const Number &other) noexcept;
+    explicit Number(const std::string &value);
+    explicit Number(const Number &other) noexcept;
 
 };
 

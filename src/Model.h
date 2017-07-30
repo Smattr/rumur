@@ -11,7 +11,7 @@ class Model {
 
     std::vector<Decl*> decls;
 
-    Model(std::vector<Decl*> &&decls);
+    explicit Model(std::vector<Decl*> &&decls);
 
     ~Model();
 

@@ -11,7 +11,7 @@ class Decl {
 
     std::string name;
 
-    Decl(const std::string &name);
+    explicit Decl(const std::string &name);
 
     virtual ~Decl() {};
 
@@ -23,7 +23,7 @@ class ConstDecl : public Decl {
 
     Number *value;
 
-    ConstDecl(const std::string &name, Number *value);
+    explicit ConstDecl(const std::string &name, Number *value);
 
     ~ConstDecl();
 
