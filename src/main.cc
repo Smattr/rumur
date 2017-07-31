@@ -1,7 +1,7 @@
 #include <iostream>
 #include "parser.yy.hh"
 #include "Model.h"
-#include "Scanner.h"
+#include "scanner.h"
 #include <unistd.h>
 
 using namespace rumur;
@@ -9,7 +9,7 @@ using namespace std;
 
 int main(void) {
 
-    Scanner s(&cin);
+    scanner s(&cin);
     Model *m = nullptr;
     parser p(s, m);
 

@@ -1,13 +1,13 @@
 %{
 
 #include "except.h"
-#include "Scanner.h"
+#include "scanner.h"
 
 /* Override the declaration of yylex with the one from our derived scanner. */
 #ifdef YY_DECL
     #undef YY_DECL
 #endif
-#define YY_DECL int rumur::Scanner::yylex(\
+#define YY_DECL int rumur::scanner::yylex(\
     rumur::parser::semantic_type *const lval, rumur::parser::location_type *loc)
 
 %}
@@ -24,7 +24,7 @@
 %option c++
 
     /* Use our own scanner class, rather than the default yyFlexLexer. */
-%option yyclass="rumur::Scanner"
+%option yyclass="rumur::scanner"
 
     /* Switch to case-insensitive. */
 %option caseless

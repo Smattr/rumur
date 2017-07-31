@@ -8,7 +8,7 @@
 
 namespace rumur {
 
-class Scanner : public yyFlexLexer {
+class scanner : public yyFlexLexer {
 
   public:
 
