@@ -29,9 +29,9 @@
      */
 %code requires {
 
-    #include "Decl.h"
-    #include "Model.h"
-    #include "Symtab.h"
+    #include <rumur/Decl.h>
+    #include <rumur/Model.h>
+    #include <rumur/Symtab.h>
 
     /* Forward declare the scanner class that Flex will produce for us. */
     namespace rumur {
@@ -64,7 +64,7 @@
      */
 %code top {
 
-    #include "scanner.h"
+    #include <rumur/scanner.h>
 
 }
 

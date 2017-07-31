@@ -1,7 +1,7 @@
 %{
 
-#include "except.h"
-#include "scanner.h"
+#include <rumur/except.h>
+#include <rumur/scanner.h>
 
 /* Override the declaration of yylex with the one from our derived scanner. */
 #ifdef YY_DECL

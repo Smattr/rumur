@@ -1,5 +1,5 @@
-#include "Decl.h"
-#include "Model.h"
+#include <rumur/Decl.h>
+#include <rumur/Model.h>
 #include <vector>
 
 using namespace rumur;

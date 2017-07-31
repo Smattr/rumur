@@ -1,7 +1,7 @@
 #include <iostream>
 #include "parser.yy.hh"
-#include "Model.h"
-#include "scanner.h"
+#include <rumur/Model.h>
+#include <rumur/scanner.h>
 #include <unistd.h>
 
 using namespace rumur;

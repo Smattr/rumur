@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Decl.h"
+#include <rumur/Decl.h>
 #include <vector>
 
 namespace rumur {

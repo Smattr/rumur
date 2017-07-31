@@ -1,6 +1,6 @@
 #include <cassert>
-#include "except.h"
-#include "Number.h"
+#include <rumur/except.h>
+#include <rumur/Number.h>
 #include <stdexcept>
 #include <string>
 

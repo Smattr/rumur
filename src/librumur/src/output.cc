@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "Model.h"
+#include <rumur/Model.h>
 #include "resources_header.h"
 #include "resources_includes.h"
 #include <string>

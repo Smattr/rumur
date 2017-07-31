@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Model.h"
+#include <rumur/Model.h>
 #include <string>
 
 namespace rumur {

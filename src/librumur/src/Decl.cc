@@ -1,4 +1,4 @@
-#include "Decl.h"
+#include <rumur/Decl.h>
 #include <string>
 
 using namespace rumur;
