@@ -82,6 +82,7 @@
 %token CONST
 %token <std::string> ID
 %token <std::string> NUMBER
+%token SEMICOLON
 %token TYPE
 %token VAR
 
@@ -115,7 +116,7 @@ constdecls: constdecls constdecl {
     /* nothing required */
 };
 
-constdecl: ID COLON number {
+constdecl: ID COLON number SEMICOLON {
     $$ = new rumur::ConstDecl($1, $3);
 };
 

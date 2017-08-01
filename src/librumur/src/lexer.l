@@ -62,6 +62,10 @@ var {
     return rumur::parser::token::COLON;
 }
 
+";" {
+    return rumur::parser::token::SEMICOLON;
+}
+
 "--" {
     BEGIN(SC_COMMENT);
 }
