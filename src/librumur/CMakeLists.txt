@@ -5,7 +5,8 @@ find_package(FLEX REQUIRED)
 
 bison_target(parser
     src/parser.yy
-    ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.cc)
+    ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.cc
+    COMPILE_FLAGS --warnings=all)
 flex_target(lexer
     src/lexer.l
     ${CMAKE_CURRENT_BINARY_DIR}/lexer.l.cc)
