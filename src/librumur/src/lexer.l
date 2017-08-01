@@ -58,14 +58,6 @@ var {
     return rumur::parser::token::ID;
 }
 
-":" {
-    return rumur::parser::token::COLON;
-}
-
-";" {
-    return rumur::parser::token::SEMICOLON;
-}
-
 "--" {
     BEGIN(SC_COMMENT);
 }
@@ -73,6 +65,14 @@ var {
 "/*" {
     BEGIN(SC_MULTILINE_COMMENT);
 }
+
+":=" { return rumur::parser::token::COLON_EQ;  }
+">=" { return rumur::parser::token::GEQ;       }
+"->" { return rumur::parser::token::IMPLIES;   }
+"<=" { return rumur::parser::token::LEQ;       }
+"!=" { return rumur::parser::token::NEQ;       }
+
+[&!|:=><\-\%\+;] { return YYText()[0]; }
 
     /* Ensure we keep a correct line count for error reporting. */
 "\n" {

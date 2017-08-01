@@ -78,13 +78,26 @@
      */
 %parse-param { rumur::Model *&output }
 
-%token COLON
+%token COLON_EQ
 %token CONST
+%token GEQ
 %token <std::string> ID
+%token IMPLIES
+%token LEQ
+%token NEQ
 %token <std::string> NUMBER
-%token SEMICOLON
 %token TYPE
 %token VAR
+
+%nonassoc COLON_EQ
+%nonassoc '?' ':'
+%nonassoc IMPLIES
+%left '|'
+%left '&'
+%left '!'
+%nonassoc '<' LEQ '=' NEQ GEQ '>'
+%left '+' '-'
+%left '*' '/' '%'
 
 %type <rumur::Decl*> constdecl
 %type <std::vector<rumur::Decl*>> constdecls
@@ -116,7 +129,7 @@ constdecls: constdecls constdecl {
     /* nothing required */
 };
 
-constdecl: ID COLON number SEMICOLON {
+constdecl: ID ':' number ';' {
     $$ = new rumur::ConstDecl($1, $3);
 };
 
