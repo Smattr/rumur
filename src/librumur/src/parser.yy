@@ -114,7 +114,7 @@ model: decls {
 decls: decls decl {
     $$ = $1;
     std::copy($2.begin(), $2.end(), std::back_inserter($1));
-} | {
+} | %empty {
     /* nothing required */
 };
 
@@ -125,7 +125,7 @@ decl: CONST constdecls {
 constdecls: constdecls constdecl {
     $$ = $1;
     $$.push_back($2);
-} | {
+} | %empty {
     /* nothing required */
 };
 
