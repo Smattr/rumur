@@ -96,7 +96,7 @@
 %nonassoc IMPLIES
 %left '|'
 %left '&'
-%left '!'
+%precedence '!'
 %nonassoc '<' LEQ '=' NEQ GEQ '>'
 %left '+' '-'
 %left '*' '/' '%'
