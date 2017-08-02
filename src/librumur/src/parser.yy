@@ -110,7 +110,7 @@
 %%
 
 model: decls {
-    output = new Model(std::move($1));
+    output = new rumur::Model(std::move($1), @$);
 };
 
 decls: decls decl {
@@ -132,49 +132,51 @@ constdecls: constdecls constdecl {
 };
 
 constdecl: ID ':' expr ';' {
-    $$ = new rumur::ConstDecl($1, $3);
+    $$ = new rumur::ConstDecl($1, $3, @$);
 };
 
 expr: expr '?' expr ':' expr {
-    $$ = new rumur::Ternary($1, $3, $5);
+    $$ = new rumur::Ternary($1, $3, $5, @$);
 } | expr IMPLIES expr {
-    $$ = new rumur::Implication($1, $3);
+    $$ = new rumur::Implication($1, $3, @$);
 } | expr '|' expr {
-    $$ = new rumur::Or($1, $3);
+    $$ = new rumur::Or($1, $3, @$);
 } | expr '&' expr {
-    $$ = new rumur::And($1, $3);
+    $$ = new rumur::And($1, $3, @$);
 } | '!' expr {
-    $$ = new rumur::Not($2);
+    $$ = new rumur::Not($2, @$);
 } | expr '<' expr {
-    $$ = new rumur::Lt($1, $3);
+    $$ = new rumur::Lt($1, $3, @$);
 } | expr LEQ expr {
-    $$ = new rumur::Leq($1, $3);
+    $$ = new rumur::Leq($1, $3, @$);
 } | expr '>' expr {
-    $$ = new rumur::Gt($1, $3);
+    $$ = new rumur::Gt($1, $3, @$);
 } | expr GEQ expr {
-    $$ = new rumur::Geq($1, $3);
+    $$ = new rumur::Geq($1, $3, @$);
 } | expr '=' expr {
-    $$ = new rumur::Eq($1, $3);
+    $$ = new rumur::Eq($1, $3, @$);
 } | expr NEQ expr {
-    $$ = new rumur::Neq($1, $3);
+    $$ = new rumur::Neq($1, $3, @$);
 } | expr '+' expr {
-    $$ = new rumur::Add($1, $3);
+    $$ = new rumur::Add($1, $3, @$);
 } | expr '-' expr {
-    $$ = new rumur::Sub($1, $3);
+    $$ = new rumur::Sub($1, $3, @$);
 } | '+' expr %prec '*' {
     $$ = $2;
+    $$->loc = @$;
 } | '-' expr %prec '*' {
-    $$ = new rumur::Negative($2);
+    $$ = new rumur::Negative($2, @$);
 } | expr '*' expr {
-    $$ = new rumur::Mul($1, $3);
+    $$ = new rumur::Mul($1, $3, @$);
 } | expr '/' expr {
-    $$ = new rumur::Div($1, $3);
+    $$ = new rumur::Div($1, $3, @$);
 } | expr '%' expr {
-    $$ = new rumur::Mod($1, $3);
+    $$ = new rumur::Mod($1, $3, @$);
 } | NUMBER {
-    $$ = new rumur::Number($1);
+    $$ = new rumur::Number($1, @$);
 } | '(' expr ')' {
     $$ = $2;
+    $$->loc = @$;
 };
 
 %%

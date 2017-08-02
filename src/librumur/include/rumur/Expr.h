@@ -1,10 +1,14 @@
 #pragma once
 
+#include "location.hh"
+#include <rumur/Node.h>
+
 namespace rumur {
 
-class Expr {
+class Expr : public Node {
 
   public:
+    using Node::Node;
 
     virtual ~Expr() = 0;
 
@@ -18,7 +22,8 @@ class Ternary : public Expr {
     Expr *lhs;
     Expr *rhs;
 
-    explicit Ternary(Expr *cond, Expr *lhs, Expr *rhs) noexcept;
+    explicit Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc)
+        noexcept;
 
     virtual ~Ternary();
 
@@ -31,7 +36,7 @@ class BinaryExpr : public Expr {
     Expr *lhs;
     Expr *rhs;
 
-    explicit BinaryExpr(Expr *lhs, Expr *rhs) noexcept;
+    explicit BinaryExpr(Expr *lhs, Expr *rhs, const location &loc) noexcept;
 
     virtual ~BinaryExpr() = 0;
 
@@ -64,7 +69,7 @@ class UnaryExpr : public Expr {
 
     Expr *rhs;
 
-    explicit UnaryExpr(Expr *rhs) noexcept;
+    explicit UnaryExpr(Expr *rhs, const location &loc) noexcept;
 
     virtual ~UnaryExpr() = 0;
 

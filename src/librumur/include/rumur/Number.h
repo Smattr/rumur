@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "location.hh"
 #include <rumur/Expr.h>
 #include <string>
 
@@ -12,8 +13,8 @@ class Number : public Expr {
 
     int64_t value;
 
-    explicit Number(const std::string &value);
-    explicit Number(const Number &other) noexcept;
+    explicit Number(const std::string &value, const location &loc);
+    explicit Number(const Number &other, const location &loc) noexcept;
 
 };
 
