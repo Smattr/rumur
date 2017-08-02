@@ -30,6 +30,7 @@ add_custom_command(
 
 add_library(librumur
     src/Decl.cc
+    src/Expr.cc
     src/Model.cc
     src/Number.cc
     src/output.cc

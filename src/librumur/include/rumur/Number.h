@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <rumur/Expr.h>
 #include <string>
 
 namespace rumur {
 
-class Number {
+class Number : public Expr {
 
   public:
 

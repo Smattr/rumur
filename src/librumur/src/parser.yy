@@ -30,7 +30,9 @@
 %code requires {
 
     #include <rumur/Decl.h>
+    #include <rumur/Expr.h>
     #include <rumur/Model.h>
+    #include <rumur/Number.h>
     #include <rumur/Symtab.h>
 
     /* Forward declare the scanner class that Flex will produce for us. */
@@ -103,6 +105,7 @@
 %type <std::vector<rumur::Decl*>> constdecls
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
+%type <rumur::Expr*> expr
 %type <rumur::Number*> number
 
 %%
@@ -131,6 +134,48 @@ constdecls: constdecls constdecl {
 
 constdecl: ID ':' number ';' {
     $$ = new rumur::ConstDecl($1, $3);
+};
+
+expr: expr '?' expr ':' expr {
+    $$ = new rumur::Ternary($1, $3, $5);
+} | expr IMPLIES expr {
+    $$ = new rumur::Implication($1, $3);
+} | expr '|' expr {
+    $$ = new rumur::Or($1, $3);
+} | expr '&' expr {
+    $$ = new rumur::And($1, $3);
+} | '!' expr {
+    $$ = new rumur::Not($2);
+} | expr '<' expr {
+    $$ = new rumur::Lt($1, $3);
+} | expr LEQ expr {
+    $$ = new rumur::Leq($1, $3);
+} | expr '>' expr {
+    $$ = new rumur::Gt($1, $3);
+} | expr GEQ expr {
+    $$ = new rumur::Geq($1, $3);
+} | expr '=' expr {
+    $$ = new rumur::Eq($1, $3);
+} | expr NEQ expr {
+    $$ = new rumur::Neq($1, $3);
+} | expr '+' expr {
+    $$ = new rumur::Add($1, $3);
+} | expr '-' expr {
+    $$ = new rumur::Sub($1, $3);
+} | '+' expr %prec '*' {
+    $$ = $2;
+} | '-' expr %prec '*' {
+    $$ = new rumur::Negative($2);
+} | expr '*' expr {
+    $$ = new rumur::Mul($1, $3);
+} | expr '/' expr {
+    $$ = new rumur::Div($1, $3);
+} | expr '%' expr {
+    $$ = new rumur::Mod($1, $3);
+} | NUMBER {
+    $$ = new rumur::Number($1);
+} | '(' expr ')' {
+    $$ = $2;
 };
 
 number: NUMBER {
