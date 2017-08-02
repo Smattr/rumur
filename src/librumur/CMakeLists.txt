@@ -32,6 +32,7 @@ add_library(librumur
     src/Decl.cc
     src/Expr.cc
     src/Model.cc
+    src/Node.cc
     src/Number.cc
     src/output.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
