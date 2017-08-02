@@ -1,4 +1,5 @@
 #include <rumur/Decl.h>
+#include <rumur/Expr.h>
 #include <string>
 
 using namespace rumur;
@@ -8,7 +9,7 @@ Decl::Decl(const string &name)
   : name(name) {
 }
 
-ConstDecl::ConstDecl(const string &name, Number *value)
+ConstDecl::ConstDecl(const string &name, Expr *value)
   : Decl(name), value(value) {
 }
 

@@ -106,7 +106,6 @@
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
 %type <rumur::Expr*> expr
-%type <rumur::Number*> number
 
 %%
 
@@ -132,7 +131,7 @@ constdecls: constdecls constdecl {
     /* nothing required */
 };
 
-constdecl: ID ':' number ';' {
+constdecl: ID ':' expr ';' {
     $$ = new rumur::ConstDecl($1, $3);
 };
 
@@ -177,10 +176,6 @@ expr: expr '?' expr ':' expr {
 } | '(' expr ')' {
     $$ = $2;
 };
-
-number: NUMBER {
-    $$ = new rumur::Number($1);
-}
 
 %%
 

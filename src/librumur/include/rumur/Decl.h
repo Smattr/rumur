@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rumur/Number.h>
+#include <rumur/Expr.h>
 #include <string>
 
 namespace rumur {
@@ -21,9 +21,9 @@ class ConstDecl : public Decl {
 
   public:
 
-    Number *value;
+    Expr *value;
 
-    explicit ConstDecl(const std::string &name, Number *value);
+    explicit ConstDecl(const std::string &name, Expr *value);
 
     ~ConstDecl();
 
