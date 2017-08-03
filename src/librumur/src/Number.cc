@@ -26,3 +26,7 @@ Number::Number(const string &value, const location &loc)
 Number::Number(const Number &other, const location &loc) noexcept
   : Expr(loc), value(other.value) {
 }
+
+bool Number::constant() const noexcept {
+    return true;
+}

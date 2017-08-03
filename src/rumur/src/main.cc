@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include "parser.yy.hh"
 #include <rumur/Model.h>
@@ -22,6 +23,14 @@ int main(void) {
     }
     if (err != 0)
         return EXIT_FAILURE;
+
+    assert(m != nullptr);
+    try {
+        m->validate();
+    } catch (RumurError &e) {
+        cerr << e.what() << "\n";
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

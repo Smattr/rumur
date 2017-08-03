@@ -10,6 +10,9 @@ class Expr : public Node {
   public:
     using Node::Node;
 
+    // Whether an expression is a compile-time constant
+    virtual bool constant() const noexcept = 0;
+
     virtual ~Expr() = 0;
 
 };
@@ -25,6 +28,8 @@ class Ternary : public Expr {
     explicit Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc)
         noexcept;
 
+    bool constant() const noexcept final;
+
     virtual ~Ternary();
 
 };
@@ -37,6 +42,8 @@ class BinaryExpr : public Expr {
     Expr *rhs;
 
     explicit BinaryExpr(Expr *lhs, Expr *rhs, const location &loc) noexcept;
+
+    bool constant() const noexcept final;
 
     virtual ~BinaryExpr() = 0;
 
@@ -70,6 +77,8 @@ class UnaryExpr : public Expr {
     Expr *rhs;
 
     explicit UnaryExpr(Expr *rhs, const location &loc) noexcept;
+
+    bool constant() const noexcept final;
 
     virtual ~UnaryExpr() = 0;
 

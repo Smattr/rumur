@@ -15,6 +15,8 @@ class Model : public Node {
 
     explicit Model(std::vector<Decl*> &&decls, const location &loc);
 
+    void validate() const;
+
     ~Model();
 
 };

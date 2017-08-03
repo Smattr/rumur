@@ -16,6 +16,8 @@ class Number : public Expr {
     explicit Number(const std::string &value, const location &loc);
     explicit Number(const Number &other, const location &loc) noexcept;
 
+    bool constant() const noexcept final;
+
 };
 
 }
