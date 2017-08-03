@@ -13,7 +13,15 @@ int main(void) {
     Model *m = nullptr;
     parser p(s, m);
 
-    int err = p.parse();
+    int err;
+    try {
+        err = p.parse();
+    } catch (RumurError &e) {
+        cerr << e.what() << "\n";
+        return EXIT_FAILURE;
+    }
+    if (err != 0)
+        return EXIT_FAILURE;
 
-    return err == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
