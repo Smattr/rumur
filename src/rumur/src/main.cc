@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     try {
         err = p.parse();
     } catch (RumurError &e) {
-        cerr << e.what() << "\n";
+        cerr << e.loc << ":" << e.what() << "\n";
         return EXIT_FAILURE;
     }
     if (err != 0)
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     try {
         m->validate();
     } catch (RumurError &e) {
-        cerr << e.what() << "\n";
+        cerr << e.loc << ":" << e.what() << "\n";
         return EXIT_FAILURE;
     }
 
