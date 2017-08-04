@@ -83,7 +83,8 @@ var {
 [[:space:]] {}
 
 . {
-    throw RumurError(std::string("unexpected character: '") + YYText() + "'");
+    /* FIXME: the location here is bogus */
+    throw RumurError(std::string("unexpected character: '") + YYText() + "'", location());
 }
 
     /* Comment handling. */

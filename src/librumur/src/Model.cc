@@ -19,7 +19,7 @@ void Model::validate() const {
         if (auto *c = dynamic_cast<const ConstDecl*>(d)) {
             if (!c->value->constant()) {
                 // TODO: include positional/source information in this error
-                throw RumurError("const definition is not a constant");
+                throw RumurError("const definition is not a constant", c->value->loc);
             }
         }
     }

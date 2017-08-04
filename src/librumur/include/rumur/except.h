@@ -1,6 +1,8 @@
 #pragma once
 
+#include "location.hh"
 #include <stdexcept>
+#include <string>
 
 namespace rumur {
 
@@ -11,8 +13,9 @@ class RumurError : public std::runtime_error {
 
   public:
 
-    // Inherit runtime_error's constructor
-    using std::runtime_error::runtime_error;
+    location loc;
+
+    RumurError(const std::string &message, const location &loc);
 
 };
 
