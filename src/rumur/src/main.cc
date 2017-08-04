@@ -1,8 +1,6 @@
 #include <cassert>
 #include <iostream>
-#include "parser.yy.hh"
-#include <rumur/Model.h>
-#include <rumur/scanner.h>
+#include <rumur/rumur.h>
 #include <unistd.h>
 
 using namespace rumur;
