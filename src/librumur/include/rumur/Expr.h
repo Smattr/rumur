@@ -186,6 +186,8 @@ class ExprID : public Expr {
 
     bool constant() const noexcept final;
 
+    // Note that we don't delete `value` because we don't own it.
+
 };
 
 }
