@@ -2,9 +2,9 @@
 
 #include <cassert>
 #include <rumur/except.h>
-#include <stack>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace rumur {
 
@@ -13,22 +13,22 @@ class Symtab {
 
   private:
 
-    std::stack<std::unordered_map<std::string, T>> scope;
+    std::vector<std::unordered_map<std::string, T>> scope;
 
   public:
 
     void open_scope() {
-        scope.push(std::unordered_map<std::string, T>());
+        scope.emplace_back();
     }
 
     void close_scope() {
         assert(!scope.empty());
-        scope.pop();
+        scope.pop_back();
     }
 
     void declare(const std::string &name, T value) {
         assert(!scope.empty());
-        scope.top()[name] = value;
+        scope.back()[name] = value;
     }
 
     template<typename U>
