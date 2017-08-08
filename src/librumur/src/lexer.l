@@ -67,6 +67,7 @@ var {
 }
 
 ":=" { return rumur::parser::token::COLON_EQ;  }
+".." { return rumur::parser::token::DOTDOT;    }
 ">=" { return rumur::parser::token::GEQ;       }
 "->" { return rumur::parser::token::IMPLIES;   }
 "<=" { return rumur::parser::token::LEQ;       }

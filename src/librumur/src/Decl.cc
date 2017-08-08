@@ -18,3 +18,11 @@ ConstDecl::ConstDecl(const string &name, Expr *value, const location &loc)
 ConstDecl::~ConstDecl() {
     delete value;
 }
+
+TypeDecl::TypeDecl(const string &name, TypeExpr *value, const location &loc)
+  : Decl(name, loc), value(value) {
+}
+
+TypeDecl::~TypeDecl() {
+    delete value;
+}

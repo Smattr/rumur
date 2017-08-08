@@ -89,6 +89,7 @@
 
 %token COLON_EQ
 %token CONST
+%token DOTDOT
 %token GEQ
 %token <std::string> ID
 %token IMPLIES
@@ -114,6 +115,9 @@
 %type <std::vector<rumur::Decl*>> decls
 %type <rumur::ExprID*> designator
 %type <rumur::Expr*> expr
+%type <rumur::Decl*> typedecl
+%type <std::vector<rumur::Decl*>> typedecls
+%type <rumur::TypeExpr*> typeexpr
 
 %%
 
@@ -130,6 +134,8 @@ decls: decls decl {
 
 decl: CONST constdecls {
     $$ = $2;
+} | TYPE typedecls {
+    $$ = $2;
 };
 
 constdecls: constdecls constdecl {
@@ -142,6 +148,22 @@ constdecls: constdecls constdecl {
 constdecl: ID ':' expr ';' {
     $$ = new rumur::ConstDecl($1, $3, @$);
     symtab->declare($1, $3);
+};
+
+typedecls: typedecls typedecl {
+    $$ = $1;
+    $$.push_back($2);
+} | %empty {
+    /* nothing required */
+};
+
+typedecl: ID ':' typeexpr ';' {
+    $$ = new rumur::TypeDecl($1, $3, @$);
+    symtab->declare($1, $3);
+};
+
+typeexpr: expr DOTDOT expr {
+    $$ = new rumur::Range($1, $3, @$);
 };
 
 expr: expr '?' expr ':' expr {

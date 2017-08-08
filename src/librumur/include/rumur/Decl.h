@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/TypeExpr.h>
 #include <string>
 
 namespace rumur {
@@ -32,6 +33,14 @@ class ConstDecl : public Decl {
 };
 
 class TypeDecl : public Decl {
+
+  public:
+    TypeExpr *value;
+
+    explicit TypeDecl(const std::string &name, TypeExpr *value, const location &loc);
+
+    ~TypeDecl();
+
 };
 
 class VarDecl : public Decl {
