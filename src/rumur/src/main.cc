@@ -69,9 +69,11 @@ int main(int argc, char **argv) {
     parse_args(argc, argv);
 
     // Setup the parser
+    Symtab<Node*> symtab;
+    symtab.open_scope();
     scanner s(in);
     Model *m = nullptr;
-    parser p(s, m);
+    parser p(s, m, &symtab);
 
     // Parse the input model
     int err;

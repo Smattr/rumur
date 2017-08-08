@@ -32,6 +32,7 @@
     #include <rumur/Decl.h>
     #include <rumur/Expr.h>
     #include <rumur/Model.h>
+    #include <rumur/Node.h>
     #include <rumur/Number.h>
     #include <rumur/Symtab.h>
 
@@ -79,6 +80,11 @@
      * back the result of parsing.
      */
 %parse-param { rumur::Model *&output }
+
+    /* And also a symbol table we'll use for relating identifiers back to the
+     * target they refer to.
+     */
+%parse-param { rumur::Symtab<Node*> *symtab }
 
 %token COLON_EQ
 %token CONST
@@ -133,6 +139,7 @@ constdecls: constdecls constdecl {
 
 constdecl: ID ':' expr ';' {
     $$ = new rumur::ConstDecl($1, $3, @$);
+    symtab->declare($1, $3);
 };
 
 expr: expr '?' expr ':' expr {
