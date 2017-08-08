@@ -199,5 +199,5 @@ designator: ID {
 %%
 
 void rumur::parser::error(const location_type &loc, const std::string &message) {
-    std::cerr << "Error: " << message << " at " << loc << "\n";
+    throw RumurError(message, loc);
 }
