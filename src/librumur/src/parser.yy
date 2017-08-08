@@ -162,7 +162,10 @@ typedecl: ID ':' typeexpr ';' {
     symtab->declare($1, $3);
 };
 
-typeexpr: expr DOTDOT expr {
+typeexpr: ID {
+    auto e = symtab->lookup<TypeExpr*>($1, @$);
+    $$ = new rumur::TypeExprID($1, e, @$);
+} | expr DOTDOT expr {
     $$ = new rumur::Range($1, $3, @$);
 };
 
