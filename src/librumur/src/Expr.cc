@@ -1,7 +1,9 @@
 #include "location.hh"
 #include <rumur/Expr.h>
+#include <string>
 
 using namespace rumur;
+using namespace std;
 
 Expr::~Expr() {
 }
@@ -43,4 +45,12 @@ bool UnaryExpr::constant() const noexcept {
 
 UnaryExpr::~UnaryExpr() {
     delete rhs;
+}
+
+ExprID::ExprID(const string &id, Expr *value, const location &loc)
+  : Expr(loc), id(id), value(value) {
+}
+
+bool ExprID::constant() const noexcept {
+    return value->constant();
 }

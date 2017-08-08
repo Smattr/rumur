@@ -48,6 +48,7 @@
 %code {
 
     #include <algorithm>
+    #include <cassert>
     #include <iostream>
     #include <iterator>
     #include <utility>
@@ -111,6 +112,7 @@
 %type <std::vector<rumur::Decl*>> constdecls
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
+%type <rumur::ExprID*> designator
 %type <rumur::Expr*> expr
 
 %%
@@ -179,12 +181,20 @@ expr: expr '?' expr ':' expr {
     $$ = new rumur::Div($1, $3, @$);
 } | expr '%' expr {
     $$ = new rumur::Mod($1, $3, @$);
+} | designator {
+    $$ = $1;
 } | NUMBER {
     $$ = new rumur::Number($1, @$);
 } | '(' expr ')' {
     $$ = $2;
     $$->loc = @$;
 };
+
+designator: ID {
+    auto e = symtab->lookup<Expr*>($1, @$);
+    assert(e != nullptr);
+    $$ = new rumur::ExprID($1, e, @$);
+}
 
 %%
 

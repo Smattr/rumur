@@ -2,6 +2,7 @@
 
 #include "location.hh"
 #include <rumur/Node.h>
+#include <string>
 
 namespace rumur {
 
@@ -172,6 +173,18 @@ class Mod : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+
+};
+
+class ExprID : public Expr {
+
+  public:
+    std::string id;
+    Expr *value;
+
+    explicit ExprID(const std::string &id, Expr *value, const location &loc);
+
+    bool constant() const noexcept final;
 
 };
 
