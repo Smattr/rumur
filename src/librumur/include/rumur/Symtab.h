@@ -31,11 +31,17 @@ class Symtab {
         scope.top()[name] = value;
     }
 
-    T lookup(const std::string &name) {
+    template<typename U>
+    U lookup(const std::string &name) {
         for (auto it = scope.rbegin(); it != scope.rend(); it++) {
             auto it2 = it->find(name);
-            if (it2 != it->end())
-                return *it2;
+            if (it2 != it->end()) {
+                if (auto ret = dynamic_cast<U>(*it2)) {
+                    return ret;
+                } else {
+                    break;
+                }
+            }
         }
         throw RumurError("unknown symbol: " + name);
     }
