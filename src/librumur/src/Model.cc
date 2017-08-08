@@ -3,6 +3,7 @@
 #include <rumur/except.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
+#include <rumur/TypeExpr.h>
 #include <vector>
 
 using namespace rumur;
@@ -19,6 +20,22 @@ void Model::validate() const {
         if (auto *c = dynamic_cast<const ConstDecl*>(d)) {
             if (!c->value->constant()) {
                 throw RumurError("const definition is not a constant", c->value->loc);
+            }
+        }
+    }
+
+    // Check all range types have constant bounds.
+    for (const Decl *d : decls) {
+        if (auto *t = dynamic_cast<const TypeDecl*>(d)) {
+            if (auto *r = dynamic_cast<const Range*>(t->value)) {
+                if (!r->min->constant()) {
+                    throw RumurError("lower bound of range " + t->name +
+                        " is not a constant", r->min->loc);
+                }
+                if (!r->max->constant()) {
+                    throw RumurError("upper bound of range " + t->name +
+                        " is not a constant", r->max->loc);
+                }
             }
         }
     }
