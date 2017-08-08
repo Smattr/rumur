@@ -18,7 +18,7 @@ class Symtab {
   public:
 
     void open_scope() {
-        scope.push();
+        scope.push(std::unordered_map<std::string, T>());
     }
 
     void close_scope() {
