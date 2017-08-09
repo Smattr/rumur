@@ -9,8 +9,8 @@
 using namespace rumur;
 using namespace std;
 
-int rumur::output(const string &path, const Model &model) {
-    ofstream out(path + "/model.cc");
+int rumur::output_checker(const string &path, const Model &model) {
+    ofstream out(path);
     if (!out)
         return -1;
 

@@ -5,6 +5,6 @@
 
 namespace rumur {
 
-int output(const std::string &path, const rumur::Model &model);
+int output_checker(const std::string &path, const rumur::Model &model);
 
 }
