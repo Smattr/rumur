@@ -163,7 +163,7 @@ typedecl: ID ':' typeexpr ';' {
 };
 
 typeexpr: ID {
-    auto e = symtab->lookup<TypeExpr*>($1, @$);
+    auto e = symtab->lookup<rumur::TypeExpr*>($1, @$);
     $$ = new rumur::TypeExprID($1, e, @$);
 } | expr DOTDOT expr {
     $$ = new rumur::Range($1, $3, @$);
@@ -216,7 +216,7 @@ expr: expr '?' expr ':' expr {
 };
 
 designator: ID {
-    auto e = symtab->lookup<Expr*>($1, @$);
+    auto e = symtab->lookup<rumur::Expr*>($1, @$);
     assert(e != nullptr);
     $$ = new rumur::ExprID($1, e, @$);
 }
