@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "location.hh"
 #include <rumur/Node.h>
 #include <string>
@@ -187,6 +188,19 @@ class ExprID : public Expr {
     bool constant() const noexcept final;
 
     // Note that we don't delete `value` because we don't own it.
+
+};
+
+// A member of an enum
+class EnumValue : public Expr {
+
+  public:
+    std::string id;
+    int64_t value;
+
+    explicit EnumValue(const std::string &id, int64_t value, const location &loc);
+
+    bool constant() const noexcept final;
 
 };
 

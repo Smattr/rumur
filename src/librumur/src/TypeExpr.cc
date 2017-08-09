@@ -1,5 +1,7 @@
+#include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
+#include <vector>
 
 using namespace rumur;
 using namespace std;
@@ -19,4 +21,13 @@ TypeExprID::TypeExprID(const string &id, TypeExpr *value, const location &loc)
 
 TypeExprID::~TypeExprID() {
     delete value;
+}
+
+Enum::Enum(vector<EnumValue*> &&members, const location &loc)
+  : TypeExpr(loc), members(members) {
+}
+
+Enum::~Enum() {
+    for (EnumValue *e : members)
+        delete e;
 }

@@ -90,6 +90,7 @@
 %token COLON_EQ
 %token CONST
 %token DOTDOT
+%token ENUM
 %token GEQ
 %token <std::string> ID
 %token IMPLIES
@@ -114,6 +115,8 @@
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
 %type <rumur::ExprID*> designator
+%type <std::vector<rumur::EnumValue*>> enummembers;
+%type <std::vector<rumur::EnumValue*>> enummembers_opt;
 %type <rumur::Expr*> expr
 %type <rumur::Decl*> typedecl
 %type <std::vector<rumur::Decl*>> typedecls
@@ -167,7 +170,30 @@ typeexpr: ID {
     $$ = new rumur::TypeExprID($1, e, @$);
 } | expr DOTDOT expr {
     $$ = new rumur::Range($1, $3, @$);
+} | ENUM '{' enummembers_opt '}' {
+    $$ = new rumur::Enum(std::move($3), @$);
 };
+
+    /* Support optional trailing comma to make it easier for tools that generate
+     * an input mdoels.
+     */
+enummembers_opt: enummembers comma_opt {
+    $$ = $1;
+} | %empty {
+};
+
+enummembers: enummembers ',' ID {
+    $$ = $1;
+    auto e = new rumur::EnumValue($3, $$.size(), @3);
+    $$.push_back(e);
+    symtab->declare($3, e);
+} | ID {
+    auto e = new rumur::EnumValue($1, $$.size(), @$);
+    $$.push_back(e);
+    symtab->declare($1, e);
+};
+
+comma_opt: ',' | %empty;
 
 expr: expr '?' expr ':' expr {
     $$ = new rumur::Ternary($1, $3, $5, @$);

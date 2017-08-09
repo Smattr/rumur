@@ -4,6 +4,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <string>
+#include <vector>
 
 namespace rumur {
 
@@ -35,6 +36,17 @@ class TypeExprID : public TypeExpr {
     explicit TypeExprID(const std::string &id, TypeExpr *value, const location &loc);
 
     virtual ~TypeExprID();
+
+};
+
+class Enum : public TypeExpr {
+
+  public:
+    std::vector<EnumValue*> members;
+
+    explicit Enum(std::vector<EnumValue*> &&members, const location &loc);
+
+    virtual ~Enum();
 
 };
 

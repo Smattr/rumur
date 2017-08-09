@@ -1,3 +1,4 @@
+#include <cstdint>
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <string>
@@ -53,4 +54,12 @@ ExprID::ExprID(const string &id, Expr *value, const location &loc)
 
 bool ExprID::constant() const noexcept {
     return value->constant();
+}
+
+EnumValue::EnumValue(const string &id, int64_t value, const location &loc)
+  : Expr(loc), id(id), value(value) {
+}
+
+bool EnumValue::constant() const noexcept {
+    return true;
 }

@@ -45,6 +45,10 @@ const {
     return rumur::parser::token::CONST;
 }
 
+enum {
+    return rumur::parser::token::ENUM;
+}
+
 type {
     return rumur::parser::token::TYPE;
 }
