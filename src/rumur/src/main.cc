@@ -77,5 +77,10 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
+    assert(out != nullptr);
+    assert(m != nullptr);
+    if (output_checker(*out + "/checker.cc", *m) != 0)
+        return EXIT_FAILURE;
+
     return EXIT_SUCCESS;
 }
