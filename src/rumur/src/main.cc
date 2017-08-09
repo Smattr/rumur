@@ -68,30 +68,10 @@ int main(int argc, char **argv) {
     // Parse command line options
     parse_args(argc, argv);
 
-    // Setup the parser
-    Symtab<Node*> symtab;
-    symtab.open_scope();
-    scanner s(in);
-    Model *m = nullptr;
-    parser p(s, m, &symtab);
-
-    // Parse the input model
-    int err;
+    // Parse input model
+    Model *m;
     try {
-        err = p.parse();
-    } catch (RumurError &e) {
-        cerr << e.loc << ":" << e.what() << "\n";
-        return EXIT_FAILURE;
-    }
-    if (err != 0)
-        return EXIT_FAILURE;
-
-    /* Validate that the model makes sense. E.g. constant definitions are
-     * actually constant.
-     */
-    assert(m != nullptr);
-    try {
-        m->validate();
+        m = parse(in);
     } catch (RumurError &e) {
         cerr << e.loc << ":" << e.what() << "\n";
         return EXIT_FAILURE;

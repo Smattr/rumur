@@ -11,6 +11,7 @@
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/output.h>
+#include <rumur/parse.h>
 #include <rumur/scanner.h>
 #include <rumur/Symtab.h>
 // stack.hh is deliberately not included; just use std::stack
