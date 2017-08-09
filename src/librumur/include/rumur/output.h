@@ -5,6 +5,6 @@
 
 namespace rumur {
 
-void output(const std::string &path, const rumur::Model &model);
+int output(const std::string &path, const rumur::Model &model);
 
 }

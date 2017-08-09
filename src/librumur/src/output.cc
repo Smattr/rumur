@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <rumur/Model.h>
+#include <rumur/output.h>
 #include "resources_header.h"
 #include "resources_includes.h"
 #include <string>
@@ -8,7 +9,7 @@
 using namespace rumur;
 using namespace std;
 
-int output(const string &path, const Model &model) {
+int rumur::output(const string &path, const Model &model) {
     ofstream out(path + "/model.cc");
     if (!out)
         return -1;
