@@ -73,7 +73,7 @@ var {
 "<=" { return rumur::parser::token::LEQ;       }
 "!=" { return rumur::parser::token::NEQ;       }
 
-[&!|:=><\-\%\+;] { return YYText()[0]; }
+[&!|:=><\-\%\+;{},] { return YYText()[0]; }
 
     /* Ensure we keep a correct line count for error reporting. */
 "\n" {
