@@ -29,6 +29,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(librumur
+    src/Boolean.cc
     src/Decl.cc
     src/except.cc
     src/Expr.cc
