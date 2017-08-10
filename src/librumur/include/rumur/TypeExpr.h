@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/Number.h>
 #include <string>
 #include <vector>
 
@@ -42,9 +43,10 @@ class TypeExprID : public TypeExpr {
 class Enum : public TypeExpr {
 
   public:
-    std::vector<EnumValue*> members;
+    std::vector<ExprID*> members;
+    std::vector<Number*> representations;
 
-    explicit Enum(std::vector<EnumValue*> &&members, const location &loc);
+    explicit Enum(std::vector<ExprID*> &&members, const location &loc);
 
     virtual ~Enum();
 

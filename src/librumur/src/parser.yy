@@ -115,8 +115,8 @@
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
 %type <rumur::ExprID*> designator
-%type <std::vector<rumur::EnumValue*>> enummembers;
-%type <std::vector<rumur::EnumValue*>> enummembers_opt;
+%type <std::vector<rumur::ExprID*>> enummembers;
+%type <std::vector<rumur::ExprID*>> enummembers_opt;
 %type <rumur::Expr*> expr
 %type <rumur::Decl*> typedecl
 %type <std::vector<rumur::Decl*>> typedecls
@@ -182,13 +182,17 @@ enummembers_opt: enummembers comma_opt {
 } | %empty {
 };
 
+    /* Note that we create invalid ExprIDs here. We'll go back in fill in their
+     * value and type_of in the rumur::Enum constructor.
+     */
 enummembers: enummembers ',' ID {
     $$ = $1;
-    auto e = new rumur::EnumValue($3, $$.size(), @3);
+    auto e = new rumur::ExprID($3, nullptr, nullptr, @$);
     $$.push_back(e);
     symtab->declare($3, e);
+
 } | ID {
-    auto e = new rumur::EnumValue($1, $$.size(), @$);
+    auto e = new rumur::ExprID($1, nullptr, nullptr, @$);
     $$.push_back(e);
     symtab->declare($1, e);
 };
@@ -244,7 +248,7 @@ expr: expr '?' expr ':' expr {
 designator: ID {
     auto e = symtab->lookup<rumur::Expr*>($1, @$);
     assert(e != nullptr);
-    $$ = new rumur::ExprID($1, e, @$);
+    $$ = new rumur::ExprID($1, e, e->type(), @$);
 }
 
 %%

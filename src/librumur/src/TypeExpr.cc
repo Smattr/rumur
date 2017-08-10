@@ -23,11 +23,28 @@ TypeExprID::~TypeExprID() {
     delete value;
 }
 
-Enum::Enum(vector<EnumValue*> &&members, const location &loc)
+Enum::Enum(vector<ExprID*> &&members, const location &loc)
   : TypeExpr(loc), members(members) {
+    int64_t i = 0;
+    for (ExprID *e : members) {
+
+        // Assign the enum member a numerical value
+        Number *n = new Number(i, e->loc);
+        e->value = n;
+
+        // Give it the correct type
+        e->type_of = this;
+
+        i++;
+    }
+    /* Now we have repaired the invariants that Symtab (or one of its callers)
+     * expects.
+     */
 }
 
 Enum::~Enum() {
-    for (EnumValue *e : members)
+    for (Number *n : representations)
+        delete n;
+    for (ExprID *e : members)
         delete e;
 }

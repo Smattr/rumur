@@ -27,6 +27,14 @@ Number::Number(const Number &other, const location &loc) noexcept
   : Expr(loc), value(other.value) {
 }
 
+Number::Number(int64_t value, const location &loc) noexcept
+  : Expr(loc), value(value) {
+}
+
 bool Number::constant() const noexcept {
     return true;
+}
+
+const TypeExpr *Number::type() const noexcept {
+    return nullptr;
 }
