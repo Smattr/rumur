@@ -32,11 +32,9 @@ class TypeExprID : public TypeExpr {
 
   public:
     std::string id;
-    TypeExpr *value;
+    const TypeExpr *value;
 
-    explicit TypeExprID(const std::string &id, TypeExpr *value, const location &loc);
-
-    virtual ~TypeExprID();
+    explicit TypeExprID(const std::string &id, const TypeExpr *value, const location &loc);
 
 };
 

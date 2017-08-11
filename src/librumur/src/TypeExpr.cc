@@ -15,12 +15,8 @@ Range::~Range() {
     delete max;
 }
 
-TypeExprID::TypeExprID(const string &id, TypeExpr *value, const location &loc)
+TypeExprID::TypeExprID(const string &id, const TypeExpr *value, const location &loc)
   : TypeExpr(loc), id(id), value(value) {
-}
-
-TypeExprID::~TypeExprID() {
-    delete value;
 }
 
 Enum::Enum(vector<ExprID*> &&members, const location &loc)
