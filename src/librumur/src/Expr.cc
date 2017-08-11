@@ -119,7 +119,7 @@ const TypeExpr *Mod::type() const noexcept {
     return nullptr;
 }
 
-ExprID::ExprID(const string &id, Expr *value, const TypeExpr *type_of, const location &loc)
+ExprID::ExprID(const string &id, const Expr *value, const TypeExpr *type_of, const location &loc)
   : Expr(loc), id(id), value(value), type_of(type_of) {
 }
 

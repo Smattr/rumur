@@ -223,10 +223,10 @@ class ExprID : public Expr {
 
   public:
     std::string id;
-    Expr *value;
+    const Expr *value;
     const TypeExpr *type_of;
 
-    explicit ExprID(const std::string &id, Expr *value, const TypeExpr *type_of, const location &loc);
+    explicit ExprID(const std::string &id, const Expr *value, const TypeExpr *type_of, const location &loc);
 
     bool constant() const noexcept final;
 
