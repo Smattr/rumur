@@ -171,7 +171,12 @@ typeexpr: ID {
 } | expr DOTDOT expr {
     $$ = new rumur::Range($1, $3, @$);
 } | ENUM '{' enummembers_opt '}' {
-    $$ = new rumur::Enum(std::move($3), @$);
+    rumur::Enum *e = new rumur::Enum(std::move($3), @$);
+    /* Register all the enum members so they can be referenced later. */
+    for (rumur::ExprID *eid : e->members) {
+        symtab->declare(eid->id, eid);
+    }
+    $$ = e;
 };
 
     /* Support optional trailing comma to make it easier for tools that generate
@@ -189,12 +194,10 @@ enummembers: enummembers ',' ID {
     $$ = $1;
     auto e = new rumur::ExprID($3, nullptr, nullptr, @$);
     $$.push_back(e);
-    symtab->declare($3, e);
 
 } | ID {
     auto e = new rumur::ExprID($1, nullptr, nullptr, @$);
     $$.push_back(e);
-    symtab->declare($1, e);
 };
 
 comma_opt: ',' | %empty;
