@@ -33,11 +33,11 @@ class Symtab {
     }
 
     template<typename U>
-    U lookup(const std::string &name, const location &loc) {
+    const U lookup(const std::string &name, const location &loc) {
         for (auto it = scope.rbegin(); it != scope.rend(); it++) {
             auto it2 = it->find(name);
             if (it2 != it->end()) {
-                if (auto ret = dynamic_cast<U>(it2->second)) {
+                if (auto ret = dynamic_cast<const U>(it2->second)) {
                     return ret;
                 } else {
                     break;
