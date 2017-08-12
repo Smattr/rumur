@@ -1,3 +1,4 @@
+#include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -43,4 +44,13 @@ Enum::~Enum() {
         delete e->value;
         delete e;
     }
+}
+
+Record::Record(vector<VarDecl*> &&fields, const location &loc)
+  : TypeExpr(loc), fields(fields) {
+}
+
+Record::~Record() {
+    for (VarDecl *v : fields)
+        delete v;
 }

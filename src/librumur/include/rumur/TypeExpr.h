@@ -10,6 +10,9 @@
 
 namespace rumur {
 
+// Forward declare to avoid circular #include
+class VarDecl;
+
 class TypeExpr : public Node {
 
   public:
@@ -48,6 +51,17 @@ class Enum : public TypeExpr {
     explicit Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc);
 
     virtual ~Enum();
+
+};
+
+class Record : public TypeExpr {
+
+  public:
+    std::vector<VarDecl*> fields;
+
+    explicit Record(std::vector<VarDecl*> &&fields, const location &loc);
+
+    virtual ~Record();
 
 };
 

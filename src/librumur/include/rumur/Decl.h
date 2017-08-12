@@ -44,6 +44,15 @@ class TypeDecl : public Decl {
 };
 
 class VarDecl : public Decl {
+
+  public:
+    std::string name;
+    TypeExpr *type;
+
+    explicit VarDecl(const std::string &name, TypeExpr *type, const location &loc);
+
+    virtual ~VarDecl();
+
 };
 
 }

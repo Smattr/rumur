@@ -26,3 +26,11 @@ TypeDecl::TypeDecl(const string &name, TypeExpr *value, const location &loc)
 TypeDecl::~TypeDecl() {
     delete value;
 }
+
+VarDecl::VarDecl(const string &name, TypeExpr *type, const location &loc)
+  : Decl(name, loc), type(type) {
+}
+
+VarDecl::~VarDecl() {
+    delete type;
+}

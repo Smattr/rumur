@@ -90,6 +90,8 @@
 %token COLON_EQ
 %token CONST
 %token DOTDOT
+%token END
+%token ENDRECORD
 %token ENUM
 %token GEQ
 %token <std::string> ID
@@ -97,6 +99,7 @@
 %token LEQ
 %token NEQ
 %token <std::string> NUMBER
+%token RECORD
 %token TYPE
 %token VAR
 
@@ -121,6 +124,8 @@
 %type <rumur::Decl*> typedecl
 %type <std::vector<rumur::Decl*>> typedecls
 %type <rumur::TypeExpr*> typeexpr
+%type <std::vector<rumur::VarDecl*>> vardecl
+%type <std::vector<rumur::VarDecl*>> vardecls
 
 %%
 
@@ -177,7 +182,32 @@ typeexpr: ID {
         symtab->declare(eid->id, eid);
     }
     $$ = e;
+} | RECORD vardecls endrecord {
+    $$ = new Record(std::move($2), @$);
 };
+
+vardecls: vardecls vardecl {
+    $$ = $1;
+    std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | %empty {
+    /* nothing required */
+};
+
+vardecl: id_list_opt ':' typeexpr ';' {
+    bool first = true;
+    for (auto [s, l] : $1) {
+        rumur::TypeExpr *t;
+        if (first) {
+            t = $3;
+        } else {
+            t = new rumur::TypeExprID("", $3, @3);
+        }
+        $$.emplace_back(new VarDecl(s, t, l));
+        first = false;
+    }
+};
+
+endrecord: END | ENDRECORD;
 
 expr: expr '?' expr ':' expr {
     $$ = new rumur::Ternary($1, $3, $5, @$);

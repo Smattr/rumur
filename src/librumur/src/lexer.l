@@ -45,8 +45,20 @@ const {
     return rumur::parser::token::CONST;
 }
 
+end {
+    return rumur::parser::token::END;
+}
+
+endrecord {
+    return rumur::parser::token::ENDRECORD;
+}
+
 enum {
     return rumur::parser::token::ENUM;
+}
+
+record {
+    return rumur::parser::token::RECORD;
 }
 
 type {
