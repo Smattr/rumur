@@ -103,7 +103,6 @@
 %token TYPE
 %token VAR
 
-%nonassoc COLON_EQ
 %nonassoc '?' ':'
 %nonassoc IMPLIES
 %left '|'
