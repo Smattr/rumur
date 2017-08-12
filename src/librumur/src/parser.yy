@@ -34,6 +34,8 @@
     #include <rumur/Model.h>
     #include <rumur/Node.h>
     #include <rumur/Number.h>
+    #include <rumur/Rule.h>
+    #include <rumur/Stmt.h>
     #include <rumur/Symtab.h>
 
     /* Forward declare the scanner class that Flex will produce for us. */
@@ -87,11 +89,13 @@
      */
 %parse-param { rumur::Symtab<Node*> *symtab }
 
+%token BEGIN_TOK
 %token COLON_EQ
 %token CONST
 %token DOTDOT
 %token END
 %token ENDRECORD
+%token ENDSTARTSTATE
 %token ENUM
 %token GEQ
 %token <std::string> ID
@@ -100,6 +104,8 @@
 %token NEQ
 %token <std::string> NUMBER
 %token RECORD
+%token STARTSTATE
+%token <std::string> STRING
 %token TYPE
 %token VAR
 
@@ -116,10 +122,19 @@
 %type <std::vector<rumur::Decl*>> constdecls
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
+%type <std::vector<rumur::Decl*>> decls_header
 %type <rumur::ExprID*> designator
 %type <rumur::Expr*> expr
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list;
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt;
+%type <rumur::Rule*> rule
+%type <std::vector<rumur::Rule*>> rules
+%type <std::vector<rumur::Rule*>> rules_cont
+%type <rumur::StartState*> startstate
+%type <rumur::Stmt*> stmt
+%type <std::vector<rumur::Stmt*>> stmts
+%type <std::vector<rumur::Stmt*>> stmts_cont
+%type <std::string> string_opt
 %type <rumur::Decl*> typedecl
 %type <std::vector<rumur::Decl*>> typedecls
 %type <rumur::TypeExpr*> typeexpr
@@ -128,8 +143,8 @@
 
 %%
 
-model: decls {
-    output = new rumur::Model(std::move($1), @$);
+model: decls rules {
+    output = new rumur::Model(std::move($1), std::move($2), @$);
 };
 
 decls: decls decl {
@@ -207,6 +222,57 @@ vardecl: id_list_opt ':' typeexpr ';' {
 };
 
 endrecord: END | ENDRECORD;
+
+rules: rules_cont rule semi_opt {
+    $$ = $1;
+    $$.push_back($2);
+} | %empty {
+};
+
+rules_cont: rules_cont rule ';' {
+    $$ = $1;
+    $$.push_back($2);
+} | %empty {
+};
+
+rule: startstate {
+    $$ = $1;
+};
+
+startstate: STARTSTATE string_opt decls_header stmts endstartstate semi_opt {
+    $$ = new rumur::StartState($2, std::move($3), std::move($4), @$);
+};
+
+decls_header: decls BEGIN_TOK {
+    $$ = $1;
+} | %empty {
+};
+
+stmts: stmts_cont stmt semi_opt {
+    $$ = $1;
+    $$.push_back($2);
+} | %empty {
+};
+
+stmts_cont: stmts_cont stmt ';' {
+    $$ = $1;
+    $$.push_back($2);
+} | %empty {
+};
+
+stmt: designator COLON_EQ expr {
+    $$ = new rumur::Assignment($1, $3, @$);
+};
+
+endstartstate: END | ENDSTARTSTATE;
+
+string_opt: STRING {
+    $$ = $1;
+} | %empty {
+    /* nothing required */
+};
+
+semi_opt: ';' | %empty;
 
 expr: expr '?' expr ':' expr {
     $$ = new rumur::Ternary($1, $3, $5, @$);

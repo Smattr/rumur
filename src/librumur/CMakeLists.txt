@@ -38,6 +38,8 @@ add_library(librumur
     src/Number.cc
     src/output.cc
     src/parse.cc
+    src/Rule.cc
+    src/Stmt.cc
     src/TypeExpr.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc

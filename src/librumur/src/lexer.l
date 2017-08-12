@@ -41,6 +41,10 @@
     return rumur::parser::token::NUMBER;
 }
 
+begin {
+    return rumur::parser::token::BEGIN_TOK;
+}
+
 const {
     return rumur::parser::token::CONST;
 }
@@ -53,12 +57,20 @@ endrecord {
     return rumur::parser::token::ENDRECORD;
 }
 
+endstartstate {
+    return rumur::parser::token::ENDSTARTSTATE;
+}
+
 enum {
     return rumur::parser::token::ENUM;
 }
 
 record {
     return rumur::parser::token::RECORD;
+}
+
+startstate {
+    return rumur::parser::token::STARTSTATE;
 }
 
 type {
@@ -90,6 +102,11 @@ var {
 "!=" { return rumur::parser::token::NEQ;       }
 
 [&!|:=><\-\%\+;{},] { return YYText()[0]; }
+
+\"[^"]*\" {
+    lval->build<std::string>(YYText());
+    return rumur::parser::token::STRING;
+}
 
     /* Ensure we keep a correct line count for error reporting. */
 "\n" {

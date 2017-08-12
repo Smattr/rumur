@@ -1,16 +1,18 @@
+#include <algorithm>
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
+#include <rumur/Rule.h>
 #include <rumur/TypeExpr.h>
 #include <vector>
 
 using namespace rumur;
 using namespace std;
 
-Model::Model(vector<Decl*> &&decls, const location &loc)
-  : Node(loc), decls(decls) {
+Model::Model(vector<Decl*> &&decls, vector<Rule*> &&rules, const location &loc)
+  : Node(loc), decls(decls), rules(rules) {
 }
 
 void Model::validate() const {
@@ -40,9 +42,18 @@ void Model::validate() const {
         }
     }
 
+    // Check we have at least one start state.
+    auto is_start_state = [](const Rule *r) {
+        return dynamic_cast<const StartState*>(r) != nullptr;
+    };
+    if (find_if(rules.begin(), rules.end(), is_start_state) == rules.end())
+        throw RumurError("model has no start state", location());
+
 }
 
 Model::~Model() {
     for (Decl *decl : decls)
         delete decl;
+    for (Rule *r : rules)
+        delete r;
 }
