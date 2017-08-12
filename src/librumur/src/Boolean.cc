@@ -2,15 +2,19 @@
 #include <rumur/Boolean.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
+#include <string>
+#include <utility>
 #include <vector>
 
 using namespace std;
 
 namespace rumur {
 
-static ExprID *False = new ExprID("false", nullptr, nullptr, location());
-static ExprID *True = new ExprID("true", nullptr, nullptr, location());
+static const pair<string, location> False = make_pair("false", location());
+static const pair<string, location> True = make_pair("true", location());
 
-const Enum Boolean(vector<ExprID*>{False, True}, location());
+static const vector<pair<string, location>> members{False, True};
+
+const Enum Boolean(members, location());
 
 }

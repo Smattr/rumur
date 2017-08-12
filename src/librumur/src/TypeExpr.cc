@@ -1,6 +1,7 @@
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace rumur;
@@ -19,28 +20,27 @@ TypeExprID::TypeExprID(const string &id, const TypeExpr *value, const location &
   : TypeExpr(loc), id(id), value(value) {
 }
 
-Enum::Enum(vector<ExprID*> &&members, const location &loc)
-  : TypeExpr(loc), members(members) {
-    int64_t i = 0;
-    for (ExprID *e : members) {
+Enum::Enum(const vector<pair<string, location>> &members, const location &loc)
+  : TypeExpr(loc) {
+
+    for (auto [s, l] : members) {
 
         // Assign the enum member a numerical value
-        Number *n = new Number(i, e->loc);
-        e->value = n;
+        Number *n = new Number(this->members.size(), l);
 
-        // Give it the correct type
-        e->type_of = this;
+        // Construct an expression for it
+        ExprID *e = new ExprID(s, n, this, l);
+        this->members.emplace_back(e);
 
-        i++;
     }
-    /* Now we have repaired the invariants that Symtab (or one of its callers)
-     * expects.
-     */
 }
 
 Enum::~Enum() {
-    for (Number *n : representations)
-        delete n;
-    for (ExprID *e : members)
+    for (ExprID *e : members) {
+        /* Note, our ExprIDs are special in that we own their value and so have
+         * responsibility for deleting it.
+         */
+        delete e->value;
         delete e;
+    }
 }

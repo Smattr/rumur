@@ -115,9 +115,9 @@
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
 %type <rumur::ExprID*> designator
-%type <std::vector<rumur::ExprID*>> enummembers;
-%type <std::vector<rumur::ExprID*>> enummembers_opt;
 %type <rumur::Expr*> expr
+%type <std::vector<std::pair<std::string, rumur::location>>> id_list;
+%type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt;
 %type <rumur::Decl*> typedecl
 %type <std::vector<rumur::Decl*>> typedecls
 %type <rumur::TypeExpr*> typeexpr
@@ -170,37 +170,14 @@ typeexpr: ID {
     $$ = new rumur::TypeExprID($1, e, @$);
 } | expr DOTDOT expr {
     $$ = new rumur::Range($1, $3, @$);
-} | ENUM '{' enummembers_opt '}' {
-    rumur::Enum *e = new rumur::Enum(std::move($3), @$);
+} | ENUM '{' id_list_opt '}' {
+    rumur::Enum *e = new rumur::Enum($3, @$);
     /* Register all the enum members so they can be referenced later. */
     for (rumur::ExprID *eid : e->members) {
         symtab->declare(eid->id, eid);
     }
     $$ = e;
 };
-
-    /* Support optional trailing comma to make it easier for tools that generate
-     * an input mdoels.
-     */
-enummembers_opt: enummembers comma_opt {
-    $$ = $1;
-} | %empty {
-};
-
-    /* Note that we create invalid ExprIDs here. We'll go back in fill in their
-     * value and type_of in the rumur::Enum constructor.
-     */
-enummembers: enummembers ',' ID {
-    $$ = $1;
-    auto e = new rumur::ExprID($3, nullptr, nullptr, @$);
-    $$.push_back(e);
-
-} | ID {
-    auto e = new rumur::ExprID($1, nullptr, nullptr, @$);
-    $$.push_back(e);
-};
-
-comma_opt: ',' | %empty;
 
 expr: expr '?' expr ':' expr {
     $$ = new rumur::Ternary($1, $3, $5, @$);
@@ -252,7 +229,27 @@ designator: ID {
     auto e = symtab->lookup<rumur::Expr*>($1, @$);
     assert(e != nullptr);
     $$ = new rumur::ExprID($1, e, e->type(), @$);
-}
+};
+
+    /* Support optional trailing comma to make it easier for tools that generate
+     * an input mdoels.
+     */
+id_list_opt: id_list comma_opt {
+    $$ = $1;
+} | %empty {
+};
+
+    /* Note that we create invalid ExprIDs here. We'll go back in fill in their
+     * value and type_of in the rumur::Enum constructor.
+     */
+id_list: id_list ',' ID {
+    $$ = $1;
+    $$.emplace_back(std::make_pair($3, @$));
+} | ID {
+    $$.emplace_back(std::make_pair($1, @$));
+};
+
+comma_opt: ',' | %empty;
 
 %%
 

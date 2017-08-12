@@ -5,6 +5,7 @@
 #include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace rumur {
@@ -44,7 +45,7 @@ class Enum : public TypeExpr {
     std::vector<ExprID*> members;
     std::vector<Number*> representations;
 
-    explicit Enum(std::vector<ExprID*> &&members, const location &loc);
+    explicit Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc);
 
     virtual ~Enum();
 
