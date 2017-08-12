@@ -226,20 +226,23 @@ endrecord: END | ENDRECORD;
 rules: rules_cont rule semi_opt {
     $$ = $1;
     $$.push_back($2);
+} | rule semi_opt {
+    $$.push_back($1);
 } | %empty {
 };
 
 rules_cont: rules_cont rule ';' {
     $$ = $1;
     $$.push_back($2);
-} | %empty {
+} | rule ';' {
+    $$.push_back($1);
 };
 
 rule: startstate {
     $$ = $1;
 };
 
-startstate: STARTSTATE string_opt decls_header stmts endstartstate semi_opt {
+startstate: STARTSTATE string_opt decls_header stmts endstartstate {
     $$ = new rumur::StartState($2, std::move($3), std::move($4), @$);
 };
 
@@ -251,13 +254,16 @@ decls_header: decls BEGIN_TOK {
 stmts: stmts_cont stmt semi_opt {
     $$ = $1;
     $$.push_back($2);
+} | stmt semi_opt {
+    $$.push_back($1);
 } | %empty {
 };
 
 stmts_cont: stmts_cont stmt ';' {
     $$ = $1;
     $$.push_back($2);
-} | %empty {
+} | stmt ';' {
+    $$.push_back($1);
 };
 
 stmt: designator COLON_EQ expr {
