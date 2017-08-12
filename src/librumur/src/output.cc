@@ -9,7 +9,9 @@
 using namespace rumur;
 using namespace std;
 
-int rumur::output_checker(const string &path, const Model &model) {
+int rumur::output_checker(const string &path, const Model &model,
+  const OutputOptions &options) {
+
     ofstream out(path);
     if (!out)
         return -1;
@@ -23,6 +25,10 @@ int rumur::output_checker(const string &path, const Model &model) {
     } while (0)
 
     WRITE(includes_cc);
+
+    out << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
+      (options.overflow_checks ? "true" : "false") << ";\n\n";
+
     WRITE(header_cc);
 
 #undef WRITE

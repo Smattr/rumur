@@ -11,6 +11,9 @@ using namespace std;
 
 static istream *in;
 static string *out;
+static OutputOptions output_options = {
+    .overflow_checks = true,
+};
 
 static void parse_args(int argc, char **argv) {
 
@@ -79,7 +82,7 @@ int main(int argc, char **argv) {
 
     assert(out != nullptr);
     assert(m != nullptr);
-    if (output_checker(*out + "/checker.cc", *m) != 0)
+    if (output_checker(*out + "/checker.cc", *m, output_options) != 0)
         return EXIT_FAILURE;
 
     return EXIT_SUCCESS;

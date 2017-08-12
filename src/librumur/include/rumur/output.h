@@ -5,6 +5,11 @@
 
 namespace rumur {
 
-int output_checker(const std::string &path, const rumur::Model &model);
+struct OutputOptions {
+    bool overflow_checks;
+};
+
+int output_checker(const std::string &path, const rumur::Model &model,
+  const OutputOptions &options);
 
 }
