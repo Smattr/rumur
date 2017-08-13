@@ -123,7 +123,7 @@
 %type <std::vector<rumur::Decl*>> decl
 %type <std::vector<rumur::Decl*>> decls
 %type <std::vector<rumur::Decl*>> decls_header
-%type <rumur::ExprID*> designator
+%type <rumur::Expr*> designator
 %type <rumur::Expr*> expr
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list;
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt;
@@ -326,7 +326,11 @@ expr: expr '?' expr ':' expr {
     $$->loc = @$;
 };
 
-designator: ID {
+designator: designator '.' ID {
+    $$ = new rumur::Field($1, $3, @$);
+} | designator '[' expr ']' {
+    $$ = new rumur::Element($1, $3, @$);
+} | ID {
     auto e = symtab->lookup<rumur::Expr*>($1, @$);
     assert(e != nullptr);
     $$ = new rumur::ExprID($1, e, e->type(), @$);

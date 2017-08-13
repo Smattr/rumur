@@ -236,4 +236,34 @@ class ExprID : public Expr {
 
 };
 
+class Field : public Expr {
+
+  public:
+    Expr *record;
+    std::string field;
+
+    explicit Field(Expr *record, const std::string &field, const location &loc);
+
+    bool constant() const noexcept final;
+    const TypeExpr *type() const noexcept final;
+
+    virtual ~Field();
+
+};
+
+class Element : public Expr {
+
+  public:
+    Expr *array;
+    Expr *index;
+
+    explicit Element(Expr *array, Expr *index, const location &loc);
+
+    bool constant() const noexcept final;
+    const TypeExpr *type() const noexcept final;
+
+    virtual ~Element();
+
+};
+
 }

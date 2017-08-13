@@ -130,3 +130,38 @@ bool ExprID::constant() const noexcept {
 const TypeExpr *ExprID::type() const noexcept {
     return type_of;
 }
+
+Field::Field(Expr *record, const string &field, const location &loc)
+  : Expr(loc), record(record), field(field) {
+}
+
+bool Field::constant() const noexcept {
+    return record->constant();
+}
+
+const TypeExpr *Field::type() const noexcept {
+    // TODO
+    return nullptr;
+}
+
+Field::~Field() {
+    delete record;
+}
+
+Element::Element(Expr *array, Expr *index, const location &loc)
+  : Expr(loc), array(array), index(index) {
+}
+
+bool Element::constant() const noexcept {
+    return array->constant() && index->constant();
+}
+
+const TypeExpr *Element::type() const noexcept {
+    // TODO
+    return nullptr;
+}
+
+Element::~Element() {
+    delete array;
+    delete index;
+}

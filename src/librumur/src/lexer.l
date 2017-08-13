@@ -101,7 +101,7 @@ var {
 "<=" { return rumur::parser::token::LEQ;       }
 "!=" { return rumur::parser::token::NEQ;       }
 
-[&!|:=><\-\%\+;{},] { return YYText()[0]; }
+[&!|:=><\-\%\+;{},\[\]\.] { return YYText()[0]; }
 
 \"[^"]*\" {
     lval->build<std::string>(YYText());
