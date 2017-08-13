@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdint>
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/except.h>
@@ -49,6 +50,11 @@ void Model::validate() const {
     if (find_if(rules.begin(), rules.end(), is_start_state) == rules.end())
         throw RumurError("model has no start state", location());
 
+}
+
+uint64_t Model::size_bits() const {
+    // TODO
+    return 1;
 }
 
 Model::~Model() {

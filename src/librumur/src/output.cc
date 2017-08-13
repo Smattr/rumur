@@ -2,8 +2,7 @@
 #include <fstream>
 #include <rumur/Model.h>
 #include <rumur/output.h>
-#include "resources_header.h"
-#include "resources_includes.h"
+#include "resources.h"
 #include <string>
 
 using namespace rumur;
@@ -26,10 +25,18 @@ int rumur::output_checker(const string &path, const Model &model,
 
     WRITE(includes_cc);
 
-    out << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
-      (options.overflow_checks ? "true" : "false") << ";\n\n";
+    out
+      << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
+      (options.overflow_checks ? "true" : "false") << ";\n"
+
+      << "static constexpr uint64_t STATE_SIZE_BITS = " << model.size_bits()
+      << ";\n"
+
+      << "\n";
 
     WRITE(header_cc);
+
+    WRITE(State_cc);
 
 #undef WRITE
 

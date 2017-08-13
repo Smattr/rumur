@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/Node.h>
@@ -18,6 +19,9 @@ class Model : public Node {
       const location &loc);
 
     void validate() const;
+
+    // Get the size of the state data in bits.
+    uint64_t size_bits() const;
 
     ~Model();
 
