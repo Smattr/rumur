@@ -7,6 +7,8 @@
 #include <rumur/Node.h>
 #include <rumur/Rule.h>
 #include <rumur/TypeExpr.h>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 using namespace rumur;
@@ -49,6 +51,15 @@ void Model::validate() const {
     };
     if (find_if(rules.begin(), rules.end(), is_start_state) == rules.end())
         throw RumurError("model has no start state", location());
+
+    // Check all rule names are distinct.
+    unordered_set<string> names;
+    for (const Rule *r : rules) {
+        if (r->name != "") {
+            if (!names.insert(r->name).second)
+                throw RumurError("duplicate rule name " + r->name, r->loc);
+        }
+    }
 
 }
 
