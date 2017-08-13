@@ -7,9 +7,9 @@ Quickstart
 ----------
 First you will need to have the following dependencies installed:
 
-  * A C++ compiler with `C++17`_ support (recent GCC_ or Clang_)
-  * CMake_
-  * Ninja_ (you can get by with `GNU Make`_ but the experience will be worse)
+* A C++ compiler with `C++17`_ support (recent GCC_ or Clang_)
+* CMake_
+* Ninja_ (you can get by with `GNU Make`_ but the experience will be worse)
 
 Then you can build this project using the standard CMake steps:
 
@@ -25,10 +25,10 @@ To use a different C++ compiler or to change the target path to install files
 to, change the options passed to ``cmake``. You should now have the following
 available in the directory you installed to:
 
-  * bin/rumur: Tool for translating a Murphi model into a program that
-      implements a model checker;
-  * lib/librumur.a: A library for building your own Murphi model tools; and
-  * include/rumur/: The API for the above library.
+* bin/rumur: Tool for translating a Murphi model into a program that implements
+  a model checker;
+* lib/librumur.a: A library for building your own Murphi model tools; and
+* include/rumur/: The API for the above library.
 
 Legal
 -----
