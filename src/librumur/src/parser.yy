@@ -273,7 +273,7 @@ stmt: designator COLON_EQ expr {
 endstartstate: END | ENDSTARTSTATE;
 
 string_opt: STRING {
-    $$ = $1;
+    $$ = $1.substr(1, $1.size() - 2); /* strip quotes */
 } | %empty {
     /* nothing required */
 };
