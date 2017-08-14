@@ -1,0 +1,11 @@
+In the change to use ``std::shared_ptrs``, const correctness got a bit
+scrambled. There are now instances of each of the following:
+
+.. code-block:: cpp
+
+    const std::shared_ptr<Foo> ...
+    std::shared_ptr<const Foo> ...
+
+Both of these came from cases that used to be ``const Foo*``. Repairing this
+shouldn't be too hard.
+
