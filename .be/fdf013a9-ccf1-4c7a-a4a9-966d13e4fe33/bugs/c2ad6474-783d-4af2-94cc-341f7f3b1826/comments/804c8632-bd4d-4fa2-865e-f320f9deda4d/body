@@ -1,0 +1,3 @@
+Following the change to ``std::shared_ptrs`` there's now odd uses of
+``push_back`` and ``emplace_back`` when interacting with ``std::vectors``. We
+should clean this up and at least make ourselves internally consistent.
