@@ -17,7 +17,7 @@ Model *rumur::parse(istream *input) {
     assert(input != nullptr);
 
     // Setup the parser
-    Symtab<Node*> symtab;
+    Symtab<Node> symtab;
     symtab.open_scope();
     scanner s(input);
     Model *m = nullptr;

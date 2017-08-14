@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "location.hh"
+#include <memory>
 #include <rumur/Node.h>
 #include <string>
 
@@ -30,34 +31,29 @@ class Expr : public Node {
 class Ternary : public Expr {
 
   public:
+    std::shared_ptr<Expr> cond;
+    std::shared_ptr<Expr> lhs;
+    std::shared_ptr<Expr> rhs;
 
-    Expr *cond;
-    Expr *lhs;
-    Expr *rhs;
-
-    explicit Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc)
-        noexcept;
+    explicit Ternary(std::shared_ptr<Expr> cond, std::shared_ptr<Expr> lhs,
+      std::shared_ptr<Expr> rhs, const location &loc) noexcept;
 
     bool constant() const noexcept final;
 
     const TypeExpr *type() const noexcept final;
-
-    virtual ~Ternary();
 
 };
 
 class BinaryExpr : public Expr {
 
   public:
+    std::shared_ptr<Expr> lhs;
+    std::shared_ptr<Expr> rhs;
 
-    Expr *lhs;
-    Expr *rhs;
-
-    explicit BinaryExpr(Expr *lhs, Expr *rhs, const location &loc) noexcept;
+    explicit BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
+      const location &loc) noexcept;
 
     bool constant() const noexcept final;
-
-    virtual ~BinaryExpr() = 0;
 
 };
 
@@ -92,13 +88,11 @@ class UnaryExpr : public Expr {
 
   public:
 
-    Expr *rhs;
+    std::shared_ptr<Expr> rhs;
 
-    explicit UnaryExpr(Expr *rhs, const location &loc) noexcept;
+    explicit UnaryExpr(std::shared_ptr<Expr> rhs, const location &loc) noexcept;
 
     bool constant() const noexcept final;
-
-    virtual ~UnaryExpr() = 0;
 
 };
 
@@ -223,46 +217,50 @@ class ExprID : public Expr {
 
   public:
     std::string id;
-    const Expr *value;
+    std::shared_ptr<Expr> value;
+
+    /* We use a raw pointer here because we don't own this object and using a
+     * std::shared_ptr would introduce a GC cycle. This is because the members
+     * of an Enum (ExprIDs) have a type_of that points back to the Enum itself.
+     * We set these in Enum's constructor so we can't easily use a std::weak_ptr
+     * either.
+     */
     const TypeExpr *type_of;
 
-    explicit ExprID(const std::string &id, const Expr *value, const TypeExpr *type_of, const location &loc);
+    explicit ExprID(const std::string &id, std::shared_ptr<Expr> value,
+      const TypeExpr *type_of, const location &loc);
 
     bool constant() const noexcept final;
 
     const TypeExpr *type() const noexcept final;
-
-    // Note that we don't delete `value` or `type_of` because we don't own them.
 
 };
 
 class Field : public Expr {
 
   public:
-    Expr *record;
+    std::shared_ptr<Expr> record;
     std::string field;
 
-    explicit Field(Expr *record, const std::string &field, const location &loc);
+    explicit Field(std::shared_ptr<Expr> record, const std::string &field,
+      const location &loc);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-
-    virtual ~Field();
 
 };
 
 class Element : public Expr {
 
   public:
-    Expr *array;
-    Expr *index;
+    std::shared_ptr<Expr> array;
+    std::shared_ptr<Expr> index;
 
-    explicit Element(Expr *array, Expr *index, const location &loc);
+    explicit Element(std::shared_ptr<Expr> array, std::shared_ptr<Expr> index,
+      const location &loc);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-
-    virtual ~Element();
 
 };
 

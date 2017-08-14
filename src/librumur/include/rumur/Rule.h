@@ -1,6 +1,7 @@
 #pragma once
 
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
@@ -14,15 +15,13 @@ class Rule : public Node {
 
   public:
     std::string name;
-    Expr *guard;
-    std::vector<Decl*> decls;
-    std::vector<Stmt*> body;
+    std::shared_ptr<Expr> guard;
+    std::vector<std::shared_ptr<Decl>> decls;
+    std::vector<std::shared_ptr<Stmt>> body;
 
-    explicit Rule(const std::string &name, Expr *guard,
-      std::vector<Decl*> &&decls, std::vector<Stmt*> &&body,
-      const location &loc);
-
-    virtual ~Rule();
+    explicit Rule(const std::string &name, std::shared_ptr<Expr> guard,
+      std::vector<std::shared_ptr<Decl>> &&decls,
+      std::vector<std::shared_ptr<Stmt>> &&body, const location &loc);
 
 };
 
@@ -30,8 +29,9 @@ class StartState : public Rule {
 
   public:
 
-    explicit StartState(const std::string &name, std::vector<Decl*> &&decls,
-      std::vector<Stmt*> &&body, const location &loc);
+    explicit StartState(const std::string &name,
+      std::vector<std::shared_ptr<Decl>> &&decls,
+      std::vector<std::shared_ptr<Stmt>> &&body, const location &loc);
 
 };
 

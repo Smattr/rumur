@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <rumur/Model.h>
 #include <rumur/output.h>
 #include "resources.h"
@@ -48,8 +49,8 @@ int rumur::output_checker(const string &path, const Model &model,
     WRITE(State_cc);
 
     vector<string> start_rules;
-    for (const Rule *r : model.rules) {
-        if (auto s = dynamic_cast<const StartState*>(r)) {
+    for (const shared_ptr<Rule> r : model.rules) {
+        if (auto s = dynamic_pointer_cast<const StartState>(r)) {
             out << "static State startstate_" << start_rules.size() << "() {\n"
                    "    State s;\n"
                    "    // TODO\n"

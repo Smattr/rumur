@@ -1,6 +1,7 @@
 #pragma once
 
 #include "location.hh"
+#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 
@@ -16,12 +17,11 @@ class Stmt : public Node {
 class Assignment : public Stmt {
 
   public:
-    Expr *lhs;
-    Expr *rhs;
+    std::shared_ptr<Expr> lhs;
+    std::shared_ptr<Expr> rhs;
 
-    explicit Assignment(Expr *lhs, Expr *rhs, const location &loc);
-
-    virtual ~Assignment();
+    explicit Assignment(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
+      const location &loc);
 
 };
 

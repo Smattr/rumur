@@ -1,5 +1,6 @@
 #include <cstdint>
 #include "location.hh"
+#include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
@@ -11,7 +12,8 @@ using namespace std;
 Expr::~Expr() {
 }
 
-Ternary::Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc) noexcept
+Ternary::Ternary(shared_ptr<Expr> cond, shared_ptr<Expr> lhs,
+  shared_ptr<Expr> rhs, const location &loc) noexcept
   : Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
 }
 
@@ -24,23 +26,13 @@ const TypeExpr *Ternary::type() const noexcept {
     return lhs->type();
 }
 
-Ternary::~Ternary() {
-    delete cond;
-    delete lhs;
-    delete rhs;
-}
-
-BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc) noexcept
+BinaryExpr::BinaryExpr(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
+  const location &loc) noexcept
   : Expr(loc), lhs(lhs), rhs(rhs) {
 }
 
 bool BinaryExpr::constant() const noexcept {
     return lhs->constant() && rhs->constant();
-}
-
-BinaryExpr::~BinaryExpr() {
-    delete lhs;
-    delete rhs;
 }
 
 const TypeExpr *Implication::type() const noexcept {
@@ -55,16 +47,12 @@ const TypeExpr *And::type() const noexcept {
     return &Boolean;
 }
 
-UnaryExpr::UnaryExpr(Expr *rhs, const location &loc) noexcept
+UnaryExpr::UnaryExpr(shared_ptr<Expr> rhs, const location &loc) noexcept
   : Expr(loc), rhs(rhs) {
 }
 
 bool UnaryExpr::constant() const noexcept {
     return rhs->constant();
-}
-
-UnaryExpr::~UnaryExpr() {
-    delete rhs;
 }
 
 const TypeExpr *Not::type() const noexcept {
@@ -119,7 +107,8 @@ const TypeExpr *Mod::type() const noexcept {
     return nullptr;
 }
 
-ExprID::ExprID(const string &id, const Expr *value, const TypeExpr *type_of, const location &loc)
+ExprID::ExprID(const string &id, shared_ptr<Expr> value,
+  const TypeExpr *type_of, const location &loc)
   : Expr(loc), id(id), value(value), type_of(type_of) {
 }
 
@@ -131,7 +120,7 @@ const TypeExpr *ExprID::type() const noexcept {
     return type_of;
 }
 
-Field::Field(Expr *record, const string &field, const location &loc)
+Field::Field(shared_ptr<Expr> record, const string &field, const location &loc)
   : Expr(loc), record(record), field(field) {
 }
 
@@ -144,11 +133,7 @@ const TypeExpr *Field::type() const noexcept {
     return nullptr;
 }
 
-Field::~Field() {
-    delete record;
-}
-
-Element::Element(Expr *array, Expr *index, const location &loc)
+Element::Element(shared_ptr<Expr> array, shared_ptr<Expr> index, const location &loc)
   : Expr(loc), array(array), index(index) {
 }
 
@@ -159,9 +144,4 @@ bool Element::constant() const noexcept {
 const TypeExpr *Element::type() const noexcept {
     // TODO
     return nullptr;
-}
-
-Element::~Element() {
-    delete array;
-    delete index;
 }

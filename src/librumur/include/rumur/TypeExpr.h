@@ -1,6 +1,7 @@
 #pragma once
 
 #include "location.hh"
+#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Number.h>
@@ -23,12 +24,11 @@ class TypeExpr : public Node {
 class Range : public TypeExpr {
 
   public:
-    Expr *min;
-    Expr *max;
+    std::shared_ptr<Expr> min;
+    std::shared_ptr<Expr> max;
 
-    explicit Range(Expr *min, Expr *max, const location &loc);
-
-    virtual ~Range();
+    explicit Range(std::shared_ptr<Expr> min, std::shared_ptr<Expr> max,
+      const location &loc);
 
 };
 
@@ -36,32 +36,30 @@ class TypeExprID : public TypeExpr {
 
   public:
     std::string id;
-    const TypeExpr *value;
+    std::shared_ptr<TypeExpr> value;
 
-    explicit TypeExprID(const std::string &id, const TypeExpr *value, const location &loc);
+    explicit TypeExprID(const std::string &id, std::shared_ptr<TypeExpr> value,
+      const location &loc);
 
 };
 
 class Enum : public TypeExpr {
 
   public:
-    std::vector<ExprID*> members;
-    std::vector<Number*> representations;
+    std::vector<std::shared_ptr<ExprID>> members;
 
-    explicit Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc);
-
-    virtual ~Enum();
+    explicit Enum(const std::vector<std::pair<std::string, location>> &members,
+      const location &loc);
 
 };
 
 class Record : public TypeExpr {
 
   public:
-    std::vector<VarDecl*> fields;
+    std::vector<std::shared_ptr<VarDecl>> fields;
 
-    explicit Record(std::vector<VarDecl*> &&fields, const location &loc);
-
-    virtual ~Record();
+    explicit Record(std::vector<std::shared_ptr<VarDecl>> &&fields,
+      const location &loc);
 
 };
 

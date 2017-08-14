@@ -1,4 +1,5 @@
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
@@ -11,26 +12,14 @@ Decl::Decl(const string &name, const location &loc)
   : Node(loc), name(name) {
 }
 
-ConstDecl::ConstDecl(const string &name, Expr *value, const location &loc)
+ConstDecl::ConstDecl(const string &name, shared_ptr<Expr> value, const location &loc)
   : Decl(name, loc), value(value) {
 }
 
-ConstDecl::~ConstDecl() {
-    delete value;
-}
-
-TypeDecl::TypeDecl(const string &name, TypeExpr *value, const location &loc)
+TypeDecl::TypeDecl(const string &name, shared_ptr<TypeExpr> value, const location &loc)
   : Decl(name, loc), value(value) {
 }
 
-TypeDecl::~TypeDecl() {
-    delete value;
-}
-
-VarDecl::VarDecl(const string &name, TypeExpr *type, const location &loc)
+VarDecl::VarDecl(const string &name, shared_ptr<TypeExpr> type, const location &loc)
   : Decl(name, loc), type(type) {
-}
-
-VarDecl::~VarDecl() {
-    delete type;
 }

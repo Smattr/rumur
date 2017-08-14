@@ -1,6 +1,7 @@
 #pragma once
 
 #include "location.hh"
+#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/TypeExpr.h>
@@ -24,22 +25,18 @@ class ConstDecl : public Decl {
 
   public:
 
-    Expr *value;
+    std::shared_ptr<Expr> value;
 
-    explicit ConstDecl(const std::string &name, Expr *value, const location &loc);
-
-    ~ConstDecl();
+    explicit ConstDecl(const std::string &name, std::shared_ptr<Expr> value, const location &loc);
 
 };
 
 class TypeDecl : public Decl {
 
   public:
-    TypeExpr *value;
+    std::shared_ptr<TypeExpr> value;
 
-    explicit TypeDecl(const std::string &name, TypeExpr *value, const location &loc);
-
-    ~TypeDecl();
+    explicit TypeDecl(const std::string &name, std::shared_ptr<TypeExpr> value, const location &loc);
 
 };
 
@@ -47,11 +44,9 @@ class VarDecl : public Decl {
 
   public:
     std::string name;
-    TypeExpr *type;
+    std::shared_ptr<TypeExpr> type;
 
-    explicit VarDecl(const std::string &name, TypeExpr *type, const location &loc);
-
-    virtual ~VarDecl();
+    explicit VarDecl(const std::string &name, std::shared_ptr<TypeExpr> type, const location &loc);
 
 };
 
