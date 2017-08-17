@@ -326,11 +326,7 @@ expr: expr '?' expr ':' expr {
     $$ = std::make_shared<rumur::Mod>($1, $3, @$);
 } | FORALL quantifier {
         symtab->open_scope();
-        symtab->declare($2->var->name, $2->var);
-        /* FIXME: this doesn't quite work because later lookups of this expect
-         * it to be an Expr and VarDecl is not a child of Expr. This is part of
-         * a broader problem that affects looking up state components too.
-         */
+        symtab->declare($2->var->name, std::make_shared<rumur::Var>($2->var, $2->loc));
     } DO expr endforall {
         $$ = std::make_shared<rumur::Forall>($2, $5, @$);
         symtab->close_scope();
