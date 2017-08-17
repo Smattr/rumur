@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "location.hh"
 #include <memory>
+#include <optional>
 #include <rumur/Node.h>
 #include <string>
 
@@ -10,6 +11,7 @@ namespace rumur {
 
 // Forward declarations to avoid a circular #include
 class TypeExpr;
+class VarDecl;
 
 class Expr : public Node {
 
@@ -258,6 +260,45 @@ class Element : public Expr {
 
     explicit Element(std::shared_ptr<Expr> array, std::shared_ptr<Expr> index,
       const location &loc);
+
+    bool constant() const noexcept final;
+    const TypeExpr *type() const noexcept final;
+
+};
+
+class Quantifier : public Node {
+
+  public:
+    std::shared_ptr<VarDecl> var;
+    std::optional<std::shared_ptr<Expr>> step;
+
+    explicit Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
+      const location &loc);
+    explicit Quantifier(const std::string &name, std::shared_ptr<Expr> from,
+      std::shared_ptr<Expr> to, const location &loc);
+    explicit Quantifier(const std::string &name, std::shared_ptr<Expr> from,
+      std::shared_ptr<Expr> to, std::shared_ptr<Expr> step,
+      const location &loc);
+
+  private:
+    /* This constructor is delegated to internally.
+     * HACK: This takes the arguments in a different order to avoid internal
+     * constructor references being ambiguous.
+     */
+    explicit Quantifier(const location &loc, const std::string &name,
+      std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
+      std::optional<std::shared_ptr<Expr>> step);
+
+};
+
+class Forall : public Expr {
+
+  public:
+    std::shared_ptr<Quantifier> quantifier;
+    std::shared_ptr<Expr> expr;
+
+    explicit Forall(std::shared_ptr<Quantifier> quantifier,
+      std::shared_ptr<Expr> expr, const location &loc);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;

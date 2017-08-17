@@ -1,7 +1,9 @@
 #include <cstdint>
 #include "location.hh"
 #include <memory>
+#include <optional>
 #include <rumur/Boolean.h>
+#include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -144,4 +146,39 @@ bool Element::constant() const noexcept {
 const TypeExpr *Element::type() const noexcept {
     // TODO
     return nullptr;
+}
+
+Quantifier::Quantifier(const string &name, shared_ptr<TypeExpr> type,
+  const location &loc)
+  : Node(loc), var(make_shared<VarDecl>(name, type, loc)) {
+}
+
+Quantifier::Quantifier(const string &name, shared_ptr<Expr> from,
+  shared_ptr<Expr> to, const location &loc)
+  : Quantifier(loc, name, from, to, {}) {
+}
+
+Quantifier::Quantifier(const string &name, shared_ptr<Expr> from,
+  shared_ptr<Expr> to, shared_ptr<Expr> step, const location &loc)
+  : Quantifier(loc, name, from, to, step) {
+}
+
+Quantifier::Quantifier(const location &loc, const string &name,
+  shared_ptr<Expr> from, shared_ptr<Expr> to, optional<shared_ptr<Expr>> step)
+  : Node(loc),
+    var(make_shared<VarDecl>(name, make_shared<Range>(from, to, loc), loc)),
+    step(step) {
+}
+
+Forall::Forall(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
+  const location &loc)
+  : Expr(loc), quantifier(quantifier), expr(expr) {
+}
+
+bool Forall::constant() const noexcept {
+    return expr->constant();
+}
+
+const TypeExpr *Forall::type() const noexcept {
+    return &Boolean;
 }

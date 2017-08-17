@@ -45,12 +45,24 @@ begin {
     return rumur::parser::token::BEGIN_TOK;
 }
 
+by {
+    return rumur::parser::token::BY;
+}
+
 const {
     return rumur::parser::token::CONST;
 }
 
+do {
+    return rumur::parser::token::DO;
+}
+
 end {
     return rumur::parser::token::END;
+}
+
+endforall {
+    return rumur::parser::token::ENDFORALL;
 }
 
 endrecord {
@@ -65,12 +77,20 @@ enum {
     return rumur::parser::token::ENUM;
 }
 
+forall {
+    return rumur::parser::token::FORALL;
+}
+
 record {
     return rumur::parser::token::RECORD;
 }
 
 startstate {
     return rumur::parser::token::STARTSTATE;
+}
+
+to {
+    return rumur::parser::token::TO;
 }
 
 type {

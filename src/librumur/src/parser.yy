@@ -91,13 +91,17 @@
 %parse-param { rumur::Symtab<Node> *symtab }
 
 %token BEGIN_TOK
+%token BY
 %token COLON_EQ
 %token CONST
+%token DO
 %token DOTDOT
 %token END
+%token ENDFORALL
 %token ENDRECORD
 %token ENDSTARTSTATE
 %token ENUM
+%token FORALL
 %token GEQ
 %token <std::string> ID
 %token IMPLIES
@@ -107,6 +111,7 @@
 %token RECORD
 %token STARTSTATE
 %token <std::string> STRING
+%token TO
 %token TYPE
 %token VAR
 
@@ -126,8 +131,9 @@
 %type <std::vector<std::shared_ptr<rumur::Decl>>> decls_header
 %type <std::shared_ptr<rumur::Expr>> designator
 %type <std::shared_ptr<rumur::Expr>> expr
-%type <std::vector<std::pair<std::string, rumur::location>>> id_list;
-%type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt;
+%type <std::vector<std::pair<std::string, rumur::location>>> id_list
+%type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
+%type <std::shared_ptr<rumur::Quantifier>> quantifier
 %type <std::shared_ptr<rumur::Rule>> rule
 %type <std::vector<std::shared_ptr<rumur::Rule>>> rules
 %type <std::vector<std::shared_ptr<rumur::Rule>>> rules_cont
@@ -318,6 +324,16 @@ expr: expr '?' expr ':' expr {
     $$ = std::make_shared<rumur::Div>($1, $3, @$);
 } | expr '%' expr {
     $$ = std::make_shared<rumur::Mod>($1, $3, @$);
+} | FORALL quantifier {
+        symtab->open_scope();
+        symtab->declare($2->var->name, $2->var);
+        /* FIXME: this doesn't quite work because later lookups of this expect
+         * it to be an Expr and VarDecl is not a child of Expr. This is part of
+         * a broader problem that affects looking up state components too.
+         */
+    } DO expr endforall {
+        $$ = std::make_shared<rumur::Forall>($2, $5, @$);
+        symtab->close_scope();
 } | designator {
     $$ = $1;
 } | NUMBER {
@@ -325,6 +341,14 @@ expr: expr '?' expr ':' expr {
 } | '(' expr ')' {
     $$ = $2;
     $$->loc = @$;
+};
+
+quantifier: ID ':' typeexpr {
+    $$ = std::make_shared<rumur::Quantifier>($1, $3, @$);
+} | ID ':' expr TO expr BY expr {
+    $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, $7, @$);
+} | ID ':' expr TO expr {
+    $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, @$);
 };
 
 designator: designator '.' ID {
@@ -336,6 +360,8 @@ designator: designator '.' ID {
     assert(e != nullptr);
     $$ = std::make_shared<rumur::ExprID>($1, e, e->type(), @$);
 };
+
+endforall: END | ENDFORALL;
 
     /* Support optional trailing comma to make it easier for tools that generate
      * an input mdoels.
