@@ -238,6 +238,18 @@ class ExprID : public Expr {
 
 };
 
+class Var : public Expr {
+
+  public:
+    std::shared_ptr<VarDecl> decl;
+
+    explicit Var(std::shared_ptr<VarDecl> decl, const location &loc);
+
+    bool constant() const noexcept final;
+    const TypeExpr *type() const noexcept final;
+
+};
+
 class Field : public Expr {
 
   public:

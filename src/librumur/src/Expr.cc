@@ -122,6 +122,18 @@ const TypeExpr *ExprID::type() const noexcept {
     return type_of;
 }
 
+Var::Var(shared_ptr<VarDecl> decl, const location &loc)
+  : Expr(loc), decl(decl) {
+}
+
+bool Var::constant() const noexcept {
+    return false;
+}
+
+const TypeExpr *Var::type() const noexcept {
+    return decl->type.get();
+}
+
 Field::Field(shared_ptr<Expr> record, const string &field, const location &loc)
   : Expr(loc), record(record), field(field) {
 }
