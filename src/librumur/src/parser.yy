@@ -94,6 +94,7 @@
 %token BY
 %token COLON_EQ
 %token CONST
+%token DEQ
 %token DO
 %token DOTDOT
 %token END
@@ -122,7 +123,7 @@
 %left '|'
 %left '&'
 %precedence '!'
-%nonassoc '<' LEQ '=' NEQ GEQ '>'
+%nonassoc '<' LEQ DEQ '=' NEQ GEQ '>'
 %left '+' '-'
 %left '*' '/' '%'
 
@@ -307,6 +308,8 @@ expr: expr '?' expr ':' expr {
     $$ = std::make_shared<rumur::Gt>($1, $3, @$);
 } | expr GEQ expr {
     $$ = std::make_shared<rumur::Geq>($1, $3, @$);
+} | expr DEQ expr {
+    $$ = std::make_shared<rumur::Eq>($1, $3, @$);
 } | expr '=' expr {
     $$ = std::make_shared<rumur::Eq>($1, $3, @$);
 } | expr NEQ expr {
