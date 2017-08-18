@@ -26,6 +26,15 @@ class Expr : public Node {
      */
     virtual const TypeExpr *type() const noexcept = 0;
 
+    /* Whether this expression can participate in arithmetic expressions (e.g.
+     * addition). This is only true of literals and values of range types. That
+     * is, booleans, enums and complex types are not arithmetic.
+     */
+    bool is_arithmetic() const noexcept;
+
+    // If this expression is of boolean type.
+    bool is_boolean() const noexcept;
+
     virtual ~Expr() = 0;
 
 };
@@ -40,8 +49,8 @@ class Ternary : public Expr {
     explicit Ternary(std::shared_ptr<Expr> cond, std::shared_ptr<Expr> lhs,
       std::shared_ptr<Expr> rhs, const location &loc) noexcept;
 
+    void validate() const final;
     bool constant() const noexcept final;
-
     const TypeExpr *type() const noexcept final;
 
 };
@@ -55,6 +64,7 @@ class BinaryExpr : public Expr {
     explicit BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
       const location &loc) noexcept;
 
+    void validate() const override;
     bool constant() const noexcept final;
 
 };
@@ -64,6 +74,7 @@ class Implication : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -73,6 +84,7 @@ class Or : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -82,6 +94,7 @@ class And : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -94,6 +107,7 @@ class UnaryExpr : public Expr {
 
     explicit UnaryExpr(std::shared_ptr<Expr> rhs, const location &loc) noexcept;
 
+    void validate() const override;
     bool constant() const noexcept final;
 
 };
@@ -103,6 +117,7 @@ class Not : public UnaryExpr {
   public:
     using UnaryExpr::UnaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -112,6 +127,7 @@ class Lt : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -121,6 +137,7 @@ class Leq : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -130,6 +147,7 @@ class Gt : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -139,6 +157,7 @@ class Geq : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -148,6 +167,7 @@ class Eq : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -157,6 +177,7 @@ class Neq : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -166,6 +187,7 @@ class Add : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -175,6 +197,7 @@ class Sub : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -184,6 +207,7 @@ class Negative : public UnaryExpr {
   public:
     using UnaryExpr::UnaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -193,6 +217,7 @@ class Mul : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -202,6 +227,7 @@ class Div : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -211,6 +237,7 @@ class Mod : public BinaryExpr {
   public:
     using BinaryExpr::BinaryExpr;
 
+    void validate() const final;
     const TypeExpr *type() const noexcept final;
 
 };
@@ -232,8 +259,8 @@ class ExprID : public Expr {
     explicit ExprID(const std::string &id, std::shared_ptr<Expr> value,
       const TypeExpr *type_of, const location &loc);
 
+    void validate() const final;
     bool constant() const noexcept final;
-
     const TypeExpr *type() const noexcept final;
 
 };

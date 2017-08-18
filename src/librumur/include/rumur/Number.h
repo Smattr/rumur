@@ -18,7 +18,6 @@ class Number : public Expr {
     explicit Number(int64_t value, const location &loc) noexcept;
 
     bool constant() const noexcept final;
-
     const TypeExpr *type() const noexcept final;
 
 };

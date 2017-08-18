@@ -9,3 +9,8 @@ Assignment::Assignment(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
   const location &loc)
   : Stmt(loc), lhs(lhs), rhs(rhs) {
 }
+
+void Assignment::validate() const {
+    lhs->validate();
+    rhs->validate();
+}

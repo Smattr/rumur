@@ -23,6 +23,8 @@ class Assignment : public Stmt {
     explicit Assignment(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
       const location &loc);
 
+    void validate() const final;
+
 };
 
 }

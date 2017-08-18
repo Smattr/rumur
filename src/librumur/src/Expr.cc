@@ -4,6 +4,7 @@
 #include <optional>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
+#include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -11,12 +12,51 @@
 using namespace rumur;
 using namespace std;
 
+bool Expr::is_arithmetic() const noexcept {
+
+    // Is this a literal?
+    if (type() == nullptr)
+        return true;
+
+    // Is this of a range type?
+    if (dynamic_cast<const Range*>(type()) != nullptr)
+        return true;
+
+    return false;
+}
+
+static void expect_arithmetic(const shared_ptr<Expr> e) {
+    if (!e->is_arithmetic())
+        throw RumurError("expected arithmetic expression is not arithmetic",
+          e->loc);
+}
+
+bool Expr::is_boolean() const noexcept {
+    return type() == &Boolean;
+}
+
+static void expect_boolean(const shared_ptr<Expr> e) {
+    if (!e->is_boolean())
+        throw RumurError("expected boolean expression is not a boolean",
+          e->loc);
+}
+
 Expr::~Expr() {
 }
 
 Ternary::Ternary(shared_ptr<Expr> cond, shared_ptr<Expr> lhs,
   shared_ptr<Expr> rhs, const location &loc) noexcept
   : Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
+}
+
+void Ternary::validate() const {
+    cond->validate();
+    lhs->validate();
+    rhs->validate();
+
+    expect_boolean(cond);
+
+    // TODO: check lhs and rhs have the same type
 }
 
 bool Ternary::constant() const noexcept {
@@ -33,16 +73,42 @@ BinaryExpr::BinaryExpr(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
   : Expr(loc), lhs(lhs), rhs(rhs) {
 }
 
+void BinaryExpr::validate() const {
+    lhs->validate();
+    rhs->validate();
+}
+
 bool BinaryExpr::constant() const noexcept {
     return lhs->constant() && rhs->constant();
+}
+
+void Implication::validate() const {
+    BinaryExpr::validate();
+
+    expect_boolean(lhs);
+    expect_boolean(rhs);
 }
 
 const TypeExpr *Implication::type() const noexcept {
     return &Boolean;
 }
 
+void Or::validate() const {
+    BinaryExpr::validate();
+
+    expect_boolean(lhs);
+    expect_boolean(rhs);
+}
+
 const TypeExpr *Or::type() const noexcept {
     return &Boolean;
+}
+
+void And::validate() const {
+    BinaryExpr::validate();
+
+    expect_boolean(lhs);
+    expect_boolean(rhs);
 }
 
 const TypeExpr *And::type() const noexcept {
@@ -53,56 +119,168 @@ UnaryExpr::UnaryExpr(shared_ptr<Expr> rhs, const location &loc) noexcept
   : Expr(loc), rhs(rhs) {
 }
 
+void UnaryExpr::validate() const {
+    rhs->validate();
+}
+
 bool UnaryExpr::constant() const noexcept {
     return rhs->constant();
+}
+
+void Not::validate() const {
+    UnaryExpr::validate();
+
+    expect_boolean(rhs);
 }
 
 const TypeExpr *Not::type() const noexcept {
     return &Boolean;
 }
 
+void Lt::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
+}
+
 const TypeExpr *Lt::type() const noexcept {
     return &Boolean;
+}
+
+void Leq::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
 }
 
 const TypeExpr *Leq::type() const noexcept {
     return &Boolean;
 }
 
+void Gt::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
+}
+
 const TypeExpr *Gt::type() const noexcept {
     return &Boolean;
+}
+
+void Geq::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
 }
 
 const TypeExpr *Geq::type() const noexcept {
     return &Boolean;
 }
 
+void Eq::validate() const {
+    BinaryExpr::validate();
+
+    if (lhs->is_boolean()) {
+        if (!rhs->is_boolean()) {
+            throw RumurError("left hand side of comparison is boolean but "
+              "right hand side is not", loc);
+        }
+    } else if (lhs->is_arithmetic()) {
+        if (!rhs->is_arithmetic()) {
+            throw RumurError("left hand side of comparison is arithmetic but "
+              "right hand side is not", loc);
+        }
+    }
+    // TODO test other comparable pairs
+}
+
 const TypeExpr *Eq::type() const noexcept {
     return &Boolean;
+}
+
+void Neq::validate() const {
+    BinaryExpr::validate();
+
+    if (lhs->is_boolean()) {
+        if (!rhs->is_boolean()) {
+            throw RumurError("left hand side of comparison is boolean but "
+              "right hand side is not", loc);
+        }
+    } else if (lhs->is_arithmetic()) {
+        if (!rhs->is_arithmetic()) {
+            throw RumurError("left hand side of comparison is arithmetic but "
+              "right hand side is not", loc);
+        }
+    }
+    // TODO test other comparable pairs
 }
 
 const TypeExpr *Neq::type() const noexcept {
     return &Boolean;
 }
 
+void Add::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
+}
+
 const TypeExpr *Add::type() const noexcept {
     return nullptr;
+}
+
+void Sub::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
 }
 
 const TypeExpr *Sub::type() const noexcept {
     return nullptr;
 }
 
+void Negative::validate() const {
+    rhs->validate();
+    expect_arithmetic(rhs);
+}
+
 const TypeExpr *Negative::type() const noexcept {
     return rhs->type();
+}
+
+void Mul::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
 }
 
 const TypeExpr *Mul::type() const noexcept {
     return nullptr;
 }
 
+void Div::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
+}
+
 const TypeExpr *Div::type() const noexcept {
     return nullptr;
+}
+
+void Mod::validate() const {
+    BinaryExpr::validate();
+
+    expect_arithmetic(lhs);
+    expect_arithmetic(rhs);
 }
 
 const TypeExpr *Mod::type() const noexcept {
@@ -116,6 +294,12 @@ ExprID::ExprID(const string &id, shared_ptr<Expr> value,
 
 bool ExprID::constant() const noexcept {
     return value->constant();
+}
+
+void ExprID::validate() const {
+    // FIXME: Is this relevant? An ExprID is just referencing another expression
+    // we've probably already checked.
+    value->validate();
 }
 
 const TypeExpr *ExprID::type() const noexcept {

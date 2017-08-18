@@ -11,6 +11,9 @@ class Node {
 
     explicit Node(const location &loc) noexcept;
 
+    virtual void validate() const {
+    }
+
     virtual ~Node() {
     }
 

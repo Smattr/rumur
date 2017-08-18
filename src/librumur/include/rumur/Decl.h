@@ -29,6 +29,8 @@ class ConstDecl : public Decl {
 
     explicit ConstDecl(const std::string &name, std::shared_ptr<Expr> value, const location &loc);
 
+    void validate() const final;
+
 };
 
 class TypeDecl : public Decl {
@@ -37,6 +39,8 @@ class TypeDecl : public Decl {
     std::shared_ptr<TypeExpr> value;
 
     explicit TypeDecl(const std::string &name, std::shared_ptr<TypeExpr> value, const location &loc);
+
+    void validate() const final;
 
 };
 

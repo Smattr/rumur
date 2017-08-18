@@ -19,7 +19,7 @@ class Model : public Node {
     explicit Model(std::vector<std::shared_ptr<Decl>> &&decls,
       std::vector<std::shared_ptr<Rule>> &&rules, const location &loc);
 
-    void validate() const;
+    void validate() const final;
 
     // Get the size of the state data in bits.
     uint64_t size_bits() const;

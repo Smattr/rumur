@@ -1,5 +1,6 @@
 #include <memory>
 #include <rumur/Decl.h>
+#include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -11,6 +12,14 @@ using namespace std;
 
 Range::Range(shared_ptr<Expr> min, shared_ptr<Expr> max, const location &loc)
   : TypeExpr(loc), min(min), max(max) {
+}
+
+void Range::validate() const {
+    if (!min->constant())
+        throw RumurError("lower bound of range is not a constant", min->loc);
+
+    if (!max->constant())
+        throw RumurError("upper bound of range is not a constant", max->loc);
 }
 
 TypeExprID::TypeExprID(const string &id, shared_ptr<TypeExpr> value,

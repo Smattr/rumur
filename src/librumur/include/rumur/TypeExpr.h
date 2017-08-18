@@ -30,6 +30,8 @@ class Range : public TypeExpr {
     explicit Range(std::shared_ptr<Expr> min, std::shared_ptr<Expr> max,
       const location &loc);
 
+    void validate() const final;
+
 };
 
 class TypeExprID : public TypeExpr {

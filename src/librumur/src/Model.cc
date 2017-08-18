@@ -22,30 +22,11 @@ Model::Model(vector<shared_ptr<Decl>> &&decls, vector<shared_ptr<Rule>> &&rules,
 
 void Model::validate() const {
 
-    // Check all constdecls are actually constant.
-    for (const shared_ptr<Decl> d : decls) {
-        if (auto c = dynamic_pointer_cast<const ConstDecl>(d)) {
-            if (!c->value->constant()) {
-                throw RumurError("const definition is not a constant", c->value->loc);
-            }
-        }
-    }
+    for (const shared_ptr<Decl> d : decls)
+        d->validate();
 
-    // Check all range types have constant bounds.
-    for (const shared_ptr<Decl> d : decls) {
-        if (auto t = dynamic_pointer_cast<const TypeDecl>(d)) {
-            if (auto r = dynamic_pointer_cast<const Range>(t->value)) {
-                if (!r->min->constant()) {
-                    throw RumurError("lower bound of range " + t->name +
-                        " is not a constant", r->min->loc);
-                }
-                if (!r->max->constant()) {
-                    throw RumurError("upper bound of range " + t->name +
-                        " is not a constant", r->max->loc);
-                }
-            }
-        }
-    }
+    for (const shared_ptr<Decl> d : decls)
+        d->validate();
 
     // Check we have at least one start state.
     auto is_start_state = [](const shared_ptr<Rule> r) {
