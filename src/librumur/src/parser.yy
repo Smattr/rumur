@@ -97,10 +97,12 @@
 %token DO
 %token DOTDOT
 %token END
+%token ENDEXISTS
 %token ENDFORALL
 %token ENDRECORD
 %token ENDSTARTSTATE
 %token ENUM
+%token EXISTS
 %token FORALL
 %token GEQ
 %token <std::string> ID
@@ -330,6 +332,12 @@ expr: expr '?' expr ':' expr {
     } DO expr endforall {
         $$ = std::make_shared<rumur::Forall>($2, $5, @$);
         symtab->close_scope();
+} | EXISTS quantifier {
+        symtab->open_scope();
+        symtab->declare($2->var->name, std::make_shared<rumur::Var>($2->var, $2->loc));
+    } DO expr endexists {
+        $$ = std::make_shared<rumur::Exists>($2, $5, @$);
+        symtab->close_scope();
 } | designator {
     $$ = $1;
 } | NUMBER {
@@ -358,6 +366,8 @@ designator: designator '.' ID {
 };
 
 endforall: END | ENDFORALL;
+
+endexists: END | ENDEXISTS;
 
     /* Support optional trailing comma to make it easier for tools that generate
      * an input mdoels.

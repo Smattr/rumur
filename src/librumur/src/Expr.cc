@@ -182,6 +182,19 @@ Quantifier::Quantifier(const location &loc, const string &name,
     step(step) {
 }
 
+Exists::Exists(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
+  const location &loc)
+  : Expr(loc), quantifier(quantifier), expr(expr) {
+}
+
+bool Exists::constant() const noexcept {
+    return expr->constant();
+}
+
+const TypeExpr *Exists::type() const noexcept {
+    return &Boolean;
+}
+
 Forall::Forall(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
   const location &loc)
   : Expr(loc), quantifier(quantifier), expr(expr) {

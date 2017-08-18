@@ -317,4 +317,18 @@ class Forall : public Expr {
 
 };
 
+class Exists : public Expr {
+
+  public:
+    std::shared_ptr<Quantifier> quantifier;
+    std::shared_ptr<Expr> expr;
+
+    explicit Exists(std::shared_ptr<Quantifier> quantifier,
+      std::shared_ptr<Expr> expr, const location &loc);
+
+    bool constant() const noexcept final;
+    const TypeExpr *type() const noexcept final;
+
+};
+
 }

@@ -61,6 +61,10 @@ end {
     return rumur::parser::token::END;
 }
 
+endexists {
+    return rumur::parser::token::ENDEXISTS;
+}
+
 endforall {
     return rumur::parser::token::ENDFORALL;
 }
@@ -75,6 +79,10 @@ endstartstate {
 
 enum {
     return rumur::parser::token::ENUM;
+}
+
+exists {
+    return rumur::parser::token::EXISTS;
 }
 
 forall {
