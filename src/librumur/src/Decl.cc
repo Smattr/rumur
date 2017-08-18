@@ -18,6 +18,7 @@ ConstDecl::ConstDecl(const string &name, shared_ptr<Expr> value, const location 
 }
 
 void ConstDecl::validate() const {
+    value->validate();
     if (!value->constant())
         throw RumurError("const definition is not a constant", value->loc);
 }
