@@ -25,9 +25,6 @@ void Model::validate() const {
     for (const shared_ptr<Decl> d : decls)
         d->validate();
 
-    for (const shared_ptr<Decl> d : decls)
-        d->validate();
-
     // Check we have at least one start state.
     auto is_start_state = [](const shared_ptr<Rule> r) {
         return dynamic_pointer_cast<const StartState>(r) != nullptr;
