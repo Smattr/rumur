@@ -158,7 +158,7 @@ model: decls rules {
 
 decls: decls decl {
     $$ = $1;
-    std::copy($2.begin(), $2.end(), std::back_inserter($1));
+    std::copy($2.begin(), $2.end(), std::back_inserter($$));
 } | %empty {
     /* nothing required */
 };
