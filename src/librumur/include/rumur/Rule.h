@@ -35,4 +35,15 @@ class StartState : public Rule {
 
 };
 
+class Invariant : public Node {
+
+  public:
+    std::string name;
+    std::shared_ptr<Expr> guard;
+
+    explicit Invariant(const std::string &name, std::shared_ptr<Expr> guard,
+      const location &loc);
+
+};
+
 }

@@ -24,3 +24,8 @@ StartState::StartState(const string &name, vector<shared_ptr<Decl>> &&decls,
   vector<shared_ptr<Stmt>> &&body, const location &loc)
   : Rule(name, nullptr, move(decls), move(body), loc) {
 }
+
+Invariant::Invariant(const string &name_, shared_ptr<Expr> guard_,
+  const location &loc_)
+  : Node(loc_), name(name_), guard(guard_) {
+}
