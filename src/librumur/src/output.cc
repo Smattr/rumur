@@ -18,6 +18,12 @@ static string escape_string(const string &s) {
     return "\"" + s + "\"";
 }
 
+// Whether a rule is a standard state transition rule.
+static bool is_regular_rule(const shared_ptr<Rule> r) {
+    return dynamic_pointer_cast<const StartState>(r) == nullptr &&
+           dynamic_pointer_cast<const Invariant>(r) == nullptr;
+}
+
 int rumur::output_checker(const string &path, const Model &model,
   const OutputOptions &options) {
 
@@ -91,6 +97,34 @@ int rumur::output_checker(const string &path, const Model &model,
         unsigned i = 0;
         for (const string &n : invariants) {
             out << "    std::make_pair(" << escape_string(n) << ", invariant_" << i << "),\n";
+            i++;
+        }
+        out << "};\n\n";
+    }
+
+    // Write out the regular rules.
+    {
+        vector<string> rules;
+        for (const shared_ptr<Rule> r : model.rules) {
+            if (is_regular_rule(r)) {
+                out << "static bool guard_" << rules.size() << "(const State &s [[maybe_unused]]) {\n"
+                       "    //TODO\n"
+                       "    return true;\n"
+                       "}\n\n"
+                       "static void rule_" << rules.size() << "(State *s [[maybe_unused]]) {\n"
+                       "    // TODO\n"
+                       "}\n\n";
+                rules.push_back(r->name);
+            }
+        }
+
+        out << "static const std::array<std::tuple<std::string, "
+          "std::function<bool(const State&)>, std::function<void(State*)>>, " <<
+          rules.size() << "> RULES = {\n";
+        unsigned i = 0;
+        for (const string &n : rules) {
+            out << "    std::make_tuple(" << escape_string(n) << ", guard_" <<
+              i << ", rule_" << i << "),\n";
             i++;
         }
         out << "};\n\n";
