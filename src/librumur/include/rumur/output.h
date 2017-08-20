@@ -9,7 +9,7 @@ struct OutputOptions {
     bool overflow_checks;
 };
 
-int output_checker(const std::string &path, const rumur::Model &model,
+int output_checker(const std::string &path, const Model &model,
   const OutputOptions &options);
 
 }
