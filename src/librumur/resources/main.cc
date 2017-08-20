@@ -2,16 +2,27 @@ static int main_single_threaded() {
 
     std::queue<State*> q;
 
-    for (auto [name, f] : START_RULES) {
-        State *s = f();
-        // TODO: invariant check here
-        q.push(s);
-    }
+    try {
 
-    while (!q.empty()) {
-        State *s = q.front();
-        q.pop();
-        // TODO
+        for (auto [name, f] : START_RULES) {
+            State *s = f();
+            // Check invariants eagerly.
+            for (auto [inv_name, i] : INVARIANTS) {
+                if (!i(*s))
+                    throw ModelError("invariant " + inv_name + " failed");
+            }
+            q.push(s);
+        }
+
+        while (!q.empty()) {
+            State *s = q.front();
+            q.pop();
+            // TODO
+        }
+
+    } catch (ModelError &e) {
+        fputs(e.what(), stderr);;
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

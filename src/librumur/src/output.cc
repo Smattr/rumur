@@ -48,27 +48,53 @@ int rumur::output_checker(const string &path, const Model &model,
 
     WRITE(State_cc);
 
-    vector<string> start_rules;
-    for (const shared_ptr<Rule> r : model.rules) {
-        if (auto s = dynamic_pointer_cast<const StartState>(r)) {
-            out << "static State *startstate_" << start_rules.size() << "() {\n"
-                   "    State *s = new State;\n"
-                   "    // TODO\n"
-                   "    return s;\n"
-                   "}\n\n";
-            start_rules.push_back(s->name);
+    // Write out the start state rules.
+    {
+        vector<string> start_rules;
+        for (const shared_ptr<Rule> r : model.rules) {
+            if (auto s = dynamic_pointer_cast<const StartState>(r)) {
+                out << "static State *startstate_" << start_rules.size() << "() {\n"
+                       "    State *s = new State;\n"
+                       "    // TODO\n"
+                       "    return s;\n"
+                       "}\n\n";
+                start_rules.push_back(s->name);
+            }
         }
+
+        out << "static const std::array<std::pair<std::string, std::function<State*()>>, "
+          << start_rules.size() << "> START_RULES = {\n";
+        unsigned i = 0;
+        for (const string &s : start_rules) {
+            out << "    std::make_pair(" << escape_string(s) << ", startstate_" << i << "),\n";
+            i++;
+        }
+        out << "};\n\n";
     }
 
-    out << "static const std::array<std::pair<std::string, std::function<State*()>>, "
-      << start_rules.size() << "> START_RULES = {";
+    // Write out the invariant rules.
+    {
+        vector<string> invariants;
+        for (const shared_ptr<Rule> r : model.rules) {
+            if (auto i = dynamic_pointer_cast<const Invariant>(r)) {
+                out << "static bool invariant_" << invariants.size() << "(const State &s [[maybe_unused]]) {\n"
+                       "    // TODO\n"
+                       "    return true;\n"
+                       "}\n\n";
+                invariants.push_back(i->name);
+            }
+        }
 
-    unsigned i = 0;
-    for (const string &s : start_rules) {
-        out << "std::make_pair(" << escape_string(s) << ", startstate_" << i << "),";
-        i++;
+        out << "static const std::array<std::pair<std::string, "
+            "std::function<bool(const State&)>>, " << invariants.size() <<
+            "> INVARIANTS = {\n";
+        unsigned i = 0;
+        for (const string &n : invariants) {
+            out << "    std::make_pair(" << escape_string(n) << ", invariant_" << i << "),\n";
+            i++;
+        }
+        out << "};\n\n";
     }
-    out << "};\n\n";
 
     WRITE(main_cc);
 
