@@ -2,10 +2,10 @@
 template<uint64_t SIZE_BITS>
 class StateBase {
 
+  public:
     std::bitset<SIZE_BITS> data;
     StateBase<SIZE_BITS> *previous = nullptr;
 
-  public:
     StateBase<SIZE_BITS> *duplicate() const {
         auto *s = new StateBase<SIZE_BITS>(*this);
         s->previous = this;

@@ -44,9 +44,9 @@ int rumur::output_checker(const string &path, const Model &model,
 
       << "\n";
 
-    WRITE(header_cc);
-
     WRITE(State_cc);
+
+    WRITE(header_cc);
 
     // Write out the start state rules.
     {

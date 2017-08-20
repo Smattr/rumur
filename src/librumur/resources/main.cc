@@ -9,7 +9,7 @@ static int main_single_threaded() {
             // Check invariants eagerly.
             for (auto [inv_name, i] : INVARIANTS) {
                 if (!i(*s))
-                    throw ModelError("invariant " + inv_name + " failed");
+                    throw ModelError("invariant " + inv_name + " failed", s);
             }
             q.push(s);
         }
@@ -21,7 +21,8 @@ static int main_single_threaded() {
         }
 
     } catch (ModelError &e) {
-        fputs(e.what(), stderr);;
+        fputs(e.what(), stderr);
+        print_counterexample(e.state);
         return EXIT_FAILURE;
     }
 

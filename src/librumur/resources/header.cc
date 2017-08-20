@@ -4,7 +4,16 @@
 class ModelError : public std::runtime_error {
 
   public:
-    using std::runtime_error::runtime_error;
+    const State *state;
+
+    explicit ModelError(const std::string &message,
+      const State *state_ = nullptr)
+      : std::runtime_error(message), state(state_) {
+    }
+
+    explicit ModelError(const ModelError &e, const State *state_)
+      : std::runtime_error(e.what()), state(state_) {
+    }
 
 };
 
@@ -60,4 +69,11 @@ static int64_t div(int64_t a, int64_t b) {
         }
     }
     return a / b;
+}
+
+static void print_counterexample(const State *last) {
+    if (last != nullptr) {
+        print_counterexample(last->previous);
+        // TODO print state
+    }
 }
