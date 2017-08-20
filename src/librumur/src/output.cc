@@ -51,8 +51,8 @@ int rumur::output_checker(const string &path, const Model &model,
     vector<string> start_rules;
     for (const shared_ptr<Rule> r : model.rules) {
         if (auto s = dynamic_pointer_cast<const StartState>(r)) {
-            out << "static State startstate_" << start_rules.size() << "() {\n"
-                   "    State s;\n"
+            out << "static State *startstate_" << start_rules.size() << "() {\n"
+                   "    State *s = new State;\n"
                    "    // TODO\n"
                    "    return s;\n"
                    "}\n\n";
@@ -60,7 +60,7 @@ int rumur::output_checker(const string &path, const Model &model,
         }
     }
 
-    out << "static const std::array<std::pair<std::string, std::function<State()>>, "
+    out << "static const std::array<std::pair<std::string, std::function<State*()>>, "
       << start_rules.size() << "> START_RULES = {";
 
     unsigned i = 0;
