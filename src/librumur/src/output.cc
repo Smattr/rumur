@@ -68,7 +68,9 @@ int rumur::output_checker(const string &path, const Model &model,
         out << "std::make_pair(" << escape_string(s) << ", startstate_" << i << "),";
         i++;
     }
-    out << "};\n";
+    out << "};\n\n";
+
+    WRITE(main_cc);
 
 #undef WRITE
 
