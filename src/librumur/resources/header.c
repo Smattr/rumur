@@ -16,7 +16,7 @@ static _Noreturn void error(const State *s, const char *message) {
  * compiler, you'll have to implement these yourself.
  */
 
-static int64_t add(const State *s, int64_t a, int64_t b) {
+static int64_t __attribute__((unused)) add(const State *s, int64_t a, int64_t b) {
     int64_t r;
     if (OVERFLOW_CHECKS_ENABLED) {
         if (__builtin_add_overflow(a, b, &r)) {\
@@ -28,7 +28,7 @@ static int64_t add(const State *s, int64_t a, int64_t b) {
     return r;
 }
 
-static int64_t sub(const State *s, int64_t a, int64_t b) {
+static int64_t __attribute__((unused)) sub(const State *s, int64_t a, int64_t b) {
     int64_t r;
     if (OVERFLOW_CHECKS_ENABLED) {
         if (__builtin_sub_overflow(a, b, &r)) {
@@ -40,7 +40,7 @@ static int64_t sub(const State *s, int64_t a, int64_t b) {
     return r;
 }
 
-static int64_t mul(const State *s, int64_t a, int64_t b) {
+static int64_t __attribute__((unused)) mul(const State *s, int64_t a, int64_t b) {
     int64_t r;
     if (OVERFLOW_CHECKS_ENABLED) {
         if (__builtin_mul_overflow(a, b, &r)) {
@@ -52,7 +52,7 @@ static int64_t mul(const State *s, int64_t a, int64_t b) {
     return r;
 }
 
-static int64_t divide(const State *s, int64_t a, int64_t b) {
+static int64_t __attribute__((unused)) divide(const State *s, int64_t a, int64_t b) {
     if (b == 0) {
         error(s, "division by zero");
     }
