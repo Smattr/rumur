@@ -31,6 +31,11 @@ int rumur::output_checker(const string &path, const Model &model,
     if (!out)
         return -1;
 
+    out << "#include <stdbool.h>\n"
+           "#include <stdint.h>\n"
+           "#include <stdio.h>\n"
+           "#include <unistd.h>\n";
+
 #define WRITE(resource) \
     do { \
         for (unsigned int i = 0; i < resources_##resource##_len; i++) { \
@@ -39,20 +44,20 @@ int rumur::output_checker(const string &path, const Model &model,
         out << "\n"; \
     } while (0)
 
-    WRITE(includes_cc);
-
     out
-      << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
-      (options.overflow_checks ? "true" : "false") << ";\n"
+      << "enum { OVERFLOW_CHECKS_ENABLED = " <<
+      (options.overflow_checks ? "true" : "false") << "};\n"
 
-      << "static constexpr uint64_t STATE_SIZE_BITS = " << model.size_bits()
-      << ";\n"
+      << "enum { STATE_SIZE_BITS = " << model.size_bits()
+      << "};\n"
 
       << "\n";
 
-    WRITE(State_cc);
+    WRITE(State_c);
 
-    WRITE(header_cc);
+    WRITE(collections_c);
+
+    WRITE(header_c);
 
     // Write out the start state rules.
     {
@@ -60,7 +65,11 @@ int rumur::output_checker(const string &path, const Model &model,
         for (const shared_ptr<Rule> r : model.rules) {
             if (auto s = dynamic_pointer_cast<const StartState>(r)) {
                 out << "static State *startstate_" << start_rules.size() << "() {\n"
-                       "    State *s = new State;\n"
+                       "    State *s = malloc(sizeof(*s));\n"
+                       "    if (s == NULL) {\n"
+                       "        perror(\"malloc\");\n"
+                       "        exit(EXIT_FAILURE);\n"
+                       "    }\n"
                        "    // TODO\n"
                        "    return s;\n"
                        "}\n\n";
@@ -68,11 +77,13 @@ int rumur::output_checker(const string &path, const Model &model,
             }
         }
 
-        out << "static const std::array<std::pair<std::string, std::function<State*()>>, "
-          << start_rules.size() << "> START_RULES = {\n";
+        out << "static const struct {\n"
+               "    const char *name;\n"
+               "    State *(*body)(void);\n"
+               "} START_RULES[] = {\n";
         unsigned i = 0;
         for (const string &s : start_rules) {
-            out << "    std::make_pair(" << escape_string(s) << ", startstate_" << i << "),\n";
+            out << "    { .name = " << escape_string(s) << ", .body = startstate_" << i << "},\n";
             i++;
         }
         out << "};\n\n";
@@ -83,7 +94,7 @@ int rumur::output_checker(const string &path, const Model &model,
         vector<string> invariants;
         for (const shared_ptr<Rule> r : model.rules) {
             if (auto i = dynamic_pointer_cast<const Invariant>(r)) {
-                out << "static bool invariant_" << invariants.size() << "(const State &s [[maybe_unused]]) {\n"
+                out << "static bool invariant_" << invariants.size() << "(const State *s) {\n"
                        "    // TODO\n"
                        "    return true;\n"
                        "}\n\n";
@@ -91,12 +102,13 @@ int rumur::output_checker(const string &path, const Model &model,
             }
         }
 
-        out << "static const std::array<std::pair<std::string, "
-            "std::function<bool(const State&)>>, " << invariants.size() <<
-            "> INVARIANTS = {\n";
+        out << "static const struct {\n"
+               "    const char *name;\n"
+               "    bool (*guard)(const State*);\n"
+               "} INVARIANTS[] = {\n";
         unsigned i = 0;
         for (const string &n : invariants) {
-            out << "    std::make_pair(" << escape_string(n) << ", invariant_" << i << "),\n";
+            out << "    { .name = " << escape_string(n) << ", .guard = invariant_" << i << "},\n";
             i++;
         }
         out << "};\n\n";
@@ -107,30 +119,32 @@ int rumur::output_checker(const string &path, const Model &model,
         vector<string> rules;
         for (const shared_ptr<Rule> r : model.rules) {
             if (is_regular_rule(r)) {
-                out << "static bool guard_" << rules.size() << "(const State &s [[maybe_unused]]) {\n"
+                out << "static bool guard_" << rules.size() << "(const State *s) {\n"
                        "    //TODO\n"
                        "    return true;\n"
                        "}\n\n"
-                       "static void rule_" << rules.size() << "(State *s [[maybe_unused]]) {\n"
+                       "static void rule_" << rules.size() << "(State *s) {\n"
                        "    // TODO\n"
                        "}\n\n";
                 rules.push_back(r->name);
             }
         }
 
-        out << "static const std::array<std::tuple<std::string, "
-          "std::function<bool(const State&)>, std::function<void(State*)>>, " <<
-          rules.size() << "> RULES = {\n";
+        out << "static const struct {\n"
+               "    const char *name;\n"
+               "    bool (*guard)(const State*);\n"
+               "    void (*body)(State *);\n"
+               "} RULES[] = {\n";
         unsigned i = 0;
         for (const string &n : rules) {
-            out << "    std::make_tuple(" << escape_string(n) << ", guard_" <<
-              i << ", rule_" << i << "),\n";
+            out << "    { .name = " << escape_string(n) << ", .guard = guard_" <<
+              i << ", .body = rule_" << i << "},\n";
             i++;
         }
         out << "};\n\n";
     }
 
-    WRITE(main_cc);
+    WRITE(main_c);
 
 #undef WRITE
 
