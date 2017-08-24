@@ -17,6 +17,6 @@ void Assignment::validate() const {
     rhs->validate();
 }
 
-void Assignment::write_stmt(ostream &out, const string &indent) const {
+void Assignment::generate_stmt(ostream &out, const string &indent) const {
     out << indent << "/* TODO */ = /* TODO */;";
 }

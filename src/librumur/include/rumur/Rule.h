@@ -24,7 +24,7 @@ class Rule : public Node {
       std::vector<std::shared_ptr<Decl>> &&decls,
       std::vector<std::shared_ptr<Stmt>> &&body, const location &loc);
 
-    void write_rule(std::ostream &out, const std::string &indent) const;
+    void generate_rule(std::ostream &out, const std::string &indent) const;
 
 };
 

@@ -70,7 +70,7 @@ int rumur::output_checker(const string &path, const Model &model,
                        "        perror(\"malloc\");\n"
                        "        exit(EXIT_FAILURE);\n"
                        "    }\n";
-                s->write_rule(out, "    ");
+                s->generate_rule(out, "    ");
                 out << "    return s;\n"
                        "}\n\n";
                 start_rules.push_back(s->name);

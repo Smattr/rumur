@@ -14,7 +14,7 @@ class Stmt : public Node {
   public:
     using Node::Node;
 
-    virtual void write_stmt(std::ostream &out, const std::string &indent) const = 0;
+    virtual void generate_stmt(std::ostream &out, const std::string &indent) const = 0;
 
 };
 
@@ -29,7 +29,7 @@ class Assignment : public Stmt {
 
     void validate() const final;
 
-    void write_stmt(std::ostream &out, const std::string &indent) const final;
+    void generate_stmt(std::ostream &out, const std::string &indent) const final;
 
 };
 
