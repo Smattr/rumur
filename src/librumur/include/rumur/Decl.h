@@ -48,6 +48,7 @@ class VarDecl : public Decl {
 
   public:
     std::shared_ptr<TypeExpr> type;
+    bool local = false;
 
     explicit VarDecl(const std::string &name, std::shared_ptr<TypeExpr> type, const location &loc);
 
