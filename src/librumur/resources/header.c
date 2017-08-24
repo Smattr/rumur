@@ -64,3 +64,26 @@ static int64_t __attribute__((unused)) divide(const State *s, int64_t a, int64_t
     }
     return a / b;
 }
+
+static int64_t __attribute__((unused)) mod(const State *s, int64_t a, int64_t b) {
+    if (b == 0) {
+        error(s, "modulus by zero");
+    }
+
+    // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
+    if (OVERFLOW_CHECKS_ENABLED) {
+        if (a == INT64_MIN && b == -1) {
+            error(s, "integer overflow in modulo");
+        }
+    }
+    return a % b;
+}
+
+static int64_t __attribute__((unused)) negate(const State *s, int64_t a) {
+    if (OVERFLOW_CHECKS_ENABLED) {
+        if (a == INT64_MIN) {
+            error(s, "integer overflow in negation");
+        }
+    }
+    return -a;
+}
