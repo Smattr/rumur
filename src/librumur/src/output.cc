@@ -69,9 +69,9 @@ int rumur::output_checker(const string &path, const Model &model,
                        "    if (s == NULL) {\n"
                        "        perror(\"malloc\");\n"
                        "        exit(EXIT_FAILURE);\n"
-                       "    }\n"
-                       "    // TODO\n"
-                       "    return s;\n"
+                       "    }\n";
+                s->write_rule(out, "    ");
+                out << "    return s;\n"
                        "}\n\n";
                 start_rules.push_back(s->name);
             }

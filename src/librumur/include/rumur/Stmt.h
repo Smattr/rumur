@@ -1,9 +1,11 @@
 #pragma once
 
+#include <iostream>
 #include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <string>
 
 namespace rumur {
 
@@ -11,6 +13,8 @@ class Stmt : public Node {
 
   public:
     using Node::Node;
+
+    virtual void write_stmt(std::ostream &out, const std::string &indent) const = 0;
 
 };
 
@@ -24,6 +28,8 @@ class Assignment : public Stmt {
       const location &loc);
 
     void validate() const final;
+
+    void write_stmt(std::ostream &out, const std::string &indent) const final;
 
 };
 

@@ -1,6 +1,8 @@
+#include <iostream>
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Stmt.h>
+#include <string>
 
 using namespace rumur;
 using namespace std;
@@ -13,4 +15,8 @@ Assignment::Assignment(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
 void Assignment::validate() const {
     lhs->validate();
     rhs->validate();
+}
+
+void Assignment::write_stmt(ostream &out, const string &indent) const {
+    out << indent << "/* TODO */ = /* TODO */;";
 }

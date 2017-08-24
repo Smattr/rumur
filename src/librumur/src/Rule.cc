@@ -1,3 +1,4 @@
+#include <iostream>
 #include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
@@ -14,6 +15,14 @@ Rule::Rule(const string &name, shared_ptr<Expr> guard,
   vector<shared_ptr<Decl>> &&decls, vector<shared_ptr<Stmt>> &&body,
   const location &loc)
   : Node(loc), name(name), guard(guard), decls(decls), body(body) {
+}
+
+void Rule::write_rule(ostream &out, const string &indent) const {
+    // TODO: decls
+    for (const shared_ptr<Stmt> s : body) {
+        s->write_stmt(out, indent);
+        out << "\n";
+    }
 }
 
 /* XXX: Why do we need the explicit moves here? I assumed that we could

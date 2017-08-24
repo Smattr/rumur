@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
@@ -22,6 +23,8 @@ class Rule : public Node {
     explicit Rule(const std::string &name, std::shared_ptr<Expr> guard,
       std::vector<std::shared_ptr<Decl>> &&decls,
       std::vector<std::shared_ptr<Stmt>> &&body, const location &loc);
+
+    void write_rule(std::ostream &out, const std::string &indent) const;
 
 };
 
