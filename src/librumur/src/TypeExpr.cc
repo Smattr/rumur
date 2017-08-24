@@ -10,8 +10,16 @@
 using namespace rumur;
 using namespace std;
 
+bool TypeExpr::is_simple() const {
+    return false;
+}
+
+bool SimpleTypeExpr::is_simple() const {
+    return true;
+}
+
 Range::Range(shared_ptr<Expr> min, shared_ptr<Expr> max, const location &loc)
-  : TypeExpr(loc), min(min), max(max) {
+  : SimpleTypeExpr(loc), min(min), max(max) {
 }
 
 void Range::validate() const {
@@ -27,8 +35,12 @@ TypeExprID::TypeExprID(const string &id, shared_ptr<TypeExpr> value,
   : TypeExpr(loc), id(id), value(value) {
 }
 
+bool TypeExprID::is_simple() const {
+    return value->is_simple();
+}
+
 Enum::Enum(const vector<pair<string, location>> &members, const location &loc)
-  : TypeExpr(loc) {
+  : SimpleTypeExpr(loc) {
 
     for (auto [s, l] : members) {
 

@@ -19,9 +19,21 @@ class TypeExpr : public Node {
   public:
     using Node::Node;
 
+    // Whether this type is a primitive integer-like type.
+    virtual bool is_simple() const;
+
 };
 
-class Range : public TypeExpr {
+class SimpleTypeExpr : public TypeExpr {
+
+  public:
+    using TypeExpr::TypeExpr;
+
+    bool is_simple() const final;
+
+};
+
+class Range : public SimpleTypeExpr {
 
   public:
     std::shared_ptr<Expr> min;
@@ -43,9 +55,11 @@ class TypeExprID : public TypeExpr {
     explicit TypeExprID(const std::string &id, std::shared_ptr<TypeExpr> value,
       const location &loc);
 
+    bool is_simple() const final;
+
 };
 
-class Enum : public TypeExpr {
+class Enum : public SimpleTypeExpr {
 
   public:
     std::vector<std::shared_ptr<ExprID>> members;
