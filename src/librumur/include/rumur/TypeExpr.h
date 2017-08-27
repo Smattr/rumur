@@ -79,4 +79,15 @@ class Record : public TypeExpr {
 
 };
 
+class Array : public TypeExpr {
+
+  public:
+    std::shared_ptr<TypeExpr> index_type;
+    std::shared_ptr<TypeExpr> element_type;
+
+    explicit Array(std::shared_ptr<TypeExpr> index_type_,
+      std::shared_ptr<TypeExpr> element_type_, const location &loc_);
+
+};
+
 }

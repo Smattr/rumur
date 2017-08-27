@@ -57,3 +57,8 @@ Enum::Enum(const vector<pair<string, location>> &members, const location &loc)
 Record::Record(vector<shared_ptr<VarDecl>> &&fields, const location &loc)
   : TypeExpr(loc), fields(fields) {
 }
+
+Array::Array(shared_ptr<TypeExpr> index_type_,
+  shared_ptr<TypeExpr> element_type_, const location &loc_)
+  : TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
+}
