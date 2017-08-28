@@ -9,6 +9,7 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/output.h>
