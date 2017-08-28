@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <string>
@@ -19,6 +20,7 @@ class Number : public Expr {
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
+    void generate_read(std::ostream &out) const final;
 
 };
 

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 #include "location.hh"
 #include <rumur/except.h>
 #include <rumur/Expr.h>
@@ -37,4 +38,8 @@ bool Number::constant() const noexcept {
 
 const TypeExpr *Number::type() const noexcept {
     return nullptr;
+}
+
+void Number::generate_read(ostream &out) const {
+    out << "INT64_C(" << value << ")";
 }
