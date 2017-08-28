@@ -4,6 +4,7 @@
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
+#include <rumur/Indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Rule.h>
@@ -16,7 +17,7 @@ using namespace rumur;
 using namespace std;
 
 Model::Model(vector<shared_ptr<Decl>> &&decls, vector<shared_ptr<Rule>> &&rules,
-  const location &loc)
+  const location &loc, Indexer&)
   : Node(loc), decls(decls), rules(rules) {
 }
 

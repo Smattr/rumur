@@ -3,6 +3,7 @@
 #include "location.hh"
 #include "parser.yy.hh"
 #include <rumur/except.h>
+#include <rumur/Indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/parse.h>
@@ -21,7 +22,8 @@ Model *rumur::parse(istream *input) {
     symtab.open_scope();
     scanner s(input);
     Model *m = nullptr;
-    parser p(s, m, &symtab);
+    Indexer indexer;
+    parser p(s, m, &symtab, indexer);
 
     // Parse the input model
     int err = p.parse();

@@ -3,6 +3,7 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Indexer.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -43,7 +44,8 @@ bool SimpleTypeExpr::is_simple() const {
     return true;
 }
 
-Range::Range(shared_ptr<Expr> min, shared_ptr<Expr> max, const location &loc)
+Range::Range(shared_ptr<Expr> min, shared_ptr<Expr> max, const location &loc,
+  Indexer&)
   : SimpleTypeExpr(loc), min(min), max(max) {
 }
 
@@ -64,7 +66,7 @@ void Range::generate_max(ostream &out) const {
 }
 
 TypeExprID::TypeExprID(const string &id, shared_ptr<TypeExpr> value,
-  const location &loc)
+  const location &loc, Indexer&)
   : TypeExpr(loc), id(id), value(value) {
 }
 
@@ -96,16 +98,17 @@ string TypeExprID::element_writer() const {
     return value->element_writer();
 }
 
-Enum::Enum(const vector<pair<string, location>> &members, const location &loc)
+Enum::Enum(const vector<pair<string, location>> &members, const location &loc,
+  Indexer &indexer)
   : SimpleTypeExpr(loc) {
 
     for (auto [s, l] : members) {
 
         // Assign the enum member a numerical value
-        auto n = make_shared<Number>(this->members.size(), l);
+        auto n = make_shared<Number>(this->members.size(), l, indexer);
 
         // Construct an expression for it
-        auto e = make_shared<ExprID>(s, n, this, l);
+        auto e = make_shared<ExprID>(s, n, this, l, indexer);
         this->members.emplace_back(e);
 
     }
@@ -119,7 +122,8 @@ void Enum::generate_max(ostream &out) const {
     out << "INT64_C(" << members.size() << ")";
 }
 
-Record::Record(vector<shared_ptr<VarDecl>> &&fields, const location &loc)
+Record::Record(vector<shared_ptr<VarDecl>> &&fields, const location &loc,
+  Indexer &)
   : TypeExpr(loc), fields(fields) {
 }
 
@@ -146,7 +150,8 @@ string Record::field_writer(const string &field) const {
 }
 
 Array::Array(shared_ptr<TypeExpr> index_type_,
-  shared_ptr<TypeExpr> element_type_, const location &loc_)
+  shared_ptr<TypeExpr> element_type_, const location &loc_,
+  Indexer&)
   : TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
 }
 

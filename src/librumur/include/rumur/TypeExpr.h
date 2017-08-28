@@ -4,6 +4,7 @@
 #include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
+#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <string>
@@ -56,7 +57,7 @@ class Range : public SimpleTypeExpr {
     std::shared_ptr<Expr> max;
 
     explicit Range(std::shared_ptr<Expr> min, std::shared_ptr<Expr> max,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     void validate() const final;
     void generate_min(std::ostream &out) const final;
@@ -71,7 +72,7 @@ class TypeExprID : public TypeExpr {
     std::shared_ptr<TypeExpr> value;
 
     explicit TypeExprID(const std::string &id, std::shared_ptr<TypeExpr> value,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     bool is_simple() const final;
     void generate_min(std::ostream &out) const final;
@@ -89,7 +90,7 @@ class Enum : public SimpleTypeExpr {
     std::vector<std::shared_ptr<ExprID>> members;
 
     explicit Enum(const std::vector<std::pair<std::string, location>> &members,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     void generate_min(std::ostream &out) const final;
     void generate_max(std::ostream &out) const final;
@@ -103,7 +104,7 @@ class Record : public TypeExpr {
     std::string name; // TODO: set this somewhere
 
     explicit Record(std::vector<std::shared_ptr<VarDecl>> &&fields,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     std::string field_reader(const std::string &field) const final;
     std::string field_writer(const std::string &field) const final;
@@ -118,7 +119,8 @@ class Array : public TypeExpr {
     std::string name; // TODO: set this somewhere
 
     explicit Array(std::shared_ptr<TypeExpr> index_type_,
-      std::shared_ptr<TypeExpr> element_type_, const location &loc_);
+      std::shared_ptr<TypeExpr> element_type_, const location &loc_,
+      Indexer &indexer);
 
     std::string element_reader() const final;
     std::string element_writer() const final;

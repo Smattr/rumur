@@ -8,6 +8,7 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Indexer.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 
@@ -47,7 +48,7 @@ Expr::~Expr() {
 }
 
 Ternary::Ternary(shared_ptr<Expr> cond, shared_ptr<Expr> lhs,
-  shared_ptr<Expr> rhs, const location &loc) noexcept
+  shared_ptr<Expr> rhs, const location &loc, Indexer&) noexcept
   : Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
 }
 
@@ -81,7 +82,7 @@ void Ternary::generate_read(ostream &out) const {
 }
 
 BinaryExpr::BinaryExpr(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
-  const location &loc) noexcept
+  const location &loc, Indexer&) noexcept
   : Expr(loc), lhs(lhs), rhs(rhs) {
 }
 
@@ -151,7 +152,8 @@ void And::generate_read(ostream &out) const {
     out << ")";
 }
 
-UnaryExpr::UnaryExpr(shared_ptr<Expr> rhs, const location &loc) noexcept
+UnaryExpr::UnaryExpr(shared_ptr<Expr> rhs, const location &loc,
+  Indexer&) noexcept
   : Expr(loc), rhs(rhs) {
 }
 
@@ -424,7 +426,7 @@ void Mod::generate_read(ostream &out) const {
 }
 
 ExprID::ExprID(const string &id, shared_ptr<Expr> value,
-  const TypeExpr *type_of, const location &loc)
+  const TypeExpr *type_of, const location &loc, Indexer&)
   : Expr(loc), id(id), value(value), type_of(type_of) {
 }
 
@@ -446,7 +448,7 @@ void ExprID::generate_read(ostream &out) const {
     out << "model_" << id;
 }
 
-Var::Var(shared_ptr<VarDecl> decl, const location &loc)
+Var::Var(shared_ptr<VarDecl> decl, const location &loc, Indexer&)
   : Expr(loc), decl(decl) {
 }
 
@@ -466,7 +468,8 @@ void Var::generate_read(ostream &out) const {
     }
 }
 
-Field::Field(shared_ptr<Expr> record, const string &field, const location &loc)
+Field::Field(shared_ptr<Expr> record, const string &field, const location &loc,
+  Indexer&)
   : Expr(loc), record(record), field(field) {
 }
 
@@ -488,7 +491,8 @@ const TypeExpr *Field::type() const noexcept {
     return nullptr;
 }
 
-Element::Element(shared_ptr<Expr> array, shared_ptr<Expr> index, const location &loc)
+Element::Element(shared_ptr<Expr> array, shared_ptr<Expr> index,
+  const location &loc, Indexer&)
   : Expr(loc), array(array), index(index) {
 }
 
@@ -513,29 +517,31 @@ void Element::generate_read(ostream &out) const {
 }
 
 Quantifier::Quantifier(const string &name, shared_ptr<TypeExpr> type,
-  const location &loc)
-  : Node(loc), var(make_shared<VarDecl>(name, type, loc)) {
+  const location &loc, Indexer &indexer)
+  : Node(loc), var(make_shared<VarDecl>(name, type, loc, indexer)) {
 }
 
 Quantifier::Quantifier(const string &name, shared_ptr<Expr> from,
-  shared_ptr<Expr> to, const location &loc)
-  : Quantifier(loc, name, from, to, {}) {
+  shared_ptr<Expr> to, const location &loc, Indexer& indexer)
+  : Quantifier(loc, name, from, to, {}, indexer) {
 }
 
 Quantifier::Quantifier(const string &name, shared_ptr<Expr> from,
-  shared_ptr<Expr> to, shared_ptr<Expr> step, const location &loc)
-  : Quantifier(loc, name, from, to, step) {
+  shared_ptr<Expr> to, shared_ptr<Expr> step, const location &loc,
+  Indexer &indexer)
+  : Quantifier(loc, name, from, to, step, indexer) {
 }
 
 Quantifier::Quantifier(const location &loc, const string &name,
-  shared_ptr<Expr> from, shared_ptr<Expr> to, optional<shared_ptr<Expr>> step)
+  shared_ptr<Expr> from, shared_ptr<Expr> to, optional<shared_ptr<Expr>> step,
+  Indexer &indexer)
   : Node(loc),
-    var(make_shared<VarDecl>(name, make_shared<Range>(from, to, loc), loc)),
+    var(make_shared<VarDecl>(name, make_shared<Range>(from, to, loc, indexer), loc, indexer)),
     step(step) {
 }
 
 Exists::Exists(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
-  const location &loc)
+  const location &loc, Indexer&)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
 
@@ -565,7 +571,7 @@ void Exists::generate_read(ostream &out) const {
 }
 
 Forall::Forall(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
-  const location &loc)
+  const location &loc, Indexer&)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
 

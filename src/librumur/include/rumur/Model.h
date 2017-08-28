@@ -4,6 +4,7 @@
 #include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
+#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <rumur/Rule.h>
 #include <vector>
@@ -17,7 +18,8 @@ class Model : public Node {
     std::vector<std::shared_ptr<Rule>> rules;
 
     explicit Model(std::vector<std::shared_ptr<Decl>> &&decls,
-      std::vector<std::shared_ptr<Rule>> &&rules, const location &loc);
+      std::vector<std::shared_ptr<Rule>> &&rules, const location &loc,
+      Indexer &indexer);
 
     void validate() const final;
 

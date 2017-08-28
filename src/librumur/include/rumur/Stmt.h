@@ -4,6 +4,7 @@
 #include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
+#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <string>
 
@@ -25,7 +26,7 @@ class Assignment : public Stmt {
     std::shared_ptr<Expr> rhs;
 
     explicit Assignment(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     void validate() const final;
 

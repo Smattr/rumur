@@ -5,6 +5,7 @@
 #include "location.hh"
 #include <memory>
 #include <optional>
+#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <string>
 
@@ -56,7 +57,7 @@ class Ternary : public Expr {
     std::shared_ptr<Expr> rhs;
 
     explicit Ternary(std::shared_ptr<Expr> cond, std::shared_ptr<Expr> lhs,
-      std::shared_ptr<Expr> rhs, const location &loc) noexcept;
+      std::shared_ptr<Expr> rhs, const location &loc, Indexer &indexer) noexcept;
 
     void validate() const final;
     bool constant() const noexcept final;
@@ -72,7 +73,7 @@ class BinaryExpr : public Expr {
     std::shared_ptr<Expr> rhs;
 
     explicit BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
-      const location &loc) noexcept;
+      const location &loc, Indexer &indexer) noexcept;
 
     void validate() const override;
     bool constant() const noexcept final;
@@ -118,7 +119,8 @@ class UnaryExpr : public Expr {
 
     std::shared_ptr<Expr> rhs;
 
-    explicit UnaryExpr(std::shared_ptr<Expr> rhs, const location &loc) noexcept;
+    explicit UnaryExpr(std::shared_ptr<Expr> rhs, const location &loc,
+      Indexer &indexer) noexcept;
 
     void validate() const override;
     bool constant() const noexcept final;
@@ -283,7 +285,7 @@ class ExprID : public Expr {
     const TypeExpr *type_of;
 
     explicit ExprID(const std::string &id, std::shared_ptr<Expr> value,
-      const TypeExpr *type_of, const location &loc);
+      const TypeExpr *type_of, const location &loc, Indexer &indexer);
 
     void validate() const final;
     bool constant() const noexcept final;
@@ -298,7 +300,8 @@ class Var : public Expr {
   public:
     std::shared_ptr<VarDecl> decl;
 
-    explicit Var(std::shared_ptr<VarDecl> decl, const location &loc);
+    explicit Var(std::shared_ptr<VarDecl> decl, const location &loc,
+      Indexer &indexer);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
@@ -313,7 +316,7 @@ class Field : public Expr {
     std::string field;
 
     explicit Field(std::shared_ptr<Expr> record, const std::string &field,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
@@ -328,7 +331,7 @@ class Element : public Expr {
     std::shared_ptr<Expr> index;
 
     explicit Element(std::shared_ptr<Expr> array, std::shared_ptr<Expr> index,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
@@ -343,12 +346,12 @@ class Quantifier : public Node {
     std::optional<std::shared_ptr<Expr>> step;
 
     explicit Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
-      const location &loc);
+      const location &loc, Indexer &indexer);
     explicit Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-      std::shared_ptr<Expr> to, const location &loc);
+      std::shared_ptr<Expr> to, const location &loc, Indexer &indexer);
     explicit Quantifier(const std::string &name, std::shared_ptr<Expr> from,
       std::shared_ptr<Expr> to, std::shared_ptr<Expr> step,
-      const location &loc);
+      const location &loc, Indexer &indexer);
 
   private:
     /* This constructor is delegated to internally.
@@ -357,7 +360,7 @@ class Quantifier : public Node {
      */
     explicit Quantifier(const location &loc, const std::string &name,
       std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
-      std::optional<std::shared_ptr<Expr>> step);
+      std::optional<std::shared_ptr<Expr>> step, Indexer &indexer);
 
 };
 
@@ -368,7 +371,7 @@ class Forall : public Expr {
     std::shared_ptr<Expr> expr;
 
     explicit Forall(std::shared_ptr<Quantifier> quantifier,
-      std::shared_ptr<Expr> expr, const location &loc);
+      std::shared_ptr<Expr> expr, const location &loc, Indexer &indexer);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
@@ -383,7 +386,7 @@ class Exists : public Expr {
     std::shared_ptr<Expr> expr;
 
     explicit Exists(std::shared_ptr<Quantifier> quantifier,
-      std::shared_ptr<Expr> expr, const location &loc);
+      std::shared_ptr<Expr> expr, const location &loc, Indexer &indexer);
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
