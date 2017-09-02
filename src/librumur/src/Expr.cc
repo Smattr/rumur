@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iostream>
 #include "location.hh"
+#include "macros.h"
 #include <memory>
 #include <optional>
 #include <rumur/Boolean.h>
@@ -26,6 +27,10 @@ bool Expr::is_arithmetic() const noexcept {
         return true;
 
     return false;
+}
+
+void Expr::lvalue(ostream&) const {
+    BUG_STUB();
 }
 
 static void expect_arithmetic(const shared_ptr<Expr> e) {
@@ -448,6 +453,10 @@ void ExprID::generate_read(ostream &out) const {
     out << "model_" << id;
 }
 
+void ExprID::lvalue(ostream &out) const {
+    value->lvalue(out);
+}
+
 Var::Var(shared_ptr<VarDecl> decl, const location &loc, Indexer&)
   : Expr(loc), decl(decl) {
 }
@@ -465,6 +474,14 @@ void Var::generate_read(ostream &out) const {
         out << "model_" << decl->name;
     } else {
         out << "state_read_" << decl->name << "(s)";
+    }
+}
+
+void Var::lvalue(ostream &out) const {
+    if (decl->local) {
+        out << "model_" << decl->name;
+    } else {
+        out << "state_reference_" << decl->name << "(s)";
     }
 }
 
@@ -491,6 +508,17 @@ const TypeExpr *Field::type() const noexcept {
     return nullptr;
 }
 
+void Field::lvalue(ostream &out) const {
+    const TypeExpr *t = record->type();
+    assert(t != nullptr && "root of field reference with no type");
+    auto r = dynamic_cast<const Record*>(t);
+    assert(r != nullptr && "root of field reference with non-record type");
+    r->field_referencer(out, field);
+    out << "(";
+    record->lvalue(out);
+    out << ")";
+}
+
 Element::Element(shared_ptr<Expr> array, shared_ptr<Expr> index,
   const location &loc, Indexer&)
   : Expr(loc), array(array), index(index) {
@@ -511,6 +539,19 @@ void Element::generate_read(ostream &out) const {
     out << t->element_reader() << "(";
 
     array->generate_read(out);
+    out << ",";
+    index->generate_read(out);
+    out << ")";
+}
+
+void Element::lvalue(ostream &out) const {
+    const TypeExpr *t = array->type();
+    assert(t != nullptr && "root of element reference with no type");
+    auto a = dynamic_cast<const Array*>(t);
+    assert(a != nullptr && "root of element reference with non-array type");
+    a->element_referencer(out);
+    out << "(";
+    array->lvalue(out);
     out << ",";
     index->generate_read(out);
     out << ")";

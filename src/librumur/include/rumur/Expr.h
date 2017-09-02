@@ -45,6 +45,13 @@ class Expr : public Node {
      */
     virtual void generate_read(std::ostream &out) const = 0;
 
+    /* Emit some C++ code that implements an lvalue reference of this
+     * expression. Note that it makes no sense for some expressions to be
+     * lvalues (e.g. addition). Callers are expected to understand this and only
+     * call this method on expressions for which it makes sense.
+     */
+    virtual void lvalue(std::ostream &out) const;
+
     virtual ~Expr() = 0;
 
 };
@@ -63,6 +70,10 @@ class Ternary : public Expr {
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
     void generate_read(std::ostream &out) const final;
+
+    /* Note that we do not override ``lvalue``. In Murphi, unlike C++, a ternary
+     * expression cannot be an lvalue.
+     */
 
 };
 
@@ -287,10 +298,15 @@ class ExprID : public Expr {
     explicit ExprID(const std::string &id, std::shared_ptr<Expr> value,
       const TypeExpr *type_of, const location &loc, Indexer &indexer);
 
+    /* FIXME: This object is basically a proxy for other expression types, which
+     * results in us re-implementing any applicable method here. It would be
+     * simpler if we could just redirect these in a less verbose way.
+     */
     void validate() const final;
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
     void generate_read(std::ostream &out) const final;
+    void lvalue(std::ostream &out) const final;
 
 };
 
@@ -306,6 +322,7 @@ class Var : public Expr {
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
     void generate_read(std::ostream &out) const final;
+    void lvalue(std::ostream &out) const final;
 
 };
 
@@ -321,6 +338,7 @@ class Field : public Expr {
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
     void generate_read(std::ostream &out) const final;
+    void lvalue(std::ostream &out) const final;
 
 };
 
@@ -336,6 +354,7 @@ class Element : public Expr {
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
     void generate_read(std::ostream &out) const final;
+    void lvalue(std::ostream &out) const final;
 
 };
 
