@@ -102,10 +102,12 @@ class Record : public TypeExpr {
   public:
     std::vector<std::shared_ptr<VarDecl>> fields;
     std::string name; // TODO: set this somewhere
+    unsigned long index;
 
     explicit Record(std::vector<std::shared_ptr<VarDecl>> &&fields,
       const location &loc, Indexer &indexer);
 
+    void field_referencer(std::ostream &out, const std::string &field) const;
     std::string field_reader(const std::string &field) const final;
     std::string field_writer(const std::string &field) const final;
 

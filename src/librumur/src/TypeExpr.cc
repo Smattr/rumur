@@ -123,8 +123,12 @@ void Enum::generate_max(ostream &out) const {
 }
 
 Record::Record(vector<shared_ptr<VarDecl>> &&fields, const location &loc,
-  Indexer &)
-  : TypeExpr(loc), fields(fields) {
+  Indexer &indexer)
+  : TypeExpr(loc), fields(fields), index(indexer.new_index()) {
+}
+
+void Record::field_referencer(ostream &out, const string &field) const {
+    out << "make_reference_" << index << field;
 }
 
 string Record::field_reader(const string &field) const {
