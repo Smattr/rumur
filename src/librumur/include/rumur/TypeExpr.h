@@ -119,11 +119,13 @@ class Array : public TypeExpr {
     std::shared_ptr<TypeExpr> index_type;
     std::shared_ptr<TypeExpr> element_type;
     std::string name; // TODO: set this somewhere
+    unsigned long index;
 
     explicit Array(std::shared_ptr<TypeExpr> index_type_,
       std::shared_ptr<TypeExpr> element_type_, const location &loc_,
       Indexer &indexer);
 
+    void element_referencer(std::ostream &out) const;
     std::string element_reader() const final;
     std::string element_writer() const final;
 

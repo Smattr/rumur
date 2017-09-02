@@ -155,8 +155,13 @@ string Record::field_writer(const string &field) const {
 
 Array::Array(shared_ptr<TypeExpr> index_type_,
   shared_ptr<TypeExpr> element_type_, const location &loc_,
-  Indexer&)
-  : TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
+  Indexer &indexer)
+  : TypeExpr(loc_), index_type(index_type_), element_type(element_type_),
+    index(indexer.new_index()) {
+}
+
+void Array::element_referencer(ostream &out) const {
+    out << "make_reference_" << index;
 }
 
 string Array::element_reader() const {
