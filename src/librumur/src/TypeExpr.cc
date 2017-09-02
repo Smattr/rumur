@@ -40,13 +40,25 @@ string TypeExpr::element_writer() const {
     throw RumurError("element write of something that is not an array", loc);
 }
 
+SimpleTypeExpr::SimpleTypeExpr(const location &loc, Indexer &indexer)
+  : TypeExpr(loc), index(indexer.new_index()) {
+}
+
 bool SimpleTypeExpr::is_simple() const {
     return true;
 }
 
+void SimpleTypeExpr::reader(ostream &out) const {
+    out << "type_read_" << index;
+}
+
+void SimpleTypeExpr::writer(ostream &out) const {
+    out << "type_write_" << index;
+}
+
 Range::Range(shared_ptr<Expr> min, shared_ptr<Expr> max, const location &loc,
-  Indexer&)
-  : SimpleTypeExpr(loc), min(min), max(max) {
+  Indexer &indexer)
+  : SimpleTypeExpr(loc, indexer), min(min), max(max) {
 }
 
 void Range::validate() const {
@@ -100,7 +112,7 @@ string TypeExprID::element_writer() const {
 
 Enum::Enum(const vector<pair<string, location>> &members, const location &loc,
   Indexer &indexer)
-  : SimpleTypeExpr(loc) {
+  : SimpleTypeExpr(loc, indexer) {
 
     for (auto [s, l] : members) {
 

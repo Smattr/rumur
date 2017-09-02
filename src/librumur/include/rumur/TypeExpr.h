@@ -44,9 +44,15 @@ class TypeExpr : public Node {
 class SimpleTypeExpr : public TypeExpr {
 
   public:
-    using TypeExpr::TypeExpr;
+    unsigned long index;
+
+    explicit SimpleTypeExpr(const location &loc, Indexer &indexer);
 
     bool is_simple() const final;
+
+    /* Emit a C++ function name for reading/writing this type, respectively. */
+    void reader(std::ostream &out) const;
+    void writer(std::ostream &out) const;
 
 };
 
