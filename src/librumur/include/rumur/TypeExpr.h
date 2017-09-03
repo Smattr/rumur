@@ -71,25 +71,6 @@ class Range : public SimpleTypeExpr {
 
 };
 
-class TypeExprID : public TypeExpr {
-
-  public:
-    std::string id;
-    std::shared_ptr<TypeExpr> value;
-
-    explicit TypeExprID(const std::string &id, std::shared_ptr<TypeExpr> value,
-      const location &loc, Indexer &indexer);
-
-    bool is_simple() const final;
-    void generate_min(std::ostream &out) const final;
-    void generate_max(std::ostream &out) const final;
-    std::string field_reader(const std::string &field) const final;
-    std::string field_writer(const std::string &field) const final;
-    std::string element_reader() const final;
-    std::string element_writer() const final;
-
-};
-
 class Enum : public SimpleTypeExpr {
 
   public:

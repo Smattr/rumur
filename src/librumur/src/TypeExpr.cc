@@ -77,39 +77,6 @@ void Range::generate_max(ostream &out) const {
     max->rvalue(out);
 }
 
-TypeExprID::TypeExprID(const string &id, shared_ptr<TypeExpr> value,
-  const location &loc, Indexer&)
-  : TypeExpr(loc), id(id), value(value) {
-}
-
-bool TypeExprID::is_simple() const {
-    return value->is_simple();
-}
-
-void TypeExprID::generate_min(ostream &out) const {
-    return value->generate_min(out);
-}
-
-void TypeExprID::generate_max(ostream &out) const {
-    return value->generate_max(out);
-}
-
-string TypeExprID::field_reader(const string &field) const {
-    return value->field_reader(field);
-}
-
-string TypeExprID::field_writer(const string &field) const {
-    return value->field_writer(field);
-}
-
-string TypeExprID::element_reader() const {
-    return value->element_reader();
-}
-
-string TypeExprID::element_writer() const {
-    return value->element_writer();
-}
-
 Enum::Enum(const vector<pair<string, location>> &members, const location &loc,
   Indexer &indexer)
   : SimpleTypeExpr(loc, indexer) {

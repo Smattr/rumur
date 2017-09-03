@@ -199,8 +199,7 @@ typedecl: ID ':' typeexpr ';' {
 };
 
 typeexpr: ID {
-    auto e = symtab->lookup<rumur::TypeExpr>($1, @$);
-    $$ = std::make_shared<rumur::TypeExprID>($1, e, @$, indexer);
+    $$ = symtab->lookup<rumur::TypeExpr>($1, @$);
 } | expr DOTDOT expr {
     $$ = std::make_shared<rumur::Range>($1, $3, @$, indexer);
 } | ENUM '{' id_list_opt '}' {
@@ -222,16 +221,8 @@ vardecls: vardecls vardecl {
 };
 
 vardecl: id_list_opt ':' typeexpr ';' {
-    bool first = true;
     for (auto [s, l] : $1) {
-        std::shared_ptr<rumur::TypeExpr> t;
-        if (first) {
-            t = $3;
-        } else {
-            t = std::make_shared<rumur::TypeExprID>("", $3, @3, indexer);
-        }
-        $$.push_back(std::make_shared<rumur::VarDecl>(s, t, l, indexer));
-        first = false;
+        $$.push_back(std::make_shared<rumur::VarDecl>(s, $3, l, indexer));
     }
 };
 
