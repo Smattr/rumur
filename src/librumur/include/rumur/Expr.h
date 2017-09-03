@@ -43,7 +43,7 @@ class Expr : public Node {
      * there is any possibility of an order-of-operations confusion when
      * embedding them in something else.
      */
-    virtual void generate_read(std::ostream &out) const = 0;
+    virtual void rvalue(std::ostream &out) const = 0;
 
     /* Emit some C++ code that implements an lvalue reference of this
      * expression. Note that it makes no sense for some expressions to be
@@ -69,7 +69,7 @@ class Ternary : public Expr {
     void validate() const final;
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
     /* Note that we do not override ``lvalue``. In Murphi, unlike C++, a ternary
      * expression cannot be an lvalue.
@@ -98,7 +98,7 @@ class Implication : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -109,7 +109,7 @@ class Or : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -120,7 +120,7 @@ class And : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -145,7 +145,7 @@ class Not : public UnaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -156,7 +156,7 @@ class Lt : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -167,7 +167,7 @@ class Leq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -178,7 +178,7 @@ class Gt : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -189,7 +189,7 @@ class Geq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -200,7 +200,7 @@ class Eq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -211,7 +211,7 @@ class Neq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -222,7 +222,7 @@ class Add : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -233,7 +233,7 @@ class Sub : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -244,7 +244,7 @@ class Negative : public UnaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -255,7 +255,7 @@ class Mul : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -266,7 +266,7 @@ class Div : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -277,7 +277,7 @@ class Mod : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -305,7 +305,7 @@ class ExprID : public Expr {
     void validate() const final;
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
 };
@@ -321,7 +321,7 @@ class Var : public Expr {
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
 };
@@ -337,7 +337,7 @@ class Field : public Expr {
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
 };
@@ -353,7 +353,7 @@ class Element : public Expr {
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
 };
@@ -394,7 +394,7 @@ class Forall : public Expr {
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 
@@ -409,7 +409,7 @@ class Exists : public Expr {
 
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
-    void generate_read(std::ostream &out) const final;
+    void rvalue(std::ostream &out) const final;
 
 };
 

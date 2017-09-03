@@ -70,11 +70,11 @@ void Range::validate() const {
 }
 
 void Range::generate_min(ostream &out) const {
-    min->generate_read(out);
+    min->rvalue(out);
 }
 
 void Range::generate_max(ostream &out) const {
-    max->generate_read(out);
+    max->rvalue(out);
 }
 
 TypeExprID::TypeExprID(const string &id, shared_ptr<TypeExpr> value,

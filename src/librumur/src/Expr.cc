@@ -76,13 +76,13 @@ const TypeExpr *Ternary::type() const noexcept {
     return lhs->type();
 }
 
-void Ternary::generate_read(ostream &out) const {
+void Ternary::rvalue(ostream &out) const {
     out << "(";
-    cond->generate_read(out);
+    cond->rvalue(out);
     out << "?";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ":";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -118,11 +118,11 @@ void Or::validate() const {
     expect_boolean(rhs);
 }
 
-void Implication::generate_read(ostream &out) const {
+void Implication::rvalue(ostream &out) const {
     out << "(!";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "||";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -130,11 +130,11 @@ const TypeExpr *Or::type() const noexcept {
     return &Boolean;
 }
 
-void Or::generate_read(ostream &out) const {
+void Or::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "||";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -149,11 +149,11 @@ const TypeExpr *And::type() const noexcept {
     return &Boolean;
 }
 
-void And::generate_read(ostream &out) const {
+void And::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "&&";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -180,9 +180,9 @@ const TypeExpr *Not::type() const noexcept {
     return &Boolean;
 }
 
-void Not::generate_read(ostream &out) const {
+void Not::rvalue(ostream &out) const {
     out << "(!";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -197,11 +197,11 @@ const TypeExpr *Lt::type() const noexcept {
     return &Boolean;
 }
 
-void Lt::generate_read(ostream &out) const {
+void Lt::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "<";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -216,11 +216,11 @@ const TypeExpr *Leq::type() const noexcept {
     return &Boolean;
 }
 
-void Leq::generate_read(ostream &out) const {
+void Leq::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "<=";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -235,11 +235,11 @@ const TypeExpr *Gt::type() const noexcept {
     return &Boolean;
 }
 
-void Gt::generate_read(ostream &out) const {
+void Gt::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ">";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -254,11 +254,11 @@ const TypeExpr *Geq::type() const noexcept {
     return &Boolean;
 }
 
-void Geq::generate_read(ostream &out) const {
+void Geq::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ">=";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -283,11 +283,11 @@ const TypeExpr *Eq::type() const noexcept {
     return &Boolean;
 }
 
-void Eq::generate_read(ostream &out) const {
+void Eq::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "==";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -312,11 +312,11 @@ const TypeExpr *Neq::type() const noexcept {
     return &Boolean;
 }
 
-void Neq::generate_read(ostream &out) const {
+void Neq::rvalue(ostream &out) const {
     out << "(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << "!=";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -331,11 +331,11 @@ const TypeExpr *Add::type() const noexcept {
     return nullptr;
 }
 
-void Add::generate_read(ostream &out) const {
+void Add::rvalue(ostream &out) const {
     out << "add(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ",";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -350,11 +350,11 @@ const TypeExpr *Sub::type() const noexcept {
     return nullptr;
 }
 
-void Sub::generate_read(ostream &out) const {
+void Sub::rvalue(ostream &out) const {
     out << "sub(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ",";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -367,9 +367,9 @@ const TypeExpr *Negative::type() const noexcept {
     return rhs->type();
 }
 
-void Negative::generate_read(ostream &out) const {
+void Negative::rvalue(ostream &out) const {
     out << "negate(";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -384,11 +384,11 @@ const TypeExpr *Mul::type() const noexcept {
     return nullptr;
 }
 
-void Mul::generate_read(ostream &out) const {
+void Mul::rvalue(ostream &out) const {
     out << "mul(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ",";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -403,11 +403,11 @@ const TypeExpr *Div::type() const noexcept {
     return nullptr;
 }
 
-void Div::generate_read(ostream &out) const {
+void Div::rvalue(ostream &out) const {
     out << "divide(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ",";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -422,11 +422,11 @@ const TypeExpr *Mod::type() const noexcept {
     return nullptr;
 }
 
-void Mod::generate_read(ostream &out) const {
+void Mod::rvalue(ostream &out) const {
     out << "mod(";
-    lhs->generate_read(out);
+    lhs->rvalue(out);
     out << ",";
-    rhs->generate_read(out);
+    rhs->rvalue(out);
     out << ")";
 }
 
@@ -449,7 +449,7 @@ const TypeExpr *ExprID::type() const noexcept {
     return type_of;
 }
 
-void ExprID::generate_read(ostream &out) const {
+void ExprID::rvalue(ostream &out) const {
     out << "model_" << id;
 }
 
@@ -469,7 +469,7 @@ const TypeExpr *Var::type() const noexcept {
     return decl->type.get();
 }
 
-void Var::generate_read(ostream &out) const {
+void Var::rvalue(ostream &out) const {
     if (decl->local) {
         out << "model_" << decl->name;
     } else {
@@ -494,13 +494,37 @@ bool Field::constant() const noexcept {
     return record->constant();
 }
 
-void Field::generate_read(ostream &out) const {
+void Field::rvalue(ostream &out) const {
     const TypeExpr *t = record->type();
-    assert(t != nullptr);
-    out << t->field_reader(field) << "(";
+    assert(t != nullptr && "root of field reference with no type");
+    auto r = dynamic_cast<const Record*>(t);
+    assert(r != nullptr && "root of field reference with non-record type");
 
-    record->generate_read(out);
-    out << ")";
+    shared_ptr<SimpleTypeExpr> f = nullptr;
+    for (shared_ptr<VarDecl> v : r->fields) {
+        if (v->name == field) {
+            f = dynamic_pointer_cast<SimpleTypeExpr>(v->type);
+            break;
+        }
+    }
+
+    if (f != nullptr) {
+        /* HACK: if this field has a simple type, "unwrap" it into a bare
+         * ``int64_t``. This way callers of this can rely on getting back a
+         * reference in the case of an aggregate type and an ``int64_t`` in the
+         * case of a simple type.
+         * FIXME: it is not immediately obvious from the above comment *why*
+         * this is desirable.
+         */
+        f->reader(out);
+        out << "(";
+    }
+
+    lvalue(out);
+
+    if (f != nullptr) {
+        out << ")";
+    }
 }
 
 const TypeExpr *Field::type() const noexcept {
@@ -533,15 +557,26 @@ const TypeExpr *Element::type() const noexcept {
     return nullptr;
 }
 
-void Element::generate_read(ostream &out) const {
+void Element::rvalue(ostream &out) const {
     const TypeExpr *t = array->type();
-    assert(t != nullptr);
-    out << t->element_reader() << "(";
+    assert(t != nullptr && "root of element reference with no type");
+    auto a = dynamic_cast<const Array*>(t);
+    assert(a != nullptr && "root of element reference with non-array type");
+    auto e = dynamic_pointer_cast<SimpleTypeExpr>(a->element_type);
 
-    array->generate_read(out);
-    out << ",";
-    index->generate_read(out);
-    out << ")";
+    if (e != nullptr) {
+        /* HACK: We do the same trick as Field::rvalue above to emit either a
+         * reference or ``int64_t`` based on the element type of this array.
+         */
+        e->reader(out);
+        out << "(";
+    }
+
+    lvalue(out);
+
+    if (e != nullptr) {
+        out << ")";
+    }
 }
 
 void Element::lvalue(ostream &out) const {
@@ -553,7 +588,7 @@ void Element::lvalue(ostream &out) const {
     out << "(";
     array->lvalue(out);
     out << ",";
-    index->generate_read(out);
+    index->rvalue(out);
     out << ")";
 }
 
@@ -594,18 +629,18 @@ const TypeExpr *Exists::type() const noexcept {
     return &Boolean;
 }
 
-void Exists::generate_read(ostream &out) const {
+void Exists::rvalue(ostream &out) const {
     out << "({bool r=false;for(int64_t model_" << quantifier->var->name << "=";
     quantifier->var->type->generate_min(out);
     out << ";;model_" << quantifier->var->name << "=add(model_"
       << quantifier->var->name << ",";
     if (quantifier->step.has_value()) {
-        quantifier->step.value()->generate_read(out);
+        quantifier->step.value()->rvalue(out);
     } else {
         out << "1";
     }
     out << ")){r|=";
-    expr->generate_read(out);
+    expr->rvalue(out);
     out << ";if(r||" << quantifier->var->name << "==";
     quantifier->var->type->generate_max(out);
     out << "){break;}}r;})";
@@ -624,18 +659,18 @@ const TypeExpr *Forall::type() const noexcept {
     return &Boolean;
 }
 
-void Forall::generate_read(ostream &out) const {
+void Forall::rvalue(ostream &out) const {
     out << "({bool r=true;for(int64_t model_" << quantifier->var->name << "=";
     quantifier->var->type->generate_min(out);
     out << ";;model_" << quantifier->var->name << "=add(model_"
       << quantifier->var->name << ",";
     if (quantifier->step.has_value()) {
-        quantifier->step.value()->generate_read(out);
+        quantifier->step.value()->rvalue(out);
     } else {
         out << "1";
     }
     out << ")){r&=";
-    expr->generate_read(out);
+    expr->rvalue(out);
     out << ";if(!r||" << quantifier->var->name << "==";
     quantifier->var->type->generate_max(out);
     out << "){break;}}r;})";
