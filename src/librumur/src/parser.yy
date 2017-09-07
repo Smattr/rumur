@@ -173,6 +173,9 @@ decl: CONST constdecls {
 } | TYPE typedecls {
     $$ = $2;
 } | VAR vardecls {
+    for (std::shared_ptr<rumur::VarDecl> d : $2) {
+        symtab->declare(d->name, std::make_shared<rumur::Var>(d, d->loc, indexer));
+    }
     std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
 
