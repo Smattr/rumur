@@ -18,10 +18,10 @@ Rule::Rule(const string &name, shared_ptr<Expr> guard,
   : Node(loc), name(name), guard(guard), decls(decls), body(body) {
 }
 
-void Rule::generate_rule(ostream &out, const string &indent) const {
+void Rule::generate_rule(ostream &out) const {
     // TODO: decls
     for (const shared_ptr<Stmt> s : body) {
-        s->generate_stmt(out, indent);
+        s->generate_stmt(out);
         out << "\n";
     }
 }

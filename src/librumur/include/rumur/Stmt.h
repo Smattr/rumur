@@ -6,7 +6,6 @@
 #include <rumur/Expr.h>
 #include <rumur/Indexer.h>
 #include <rumur/Node.h>
-#include <string>
 
 namespace rumur {
 
@@ -15,7 +14,7 @@ class Stmt : public Node {
   public:
     using Node::Node;
 
-    virtual void generate_stmt(std::ostream &out, const std::string &indent) const = 0;
+    virtual void generate_stmt(std::ostream &out) const = 0;
 
 };
 
@@ -30,7 +29,7 @@ class Assignment : public Stmt {
 
     void validate() const final;
 
-    void generate_stmt(std::ostream &out, const std::string &indent) const final;
+    void generate_stmt(std::ostream &out) const final;
 
 };
 

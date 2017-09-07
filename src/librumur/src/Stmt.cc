@@ -24,7 +24,7 @@ void Assignment::validate() const {
     rhs->validate();
 }
 
-void Assignment::generate_stmt(ostream &out, const string&) const {
+void Assignment::generate_stmt(ostream &out) const {
     auto t = dynamic_cast<const SimpleTypeExpr*>(lhs->type());
     assert (t != nullptr && "BUG: Left hand side of assignment with non-simple "
       "type. Attempted code generation on unvalidated AST?");
