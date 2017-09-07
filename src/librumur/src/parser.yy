@@ -172,6 +172,8 @@ decl: CONST constdecls {
     $$ = $2;
 } | TYPE typedecls {
     $$ = $2;
+} | VAR vardecls {
+    std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
 
 constdecls: constdecls constdecl {
