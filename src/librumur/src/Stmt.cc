@@ -8,7 +8,7 @@
 using namespace rumur;
 using namespace std;
 
-Assignment::Assignment(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
+Assignment::Assignment(shared_ptr<Lvalue> lhs, shared_ptr<Expr> rhs,
   const location &loc, Indexer&)
   : Stmt(loc), lhs(lhs), rhs(rhs) {
 }

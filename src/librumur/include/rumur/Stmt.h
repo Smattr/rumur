@@ -22,10 +22,10 @@ class Stmt : public Node {
 class Assignment : public Stmt {
 
   public:
-    std::shared_ptr<Expr> lhs;
+    std::shared_ptr<Lvalue> lhs;
     std::shared_ptr<Expr> rhs;
 
-    explicit Assignment(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
+    explicit Assignment(std::shared_ptr<Lvalue> lhs, std::shared_ptr<Expr> rhs,
       const location &loc, Indexer &indexer);
 
     void validate() const final;
