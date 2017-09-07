@@ -29,10 +29,6 @@ bool Expr::is_arithmetic() const noexcept {
     return false;
 }
 
-void Expr::lvalue(ostream&) const {
-    BUG_STUB();
-}
-
 static void expect_arithmetic(const shared_ptr<Expr> e) {
     if (!e->is_arithmetic())
         throw RumurError("expected arithmetic expression is not arithmetic",
@@ -430,9 +426,15 @@ void Mod::rvalue(ostream &out) const {
     out << ")";
 }
 
+/* Cheap trick: this destructor is pure virtual in the class declaration, making
+ * the class abstract.
+ */
+Lvalue::~Lvalue() {
+}
+
 ExprID::ExprID(const string &id, shared_ptr<Expr> value,
   const TypeExpr *type_of, const location &loc, Indexer&)
-  : Expr(loc), id(id), value(value), type_of(type_of) {
+  : Lvalue(loc), id(id), value(value), type_of(type_of) {
 }
 
 bool ExprID::constant() const noexcept {
@@ -454,11 +456,13 @@ void ExprID::rvalue(ostream &out) const {
 }
 
 void ExprID::lvalue(ostream &out) const {
-    value->lvalue(out);
+    auto l = dynamic_pointer_cast<Lvalue>(value);
+    assert(l != nullptr);
+    l->lvalue(out);
 }
 
 Var::Var(shared_ptr<VarDecl> decl, const location &loc, Indexer&)
-  : Expr(loc), decl(decl) {
+  : Lvalue(loc), decl(decl) {
 }
 
 bool Var::constant() const noexcept {
@@ -485,9 +489,9 @@ void Var::lvalue(ostream &out) const {
     }
 }
 
-Field::Field(shared_ptr<Expr> record, const string &field, const location &loc,
+Field::Field(shared_ptr<Lvalue> record, const string &field, const location &loc,
   Indexer&)
-  : Expr(loc), record(record), field(field) {
+  : Lvalue(loc), record(record), field(field) {
 }
 
 bool Field::constant() const noexcept {
@@ -543,9 +547,9 @@ void Field::lvalue(ostream &out) const {
     out << ")";
 }
 
-Element::Element(shared_ptr<Expr> array, shared_ptr<Expr> index,
+Element::Element(shared_ptr<Lvalue> array, shared_ptr<Expr> index,
   const location &loc, Indexer&)
-  : Expr(loc), array(array), index(index) {
+  : Lvalue(loc), array(array), index(index) {
 }
 
 bool Element::constant() const noexcept {

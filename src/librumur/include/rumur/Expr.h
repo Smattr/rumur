@@ -45,13 +45,6 @@ class Expr : public Node {
      */
     virtual void rvalue(std::ostream &out) const = 0;
 
-    /* Emit some C++ code that implements an lvalue reference of this
-     * expression. Note that it makes no sense for some expressions to be
-     * lvalues (e.g. addition). Callers are expected to understand this and only
-     * call this method on expressions for which it makes sense.
-     */
-    virtual void lvalue(std::ostream &out) const;
-
     virtual ~Expr() = 0;
 
 };
@@ -70,10 +63,6 @@ class Ternary : public Expr {
     bool constant() const noexcept final;
     const TypeExpr *type() const noexcept final;
     void rvalue(std::ostream &out) const final;
-
-    /* Note that we do not override ``lvalue``. In Murphi, unlike C++, a ternary
-     * expression cannot be an lvalue.
-     */
 
 };
 
@@ -281,7 +270,21 @@ class Mod : public BinaryExpr {
 
 };
 
-class ExprID : public Expr {
+class Lvalue : public Expr {
+
+  public:
+    using Expr::Expr;
+
+    /* Emit some C++ code that implements an lvalue reference of this
+     * expression.
+     */
+    virtual void lvalue(std::ostream &out) const = 0;;
+
+    virtual ~Lvalue() = 0;
+
+};
+
+class ExprID : public Lvalue {
 
   public:
     std::string id;
@@ -311,7 +314,7 @@ class ExprID : public Expr {
 };
 
 // FIXME: why do we need this class? Could this just be covered by ExprID?
-class Var : public Expr {
+class Var : public Lvalue {
 
   public:
     std::shared_ptr<VarDecl> decl;
@@ -326,13 +329,13 @@ class Var : public Expr {
 
 };
 
-class Field : public Expr {
+class Field : public Lvalue {
 
   public:
-    std::shared_ptr<Expr> record;
+    std::shared_ptr<Lvalue> record;
     std::string field;
 
-    explicit Field(std::shared_ptr<Expr> record, const std::string &field,
+    explicit Field(std::shared_ptr<Lvalue> record, const std::string &field,
       const location &loc, Indexer &indexer);
 
     bool constant() const noexcept final;
@@ -342,13 +345,13 @@ class Field : public Expr {
 
 };
 
-class Element : public Expr {
+class Element : public Lvalue {
 
   public:
-    std::shared_ptr<Expr> array;
+    std::shared_ptr<Lvalue> array;
     std::shared_ptr<Expr> index;
 
-    explicit Element(std::shared_ptr<Expr> array, std::shared_ptr<Expr> index,
+    explicit Element(std::shared_ptr<Lvalue> array, std::shared_ptr<Expr> index,
       const location &loc, Indexer &indexer);
 
     bool constant() const noexcept final;

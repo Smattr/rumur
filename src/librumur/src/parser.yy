@@ -136,7 +136,7 @@
 %type <std::vector<std::shared_ptr<rumur::Decl>>> decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>> decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>> decls_header
-%type <std::shared_ptr<rumur::Expr>> designator
+%type <std::shared_ptr<rumur::Lvalue>> designator
 %type <std::shared_ptr<rumur::Expr>> expr
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
