@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
@@ -18,6 +19,9 @@ class Decl : public Node {
 
     explicit Decl(const std::string &name, const location &loc);
 
+    // Emit C++ code to define this entity.
+    virtual void define(std::ostream &out) const = 0;
+
     virtual ~Decl() = 0;
 
 };
@@ -32,6 +36,7 @@ class ConstDecl : public Decl {
       const location &loc, Indexer &indexer);
 
     void validate() const final;
+    void define(std::ostream &out) const final;
 
 };
 
@@ -44,6 +49,7 @@ class TypeDecl : public Decl {
       const location &loc, Indexer &indexer);
 
     void validate() const final;
+    void define(std::ostream &out) const final;
 
 };
 
@@ -55,6 +61,8 @@ class VarDecl : public Decl {
 
     explicit VarDecl(const std::string &name, std::shared_ptr<TypeExpr> type,
       const location &loc, Indexer &indexer);
+
+    void define(std::ostream &out) const final;
 
 };
 

@@ -1,3 +1,4 @@
+#include <iostream>
 #include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
@@ -28,6 +29,12 @@ void ConstDecl::validate() const {
         throw RumurError("const definition is not a constant", value->loc);
 }
 
+void ConstDecl::define(ostream &out) const {
+    out << "static int64_t model_" << name << "(const State*s __attribute__((unused))){return ";
+    value->rvalue(out);
+    out << ";}";
+}
+
 TypeDecl::TypeDecl(const string &name, shared_ptr<TypeExpr> value,
   const location &loc, Indexer&)
   : Decl(name, loc), value(value) {
@@ -37,7 +44,15 @@ void TypeDecl::validate() const {
     value->validate();
 }
 
+void TypeDecl::define(ostream&) const {
+    // TODO
+}
+
 VarDecl::VarDecl(const string &name, shared_ptr<TypeExpr> type,
   const location &loc, Indexer&)
   : Decl(name, loc), type(type) {
+}
+
+void VarDecl::define(ostream&) const {
+    // TODO
 }
