@@ -59,6 +59,10 @@ int rumur::output_checker(const string &path, const Model &model,
 
     WRITE(header_c);
 
+    // Write out constants and type declarations.
+    for (const shared_ptr<Decl> d : model.decls)
+        d->define(out);
+
     // Write out the start state rules.
     {
         vector<string> start_rules;
