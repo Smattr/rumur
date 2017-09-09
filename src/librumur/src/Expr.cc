@@ -452,7 +452,7 @@ const TypeExpr *ExprID::type() const noexcept {
 }
 
 void ExprID::rvalue(ostream &out) const {
-    out << "model_" << id;
+    out << "model_" << id << "(s)";
 }
 
 void ExprID::lvalue(ostream &out) const {
