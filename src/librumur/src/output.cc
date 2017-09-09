@@ -5,6 +5,7 @@
 #include <rumur/output.h>
 #include "resources.h"
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace rumur;
@@ -16,6 +17,26 @@ using namespace std;
 static string escape_string(const string &s) {
     // TODO
     return "\"" + s + "\"";
+}
+
+static const vector<pair<string, string>> INCLUDES = {
+#define RES(r) make_pair(#r ".c", string((const char*)resources_##r##_c, (size_t)resources_##r##_c_len))
+    RES(State),
+    RES(collections),
+    RES(header),
+    RES(main),
+#undef RES
+};
+
+int rumur::output_includes(const string &path) {
+    for (auto [p, data] : INCLUDES) {
+        ofstream out(path + "/" + p);
+        if (!out)
+            return -1;
+
+        out << data;
+    }
+    return 0;
 }
 
 // Whether a rule is a standard state transition rule.
@@ -36,14 +57,6 @@ int rumur::output_checker(const string &path, const Model &model,
            "#include <stdio.h>\n"
            "#include <unistd.h>\n";
 
-#define WRITE(resource) \
-    do { \
-        for (unsigned int i = 0; i < resources_##resource##_len; i++) { \
-            out << resources_##resource[i]; \
-        } \
-        out << "\n"; \
-    } while (0)
-
     out
       << "enum { OVERFLOW_CHECKS_ENABLED = " <<
       (options.overflow_checks ? "true" : "false") << "};\n"
@@ -51,13 +64,13 @@ int rumur::output_checker(const string &path, const Model &model,
       << "enum { STATE_SIZE_BITS = " << model.size_bits()
       << "};\n"
 
+      << "\n"
+
+      << "#include \"State.c\"\n"
+      << "#include \"collections.c\"\n"
+      << "#include \"header.c\"\n"
+
       << "\n";
-
-    WRITE(State_c);
-
-    WRITE(collections_c);
-
-    WRITE(header_c);
 
     // Write out constants and type declarations.
     for (const shared_ptr<Decl> d : model.decls)
@@ -148,9 +161,7 @@ int rumur::output_checker(const string &path, const Model &model,
         out << "};\n\n";
     }
 
-    WRITE(main_c);
-
-#undef WRITE
+    out << "#include \"main.c\"\n";
 
     return 0;
 
