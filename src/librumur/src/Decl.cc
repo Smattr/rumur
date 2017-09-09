@@ -14,6 +14,9 @@ Decl::Decl(const string &name, const location &loc)
   : Node(loc), name(name) {
 }
 
+Decl::~Decl() {
+}
+
 ConstDecl::ConstDecl(const string &name, shared_ptr<Expr> value,
   const location &loc, Indexer&)
   : Decl(name, loc), value(value) {

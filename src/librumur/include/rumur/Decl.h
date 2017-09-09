@@ -18,7 +18,7 @@ class Decl : public Node {
 
     explicit Decl(const std::string &name, const location &loc);
 
-    virtual ~Decl() {};
+    virtual ~Decl() = 0;
 
 };
 
