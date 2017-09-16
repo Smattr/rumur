@@ -44,8 +44,8 @@ void TypeDecl::validate() const {
     value->validate();
 }
 
-void TypeDecl::define(ostream&) const {
-    // TODO
+void TypeDecl::define(ostream &out) const {
+    value->define(out);
 }
 
 VarDecl::VarDecl(const string &name, shared_ptr<TypeExpr> type,

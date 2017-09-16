@@ -77,6 +77,26 @@ void Range::generate_max(ostream &out) const {
     max->rvalue(out);
 }
 
+void Range::define(ostream &out) const {
+    // Emit a type struct.
+    out << "struct type_" << index << "{void*base;unsigned long offset;};";
+
+    // Emit a reader for this type.
+    out << "static int64_t ";
+    reader(out);
+    out << "(const struct context*context,const struct state*s,const struct type_" << index << " *t){ /* TODO */}";
+
+    // Emit a writer for this type.
+    out << "static void ";
+    writer(out);
+    out << "(const struct context*context,const struct state*s,const struct type_" << index << " *t,int64_t value){"
+      "if(value<";
+    generate_min(out);
+    out << "){context->error(context,s,\"...\");}if(value>";
+    generate_max(out);
+    out << "){context->error(context,s,\"...\");} /* TODO */}";
+}
+
 Enum::Enum(const vector<pair<string, location>> &members, const location &loc,
   Indexer &indexer)
   : SimpleTypeExpr(loc, indexer) {
@@ -99,6 +119,9 @@ void Enum::generate_min(ostream &out) const {
 
 void Enum::generate_max(ostream &out) const {
     out << "INT64_C(" << members.size() << ")";
+}
+
+void Enum::define(ostream &) const {
 }
 
 Record::Record(vector<shared_ptr<VarDecl>> &&fields, const location &loc,
@@ -132,6 +155,9 @@ string Record::field_writer(const string &field) const {
     throw RumurError("attempted write of non-existent record field", loc);
 }
 
+void Record::define(ostream &) const {
+}
+
 Array::Array(shared_ptr<TypeExpr> index_type_,
   shared_ptr<TypeExpr> element_type_, const location &loc_,
   Indexer &indexer)
@@ -149,4 +175,7 @@ string Array::element_reader() const {
 
 string Array::element_writer() const {
     return name + "_write";
+}
+
+void Array::define(ostream &) const {
 }

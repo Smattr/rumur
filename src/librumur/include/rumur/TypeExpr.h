@@ -39,6 +39,9 @@ class TypeExpr : public Node {
     virtual std::string element_reader() const;
     virtual std::string element_writer() const;
 
+    // Emit C++ definitions relevant to this type.
+    virtual void define(std::ostream &out) const = 0;
+
 };
 
 class SimpleTypeExpr : public TypeExpr {
@@ -68,6 +71,7 @@ class Range : public SimpleTypeExpr {
     void validate() const final;
     void generate_min(std::ostream &out) const final;
     void generate_max(std::ostream &out) const final;
+    void define(std::ostream &out) const final;
 
 };
 
@@ -81,6 +85,7 @@ class Enum : public SimpleTypeExpr {
 
     void generate_min(std::ostream &out) const final;
     void generate_max(std::ostream &out) const final;
+    void define(std::ostream &out) const final;
 
 };
 
@@ -97,6 +102,7 @@ class Record : public TypeExpr {
     void field_referencer(std::ostream &out, const std::string &field) const;
     std::string field_reader(const std::string &field) const final;
     std::string field_writer(const std::string &field) const final;
+    void define(std::ostream &out) const final;
 
 };
 
@@ -115,6 +121,7 @@ class Array : public TypeExpr {
     void element_referencer(std::ostream &out) const;
     std::string element_reader() const final;
     std::string element_writer() const final;
+    void define(std::ostream &out) const final;
 
 };
 
