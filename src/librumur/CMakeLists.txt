@@ -18,24 +18,19 @@ set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-register)
 
 # Define resources.
 add_custom_command(
-    OUTPUT resources_collections.cc
-    COMMAND xxd -include resources/collections.c ${CMAKE_CURRENT_BINARY_DIR}/resources_collections.cc
-    MAIN_DEPENDENCY resources/collections.c
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_command(
     OUTPUT resources_header.cc
-    COMMAND xxd -include resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
-    MAIN_DEPENDENCY resources/header.c
+    COMMAND xxd -include resources/header.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+    MAIN_DEPENDENCY resources/header.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
     OUTPUT resources_main.cc
-    COMMAND xxd -include resources/main.c ${CMAKE_CURRENT_BINARY_DIR}/resources_main.cc
-    MAIN_DEPENDENCY resources/main.c
+    COMMAND xxd -include resources/main.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_main.cc
+    MAIN_DEPENDENCY resources/main.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
     OUTPUT resources_State.cc
-    COMMAND xxd -include resources/State.c ${CMAKE_CURRENT_BINARY_DIR}/resources_State.cc
-    MAIN_DEPENDENCY resources/State.c
+    COMMAND xxd -include resources/State.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_State.cc
+    MAIN_DEPENDENCY resources/State.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(librumur
@@ -52,7 +47,6 @@ add_library(librumur
     src/Rule.cc
     src/Stmt.cc
     src/TypeExpr.cc
-    ${CMAKE_CURRENT_BINARY_DIR}/resources_collections.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_main.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_State.cc

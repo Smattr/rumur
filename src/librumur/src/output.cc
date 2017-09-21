@@ -20,9 +20,8 @@ static string escape_string(const string &s) {
 }
 
 static const vector<pair<string, string>> INCLUDES = {
-#define RES(r) make_pair(#r ".c", string((const char*)resources_##r##_c, (size_t)resources_##r##_c_len))
+#define RES(r) make_pair(#r ".cc", string((const char*)resources_##r##_cc, (size_t)resources_##r##_cc_len))
     RES(State),
-    RES(collections),
     RES(header),
     RES(main),
 #undef RES
@@ -52,25 +51,21 @@ int rumur::output_checker(const string &path, const Model &model,
     if (!out)
         return -1;
 
-    out << "#include <stdbool.h>\n"
-           "#include <stdint.h>\n"
-           "#include <stdio.h>\n"
-           "#include <unistd.h>\n";
-
     out
-      << "enum { OVERFLOW_CHECKS_ENABLED = " <<
-      (options.overflow_checks ? "true" : "false") << "};\n"
+      << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
+      (options.overflow_checks ? "true" : "false") << ";\n"
 
-      << "enum { STATE_SIZE_BITS = " << model.size_bits()
-      << "};\n"
+      << "static constexpr size_t STATE_SIZE_BITS = " << model.size_bits()
+      << ";\n"
 
       << "\n"
 
-      << "#include \"State.c\"\n"
-      << "#include \"collections.c\"\n"
-      << "#include \"header.c\"\n"
+      << "#include \"State.cc\"\n"
+      << "#include \"header.cc\"\n"
 
       << "\n";
+
+    // TODO: rewrite the following into C++17
 
     // Write out constants and type declarations.
     for (const shared_ptr<Decl> d : model.decls)
