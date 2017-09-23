@@ -30,6 +30,13 @@ available in the directory you installed to:
 * lib/librumur.a: A library for building your own Murphi model tools; and
 * include/rumur/: The API for the above library.
 
+Comparison with CMurphi
+-----------------------
+At a glance, some differences between Rumur and CMurphi:
+
+* CMurphi considers the operator ``==`` an error, while Rumur treats it as an
+  alias of ``=`` to ease life for C/C++ programmers.
+
 Legal
 -----
 Everything in this repository is in the public domain. Use in any way you see
