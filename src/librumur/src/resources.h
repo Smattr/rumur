@@ -9,5 +9,8 @@ extern unsigned int resources_header_cc_len;
 extern unsigned char resources_main_cc[];
 extern unsigned int resources_main_cc_len;
 
+extern unsigned char resources_Rule_cc[];
+extern unsigned int resources_Rule_cc_len;
+
 extern unsigned char resources_State_cc[];
 extern unsigned int resources_State_cc_len;

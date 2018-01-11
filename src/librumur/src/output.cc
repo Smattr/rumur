@@ -22,6 +22,7 @@ static string escape_string(const string &s) {
 static const vector<pair<string, string>> INCLUDES = {
 #define RES(r) make_pair(#r ".cc", string((const char*)resources_##r##_cc, (size_t)resources_##r##_cc_len))
     RES(State),
+    RES(Rule),
     RES(header),
     RES(main),
 #undef RES
@@ -60,6 +61,7 @@ int rumur::output_checker(const string &path, const Model &model,
 
       << "\n"
 
+      << "#include \"Rule.cc\"\n"
       << "#include \"State.cc\"\n"
       << "#include \"header.cc\"\n"
 
