@@ -1,7 +1,9 @@
 #include <rumur/Indexer.h>
 
-using namespace rumur;
+namespace rumur {
 
 unsigned long Indexer::new_index() {
     return index++;
+}
+
 }

@@ -8,8 +8,9 @@
 #include <stdexcept>
 #include <string>
 
-using namespace rumur;
 using namespace std;
+
+namespace rumur {
 
 static_assert(sizeof(long long) >= sizeof(int64_t),
     "a 64-bit integer cannot be read with stoll");
@@ -25,22 +26,24 @@ Number::Number(const string &value, const location &loc, Indexer&)
     }
 }
 
-Number::Number(const Number &other, const location &loc, Indexer&) noexcept
-  : Expr(loc), value(other.value) {
-}
-
-Number::Number(int64_t value, const location &loc, Indexer&) noexcept
+Number::Number(int64_t value, const location &loc, Indexer&)
   : Expr(loc), value(value) {
 }
 
-bool Number::constant() const noexcept {
+Number *Number::clone() const {
+    return new Number(*this);
+}
+
+bool Number::constant() const {
     return true;
 }
 
-const TypeExpr *Number::type() const noexcept {
+const TypeExpr *Number::type() const {
     return nullptr;
 }
 
 void Number::rvalue(ostream &out) const {
     out << "INT64_C(" << value << ")";
+}
+
 }

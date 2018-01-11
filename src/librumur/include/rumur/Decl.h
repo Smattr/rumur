@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "location.hh"
-#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Indexer.h>
 #include <rumur/Node.h>
@@ -14,26 +13,36 @@ namespace rumur {
 class Decl : public Node {
 
   public:
-
     std::string name;
 
-    explicit Decl(const std::string &name, const location &loc);
+    Decl() = delete;
+    Decl(const std::string &name, const location &loc);
+    Decl(const Decl&) = default;
+    Decl(Decl&&) = default;
+    Decl &operator=(const Decl&) = default;
+    Decl &operator=(Decl&&) = default;
+    virtual ~Decl() = 0;
 
     // Emit C++ code to define this entity.
     virtual void define(std::ostream &out) const = 0;
 
-    virtual ~Decl() = 0;
+    Decl *clone() const override = 0;
 
 };
 
 class ConstDecl : public Decl {
 
   public:
+    Expr *value;
 
-    std::shared_ptr<Expr> value;
-
-    explicit ConstDecl(const std::string &name, std::shared_ptr<Expr> value,
+    ConstDecl() = delete;
+    ConstDecl(const std::string &name, const Expr *value,
       const location &loc, Indexer &indexer);
+    ConstDecl(const ConstDecl &other);
+    ConstDecl &operator=(ConstDecl other);
+    friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
+    ConstDecl *clone() const final;
+    virtual ~ConstDecl();
 
     void validate() const final;
     void define(std::ostream &out) const final;
@@ -43,10 +52,16 @@ class ConstDecl : public Decl {
 class TypeDecl : public Decl {
 
   public:
-    std::shared_ptr<TypeExpr> value;
+    TypeExpr *value;
 
-    explicit TypeDecl(const std::string &name, std::shared_ptr<TypeExpr> value,
+    TypeDecl() = delete;
+    TypeDecl(const std::string &name, TypeExpr *value,
       const location &loc, Indexer &indexer);
+    TypeDecl(const TypeDecl &other);
+    TypeDecl &operator=(TypeDecl other);
+    friend void swap(TypeDecl &x, TypeDecl &y) noexcept;
+    TypeDecl *clone() const final;
+    virtual ~TypeDecl();
 
     void validate() const final;
     void define(std::ostream &out) const final;
@@ -56,11 +71,17 @@ class TypeDecl : public Decl {
 class VarDecl : public Decl {
 
   public:
-    std::shared_ptr<TypeExpr> type;
+    TypeExpr *type;
     bool local = false;
 
-    explicit VarDecl(const std::string &name, std::shared_ptr<TypeExpr> type,
+    VarDecl() = delete;
+    VarDecl(const std::string &name, TypeExpr *type,
       const location &loc, Indexer &indexer);
+    VarDecl(const VarDecl &other);
+    VarDecl &operator=(VarDecl other);
+    friend void swap(VarDecl &x, VarDecl &y) noexcept;
+    VarDecl *clone() const final;
+    virtual ~VarDecl();
 
     void define(std::ostream &out) const final;
 

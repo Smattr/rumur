@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include "location.hh"
-#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Indexer.h>
 #include <rumur/Node.h>
@@ -14,6 +13,14 @@ class Stmt : public Node {
   public:
     using Node::Node;
 
+    Stmt() = delete;
+    Stmt(const Stmt&) = default;
+    Stmt(Stmt&&) = default;
+    Stmt &operator=(const Stmt&) = default;
+    Stmt &operator=(Stmt&&) = default;
+    virtual ~Stmt() { }
+    virtual Stmt *clone() const = 0;
+
     virtual void generate_stmt(std::ostream &out) const = 0;
 
 };
@@ -21,11 +28,16 @@ class Stmt : public Node {
 class Assignment : public Stmt {
 
   public:
-    std::shared_ptr<Lvalue> lhs;
-    std::shared_ptr<Expr> rhs;
+    Lvalue *lhs;
+    Expr *rhs;
 
-    explicit Assignment(std::shared_ptr<Lvalue> lhs, std::shared_ptr<Expr> rhs,
-      const location &loc, Indexer &indexer);
+    Assignment() = delete;
+    Assignment(Lvalue *lhs, Expr *rhs, const location &loc, Indexer &indexer);
+    Assignment(const Assignment &other);
+    Assignment &operator=(Assignment other);
+    friend void swap(Assignment &x, Assignment &y) noexcept;
+    Assignment *clone() const final;
+    virtual ~Assignment();
 
     void validate() const final;
 

@@ -12,18 +12,20 @@ namespace rumur {
 class Number : public Expr {
 
   public:
-
     int64_t value;
 
-    explicit Number(const std::string &value, const location &loc,
-      Indexer &indexer);
-    explicit Number(const Number &other, const location &loc,
-      Indexer &indexer) noexcept;
-    explicit Number(int64_t value, const location &loc, Indexer &indexer)
-      noexcept;
+    Number() = delete;
+    Number(const std::string &value, const location &loc, Indexer &indexer);
+    Number(int64_t value, const location &loc, Indexer &indexer);
+    Number(const Number&) = default;
+    Number(Number&&) = default;
+    Number &operator=(const Number&) = default;
+    Number &operator=(Number&&) = default;
+    virtual ~Number() { }
+    Number *clone() const final;
 
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };

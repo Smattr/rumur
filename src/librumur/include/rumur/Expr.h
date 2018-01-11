@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <iostream>
 #include "location.hh"
-#include <memory>
-#include <optional>
 #include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <string>
@@ -19,23 +17,31 @@ class Expr : public Node {
 
   public:
     using Node::Node;
+    Expr() = delete;
+    Expr(const Expr&) = default;
+    Expr(Expr&&) = default;
+    Expr &operator=(const Expr&) = default;
+    Expr &operator=(Expr&&) = default;
+    virtual ~Expr() { }
+
+    virtual Expr *clone() const = 0;
 
     // Whether an expression is a compile-time constant
-    virtual bool constant() const noexcept = 0;
+    virtual bool constant() const = 0;
 
     /* The type of this expression. A nullptr indicates the type is equivalent
      * to a numeric literal; that is, an unbounded range.
      */
-    virtual const TypeExpr *type() const noexcept = 0;
+    virtual const TypeExpr *type() const = 0;
 
     /* Whether this expression can participate in arithmetic expressions (e.g.
      * addition). This is only true of literals and values of range types. That
      * is, booleans, enums and complex types are not arithmetic.
      */
-    bool is_arithmetic() const noexcept;
+    bool is_arithmetic() const;
 
     // If this expression is of boolean type.
-    bool is_boolean() const noexcept;
+    bool is_boolean() const;
 
     /* Emit some C++ code that implements an rvalue reference of this
      * expression. Implementers can assume the variable 's' is in scope that is
@@ -45,23 +51,28 @@ class Expr : public Node {
      */
     virtual void rvalue(std::ostream &out) const = 0;
 
-    virtual ~Expr() = 0;
-
 };
 
 class Ternary : public Expr {
 
   public:
-    std::shared_ptr<Expr> cond;
-    std::shared_ptr<Expr> lhs;
-    std::shared_ptr<Expr> rhs;
+    Expr *cond;
+    Expr *lhs;
+    Expr *rhs;
 
-    explicit Ternary(std::shared_ptr<Expr> cond, std::shared_ptr<Expr> lhs,
-      std::shared_ptr<Expr> rhs, const location &loc, Indexer &indexer) noexcept;
+    Ternary() = delete;
+    Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc,
+        Indexer &indexer);
+    Ternary(const Ternary &other);
+    Ternary(Ternary&&) = default;
+    Ternary &operator=(Ternary other);
+    friend void swap(Ternary &x, Ternary &y) noexcept;
+    virtual ~Ternary();
 
+    Ternary *clone() const final;
     void validate() const final;
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -69,14 +80,20 @@ class Ternary : public Expr {
 class BinaryExpr : public Expr {
 
   public:
-    std::shared_ptr<Expr> lhs;
-    std::shared_ptr<Expr> rhs;
+    Expr *lhs;
+    Expr *rhs;
 
-    explicit BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs,
-      const location &loc, Indexer &indexer) noexcept;
+    BinaryExpr() = delete;
+    BinaryExpr(Expr *lhs, Expr *rhs, const location &loc, Indexer &indexer);
+    BinaryExpr(const BinaryExpr &other);
+    BinaryExpr &operator=(const BinaryExpr&) = delete;
+    BinaryExpr &operator=(BinaryExpr&&) = delete;
+    friend void swap(BinaryExpr &x, BinaryExpr &y) noexcept;
+    virtual ~BinaryExpr();
 
+    BinaryExpr *clone() const override = 0;
     void validate() const override;
-    bool constant() const noexcept final;
+    bool constant() const final;
 
 };
 
@@ -84,9 +101,13 @@ class Implication : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Implication() = delete;
+    Implication &operator=(Implication other);
+    Implication *clone() const final;
+    virtual ~Implication() { }
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -95,9 +116,13 @@ class Or : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Or() = delete;
+    Or &operator=(Or other);
+    virtual ~Or() { }
+    Or *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -106,9 +131,13 @@ class And : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    And() = delete;
+    And &operator=(And other);
+    virtual ~And() { }
+    And *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -116,14 +145,17 @@ class And : public BinaryExpr {
 class UnaryExpr : public Expr {
 
   public:
+    Expr *rhs;
 
-    std::shared_ptr<Expr> rhs;
-
-    explicit UnaryExpr(std::shared_ptr<Expr> rhs, const location &loc,
-      Indexer &indexer) noexcept;
+    UnaryExpr() = delete;
+    UnaryExpr(Expr *rhs, const location &loc, Indexer &indexer);
+    UnaryExpr(const UnaryExpr &other);
+    friend void swap(UnaryExpr &x, UnaryExpr &y) noexcept;
+    UnaryExpr *clone() const override = 0;
+    virtual ~UnaryExpr();
 
     void validate() const override;
-    bool constant() const noexcept final;
+    bool constant() const final;
 
 };
 
@@ -131,9 +163,13 @@ class Not : public UnaryExpr {
 
   public:
     using UnaryExpr::UnaryExpr;
+    Not() = delete;
+    Not &operator=(Not other);
+    virtual ~Not() { }
+    Not *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -142,9 +178,13 @@ class Lt : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Lt() = delete;
+    Lt &operator=(Lt other);
+    virtual ~Lt() { }
+    Lt *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -153,9 +193,13 @@ class Leq : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Leq() = delete;
+    Leq &operator=(Leq other);
+    virtual ~Leq() { }
+    Leq *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -164,9 +208,13 @@ class Gt : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Gt() = delete;
+    Gt &operator=(Gt other);
+    virtual ~Gt() { }
+    Gt *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -175,9 +223,13 @@ class Geq : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Geq() = delete;
+    Geq &operator=(Geq other);
+    virtual ~Geq() { }
+    Geq *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -186,9 +238,13 @@ class Eq : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Eq() = delete;
+    Eq &operator=(Eq other);
+    virtual ~Eq() { }
+    Eq *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -197,9 +253,13 @@ class Neq : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Neq() = delete;
+    Neq &operator=(Neq other);
+    virtual ~Neq() { }
+    Neq *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -208,9 +268,13 @@ class Add : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Add() = delete;
+    Add &operator=(Add other);
+    virtual ~Add() { }
+    Add *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -219,9 +283,13 @@ class Sub : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Sub() = delete;
+    Sub &operator=(Sub other);
+    virtual ~Sub() { }
+    Sub *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -230,9 +298,13 @@ class Negative : public UnaryExpr {
 
   public:
     using UnaryExpr::UnaryExpr;
+    Negative() = delete;
+    Negative &operator=(Negative other);
+    virtual ~Negative() { }
+    Negative *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -241,9 +313,13 @@ class Mul : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Mul() = delete;
+    Mul &operator=(Mul other);
+    virtual ~Mul() { }
+    Mul *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -252,9 +328,13 @@ class Div : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Div() = delete;
+    Div &operator=(Div other);
+    virtual ~Div() { }
+    Div *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -263,9 +343,13 @@ class Mod : public BinaryExpr {
 
   public:
     using BinaryExpr::BinaryExpr;
+    Mod() = delete;
+    Mod &operator=(Mod other);
+    virtual ~Mod() { }
+    Mod *clone() const final;
 
     void validate() const final;
-    const TypeExpr *type() const noexcept final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };
@@ -274,13 +358,18 @@ class Lvalue : public Expr {
 
   public:
     using Expr::Expr;
+    Lvalue() = delete;
+    Lvalue(const Lvalue&) = default;
+    Lvalue(Lvalue&&) = default;
+    Lvalue &operator=(const Lvalue&) = default;
+    Lvalue &operator=(Lvalue&&) = default;
+    virtual ~Lvalue() = 0;
+    virtual Lvalue *clone() const = 0;
 
     /* Emit some C++ code that implements an lvalue reference of this
      * expression.
      */
     virtual void lvalue(std::ostream &out) const = 0;;
-
-    virtual ~Lvalue() = 0;
 
 };
 
@@ -288,7 +377,7 @@ class ExprID : public Lvalue {
 
   public:
     std::string id;
-    std::shared_ptr<Expr> value;
+    Expr *value;
 
     /* We use a raw pointer here because we don't own this object and using a
      * std::shared_ptr would introduce a GC cycle. This is because the members
@@ -298,16 +387,22 @@ class ExprID : public Lvalue {
      */
     const TypeExpr *type_of;
 
-    explicit ExprID(const std::string &id, std::shared_ptr<Expr> value,
+    ExprID() = delete;
+    ExprID(const std::string &id, const Expr *value,
       const TypeExpr *type_of, const location &loc, Indexer &indexer);
+    ExprID(const ExprID &other);
+    ExprID &operator=(ExprID other);
+    friend void swap(ExprID &x, ExprID &y) noexcept;
+    virtual ~ExprID();
+    ExprID *clone() const final;
 
     /* FIXME: This object is basically a proxy for other expression types, which
      * results in us re-implementing any applicable method here. It would be
      * simpler if we could just redirect these in a less verbose way.
      */
     void validate() const final;
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
@@ -317,13 +412,18 @@ class ExprID : public Lvalue {
 class Var : public Lvalue {
 
   public:
-    std::shared_ptr<VarDecl> decl;
+    VarDecl *decl;
 
-    explicit Var(std::shared_ptr<VarDecl> decl, const location &loc,
-      Indexer &indexer);
+    Var() = delete;
+    Var(const VarDecl *decl, const location &loc, Indexer &indexer);
+    Var(const Var &other);
+    friend void swap(Var &x, Var &y) noexcept;
+    Var &operator=(Var other);
+    virtual ~Var();
+    Var *clone() const final;
 
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
@@ -332,14 +432,19 @@ class Var : public Lvalue {
 class Field : public Lvalue {
 
   public:
-    std::shared_ptr<Lvalue> record;
+    Lvalue *record;
     std::string field;
 
-    explicit Field(std::shared_ptr<Lvalue> record, const std::string &field,
-      const location &loc, Indexer &indexer);
+    Field() = delete;
+    Field(Lvalue *record, const std::string &field, const location &loc, Indexer &indexer);
+    Field(const Field &other);
+    friend void swap(Field &x, Field &y) noexcept;
+    Field &operator=(Field other);
+    virtual ~Field();
+    Field *clone() const final;
 
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
@@ -348,14 +453,19 @@ class Field : public Lvalue {
 class Element : public Lvalue {
 
   public:
-    std::shared_ptr<Lvalue> array;
-    std::shared_ptr<Expr> index;
+    Lvalue *array;
+    Expr *index;
 
-    explicit Element(std::shared_ptr<Lvalue> array, std::shared_ptr<Expr> index,
-      const location &loc, Indexer &indexer);
+    Element() = delete;
+    Element(Lvalue *array, Expr *index, const location &loc, Indexer &indexer);
+    Element(const Element &other);
+    friend void swap(Element &x, Element &y) noexcept;
+    Element &operator=(Element other);
+    virtual ~Element();
+    Element *clone() const final;
 
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
 
@@ -364,54 +474,70 @@ class Element : public Lvalue {
 class Quantifier : public Node {
 
   public:
-    std::shared_ptr<VarDecl> var;
-    std::optional<std::shared_ptr<Expr>> step;
+    VarDecl *var;
+    Expr *step;
 
-    explicit Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
+    Quantifier() = delete;
+    Quantifier(const std::string &name, TypeExpr *type, const location &loc,
+        Indexer &indexer);
+    Quantifier(const std::string &name, Expr *from, Expr *to,
+        const location &loc, Indexer &indexer);
+    Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step,
       const location &loc, Indexer &indexer);
-    explicit Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-      std::shared_ptr<Expr> to, const location &loc, Indexer &indexer);
-    explicit Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-      std::shared_ptr<Expr> to, std::shared_ptr<Expr> step,
-      const location &loc, Indexer &indexer);
+    Quantifier(const Quantifier &other);
+    Quantifier &operator=(Quantifier other);
+    friend void swap(Quantifier &x, Quantifier &y) noexcept;
+    virtual ~Quantifier();
+    Quantifier *clone() const final;
 
   private:
     /* This constructor is delegated to internally.
      * HACK: This takes the arguments in a different order to avoid internal
      * constructor references being ambiguous.
      */
-    explicit Quantifier(const location &loc, const std::string &name,
-      std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
-      std::optional<std::shared_ptr<Expr>> step, Indexer &indexer);
-
-};
-
-class Forall : public Expr {
-
-  public:
-    std::shared_ptr<Quantifier> quantifier;
-    std::shared_ptr<Expr> expr;
-
-    explicit Forall(std::shared_ptr<Quantifier> quantifier,
-      std::shared_ptr<Expr> expr, const location &loc, Indexer &indexer);
-
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
-    void rvalue(std::ostream &out) const final;
+    Quantifier(const location &loc, const std::string &name, Expr *from,
+        Expr *to, Expr *step, Indexer &indexer);
 
 };
 
 class Exists : public Expr {
 
   public:
-    std::shared_ptr<Quantifier> quantifier;
-    std::shared_ptr<Expr> expr;
+    Quantifier *quantifier;
+    Expr *expr;
 
-    explicit Exists(std::shared_ptr<Quantifier> quantifier,
-      std::shared_ptr<Expr> expr, const location &loc, Indexer &indexer);
+    Exists() = delete;
+    Exists(Quantifier *quantifier, Expr *expr, const location &loc,
+        Indexer &indexer);
+    Exists(const Exists &other);
+    Exists &operator=(Exists other);
+    friend void swap(Exists &x, Exists &y) noexcept;
+    virtual ~Exists();
+    Exists *clone() const final;
 
-    bool constant() const noexcept final;
-    const TypeExpr *type() const noexcept final;
+    bool constant() const final;
+    const TypeExpr *type() const final;
+    void rvalue(std::ostream &out) const final;
+
+};
+
+class Forall : public Expr {
+
+  public:
+    Quantifier *quantifier;
+    Expr *expr;
+
+    Forall() = delete;
+    Forall(Quantifier *quantifier, Expr *expr, const location &loc,
+        Indexer &indexer);
+    Forall(const Forall &other);
+    Forall &operator=(Forall other);
+    friend void swap(Forall &x, Forall &y) noexcept;
+    virtual ~Forall();
+    Forall *clone() const final;
+
+    bool constant() const final;
+    const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
 
 };

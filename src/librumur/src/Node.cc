@@ -1,7 +1,9 @@
 #include <rumur/Node.h>
 
-using namespace rumur;
+namespace rumur {
 
-Node::Node(const location &loc) noexcept
+Node::Node(const location &loc)
   : loc(loc) {
+}
+
 }

@@ -10,10 +10,11 @@
 #include <rumur/scanner.h>
 #include <rumur/Symtab.h>
 
-using namespace rumur;
 using namespace std;
 
-Model *rumur::parse(istream *input) {
+namespace rumur {
+
+Model *parse(istream *input) {
 
     assert(input != nullptr);
 
@@ -37,4 +38,6 @@ Model *rumur::parse(istream *input) {
     m->validate();
 
     return m;
+}
+
 }

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
@@ -9,8 +8,9 @@
 #include <utility>
 #include <vector>
 
-using namespace rumur;
 using namespace std;
+
+namespace rumur {
 
 bool TypeExpr::is_simple() const {
     return false;
@@ -56,9 +56,29 @@ void SimpleTypeExpr::writer(ostream &out) const {
     out << "type_write_" << index;
 }
 
-Range::Range(shared_ptr<Expr> min, shared_ptr<Expr> max, const location &loc,
-  Indexer &indexer)
+Range::Range(Expr *min, Expr *max, const location &loc, Indexer &indexer)
   : SimpleTypeExpr(loc, indexer), min(min), max(max) {
+}
+
+Range::Range(const Range &other):
+  SimpleTypeExpr(other), min(other.min->clone()), max(other.max->clone()) {
+}
+
+Range &Range::operator=(Range other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Range &x, Range &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.index, y.index);
+    swap(x.min, y.min);
+    swap(x.max, y.max);
+}
+
+Range *Range::clone() const {
+    return new Range(*this);
 }
 
 void Range::validate() const {
@@ -97,20 +117,28 @@ void Range::define(ostream &out) const {
     out << "){context->error(context,s,\"...\");} /* TODO */}";
 }
 
+Range::~Range() {
+    delete min;
+    delete max;
+}
+
 Enum::Enum(const vector<pair<string, location>> &members, const location &loc,
   Indexer &indexer)
   : SimpleTypeExpr(loc, indexer) {
 
-    for (auto [s, l] : members) {
+    for (const std::pair<std::string, location> &m : members) {
 
         // Assign the enum member a numerical value
-        auto n = make_shared<Number>(this->members.size(), l, indexer);
+        auto n = new Number(this->members.size(), m.second, indexer);
 
         // Construct an expression for it
-        auto e = make_shared<ExprID>(s, n, this, l, indexer);
-        this->members.emplace_back(e);
+        this->members.emplace_back(m.first, n, this, m.second, indexer);
 
     }
+}
+
+Enum *Enum::clone() const {
+    return new Enum(*this);
 }
 
 void Enum::generate_min(ostream &out) const {
@@ -124,9 +152,32 @@ void Enum::generate_max(ostream &out) const {
 void Enum::define(ostream &) const {
 }
 
-Record::Record(vector<shared_ptr<VarDecl>> &&fields, const location &loc,
+Record::Record(vector<VarDecl*> &&fields, const location &loc,
   Indexer &indexer)
   : TypeExpr(loc), fields(fields), index(indexer.new_index()) {
+}
+
+Record::Record(const Record &other):
+  TypeExpr(other), index(other.index) {
+    for (const VarDecl *v : other.fields)
+        fields.push_back(v->clone());
+}
+
+Record &Record::operator=(Record other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Record &x, Record &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.fields, y.fields);
+    swap(x.name, y.name);
+    swap(x.index, y.index);
+}
+
+Record *Record::clone() const {
+    return new Record(*this);
 }
 
 void Record::field_referencer(ostream &out, const string &field) const {
@@ -135,7 +186,7 @@ void Record::field_referencer(ostream &out, const string &field) const {
 
 string Record::field_reader(const string &field) const {
     unsigned long i = 0;
-    for (const shared_ptr<VarDecl> v : fields) {
+    for (const VarDecl *v : fields) {
         if (v->name == field) {
             return name + "_field_" + to_string(i) + "_read";
         }
@@ -146,7 +197,7 @@ string Record::field_reader(const string &field) const {
 
 string Record::field_writer(const string &field) const {
     unsigned long i = 0;
-    for (const shared_ptr<VarDecl> v : fields) {
+    for (const VarDecl *v : fields) {
         if (v->name == field) {
             return name + "_field_" + to_string(i) + "_write";
         }
@@ -158,11 +209,38 @@ string Record::field_writer(const string &field) const {
 void Record::define(ostream &) const {
 }
 
-Array::Array(shared_ptr<TypeExpr> index_type_,
-  shared_ptr<TypeExpr> element_type_, const location &loc_,
+Record::~Record() {
+    for (VarDecl *v : fields)
+        delete v;
+}
+
+Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_,
   Indexer &indexer)
   : TypeExpr(loc_), index_type(index_type_), element_type(element_type_),
     index(indexer.new_index()) {
+}
+
+Array::Array(const Array &other):
+  TypeExpr(other), index_type(other.index_type->clone()),
+  element_type(other.element_type->clone()), index(other.index) {
+}
+
+Array &Array::operator=(Array other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Array &x, Array &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.index_type, y.index_type);
+    swap(x.element_type, y.element_type);
+    swap(x.name, y.name);
+    swap(x.index, y.index);
+}
+
+Array *Array::clone() const {
+    return new Array(*this);
 }
 
 void Array::element_referencer(ostream &out) const {
@@ -178,4 +256,11 @@ string Array::element_writer() const {
 }
 
 void Array::define(ostream &) const {
+}
+
+Array::~Array() {
+    delete index_type;
+    delete element_type;
+}
+
 }

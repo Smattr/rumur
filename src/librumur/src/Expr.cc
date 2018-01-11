@@ -3,8 +3,6 @@
 #include <iostream>
 #include "location.hh"
 #include "macros.h"
-#include <memory>
-#include <optional>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
@@ -12,11 +10,13 @@
 #include <rumur/Indexer.h>
 #include <rumur/TypeExpr.h>
 #include <string>
+#include <utility>
 
-using namespace rumur;
 using namespace std;
 
-bool Expr::is_arithmetic() const noexcept {
+namespace rumur {
+
+bool Expr::is_arithmetic() const {
 
     // Is this a literal?
     if (type() == nullptr)
@@ -29,28 +29,53 @@ bool Expr::is_arithmetic() const noexcept {
     return false;
 }
 
-static void expect_arithmetic(const shared_ptr<Expr> e) {
+static void expect_arithmetic(const Expr *e) {
     if (!e->is_arithmetic())
         throw RumurError("expected arithmetic expression is not arithmetic",
           e->loc);
 }
 
-bool Expr::is_boolean() const noexcept {
+bool Expr::is_boolean() const {
     return type() == &Boolean;
 }
 
-static void expect_boolean(const shared_ptr<Expr> e) {
+static void expect_boolean(const Expr *e) {
     if (!e->is_boolean())
         throw RumurError("expected boolean expression is not a boolean",
           e->loc);
 }
 
-Expr::~Expr() {
+Ternary::Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc,
+    Indexer&):
+    Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
 }
 
-Ternary::Ternary(shared_ptr<Expr> cond, shared_ptr<Expr> lhs,
-  shared_ptr<Expr> rhs, const location &loc, Indexer&) noexcept
-  : Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
+Ternary::Ternary(const Ternary &other):
+    Expr(other), cond(other.cond->clone()), lhs(other.lhs->clone()),
+    rhs(other.rhs->clone()) {
+}
+
+Ternary &Ternary::operator=(Ternary other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Ternary &x, Ternary &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.cond, y.cond);
+    swap(x.lhs, y.lhs);
+    swap(x.rhs, y.rhs);
+}
+
+Ternary *Ternary::clone() const {
+    return new Ternary(*this);
+}
+
+Ternary::~Ternary() {
+    delete cond;
+    delete lhs;
+    delete rhs;
 }
 
 void Ternary::validate() const {
@@ -63,11 +88,11 @@ void Ternary::validate() const {
     // TODO: check lhs and rhs have the same type
 }
 
-bool Ternary::constant() const noexcept {
+bool Ternary::constant() const {
     return cond->constant() && lhs->constant() && rhs->constant();
 }
 
-const TypeExpr *Ternary::type() const noexcept {
+const TypeExpr *Ternary::type() const {
     // TODO: assert lhs and rhs are compatible types.
     return lhs->type();
 }
@@ -82,9 +107,19 @@ void Ternary::rvalue(ostream &out) const {
     out << ")";
 }
 
-BinaryExpr::BinaryExpr(shared_ptr<Expr> lhs, shared_ptr<Expr> rhs,
-  const location &loc, Indexer&) noexcept
-  : Expr(loc), lhs(lhs), rhs(rhs) {
+BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc, Indexer&):
+    Expr(loc), lhs(lhs), rhs(rhs) {
+}
+
+BinaryExpr::BinaryExpr(const BinaryExpr &other):
+    Expr(other), lhs(other.lhs->clone()), rhs(other.rhs->clone()) {
+}
+
+void swap(BinaryExpr &x, BinaryExpr &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.lhs, y.lhs);
+    swap(x.rhs, y.rhs);
 }
 
 void BinaryExpr::validate() const {
@@ -92,8 +127,22 @@ void BinaryExpr::validate() const {
     rhs->validate();
 }
 
-bool BinaryExpr::constant() const noexcept {
+bool BinaryExpr::constant() const {
     return lhs->constant() && rhs->constant();
+}
+
+BinaryExpr::~BinaryExpr() {
+    delete lhs;
+    delete rhs;
+}
+
+Implication &Implication::operator=(Implication other) {
+    swap(*this, other);
+    return *this;
+}
+
+Implication *Implication::clone() const {
+    return new Implication(*this);
 }
 
 void Implication::validate() const {
@@ -103,8 +152,17 @@ void Implication::validate() const {
     expect_boolean(rhs);
 }
 
-const TypeExpr *Implication::type() const noexcept {
+const TypeExpr *Implication::type() const {
     return &Boolean;
+}
+
+Or &Or::operator=(Or other) {
+    swap(*this, other);
+    return *this;
+}
+
+Or *Or::clone() const {
+    return new Or(*this);
 }
 
 void Or::validate() const {
@@ -122,7 +180,7 @@ void Implication::rvalue(ostream &out) const {
     out << ")";
 }
 
-const TypeExpr *Or::type() const noexcept {
+const TypeExpr *Or::type() const {
     return &Boolean;
 }
 
@@ -134,6 +192,15 @@ void Or::rvalue(ostream &out) const {
     out << ")";
 }
 
+And &And::operator=(And other) {
+    swap(*this, other);
+    return *this;
+}
+
+And *And::clone() const {
+    return new And(*this);
+}
+
 void And::validate() const {
     BinaryExpr::validate();
 
@@ -141,7 +208,7 @@ void And::validate() const {
     expect_boolean(rhs);
 }
 
-const TypeExpr *And::type() const noexcept {
+const TypeExpr *And::type() const {
     return &Boolean;
 }
 
@@ -153,17 +220,39 @@ void And::rvalue(ostream &out) const {
     out << ")";
 }
 
-UnaryExpr::UnaryExpr(shared_ptr<Expr> rhs, const location &loc,
-  Indexer&) noexcept
-  : Expr(loc), rhs(rhs) {
+UnaryExpr::UnaryExpr(Expr *rhs, const location &loc, Indexer&):
+    Expr(loc), rhs(rhs) {
+}
+
+UnaryExpr::UnaryExpr(const UnaryExpr &other):
+    Expr(other), rhs(other.rhs->clone()) {
+}
+
+void swap(UnaryExpr &x, UnaryExpr &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.rhs, y.rhs);
+}
+
+UnaryExpr::~UnaryExpr() {
+    delete rhs;
 }
 
 void UnaryExpr::validate() const {
     rhs->validate();
 }
 
-bool UnaryExpr::constant() const noexcept {
+bool UnaryExpr::constant() const {
     return rhs->constant();
+}
+
+Not &Not::operator=(Not other) {
+    swap(*this, other);
+    return *this;
+}
+
+Not *Not::clone() const {
+    return new Not(*this);
 }
 
 void Not::validate() const {
@@ -172,7 +261,7 @@ void Not::validate() const {
     expect_boolean(rhs);
 }
 
-const TypeExpr *Not::type() const noexcept {
+const TypeExpr *Not::type() const {
     return &Boolean;
 }
 
@@ -182,6 +271,15 @@ void Not::rvalue(ostream &out) const {
     out << ")";
 }
 
+Lt &Lt::operator=(Lt other) {
+    swap(*this, other);
+    return *this;
+}
+
+Lt *Lt::clone() const {
+    return new Lt(*this);
+}
+
 void Lt::validate() const {
     BinaryExpr::validate();
 
@@ -189,7 +287,7 @@ void Lt::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Lt::type() const noexcept {
+const TypeExpr *Lt::type() const {
     return &Boolean;
 }
 
@@ -201,6 +299,15 @@ void Lt::rvalue(ostream &out) const {
     out << ")";
 }
 
+Leq &Leq::operator=(Leq other) {
+    swap(*this, other);
+    return *this;
+}
+
+Leq *Leq::clone() const {
+    return new Leq(*this);
+}
+
 void Leq::validate() const {
     BinaryExpr::validate();
 
@@ -208,7 +315,7 @@ void Leq::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Leq::type() const noexcept {
+const TypeExpr *Leq::type() const {
     return &Boolean;
 }
 
@@ -220,6 +327,15 @@ void Leq::rvalue(ostream &out) const {
     out << ")";
 }
 
+Gt &Gt::operator=(Gt other) {
+    swap(*this, other);
+    return *this;
+}
+
+Gt *Gt::clone() const {
+    return new Gt(*this);
+}
+
 void Gt::validate() const {
     BinaryExpr::validate();
 
@@ -227,7 +343,7 @@ void Gt::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Gt::type() const noexcept {
+const TypeExpr *Gt::type() const {
     return &Boolean;
 }
 
@@ -239,6 +355,15 @@ void Gt::rvalue(ostream &out) const {
     out << ")";
 }
 
+Geq &Geq::operator=(Geq other) {
+    swap(*this, other);
+    return *this;
+}
+
+Geq *Geq::clone() const {
+    return new Geq(*this);
+}
+
 void Geq::validate() const {
     BinaryExpr::validate();
 
@@ -246,7 +371,7 @@ void Geq::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Geq::type() const noexcept {
+const TypeExpr *Geq::type() const {
     return &Boolean;
 }
 
@@ -256,6 +381,15 @@ void Geq::rvalue(ostream &out) const {
     out << ">=";
     rhs->rvalue(out);
     out << ")";
+}
+
+Eq &Eq::operator=(Eq other) {
+    swap(*this, other);
+    return *this;
+}
+
+Eq *Eq::clone() const {
+    return new Eq(*this);
 }
 
 void Eq::validate() const {
@@ -275,7 +409,7 @@ void Eq::validate() const {
     // TODO test other comparable pairs
 }
 
-const TypeExpr *Eq::type() const noexcept {
+const TypeExpr *Eq::type() const {
     return &Boolean;
 }
 
@@ -285,6 +419,15 @@ void Eq::rvalue(ostream &out) const {
     out << "==";
     rhs->rvalue(out);
     out << ")";
+}
+
+Neq &Neq::operator=(Neq other) {
+    swap(*this, other);
+    return *this;
+}
+
+Neq *Neq::clone() const {
+    return new Neq(*this);
 }
 
 void Neq::validate() const {
@@ -304,7 +447,7 @@ void Neq::validate() const {
     // TODO test other comparable pairs
 }
 
-const TypeExpr *Neq::type() const noexcept {
+const TypeExpr *Neq::type() const {
     return &Boolean;
 }
 
@@ -316,6 +459,15 @@ void Neq::rvalue(ostream &out) const {
     out << ")";
 }
 
+Add &Add::operator=(Add other) {
+    swap(*this, other);
+    return *this;
+}
+
+Add *Add::clone() const {
+    return new Add(*this);
+}
+
 void Add::validate() const {
     BinaryExpr::validate();
 
@@ -323,7 +475,7 @@ void Add::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Add::type() const noexcept {
+const TypeExpr *Add::type() const {
     return nullptr;
 }
 
@@ -335,6 +487,15 @@ void Add::rvalue(ostream &out) const {
     out << ")";
 }
 
+Sub &Sub::operator=(Sub other) {
+    swap(*this, other);
+    return *this;
+}
+
+Sub *Sub::clone() const {
+    return new Sub(*this);
+}
+
 void Sub::validate() const {
     BinaryExpr::validate();
 
@@ -342,7 +503,7 @@ void Sub::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Sub::type() const noexcept {
+const TypeExpr *Sub::type() const {
     return nullptr;
 }
 
@@ -359,7 +520,16 @@ void Negative::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Negative::type() const noexcept {
+Negative &Negative::operator=(Negative other) {
+    swap(*this, other);
+    return *this;
+}
+
+Negative *Negative::clone() const {
+    return new Negative(*this);
+}
+
+const TypeExpr *Negative::type() const {
     return rhs->type();
 }
 
@@ -369,6 +539,15 @@ void Negative::rvalue(ostream &out) const {
     out << ")";
 }
 
+Mul &Mul::operator=(Mul other) {
+    swap(*this, other);
+    return *this;
+}
+
+Mul *Mul::clone() const {
+    return new Mul(*this);
+}
+
 void Mul::validate() const {
     BinaryExpr::validate();
 
@@ -376,7 +555,7 @@ void Mul::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Mul::type() const noexcept {
+const TypeExpr *Mul::type() const {
     return nullptr;
 }
 
@@ -388,6 +567,15 @@ void Mul::rvalue(ostream &out) const {
     out << ")";
 }
 
+Div &Div::operator=(Div other) {
+    swap(*this, other);
+    return *this;
+}
+
+Div *Div::clone() const {
+    return new Div(*this);
+}
+
 void Div::validate() const {
     BinaryExpr::validate();
 
@@ -395,7 +583,7 @@ void Div::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Div::type() const noexcept {
+const TypeExpr *Div::type() const {
     return nullptr;
 }
 
@@ -407,6 +595,15 @@ void Div::rvalue(ostream &out) const {
     out << ")";
 }
 
+Mod &Mod::operator=(Mod other) {
+    swap(*this, other);
+    return *this;
+}
+
+Mod *Mod::clone() const {
+    return new Mod(*this);
+}
+
 void Mod::validate() const {
     BinaryExpr::validate();
 
@@ -414,7 +611,7 @@ void Mod::validate() const {
     expect_arithmetic(rhs);
 }
 
-const TypeExpr *Mod::type() const noexcept {
+const TypeExpr *Mod::type() const {
     return nullptr;
 }
 
@@ -432,12 +629,33 @@ void Mod::rvalue(ostream &out) const {
 Lvalue::~Lvalue() {
 }
 
-ExprID::ExprID(const string &id, shared_ptr<Expr> value,
+ExprID::ExprID(const string &id, const Expr *value,
   const TypeExpr *type_of, const location &loc, Indexer&)
-  : Lvalue(loc), id(id), value(value), type_of(type_of) {
+  : Lvalue(loc), id(id), value(value->clone()), type_of(type_of) {
 }
 
-bool ExprID::constant() const noexcept {
+ExprID::ExprID(const ExprID &other):
+  Lvalue(other), id(other.id), value(other.value->clone()), type_of(other.type_of) {
+}
+
+ExprID &ExprID::operator=(ExprID other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(ExprID &x, ExprID &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.id, y.id);
+    swap(x.value, y.value);
+    swap(x.type_of, y.type_of);
+}
+
+ExprID *ExprID::clone() const {
+    return new ExprID(*this);
+}
+
+bool ExprID::constant() const {
     return value->constant();
 }
 
@@ -447,7 +665,7 @@ void ExprID::validate() const {
     value->validate();
 }
 
-const TypeExpr *ExprID::type() const noexcept {
+const TypeExpr *ExprID::type() const {
     return type_of;
 }
 
@@ -456,21 +674,44 @@ void ExprID::rvalue(ostream &out) const {
 }
 
 void ExprID::lvalue(ostream &out) const {
-    auto l = dynamic_pointer_cast<Lvalue>(value);
+    auto l = dynamic_cast<const Lvalue*>(value);
     assert(l != nullptr);
     l->lvalue(out);
 }
 
-Var::Var(shared_ptr<VarDecl> decl, const location &loc, Indexer&)
-  : Lvalue(loc), decl(decl) {
+ExprID::~ExprID() {
+    delete value;
 }
 
-bool Var::constant() const noexcept {
+Var::Var(const VarDecl *decl, const location &loc, Indexer&)
+  : Lvalue(loc), decl(decl->clone()) {
+}
+
+Var::Var(const Var &other):
+  Lvalue(other), decl(other.decl->clone()) {
+}
+
+void swap(Var &x, Var &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.decl, y.decl);
+}
+
+Var &Var::operator=(Var other) {
+    swap(*this, other);
+    return *this;
+}
+
+Var *Var::clone() const {
+    return new Var(*this);
+}
+
+bool Var::constant() const {
     return false;
 }
 
-const TypeExpr *Var::type() const noexcept {
-    return decl->type.get();
+const TypeExpr *Var::type() const {
+    return decl->type;
 }
 
 void Var::rvalue(ostream &out) const {
@@ -489,12 +730,36 @@ void Var::lvalue(ostream &out) const {
     }
 }
 
-Field::Field(shared_ptr<Lvalue> record, const string &field, const location &loc,
+Var::~Var() {
+    delete decl;
+}
+
+Field::Field(Lvalue *record, const string &field, const location &loc,
   Indexer&)
   : Lvalue(loc), record(record), field(field) {
 }
 
-bool Field::constant() const noexcept {
+Field::Field(const Field &other):
+  Lvalue(other), record(other.record->clone()), field(other.field) {
+}
+
+void swap(Field &x, Field &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.record, y.record);
+    swap(x.field, y.field);
+}
+
+Field &Field::operator=(Field other) {
+    swap(*this, other);
+    return *this;
+}
+
+Field *Field::clone() const {
+    return new Field(*this);
+}
+
+bool Field::constant() const {
     return record->constant();
 }
 
@@ -504,10 +769,10 @@ void Field::rvalue(ostream &out) const {
     auto r = dynamic_cast<const Record*>(t);
     assert(r != nullptr && "root of field reference with non-record type");
 
-    shared_ptr<SimpleTypeExpr> f = nullptr;
-    for (shared_ptr<VarDecl> v : r->fields) {
+    const SimpleTypeExpr *f = nullptr;
+    for (const VarDecl *v : r->fields) {
         if (v->name == field) {
-            f = dynamic_pointer_cast<SimpleTypeExpr>(v->type);
+            f = dynamic_cast<const SimpleTypeExpr*>(v->type);
             break;
         }
     }
@@ -531,7 +796,7 @@ void Field::rvalue(ostream &out) const {
     }
 }
 
-const TypeExpr *Field::type() const noexcept {
+const TypeExpr *Field::type() const {
     // TODO
     return nullptr;
 }
@@ -547,16 +812,44 @@ void Field::lvalue(ostream &out) const {
     out << ")";
 }
 
-Element::Element(shared_ptr<Lvalue> array, shared_ptr<Expr> index,
-  const location &loc, Indexer&)
+Field::~Field() {
+    delete record;
+}
+
+Element::Element(Lvalue *array, Expr *index, const location &loc, Indexer&)
   : Lvalue(loc), array(array), index(index) {
 }
 
-bool Element::constant() const noexcept {
+Element::Element(const Element &other):
+    Lvalue(other), array(other.array->clone()), index(other.index->clone()) {
+}
+
+void swap(Element &x, Element &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.array, y.array);
+    swap(x.index, y.index);
+}
+
+Element &Element::operator=(Element other) {
+    swap(*this, other);
+    return *this;
+}
+
+Element *Element::clone() const {
+    return new Element(*this);
+}
+
+Element::~Element() {
+    delete array;
+    delete index;
+}
+
+bool Element::constant() const {
     return array->constant() && index->constant();
 }
 
-const TypeExpr *Element::type() const noexcept {
+const TypeExpr *Element::type() const {
     // TODO
     return nullptr;
 }
@@ -566,7 +859,7 @@ void Element::rvalue(ostream &out) const {
     assert(t != nullptr && "root of element reference with no type");
     auto a = dynamic_cast<const Array*>(t);
     assert(a != nullptr && "root of element reference with non-array type");
-    auto e = dynamic_pointer_cast<SimpleTypeExpr>(a->element_type);
+    auto e = dynamic_cast<const SimpleTypeExpr*>(a->element_type);
 
     if (e != nullptr) {
         /* HACK: We do the same trick as Field::rvalue above to emit either a
@@ -596,40 +889,83 @@ void Element::lvalue(ostream &out) const {
     out << ")";
 }
 
-Quantifier::Quantifier(const string &name, shared_ptr<TypeExpr> type,
+Quantifier::Quantifier(const string &name, TypeExpr *type,
   const location &loc, Indexer &indexer)
-  : Node(loc), var(make_shared<VarDecl>(name, type, loc, indexer)) {
+  : Node(loc), var(new VarDecl(name, type, loc, indexer)) {
 }
 
-Quantifier::Quantifier(const string &name, shared_ptr<Expr> from,
-  shared_ptr<Expr> to, const location &loc, Indexer& indexer)
-  : Quantifier(loc, name, from, to, {}, indexer) {
+Quantifier::Quantifier(const string &name, Expr *from, Expr *to,
+  const location &loc, Indexer& indexer)
+  : Quantifier(loc, name, from, to, nullptr, indexer) {
 }
 
-Quantifier::Quantifier(const string &name, shared_ptr<Expr> from,
-  shared_ptr<Expr> to, shared_ptr<Expr> step, const location &loc,
-  Indexer &indexer)
+Quantifier::Quantifier(const string &name, Expr *from, Expr *to, Expr *step,
+  const location &loc, Indexer &indexer)
   : Quantifier(loc, name, from, to, step, indexer) {
 }
 
-Quantifier::Quantifier(const location &loc, const string &name,
-  shared_ptr<Expr> from, shared_ptr<Expr> to, optional<shared_ptr<Expr>> step,
-  Indexer &indexer)
+Quantifier::Quantifier(const location &loc, const string &name, Expr *from,
+  Expr *to, Expr *step, Indexer &indexer)
   : Node(loc),
-    var(make_shared<VarDecl>(name, make_shared<Range>(from, to, loc, indexer), loc, indexer)),
+    var(new VarDecl(name, new Range(from, to, loc, indexer), loc, indexer)),
     step(step) {
 }
 
-Exists::Exists(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
-  const location &loc, Indexer&)
+Quantifier::Quantifier(const Quantifier &other):
+  Node(other), var(other.var->clone()),
+  step(other.step == nullptr ? nullptr : other.step->clone()) {
+}
+
+Quantifier &Quantifier::operator=(Quantifier other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Quantifier &x, Quantifier &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.var, y.var);
+    swap(x.step, y.step);
+}
+
+Quantifier *Quantifier::clone() const {
+    return new Quantifier(*this);
+}
+
+Quantifier::~Quantifier() {
+    delete var;
+    delete step;
+}
+
+Exists::Exists(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
 
-bool Exists::constant() const noexcept {
+Exists::Exists(const Exists &other):
+  Expr(other), quantifier(other.quantifier->clone()), expr(other.expr->clone()) {
+}
+
+Exists &Exists::operator=(Exists other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Exists &x, Exists &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.quantifier, y.quantifier);
+    swap(x.expr, y.expr);
+}
+
+Exists *Exists::clone() const {
+    return new Exists(*this);
+}
+
+bool Exists::constant() const {
     return expr->constant();
 }
 
-const TypeExpr *Exists::type() const noexcept {
+const TypeExpr *Exists::type() const {
     return &Boolean;
 }
 
@@ -638,8 +974,8 @@ void Exists::rvalue(ostream &out) const {
     quantifier->var->type->generate_min(out);
     out << ";;model_" << quantifier->var->name << "=add(model_"
       << quantifier->var->name << ",";
-    if (quantifier->step.has_value()) {
-        quantifier->step.value()->rvalue(out);
+    if (quantifier->step != nullptr) {
+        quantifier->step->rvalue(out);
     } else {
         out << "1";
     }
@@ -650,16 +986,40 @@ void Exists::rvalue(ostream &out) const {
     out << "){break;}}r;})";
 }
 
-Forall::Forall(shared_ptr<Quantifier> quantifier, shared_ptr<Expr> expr,
-  const location &loc, Indexer&)
+Exists::~Exists() {
+    delete quantifier;
+    delete expr;
+}
+
+Forall::Forall(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
 
-bool Forall::constant() const noexcept {
+Forall::Forall(const Forall &other):
+  Expr(other), quantifier(other.quantifier->clone()), expr(other.expr->clone()) {
+}
+
+Forall &Forall::operator=(Forall other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Forall &x, Forall &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.quantifier, y.quantifier);
+    swap(x.expr, y.expr);
+}
+
+Forall *Forall::clone() const {
+    return new Forall(*this);
+}
+
+bool Forall::constant() const {
     return expr->constant();
 }
 
-const TypeExpr *Forall::type() const noexcept {
+const TypeExpr *Forall::type() const {
     return &Boolean;
 }
 
@@ -668,8 +1028,8 @@ void Forall::rvalue(ostream &out) const {
     quantifier->var->type->generate_min(out);
     out << ";;model_" << quantifier->var->name << "=add(model_"
       << quantifier->var->name << ",";
-    if (quantifier->step.has_value()) {
-        quantifier->step.value()->rvalue(out);
+    if (quantifier->step != nullptr) {
+        quantifier->step->rvalue(out);
     } else {
         out << "1";
     }
@@ -678,4 +1038,11 @@ void Forall::rvalue(ostream &out) const {
     out << ";if(!r||" << quantifier->var->name << "==";
     quantifier->var->type->generate_max(out);
     out << "){break;}}r;})";
+}
+
+Forall::~Forall() {
+    delete quantifier;
+    delete expr;
+}
+
 }

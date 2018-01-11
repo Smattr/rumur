@@ -54,7 +54,6 @@
     #include <cassert>
     #include <iostream>
     #include <iterator>
-    #include <memory>
     #include <utility>
     #include <vector>
 
@@ -131,29 +130,29 @@
 %left '+' '-'
 %left '*' '/' '%'
 
-%type <std::shared_ptr<rumur::Decl>> constdecl
-%type <std::vector<std::shared_ptr<rumur::Decl>>> constdecls
-%type <std::vector<std::shared_ptr<rumur::Decl>>> decl
-%type <std::vector<std::shared_ptr<rumur::Decl>>> decls
-%type <std::vector<std::shared_ptr<rumur::Decl>>> decls_header
-%type <std::shared_ptr<rumur::Lvalue>> designator
-%type <std::shared_ptr<rumur::Expr>> expr
+%type <rumur::Decl*>                                         constdecl
+%type <std::vector<rumur::Decl*>>                            constdecls
+%type <std::vector<rumur::Decl*>>                            decl
+%type <std::vector<rumur::Decl*>>                            decls
+%type <std::vector<rumur::Decl*>>                            decls_header
+%type <rumur::Lvalue*>                                       designator
+%type <rumur::Expr*>                                         expr
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
-%type <std::shared_ptr<rumur::Quantifier>> quantifier
-%type <std::shared_ptr<rumur::Rule>> rule
-%type <std::vector<std::shared_ptr<rumur::Rule>>> rules
-%type <std::vector<std::shared_ptr<rumur::Rule>>> rules_cont
-%type <std::shared_ptr<rumur::StartState>> startstate
-%type <std::shared_ptr<rumur::Stmt>> stmt
-%type <std::vector<std::shared_ptr<rumur::Stmt>>> stmts
-%type <std::vector<std::shared_ptr<rumur::Stmt>>> stmts_cont
-%type <std::string> string_opt
-%type <std::shared_ptr<rumur::Decl>> typedecl
-%type <std::vector<std::shared_ptr<rumur::Decl>>> typedecls
-%type <std::shared_ptr<rumur::TypeExpr>> typeexpr
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>> vardecl
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>> vardecls
+%type <rumur::Quantifier*>                                   quantifier
+%type <rumur::Rule*>                                         rule
+%type <std::vector<rumur::Rule*>>                            rules
+%type <std::vector<rumur::Rule*>>                            rules_cont
+%type <rumur::StartState*>                                   startstate
+%type <rumur::Stmt*>                                         stmt
+%type <std::vector<rumur::Stmt*>>                            stmts
+%type <std::vector<rumur::Stmt*>>                            stmts_cont
+%type <std::string>                                          string_opt
+%type <rumur::Decl*>                                         typedecl
+%type <std::vector<rumur::Decl*>>                            typedecls
+%type <rumur::TypeExpr*>                                     typeexpr
+%type <std::vector<rumur::VarDecl*>>                         vardecl
+%type <std::vector<rumur::VarDecl*>>                         vardecls
 
 %%
 
@@ -163,7 +162,7 @@ model: decls rules {
 
 decls: decls decl {
     $$ = $1;
-    std::copy($2.begin(), $2.end(), std::back_inserter($$));
+    std::move($2.begin(), $2.end(), std::back_inserter($$));
 } | %empty {
     /* nothing required */
 };
@@ -173,8 +172,8 @@ decl: CONST constdecls {
 } | TYPE typedecls {
     $$ = $2;
 } | VAR vardecls {
-    for (std::shared_ptr<rumur::VarDecl> d : $2) {
-        symtab->declare(d->name, std::make_shared<rumur::Var>(d, d->loc, indexer));
+    for (const rumur::VarDecl *d : $2) {
+        symtab->declare(d->name, rumur::Var(d, d->loc, indexer));
     }
     std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
@@ -187,8 +186,8 @@ constdecls: constdecls constdecl {
 };
 
 constdecl: ID ':' expr ';' {
-    $$ = std::make_shared<rumur::ConstDecl>($1, $3, @$, indexer);
-    symtab->declare($1, $3);
+    $$ = new rumur::ConstDecl($1, $3, @$, indexer);
+    symtab->declare($1, *$3);
 };
 
 typedecls: typedecls typedecl {
@@ -199,23 +198,27 @@ typedecls: typedecls typedecl {
 };
 
 typedecl: ID ':' typeexpr ';' {
-    $$ = std::make_shared<rumur::TypeDecl>($1, $3, @$, indexer);
-    symtab->declare($1, $3);
+    $$ = new rumur::TypeDecl($1, $3, @$, indexer);
+    symtab->declare($1, *$3);
 };
 
 typeexpr: ID {
-    $$ = symtab->lookup<rumur::TypeExpr>($1, @$);
+    const TypeExpr *t = symtab->lookup<rumur::TypeExpr>($1, @$);
+    if (t == nullptr) {
+        throw RumurError("unknown type ID \"" + $1 + "\"", @1);
+    }
+    $$ = t->clone();
 } | expr DOTDOT expr {
-    $$ = std::make_shared<rumur::Range>($1, $3, @$, indexer);
+    $$ = new rumur::Range($1, $3, @$, indexer);
 } | ENUM '{' id_list_opt '}' {
-    std::shared_ptr<rumur::Enum> e = std::make_shared<rumur::Enum>($3, @$, indexer);
+    auto e = new rumur::Enum($3, @$, indexer);
     /* Register all the enum members so they can be referenced later. */
-    for (std::shared_ptr<rumur::ExprID> eid : e->members) {
-        symtab->declare(eid->id, eid);
+    for (const rumur::ExprID &eid : e->members) {
+        symtab->declare(eid.id, eid);
     }
     $$ = e;
 } | RECORD vardecls endrecord {
-    $$ = std::make_shared<rumur::Record>(std::move($2), @$, indexer);
+    $$ = new rumur::Record(std::move($2), @$, indexer);
 };
 
 vardecls: vardecls vardecl {
@@ -226,8 +229,8 @@ vardecls: vardecls vardecl {
 };
 
 vardecl: id_list_opt ':' typeexpr ';' {
-    for (auto [s, l] : $1) {
-        $$.push_back(std::make_shared<rumur::VarDecl>(s, $3, l, indexer));
+    for (const std::pair<std::string, location> &m : $1) {
+        $$.push_back(new rumur::VarDecl(m.first, $3, m.second, indexer));
     }
 };
 
@@ -253,7 +256,7 @@ rule: startstate {
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-    $$ = std::make_shared<rumur::StartState>($2, std::move($3), std::move($4), @$, indexer);
+    $$ = new rumur::StartState($2, std::move($3), std::move($4), @$, indexer);
 };
 
 decls_header: decls BEGIN_TOK {
@@ -277,7 +280,7 @@ stmts_cont: stmts_cont stmt ';' {
 };
 
 stmt: designator COLON_EQ expr {
-    $$ = std::make_shared<rumur::Assignment>($1, $3, @$, indexer);
+    $$ = new rumur::Assignment($1, $3, @$, indexer);
 };
 
 endstartstate: END | ENDSTARTSTATE;
@@ -291,81 +294,81 @@ string_opt: STRING {
 semi_opt: ';' | %empty;
 
 expr: expr '?' expr ':' expr {
-    $$ = std::make_shared<rumur::Ternary>($1, $3, $5, @$, indexer);
+    $$ = new rumur::Ternary($1, $3, $5, @$, indexer);
 } | expr IMPLIES expr {
-    $$ = std::make_shared<rumur::Implication>($1, $3, @$, indexer);
+    $$ = new rumur::Implication($1, $3, @$, indexer);
 } | expr '|' expr {
-    $$ = std::make_shared<rumur::Or>($1, $3, @$, indexer);
+    $$ = new rumur::Or($1, $3, @$, indexer);
 } | expr '&' expr {
-    $$ = std::make_shared<rumur::And>($1, $3, @$, indexer);
+    $$ = new rumur::And($1, $3, @$, indexer);
 } | '!' expr {
-    $$ = std::make_shared<rumur::Not>($2, @$, indexer);
+    $$ = new rumur::Not($2, @$, indexer);
 } | expr '<' expr {
-    $$ = std::make_shared<rumur::Lt>($1, $3, @$, indexer);
+    $$ = new rumur::Lt($1, $3, @$, indexer);
 } | expr LEQ expr {
-    $$ = std::make_shared<rumur::Leq>($1, $3, @$, indexer);
+    $$ = new rumur::Leq($1, $3, @$, indexer);
 } | expr '>' expr {
-    $$ = std::make_shared<rumur::Gt>($1, $3, @$, indexer);
+    $$ = new rumur::Gt($1, $3, @$, indexer);
 } | expr GEQ expr {
-    $$ = std::make_shared<rumur::Geq>($1, $3, @$, indexer);
+    $$ = new rumur::Geq($1, $3, @$, indexer);
 } | expr DEQ expr {
-    $$ = std::make_shared<rumur::Eq>($1, $3, @$, indexer);
+    $$ = new rumur::Eq($1, $3, @$, indexer);
 } | expr '=' expr {
-    $$ = std::make_shared<rumur::Eq>($1, $3, @$, indexer);
+    $$ = new rumur::Eq($1, $3, @$, indexer);
 } | expr NEQ expr {
-    $$ = std::make_shared<rumur::Neq>($1, $3, @$, indexer);
+    $$ = new rumur::Neq($1, $3, @$, indexer);
 } | expr '+' expr {
-    $$ = std::make_shared<rumur::Add>($1, $3, @$, indexer);
+    $$ = new rumur::Add($1, $3, @$, indexer);
 } | expr '-' expr {
-    $$ = std::make_shared<rumur::Sub>($1, $3, @$, indexer);
+    $$ = new rumur::Sub($1, $3, @$, indexer);
 } | '+' expr %prec '*' {
     $$ = $2;
     $$->loc = @$;
 } | '-' expr %prec '*' {
-    $$ = std::make_shared<rumur::Negative>($2, @$, indexer);
+    $$ = new rumur::Negative($2, @$, indexer);
 } | expr '*' expr {
-    $$ = std::make_shared<rumur::Mul>($1, $3, @$, indexer);
+    $$ = new rumur::Mul($1, $3, @$, indexer);
 } | expr '/' expr {
-    $$ = std::make_shared<rumur::Div>($1, $3, @$, indexer);
+    $$ = new rumur::Div($1, $3, @$, indexer);
 } | expr '%' expr {
-    $$ = std::make_shared<rumur::Mod>($1, $3, @$, indexer);
+    $$ = new rumur::Mod($1, $3, @$, indexer);
 } | FORALL quantifier {
         symtab->open_scope();
-        symtab->declare($2->var->name, std::make_shared<rumur::Var>($2->var, $2->loc, indexer));
+        symtab->declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
     } DO expr endforall {
-        $$ = std::make_shared<rumur::Forall>($2, $5, @$, indexer);
+        $$ = new rumur::Forall($2, $5, @$, indexer);
         symtab->close_scope();
 } | EXISTS quantifier {
         symtab->open_scope();
-        symtab->declare($2->var->name, std::make_shared<rumur::Var>($2->var, $2->loc, indexer));
+        symtab->declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
     } DO expr endexists {
-        $$ = std::make_shared<rumur::Exists>($2, $5, @$, indexer);
+        $$ = new rumur::Exists($2, $5, @$, indexer);
         symtab->close_scope();
 } | designator {
     $$ = $1;
 } | NUMBER {
-    $$ = std::make_shared<rumur::Number>($1, @$, indexer);
+    $$ = new rumur::Number($1, @$, indexer);
 } | '(' expr ')' {
     $$ = $2;
     $$->loc = @$;
 };
 
 quantifier: ID ':' typeexpr {
-    $$ = std::make_shared<rumur::Quantifier>($1, $3, @$, indexer);
+    $$ = new rumur::Quantifier($1, $3, @$, indexer);
 } | ID ':' expr TO expr BY expr {
-    $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, $7, @$, indexer);
+    $$ = new rumur::Quantifier($1, $3, $5, $7, @$, indexer);
 } | ID ':' expr TO expr {
-    $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, @$, indexer);
+    $$ = new rumur::Quantifier($1, $3, $5, @$, indexer);
 };
 
 designator: designator '.' ID {
-    $$ = std::make_shared<rumur::Field>($1, $3, @$, indexer);
+    $$ = new rumur::Field($1, $3, @$, indexer);
 } | designator '[' expr ']' {
-    $$ = std::make_shared<rumur::Element>($1, $3, @$, indexer);
+    $$ = new rumur::Element($1, $3, @$, indexer);
 } | ID {
     auto e = symtab->lookup<rumur::Expr>($1, @$);
     assert(e != nullptr);
-    $$ = std::make_shared<rumur::ExprID>($1, e, e->type(), @$, indexer);
+    $$ = new rumur::ExprID($1, e, e->type(), @$, indexer);
 };
 
 endforall: END | ENDFORALL;

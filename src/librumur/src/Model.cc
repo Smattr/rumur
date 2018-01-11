@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cstdint>
 #include "location.hh"
-#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Indexer.h>
@@ -13,29 +12,53 @@
 #include <unordered_set>
 #include <vector>
 
-using namespace rumur;
 using namespace std;
 
-Model::Model(vector<shared_ptr<Decl>> &&decls, vector<shared_ptr<Rule>> &&rules,
-  const location &loc, Indexer&)
+namespace rumur {
+
+Model::Model(vector<Decl*> &&decls, vector<Rule*> &&rules, const location &loc, Indexer&)
   : Node(loc), decls(decls), rules(rules) {
+}
+
+Model::Model(const Model &other):
+  Node(other) {
+    for (const Decl *d : other.decls)
+        decls.push_back(d->clone());
+    for (const Rule *r : other.rules)
+        rules.push_back(r->clone());
+}
+
+Model &Model::operator=(Model other) {
+    swap(*this, other);
+    return *this;
+}
+
+void swap(Model &x, Model &y) noexcept {
+    using std::swap;
+    swap(x.loc, y.loc);
+    swap(x.decls, y.decls);
+    swap(x.rules, y.rules);
+}
+
+Model *Model::clone() const {
+    return new Model(*this);
 }
 
 void Model::validate() const {
 
-    for (const shared_ptr<Decl> d : decls)
+    for (const Decl *d : decls)
         d->validate();
 
     // Check we have at least one start state.
-    auto is_start_state = [](const shared_ptr<Rule> r) {
-        return dynamic_pointer_cast<const StartState>(r) != nullptr;
+    auto is_start_state = [](const Rule *r) {
+        return dynamic_cast<const StartState*>(r) != nullptr;
     };
     if (find_if(rules.begin(), rules.end(), is_start_state) == rules.end())
         throw RumurError("model has no start state", location());
 
     // Check all rule names are distinct.
     unordered_set<string> names;
-    for (const shared_ptr<Rule> r : rules) {
+    for (const Rule *r : rules) {
         if (r->name != "") {
             if (!names.insert(r->name).second)
                 throw RumurError("duplicate rule name " + r->name, r->loc);
@@ -47,4 +70,13 @@ void Model::validate() const {
 uint64_t Model::size_bits() const {
     // TODO
     return 1;
+}
+
+Model::~Model() {
+    for (Decl *d : decls)
+        delete d;
+    for (Rule *r : rules)
+        delete r;
+}
+
 }

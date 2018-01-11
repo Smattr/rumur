@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include "location.hh"
-#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Indexer.h>
 #include <rumur/Node.h>
@@ -14,12 +13,17 @@ namespace rumur {
 class Model : public Node {
 
   public:
-    std::vector<std::shared_ptr<Decl>> decls;
-    std::vector<std::shared_ptr<Rule>> rules;
+    std::vector<Decl*> decls;
+    std::vector<Rule*> rules;
 
-    explicit Model(std::vector<std::shared_ptr<Decl>> &&decls,
-      std::vector<std::shared_ptr<Rule>> &&rules, const location &loc,
+    Model() = delete;
+    Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc,
       Indexer &indexer);
+    Model(const Model &other);
+    Model &operator=(Model other);
+    friend void swap(Model &x, Model &y) noexcept;
+    virtual ~Model();
+    Model *clone() const final;
 
     void validate() const final;
 

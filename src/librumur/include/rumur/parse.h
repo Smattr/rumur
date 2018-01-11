@@ -13,6 +13,6 @@ namespace rumur {
  * own parsing logic. I recommend you copy the implementation of this function
  * and tweak as desired.
  */
-rumur::Model *parse(std::istream *input);
+Model *parse(std::istream *input);
 
 }
