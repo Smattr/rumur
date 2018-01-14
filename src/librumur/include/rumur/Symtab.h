@@ -3,18 +3,18 @@
 #include <cassert>
 #include "location.hh"
 #include <rumur/except.h>
+#include <rumur/Node.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace rumur {
 
-template<typename T>
 class Symtab {
 
   private:
 
-    std::vector<std::unordered_map<std::string, T*>> scope;
+    std::vector<std::unordered_map<std::string, Node*>> scope;
 
   public:
 
@@ -27,7 +27,7 @@ class Symtab {
         scope.pop_back();
     }
 
-    void declare(const std::string &name, const T &value) {
+    void declare(const std::string &name, const Node &value) {
         assert(!scope.empty());
         scope.back()[name] = value.clone();
     }

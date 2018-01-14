@@ -88,7 +88,7 @@
     /* And also a symbol table we'll use for relating identifiers back to the
      * target they refer to.
      */
-%parse-param { rumur::Symtab<Node> *symtab }
+%parse-param { rumur::Symtab *symtab }
 
     /* A helper for generating unique IDs for nodes that require it. */
 %parse-param { rumur::Indexer &indexer }

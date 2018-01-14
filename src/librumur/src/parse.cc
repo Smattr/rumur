@@ -17,7 +17,7 @@ Model *parse(std::istream *input) {
     assert(input != nullptr);
 
     // Setup the parser
-    Symtab<Node> symtab;
+    Symtab symtab;
     symtab.open_scope();
     scanner s(input);
     Model *m = nullptr;
