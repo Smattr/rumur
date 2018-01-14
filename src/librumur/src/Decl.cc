@@ -7,18 +7,16 @@
 #include <rumur/Node.h>
 #include <string>
 
-using namespace std;
-
 namespace rumur {
 
-Decl::Decl(const string &name, const location &loc)
+Decl::Decl(const std::string &name, const location &loc)
   : Node(loc), name(name) {
 }
 
 Decl::~Decl() {
 }
 
-ConstDecl::ConstDecl(const string &name, const Expr *value,
+ConstDecl::ConstDecl(const std::string &name, const Expr *value,
   const location &loc, Indexer&)
   : Decl(name, loc), value(value->clone()) {
 }
@@ -49,7 +47,7 @@ void ConstDecl::validate() const {
         throw RumurError("const definition is not a constant", value->loc);
 }
 
-void ConstDecl::define(ostream &out) const {
+void ConstDecl::define(std::ostream &out) const {
     out << "static int64_t model_" << name << "(const State*s __attribute__((unused))){return ";
     value->rvalue(out);
     out << ";}";
@@ -59,7 +57,7 @@ ConstDecl::~ConstDecl() {
     delete value;
 }
 
-TypeDecl::TypeDecl(const string &name, TypeExpr *value,
+TypeDecl::TypeDecl(const std::string &name, TypeExpr *value,
   const location &loc, Indexer&)
   : Decl(name, loc), value(value) {
 }
@@ -88,7 +86,7 @@ void TypeDecl::validate() const {
     value->validate();
 }
 
-void TypeDecl::define(ostream &out) const {
+void TypeDecl::define(std::ostream &out) const {
     value->define(out);
 }
 
@@ -96,7 +94,7 @@ TypeDecl::~TypeDecl() {
     delete value;
 }
 
-VarDecl::VarDecl(const string &name, TypeExpr *type,
+VarDecl::VarDecl(const std::string &name, TypeExpr *type,
   const location &loc, Indexer&)
   : Decl(name, loc), type(type) {
 }
@@ -122,7 +120,7 @@ VarDecl *VarDecl::clone() const {
     return new VarDecl(*this);
 }
 
-void VarDecl::define(ostream&) const {
+void VarDecl::define(std::ostream&) const {
     // TODO
 }
 

@@ -11,8 +11,6 @@
 #include <string>
 #include <utility>
 
-using namespace std;
-
 namespace rumur {
 
 bool Expr::is_arithmetic() const {
@@ -96,7 +94,7 @@ const TypeExpr *Ternary::type() const {
     return lhs->type();
 }
 
-void Ternary::rvalue(ostream &out) const {
+void Ternary::rvalue(std::ostream &out) const {
     out << "(";
     cond->rvalue(out);
     out << "?";
@@ -171,7 +169,7 @@ void Or::validate() const {
     expect_boolean(rhs);
 }
 
-void Implication::rvalue(ostream &out) const {
+void Implication::rvalue(std::ostream &out) const {
     out << "(!";
     lhs->rvalue(out);
     out << "||";
@@ -183,7 +181,7 @@ const TypeExpr *Or::type() const {
     return &Boolean;
 }
 
-void Or::rvalue(ostream &out) const {
+void Or::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << "||";
@@ -211,7 +209,7 @@ const TypeExpr *And::type() const {
     return &Boolean;
 }
 
-void And::rvalue(ostream &out) const {
+void And::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << "&&";
@@ -264,7 +262,7 @@ const TypeExpr *Not::type() const {
     return &Boolean;
 }
 
-void Not::rvalue(ostream &out) const {
+void Not::rvalue(std::ostream &out) const {
     out << "(!";
     rhs->rvalue(out);
     out << ")";
@@ -290,7 +288,7 @@ const TypeExpr *Lt::type() const {
     return &Boolean;
 }
 
-void Lt::rvalue(ostream &out) const {
+void Lt::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << "<";
@@ -318,7 +316,7 @@ const TypeExpr *Leq::type() const {
     return &Boolean;
 }
 
-void Leq::rvalue(ostream &out) const {
+void Leq::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << "<=";
@@ -346,7 +344,7 @@ const TypeExpr *Gt::type() const {
     return &Boolean;
 }
 
-void Gt::rvalue(ostream &out) const {
+void Gt::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << ">";
@@ -374,7 +372,7 @@ const TypeExpr *Geq::type() const {
     return &Boolean;
 }
 
-void Geq::rvalue(ostream &out) const {
+void Geq::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << ">=";
@@ -412,7 +410,7 @@ const TypeExpr *Eq::type() const {
     return &Boolean;
 }
 
-void Eq::rvalue(ostream &out) const {
+void Eq::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << "==";
@@ -450,7 +448,7 @@ const TypeExpr *Neq::type() const {
     return &Boolean;
 }
 
-void Neq::rvalue(ostream &out) const {
+void Neq::rvalue(std::ostream &out) const {
     out << "(";
     lhs->rvalue(out);
     out << "!=";
@@ -478,7 +476,7 @@ const TypeExpr *Add::type() const {
     return nullptr;
 }
 
-void Add::rvalue(ostream &out) const {
+void Add::rvalue(std::ostream &out) const {
     out << "add(";
     lhs->rvalue(out);
     out << ",";
@@ -506,7 +504,7 @@ const TypeExpr *Sub::type() const {
     return nullptr;
 }
 
-void Sub::rvalue(ostream &out) const {
+void Sub::rvalue(std::ostream &out) const {
     out << "sub(";
     lhs->rvalue(out);
     out << ",";
@@ -532,7 +530,7 @@ const TypeExpr *Negative::type() const {
     return rhs->type();
 }
 
-void Negative::rvalue(ostream &out) const {
+void Negative::rvalue(std::ostream &out) const {
     out << "negate(";
     rhs->rvalue(out);
     out << ")";
@@ -558,7 +556,7 @@ const TypeExpr *Mul::type() const {
     return nullptr;
 }
 
-void Mul::rvalue(ostream &out) const {
+void Mul::rvalue(std::ostream &out) const {
     out << "mul(";
     lhs->rvalue(out);
     out << ",";
@@ -586,7 +584,7 @@ const TypeExpr *Div::type() const {
     return nullptr;
 }
 
-void Div::rvalue(ostream &out) const {
+void Div::rvalue(std::ostream &out) const {
     out << "divide(";
     lhs->rvalue(out);
     out << ",";
@@ -614,7 +612,7 @@ const TypeExpr *Mod::type() const {
     return nullptr;
 }
 
-void Mod::rvalue(ostream &out) const {
+void Mod::rvalue(std::ostream &out) const {
     out << "mod(";
     lhs->rvalue(out);
     out << ",";
@@ -628,7 +626,7 @@ void Mod::rvalue(ostream &out) const {
 Lvalue::~Lvalue() {
 }
 
-ExprID::ExprID(const string &id, const Expr *value,
+ExprID::ExprID(const std::string &id, const Expr *value,
   const TypeExpr *type_of, const location &loc, Indexer&)
   : Lvalue(loc), id(id), value(value->clone()), type_of(type_of) {
 }
@@ -668,11 +666,11 @@ const TypeExpr *ExprID::type() const {
     return type_of;
 }
 
-void ExprID::rvalue(ostream &out) const {
+void ExprID::rvalue(std::ostream &out) const {
     out << "model_" << id << "(s)";
 }
 
-void ExprID::lvalue(ostream &out) const {
+void ExprID::lvalue(std::ostream &out) const {
     auto l = dynamic_cast<const Lvalue*>(value);
     assert(l != nullptr);
     l->lvalue(out);
@@ -713,7 +711,7 @@ const TypeExpr *Var::type() const {
     return decl->type;
 }
 
-void Var::rvalue(ostream &out) const {
+void Var::rvalue(std::ostream &out) const {
     if (decl->local) {
         out << "model_" << decl->name;
     } else {
@@ -721,7 +719,7 @@ void Var::rvalue(ostream &out) const {
     }
 }
 
-void Var::lvalue(ostream &out) const {
+void Var::lvalue(std::ostream &out) const {
     if (decl->local) {
         out << "model_" << decl->name;
     } else {
@@ -733,7 +731,7 @@ Var::~Var() {
     delete decl;
 }
 
-Field::Field(Lvalue *record, const string &field, const location &loc,
+Field::Field(Lvalue *record, const std::string &field, const location &loc,
   Indexer&)
   : Lvalue(loc), record(record), field(field) {
 }
@@ -762,7 +760,7 @@ bool Field::constant() const {
     return record->constant();
 }
 
-void Field::rvalue(ostream &out) const {
+void Field::rvalue(std::ostream &out) const {
     const TypeExpr *t = record->type();
     assert(t != nullptr && "root of field reference with no type");
     auto r = dynamic_cast<const Record*>(t);
@@ -800,7 +798,7 @@ const TypeExpr *Field::type() const {
     return nullptr;
 }
 
-void Field::lvalue(ostream &out) const {
+void Field::lvalue(std::ostream &out) const {
     const TypeExpr *t = record->type();
     assert(t != nullptr && "root of field reference with no type");
     auto r = dynamic_cast<const Record*>(t);
@@ -853,7 +851,7 @@ const TypeExpr *Element::type() const {
     return nullptr;
 }
 
-void Element::rvalue(ostream &out) const {
+void Element::rvalue(std::ostream &out) const {
     const TypeExpr *t = array->type();
     assert(t != nullptr && "root of element reference with no type");
     auto a = dynamic_cast<const Array*>(t);
@@ -875,7 +873,7 @@ void Element::rvalue(ostream &out) const {
     }
 }
 
-void Element::lvalue(ostream &out) const {
+void Element::lvalue(std::ostream &out) const {
     const TypeExpr *t = array->type();
     assert(t != nullptr && "root of element reference with no type");
     auto a = dynamic_cast<const Array*>(t);
@@ -888,22 +886,22 @@ void Element::lvalue(ostream &out) const {
     out << ")";
 }
 
-Quantifier::Quantifier(const string &name, TypeExpr *type,
+Quantifier::Quantifier(const std::string &name, TypeExpr *type,
   const location &loc, Indexer &indexer)
   : Node(loc), var(new VarDecl(name, type, loc, indexer)) {
 }
 
-Quantifier::Quantifier(const string &name, Expr *from, Expr *to,
+Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to,
   const location &loc, Indexer& indexer)
   : Quantifier(loc, name, from, to, nullptr, indexer) {
 }
 
-Quantifier::Quantifier(const string &name, Expr *from, Expr *to, Expr *step,
+Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step,
   const location &loc, Indexer &indexer)
   : Quantifier(loc, name, from, to, step, indexer) {
 }
 
-Quantifier::Quantifier(const location &loc, const string &name, Expr *from,
+Quantifier::Quantifier(const location &loc, const std::string &name, Expr *from,
   Expr *to, Expr *step, Indexer &indexer)
   : Node(loc),
     var(new VarDecl(name, new Range(from, to, loc, indexer), loc, indexer)),
@@ -968,7 +966,7 @@ const TypeExpr *Exists::type() const {
     return &Boolean;
 }
 
-void Exists::rvalue(ostream &out) const {
+void Exists::rvalue(std::ostream &out) const {
     out << "({bool r=false;for(int64_t model_" << quantifier->var->name << "=";
     quantifier->var->type->generate_min(out);
     out << ";;model_" << quantifier->var->name << "=add(model_"
@@ -1022,7 +1020,7 @@ const TypeExpr *Forall::type() const {
     return &Boolean;
 }
 
-void Forall::rvalue(ostream &out) const {
+void Forall::rvalue(std::ostream &out) const {
     out << "({bool r=true;for(int64_t model_" << quantifier->var->name << "=";
     quantifier->var->type->generate_min(out);
     out << ";;model_" << quantifier->var->name << "=add(model_"

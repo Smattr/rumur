@@ -8,11 +8,9 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace rumur {
 
-Rule::Rule(const string &name, Expr *guard, vector<Decl*> &&decls, vector<Stmt*> &&body,
+Rule::Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls, std::vector<Stmt*> &&body,
   const location &loc, Indexer&)
   : Node(loc), name(name), guard(guard), decls(decls), body(body) {
 }
@@ -42,7 +40,7 @@ Rule *Rule::clone() const {
     return new Rule(*this);
 }
 
-void Rule::generate_rule(ostream &out) const {
+void Rule::generate_rule(std::ostream &out) const {
     // TODO: decls
     for (const Stmt *s : body) {
         s->generate_stmt(out);
@@ -62,8 +60,8 @@ Rule::~Rule() {
  * transparently forward the rvalue references, but it seems they need to be
  * bound to lvalue references which does not happen automatically.
  */
-StartState::StartState(const string &name, vector<Decl*> &&decls,
-  vector<Stmt*> &&body, const location &loc, Indexer& indexer)
+StartState::StartState(const std::string &name, std::vector<Decl*> &&decls,
+  std::vector<Stmt*> &&body, const location &loc, Indexer& indexer)
   : Rule(name, nullptr, move(decls), move(body), loc, indexer) {
 }
 
@@ -71,7 +69,7 @@ StartState *StartState::clone() const {
     return new StartState(*this);
 }
 
-Invariant::Invariant(const string &name_, Expr *guard_,
+Invariant::Invariant(const std::string &name_, Expr *guard_,
   const location &loc_, Indexer&)
   : Node(loc_), name(name_), guard(guard_) {
 }

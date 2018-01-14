@@ -5,10 +5,7 @@
 #include <rumur/Indexer.h>
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
-#include <string>
 #include <utility>
-
-using namespace std;
 
 namespace rumur {
 
@@ -49,7 +46,7 @@ void Assignment::validate() const {
     rhs->validate();
 }
 
-void Assignment::generate_stmt(ostream &out) const {
+void Assignment::generate_stmt(std::ostream &out) const {
     auto t = dynamic_cast<const SimpleTypeExpr*>(lhs->type());
     assert (t != nullptr && "BUG: Left hand side of assignment with non-simple "
       "type. Attempted code generation on unvalidated AST?");

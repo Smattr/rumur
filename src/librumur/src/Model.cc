@@ -12,11 +12,9 @@
 #include <unordered_set>
 #include <vector>
 
-using namespace std;
-
 namespace rumur {
 
-Model::Model(vector<Decl*> &&decls, vector<Rule*> &&rules, const location &loc, Indexer&)
+Model::Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc, Indexer&)
   : Node(loc), decls(decls), rules(rules) {
 }
 
@@ -57,7 +55,7 @@ void Model::validate() const {
         throw RumurError("model has no start state", location());
 
     // Check all rule names are distinct.
-    unordered_set<string> names;
+    std::unordered_set<std::string> names;
     for (const Rule *r : rules) {
         if (r->name != "") {
             if (!names.insert(r->name).second)

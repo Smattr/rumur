@@ -8,35 +8,33 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 namespace rumur {
 
 bool TypeExpr::is_simple() const {
     return false;
 }
 
-void TypeExpr::generate_min(ostream&) const {
+void TypeExpr::generate_min(std::ostream&) const {
     throw RumurError("generate_min called on a complex type", loc);
 }
 
-void TypeExpr::generate_max(ostream&) const {
+void TypeExpr::generate_max(std::ostream&) const {
     throw RumurError("generate_max called on a complex type", loc);
 }
 
-string TypeExpr::field_reader(const string&) const {
+std::string TypeExpr::field_reader(const std::string&) const {
     throw RumurError("field read of something that is not a record", loc);
 }
 
-string TypeExpr::field_writer(const string&) const {
+std::string TypeExpr::field_writer(const std::string&) const {
     throw RumurError("field write of something that is not a record", loc);
 }
 
-string TypeExpr::element_reader() const {
+std::string TypeExpr::element_reader() const {
     throw RumurError("element read of something that is not an array", loc);
 }
 
-string TypeExpr::element_writer() const {
+std::string TypeExpr::element_writer() const {
     throw RumurError("element write of something that is not an array", loc);
 }
 
@@ -48,11 +46,11 @@ bool SimpleTypeExpr::is_simple() const {
     return true;
 }
 
-void SimpleTypeExpr::reader(ostream &out) const {
+void SimpleTypeExpr::reader(std::ostream &out) const {
     out << "type_read_" << index;
 }
 
-void SimpleTypeExpr::writer(ostream &out) const {
+void SimpleTypeExpr::writer(std::ostream &out) const {
     out << "type_write_" << index;
 }
 
@@ -89,15 +87,15 @@ void Range::validate() const {
         throw RumurError("upper bound of range is not a constant", max->loc);
 }
 
-void Range::generate_min(ostream &out) const {
+void Range::generate_min(std::ostream &out) const {
     min->rvalue(out);
 }
 
-void Range::generate_max(ostream &out) const {
+void Range::generate_max(std::ostream &out) const {
     max->rvalue(out);
 }
 
-void Range::define(ostream &out) const {
+void Range::define(std::ostream &out) const {
     // Emit a type struct.
     out << "struct type_" << index << "{void*base;unsigned long offset;};";
 
@@ -122,7 +120,7 @@ Range::~Range() {
     delete max;
 }
 
-Enum::Enum(const vector<pair<string, location>> &members, const location &loc,
+Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc,
   Indexer &indexer)
   : SimpleTypeExpr(loc, indexer) {
 
@@ -141,18 +139,18 @@ Enum *Enum::clone() const {
     return new Enum(*this);
 }
 
-void Enum::generate_min(ostream &out) const {
+void Enum::generate_min(std::ostream &out) const {
     out << "INT64_C(0)";
 }
 
-void Enum::generate_max(ostream &out) const {
+void Enum::generate_max(std::ostream &out) const {
     out << "INT64_C(" << members.size() << ")";
 }
 
-void Enum::define(ostream &) const {
+void Enum::define(std::ostream &) const {
 }
 
-Record::Record(vector<VarDecl*> &&fields, const location &loc,
+Record::Record(std::vector<VarDecl*> &&fields, const location &loc,
   Indexer &indexer)
   : TypeExpr(loc), fields(fields), index(indexer.new_index()) {
 }
@@ -180,33 +178,33 @@ Record *Record::clone() const {
     return new Record(*this);
 }
 
-void Record::field_referencer(ostream &out, const string &field) const {
+void Record::field_referencer(std::ostream &out, const std::string &field) const {
     out << "make_reference_" << index << field;
 }
 
-string Record::field_reader(const string &field) const {
+std::string Record::field_reader(const std::string &field) const {
     unsigned long i = 0;
     for (const VarDecl *v : fields) {
         if (v->name == field) {
-            return name + "_field_" + to_string(i) + "_read";
+            return name + "_field_" + std::to_string(i) + "_read";
         }
         i++;
     }
     throw RumurError("attempted read of non-existent record field", loc);
 }
 
-string Record::field_writer(const string &field) const {
+std::string Record::field_writer(const std::string &field) const {
     unsigned long i = 0;
     for (const VarDecl *v : fields) {
         if (v->name == field) {
-            return name + "_field_" + to_string(i) + "_write";
+            return name + "_field_" + std::to_string(i) + "_write";
         }
         i++;
     }
     throw RumurError("attempted write of non-existent record field", loc);
 }
 
-void Record::define(ostream &) const {
+void Record::define(std::ostream &) const {
 }
 
 Record::~Record() {
@@ -243,19 +241,19 @@ Array *Array::clone() const {
     return new Array(*this);
 }
 
-void Array::element_referencer(ostream &out) const {
+void Array::element_referencer(std::ostream &out) const {
     out << "make_reference_" << index;
 }
 
-string Array::element_reader() const {
+std::string Array::element_reader() const {
     return name + "_read";
 }
 
-string Array::element_writer() const {
+std::string Array::element_writer() const {
     return name + "_write";
 }
 
-void Array::define(ostream &) const {
+void Array::define(std::ostream &) const {
 }
 
 Array::~Array() {

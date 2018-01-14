@@ -7,20 +7,18 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 namespace rumur {
 
 /* Turn a string into a something that can be safely emitted in a C++ file and
  * seen by the compiler as a string literal.
  */
-static string escape_string(const string &s) {
+static std::string escape_string(const std::string &s) {
     // TODO
     return "\"" + s + "\"";
 }
 
-static const vector<pair<string, string>> INCLUDES = {
-#define RES(r) make_pair(#r ".cc", string((const char*)resources_##r##_cc, (size_t)resources_##r##_cc_len))
+static const std::vector<std::pair<std::string, std::string>> INCLUDES = {
+#define RES(r) std::make_pair(#r ".cc", std::string((const char*)resources_##r##_cc, (size_t)resources_##r##_cc_len))
     RES(State),
     RES(Rule),
     RES(header),
@@ -28,9 +26,9 @@ static const vector<pair<string, string>> INCLUDES = {
 #undef RES
 };
 
-int output_includes(const string &path) {
+int output_includes(const std::string &path) {
     for (const std::pair<std::string, std::string> i : INCLUDES) {
-        ofstream out(path + "/" + i.first);
+        std::ofstream out(path + "/" + i.first);
         if (!out)
             return -1;
 
@@ -45,10 +43,10 @@ static bool is_regular_rule(const Rule *r) {
            dynamic_cast<const Invariant*>(r) == nullptr;
 }
 
-int output_checker(const string &path, const Model &model,
+int output_checker(const std::string &path, const Model &model,
   const OutputOptions &options) {
 
-    ofstream out(path);
+    std::ofstream out(path);
     if (!out)
         return -1;
 
@@ -75,7 +73,7 @@ int output_checker(const string &path, const Model &model,
 
     // Write out the start state rules.
     {
-        vector<string> start_rules;
+        std::vector<std::string> start_rules;
         for (const Rule *r : model.rules) {
             if (auto s = dynamic_cast<const StartState*>(r)) {
                 out << "static State *startstate_" << start_rules.size() << "() {\n"
@@ -96,7 +94,7 @@ int output_checker(const string &path, const Model &model,
                "    State *(*body)(void);\n"
                "} START_RULES[] = {\n";
         unsigned i = 0;
-        for (const string &s : start_rules) {
+        for (const std::string &s : start_rules) {
             out << "    { .name = " << escape_string(s) << ", .body = startstate_" << i << "},\n";
             i++;
         }
@@ -105,7 +103,7 @@ int output_checker(const string &path, const Model &model,
 
     // Write out the invariant rules.
     {
-        vector<string> invariants;
+        std::vector<std::string> invariants;
         for (const Rule *r : model.rules) {
             if (auto i = dynamic_cast<const Invariant*>(r)) {
                 out << "static bool invariant_" << invariants.size() << "(const State *s) {\n"
@@ -121,7 +119,7 @@ int output_checker(const string &path, const Model &model,
                "    bool (*guard)(const State*);\n"
                "} INVARIANTS[] = {\n";
         unsigned i = 0;
-        for (const string &n : invariants) {
+        for (const std::string &n : invariants) {
             out << "    { .name = " << escape_string(n) << ", .guard = invariant_" << i << "},\n";
             i++;
         }
@@ -130,7 +128,7 @@ int output_checker(const string &path, const Model &model,
 
     // Write out the regular rules.
     {
-        vector<string> rules;
+        std::vector<std::string> rules;
         for (const Rule *r : model.rules) {
             if (is_regular_rule(r)) {
                 out << "static bool guard_" << rules.size() << "(const State *s) {\n"
@@ -150,7 +148,7 @@ int output_checker(const string &path, const Model &model,
                "    void (*body)(State *);\n"
                "} RULES[] = {\n";
         unsigned i = 0;
-        for (const string &n : rules) {
+        for (const std::string &n : rules) {
             out << "    { .name = " << escape_string(n) << ", .guard = guard_" <<
               i << ", .body = rule_" << i << "},\n";
             i++;
