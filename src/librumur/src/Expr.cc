@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <iostream>
 #include "location.hh"
-#include "macros.h"
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
