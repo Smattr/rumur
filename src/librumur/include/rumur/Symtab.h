@@ -24,6 +24,8 @@ class Symtab {
 
     void close_scope() {
         assert(!scope.empty());
+        for (std::pair<std::string, Node*> e : scope[scope.size() - 1])
+            delete e.second;
         scope.pop_back();
     }
 
