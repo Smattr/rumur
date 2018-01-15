@@ -27,6 +27,7 @@ class Number : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 

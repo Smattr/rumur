@@ -74,6 +74,7 @@ class Ternary : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -109,6 +110,7 @@ class Implication : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -124,6 +126,7 @@ class Or : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -139,6 +142,7 @@ class And : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -171,6 +175,7 @@ class Not : public UnaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -186,6 +191,7 @@ class Lt : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -201,6 +207,7 @@ class Leq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -216,6 +223,7 @@ class Gt : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -231,6 +239,7 @@ class Geq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -246,6 +255,7 @@ class Eq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -261,6 +271,7 @@ class Neq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -276,6 +287,7 @@ class Add : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -291,6 +303,7 @@ class Sub : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -306,6 +319,7 @@ class Negative : public UnaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -321,6 +335,7 @@ class Mul : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -336,6 +351,7 @@ class Div : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -351,6 +367,7 @@ class Mod : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -369,7 +386,7 @@ class Lvalue : public Expr {
     /* Emit some C++ code that implements an lvalue reference of this
      * expression.
      */
-    virtual void lvalue(std::ostream &out) const = 0;;
+    virtual void lvalue(std::ostream &out) const = 0;
 
 };
 
@@ -405,6 +422,7 @@ class ExprID : public Lvalue {
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -426,6 +444,7 @@ class Var : public Lvalue {
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -447,6 +466,7 @@ class Field : public Lvalue {
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -468,6 +488,7 @@ class Element : public Lvalue {
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
     void lvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -489,6 +510,7 @@ class Quantifier : public Node {
     friend void swap(Quantifier &x, Quantifier &y) noexcept;
     virtual ~Quantifier();
     Quantifier *clone() const final;
+    void generate(std::ostream &out) const final;
 
   private:
     /* This constructor is delegated to internally.
@@ -518,6 +540,7 @@ class Exists : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -539,6 +562,7 @@ class Forall : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void rvalue(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 

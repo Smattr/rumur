@@ -77,4 +77,8 @@ Model::~Model() {
         delete r;
 }
 
+void Model::generate(std::ostream &) const {
+    // TODO
+}
+
 }

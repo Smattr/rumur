@@ -46,15 +46,16 @@ void Assignment::validate() const {
     rhs->validate();
 }
 
-void Assignment::generate_stmt(std::ostream &out) const {
-    auto t = dynamic_cast<const SimpleTypeExpr*>(lhs->type());
-    assert (t != nullptr && "BUG: Left hand side of assignment with non-simple "
-      "type. Attempted code generation on unvalidated AST?");
-    t->writer(out);
+void Assignment::generate(std::ostream &out) const {
+    assert(lhs != nullptr);
+    //auto t = dynamic_cast<const SimpleTypeExpr*>(lhs->type());
+    //assert (t != nullptr && "BUG: Left hand side of assignment with non-simple "
+    //  "type. Attempted code generation on unvalidated AST?");
+    //t->writer(out);
     out << "(";
-    lhs->lvalue(out);
+    //lhs->lvalue(out);
     out << ",";
-    rhs->rvalue(out);
+    //rhs->rvalue(out);
     out << ");";
 }
 

@@ -21,8 +21,6 @@ class Stmt : public Node {
     virtual ~Stmt() { }
     virtual Stmt *clone() const = 0;
 
-    virtual void generate_stmt(std::ostream &out) const = 0;
-
 };
 
 class Assignment : public Stmt {
@@ -41,7 +39,7 @@ class Assignment : public Stmt {
 
     void validate() const final;
 
-    void generate_stmt(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 

@@ -56,9 +56,8 @@ int output_checker(const std::string &path, const Model &model,
         std::vector<std::string> start_rules;
         for (const Rule *r : model.rules) {
             if (auto s = dynamic_cast<const StartState*>(r)) {
-                out << "void startstate_" << start_rules.size() << "(State &s) {\n";
-                s->generate_rule(out);
-                out << "}\n\n";
+                out << "void startstate_" << start_rules.size()
+                  << "(State &s) {\n" << *s << "}\n\n";
                 start_rules.push_back(s->name);
             }
         }

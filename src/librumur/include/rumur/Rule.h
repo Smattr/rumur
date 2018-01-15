@@ -29,8 +29,7 @@ class Rule : public Node {
     friend void swap(Rule &x, Rule &y) noexcept;
     virtual ~Rule();
     Rule *clone() const override;
-
-    void generate_rule(std::ostream &out) const;
+    void generate(std::ostream &out) const override;
 
 };
 
@@ -49,6 +48,7 @@ class StartState : public Rule {
     StartState &operator=(StartState&&) = default;
     virtual ~StartState() { }
     StartState *clone() const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -66,6 +66,7 @@ class Invariant : public Node {
     friend void swap(Invariant &x, Invariant &y) noexcept;
     virtual ~Invariant();
     Invariant *clone() const final;
+    void generate(std::ostream &out) const final;
 
 };
 

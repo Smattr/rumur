@@ -46,6 +46,7 @@ class ConstDecl : public Decl {
 
     void validate() const final;
     void define(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -65,6 +66,7 @@ class TypeDecl : public Decl {
 
     void validate() const final;
     void define(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -84,6 +86,7 @@ class VarDecl : public Decl {
     virtual ~VarDecl();
 
     void define(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 

@@ -40,12 +40,24 @@ Rule *Rule::clone() const {
     return new Rule(*this);
 }
 
-void Rule::generate_rule(std::ostream &out) const {
-    // TODO: decls
-    for (const Stmt *s : body) {
-        s->generate_stmt(out);
-        out << "\n";
+void Rule::generate(std::ostream &out) const {
+    out << "Rule(\"" << name << "\","
+    
+      // guard
+      << "[](const State &s){return ";
+    if (guard == nullptr) {
+        out << "true";
+    } else {
+        out << *guard;
     }
+    out << ";},"
+
+      // body
+      << "[](State &s){";
+    // TODO: decls
+    for (const Stmt *s : body)
+        out << *s << ";";
+    out << "})";
 }
 
 Rule::~Rule() {
@@ -67,6 +79,17 @@ StartState::StartState(const std::string &name, std::vector<Decl*> &&decls,
 
 StartState *StartState::clone() const {
     return new StartState(*this);
+}
+
+void StartState::generate(std::ostream &out) const {
+    out << "StartState(\"" << name << "\","
+
+      // body
+      << "[](State &s){";
+    // TODO: decls
+    for (const Stmt *s : body)
+        out << *s << ";";
+    out << "})";
 }
 
 Invariant::Invariant(const std::string &name_, Expr *guard_,
@@ -96,6 +119,19 @@ Invariant *Invariant::clone() const {
 
 Invariant::~Invariant() {
     delete guard;
+}
+
+void Invariant::generate(std::ostream &out) const {
+    out << "Invariant(\"" << name << "\","
+    
+      // guard
+      << "[](const State &s){return ";
+    if (guard == nullptr) {
+        out << "true";
+    } else {
+        out << *guard;
+    }
+    out << ";})";
 }
 
 }

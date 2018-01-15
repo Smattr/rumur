@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "location.hh"
 
 namespace rumur {
@@ -21,6 +22,13 @@ class Node {
 
     virtual Node *clone() const = 0;
 
+    virtual void generate(std::ostream &out) const = 0;
+
 };
+
+static inline std::ostream &operator<<(std::ostream &out, const Node &n) {
+    n.generate(out);
+    return out;
+}
 
 }

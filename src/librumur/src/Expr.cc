@@ -94,14 +94,11 @@ const TypeExpr *Ternary::type() const {
     return lhs->type();
 }
 
-void Ternary::rvalue(std::ostream &out) const {
-    out << "(";
-    cond->rvalue(out);
-    out << "?";
-    lhs->rvalue(out);
-    out << ":";
-    rhs->rvalue(out);
-    out << ")";
+void Ternary::rvalue(std::ostream &) const {
+}
+
+void Ternary::generate(std::ostream &out) const {
+    out << "(" << *cond << "?" << *lhs << ":" << *rhs << ")";
 }
 
 BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc, Indexer&):
@@ -153,6 +150,13 @@ const TypeExpr *Implication::type() const {
     return &Boolean;
 }
 
+void Implication::rvalue(std::ostream &) const {
+}
+
+void Implication::generate(std::ostream &out) const {
+    out << "(!" << *lhs << "||" << *rhs << ")";
+}
+
 Or &Or::operator=(Or other) {
     swap(*this, other);
     return *this;
@@ -169,24 +173,15 @@ void Or::validate() const {
     expect_boolean(rhs);
 }
 
-void Implication::rvalue(std::ostream &out) const {
-    out << "(!";
-    lhs->rvalue(out);
-    out << "||";
-    rhs->rvalue(out);
-    out << ")";
-}
-
 const TypeExpr *Or::type() const {
     return &Boolean;
 }
 
-void Or::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << "||";
-    rhs->rvalue(out);
-    out << ")";
+void Or::rvalue(std::ostream &) const {
+}
+
+void Or::generate(std::ostream &out) const {
+    out << "(" << *lhs << "||" << *rhs << ")";
 }
 
 And &And::operator=(And other) {
@@ -209,12 +204,11 @@ const TypeExpr *And::type() const {
     return &Boolean;
 }
 
-void And::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << "&&";
-    rhs->rvalue(out);
-    out << ")";
+void And::rvalue(std::ostream &) const {
+}
+
+void And::generate(std::ostream &out) const {
+    out << "(" << *lhs << "&&" << *rhs << ")";
 }
 
 UnaryExpr::UnaryExpr(Expr *rhs, const location &loc, Indexer&):
@@ -262,10 +256,11 @@ const TypeExpr *Not::type() const {
     return &Boolean;
 }
 
-void Not::rvalue(std::ostream &out) const {
-    out << "(!";
-    rhs->rvalue(out);
-    out << ")";
+void Not::rvalue(std::ostream &) const {
+}
+
+void Not::generate(std::ostream &out) const {
+    out << "(!" << *rhs << ")";
 }
 
 Lt &Lt::operator=(Lt other) {
@@ -288,12 +283,11 @@ const TypeExpr *Lt::type() const {
     return &Boolean;
 }
 
-void Lt::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << "<";
-    rhs->rvalue(out);
-    out << ")";
+void Lt::rvalue(std::ostream &) const {
+}
+
+void Lt::generate(std::ostream &out) const {
+    out << "(" << *lhs << "<" << *rhs << ")";
 }
 
 Leq &Leq::operator=(Leq other) {
@@ -316,12 +310,11 @@ const TypeExpr *Leq::type() const {
     return &Boolean;
 }
 
-void Leq::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << "<=";
-    rhs->rvalue(out);
-    out << ")";
+void Leq::rvalue(std::ostream &) const {
+}
+
+void Leq::generate(std::ostream &out) const {
+    out << "(" << *lhs << "<=" << *rhs << ")";
 }
 
 Gt &Gt::operator=(Gt other) {
@@ -344,12 +337,11 @@ const TypeExpr *Gt::type() const {
     return &Boolean;
 }
 
-void Gt::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << ">";
-    rhs->rvalue(out);
-    out << ")";
+void Gt::rvalue(std::ostream &) const {
+}
+
+void Gt::generate(std::ostream &out) const {
+    out << "(" << *lhs << ">" << *rhs << ")";
 }
 
 Geq &Geq::operator=(Geq other) {
@@ -372,12 +364,11 @@ const TypeExpr *Geq::type() const {
     return &Boolean;
 }
 
-void Geq::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << ">=";
-    rhs->rvalue(out);
-    out << ")";
+void Geq::rvalue(std::ostream &) const {
+}
+
+void Geq::generate(std::ostream &out) const {
+    out << "(" << *lhs << ">=" << *rhs << ")";
 }
 
 Eq &Eq::operator=(Eq other) {
@@ -410,12 +401,11 @@ const TypeExpr *Eq::type() const {
     return &Boolean;
 }
 
-void Eq::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << "==";
-    rhs->rvalue(out);
-    out << ")";
+void Eq::rvalue(std::ostream &) const {
+}
+
+void Eq::generate(std::ostream &out) const {
+    out << "(" << *lhs << "==" << *rhs << ")";
 }
 
 Neq &Neq::operator=(Neq other) {
@@ -448,12 +438,11 @@ const TypeExpr *Neq::type() const {
     return &Boolean;
 }
 
-void Neq::rvalue(std::ostream &out) const {
-    out << "(";
-    lhs->rvalue(out);
-    out << "!=";
-    rhs->rvalue(out);
-    out << ")";
+void Neq::rvalue(std::ostream &) const {
+}
+
+void Neq::generate(std::ostream &out) const {
+    out << "(" << *lhs << "!=" << *rhs << ")";
 }
 
 Add &Add::operator=(Add other) {
@@ -476,12 +465,11 @@ const TypeExpr *Add::type() const {
     return nullptr;
 }
 
-void Add::rvalue(std::ostream &out) const {
-    out << "add(";
-    lhs->rvalue(out);
-    out << ",";
-    rhs->rvalue(out);
-    out << ")";
+void Add::rvalue(std::ostream &) const {
+}
+
+void Add::generate(std::ostream &out) const {
+    out << "(" << *lhs << "+" << *rhs << ")";
 }
 
 Sub &Sub::operator=(Sub other) {
@@ -504,12 +492,11 @@ const TypeExpr *Sub::type() const {
     return nullptr;
 }
 
-void Sub::rvalue(std::ostream &out) const {
-    out << "sub(";
-    lhs->rvalue(out);
-    out << ",";
-    rhs->rvalue(out);
-    out << ")";
+void Sub::rvalue(std::ostream &) const {
+}
+
+void Sub::generate(std::ostream &out) const {
+    out << "(" << *lhs << "-" << *rhs << ")";
 }
 
 void Negative::validate() const {
@@ -530,10 +517,11 @@ const TypeExpr *Negative::type() const {
     return rhs->type();
 }
 
-void Negative::rvalue(std::ostream &out) const {
-    out << "negate(";
-    rhs->rvalue(out);
-    out << ")";
+void Negative::rvalue(std::ostream &) const {
+}
+
+void Negative::generate(std::ostream &out) const {
+    out << "(-" << *rhs << ")";
 }
 
 Mul &Mul::operator=(Mul other) {
@@ -556,12 +544,11 @@ const TypeExpr *Mul::type() const {
     return nullptr;
 }
 
-void Mul::rvalue(std::ostream &out) const {
-    out << "mul(";
-    lhs->rvalue(out);
-    out << ",";
-    rhs->rvalue(out);
-    out << ")";
+void Mul::rvalue(std::ostream &) const {
+}
+
+void Mul::generate(std::ostream &out) const {
+    out << "(" << *lhs << "*" << *rhs << ")";
 }
 
 Div &Div::operator=(Div other) {
@@ -584,12 +571,11 @@ const TypeExpr *Div::type() const {
     return nullptr;
 }
 
-void Div::rvalue(std::ostream &out) const {
-    out << "divide(";
-    lhs->rvalue(out);
-    out << ",";
-    rhs->rvalue(out);
-    out << ")";
+void Div::rvalue(std::ostream &) const {
+}
+
+void Div::generate(std::ostream &out) const {
+    out << "(" << *lhs << "/" << *rhs << ")";
 }
 
 Mod &Mod::operator=(Mod other) {
@@ -612,12 +598,11 @@ const TypeExpr *Mod::type() const {
     return nullptr;
 }
 
-void Mod::rvalue(std::ostream &out) const {
-    out << "mod(";
-    lhs->rvalue(out);
-    out << ",";
-    rhs->rvalue(out);
-    out << ")";
+void Mod::rvalue(std::ostream &) const {
+}
+
+void Mod::generate(std::ostream &out) const {
+    out << "(" << *lhs << "%" << *rhs << ")";
 }
 
 /* Cheap trick: this destructor is pure virtual in the class declaration, making
@@ -666,8 +651,11 @@ const TypeExpr *ExprID::type() const {
     return type_of;
 }
 
-void ExprID::rvalue(std::ostream &out) const {
-    out << "model_" << id << "(s)";
+void ExprID::rvalue(std::ostream &) const {
+}
+
+void ExprID::generate(std::ostream &out) const {
+    out << "TODO " << id;
 }
 
 void ExprID::lvalue(std::ostream &out) const {
@@ -729,6 +717,10 @@ void Var::lvalue(std::ostream &out) const {
 
 Var::~Var() {
     delete decl;
+}
+
+void Var::generate(std::ostream &) const {
+    // TODO
 }
 
 Field::Field(Lvalue *record, const std::string &field, const location &loc,
@@ -809,6 +801,10 @@ void Field::lvalue(std::ostream &out) const {
     out << ")";
 }
 
+void Field::generate(std::ostream &out) const {
+    out << "(" << *record << "." << field << ")";
+}
+
 Field::~Field() {
     delete record;
 }
@@ -886,6 +882,10 @@ void Element::lvalue(std::ostream &out) const {
     out << ")";
 }
 
+void Element::generate(std::ostream &out) const {
+    out << "(" << *array << "[" << *index << "])";
+}
+
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
   const location &loc, Indexer &indexer)
   : Node(loc), var(new VarDecl(name, type, loc, indexer)) {
@@ -932,6 +932,11 @@ Quantifier *Quantifier::clone() const {
 Quantifier::~Quantifier() {
     delete var;
     delete step;
+}
+
+void Quantifier::generate(std::ostream &out) const {
+    // TODO: needs some more work
+    out << "for(" << var->name << "...";
 }
 
 Exists::Exists(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
@@ -988,6 +993,11 @@ Exists::~Exists() {
     delete expr;
 }
 
+void Exists::generate(std::ostream &out) const {
+    out << "({bool ru_g_TODO=false;" << *quantifier << "{if(" << *expr
+      << "){ru_g_TODO=true;break;}}ru_g_TODO;})";
+}
+
 Forall::Forall(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
@@ -1040,6 +1050,11 @@ void Forall::rvalue(std::ostream &out) const {
 Forall::~Forall() {
     delete quantifier;
     delete expr;
+}
+
+void Forall::generate(std::ostream &out) const {
+    out << "({bool ru_g_TODO=true;" << *quantifier << "{if(" << *expr
+      << "){ru_g_TODO=false;break;}}ru_g_TODO;})";
 }
 
 }

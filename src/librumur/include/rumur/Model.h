@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/Indexer.h>
@@ -29,6 +30,8 @@ class Model : public Node {
 
     // Get the size of the state data in bits.
     uint64_t size_bits() const;
+
+    void generate(std::ostream &out) const final;
 
 };
 

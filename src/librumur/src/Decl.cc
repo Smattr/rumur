@@ -47,10 +47,11 @@ void ConstDecl::validate() const {
         throw RumurError("const definition is not a constant", value->loc);
 }
 
-void ConstDecl::define(std::ostream &out) const {
-    out << "static int64_t model_" << name << "(const State*s __attribute__((unused))){return ";
-    value->rvalue(out);
-    out << ";}";
+void ConstDecl::define(std::ostream &) const {
+}
+
+void ConstDecl::generate(std::ostream &out) const {
+    out << "static const Literal ru_u_" << name << "(" << *value << ")";
 }
 
 ConstDecl::~ConstDecl() {
@@ -94,6 +95,10 @@ TypeDecl::~TypeDecl() {
     delete value;
 }
 
+void TypeDecl::generate(std::ostream &out) const {
+    out << "class " << name << "{" << *value << "}";
+}
+
 VarDecl::VarDecl(const std::string &name, TypeExpr *type,
   const location &loc, Indexer&)
   : Decl(name, loc), type(type) {
@@ -122,6 +127,10 @@ VarDecl *VarDecl::clone() const {
 
 void VarDecl::define(std::ostream&) const {
     // TODO
+}
+
+void VarDecl::generate(std::ostream &out) const {
+    out << "TODO " << name;
 }
 
 VarDecl::~VarDecl() {

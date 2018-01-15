@@ -93,6 +93,8 @@ class Range : public SimpleTypeExpr {
     void generate_max(std::ostream &out) const final;
     void define(std::ostream &out) const final;
 
+    void generate(std::ostream &out) const final;
+
 };
 
 class Enum : public SimpleTypeExpr {
@@ -113,6 +115,7 @@ class Enum : public SimpleTypeExpr {
     void generate_min(std::ostream &out) const final;
     void generate_max(std::ostream &out) const final;
     void define(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -135,6 +138,7 @@ class Record : public TypeExpr {
     std::string field_reader(const std::string &field) const final;
     std::string field_writer(const std::string &field) const final;
     void define(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 
@@ -159,6 +163,7 @@ class Array : public TypeExpr {
     std::string element_reader() const final;
     std::string element_writer() const final;
     void define(std::ostream &out) const final;
+    void generate(std::ostream &out) const final;
 
 };
 

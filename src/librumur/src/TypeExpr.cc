@@ -120,6 +120,10 @@ Range::~Range() {
     delete max;
 }
 
+void Range::generate(std::ostream &out) const {
+    out << "RangeBase<" << *min << "," << *max << ">";
+}
+
 Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc,
   Indexer &indexer)
   : SimpleTypeExpr(loc, indexer) {
@@ -148,6 +152,18 @@ void Enum::generate_max(std::ostream &out) const {
 }
 
 void Enum::define(std::ostream &) const {
+}
+
+void Enum::generate(std::ostream &out) const {
+    out << "EnumBase<";
+    bool first = true;
+    for (const ExprID &m : members) {
+        if (!first)
+            out << ",";
+        out << "\"" << m.id << "\"";
+        first = false;
+    }
+    out << ">";
 }
 
 Record::Record(std::vector<VarDecl*> &&fields, const location &loc,
@@ -212,6 +228,12 @@ Record::~Record() {
         delete v;
 }
 
+void Record::generate(std::ostream &out) const {
+    out << "class:public RecordBase{";
+    // TODO
+    out << "}";
+}
+
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_,
   Indexer &indexer)
   : TypeExpr(loc_), index_type(index_type_), element_type(element_type_),
@@ -259,6 +281,10 @@ void Array::define(std::ostream &) const {
 Array::~Array() {
     delete index_type;
     delete element_type;
+}
+
+void Array::generate(std::ostream &out) const {
+    out << "ArrayBase<" << *index_type << "," << *element_type << ">";
 }
 
 }
