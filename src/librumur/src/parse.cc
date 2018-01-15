@@ -29,7 +29,7 @@ Model *parse(std::istream *input) {
     // Setup the parser
     scanner s(input);
     Model *m = nullptr;
-    parser p(s, m, &symtab, indexer);
+    parser p(s, m, symtab, indexer);
 
     // Parse the input model
     int err = p.parse();

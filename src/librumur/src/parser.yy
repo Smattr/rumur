@@ -88,7 +88,7 @@
     /* And also a symbol table we'll use for relating identifiers back to the
      * target they refer to.
      */
-%parse-param { rumur::Symtab *symtab }
+%parse-param { rumur::Symtab &symtab }
 
     /* A helper for generating unique IDs for nodes that require it. */
 %parse-param { rumur::Indexer &indexer }
@@ -173,7 +173,7 @@ decl: CONST constdecls {
     $$ = $2;
 } | VAR vardecls {
     for (const rumur::VarDecl *d : $2) {
-        symtab->declare(d->name, rumur::Var(d, d->loc, indexer));
+        symtab.declare(d->name, rumur::Var(d, d->loc, indexer));
     }
     std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
@@ -187,7 +187,7 @@ constdecls: constdecls constdecl {
 
 constdecl: ID ':' expr ';' {
     $$ = new rumur::ConstDecl($1, $3, @$, indexer);
-    symtab->declare($1, *$3);
+    symtab.declare($1, *$3);
 };
 
 typedecls: typedecls typedecl {
@@ -199,11 +199,11 @@ typedecls: typedecls typedecl {
 
 typedecl: ID ':' typeexpr ';' {
     $$ = new rumur::TypeDecl($1, $3, @$, indexer);
-    symtab->declare($1, *$3);
+    symtab.declare($1, *$3);
 };
 
 typeexpr: ID {
-    const TypeExpr *t = symtab->lookup<rumur::TypeExpr>($1, @$);
+    const TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
     if (t == nullptr) {
         throw RumurError("unknown type ID \"" + $1 + "\"", @1);
     }
@@ -214,7 +214,7 @@ typeexpr: ID {
     auto e = new rumur::Enum($3, @$, indexer);
     /* Register all the enum members so they can be referenced later. */
     for (const rumur::ExprID &eid : e->members) {
-        symtab->declare(eid.id, eid);
+        symtab.declare(eid.id, eid);
     }
     $$ = e;
 } | RECORD vardecls endrecord {
@@ -333,17 +333,17 @@ expr: expr '?' expr ':' expr {
 } | expr '%' expr {
     $$ = new rumur::Mod($1, $3, @$, indexer);
 } | FORALL quantifier {
-        symtab->open_scope();
-        symtab->declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
+        symtab.open_scope();
+        symtab.declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
     } DO expr endforall {
         $$ = new rumur::Forall($2, $5, @$, indexer);
-        symtab->close_scope();
+        symtab.close_scope();
 } | EXISTS quantifier {
-        symtab->open_scope();
-        symtab->declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
+        symtab.open_scope();
+        symtab.declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
     } DO expr endexists {
         $$ = new rumur::Exists($2, $5, @$, indexer);
-        symtab->close_scope();
+        symtab.close_scope();
 } | designator {
     $$ = $1;
 } | NUMBER {
@@ -366,7 +366,7 @@ designator: designator '.' ID {
 } | designator '[' expr ']' {
     $$ = new rumur::Element($1, $3, @$, indexer);
 } | ID {
-    auto e = symtab->lookup<rumur::Expr>($1, @$);
+    auto e = symtab.lookup<rumur::Expr>($1, @$);
     assert(e != nullptr);
     $$ = new rumur::ExprID($1, e, e->type(), @$, indexer);
 };
