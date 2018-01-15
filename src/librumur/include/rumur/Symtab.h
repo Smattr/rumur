@@ -49,6 +49,11 @@ class Symtab {
         throw RumurError("unknown symbol: " + name, loc);
     }
 
+    ~Symtab() {
+        while (scope.size() > 0)
+            close_scope();
+    }
+
 };
 
 }
