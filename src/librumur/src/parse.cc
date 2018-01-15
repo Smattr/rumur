@@ -9,6 +9,7 @@
 #include <rumur/parse.h>
 #include <rumur/scanner.h>
 #include <rumur/Symtab.h>
+#include <rumur/TypeExpr.h>
 
 namespace rumur {
 
@@ -16,12 +17,18 @@ Model *parse(std::istream *input) {
 
     assert(input != nullptr);
 
-    // Setup the parser
+    // Setup a symbol table that knows the built ins
     Symtab symtab;
     symtab.open_scope();
+    Indexer indexer;
+    const Enum boolean({ { "false", location() }, { "true", location() } },
+      location(), indexer);
+    for (const ExprID &eid : boolean.members)
+        symtab.declare(eid.id, eid);
+
+    // Setup the parser
     scanner s(input);
     Model *m = nullptr;
-    Indexer indexer;
     parser p(s, m, &symtab, indexer);
 
     // Parse the input model
