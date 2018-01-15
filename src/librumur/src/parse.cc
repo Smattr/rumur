@@ -23,6 +23,7 @@ Model *parse(std::istream *input) {
     Indexer indexer;
     const Enum boolean({ { "false", location() }, { "true", location() } },
       location(), indexer);
+    symtab.declare("boolean", boolean);
     for (const ExprID &eid : boolean.members)
         symtab.declare(eid.id, eid);
 
