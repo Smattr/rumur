@@ -42,9 +42,10 @@ int output_checker(const std::string &path, const Model &model,
 
       // Specialise classes
       << "using State = StateBase<" << model.size_bits() << ">;\n"
-      << "using StartState = StartStateBase<" << model.size_bits() << ">;\n"
-      << "using Invariant = InvariantBase<" << model.size_bits() << ">;\n"
-      << "using Rule = RuleBase<" << model.size_bits() << ">;\n";
+      << "using StartState = StartStateBase<State>;\n"
+      << "using Invariant = InvariantBase<State>;\n"
+      << "using Rule = RuleBase<State>;\n"
+      << "using ModelError = ModelErrorBase<State>;\n";
 
     // Write out constants and type declarations.
     for (const Decl *d : model.decls)
@@ -62,7 +63,7 @@ int output_checker(const std::string &path, const Model &model,
             }
         }
 
-        out << "static const std::vector<StartState> = {\n";
+        out << "static const std::vector<StartState> START_RULES = {\n";
         unsigned i = 0;
         for (const std::string &s : start_rules) {
             out << "    { .name = " << escape_string(s) << ", .body = startstate_" << i << "},\n";

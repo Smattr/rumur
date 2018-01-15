@@ -52,94 +52,27 @@ struct RuleBase {
  * checking.
  */
 template<typename STATE>
-class ModelError : public std::runtime_error {
+class ModelErrorBase : public std::runtime_error {
 
   public:
     const STATE *state;
 
-    ModelError(const std::string &message, const STATE *state_ = nullptr):
+    ModelErrorBase(const std::string &message, const STATE *state_ = nullptr):
       std::runtime_error(message), state(state_) {
     }
 
-    ModelError(const ModelError &e, const STATE *state_):
+    ModelErrorBase(const ModelErrorBase &e, const STATE *state_):
       std::runtime_error(e.what()), state(state_) {
     }
 
+    ModelErrorBase(const ModelErrorBase&) = default;
+    ModelErrorBase(ModelErrorBase&&) = default;
+
 };
 
-/* Overflow-safe helpers for doing 64-bit arithmetic. The compiler built-ins
- * used are implemented in modern GCC and Clang. If you're using another
- * compiler, you'll have to implement these yourself.
- */
-
-[[maybe_unused]] static int64_t add(int64_t a, int64_t b) {
-    int64_t r;
-    if constexpr (OVERFLOW_CHECKS_ENABLED) {
-        if (__builtin_add_overflow(a, b, &r)) {
-            throw ModelError("integer overflow in addition");
-        }
-    } else {
-        r = a + b;
-    }
-    return r;
-}
-
-[[maybe_unused]] static int64_t sub(int64_t a, int64_t b) {
-    int64_t r;
-    if constexpr (OVERFLOW_CHECKS_ENABLED) {
-        if (__builtin_sub_overflow(a, b, &r)) {
-            throw ModelError("integer overflow in subtraction");
-        }
-    } else {
-        r = a - b;
-    }
-    return r;
-}
-
-[[maybe_unused]] static int64_t mul(const State *s, int64_t a, int64_t b) {
-    int64_t r;
-    if constexpr (OVERFLOW_CHECKS_ENABLED) {
-        if (__builtin_mul_overflow(a, b, &r)) {
-            throw ModelError("integer overflow in multiplication");
-        }
-    } else {
-        r = a * b;
-    }
-    return r;
-}
-
-[[maybe_unused]] static int64_t divide(const State *s, int64_t a, int64_t b) {
-    if (b == 0) {
-        throw ModelError("division by zero");
-    }
-
-    if constexpr (OVERFLOW_CHECKS_ENABLED) {
-        if (a == std::numeric_limits<int64_t>::min() && b == -1) {
-            throw ModelError("integer overflow in division");
-        }
-    }
-    return a / b;
-}
-
-[[maybe_unused]] static int64_t mod(const State *s, int64_t a, int64_t b) {
-    if (b == 0) {
-        throw ModelError("modulus by zero");
-    }
-
-    // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
-    if constexpr (OVERFLOW_CHECKS_ENABLED) {
-        if (a == std::numeric_limits<int64_t>::min() && b == -1) {
-            throw ModelError("integer overflow in modulo");
-        }
-    }
-    return a % b;
-}
-
-[[maybe_unused]] static int64_t negate(const State *s, int64_t a) {
-    if constexpr (OVERFLOW_CHECKS_ENABLED) {
-        if (a == std::numeric_limits<int64_t>::min()) {
-            throw ModelError("integer overflow in negation");
-        }
-    }
-    return -a;
-}
+[[gnu::unused]] static int64_t add(int64_t a, int64_t b);
+[[gnu::unused]] static int64_t sub(int64_t a, int64_t b);
+[[gnu::unused]] static int64_t mul(int64_t a, int64_t b);
+[[gnu::unused]] static int64_t divide(int64_t a, int64_t b);
+[[gnu::unused]] static int64_t mod(int64_t a, int64_t b);
+[[gnu::unused]] static int64_t negate(int64_t a);
