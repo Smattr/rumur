@@ -48,6 +48,16 @@ struct RuleBase {
     std::function<void(STATE&)> body;
 };
 
+/* An exception that is thrown that is not related to a specific current state.
+ * This is used within infrastructure code.
+ */
+class Error : public std::runtime_error {
+
+ public:
+  using std::runtime_error::runtime_error;
+
+};
+
 /* An exception that is thrown at runtime if an error is detected during model
  * checking.
  */
@@ -77,43 +87,9 @@ class ModelErrorBase : public std::runtime_error {
 [[gnu::unused]] static int64_t mod(int64_t a, int64_t b);
 [[gnu::unused]] static int64_t negate(int64_t a);
 
-class Boolean {
-
- private:
-  bool value;
+struct Number {
 
  public:
-  Boolean() = delete;
-  Boolean(bool value_): value(value_) { }
-  Boolean(const Boolean&) = default;
-  Boolean(Boolean&&) = default;
-  Boolean &operator=(const Boolean&) = default;
-  Boolean &operator=(Boolean&&) = default;
-
-  Boolean operator!() const {
-    return !value;
-  }
-
-  Boolean operator==(const Boolean &other) const {
-    return value == other.value;
-  }
-
-  Boolean operator!=(const Boolean &other) const {
-    return value != other.value;
-  }
-
-  Boolean operator&&(const Boolean &other) const {
-    return value && other.value;
-  }
-
-  Boolean operator||(const Boolean &other) const {
-    return value || other.value;
-  }
-};
-
-class Number {
-
- private:
   int64_t value;
 
  public:
@@ -144,27 +120,277 @@ class Number {
     return mod(value, other.value);
   }
 
-  Boolean operator<(const Number &other) const {
+  bool operator<(const Number &other) const {
     return value < other.value;
   }
 
-  Boolean operator>(const Number &other) const {
+  bool operator>(const Number &other) const {
     return value > other.value;
   }
 
-  Boolean operator==(const Number &other) const {
+  bool operator==(const Number &other) const {
     return value == other.value;
   }
 
-  Boolean operator!=(const Number &other) const {
+  bool operator!=(const Number &other) const {
     return value != other.value;
   }
 
-  Boolean operator<=(const Number &other) const {
+  bool operator<=(const Number &other) const {
     return value <= other.value;
   }
 
-  Boolean operator>=(const Number &other) const {
+  bool operator>=(const Number &other) const {
     return value >= other.value;
   }
 };
+
+template<int64_t MIN, int64_t MAX>
+struct RangeBase {
+
+ public:
+  int64_t value;
+
+ public:
+  RangeBase() = delete;
+  RangeBase(int64_t value_): value(value_) { }
+  RangeBase(const RangeBase&) = default;
+  RangeBase(RangeBase&&) = default;
+  RangeBase &operator=(const RangeBase&) = default;
+  RangeBase &operator=(RangeBase&&) = default;
+
+  RangeBase operator+(const RangeBase &other) const {
+    return add(value, other.value);
+  }
+
+  RangeBase operator+(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of the range");
+    }
+    int64_t v = add(value, other.value);
+    if (v < MIN || v > MAX) {
+      throw Error("result of addition is out of range");
+    }
+    return v;
+  }
+
+  RangeBase operator-(const RangeBase &other) const {
+    return sub(value, other.value);
+  }
+
+  RangeBase operator-(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of the range");
+    }
+    int64_t v = sub(value, other.value);
+    if (v < MIN || v > MAX) {
+      throw Error("result of subtraction is out of range");
+    }
+    return v;
+  }
+
+  RangeBase operator*(const RangeBase &other) const {
+    return mul(value, other.value);
+  }
+
+  RangeBase operator*(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in multiplication");
+    }
+    int64_t v = mul(value, other.value);
+    if (v < MIN || v > MAX) {
+      throw Error("result of multiplication is out of range");
+    }
+    return v;
+  }
+
+  RangeBase operator/(const RangeBase &other) const {
+    return divide(value, other.value);
+  }
+
+  RangeBase operator/(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in division");
+    }
+    int64_t v = divide(value, other.value);
+    if (v < MIN || v > MAX) {
+      throw Error("result of division is out of range");
+    }
+    return v;
+  }
+
+  RangeBase operator%(const RangeBase &other) const {
+    return mod(value, other.value);
+  }
+
+  RangeBase operator%(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in mod");
+    }
+    int64_t v = mod(value, other.value);
+    if (v < MIN || v > MAX) {
+      throw Error("result of mod is out of range");
+    }
+    return v;
+  }
+
+  bool operator<(const RangeBase &other) const {
+    return value < other.value;
+  }
+
+  bool operator<(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in <");
+    }
+    return value < other.value;
+  }
+
+  bool operator>(const RangeBase &other) const {
+    return value > other.value;
+  }
+
+  bool operator>(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in >");
+    }
+    return value > other.value;
+  }
+
+  bool operator==(const RangeBase &other) const {
+    return value == other.value;
+  }
+
+  bool operator==(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in ==");
+    }
+    return value == other.value;
+  }
+
+  bool operator!=(const RangeBase &other) const {
+    return value != other.value;
+  }
+
+  bool operator!=(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in !=");
+    }
+    return value != other.value;
+  }
+
+  bool operator<=(const RangeBase &other) const {
+    return value <= other.value;
+  }
+
+  bool operator<=(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in <=");
+    }
+    return value <= other.value;
+  }
+
+  bool operator>=(const RangeBase &other) const {
+    return value >= other.value;
+  }
+
+  bool operator>=(const Number &other) const {
+    if (other.value < MIN || other.value > MAX) {
+      throw Error(std::to_string(other.value) + " is out of range in >=");
+    }
+    return value >= other.value;
+  }
+};
+
+template<int64_t MIN, int64_t MAX>
+static RangeBase<MIN, MAX> operator+(const Number &a, const RangeBase<MIN, MAX> &b) {
+  return b + a;
+}
+
+template<int64_t MIN, int64_t MAX>
+static RangeBase<MIN, MAX> operator-(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range for subtraction");
+  }
+  int64_t v = sub(a.value, b.value);
+  if (v < MIN || v > MAX) {
+    throw Error("result of subtraction is out of range");
+  }
+  return v;
+}
+
+template<int64_t MIN, int64_t MAX>
+static RangeBase<MIN, MAX> operator*(const Number &a, const RangeBase<MIN, MAX> &b) {
+  return b * a;
+}
+
+template<int64_t MIN, int64_t MAX>
+static RangeBase<MIN, MAX> operator/(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in division");
+  }
+  int64_t v = divide(a.value, b.value);
+  if (v < MIN || v > MAX) {
+    throw Error("result of division is out of range");
+  }
+  return v;
+}
+
+template<int64_t MIN, int64_t MAX>
+static RangeBase<MIN, MAX> operator%(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in mod");
+  }
+  int64_t v = mod(a.value, b.value);
+  if (v < MIN || v > MAX) {
+    throw Error("result of mod is out of range");
+  }
+  return v;
+}
+
+template<int64_t MIN, int64_t MAX>
+static bool operator<(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in <");
+  }
+  return a.value < b.value;
+}
+
+template<int64_t MIN, int64_t MAX>
+static bool operator>(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in >");
+  }
+  return a.value > b.value;
+}
+
+template<int64_t MIN, int64_t MAX>
+static bool operator==(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in ==");
+  }
+  return a.value == b.value;
+}
+
+template<int64_t MIN, int64_t MAX>
+static bool operator!=(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in !=");
+  }
+  return a.value != b.value;
+}
+
+template<int64_t MIN, int64_t MAX>
+static bool operator<=(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in <=");
+  }
+  return a.value <= b.value;
+}
+
+template<int64_t MIN, int64_t MAX>
+static bool operator>=(const Number &a, const RangeBase<MIN, MAX> &b) {
+  if (a.value < MIN || a.value > MAX) {
+    throw Error(std::to_string(a.value) + " is out of range in >=");
+  }
+  return a.value >= b.value;
+}
