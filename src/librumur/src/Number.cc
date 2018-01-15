@@ -45,7 +45,7 @@ void Number::rvalue(std::ostream &out) const {
 }
 
 void Number::generate(std::ostream &out) const {
-    out << "Literal(INT64_C(" << value << "))";
+    out << "Number(INT64_C(" << value << "))";
 }
 
 }

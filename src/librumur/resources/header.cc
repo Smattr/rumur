@@ -76,3 +76,95 @@ class ModelErrorBase : public std::runtime_error {
 [[gnu::unused]] static int64_t divide(int64_t a, int64_t b);
 [[gnu::unused]] static int64_t mod(int64_t a, int64_t b);
 [[gnu::unused]] static int64_t negate(int64_t a);
+
+class Boolean {
+
+ private:
+  bool value;
+
+ public:
+  Boolean() = delete;
+  Boolean(bool value_): value(value_) { }
+  Boolean(const Boolean&) = default;
+  Boolean(Boolean&&) = default;
+  Boolean &operator=(const Boolean&) = default;
+  Boolean &operator=(Boolean&&) = default;
+
+  Boolean operator!() const {
+    return !value;
+  }
+
+  Boolean operator==(const Boolean &other) const {
+    return value == other.value;
+  }
+
+  Boolean operator!=(const Boolean &other) const {
+    return value != other.value;
+  }
+
+  Boolean operator&&(const Boolean &other) const {
+    return value && other.value;
+  }
+
+  Boolean operator||(const Boolean &other) const {
+    return value || other.value;
+  }
+};
+
+class Number {
+
+ private:
+  int64_t value;
+
+ public:
+  Number() = delete;
+  Number(int64_t value_): value(value_) { }
+  Number(const Number&) = default;
+  Number(Number&&) = default;
+  Number &operator=(const Number&) = default;
+  Number &operator=(Number&&) = default;
+
+  Number operator+(const Number &other) const {
+    return add(value, other.value);
+  }
+
+  Number operator-(const Number &other) const {
+    return sub(value, other.value);
+  }
+
+  Number operator*(const Number &other) const {
+    return mul(value, other.value);
+  }
+
+  Number operator/(const Number &other) const {
+    return divide(value, other.value);
+  }
+
+  Number operator%(const Number &other) const {
+    return mod(value, other.value);
+  }
+
+  Boolean operator<(const Number &other) const {
+    return value < other.value;
+  }
+
+  Boolean operator>(const Number &other) const {
+    return value > other.value;
+  }
+
+  Boolean operator==(const Number &other) const {
+    return value == other.value;
+  }
+
+  Boolean operator!=(const Number &other) const {
+    return value != other.value;
+  }
+
+  Boolean operator<=(const Number &other) const {
+    return value <= other.value;
+  }
+
+  Boolean operator>=(const Number &other) const {
+    return value >= other.value;
+  }
+};
