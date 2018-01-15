@@ -23,19 +23,9 @@ add_custom_command(
     MAIN_DEPENDENCY resources/header.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
-    OUTPUT resources_main.cc
-    COMMAND xxd -include resources/main.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_main.cc
-    MAIN_DEPENDENCY resources/main.cc
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_command(
-    OUTPUT resources_Rule.cc
-    COMMAND xxd -include resources/Rule.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_Rule.cc
-    MAIN_DEPENDENCY resources/Rule.cc
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_command(
-    OUTPUT resources_State.cc
-    COMMAND xxd -include resources/State.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_State.cc
-    MAIN_DEPENDENCY resources/State.cc
+    OUTPUT resources_footer.cc
+    COMMAND xxd -include resources/footer.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_footer.cc
+    MAIN_DEPENDENCY resources/footer.cc
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(librumur
@@ -53,9 +43,7 @@ add_library(librumur
     src/Stmt.cc
     src/TypeExpr.cc
     ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
-    ${CMAKE_CURRENT_BINARY_DIR}/resources_main.cc
-    ${CMAKE_CURRENT_BINARY_DIR}/resources_Rule.cc
-    ${CMAKE_CURRENT_BINARY_DIR}/resources_State.cc
+    ${CMAKE_CURRENT_BINARY_DIR}/resources_footer.cc
     ${FLEX_lexer_OUTPUTS}
     ${BISON_parser_OUTPUTS})
 

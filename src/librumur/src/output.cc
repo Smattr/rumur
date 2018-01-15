@@ -17,26 +17,6 @@ static std::string escape_string(const std::string &s) {
     return "\"" + s + "\"";
 }
 
-static const std::vector<std::pair<std::string, std::string>> INCLUDES = {
-#define RES(r) std::make_pair(#r ".cc", std::string((const char*)resources_##r##_cc, (size_t)resources_##r##_cc_len))
-    RES(State),
-    RES(Rule),
-    RES(header),
-    RES(main),
-#undef RES
-};
-
-int output_includes(const std::string &path) {
-    for (const std::pair<std::string, std::string> i : INCLUDES) {
-        std::ofstream out(path + "/" + i.first);
-        if (!out)
-            return -1;
-
-        out << i.second;
-    }
-    return 0;
-}
-
 // Whether a rule is a standard state transition rule.
 static bool is_regular_rule(const Rule *r) {
     return dynamic_cast<const StartState*>(r) == nullptr &&
@@ -51,21 +31,20 @@ int output_checker(const std::string &path, const Model &model,
         return -1;
 
     out
+
+      // Settings that are used in header.cc
       << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
       (options.overflow_checks ? "true" : "false") << ";\n"
 
-      << "static constexpr size_t STATE_SIZE_BITS = " << model.size_bits()
-      << ";\n"
-
+      // Static boiler plate code
+      << std::string((const char*)resources_header_cc, (size_t)resources_header_cc_len)
       << "\n"
 
-      << "#include \"Rule.cc\"\n"
-      << "#include \"State.cc\"\n"
-      << "#include \"header.cc\"\n"
-
-      << "\n";
-
-    // TODO: rewrite the following into C++17
+      // Specialise classes
+      << "using State = StateBase<" << model.size_bits() << ">;\n"
+      << "using StartState = StartStateBase<" << model.size_bits() << ">;\n"
+      << "using Invariant = InvariantBase<" << model.size_bits() << ">;\n"
+      << "using Rule = RuleBase<" << model.size_bits() << ">;\n";
 
     // Write out constants and type declarations.
     for (const Decl *d : model.decls)
@@ -76,23 +55,14 @@ int output_checker(const std::string &path, const Model &model,
         std::vector<std::string> start_rules;
         for (const Rule *r : model.rules) {
             if (auto s = dynamic_cast<const StartState*>(r)) {
-                out << "static State *startstate_" << start_rules.size() << "() {\n"
-                       "    State *s = malloc(sizeof(*s));\n"
-                       "    if (s == NULL) {\n"
-                       "        perror(\"malloc\");\n"
-                       "        exit(EXIT_FAILURE);\n"
-                       "    }\n";
+                out << "void startstate_" << start_rules.size() << "(State &s) {\n";
                 s->generate_rule(out);
-                out << "    return s;\n"
-                       "}\n\n";
+                out << "}\n\n";
                 start_rules.push_back(s->name);
             }
         }
 
-        out << "static const struct {\n"
-               "    const char *name;\n"
-               "    State *(*body)(void);\n"
-               "} START_RULES[] = {\n";
+        out << "static const std::vector<StartState> = {\n";
         unsigned i = 0;
         for (const std::string &s : start_rules) {
             out << "    { .name = " << escape_string(s) << ", .body = startstate_" << i << "},\n";
@@ -106,7 +76,7 @@ int output_checker(const std::string &path, const Model &model,
         std::vector<std::string> invariants;
         for (const Rule *r : model.rules) {
             if (auto i = dynamic_cast<const Invariant*>(r)) {
-                out << "static bool invariant_" << invariants.size() << "(const State *s) {\n"
+                out << "static bool invariant_" << invariants.size() << "(const State &s) {\n"
                        "    // TODO\n"
                        "    return true;\n"
                        "}\n\n";
@@ -114,10 +84,7 @@ int output_checker(const std::string &path, const Model &model,
             }
         }
 
-        out << "static const struct {\n"
-               "    const char *name;\n"
-               "    bool (*guard)(const State*);\n"
-               "} INVARIANTS[] = {\n";
+        out << "static const std::vector<Invariant> INVARIANTS = {\n";
         unsigned i = 0;
         for (const std::string &n : invariants) {
             out << "    { .name = " << escape_string(n) << ", .guard = invariant_" << i << "},\n";
@@ -131,22 +98,18 @@ int output_checker(const std::string &path, const Model &model,
         std::vector<std::string> rules;
         for (const Rule *r : model.rules) {
             if (is_regular_rule(r)) {
-                out << "static bool guard_" << rules.size() << "(const State *s) {\n"
+                out << "static bool guard_" << rules.size() << "(const State &s) {\n"
                        "    //TODO\n"
                        "    return true;\n"
                        "}\n\n"
-                       "static void rule_" << rules.size() << "(State *s) {\n"
+                       "static void rule_" << rules.size() << "(State &s) {\n"
                        "    // TODO\n"
                        "}\n\n";
                 rules.push_back(r->name);
             }
         }
 
-        out << "static const struct {\n"
-               "    const char *name;\n"
-               "    bool (*guard)(const State*);\n"
-               "    void (*body)(State *);\n"
-               "} RULES[] = {\n";
+        out << "static const std::vector<Rule> RULES = {\n";
         unsigned i = 0;
         for (const std::string &n : rules) {
             out << "    { .name = " << escape_string(n) << ", .guard = guard_" <<
@@ -156,7 +119,7 @@ int output_checker(const std::string &path, const Model &model,
         out << "};\n\n";
     }
 
-    out << "#include \"main.c\"\n";
+    out << std::string((const char*)resources_footer_cc, (size_t)resources_footer_cc_len);
 
     return 0;
 

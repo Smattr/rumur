@@ -1,17 +1,30 @@
-#include <queue>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <unordered_set>
+// Things that are expected to be defined above
+struct State;
+struct StartState;
+struct Invariant;
+struct Rule;
 
-static void check_invariants(const State *s) {
-    for (auto [name, f] : INVARIANTS) {
-        if (!f(*s))
-            throw ModelError("invariant " + name + " failed", s);
+struct state_hash {
+    size_t operator()(const State *s) const {
+        // TODO
+        return 0;
+    }
+};
+
+struct state_eq {
+    bool operator()(const State *a, const State *b) const {
+        return *a == *b;
+    }
+};
+
+static void check_invariants(const State &s) {
+    for (const Invariant &inv : INVARIANTS) {
+        if (!inv.guard(s))
+            throw ModelError("invariant " + inv.name + " failed", &s);
     }
 }
 
-static int main_single_threaded() {
+int main(void) {
 
     /* A queue of states to expand. A data structure invariant we maintain on
      * this collection is that all states within pass all invariants.
@@ -21,19 +34,20 @@ static int main_single_threaded() {
     /* The states we have encountered. This collection will only ever grow while
      * checking the model.
      */
-    std::unordered_set<State*, state_hash> seen;
+    std::unordered_set<State*, state_hash, state_eq> seen;
 
     try {
 
-        for (auto [name, f] : START_RULES) {
-            State *s = f();
+        for (const StartState &rule : START_RULES) {
+            State *s = new State;
+            rule.body(*s);
             // Skip this state if we've already seen it.
             if (!seen.insert(s).second) {
                 delete s;
                 continue;
             }
             // Check invariants eagerly.
-            check_invariants(s);
+            check_invariants(*s);
             q.push(s);
         }
 
@@ -44,21 +58,21 @@ static int main_single_threaded() {
             q.pop();
 
             // Run each applicable rule on it, generating new states.
-            for (auto [name, g, f] : RULES) {
+            for (const Rule &rule : RULES) {
 
                 // Only consider this rule if its guard evaluates to true.
-                if (!g(*s))
+                if (!rule.guard(*s))
                     continue;
 
                 State *next = s->duplicate();
-                f(next);
+                rule.body(*next);
 
                 if (!seen.insert(next).second) {
                     delete next;
                     continue;
                 }
 
-                check_invariants(next);
+                check_invariants(*next);
                 q.push(next);
             }
 
@@ -66,16 +80,11 @@ static int main_single_threaded() {
 
         // Completed state exploration successfully.
 
-    } catch (ModelError &e) {
+    } catch (ModelError e) {
         fputs(e.what(), stderr);
         print_counterexample(e.state);
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
-}
-
-int main() {
-    // TODO: In future we will support a multi-threaded algorithm
-    return main_single_threaded();
 }

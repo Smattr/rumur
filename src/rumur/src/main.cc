@@ -36,7 +36,7 @@ static void parse_args(int argc, char **argv) {
                 break;
 
             case '?':
-                std::cerr << "usage: " << argv[0] << " --output DIR [FILE]\n";
+                std::cerr << "usage: " << argv[0] << " --output FILE [FILE]\n";
                 exit(EXIT_FAILURE);
 
             default:
@@ -58,7 +58,7 @@ static void parse_args(int argc, char **argv) {
     }
 
     if (out == nullptr) {
-        std::cerr << "output directory is required\n";
+        std::cerr << "output file is required\n";
         exit(EXIT_FAILURE);
     }
 }
@@ -79,9 +79,7 @@ int main(int argc, char **argv) {
 
     assert(out != nullptr);
     assert(m != nullptr);
-    if (rumur::output_includes(*out) != 0)
-        return EXIT_FAILURE;
-    if (rumur::output_checker(*out + "/checker.c", *m, output_options) != 0)
+    if (rumur::output_checker(*out, *m, output_options) != 0)
         return EXIT_FAILURE;
 
     return EXIT_SUCCESS;
