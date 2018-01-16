@@ -122,7 +122,7 @@ struct Number {
 
  public:
   Number() = delete;
-  Number(int64_t value_): value(value_) { }
+  constexpr Number(int64_t value_): value(value_) { }
   Number(const Number&) = default;
   Number(Number&&) = default;
   Number &operator=(const Number&) = default;

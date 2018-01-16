@@ -37,7 +37,7 @@ int output_checker(const std::string &path, const Model &model,
       << "using StartState = StartStateBase<State>;\n"
       << "using Invariant = InvariantBase<State>;\n"
       << "using Rule = RuleBase<State>;\n"
-      << "using ModelError = ModelErrorBase<State>;\n";
+      << "using ModelError = ModelErrorBase<State>;\n\n";
 
     // Write out constants and type declarations.
     for (const Decl *d : model.decls)
