@@ -40,10 +40,6 @@ const TypeExpr *Number::type() const {
     return nullptr;
 }
 
-void Number::rvalue(std::ostream &out) const {
-    out << "INT64_C(" << value << ")";
-}
-
 void Number::generate(std::ostream &out) const {
     out << "Number(INT64_C(" << value << "))";
 }

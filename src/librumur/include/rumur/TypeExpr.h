@@ -29,24 +29,6 @@ class TypeExpr : public Node {
     // Whether this type is a primitive integer-like type.
     virtual bool is_simple() const;
 
-    /* Generate code for an rvalue of the minimum or maximum of this type. These
-     * are only valid to call on a type for which is_simple returns true.
-     */
-    virtual void generate_min(std::ostream &out) const;
-    virtual void generate_max(std::ostream &out) const;
-
-    /* Get names for getters and setters dependent on this particular type. It
-     * is an error to call any of these on an inconsistent type (e.g.
-     * field_reader on a type that is not a Record).
-     */
-    virtual std::string field_reader(const std::string &field) const;
-    virtual std::string field_writer(const std::string &field) const;
-    virtual std::string element_reader() const;
-    virtual std::string element_writer() const;
-
-    // Emit C++ definitions relevant to this type.
-    virtual void define(std::ostream &out) const = 0;
-
     TypeExpr *clone() const override = 0;
 
 };
@@ -65,10 +47,6 @@ class SimpleTypeExpr : public TypeExpr {
     virtual ~SimpleTypeExpr() { }
 
     bool is_simple() const final;
-
-    /* Emit a C++ function name for reading/writing this type, respectively. */
-    void reader(std::ostream &out) const;
-    void writer(std::ostream &out) const;
 
     SimpleTypeExpr *clone() const override = 0;
 
@@ -89,10 +67,6 @@ class Range : public SimpleTypeExpr {
     virtual ~Range();
 
     void validate() const final;
-    void generate_min(std::ostream &out) const final;
-    void generate_max(std::ostream &out) const final;
-    void define(std::ostream &out) const final;
-
     void generate(std::ostream &out) const final;
 
 };
@@ -112,9 +86,6 @@ class Enum : public SimpleTypeExpr {
     Enum *clone() const final;
     virtual ~Enum() { }
 
-    void generate_min(std::ostream &out) const final;
-    void generate_max(std::ostream &out) const final;
-    void define(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -134,10 +105,6 @@ class Record : public TypeExpr {
     Record *clone() const final;
     virtual ~Record();
 
-    void field_referencer(std::ostream &out, const std::string &field) const;
-    std::string field_reader(const std::string &field) const final;
-    std::string field_writer(const std::string &field) const final;
-    void define(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -159,10 +126,6 @@ class Array : public TypeExpr {
     Array *clone() const final;
     virtual ~Array();
 
-    void element_referencer(std::ostream &out) const;
-    std::string element_reader() const final;
-    std::string element_writer() const final;
-    void define(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };

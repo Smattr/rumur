@@ -23,9 +23,6 @@ class Decl : public Node {
     Decl &operator=(Decl&&) = default;
     virtual ~Decl() = 0;
 
-    // Emit C++ code to define this entity.
-    virtual void define(std::ostream &out) const = 0;
-
     Decl *clone() const override = 0;
 
 };
@@ -45,7 +42,6 @@ class ConstDecl : public Decl {
     virtual ~ConstDecl();
 
     void validate() const final;
-    void define(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -65,7 +61,6 @@ class TypeDecl : public Decl {
     virtual ~TypeDecl();
 
     void validate() const final;
-    void define(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -85,7 +80,6 @@ class VarDecl : public Decl {
     VarDecl *clone() const final;
     virtual ~VarDecl();
 
-    void define(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };

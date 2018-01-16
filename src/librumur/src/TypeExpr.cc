@@ -14,44 +14,12 @@ bool TypeExpr::is_simple() const {
     return false;
 }
 
-void TypeExpr::generate_min(std::ostream&) const {
-    throw RumurError("generate_min called on a complex type", loc);
-}
-
-void TypeExpr::generate_max(std::ostream&) const {
-    throw RumurError("generate_max called on a complex type", loc);
-}
-
-std::string TypeExpr::field_reader(const std::string&) const {
-    throw RumurError("field read of something that is not a record", loc);
-}
-
-std::string TypeExpr::field_writer(const std::string&) const {
-    throw RumurError("field write of something that is not a record", loc);
-}
-
-std::string TypeExpr::element_reader() const {
-    throw RumurError("element read of something that is not an array", loc);
-}
-
-std::string TypeExpr::element_writer() const {
-    throw RumurError("element write of something that is not an array", loc);
-}
-
 SimpleTypeExpr::SimpleTypeExpr(const location &loc, Indexer &indexer)
   : TypeExpr(loc), index(indexer.new_index()) {
 }
 
 bool SimpleTypeExpr::is_simple() const {
     return true;
-}
-
-void SimpleTypeExpr::reader(std::ostream &out) const {
-    out << "type_read_" << index;
-}
-
-void SimpleTypeExpr::writer(std::ostream &out) const {
-    out << "type_write_" << index;
 }
 
 Range::Range(Expr *min, Expr *max, const location &loc, Indexer &indexer)
@@ -87,34 +55,6 @@ void Range::validate() const {
         throw RumurError("upper bound of range is not a constant", max->loc);
 }
 
-void Range::generate_min(std::ostream &out) const {
-    min->rvalue(out);
-}
-
-void Range::generate_max(std::ostream &out) const {
-    max->rvalue(out);
-}
-
-void Range::define(std::ostream &out) const {
-    // Emit a type struct.
-    out << "struct type_" << index << "{void*base;unsigned long offset;};";
-
-    // Emit a reader for this type.
-    out << "static int64_t ";
-    reader(out);
-    out << "(const struct context*context,const struct state*s,const struct type_" << index << " *t){ /* TODO */}";
-
-    // Emit a writer for this type.
-    out << "static void ";
-    writer(out);
-    out << "(const struct context*context,const struct state*s,const struct type_" << index << " *t,int64_t value){"
-      "if(value<";
-    generate_min(out);
-    out << "){context->error(context,s,\"...\");}if(value>";
-    generate_max(out);
-    out << "){context->error(context,s,\"...\");} /* TODO */}";
-}
-
 Range::~Range() {
     delete min;
     delete max;
@@ -141,17 +81,6 @@ Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const l
 
 Enum *Enum::clone() const {
     return new Enum(*this);
-}
-
-void Enum::generate_min(std::ostream &out) const {
-    out << "INT64_C(0)";
-}
-
-void Enum::generate_max(std::ostream &out) const {
-    out << "INT64_C(" << members.size() << ")";
-}
-
-void Enum::define(std::ostream &) const {
 }
 
 void Enum::generate(std::ostream &out) const {
@@ -194,35 +123,6 @@ Record *Record::clone() const {
     return new Record(*this);
 }
 
-void Record::field_referencer(std::ostream &out, const std::string &field) const {
-    out << "make_reference_" << index << field;
-}
-
-std::string Record::field_reader(const std::string &field) const {
-    unsigned long i = 0;
-    for (const VarDecl *v : fields) {
-        if (v->name == field) {
-            return name + "_field_" + std::to_string(i) + "_read";
-        }
-        i++;
-    }
-    throw RumurError("attempted read of non-existent record field", loc);
-}
-
-std::string Record::field_writer(const std::string &field) const {
-    unsigned long i = 0;
-    for (const VarDecl *v : fields) {
-        if (v->name == field) {
-            return name + "_field_" + std::to_string(i) + "_write";
-        }
-        i++;
-    }
-    throw RumurError("attempted write of non-existent record field", loc);
-}
-
-void Record::define(std::ostream &) const {
-}
-
 Record::~Record() {
     for (VarDecl *v : fields)
         delete v;
@@ -261,21 +161,6 @@ void swap(Array &x, Array &y) noexcept {
 
 Array *Array::clone() const {
     return new Array(*this);
-}
-
-void Array::element_referencer(std::ostream &out) const {
-    out << "make_reference_" << index;
-}
-
-std::string Array::element_reader() const {
-    return name + "_read";
-}
-
-std::string Array::element_writer() const {
-    return name + "_write";
-}
-
-void Array::define(std::ostream &) const {
 }
 
 Array::~Array() {

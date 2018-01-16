@@ -47,9 +47,6 @@ void ConstDecl::validate() const {
         throw RumurError("const definition is not a constant", value->loc);
 }
 
-void ConstDecl::define(std::ostream &) const {
-}
-
 void ConstDecl::generate(std::ostream &out) const {
     out << "static const Literal ru_u_" << name << "(" << *value << ")";
 }
@@ -87,10 +84,6 @@ void TypeDecl::validate() const {
     value->validate();
 }
 
-void TypeDecl::define(std::ostream &out) const {
-    value->define(out);
-}
-
 TypeDecl::~TypeDecl() {
     delete value;
 }
@@ -123,10 +116,6 @@ void swap(VarDecl &x, VarDecl &y) noexcept {
 
 VarDecl *VarDecl::clone() const {
     return new VarDecl(*this);
-}
-
-void VarDecl::define(std::ostream&) const {
-    // TODO
 }
 
 void VarDecl::generate(std::ostream &out) const {

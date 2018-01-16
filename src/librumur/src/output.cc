@@ -49,7 +49,7 @@ int output_checker(const std::string &path, const Model &model,
 
     // Write out constants and type declarations.
     for (const Decl *d : model.decls)
-        d->define(out);
+        out << *d << ";\n";
 
     // Write out the start state rules.
     out << "static const std::vector<StartState> START_RULES = {\n";

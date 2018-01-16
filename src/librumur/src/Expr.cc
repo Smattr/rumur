@@ -94,9 +94,6 @@ const TypeExpr *Ternary::type() const {
     return lhs->type();
 }
 
-void Ternary::rvalue(std::ostream &) const {
-}
-
 void Ternary::generate(std::ostream &out) const {
     out << "(" << *cond << "?" << *lhs << ":" << *rhs << ")";
 }
@@ -150,9 +147,6 @@ const TypeExpr *Implication::type() const {
     return &Boolean;
 }
 
-void Implication::rvalue(std::ostream &) const {
-}
-
 void Implication::generate(std::ostream &out) const {
     out << "(!" << *lhs << "||" << *rhs << ")";
 }
@@ -177,9 +171,6 @@ const TypeExpr *Or::type() const {
     return &Boolean;
 }
 
-void Or::rvalue(std::ostream &) const {
-}
-
 void Or::generate(std::ostream &out) const {
     out << "(" << *lhs << "||" << *rhs << ")";
 }
@@ -202,9 +193,6 @@ void And::validate() const {
 
 const TypeExpr *And::type() const {
     return &Boolean;
-}
-
-void And::rvalue(std::ostream &) const {
 }
 
 void And::generate(std::ostream &out) const {
@@ -256,9 +244,6 @@ const TypeExpr *Not::type() const {
     return &Boolean;
 }
 
-void Not::rvalue(std::ostream &) const {
-}
-
 void Not::generate(std::ostream &out) const {
     out << "(!" << *rhs << ")";
 }
@@ -281,9 +266,6 @@ void Lt::validate() const {
 
 const TypeExpr *Lt::type() const {
     return &Boolean;
-}
-
-void Lt::rvalue(std::ostream &) const {
 }
 
 void Lt::generate(std::ostream &out) const {
@@ -310,9 +292,6 @@ const TypeExpr *Leq::type() const {
     return &Boolean;
 }
 
-void Leq::rvalue(std::ostream &) const {
-}
-
 void Leq::generate(std::ostream &out) const {
     out << "(" << *lhs << "<=" << *rhs << ")";
 }
@@ -337,9 +316,6 @@ const TypeExpr *Gt::type() const {
     return &Boolean;
 }
 
-void Gt::rvalue(std::ostream &) const {
-}
-
 void Gt::generate(std::ostream &out) const {
     out << "(" << *lhs << ">" << *rhs << ")";
 }
@@ -362,9 +338,6 @@ void Geq::validate() const {
 
 const TypeExpr *Geq::type() const {
     return &Boolean;
-}
-
-void Geq::rvalue(std::ostream &) const {
 }
 
 void Geq::generate(std::ostream &out) const {
@@ -401,9 +374,6 @@ const TypeExpr *Eq::type() const {
     return &Boolean;
 }
 
-void Eq::rvalue(std::ostream &) const {
-}
-
 void Eq::generate(std::ostream &out) const {
     out << "(" << *lhs << "==" << *rhs << ")";
 }
@@ -438,9 +408,6 @@ const TypeExpr *Neq::type() const {
     return &Boolean;
 }
 
-void Neq::rvalue(std::ostream &) const {
-}
-
 void Neq::generate(std::ostream &out) const {
     out << "(" << *lhs << "!=" << *rhs << ")";
 }
@@ -463,9 +430,6 @@ void Add::validate() const {
 
 const TypeExpr *Add::type() const {
     return nullptr;
-}
-
-void Add::rvalue(std::ostream &) const {
 }
 
 void Add::generate(std::ostream &out) const {
@@ -492,9 +456,6 @@ const TypeExpr *Sub::type() const {
     return nullptr;
 }
 
-void Sub::rvalue(std::ostream &) const {
-}
-
 void Sub::generate(std::ostream &out) const {
     out << "(" << *lhs << "-" << *rhs << ")";
 }
@@ -515,9 +476,6 @@ Negative *Negative::clone() const {
 
 const TypeExpr *Negative::type() const {
     return rhs->type();
-}
-
-void Negative::rvalue(std::ostream &) const {
 }
 
 void Negative::generate(std::ostream &out) const {
@@ -544,9 +502,6 @@ const TypeExpr *Mul::type() const {
     return nullptr;
 }
 
-void Mul::rvalue(std::ostream &) const {
-}
-
 void Mul::generate(std::ostream &out) const {
     out << "(" << *lhs << "*" << *rhs << ")";
 }
@@ -571,9 +526,6 @@ const TypeExpr *Div::type() const {
     return nullptr;
 }
 
-void Div::rvalue(std::ostream &) const {
-}
-
 void Div::generate(std::ostream &out) const {
     out << "(" << *lhs << "/" << *rhs << ")";
 }
@@ -596,9 +548,6 @@ void Mod::validate() const {
 
 const TypeExpr *Mod::type() const {
     return nullptr;
-}
-
-void Mod::rvalue(std::ostream &) const {
 }
 
 void Mod::generate(std::ostream &out) const {
@@ -651,17 +600,8 @@ const TypeExpr *ExprID::type() const {
     return type_of;
 }
 
-void ExprID::rvalue(std::ostream &) const {
-}
-
 void ExprID::generate(std::ostream &out) const {
     out << "TODO " << id;
-}
-
-void ExprID::lvalue(std::ostream &out) const {
-    auto l = dynamic_cast<const Lvalue*>(value);
-    assert(l != nullptr);
-    l->lvalue(out);
 }
 
 ExprID::~ExprID() {
@@ -697,22 +637,6 @@ bool Var::constant() const {
 
 const TypeExpr *Var::type() const {
     return decl->type;
-}
-
-void Var::rvalue(std::ostream &out) const {
-    if (decl->local) {
-        out << "model_" << decl->name;
-    } else {
-        out << "state_read_" << decl->name << "(s)";
-    }
-}
-
-void Var::lvalue(std::ostream &out) const {
-    if (decl->local) {
-        out << "model_" << decl->name;
-    } else {
-        out << "state_reference_" << decl->name << "(s)";
-    }
 }
 
 Var::~Var() {
@@ -752,53 +676,9 @@ bool Field::constant() const {
     return record->constant();
 }
 
-void Field::rvalue(std::ostream &out) const {
-    const TypeExpr *t = record->type();
-    assert(t != nullptr && "root of field reference with no type");
-    auto r = dynamic_cast<const Record*>(t);
-    assert(r != nullptr && "root of field reference with non-record type");
-
-    const SimpleTypeExpr *f = nullptr;
-    for (const VarDecl *v : r->fields) {
-        if (v->name == field) {
-            f = dynamic_cast<const SimpleTypeExpr*>(v->type);
-            break;
-        }
-    }
-
-    if (f != nullptr) {
-        /* HACK: if this field has a simple type, "unwrap" it into a bare
-         * ``int64_t``. This way callers of this can rely on getting back a
-         * reference in the case of an aggregate type and an ``int64_t`` in the
-         * case of a simple type.
-         * FIXME: it is not immediately obvious from the above comment *why*
-         * this is desirable.
-         */
-        f->reader(out);
-        out << "(";
-    }
-
-    lvalue(out);
-
-    if (f != nullptr) {
-        out << ")";
-    }
-}
-
 const TypeExpr *Field::type() const {
     // TODO
     return nullptr;
-}
-
-void Field::lvalue(std::ostream &out) const {
-    const TypeExpr *t = record->type();
-    assert(t != nullptr && "root of field reference with no type");
-    auto r = dynamic_cast<const Record*>(t);
-    assert(r != nullptr && "root of field reference with non-record type");
-    r->field_referencer(out, field);
-    out << "(";
-    record->lvalue(out);
-    out << ")";
 }
 
 void Field::generate(std::ostream &out) const {
@@ -845,41 +725,6 @@ bool Element::constant() const {
 const TypeExpr *Element::type() const {
     // TODO
     return nullptr;
-}
-
-void Element::rvalue(std::ostream &out) const {
-    const TypeExpr *t = array->type();
-    assert(t != nullptr && "root of element reference with no type");
-    auto a = dynamic_cast<const Array*>(t);
-    assert(a != nullptr && "root of element reference with non-array type");
-    auto e = dynamic_cast<const SimpleTypeExpr*>(a->element_type);
-
-    if (e != nullptr) {
-        /* HACK: We do the same trick as Field::rvalue above to emit either a
-         * reference or ``int64_t`` based on the element type of this array.
-         */
-        e->reader(out);
-        out << "(";
-    }
-
-    lvalue(out);
-
-    if (e != nullptr) {
-        out << ")";
-    }
-}
-
-void Element::lvalue(std::ostream &out) const {
-    const TypeExpr *t = array->type();
-    assert(t != nullptr && "root of element reference with no type");
-    auto a = dynamic_cast<const Array*>(t);
-    assert(a != nullptr && "root of element reference with non-array type");
-    a->element_referencer(out);
-    out << "(";
-    array->lvalue(out);
-    out << ",";
-    index->rvalue(out);
-    out << ")";
 }
 
 void Element::generate(std::ostream &out) const {
@@ -971,23 +816,6 @@ const TypeExpr *Exists::type() const {
     return &Boolean;
 }
 
-void Exists::rvalue(std::ostream &out) const {
-    out << "({bool r=false;for(int64_t model_" << quantifier->var->name << "=";
-    quantifier->var->type->generate_min(out);
-    out << ";;model_" << quantifier->var->name << "=add(model_"
-      << quantifier->var->name << ",";
-    if (quantifier->step != nullptr) {
-        quantifier->step->rvalue(out);
-    } else {
-        out << "1";
-    }
-    out << ")){r|=";
-    expr->rvalue(out);
-    out << ";if(r||" << quantifier->var->name << "==";
-    quantifier->var->type->generate_max(out);
-    out << "){break;}}r;})";
-}
-
 Exists::~Exists() {
     delete quantifier;
     delete expr;
@@ -1028,23 +856,6 @@ bool Forall::constant() const {
 
 const TypeExpr *Forall::type() const {
     return &Boolean;
-}
-
-void Forall::rvalue(std::ostream &out) const {
-    out << "({bool r=true;for(int64_t model_" << quantifier->var->name << "=";
-    quantifier->var->type->generate_min(out);
-    out << ";;model_" << quantifier->var->name << "=add(model_"
-      << quantifier->var->name << ",";
-    if (quantifier->step != nullptr) {
-        quantifier->step->rvalue(out);
-    } else {
-        out << "1";
-    }
-    out << ")){r&=";
-    expr->rvalue(out);
-    out << ";if(!r||" << quantifier->var->name << "==";
-    quantifier->var->type->generate_max(out);
-    out << "){break;}}r;})";
 }
 
 Forall::~Forall() {

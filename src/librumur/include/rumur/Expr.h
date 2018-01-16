@@ -43,14 +43,6 @@ class Expr : public Node {
     // If this expression is of boolean type.
     bool is_boolean() const;
 
-    /* Emit some C++ code that implements an rvalue reference of this
-     * expression. Implementers can assume the variable 's' is in scope that is
-     * a pointer to the state. Expressions should be emitted inside brackets if
-     * there is any possibility of an order-of-operations confusion when
-     * embedding them in something else.
-     */
-    virtual void rvalue(std::ostream &out) const = 0;
-
 };
 
 class Ternary : public Expr {
@@ -73,7 +65,6 @@ class Ternary : public Expr {
     void validate() const final;
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -109,7 +100,6 @@ class Implication : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -125,7 +115,6 @@ class Or : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -141,7 +130,6 @@ class And : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -174,7 +162,6 @@ class Not : public UnaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -190,7 +177,6 @@ class Lt : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -206,7 +192,6 @@ class Leq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -222,7 +207,6 @@ class Gt : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -238,7 +222,6 @@ class Geq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -254,7 +237,6 @@ class Eq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -270,7 +252,6 @@ class Neq : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -286,7 +267,6 @@ class Add : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -302,7 +282,6 @@ class Sub : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -318,7 +297,6 @@ class Negative : public UnaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -334,7 +312,6 @@ class Mul : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -350,7 +327,6 @@ class Div : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -366,7 +342,6 @@ class Mod : public BinaryExpr {
 
     void validate() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -382,11 +357,6 @@ class Lvalue : public Expr {
     Lvalue &operator=(Lvalue&&) = default;
     virtual ~Lvalue() = 0;
     virtual Lvalue *clone() const = 0;
-
-    /* Emit some C++ code that implements an lvalue reference of this
-     * expression.
-     */
-    virtual void lvalue(std::ostream &out) const = 0;
 
 };
 
@@ -420,8 +390,6 @@ class ExprID : public Lvalue {
     void validate() const final;
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
-    void lvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -442,8 +410,6 @@ class Var : public Lvalue {
 
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
-    void lvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -464,8 +430,6 @@ class Field : public Lvalue {
 
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
-    void lvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -486,8 +450,6 @@ class Element : public Lvalue {
 
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
-    void lvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -539,7 +501,6 @@ class Exists : public Expr {
 
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
@@ -561,7 +522,6 @@ class Forall : public Expr {
 
     bool constant() const final;
     const TypeExpr *type() const final;
-    void rvalue(std::ostream &out) const final;
     void generate(std::ostream &out) const final;
 
 };
