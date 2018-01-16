@@ -86,10 +86,10 @@ void StartState::generate(std::ostream &out) const {
     out << "StartState(\"" << name << "\","
 
       // body
-      << "[](State &s){";
+      << "[](State &s){\n";
     // TODO: decls
     for (const Stmt *s : body)
-        out << *s << ";";
+        out << *s << ";\n";
     out << "})";
 }
 
