@@ -95,6 +95,9 @@ static void check_invariants(const State &s) {
     }
 }
 
+static void print_counterexample(const State*) {
+}
+
 int main(void) {
 
     /* A queue of states to expand. A data structure invariant we maintain on

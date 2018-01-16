@@ -52,24 +52,12 @@ int output_checker(const std::string &path, const Model &model,
         d->define(out);
 
     // Write out the start state rules.
-    {
-        std::vector<std::string> start_rules;
-        for (const Rule *r : model.rules) {
-            if (auto s = dynamic_cast<const StartState*>(r)) {
-                out << "void startstate_" << start_rules.size()
-                  << "(State &s) {\n" << *s << "}\n\n";
-                start_rules.push_back(s->name);
-            }
-        }
-
-        out << "static const std::vector<StartState> START_RULES = {\n";
-        unsigned i = 0;
-        for (const std::string &s : start_rules) {
-            out << "    { .name = " << escape_string(s) << ", .body = startstate_" << i << "},\n";
-            i++;
-        }
-        out << "};\n\n";
+    out << "static const std::vector<StartState> START_RULES = {\n";
+    for (const Rule *r : model.rules) {
+        if (auto s = dynamic_cast<const StartState*>(r))
+            out << *s << ",\n";
     }
+    out << "};\n";
 
     // Write out the invariant rules.
     {

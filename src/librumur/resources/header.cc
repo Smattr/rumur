@@ -17,7 +17,13 @@ struct StateBase {
 
   public:
     StateBase() = default;
-    StateBase(const StateBase *s): data(s->data), previous(s) {
+    StateBase(const StateBase&) = default;
+    StateBase(StateBase&&) = default;
+    StateBase &operator=(const StateBase&) = default;
+    StateBase &operator=(StateBase&&) = default;
+
+    StateBase *duplicate() const {
+      return new StateBase(this);
     }
 
     bool operator==(const StateBase &other) const {
@@ -27,25 +33,47 @@ struct StateBase {
     bool operator!=(const StateBase &other) const {
         return !(*this == other);
     }
+
+ private:
+  StateBase(const StateBase *s): data(s->data), previous(s) { }
 };
 
 template<typename STATE>
 struct StartStateBase {
-    std::string name;
-    std::function<void(STATE&)> body;
+
+ public:
+  const std::string name;
+  const std::function<void(STATE&)> body;
+
+ public:
+  StartStateBase(const std::string &name_, std::function<void(STATE&)> body_):
+    name(name_), body(body_) { }
 };
 
 template<typename STATE>
 struct InvariantBase {
-    std::string name;
-    std::function<bool(const STATE&)> guard;
+
+ public:
+  const std::string name;
+  const std::function<bool(const STATE&)> guard;
+
+ public:
+  InvariantBase(const std::string &name_, std::function<bool(const STATE&)> guard_):
+    name(name_), guard(guard_) { }
 };
 
 template<typename STATE>
 struct RuleBase {
-    std::string name;
-    std::function<bool(const STATE&)> guard;
-    std::function<void(STATE&)> body;
+
+ public:
+  const std::string name;
+  const std::function<bool(const STATE&)> guard;
+  const std::function<void(STATE&)> body;
+
+ public:
+  RuleBase(const std::string &name_, std::function<bool(const STATE&)> guard_,
+    std::function<void(STATE&)> body_):
+    name(name_), guard(guard_), body(body_) { }
 };
 
 /* An exception that is thrown that is not related to a specific current state.
