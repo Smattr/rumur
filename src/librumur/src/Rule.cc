@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include "location.hh"
 #include <rumur/Decl.h>
@@ -44,7 +45,7 @@ void Rule::generate(std::ostream &out) const {
     out << "Rule(\"" << name << "\","
     
       // guard
-      << "[](const State &s){return ";
+      << "[](const State &s [[gnu::unused]]){return ";
     if (guard == nullptr) {
         out << "true";
     } else {
@@ -122,16 +123,14 @@ Invariant::~Invariant() {
 }
 
 void Invariant::generate(std::ostream &out) const {
+    assert(guard != nullptr && "BUG: invariant with no body");
+
     out << "Invariant(\"" << name << "\","
     
       // guard
-      << "[](const State &s){return ";
-    if (guard == nullptr) {
-        out << "true";
-    } else {
-        out << *guard;
-    }
-    out << ";})";
+      << "[](const State &s){return "
+      << *guard
+      << ";})";
 }
 
 }
