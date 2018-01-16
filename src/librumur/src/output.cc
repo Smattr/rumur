@@ -9,14 +9,6 @@
 
 namespace rumur {
 
-/* Turn a string into a something that can be safely emitted in a C++ file and
- * seen by the compiler as a string literal.
- */
-static std::string escape_string(const std::string &s) {
-    // TODO
-    return "\"" + s + "\"";
-}
-
 // Whether a rule is a standard state transition rule.
 static bool is_regular_rule(const Rule *r) {
     return dynamic_cast<const StartState*>(r) == nullptr &&
@@ -50,6 +42,7 @@ int output_checker(const std::string &path, const Model &model,
     // Write out constants and type declarations.
     for (const Decl *d : model.decls)
         out << *d << ";\n";
+    out << "\n";
 
     // Write out the start state rules.
     out << "static const std::vector<StartState> START_RULES = {\n";
@@ -57,55 +50,23 @@ int output_checker(const std::string &path, const Model &model,
         if (auto s = dynamic_cast<const StartState*>(r))
             out << *s << ",\n";
     }
-    out << "};\n";
+    out << "};\n\n";
 
     // Write out the invariant rules.
-    {
-        std::vector<std::string> invariants;
-        for (const Rule *r : model.rules) {
-            if (auto i = dynamic_cast<const Invariant*>(r)) {
-                out << "static bool invariant_" << invariants.size() << "(const State &s) {\n"
-                       "    // TODO\n"
-                       "    return true;\n"
-                       "}\n\n";
-                invariants.push_back(i->name);
-            }
-        }
-
-        out << "static const std::vector<Invariant> INVARIANTS = {\n";
-        unsigned i = 0;
-        for (const std::string &n : invariants) {
-            out << "    { .name = " << escape_string(n) << ", .guard = invariant_" << i << "},\n";
-            i++;
-        }
-        out << "};\n\n";
+    out << "static const std::vector<Invariant> INVARIANTS = {\n";
+    for (const Rule *r : model.rules) {
+        if (auto i = dynamic_cast<const Invariant*>(r))
+            out << *i << ";\n";
     }
+    out << "};\n\n";
 
     // Write out the regular rules.
-    {
-        std::vector<std::string> rules;
-        for (const Rule *r : model.rules) {
-            if (is_regular_rule(r)) {
-                out << "static bool guard_" << rules.size() << "(const State &s) {\n"
-                       "    //TODO\n"
-                       "    return true;\n"
-                       "}\n\n"
-                       "static void rule_" << rules.size() << "(State &s) {\n"
-                       "    // TODO\n"
-                       "}\n\n";
-                rules.push_back(r->name);
-            }
-        }
-
-        out << "static const std::vector<Rule> RULES = {\n";
-        unsigned i = 0;
-        for (const std::string &n : rules) {
-            out << "    { .name = " << escape_string(n) << ", .guard = guard_" <<
-              i << ", .body = rule_" << i << "},\n";
-            i++;
-        }
-        out << "};\n\n";
+    out << "static const std::vector<Rule> RULES = {\n";
+    for (const Rule *r : model.rules) {
+        if (is_regular_rule(r))
+            out << *r << ";\n";
     }
+    out << "};\n\n";
 
     out << std::string((const char*)resources_footer_cc, (size_t)resources_footer_cc_len);
 

@@ -132,7 +132,7 @@ var {
 
 [&!|:=><\-\%\+;{},\[\]\.()] { return YYText()[0]; }
 
-\"[^"]*\" {
+\"[^\n\r\l\f"]*\" {
     lval->build<std::string>(YYText());
     return rumur::parser::token::STRING;
 }
