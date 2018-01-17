@@ -2,8 +2,8 @@
 
 namespace rumur {
 
-Node::Node(const location &loc)
-  : loc(loc) {
+Node::Node(const location &loc):
+  loc(loc) {
 }
 
 }

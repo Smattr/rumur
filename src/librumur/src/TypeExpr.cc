@@ -10,19 +10,19 @@
 namespace rumur {
 
 bool TypeExpr::is_simple() const {
-    return false;
+  return false;
 }
 
-SimpleTypeExpr::SimpleTypeExpr(const location &loc)
-  : TypeExpr(loc) {
+SimpleTypeExpr::SimpleTypeExpr(const location &loc):
+  TypeExpr(loc) {
 }
 
 bool SimpleTypeExpr::is_simple() const {
-    return true;
+  return true;
 }
 
-Range::Range(Expr *min, Expr *max, const location &loc)
-  : SimpleTypeExpr(loc), min(min), max(max) {
+Range::Range(Expr *min, Expr *max, const location &loc):
+  SimpleTypeExpr(loc), min(min), max(max) {
 }
 
 Range::Range(const Range &other):
@@ -30,109 +30,109 @@ Range::Range(const Range &other):
 }
 
 Range &Range::operator=(Range other) {
-    swap(*this, other);
-    return *this;
+  swap(*this, other);
+  return *this;
 }
 
 void swap(Range &x, Range &y) noexcept {
-    using std::swap;
-    swap(x.loc, y.loc);
-    swap(x.min, y.min);
-    swap(x.max, y.max);
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.min, y.min);
+  swap(x.max, y.max);
 }
 
 Range *Range::clone() const {
-    return new Range(*this);
+  return new Range(*this);
 }
 
 void Range::validate() const {
-    if (!min->constant())
-        throw RumurError("lower bound of range is not a constant", min->loc);
+  if (!min->constant())
+    throw RumurError("lower bound of range is not a constant", min->loc);
 
-    if (!max->constant())
-        throw RumurError("upper bound of range is not a constant", max->loc);
+  if (!max->constant())
+    throw RumurError("upper bound of range is not a constant", max->loc);
 }
 
 Range::~Range() {
-    delete min;
-    delete max;
+  delete min;
+  delete max;
 }
 
 void Range::generate(std::ostream &out) const {
-    int64_t lb = min->constant_fold();
-    int64_t ub = max->constant_fold();
-    // TODO: catch overflow, not constant
-    out << "RangeBase<" << lb << "," << ub << ">";
+  int64_t lb = min->constant_fold();
+  int64_t ub = max->constant_fold();
+  // TODO: catch overflow, not constant
+  out << "RangeBase<" << lb << "," << ub << ">";
 }
 
-Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc)
-  : SimpleTypeExpr(loc) {
+Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc):
+  SimpleTypeExpr(loc) {
 
-    for (const std::pair<std::string, location> &m : members) {
+  for (const std::pair<std::string, location> &m : members) {
 
-        // Assign the enum member a numerical value
-        auto n = new Number(this->members.size(), m.second);
+    // Assign the enum member a numerical value
+    auto n = new Number(this->members.size(), m.second);
 
-        // Construct an expression for it
-        this->members.emplace_back(m.first, n, this, m.second);
+    // Construct an expression for it
+    this->members.emplace_back(m.first, n, this, m.second);
 
-    }
+  }
 }
 
 Enum *Enum::clone() const {
-    return new Enum(*this);
+  return new Enum(*this);
 }
 
 void Enum::generate(std::ostream &out) const {
-    out << "EnumBase<";
-    bool first = true;
-    for (const ExprID &m : members) {
-        if (!first)
-            out << ",";
-        out << "\"" << m.id << "\"";
-        first = false;
-    }
-    out << ">";
+  out << "EnumBase<";
+  bool first = true;
+  for (const ExprID &m : members) {
+    if (!first)
+      out << ",";
+    out << "\"" << m.id << "\"";
+    first = false;
+  }
+  out << ">";
 }
 
-Record::Record(std::vector<VarDecl*> &&fields, const location &loc)
-  : TypeExpr(loc), fields(fields) {
+Record::Record(std::vector<VarDecl*> &&fields, const location &loc):
+  TypeExpr(loc), fields(fields) {
 }
 
 Record::Record(const Record &other):
   TypeExpr(other) {
-    for (const VarDecl *v : other.fields)
-        fields.push_back(v->clone());
+  for (const VarDecl *v : other.fields)
+    fields.push_back(v->clone());
 }
 
 Record &Record::operator=(Record other) {
-    swap(*this, other);
-    return *this;
+  swap(*this, other);
+  return *this;
 }
 
 void swap(Record &x, Record &y) noexcept {
-    using std::swap;
-    swap(x.loc, y.loc);
-    swap(x.fields, y.fields);
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.fields, y.fields);
 }
 
 Record *Record::clone() const {
-    return new Record(*this);
+  return new Record(*this);
 }
 
 Record::~Record() {
-    for (VarDecl *v : fields)
-        delete v;
+  for (VarDecl *v : fields)
+    delete v;
 }
 
 void Record::generate(std::ostream &out) const {
-    out << "class:public RecordBase{";
-    // TODO
-    out << "}";
+  out << "class:public RecordBase{";
+  // TODO
+  out << "}";
 }
 
-Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_)
-  : TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
+Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
+  TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
 }
 
 Array::Array(const Array &other):
@@ -141,28 +141,28 @@ Array::Array(const Array &other):
 }
 
 Array &Array::operator=(Array other) {
-    swap(*this, other);
-    return *this;
+  swap(*this, other);
+  return *this;
 }
 
 void swap(Array &x, Array &y) noexcept {
-    using std::swap;
-    swap(x.loc, y.loc);
-    swap(x.index_type, y.index_type);
-    swap(x.element_type, y.element_type);
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.index_type, y.index_type);
+  swap(x.element_type, y.element_type);
 }
 
 Array *Array::clone() const {
-    return new Array(*this);
+  return new Array(*this);
 }
 
 Array::~Array() {
-    delete index_type;
-    delete element_type;
+  delete index_type;
+  delete element_type;
 }
 
 void Array::generate(std::ostream &out) const {
-    out << "ArrayBase<" << *index_type << "," << *element_type << ">";
+  out << "ArrayBase<" << *index_type << "," << *element_type << ">";
 }
 
 }

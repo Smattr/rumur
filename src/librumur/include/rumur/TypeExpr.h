@@ -16,109 +16,109 @@ class VarDecl;
 
 class TypeExpr : public Node {
 
-  public:
-    using Node::Node;
-    TypeExpr() = delete;
-    TypeExpr(const TypeExpr&) = default;
-    TypeExpr(TypeExpr&&) = default;
-    TypeExpr &operator=(const TypeExpr&) = default;
-    TypeExpr &operator=(TypeExpr&&) = default;
-    virtual ~TypeExpr() { }
+ public:
+  using Node::Node;
+  TypeExpr() = delete;
+  TypeExpr(const TypeExpr&) = default;
+  TypeExpr(TypeExpr&&) = default;
+  TypeExpr &operator=(const TypeExpr&) = default;
+  TypeExpr &operator=(TypeExpr&&) = default;
+  virtual ~TypeExpr() { }
 
-    // Whether this type is a primitive integer-like type.
-    virtual bool is_simple() const;
+  // Whether this type is a primitive integer-like type.
+  virtual bool is_simple() const;
 
-    TypeExpr *clone() const override = 0;
+  TypeExpr *clone() const override = 0;
 
 };
 
 class SimpleTypeExpr : public TypeExpr {
 
-  public:
-    SimpleTypeExpr() = delete;
-    SimpleTypeExpr(const location &loc);
-    SimpleTypeExpr(const SimpleTypeExpr&) = default;
-    SimpleTypeExpr(SimpleTypeExpr&&) = default;
-    SimpleTypeExpr &operator=(const SimpleTypeExpr&) = default;
-    SimpleTypeExpr &operator=(SimpleTypeExpr&&) = default;
-    virtual ~SimpleTypeExpr() { }
+ public:
+  SimpleTypeExpr() = delete;
+  SimpleTypeExpr(const location &loc);
+  SimpleTypeExpr(const SimpleTypeExpr&) = default;
+  SimpleTypeExpr(SimpleTypeExpr&&) = default;
+  SimpleTypeExpr &operator=(const SimpleTypeExpr&) = default;
+  SimpleTypeExpr &operator=(SimpleTypeExpr&&) = default;
+  virtual ~SimpleTypeExpr() { }
 
-    bool is_simple() const final;
+  bool is_simple() const final;
 
-    SimpleTypeExpr *clone() const override = 0;
+  SimpleTypeExpr *clone() const override = 0;
 
 };
 
 class Range : public SimpleTypeExpr {
 
-  public:
-    Expr *min;
-    Expr *max;
+ public:
+  Expr *min;
+  Expr *max;
 
-    Range() = delete;
-    Range(Expr *min, Expr *max, const location &loc);
-    Range(const Range &other);
-    Range &operator=(Range other);
-    friend void swap(Range &x, Range &y) noexcept;
-    Range *clone() const final;
-    virtual ~Range();
+  Range() = delete;
+  Range(Expr *min, Expr *max, const location &loc);
+  Range(const Range &other);
+  Range &operator=(Range other);
+  friend void swap(Range &x, Range &y) noexcept;
+  Range *clone() const final;
+  virtual ~Range();
 
-    void validate() const final;
-    void generate(std::ostream &out) const final;
+  void validate() const final;
+  void generate(std::ostream &out) const final;
 
 };
 
 class Enum : public SimpleTypeExpr {
 
-  public:
-    std::vector<ExprID> members;
+ public:
+  std::vector<ExprID> members;
 
-    Enum() = delete;
-    Enum(const std::vector<std::pair<std::string, location>> &members,
-      const location &loc);
-    Enum(const Enum&) = default;
-    Enum(Enum&&) = default;
-    Enum &operator=(const Enum&) = default;
-    Enum &operator=(Enum&&) = default;
-    Enum *clone() const final;
-    virtual ~Enum() { }
+  Enum() = delete;
+  Enum(const std::vector<std::pair<std::string, location>> &members,
+    const location &loc);
+  Enum(const Enum&) = default;
+  Enum(Enum&&) = default;
+  Enum &operator=(const Enum&) = default;
+  Enum &operator=(Enum&&) = default;
+  Enum *clone() const final;
+  virtual ~Enum() { }
 
-    void generate(std::ostream &out) const final;
+  void generate(std::ostream &out) const final;
 
 };
 
 class Record : public TypeExpr {
 
-  public:
-    std::vector<VarDecl*> fields;
+ public:
+  std::vector<VarDecl*> fields;
 
-    Record() = delete;
-    Record(std::vector<VarDecl*> &&fields, const location &loc);
-    Record(const Record &other);
-    Record &operator=(Record other);
-    friend void swap(Record &x, Record &y) noexcept;
-    Record *clone() const final;
-    virtual ~Record();
+  Record() = delete;
+  Record(std::vector<VarDecl*> &&fields, const location &loc);
+  Record(const Record &other);
+  Record &operator=(Record other);
+  friend void swap(Record &x, Record &y) noexcept;
+  Record *clone() const final;
+  virtual ~Record();
 
-    void generate(std::ostream &out) const final;
+  void generate(std::ostream &out) const final;
 
 };
 
 class Array : public TypeExpr {
 
-  public:
-    TypeExpr *index_type;
-    TypeExpr *element_type;
+ public:
+  TypeExpr *index_type;
+  TypeExpr *element_type;
 
-    Array() = delete;
-    Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_);
-    Array(const Array &other);
-    Array &operator=(Array other);
-    friend void swap(Array &x, Array &y) noexcept;
-    Array *clone() const final;
-    virtual ~Array();
+  Array() = delete;
+  Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_);
+  Array(const Array &other);
+  Array &operator=(Array other);
+  friend void swap(Array &x, Array &y) noexcept;
+  Array *clone() const final;
+  virtual ~Array();
 
-    void generate(std::ostream &out) const final;
+  void generate(std::ostream &out) const final;
 
 };
 

@@ -12,47 +12,45 @@ namespace rumur {
 
 class Symtab {
 
-  private:
+ private:
+  std::vector<std::unordered_map<std::string, Node*>> scope;
 
-    std::vector<std::unordered_map<std::string, Node*>> scope;
+ public:
+  void open_scope() {
+    scope.emplace_back();
+  }
 
-  public:
+  void close_scope() {
+    assert(!scope.empty());
+    for (std::pair<std::string, Node*> e : scope[scope.size() - 1])
+      delete e.second;
+    scope.pop_back();
+  }
 
-    void open_scope() {
-        scope.emplace_back();
-    }
+  void declare(const std::string &name, const Node &value) {
+    assert(!scope.empty());
+    scope.back()[name] = value.clone();
+  }
 
-    void close_scope() {
-        assert(!scope.empty());
-        for (std::pair<std::string, Node*> e : scope[scope.size() - 1])
-            delete e.second;
-        scope.pop_back();
-    }
-
-    void declare(const std::string &name, const Node &value) {
-        assert(!scope.empty());
-        scope.back()[name] = value.clone();
-    }
-
-    template<typename U>
-    const U *lookup(const std::string &name, const location &loc) {
-        for (auto it = scope.rbegin(); it != scope.rend(); it++) {
-            auto it2 = it->find(name);
-            if (it2 != it->end()) {
-                if (auto ret = dynamic_cast<const U*>(it2->second)) {
-                    return ret;
-                } else {
-                    break;
-                }
-            }
+  template<typename U>
+  const U *lookup(const std::string &name, const location &loc) {
+    for (auto it = scope.rbegin(); it != scope.rend(); it++) {
+      auto it2 = it->find(name);
+      if (it2 != it->end()) {
+        if (auto ret = dynamic_cast<const U*>(it2->second)) {
+          return ret;
+        } else {
+          break;
         }
-        throw RumurError("unknown symbol: " + name, loc);
+      }
     }
+    throw RumurError("unknown symbol: " + name, loc);
+  }
 
-    ~Symtab() {
-        while (scope.size() > 0)
-            close_scope();
-    }
+  ~Symtab() {
+    while (scope.size() > 0)
+      close_scope();
+  }
 
 };
 

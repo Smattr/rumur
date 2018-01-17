@@ -6,7 +6,7 @@
 namespace rumur {
 
 struct OutputOptions {
-    bool overflow_checks;
+  bool overflow_checks;
 };
 
 int output_checker(const std::string &path, const Model &model,

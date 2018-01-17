@@ -11,11 +11,10 @@ namespace rumur {
  */
 class RumurError : public std::runtime_error {
 
-  public:
+ public:
+  location loc;
 
-    location loc;
-
-    RumurError(const std::string &message, const location &loc);
+  RumurError(const std::string &message, const location &loc);
 
 };
 

@@ -5,121 +5,121 @@
 
 /* Override the declaration of yylex with the one from our derived scanner. */
 #ifdef YY_DECL
-    #undef YY_DECL
+  #undef YY_DECL
 #endif
 #define YY_DECL int rumur::scanner::yylex(\
-    rumur::parser::semantic_type *const lval, rumur::parser::location_type *loc)
+  rumur::parser::semantic_type *const lval, rumur::parser::location_type *loc)
 
 %}
 
-    /* Track line numbers while scanning. These are retrievable via
-     * FlexLexer::lineno().
-     */
+  /* Track line numbers while scanning. These are retrievable via
+   * FlexLexer::lineno().
+   */
 %option yylineno
 
-    /* When the end of the input is encountered, do not expect another file. */
+  /* When the end of the input is encountered, do not expect another file. */
 %option noyywrap
 
-    /* Generate a C++ scanner, not C. */
+  /* Generate a C++ scanner, not C. */
 %option c++
 
-    /* Use our own scanner class, rather than the default yyFlexLexer. */
+  /* Use our own scanner class, rather than the default yyFlexLexer. */
 %option yyclass="rumur::scanner"
 
-    /* Switch to case-insensitive. */
+  /* Switch to case-insensitive. */
 %option caseless
 
-    /* States for handling comments. This is not the most efficient way of
-     * dealing with these, but meh.
-     */
+  /* States for handling comments. This is not the most efficient way of
+   * dealing with these, but meh.
+   */
 %x SC_COMMENT SC_MULTILINE_COMMENT
 
 %%
 
 (0x[[:xdigit:]]+|[[:digit:]]+) {
-    lval->build<std::string>(YYText());
-    return rumur::parser::token::NUMBER;
+  lval->build<std::string>(YYText());
+  return rumur::parser::token::NUMBER;
 }
 
 begin {
-    return rumur::parser::token::BEGIN_TOK;
+  return rumur::parser::token::BEGIN_TOK;
 }
 
 by {
-    return rumur::parser::token::BY;
+  return rumur::parser::token::BY;
 }
 
 const {
-    return rumur::parser::token::CONST;
+  return rumur::parser::token::CONST;
 }
 
 do {
-    return rumur::parser::token::DO;
+  return rumur::parser::token::DO;
 }
 
 end {
-    return rumur::parser::token::END;
+  return rumur::parser::token::END;
 }
 
 endexists {
-    return rumur::parser::token::ENDEXISTS;
+  return rumur::parser::token::ENDEXISTS;
 }
 
 endforall {
-    return rumur::parser::token::ENDFORALL;
+  return rumur::parser::token::ENDFORALL;
 }
 
 endrecord {
-    return rumur::parser::token::ENDRECORD;
+  return rumur::parser::token::ENDRECORD;
 }
 
 endstartstate {
-    return rumur::parser::token::ENDSTARTSTATE;
+  return rumur::parser::token::ENDSTARTSTATE;
 }
 
 enum {
-    return rumur::parser::token::ENUM;
+  return rumur::parser::token::ENUM;
 }
 
 exists {
-    return rumur::parser::token::EXISTS;
+  return rumur::parser::token::EXISTS;
 }
 
 forall {
-    return rumur::parser::token::FORALL;
+  return rumur::parser::token::FORALL;
 }
 
 record {
-    return rumur::parser::token::RECORD;
+  return rumur::parser::token::RECORD;
 }
 
 startstate {
-    return rumur::parser::token::STARTSTATE;
+  return rumur::parser::token::STARTSTATE;
 }
 
 to {
-    return rumur::parser::token::TO;
+  return rumur::parser::token::TO;
 }
 
 type {
-    return rumur::parser::token::TYPE;
+  return rumur::parser::token::TYPE;
 }
 
 var {
-    return rumur::parser::token::VAR;
+  return rumur::parser::token::VAR;
 }
 
 [[:alpha:][_[:alnum:]]* {
-    lval->build<std::string>(YYText());
-    return rumur::parser::token::ID;
+  lval->build<std::string>(YYText());
+  return rumur::parser::token::ID;
 }
 
 "--" {
-    BEGIN(SC_COMMENT);
+  BEGIN(SC_COMMENT);
 }
 
 "/*" {
-    BEGIN(SC_MULTILINE_COMMENT);
+  BEGIN(SC_MULTILINE_COMMENT);
 }
 
 ":=" { return rumur::parser::token::COLON_EQ;  }
@@ -133,45 +133,45 @@ var {
 [&!|:=><\-\%\+;{},\[\]\.()] { return YYText()[0]; }
 
 \"[^\n\r\l\f"]*\" {
-    lval->build<std::string>(YYText());
-    return rumur::parser::token::STRING;
+  lval->build<std::string>(YYText());
+  return rumur::parser::token::STRING;
 }
 
     /* Ensure we keep a correct line count for error reporting. */
 "\n" {
-    loc->lines();
+  loc->lines();
 }
 
-    /* Ignore white space. */
+  /* Ignore white space. */
 [[:space:]] {}
 
 . {
-    /* FIXME: the location here is bogus */
-    throw RumurError(std::string("unexpected character: '") + YYText() + "'", location());
+  /* FIXME: the location here is bogus */
+  throw RumurError(std::string("unexpected character: '") + YYText() + "'", location());
 }
 
-    /* Comment handling. */
+  /* Comment handling. */
 <SC_COMMENT>. {
-    /* do nothing */
+  /* do nothing */
 }
 
 <SC_COMMENT>\n {
-    loc->lines();
-    BEGIN(INITIAL);
+  loc->lines();
+  BEGIN(INITIAL);
 }
 
 <SC_MULTILINE_COMMENT>[^*\n]* {
-    /* do nothing */
+  /* do nothing */
 }
 
 <SC_MULTILINE_COMMENT>"*"+[^*/\n]* {
-    /* do nothing */
+  /* do nothing */
 }
 
 <SC_MULTILINE_COMMENT>\n {
-    loc->lines();
+  loc->lines();
 }
 
 <SC_MULTILINE_COMMENT>"*"+"/" {
-    BEGIN(INITIAL);
+  BEGIN(INITIAL);
 }

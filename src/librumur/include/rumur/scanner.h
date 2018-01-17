@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef yyFlexLexerOnce
-    #include <FlexLexer.h>
+  #include <FlexLexer.h>
 #endif
 
 #include "parser.yy.hh"
@@ -10,10 +10,10 @@ namespace rumur {
 
 class scanner : public yyFlexLexer {
 
-  public:
+ public:
 
-    // Inherit yyFlexLexer's constructor
-    using yyFlexLexer::yyFlexLexer;
+  // Inherit yyFlexLexer's constructor
+  using yyFlexLexer::yyFlexLexer;
 
 /* XXX: Clang's -Woverloaded-virtual decides that the following declaration is
  * possibly a mistake. However, we are deliberately overloading this method with
@@ -22,9 +22,9 @@ class scanner : public yyFlexLexer {
  */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
-    // Force a new available type signature for yylex
-    virtual int yylex(parser::semantic_type *const lval,
-        parser::location_type *loc);
+  // Force a new available type signature for yylex
+  virtual int yylex(parser::semantic_type *const lval,
+    parser::location_type *loc);
 #pragma clang diagnostic pop
 
 };

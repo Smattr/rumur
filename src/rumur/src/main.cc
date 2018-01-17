@@ -9,78 +9,78 @@
 static std::istream *in;
 static std::string *out;
 static rumur::OutputOptions output_options = {
-    .overflow_checks = true,
+  .overflow_checks = true,
 };
 
 static void parse_args(int argc, char **argv) {
 
-    for (;;) {
-        static struct option options[] = {
-            { "help", no_argument, 0, '?' },
-            { "output", required_argument, 0, 'o' },
-            { 0, 0, 0, 0 },
-        };
+  for (;;) {
+    static struct option options[] = {
+      { "help", no_argument, 0, '?' },
+      { "output", required_argument, 0, 'o' },
+      { 0, 0, 0, 0 },
+    };
 
-        int option_index = 0;
-        int c = getopt_long(argc, argv, "o:?", options, &option_index);
+    int option_index = 0;
+    int c = getopt_long(argc, argv, "o:?", options, &option_index);
 
-        if (c == -1)
-            break;
+    if (c == -1)
+      break;
 
-        switch (c) {
+    switch (c) {
 
-            case 'o':
-                if (out != nullptr)
-                    delete out;
-                out = new std::string(optarg);
-                break;
+      case 'o':
+        if (out != nullptr)
+          delete out;
+        out = new std::string(optarg);
+        break;
 
-            case '?':
-                std::cerr << "usage: " << argv[0] << " --output FILE [FILE]\n";
-                exit(EXIT_FAILURE);
-
-            default:
-                std::cerr << "unexpected error\n";
-                exit(EXIT_FAILURE);
-
-        }
-    }
-
-    if (optind == argc - 1) {
-        auto inf = new std::ifstream(argv[optind]);
-        if (!inf->is_open()) {
-            std::cerr << "failed to open " << argv[optind] << "\n";
-            exit(EXIT_FAILURE);
-        }
-        in = inf;
-    } else {
-        in = &std::cin;
-    }
-
-    if (out == nullptr) {
-        std::cerr << "output file is required\n";
+      case '?':
+        std::cerr << "usage: " << argv[0] << " --output FILE [FILE]\n";
         exit(EXIT_FAILURE);
+
+      default:
+        std::cerr << "unexpected error\n";
+        exit(EXIT_FAILURE);
+
     }
+  }
+
+  if (optind == argc - 1) {
+    auto inf = new std::ifstream(argv[optind]);
+    if (!inf->is_open()) {
+      std::cerr << "failed to open " << argv[optind] << "\n";
+      exit(EXIT_FAILURE);
+    }
+    in = inf;
+  } else {
+    in = &std::cin;
+  }
+
+  if (out == nullptr) {
+    std::cerr << "output file is required\n";
+    exit(EXIT_FAILURE);
+  }
 }
 
 int main(int argc, char **argv) {
 
-    // Parse command line options
-    parse_args(argc, argv);
+  // Parse command line options
+  parse_args(argc, argv);
 
-    // Parse input model
-    rumur::Model *m;
-    try {
-        m = rumur::parse(in);
-    } catch (rumur::RumurError &e) {
-        std::cerr << e.loc << ":" << e.what() << "\n";
-        return EXIT_FAILURE;
-    }
+  // Parse input model
+  rumur::Model *m;
+  try {
+    m = rumur::parse(in);
+  } catch (rumur::RumurError &e) {
+    std::cerr << e.loc << ":" << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
-    assert(out != nullptr);
-    assert(m != nullptr);
-    if (rumur::output_checker(*out, *m, output_options) != 0)
-        return EXIT_FAILURE;
+  assert(out != nullptr);
+  assert(m != nullptr);
+  if (rumur::output_checker(*out, *m, output_options) != 0)
+    return EXIT_FAILURE;
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }

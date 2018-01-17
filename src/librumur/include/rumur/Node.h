@@ -7,28 +7,28 @@ namespace rumur {
 
 class Node {
 
-  public:
-    location loc;
+ public:
+  location loc;
 
-    Node() = delete;
-    Node(const location &loc);
-    Node(const Node&) = default;
-    Node(Node&&) = default;
-    Node &operator=(const Node&) = default;
-    Node &operator=(Node&&) = default;
-    virtual ~Node() { }
+  Node() = delete;
+  Node(const location &loc);
+  Node(const Node&) = default;
+  Node(Node&&) = default;
+  Node &operator=(const Node&) = default;
+  Node &operator=(Node&&) = default;
+  virtual ~Node() { }
 
-    virtual void validate() const {  }
+  virtual void validate() const {  }
 
-    virtual Node *clone() const = 0;
+  virtual Node *clone() const = 0;
 
-    virtual void generate(std::ostream &out) const = 0;
+  virtual void generate(std::ostream &out) const = 0;
 
 };
 
 static inline std::ostream &operator<<(std::ostream &out, const Node &n) {
-    n.generate(out);
-    return out;
+  n.generate(out);
+  return out;
 }
 
 }

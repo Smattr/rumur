@@ -12,27 +12,27 @@
 
 template<size_t SIZE_BITS>
 struct StateBase {
-    std::bitset<SIZE_BITS> data;
-    const StateBase *previous = nullptr;
+  std::bitset<SIZE_BITS> data;
+  const StateBase *previous = nullptr;
 
-  public:
-    StateBase() = default;
-    StateBase(const StateBase&) = default;
-    StateBase(StateBase&&) = default;
-    StateBase &operator=(const StateBase&) = default;
-    StateBase &operator=(StateBase&&) = default;
+ public:
+  StateBase() = default;
+  StateBase(const StateBase&) = default;
+  StateBase(StateBase&&) = default;
+  StateBase &operator=(const StateBase&) = default;
+  StateBase &operator=(StateBase&&) = default;
 
-    StateBase *duplicate() const {
-      return new StateBase(this);
-    }
+  StateBase *duplicate() const {
+    return new StateBase(this);
+  }
 
-    bool operator==(const StateBase &other) const {
-        return data == other.data;
-    }
+  bool operator==(const StateBase &other) const {
+    return data == other.data;
+  }
 
-    bool operator!=(const StateBase &other) const {
-        return !(*this == other);
-    }
+  bool operator!=(const StateBase &other) const {
+    return !(*this == other);
+  }
 
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
@@ -92,19 +92,19 @@ class Error : public std::runtime_error {
 template<typename STATE>
 class ModelErrorBase : public std::runtime_error {
 
-  public:
-    const STATE *state;
+ public:
+  const STATE *state;
 
-    ModelErrorBase(const std::string &message, const STATE *state_ = nullptr):
-      std::runtime_error(message), state(state_) {
-    }
+  ModelErrorBase(const std::string &message, const STATE *state_ = nullptr):
+    std::runtime_error(message), state(state_) {
+  }
 
-    ModelErrorBase(const ModelErrorBase &e, const STATE *state_):
-      std::runtime_error(e.what()), state(state_) {
-    }
+  ModelErrorBase(const ModelErrorBase &e, const STATE *state_):
+    std::runtime_error(e.what()), state(state_) {
+  }
 
-    ModelErrorBase(const ModelErrorBase&) = default;
-    ModelErrorBase(ModelErrorBase&&) = default;
+  ModelErrorBase(const ModelErrorBase&) = default;
+  ModelErrorBase(ModelErrorBase&&) = default;
 
 };
 

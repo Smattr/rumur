@@ -13,57 +13,56 @@ namespace rumur {
 
 class Rule : public Node {
 
-  public:
-    std::string name;
-    Expr *guard;
-    std::vector<Decl*> decls;
-    std::vector<Stmt*> body;
+ public:
+  std::string name;
+  Expr *guard;
+  std::vector<Decl*> decls;
+  std::vector<Stmt*> body;
 
-    Rule() = delete;
-    Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls,
-      std::vector<Stmt*> &&body, const location &loc);
-    Rule(const Rule &other);
-    Rule &operator=(Rule other);
-    friend void swap(Rule &x, Rule &y) noexcept;
-    virtual ~Rule();
-    Rule *clone() const override;
-    void generate(std::ostream &out) const override;
+  Rule() = delete;
+  Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls,
+    std::vector<Stmt*> &&body, const location &loc);
+  Rule(const Rule &other);
+  Rule &operator=(Rule other);
+  friend void swap(Rule &x, Rule &y) noexcept;
+  virtual ~Rule();
+  Rule *clone() const override;
+  void generate(std::ostream &out) const override;
 
 };
 
 class StartState : public Rule {
 
-  public:
-
-    StartState() = delete;
-    StartState(const std::string &name,
-      std::vector<Decl*> &&decls,
-      std::vector<Stmt*> &&body, const location &loc);
-    StartState(const StartState &other) = default;
-    StartState(StartState&&) = default;
-    StartState &operator=(const StartState&) = default;
-    StartState &operator=(StartState&&) = default;
-    virtual ~StartState() { }
-    StartState *clone() const final;
-    void generate(std::ostream &out) const final;
+ public:
+  StartState() = delete;
+  StartState(const std::string &name,
+    std::vector<Decl*> &&decls,
+    std::vector<Stmt*> &&body, const location &loc);
+  StartState(const StartState &other) = default;
+  StartState(StartState&&) = default;
+  StartState &operator=(const StartState&) = default;
+  StartState &operator=(StartState&&) = default;
+  virtual ~StartState() { }
+  StartState *clone() const final;
+  void generate(std::ostream &out) const final;
 
 };
 
 class Invariant : public Node {
 
-  public:
-    std::string name;
-    Expr *guard;
+ public:
+  std::string name;
+  Expr *guard;
 
-    Invariant() = delete;
-    Invariant(const std::string &name, Expr *guard,
-      const location &loc);
-    Invariant(const Invariant &other);
-    Invariant &operator=(Invariant other);
-    friend void swap(Invariant &x, Invariant &y) noexcept;
-    virtual ~Invariant();
-    Invariant *clone() const final;
-    void generate(std::ostream &out) const final;
+  Invariant() = delete;
+  Invariant(const std::string &name, Expr *guard,
+    const location &loc);
+  Invariant(const Invariant &other);
+  Invariant &operator=(Invariant other);
+  friend void swap(Invariant &x, Invariant &y) noexcept;
+  virtual ~Invariant();
+  Invariant *clone() const final;
+  void generate(std::ostream &out) const final;
 
 };
 
