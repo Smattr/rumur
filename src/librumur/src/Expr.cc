@@ -723,49 +723,6 @@ int64_t ExprID::constant_fold() const {
   throw std::invalid_argument("symbol is not a constant");
 }
 
-Var::Var(const VarDecl *decl_, const location &loc_)
-  : Lvalue(loc_), decl(decl_->clone()) {
-}
-
-Var::Var(const Var &other):
-  Lvalue(other), decl(other.decl->clone()) {
-}
-
-void swap(Var &x, Var &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.decl, y.decl);
-}
-
-Var &Var::operator=(Var other) {
-  swap(*this, other);
-  return *this;
-}
-
-Var *Var::clone() const {
-  return new Var(*this);
-}
-
-bool Var::constant() const {
-  return false;
-}
-
-const TypeExpr *Var::type() const {
-  return decl->type;
-}
-
-Var::~Var() {
-  delete decl;
-}
-
-void Var::generate(std::ostream &) const {
-  // TODO
-}
-
-int64_t Var::constant_fold() const {
-  throw std::invalid_argument("variables cannot be used in constant expressions");
-}
-
 Field::Field(Lvalue *record_, const std::string &field_, const location &loc_):
   Lvalue(loc_), record(record_), field(field_) {
 }

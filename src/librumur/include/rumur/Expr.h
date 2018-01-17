@@ -404,27 +404,6 @@ class ExprID : public Lvalue {
 
 };
 
-// FIXME: why do we need this class? Could this just be covered by ExprID?
-class Var : public Lvalue {
-
- public:
-  VarDecl *decl;
-
-  Var() = delete;
-  Var(const VarDecl *decl_, const location &loc_);
-  Var(const Var &other);
-  friend void swap(Var &x, Var &y) noexcept;
-  Var &operator=(Var other);
-  virtual ~Var();
-  Var *clone() const final;
-
-  bool constant() const final;
-  const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
-  int64_t constant_fold() const final;
-
-};
-
 class Field : public Lvalue {
 
  public:
