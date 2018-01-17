@@ -60,7 +60,7 @@
   #ifdef yylex
     #undef yylex
   #endif
-  #define yylex s.yylex
+  #define yylex sc.yylex
 
 }
 
@@ -77,7 +77,7 @@
   /* Tell Bison that the parser receives a reference to an instance of our
    * scanner class, in order to use our redirected yylex defined above.
    */
-%parse-param { scanner &s }
+%parse-param { scanner &sc }
 
   /* Tell Bison we'll receive another parameter that will allow us to pass
    * back the result of parsing.

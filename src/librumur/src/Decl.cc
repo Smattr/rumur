@@ -8,16 +8,16 @@
 
 namespace rumur {
 
-Decl::Decl(const std::string &name, const location &loc):
-  Node(loc), name(name) {
+Decl::Decl(const std::string &name_, const location &loc_):
+  Node(loc_), name(name_) {
 }
 
 Decl::~Decl() {
 }
 
-ConstDecl::ConstDecl(const std::string &name, const Expr *value,
-  const location &loc):
-  Decl(name, loc), value(value->clone()) {
+ConstDecl::ConstDecl(const std::string &name_, const Expr *value_,
+  const location &loc_):
+  Decl(name_, loc_), value(value_->clone()) {
 }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
@@ -54,9 +54,9 @@ ConstDecl::~ConstDecl() {
   delete value;
 }
 
-TypeDecl::TypeDecl(const std::string &name, TypeExpr *value,
-  const location &loc):
-  Decl(name, loc), value(value) {
+TypeDecl::TypeDecl(const std::string &name_, TypeExpr *value_,
+  const location &loc_):
+  Decl(name_, loc_), value(value_) {
 }
 
 TypeDecl::TypeDecl(const TypeDecl &other):
@@ -91,9 +91,9 @@ void TypeDecl::generate(std::ostream &out) const {
   out << "using ru_u_" << name << "=" << *value;
 }
 
-VarDecl::VarDecl(const std::string &name, TypeExpr *type,
-  const location &loc):
-  Decl(name, loc), type(type) {
+VarDecl::VarDecl(const std::string &name_, TypeExpr *type_,
+  const location &loc_):
+  Decl(name_, loc_), type(type_) {
 }
 
 VarDecl::VarDecl(const VarDecl &other):

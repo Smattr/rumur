@@ -13,16 +13,16 @@ bool TypeExpr::is_simple() const {
   return false;
 }
 
-SimpleTypeExpr::SimpleTypeExpr(const location &loc):
-  TypeExpr(loc) {
+SimpleTypeExpr::SimpleTypeExpr(const location &loc_):
+  TypeExpr(loc_) {
 }
 
 bool SimpleTypeExpr::is_simple() const {
   return true;
 }
 
-Range::Range(Expr *min, Expr *max, const location &loc):
-  SimpleTypeExpr(loc), min(min), max(max) {
+Range::Range(Expr *min_, Expr *max_, const location &loc_):
+  SimpleTypeExpr(loc_), min(min_), max(max_) {
 }
 
 Range::Range(const Range &other):
@@ -65,16 +65,16 @@ void Range::generate(std::ostream &out) const {
   out << "RangeBase<" << lb << "," << ub << ">";
 }
 
-Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc):
-  SimpleTypeExpr(loc) {
+Enum::Enum(const std::vector<std::pair<std::string, location>> &members_, const location &loc_):
+  SimpleTypeExpr(loc_) {
 
-  for (const std::pair<std::string, location> &m : members) {
+  for (const std::pair<std::string, location> &m : members_) {
 
     // Assign the enum member a numerical value
-    auto n = new Number(this->members.size(), m.second);
+    auto n = new Number(members.size(), m.second);
 
     // Construct an expression for it
-    this->members.emplace_back(m.first, n, this, m.second);
+    members.emplace_back(m.first, n, this, m.second);
 
   }
 }
@@ -95,8 +95,8 @@ void Enum::generate(std::ostream &out) const {
   out << ">";
 }
 
-Record::Record(std::vector<VarDecl*> &&fields, const location &loc):
-  TypeExpr(loc), fields(fields) {
+Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
+  TypeExpr(loc_), fields(fields_) {
 }
 
 Record::Record(const Record &other):

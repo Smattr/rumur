@@ -54,7 +54,7 @@ class Ternary : public Expr {
   Expr *rhs;
 
   Ternary() = delete;
-  Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc);
+  Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_);
   Ternary(const Ternary &other);
   Ternary(Ternary&&) = default;
   Ternary &operator=(Ternary other);
@@ -77,7 +77,7 @@ class BinaryExpr : public Expr {
   Expr *rhs;
 
   BinaryExpr() = delete;
-  BinaryExpr(Expr *lhs, Expr *rhs, const location &loc);
+  BinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
   BinaryExpr(const BinaryExpr &other);
   BinaryExpr &operator=(const BinaryExpr&) = delete;
   BinaryExpr &operator=(BinaryExpr&&) = delete;
@@ -144,7 +144,7 @@ class UnaryExpr : public Expr {
   Expr *rhs;
 
   UnaryExpr() = delete;
-  UnaryExpr(Expr *rhs, const location &loc);
+  UnaryExpr(Expr *rhs_, const location &loc_);
   UnaryExpr(const UnaryExpr &other);
   friend void swap(UnaryExpr &x, UnaryExpr &y) noexcept;
   UnaryExpr *clone() const override = 0;
@@ -392,8 +392,8 @@ class ExprID : public Lvalue {
   const TypeExpr *type_of;
 
   ExprID() = delete;
-  ExprID(const std::string &id, const Expr *value,
-    const TypeExpr *type_of, const location &loc);
+  ExprID(const std::string &id_, const Expr *value_,
+    const TypeExpr *type_of_, const location &loc_);
   ExprID(const ExprID &other);
   ExprID &operator=(ExprID other);
   friend void swap(ExprID &x, ExprID &y) noexcept;
@@ -419,7 +419,7 @@ class Var : public Lvalue {
   VarDecl *decl;
 
   Var() = delete;
-  Var(const VarDecl *decl, const location &loc);
+  Var(const VarDecl *decl_, const location &loc_);
   Var(const Var &other);
   friend void swap(Var &x, Var &y) noexcept;
   Var &operator=(Var other);
@@ -440,7 +440,7 @@ class Field : public Lvalue {
   std::string field;
 
   Field() = delete;
-  Field(Lvalue *record, const std::string &field, const location &loc);
+  Field(Lvalue *record_, const std::string &field_, const location &loc_);
   Field(const Field &other);
   friend void swap(Field &x, Field &y) noexcept;
   Field &operator=(Field other);
@@ -461,7 +461,7 @@ class Element : public Lvalue {
   Expr *index;
 
   Element() = delete;
-  Element(Lvalue *array, Expr *index, const location &loc);
+  Element(Lvalue *array_, Expr *index_, const location &loc_);
   Element(const Element &other);
   friend void swap(Element &x, Element &y) noexcept;
   Element &operator=(Element other);
@@ -484,9 +484,9 @@ class Quantifier : public Node {
   Quantifier() = delete;
   Quantifier(const std::string &name, TypeExpr *type, const location &loc);
   Quantifier(const std::string &name, Expr *from, Expr *to,
-      const location &loc);
-  Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step,
-    const location &loc);
+      const location &loc_);
+  Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step_,
+    const location &loc_);
   Quantifier(const Quantifier &other);
   Quantifier &operator=(Quantifier other);
   friend void swap(Quantifier &x, Quantifier &y) noexcept;
@@ -499,8 +499,8 @@ class Quantifier : public Node {
    * HACK: This takes the arguments in a different order to avoid internal
    * constructor references being ambiguous.
    */
-  Quantifier(const location &loc, const std::string &name, Expr *from,
-      Expr *to, Expr *step);
+  Quantifier(const location &loc_, const std::string &name, Expr *from,
+    Expr *to, Expr *step_);
 
 };
 
@@ -511,7 +511,7 @@ class Exists : public Expr {
   Expr *expr;
 
   Exists() = delete;
-  Exists(Quantifier *quantifier, Expr *expr, const location &loc);
+  Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_);
   Exists(const Exists &other);
   Exists &operator=(Exists other);
   friend void swap(Exists &x, Exists &y) noexcept;
@@ -532,7 +532,7 @@ class Forall : public Expr {
   Expr *expr;
 
   Forall() = delete;
-  Forall(Quantifier *quantifier, Expr *expr, const location &loc);
+  Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_);
   Forall(const Forall &other);
   Forall &operator=(Forall other);
   friend void swap(Forall &x, Forall &y) noexcept;

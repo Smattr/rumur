@@ -10,9 +10,9 @@
 
 namespace rumur {
 
-Rule::Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls, std::vector<Stmt*> &&body,
-  const location &loc):
-  Node(loc), name(name), guard(guard), decls(decls), body(body) {
+Rule::Rule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
+  std::vector<Stmt*> &&body_, const location &loc_):
+  Node(loc_), name(name_), guard(guard_), decls(decls_), body(body_) {
 }
 
 Rule::Rule(const Rule &other):
@@ -72,9 +72,9 @@ Rule::~Rule() {
  * transparently forward the rvalue references, but it seems they need to be
  * bound to lvalue references which does not happen automatically.
  */
-StartState::StartState(const std::string &name, std::vector<Decl*> &&decls,
-  std::vector<Stmt*> &&body, const location &loc):
-  Rule(name, nullptr, move(decls), move(body), loc) {
+StartState::StartState(const std::string &name_, std::vector<Decl*> &&decls_,
+  std::vector<Stmt*> &&body_, const location &loc_):
+  Rule(name_, nullptr, std::move(decls_), std::move(body_), loc_) {
 }
 
 StartState *StartState::clone() const {

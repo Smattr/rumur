@@ -8,8 +8,8 @@
 
 namespace rumur {
 
-Assignment::Assignment(Lvalue *lhs, Expr *rhs, const location &loc):
-  Stmt(loc), lhs(lhs), rhs(rhs) {
+Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):
+  Stmt(loc_), lhs(lhs_), rhs(rhs_) {
 }
 
 Assignment::Assignment(const Assignment &other):

@@ -13,8 +13,8 @@
 
 namespace rumur {
 
-Model::Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc):
-  Node(loc), decls(decls), rules(rules) {
+Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_):
+  Node(loc_), decls(decls_), rules(rules_) {
 }
 
 Model::Model(const Model &other):

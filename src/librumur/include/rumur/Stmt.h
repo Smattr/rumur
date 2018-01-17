@@ -29,7 +29,7 @@ class Assignment : public Stmt {
   Expr *rhs;
 
   Assignment() = delete;
-  Assignment(Lvalue *lhs, Expr *rhs, const location &loc);
+  Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_);
   Assignment(const Assignment &other);
   Assignment &operator=(Assignment other);
   friend void swap(Assignment &x, Assignment &y) noexcept;

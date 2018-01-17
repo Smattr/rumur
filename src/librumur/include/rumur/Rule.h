@@ -20,8 +20,8 @@ class Rule : public Node {
   std::vector<Stmt*> body;
 
   Rule() = delete;
-  Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls,
-    std::vector<Stmt*> &&body, const location &loc);
+  Rule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
+    std::vector<Stmt*> &&body_, const location &loc_);
   Rule(const Rule &other);
   Rule &operator=(Rule other);
   friend void swap(Rule &x, Rule &y) noexcept;
@@ -35,9 +35,8 @@ class StartState : public Rule {
 
  public:
   StartState() = delete;
-  StartState(const std::string &name,
-    std::vector<Decl*> &&decls,
-    std::vector<Stmt*> &&body, const location &loc);
+  StartState(const std::string &name_, std::vector<Decl*> &&decls_,
+    std::vector<Stmt*> &&body_, const location &loc_);
   StartState(const StartState &other) = default;
   StartState(StartState&&) = default;
   StartState &operator=(const StartState&) = default;
@@ -55,8 +54,8 @@ class Invariant : public Node {
   Expr *guard;
 
   Invariant() = delete;
-  Invariant(const std::string &name, Expr *guard,
-    const location &loc);
+  Invariant(const std::string &name_, Expr *guard_,
+    const location &loc_);
   Invariant(const Invariant &other);
   Invariant &operator=(Invariant other);
   friend void swap(Invariant &x, Invariant &y) noexcept;

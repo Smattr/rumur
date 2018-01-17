@@ -15,7 +15,7 @@ class Decl : public Node {
   std::string name;
 
   Decl() = delete;
-  Decl(const std::string &name, const location &loc);
+  Decl(const std::string &name_, const location &loc_);
   Decl(const Decl&) = default;
   Decl(Decl&&) = default;
   Decl &operator=(const Decl&) = default;
@@ -32,8 +32,8 @@ class ConstDecl : public Decl {
   Expr *value;
 
   ConstDecl() = delete;
-  ConstDecl(const std::string &name, const Expr *value,
-    const location &loc);
+  ConstDecl(const std::string &name_, const Expr *value_,
+    const location &loc_);
   ConstDecl(const ConstDecl &other);
   ConstDecl &operator=(ConstDecl other);
   friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
@@ -71,8 +71,8 @@ class VarDecl : public Decl {
   bool local = false;
 
   VarDecl() = delete;
-  VarDecl(const std::string &name, TypeExpr *type,
-    const location &loc);
+  VarDecl(const std::string &name_, TypeExpr *type_,
+    const location &loc_);
   VarDecl(const VarDecl &other);
   VarDecl &operator=(VarDecl other);
   friend void swap(VarDecl &x, VarDecl &y) noexcept;

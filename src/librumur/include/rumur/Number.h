@@ -14,8 +14,8 @@ class Number : public Expr {
   int64_t value;
 
   Number() = delete;
-  Number(const std::string &value, const location &loc);
-  Number(int64_t value, const location &loc);
+  Number(const std::string &value_, const location &loc_);
+  Number(int64_t value_, const location &loc_);
   Number(const Number&) = default;
   Number(Number&&) = default;
   Number &operator=(const Number&) = default;

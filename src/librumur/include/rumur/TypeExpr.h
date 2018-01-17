@@ -36,7 +36,7 @@ class SimpleTypeExpr : public TypeExpr {
 
  public:
   SimpleTypeExpr() = delete;
-  SimpleTypeExpr(const location &loc);
+  SimpleTypeExpr(const location &loc_);
   SimpleTypeExpr(const SimpleTypeExpr&) = default;
   SimpleTypeExpr(SimpleTypeExpr&&) = default;
   SimpleTypeExpr &operator=(const SimpleTypeExpr&) = default;
@@ -56,7 +56,7 @@ class Range : public SimpleTypeExpr {
   Expr *max;
 
   Range() = delete;
-  Range(Expr *min, Expr *max, const location &loc);
+  Range(Expr *min_, Expr *max_, const location &loc_);
   Range(const Range &other);
   Range &operator=(Range other);
   friend void swap(Range &x, Range &y) noexcept;
@@ -74,8 +74,8 @@ class Enum : public SimpleTypeExpr {
   std::vector<ExprID> members;
 
   Enum() = delete;
-  Enum(const std::vector<std::pair<std::string, location>> &members,
-    const location &loc);
+  Enum(const std::vector<std::pair<std::string, location>> &members_,
+    const location &loc_);
   Enum(const Enum&) = default;
   Enum(Enum&&) = default;
   Enum &operator=(const Enum&) = default;
@@ -93,7 +93,7 @@ class Record : public TypeExpr {
   std::vector<VarDecl*> fields;
 
   Record() = delete;
-  Record(std::vector<VarDecl*> &&fields, const location &loc);
+  Record(std::vector<VarDecl*> &&fields_, const location &loc_);
   Record(const Record &other);
   Record &operator=(Record other);
   friend void swap(Record &x, Record &y) noexcept;

@@ -13,19 +13,19 @@ namespace rumur {
 static_assert(sizeof(long long) >= sizeof(int64_t),
   "a 64-bit integer cannot be read with stoll");
 
-Number::Number(const std::string &value, const location &loc):
-  Expr(loc) {
+Number::Number(const std::string &value_, const location &loc_):
+  Expr(loc_) {
   try {
-    this->value = int64_t(stoll(value, nullptr, 0));
+    value = int64_t(stoll(value_, nullptr, 0));
   } catch (std::invalid_argument &e) {
-    throw RumurError("invalid number: " + value, loc);
+    throw RumurError("invalid number: " + value_, loc);
   } catch (std::out_of_range &e) {
-    throw RumurError("out of range number: " + value, loc);
+    throw RumurError("out of range number: " + value_, loc);
   }
 }
 
-Number::Number(int64_t value, const location &loc):
-  Expr(loc), value(value) {
+Number::Number(int64_t value_, const location &loc_):
+  Expr(loc_), value(value_) {
 }
 
 Number *Number::clone() const {

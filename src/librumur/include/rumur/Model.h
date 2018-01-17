@@ -17,7 +17,7 @@ class Model : public Node {
   std::vector<Rule*> rules;
 
   Model() = delete;
-  Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc);
+  Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_);
   Model(const Model &other);
   Model &operator=(Model other);
   friend void swap(Model &x, Model &y) noexcept;

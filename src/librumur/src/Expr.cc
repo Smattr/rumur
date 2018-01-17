@@ -43,8 +43,8 @@ static void expect_boolean(const Expr *e) {
       e->loc);
 }
 
-Ternary::Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc):
-  Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
+Ternary::Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_):
+  Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
 }
 
 Ternary::Ternary(const Ternary &other):
@@ -102,8 +102,8 @@ int64_t Ternary::constant_fold() const {
   return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
 }
 
-BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc):
-  Expr(loc), lhs(lhs), rhs(rhs) {
+BinaryExpr::BinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+  Expr(loc_), lhs(lhs_), rhs(rhs_) {
 }
 
 BinaryExpr::BinaryExpr(const BinaryExpr &other):
@@ -215,8 +215,8 @@ int64_t And::constant_fold() const {
   return lhs->constant_fold() && rhs->constant_fold();
 }
 
-UnaryExpr::UnaryExpr(Expr *rhs, const location &loc):
-  Expr(loc), rhs(rhs) {
+UnaryExpr::UnaryExpr(Expr *rhs_, const location &loc_):
+  Expr(loc_), rhs(rhs_) {
 }
 
 UnaryExpr::UnaryExpr(const UnaryExpr &other):
@@ -665,9 +665,9 @@ int64_t Mod::constant_fold() const {
 Lvalue::~Lvalue() {
 }
 
-ExprID::ExprID(const std::string &id, const Expr *value,
-  const TypeExpr *type_of, const location &loc):
-  Lvalue(loc), id(id), value(value->clone()), type_of(type_of) {
+ExprID::ExprID(const std::string &id_, const Expr *value_,
+  const TypeExpr *type_of_, const location &loc_):
+  Lvalue(loc_), id(id_), value(value_->clone()), type_of(type_of_) {
 }
 
 ExprID::ExprID(const ExprID &other):
@@ -717,8 +717,8 @@ int64_t ExprID::constant_fold() const {
   throw std::invalid_argument("symbol is not a constant");
 }
 
-Var::Var(const VarDecl *decl, const location &loc)
-  : Lvalue(loc), decl(decl->clone()) {
+Var::Var(const VarDecl *decl_, const location &loc_)
+  : Lvalue(loc_), decl(decl_->clone()) {
 }
 
 Var::Var(const Var &other):
@@ -760,8 +760,8 @@ int64_t Var::constant_fold() const {
   throw std::invalid_argument("variables cannot be used in constant expressions");
 }
 
-Field::Field(Lvalue *record, const std::string &field, const location &loc):
-  Lvalue(loc), record(record), field(field) {
+Field::Field(Lvalue *record_, const std::string &field_, const location &loc_):
+  Lvalue(loc_), record(record_), field(field_) {
 }
 
 Field::Field(const Field &other):
@@ -805,8 +805,8 @@ int64_t Field::constant_fold() const {
   throw std::invalid_argument("field expressions are not constant");
 }
 
-Element::Element(Lvalue *array, Expr *index, const location &loc)
-  : Lvalue(loc), array(array), index(index) {
+Element::Element(Lvalue *array_, Expr *index_, const location &loc_):
+  Lvalue(loc_), array(array_), index(index_) {
 }
 
 Element::Element(const Element &other):
@@ -852,25 +852,25 @@ int64_t Element::constant_fold() const {
 }
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
-  const location &loc)
-  : Node(loc), var(new VarDecl(name, type, loc)) {
+  const location &loc_)
+  : Node(loc_), var(new VarDecl(name, type, loc_)) {
 }
 
 Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to,
-  const location &loc)
-  : Quantifier(loc, name, from, to, nullptr) {
+  const location &loc_)
+  : Quantifier(loc_, name, from, to, nullptr) {
 }
 
-Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step,
-  const location &loc)
-  : Quantifier(loc, name, from, to, step) {
+Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step_,
+  const location &loc_)
+  : Quantifier(loc_, name, from, to, step_) {
 }
 
-Quantifier::Quantifier(const location &loc, const std::string &name, Expr *from,
-  Expr *to, Expr *step)
-  : Node(loc),
-  var(new VarDecl(name, new Range(from, to, loc), loc)),
-  step(step) {
+Quantifier::Quantifier(const location &loc_, const std::string &name, Expr *from,
+  Expr *to, Expr *step_):
+  Node(loc_),
+  var(new VarDecl(name, new Range(from, to, loc_), loc_)),
+  step(step_) {
 }
 
 Quantifier::Quantifier(const Quantifier &other):
@@ -904,8 +904,8 @@ void Quantifier::generate(std::ostream &out) const {
   out << "for(" << var->name << "...";
 }
 
-Exists::Exists(Quantifier *quantifier, Expr *expr, const location &loc)
-  : Expr(loc), quantifier(quantifier), expr(expr) {
+Exists::Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_):
+  Expr(loc_), quantifier(quantifier_), expr(expr_) {
 }
 
 Exists::Exists(const Exists &other):
@@ -950,8 +950,8 @@ int64_t Exists::constant_fold() const {
   throw std::invalid_argument("exists expressions are not constant");
 }
 
-Forall::Forall(Quantifier *quantifier, Expr *expr, const location &loc)
-  : Expr(loc), quantifier(quantifier), expr(expr) {
+Forall::Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_):
+  Expr(loc_), quantifier(quantifier_), expr(expr_) {
 }
 
 Forall::Forall(const Forall &other):
