@@ -118,7 +118,6 @@ void swap(Record &x, Record &y) noexcept {
     using std::swap;
     swap(x.loc, y.loc);
     swap(x.fields, y.fields);
-    swap(x.name, y.name);
     swap(x.index, y.index);
 }
 
@@ -158,7 +157,6 @@ void swap(Array &x, Array &y) noexcept {
     swap(x.loc, y.loc);
     swap(x.index_type, y.index_type);
     swap(x.element_type, y.element_type);
-    swap(x.name, y.name);
     swap(x.index, y.index);
 }
 

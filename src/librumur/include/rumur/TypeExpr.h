@@ -94,7 +94,6 @@ class Record : public TypeExpr {
 
   public:
     std::vector<VarDecl*> fields;
-    std::string name; // TODO: set this somewhere
     unsigned long index;
 
     Record() = delete;
@@ -114,7 +113,6 @@ class Array : public TypeExpr {
   public:
     TypeExpr *index_type;
     TypeExpr *element_type;
-    std::string name; // TODO: set this somewhere
     unsigned long index;
 
     Array() = delete;
