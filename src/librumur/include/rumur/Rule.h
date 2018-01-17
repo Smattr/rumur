@@ -4,7 +4,6 @@
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <rumur/Stmt.h>
 #include <string>
@@ -22,8 +21,7 @@ class Rule : public Node {
 
     Rule() = delete;
     Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls,
-      std::vector<Stmt*> &&body, const location &loc,
-      Indexer &indexer);
+      std::vector<Stmt*> &&body, const location &loc);
     Rule(const Rule &other);
     Rule &operator=(Rule other);
     friend void swap(Rule &x, Rule &y) noexcept;
@@ -40,8 +38,7 @@ class StartState : public Rule {
     StartState() = delete;
     StartState(const std::string &name,
       std::vector<Decl*> &&decls,
-      std::vector<Stmt*> &&body, const location &loc,
-      Indexer &indexer);
+      std::vector<Stmt*> &&body, const location &loc);
     StartState(const StartState &other) = default;
     StartState(StartState&&) = default;
     StartState &operator=(const StartState&) = default;
@@ -60,7 +57,7 @@ class Invariant : public Node {
 
     Invariant() = delete;
     Invariant(const std::string &name, Expr *guard,
-      const location &loc, Indexer &indexer);
+      const location &loc);
     Invariant(const Invariant &other);
     Invariant &operator=(Invariant other);
     friend void swap(Invariant &x, Invariant &y) noexcept;

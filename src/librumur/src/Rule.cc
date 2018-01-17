@@ -3,7 +3,6 @@
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <string>
@@ -12,7 +11,7 @@
 namespace rumur {
 
 Rule::Rule(const std::string &name, Expr *guard, std::vector<Decl*> &&decls, std::vector<Stmt*> &&body,
-  const location &loc, Indexer&)
+  const location &loc)
   : Node(loc), name(name), guard(guard), decls(decls), body(body) {
 }
 
@@ -74,8 +73,8 @@ Rule::~Rule() {
  * bound to lvalue references which does not happen automatically.
  */
 StartState::StartState(const std::string &name, std::vector<Decl*> &&decls,
-  std::vector<Stmt*> &&body, const location &loc, Indexer& indexer)
-  : Rule(name, nullptr, move(decls), move(body), loc, indexer) {
+  std::vector<Stmt*> &&body, const location &loc)
+  : Rule(name, nullptr, move(decls), move(body), loc) {
 }
 
 StartState *StartState::clone() const {
@@ -94,7 +93,7 @@ void StartState::generate(std::ostream &out) const {
 }
 
 Invariant::Invariant(const std::string &name_, Expr *guard_,
-  const location &loc_, Indexer&)
+  const location &loc_)
   : Node(loc_), name(name_), guard(guard_) {
 }
 

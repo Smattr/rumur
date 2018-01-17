@@ -7,7 +7,6 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/TypeExpr.h>
 #include <stdexcept>
 #include <string>
@@ -44,8 +43,7 @@ static void expect_boolean(const Expr *e) {
           e->loc);
 }
 
-Ternary::Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc,
-    Indexer&):
+Ternary::Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc):
     Expr(loc), cond(cond), lhs(lhs), rhs(rhs) {
 }
 
@@ -104,7 +102,7 @@ int64_t Ternary::constant_fold() const {
     return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
 }
 
-BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc, Indexer&):
+BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc):
     Expr(loc), lhs(lhs), rhs(rhs) {
 }
 
@@ -217,7 +215,7 @@ int64_t And::constant_fold() const {
     return lhs->constant_fold() && rhs->constant_fold();
 }
 
-UnaryExpr::UnaryExpr(Expr *rhs, const location &loc, Indexer&):
+UnaryExpr::UnaryExpr(Expr *rhs, const location &loc):
     Expr(loc), rhs(rhs) {
 }
 
@@ -668,7 +666,7 @@ Lvalue::~Lvalue() {
 }
 
 ExprID::ExprID(const std::string &id, const Expr *value,
-  const TypeExpr *type_of, const location &loc, Indexer&)
+  const TypeExpr *type_of, const location &loc)
   : Lvalue(loc), id(id), value(value->clone()), type_of(type_of) {
 }
 
@@ -719,7 +717,7 @@ int64_t ExprID::constant_fold() const {
     throw std::invalid_argument("symbol is not a constant");
 }
 
-Var::Var(const VarDecl *decl, const location &loc, Indexer&)
+Var::Var(const VarDecl *decl, const location &loc)
   : Lvalue(loc), decl(decl->clone()) {
 }
 
@@ -762,8 +760,7 @@ int64_t Var::constant_fold() const {
     throw std::invalid_argument("variables cannot be used in constant expressions");
 }
 
-Field::Field(Lvalue *record, const std::string &field, const location &loc,
-  Indexer&)
+Field::Field(Lvalue *record, const std::string &field, const location &loc)
   : Lvalue(loc), record(record), field(field) {
 }
 
@@ -808,7 +805,7 @@ int64_t Field::constant_fold() const {
     throw std::invalid_argument("field expressions are not constant");
 }
 
-Element::Element(Lvalue *array, Expr *index, const location &loc, Indexer&)
+Element::Element(Lvalue *array, Expr *index, const location &loc)
   : Lvalue(loc), array(array), index(index) {
 }
 
@@ -855,24 +852,24 @@ int64_t Element::constant_fold() const {
 }
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
-  const location &loc, Indexer &indexer)
-  : Node(loc), var(new VarDecl(name, type, loc, indexer)) {
+  const location &loc)
+  : Node(loc), var(new VarDecl(name, type, loc)) {
 }
 
 Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to,
-  const location &loc, Indexer& indexer)
-  : Quantifier(loc, name, from, to, nullptr, indexer) {
+  const location &loc)
+  : Quantifier(loc, name, from, to, nullptr) {
 }
 
 Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step,
-  const location &loc, Indexer &indexer)
-  : Quantifier(loc, name, from, to, step, indexer) {
+  const location &loc)
+  : Quantifier(loc, name, from, to, step) {
 }
 
 Quantifier::Quantifier(const location &loc, const std::string &name, Expr *from,
-  Expr *to, Expr *step, Indexer &indexer)
+  Expr *to, Expr *step)
   : Node(loc),
-    var(new VarDecl(name, new Range(from, to, loc, indexer), loc, indexer)),
+    var(new VarDecl(name, new Range(from, to, loc), loc)),
     step(step) {
 }
 
@@ -907,7 +904,7 @@ void Quantifier::generate(std::ostream &out) const {
     out << "for(" << var->name << "...";
 }
 
-Exists::Exists(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
+Exists::Exists(Quantifier *quantifier, Expr *expr, const location &loc)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
 
@@ -953,7 +950,7 @@ int64_t Exists::constant_fold() const {
     throw std::invalid_argument("exists expressions are not constant");
 }
 
-Forall::Forall(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
+Forall::Forall(Quantifier *quantifier, Expr *expr, const location &loc)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
 

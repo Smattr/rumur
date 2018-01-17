@@ -33,7 +33,6 @@ add_library(librumur
     src/Decl.cc
     src/except.cc
     src/Expr.cc
-    src/Indexer.cc
     src/Model.cc
     src/Node.cc
     src/Number.cc

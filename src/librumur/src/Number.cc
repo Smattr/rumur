@@ -4,7 +4,6 @@
 #include "location.hh"
 #include <rumur/except.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Number.h>
 #include <stdexcept>
 #include <string>
@@ -14,7 +13,7 @@ namespace rumur {
 static_assert(sizeof(long long) >= sizeof(int64_t),
     "a 64-bit integer cannot be read with stoll");
 
-Number::Number(const std::string &value, const location &loc, Indexer&)
+Number::Number(const std::string &value, const location &loc)
   : Expr(loc) {
     try {
         this->value = int64_t(stoll(value, nullptr, 0));
@@ -25,7 +24,7 @@ Number::Number(const std::string &value, const location &loc, Indexer&)
     }
 }
 
-Number::Number(int64_t value, const location &loc, Indexer&)
+Number::Number(int64_t value, const location &loc)
   : Expr(loc), value(value) {
 }
 

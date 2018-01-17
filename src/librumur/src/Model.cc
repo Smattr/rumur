@@ -3,7 +3,6 @@
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/except.h>
-#include <rumur/Indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Rule.h>
@@ -14,7 +13,7 @@
 
 namespace rumur {
 
-Model::Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc, Indexer&)
+Model::Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc)
   : Node(loc), decls(decls), rules(rules) {
 }
 

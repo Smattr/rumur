@@ -4,7 +4,6 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Decl.h>
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <rumur/Rule.h>
 #include <vector>
@@ -18,8 +17,7 @@ class Model : public Node {
     std::vector<Rule*> rules;
 
     Model() = delete;
-    Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc,
-      Indexer &indexer);
+    Model(std::vector<Decl*> &&decls, std::vector<Rule*> &&rules, const location &loc);
     Model(const Model &other);
     Model &operator=(Model other);
     friend void swap(Model &x, Model &y) noexcept;

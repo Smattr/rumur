@@ -3,7 +3,6 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -34,7 +33,7 @@ class ConstDecl : public Decl {
 
     ConstDecl() = delete;
     ConstDecl(const std::string &name, const Expr *value,
-      const location &loc, Indexer &indexer);
+      const location &loc);
     ConstDecl(const ConstDecl &other);
     ConstDecl &operator=(ConstDecl other);
     friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
@@ -53,7 +52,7 @@ class TypeDecl : public Decl {
 
     TypeDecl() = delete;
     TypeDecl(const std::string &name, TypeExpr *value,
-      const location &loc, Indexer &indexer);
+      const location &loc);
     TypeDecl(const TypeDecl &other);
     TypeDecl &operator=(TypeDecl other);
     friend void swap(TypeDecl &x, TypeDecl &y) noexcept;
@@ -73,7 +72,7 @@ class VarDecl : public Decl {
 
     VarDecl() = delete;
     VarDecl(const std::string &name, TypeExpr *type,
-      const location &loc, Indexer &indexer);
+      const location &loc);
     VarDecl(const VarDecl &other);
     VarDecl &operator=(VarDecl other);
     friend void swap(VarDecl &x, VarDecl &y) noexcept;

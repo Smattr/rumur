@@ -3,7 +3,6 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <string>
 
@@ -17,7 +16,7 @@ Decl::~Decl() {
 }
 
 ConstDecl::ConstDecl(const std::string &name, const Expr *value,
-  const location &loc, Indexer&)
+  const location &loc)
   : Decl(name, loc), value(value->clone()) {
 }
 
@@ -56,7 +55,7 @@ ConstDecl::~ConstDecl() {
 }
 
 TypeDecl::TypeDecl(const std::string &name, TypeExpr *value,
-  const location &loc, Indexer&)
+  const location &loc)
   : Decl(name, loc), value(value) {
 }
 
@@ -93,7 +92,7 @@ void TypeDecl::generate(std::ostream &out) const {
 }
 
 VarDecl::VarDecl(const std::string &name, TypeExpr *type,
-  const location &loc, Indexer&)
+  const location &loc)
   : Decl(name, loc), type(type) {
 }
 

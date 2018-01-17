@@ -3,7 +3,6 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 
 namespace rumur {
@@ -30,7 +29,7 @@ class Assignment : public Stmt {
     Expr *rhs;
 
     Assignment() = delete;
-    Assignment(Lvalue *lhs, Expr *rhs, const location &loc, Indexer &indexer);
+    Assignment(Lvalue *lhs, Expr *rhs, const location &loc);
     Assignment(const Assignment &other);
     Assignment &operator=(Assignment other);
     friend void swap(Assignment &x, Assignment &y) noexcept;

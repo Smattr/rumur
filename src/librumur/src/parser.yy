@@ -31,7 +31,6 @@
 
     #include <rumur/Decl.h>
     #include <rumur/Expr.h>
-    #include <rumur/Indexer.h>
     #include <rumur/Model.h>
     #include <rumur/Node.h>
     #include <rumur/Number.h>
@@ -89,9 +88,6 @@
      * target they refer to.
      */
 %parse-param { rumur::Symtab &symtab }
-
-    /* A helper for generating unique IDs for nodes that require it. */
-%parse-param { rumur::Indexer &indexer }
 
 %token BEGIN_TOK
 %token BY
@@ -157,7 +153,7 @@
 %%
 
 model: decls rules {
-    output = new rumur::Model(std::move($1), std::move($2), @$, indexer);
+    output = new rumur::Model(std::move($1), std::move($2), @$);
 };
 
 decls: decls decl {
@@ -173,7 +169,7 @@ decl: CONST constdecls {
     $$ = $2;
 } | VAR vardecls {
     for (const rumur::VarDecl *d : $2) {
-        symtab.declare(d->name, rumur::Var(d, d->loc, indexer));
+        symtab.declare(d->name, rumur::Var(d, d->loc));
     }
     std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
@@ -186,7 +182,7 @@ constdecls: constdecls constdecl {
 };
 
 constdecl: ID ':' expr ';' {
-    $$ = new rumur::ConstDecl($1, $3, @$, indexer);
+    $$ = new rumur::ConstDecl($1, $3, @$);
     symtab.declare($1, *$3);
 };
 
@@ -198,7 +194,7 @@ typedecls: typedecls typedecl {
 };
 
 typedecl: ID ':' typeexpr ';' {
-    $$ = new rumur::TypeDecl($1, $3, @$, indexer);
+    $$ = new rumur::TypeDecl($1, $3, @$);
     symtab.declare($1, *$3);
 };
 
@@ -209,16 +205,16 @@ typeexpr: ID {
     }
     $$ = t->clone();
 } | expr DOTDOT expr {
-    $$ = new rumur::Range($1, $3, @$, indexer);
+    $$ = new rumur::Range($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
-    auto e = new rumur::Enum($3, @$, indexer);
+    auto e = new rumur::Enum($3, @$);
     /* Register all the enum members so they can be referenced later. */
     for (const rumur::ExprID &eid : e->members) {
         symtab.declare(eid.id, eid);
     }
     $$ = e;
 } | RECORD vardecls endrecord {
-    $$ = new rumur::Record(std::move($2), @$, indexer);
+    $$ = new rumur::Record(std::move($2), @$);
 };
 
 vardecls: vardecls vardecl {
@@ -230,7 +226,7 @@ vardecls: vardecls vardecl {
 
 vardecl: id_list_opt ':' typeexpr ';' {
     for (const std::pair<std::string, location> &m : $1) {
-        $$.push_back(new rumur::VarDecl(m.first, $3, m.second, indexer));
+        $$.push_back(new rumur::VarDecl(m.first, $3, m.second));
     }
 };
 
@@ -256,7 +252,7 @@ rule: startstate {
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-    $$ = new rumur::StartState($2, std::move($3), std::move($4), @$, indexer);
+    $$ = new rumur::StartState($2, std::move($3), std::move($4), @$);
 };
 
 decls_header: decls BEGIN_TOK {
@@ -280,7 +276,7 @@ stmts_cont: stmts_cont stmt ';' {
 };
 
 stmt: designator COLON_EQ expr {
-    $$ = new rumur::Assignment($1, $3, @$, indexer);
+    $$ = new rumur::Assignment($1, $3, @$);
 };
 
 endstartstate: END | ENDSTARTSTATE;
@@ -294,81 +290,81 @@ string_opt: STRING {
 semi_opt: ';' | %empty;
 
 expr: expr '?' expr ':' expr {
-    $$ = new rumur::Ternary($1, $3, $5, @$, indexer);
+    $$ = new rumur::Ternary($1, $3, $5, @$);
 } | expr IMPLIES expr {
-    $$ = new rumur::Implication($1, $3, @$, indexer);
+    $$ = new rumur::Implication($1, $3, @$);
 } | expr '|' expr {
-    $$ = new rumur::Or($1, $3, @$, indexer);
+    $$ = new rumur::Or($1, $3, @$);
 } | expr '&' expr {
-    $$ = new rumur::And($1, $3, @$, indexer);
+    $$ = new rumur::And($1, $3, @$);
 } | '!' expr {
-    $$ = new rumur::Not($2, @$, indexer);
+    $$ = new rumur::Not($2, @$);
 } | expr '<' expr {
-    $$ = new rumur::Lt($1, $3, @$, indexer);
+    $$ = new rumur::Lt($1, $3, @$);
 } | expr LEQ expr {
-    $$ = new rumur::Leq($1, $3, @$, indexer);
+    $$ = new rumur::Leq($1, $3, @$);
 } | expr '>' expr {
-    $$ = new rumur::Gt($1, $3, @$, indexer);
+    $$ = new rumur::Gt($1, $3, @$);
 } | expr GEQ expr {
-    $$ = new rumur::Geq($1, $3, @$, indexer);
+    $$ = new rumur::Geq($1, $3, @$);
 } | expr DEQ expr {
-    $$ = new rumur::Eq($1, $3, @$, indexer);
+    $$ = new rumur::Eq($1, $3, @$);
 } | expr '=' expr {
-    $$ = new rumur::Eq($1, $3, @$, indexer);
+    $$ = new rumur::Eq($1, $3, @$);
 } | expr NEQ expr {
-    $$ = new rumur::Neq($1, $3, @$, indexer);
+    $$ = new rumur::Neq($1, $3, @$);
 } | expr '+' expr {
-    $$ = new rumur::Add($1, $3, @$, indexer);
+    $$ = new rumur::Add($1, $3, @$);
 } | expr '-' expr {
-    $$ = new rumur::Sub($1, $3, @$, indexer);
+    $$ = new rumur::Sub($1, $3, @$);
 } | '+' expr %prec '*' {
     $$ = $2;
     $$->loc = @$;
 } | '-' expr %prec '*' {
-    $$ = new rumur::Negative($2, @$, indexer);
+    $$ = new rumur::Negative($2, @$);
 } | expr '*' expr {
-    $$ = new rumur::Mul($1, $3, @$, indexer);
+    $$ = new rumur::Mul($1, $3, @$);
 } | expr '/' expr {
-    $$ = new rumur::Div($1, $3, @$, indexer);
+    $$ = new rumur::Div($1, $3, @$);
 } | expr '%' expr {
-    $$ = new rumur::Mod($1, $3, @$, indexer);
+    $$ = new rumur::Mod($1, $3, @$);
 } | FORALL quantifier {
         symtab.open_scope();
-        symtab.declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
+        symtab.declare($2->var->name, rumur::Var($2->var, $2->loc));
     } DO expr endforall {
-        $$ = new rumur::Forall($2, $5, @$, indexer);
+        $$ = new rumur::Forall($2, $5, @$);
         symtab.close_scope();
 } | EXISTS quantifier {
         symtab.open_scope();
-        symtab.declare($2->var->name, rumur::Var($2->var, $2->loc, indexer));
+        symtab.declare($2->var->name, rumur::Var($2->var, $2->loc));
     } DO expr endexists {
-        $$ = new rumur::Exists($2, $5, @$, indexer);
+        $$ = new rumur::Exists($2, $5, @$);
         symtab.close_scope();
 } | designator {
     $$ = $1;
 } | NUMBER {
-    $$ = new rumur::Number($1, @$, indexer);
+    $$ = new rumur::Number($1, @$);
 } | '(' expr ')' {
     $$ = $2;
     $$->loc = @$;
 };
 
 quantifier: ID ':' typeexpr {
-    $$ = new rumur::Quantifier($1, $3, @$, indexer);
+    $$ = new rumur::Quantifier($1, $3, @$);
 } | ID ':' expr TO expr BY expr {
-    $$ = new rumur::Quantifier($1, $3, $5, $7, @$, indexer);
+    $$ = new rumur::Quantifier($1, $3, $5, $7, @$);
 } | ID ':' expr TO expr {
-    $$ = new rumur::Quantifier($1, $3, $5, @$, indexer);
+    $$ = new rumur::Quantifier($1, $3, $5, @$);
 };
 
 designator: designator '.' ID {
-    $$ = new rumur::Field($1, $3, @$, indexer);
+    $$ = new rumur::Field($1, $3, @$);
 } | designator '[' expr ']' {
-    $$ = new rumur::Element($1, $3, @$, indexer);
+    $$ = new rumur::Element($1, $3, @$);
 } | ID {
     auto e = symtab.lookup<rumur::Expr>($1, @$);
     assert(e != nullptr);
-    $$ = new rumur::ExprID($1, e, e->type(), @$, indexer);
+    $$ = new rumur::ExprID($1, e, e->type(), @$);
 };
 
 endforall: END | ENDFORALL;

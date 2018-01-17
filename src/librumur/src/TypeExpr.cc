@@ -2,7 +2,6 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -14,16 +13,16 @@ bool TypeExpr::is_simple() const {
     return false;
 }
 
-SimpleTypeExpr::SimpleTypeExpr(const location &loc, Indexer &indexer)
-  : TypeExpr(loc), index(indexer.new_index()) {
+SimpleTypeExpr::SimpleTypeExpr(const location &loc)
+  : TypeExpr(loc) {
 }
 
 bool SimpleTypeExpr::is_simple() const {
     return true;
 }
 
-Range::Range(Expr *min, Expr *max, const location &loc, Indexer &indexer)
-  : SimpleTypeExpr(loc, indexer), min(min), max(max) {
+Range::Range(Expr *min, Expr *max, const location &loc)
+  : SimpleTypeExpr(loc), min(min), max(max) {
 }
 
 Range::Range(const Range &other):
@@ -38,7 +37,6 @@ Range &Range::operator=(Range other) {
 void swap(Range &x, Range &y) noexcept {
     using std::swap;
     swap(x.loc, y.loc);
-    swap(x.index, y.index);
     swap(x.min, y.min);
     swap(x.max, y.max);
 }
@@ -67,17 +65,16 @@ void Range::generate(std::ostream &out) const {
     out << "RangeBase<" << lb << "," << ub << ">";
 }
 
-Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc,
-  Indexer &indexer)
-  : SimpleTypeExpr(loc, indexer) {
+Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc)
+  : SimpleTypeExpr(loc) {
 
     for (const std::pair<std::string, location> &m : members) {
 
         // Assign the enum member a numerical value
-        auto n = new Number(this->members.size(), m.second, indexer);
+        auto n = new Number(this->members.size(), m.second);
 
         // Construct an expression for it
-        this->members.emplace_back(m.first, n, this, m.second, indexer);
+        this->members.emplace_back(m.first, n, this, m.second);
 
     }
 }
@@ -98,13 +95,12 @@ void Enum::generate(std::ostream &out) const {
     out << ">";
 }
 
-Record::Record(std::vector<VarDecl*> &&fields, const location &loc,
-  Indexer &indexer)
-  : TypeExpr(loc), fields(fields), index(indexer.new_index()) {
+Record::Record(std::vector<VarDecl*> &&fields, const location &loc)
+  : TypeExpr(loc), fields(fields) {
 }
 
 Record::Record(const Record &other):
-  TypeExpr(other), index(other.index) {
+  TypeExpr(other) {
     for (const VarDecl *v : other.fields)
         fields.push_back(v->clone());
 }
@@ -118,7 +114,6 @@ void swap(Record &x, Record &y) noexcept {
     using std::swap;
     swap(x.loc, y.loc);
     swap(x.fields, y.fields);
-    swap(x.index, y.index);
 }
 
 Record *Record::clone() const {
@@ -136,15 +131,13 @@ void Record::generate(std::ostream &out) const {
     out << "}";
 }
 
-Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_,
-  Indexer &indexer)
-  : TypeExpr(loc_), index_type(index_type_), element_type(element_type_),
-    index(indexer.new_index()) {
+Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_)
+  : TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
 }
 
 Array::Array(const Array &other):
   TypeExpr(other), index_type(other.index_type->clone()),
-  element_type(other.element_type->clone()), index(other.index) {
+  element_type(other.element_type->clone()) {
 }
 
 Array &Array::operator=(Array other) {
@@ -157,7 +150,6 @@ void swap(Array &x, Array &y) noexcept {
     swap(x.loc, y.loc);
     swap(x.index_type, y.index_type);
     swap(x.element_type, y.element_type);
-    swap(x.index, y.index);
 }
 
 Array *Array::clone() const {

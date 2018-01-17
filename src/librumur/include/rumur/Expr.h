@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <iostream>
 #include "location.hh"
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <string>
 
@@ -55,8 +54,7 @@ class Ternary : public Expr {
     Expr *rhs;
 
     Ternary() = delete;
-    Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc,
-        Indexer &indexer);
+    Ternary(Expr *cond, Expr *lhs, Expr *rhs, const location &loc);
     Ternary(const Ternary &other);
     Ternary(Ternary&&) = default;
     Ternary &operator=(Ternary other);
@@ -79,7 +77,7 @@ class BinaryExpr : public Expr {
     Expr *rhs;
 
     BinaryExpr() = delete;
-    BinaryExpr(Expr *lhs, Expr *rhs, const location &loc, Indexer &indexer);
+    BinaryExpr(Expr *lhs, Expr *rhs, const location &loc);
     BinaryExpr(const BinaryExpr &other);
     BinaryExpr &operator=(const BinaryExpr&) = delete;
     BinaryExpr &operator=(BinaryExpr&&) = delete;
@@ -146,7 +144,7 @@ class UnaryExpr : public Expr {
     Expr *rhs;
 
     UnaryExpr() = delete;
-    UnaryExpr(Expr *rhs, const location &loc, Indexer &indexer);
+    UnaryExpr(Expr *rhs, const location &loc);
     UnaryExpr(const UnaryExpr &other);
     friend void swap(UnaryExpr &x, UnaryExpr &y) noexcept;
     UnaryExpr *clone() const override = 0;
@@ -395,7 +393,7 @@ class ExprID : public Lvalue {
 
     ExprID() = delete;
     ExprID(const std::string &id, const Expr *value,
-      const TypeExpr *type_of, const location &loc, Indexer &indexer);
+      const TypeExpr *type_of, const location &loc);
     ExprID(const ExprID &other);
     ExprID &operator=(ExprID other);
     friend void swap(ExprID &x, ExprID &y) noexcept;
@@ -421,7 +419,7 @@ class Var : public Lvalue {
     VarDecl *decl;
 
     Var() = delete;
-    Var(const VarDecl *decl, const location &loc, Indexer &indexer);
+    Var(const VarDecl *decl, const location &loc);
     Var(const Var &other);
     friend void swap(Var &x, Var &y) noexcept;
     Var &operator=(Var other);
@@ -442,7 +440,7 @@ class Field : public Lvalue {
     std::string field;
 
     Field() = delete;
-    Field(Lvalue *record, const std::string &field, const location &loc, Indexer &indexer);
+    Field(Lvalue *record, const std::string &field, const location &loc);
     Field(const Field &other);
     friend void swap(Field &x, Field &y) noexcept;
     Field &operator=(Field other);
@@ -463,7 +461,7 @@ class Element : public Lvalue {
     Expr *index;
 
     Element() = delete;
-    Element(Lvalue *array, Expr *index, const location &loc, Indexer &indexer);
+    Element(Lvalue *array, Expr *index, const location &loc);
     Element(const Element &other);
     friend void swap(Element &x, Element &y) noexcept;
     Element &operator=(Element other);
@@ -484,12 +482,11 @@ class Quantifier : public Node {
     Expr *step;
 
     Quantifier() = delete;
-    Quantifier(const std::string &name, TypeExpr *type, const location &loc,
-        Indexer &indexer);
+    Quantifier(const std::string &name, TypeExpr *type, const location &loc);
     Quantifier(const std::string &name, Expr *from, Expr *to,
-        const location &loc, Indexer &indexer);
+        const location &loc);
     Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step,
-      const location &loc, Indexer &indexer);
+      const location &loc);
     Quantifier(const Quantifier &other);
     Quantifier &operator=(Quantifier other);
     friend void swap(Quantifier &x, Quantifier &y) noexcept;
@@ -503,7 +500,7 @@ class Quantifier : public Node {
      * constructor references being ambiguous.
      */
     Quantifier(const location &loc, const std::string &name, Expr *from,
-        Expr *to, Expr *step, Indexer &indexer);
+        Expr *to, Expr *step);
 
 };
 
@@ -514,8 +511,7 @@ class Exists : public Expr {
     Expr *expr;
 
     Exists() = delete;
-    Exists(Quantifier *quantifier, Expr *expr, const location &loc,
-        Indexer &indexer);
+    Exists(Quantifier *quantifier, Expr *expr, const location &loc);
     Exists(const Exists &other);
     Exists &operator=(Exists other);
     friend void swap(Exists &x, Exists &y) noexcept;
@@ -536,8 +532,7 @@ class Forall : public Expr {
     Expr *expr;
 
     Forall() = delete;
-    Forall(Quantifier *quantifier, Expr *expr, const location &loc,
-        Indexer &indexer);
+    Forall(Quantifier *quantifier, Expr *expr, const location &loc);
     Forall(const Forall &other);
     Forall &operator=(Forall other);
     friend void swap(Forall &x, Forall &y) noexcept;

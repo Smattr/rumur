@@ -2,14 +2,13 @@
 #include <iostream>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 #include <utility>
 
 namespace rumur {
 
-Assignment::Assignment(Lvalue *lhs, Expr *rhs, const location &loc, Indexer&):
+Assignment::Assignment(Lvalue *lhs, Expr *rhs, const location &loc):
     Stmt(loc), lhs(lhs), rhs(rhs) {
 }
 

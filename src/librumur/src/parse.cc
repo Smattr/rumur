@@ -3,7 +3,6 @@
 #include "location.hh"
 #include "parser.yy.hh"
 #include <rumur/except.h>
-#include <rumur/Indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/parse.h>
@@ -20,9 +19,8 @@ Model *parse(std::istream *input) {
     // Setup a symbol table that knows the built ins
     Symtab symtab;
     symtab.open_scope();
-    Indexer indexer;
     const Enum boolean({ { "false", location() }, { "true", location() } },
-      location(), indexer);
+      location());
     symtab.declare("boolean", boolean);
     for (const ExprID &eid : boolean.members)
         symtab.declare(eid.id, eid);
@@ -30,7 +28,7 @@ Model *parse(std::istream *input) {
     // Setup the parser
     scanner s(input);
     Model *m = nullptr;
-    parser p(s, m, symtab, indexer);
+    parser p(s, m, symtab);
 
     // Parse the input model
     int err = p.parse();

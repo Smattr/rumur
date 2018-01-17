@@ -3,7 +3,6 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <string>
@@ -36,10 +35,8 @@ class TypeExpr : public Node {
 class SimpleTypeExpr : public TypeExpr {
 
   public:
-    unsigned long index;
-
     SimpleTypeExpr() = delete;
-    SimpleTypeExpr(const location &loc, Indexer &indexer);
+    SimpleTypeExpr(const location &loc);
     SimpleTypeExpr(const SimpleTypeExpr&) = default;
     SimpleTypeExpr(SimpleTypeExpr&&) = default;
     SimpleTypeExpr &operator=(const SimpleTypeExpr&) = default;
@@ -59,7 +56,7 @@ class Range : public SimpleTypeExpr {
     Expr *max;
 
     Range() = delete;
-    Range(Expr *min, Expr *max, const location &loc, Indexer &indexer);
+    Range(Expr *min, Expr *max, const location &loc);
     Range(const Range &other);
     Range &operator=(Range other);
     friend void swap(Range &x, Range &y) noexcept;
@@ -78,7 +75,7 @@ class Enum : public SimpleTypeExpr {
 
     Enum() = delete;
     Enum(const std::vector<std::pair<std::string, location>> &members,
-      const location &loc, Indexer &indexer);
+      const location &loc);
     Enum(const Enum&) = default;
     Enum(Enum&&) = default;
     Enum &operator=(const Enum&) = default;
@@ -94,10 +91,9 @@ class Record : public TypeExpr {
 
   public:
     std::vector<VarDecl*> fields;
-    unsigned long index;
 
     Record() = delete;
-    Record(std::vector<VarDecl*> &&fields, const location &loc, Indexer &indexer);
+    Record(std::vector<VarDecl*> &&fields, const location &loc);
     Record(const Record &other);
     Record &operator=(Record other);
     friend void swap(Record &x, Record &y) noexcept;
@@ -113,11 +109,9 @@ class Array : public TypeExpr {
   public:
     TypeExpr *index_type;
     TypeExpr *element_type;
-    unsigned long index;
 
     Array() = delete;
-    Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_,
-      Indexer &indexer);
+    Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_);
     Array(const Array &other);
     Array &operator=(Array other);
     friend void swap(Array &x, Array &y) noexcept;

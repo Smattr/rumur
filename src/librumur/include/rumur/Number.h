@@ -4,7 +4,6 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
-#include <rumur/Indexer.h>
 #include <string>
 
 namespace rumur {
@@ -15,8 +14,8 @@ class Number : public Expr {
     int64_t value;
 
     Number() = delete;
-    Number(const std::string &value, const location &loc, Indexer &indexer);
-    Number(int64_t value, const location &loc, Indexer &indexer);
+    Number(const std::string &value, const location &loc);
+    Number(int64_t value, const location &loc);
     Number(const Number&) = default;
     Number(Number&&) = default;
     Number &operator=(const Number&) = default;
