@@ -379,9 +379,6 @@ id_list_opt: id_list comma_opt {
 } | %empty {
 };
 
-  /* Note that we create invalid ExprIDs here. We'll go back in fill in their
-   * value and type_of in the rumur::Enum constructor.
-   */
 id_list: id_list ',' ID {
   $$ = $1;
   $$.emplace_back(std::make_pair($3, @$));
