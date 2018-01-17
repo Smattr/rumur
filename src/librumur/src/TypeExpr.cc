@@ -65,18 +65,8 @@ void Range::generate(std::ostream &out) const {
   out << "RangeBase<" << lb << "," << ub << ">";
 }
 
-Enum::Enum(const std::vector<std::pair<std::string, location>> &members_, const location &loc_):
-  SimpleTypeExpr(loc_) {
-
-  for (const std::pair<std::string, location> &m : members_) {
-
-    // Assign the enum member a numerical value
-    auto n = new Number(members.size(), m.second);
-
-    // Construct an expression for it
-    members.emplace_back(m.first, n, this, m.second);
-
-  }
+Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
+  SimpleTypeExpr(loc_), members(members_) {
 }
 
 Enum *Enum::clone() const {
@@ -86,10 +76,10 @@ Enum *Enum::clone() const {
 void Enum::generate(std::ostream &out) const {
   out << "EnumBase<";
   bool first = true;
-  for (const ExprID &m : members) {
+  for (const std::pair<std::string, location> &m : members) {
     if (!first)
       out << ",";
-    out << "\"" << m.id << "\"";
+    out << "\"" << m.first << "\"";
     first = false;
   }
   out << ">";

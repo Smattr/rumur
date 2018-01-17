@@ -2,6 +2,7 @@
 #include <iostream>
 #include "location.hh"
 #include "parser.yy.hh"
+#include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
@@ -22,8 +23,8 @@ Model *parse(std::istream *input) {
   const Enum boolean({ { "false", location() }, { "true", location() } },
     location());
   symtab.declare("boolean", boolean);
-  for (const ExprID &eid : boolean.members)
-    symtab.declare(eid.id, eid);
+  symtab.declare("false", TypeDecl("boolean", new Enum(boolean), location()));
+  symtab.declare("true", TypeDecl("boolean", new Enum(boolean), location()));
 
   // Setup the parser
   scanner s(input);

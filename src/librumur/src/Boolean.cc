@@ -8,11 +8,6 @@
 
 namespace rumur {
 
-static const std::pair<std::string, location> False = std::make_pair("false", location());
-static const std::pair<std::string, location> True = std::make_pair("true", location());
-
-static const std::vector<std::pair<std::string, location>> members{False, True};
-
-const Enum Boolean(members, location());
+const Enum Boolean({ {"false", location()}, {"true", location()} }, location());
 
 }

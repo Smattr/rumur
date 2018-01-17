@@ -207,10 +207,11 @@ typeexpr: ID {
 } | expr DOTDOT expr {
   $$ = new rumur::Range($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
-  auto e = new rumur::Enum($3, @$);
+  auto e = new rumur::Enum(std::move($3), @$);
   /* Register all the enum members so they can be referenced later. */
-  for (const rumur::ExprID &eid : e->members) {
-    symtab.declare(eid.id, eid);
+  const TypeDecl td("", new Enum(*e), @$);
+  for (const std::pair<std::string, location> &m : e->members) {
+    symtab.declare(m.first, td);
   }
   $$ = e;
 } | RECORD vardecls endrecord {
