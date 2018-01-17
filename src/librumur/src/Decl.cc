@@ -97,7 +97,7 @@ VarDecl::VarDecl(const std::string &name_, TypeExpr *type_,
 }
 
 VarDecl::VarDecl(const VarDecl &other):
-  Decl(other), type(other.type->clone()), local(other.local) {
+  Decl(other), type(other.type->clone()), state_variable(other.state_variable) {
 }
 
 VarDecl &VarDecl::operator=(VarDecl other) {
@@ -110,7 +110,7 @@ void swap(VarDecl &x, VarDecl &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.name, y.name);
   swap(x.type, y.type);
-  swap(x.local, y.local);
+  swap(x.state_variable, y.state_variable);
 }
 
 VarDecl *VarDecl::clone() const {

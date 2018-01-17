@@ -68,7 +68,13 @@ class VarDecl : public Decl {
 
  public:
   TypeExpr *type;
-  bool local = false;
+
+  /* Whether this variable is part of the model state. If not, it is either a
+   * local or a rule parameter. Note that this is simply set to false by default
+   * during construction and then later toggled to true if necessary as we
+   * ascend the AST.
+   */
+  bool state_variable = false;
 
   VarDecl() = delete;
   VarDecl(const std::string &name_, TypeExpr *type_,

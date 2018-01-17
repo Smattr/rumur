@@ -712,7 +712,13 @@ const TypeExpr *ExprID::type() const {
 }
 
 void ExprID::generate(std::ostream &out) const {
-  out << "TODO " << id;
+  if (auto v = dynamic_cast<const VarDecl*>(value)) {
+    if (v->state_variable) {
+      out << "ru_u_" << id << "(s)";
+      return;
+    }
+  }
+  out << "ru_u_" << id;
 }
 
 ExprID::~ExprID() {

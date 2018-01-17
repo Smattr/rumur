@@ -52,6 +52,11 @@ class Symtab {
       close_scope();
   }
 
+  // Whether we are in the top-level scope.
+  bool is_global_scope() const {
+    return scope.size() == 1;
+  }
+
 };
 
 }

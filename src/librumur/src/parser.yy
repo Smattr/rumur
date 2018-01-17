@@ -168,7 +168,9 @@ decl: CONST constdecls {
 } | TYPE typedecls {
   $$ = $2;
 } | VAR vardecls {
-  for (const rumur::VarDecl *d : $2) {
+  for (rumur::VarDecl *d : $2) {
+    // Account for whether this declaration is part of the state
+    d->state_variable = symtab.is_global_scope();
     symtab.declare(d->name, *d);
   }
   std::move($2.begin(), $2.end(), std::back_inserter($$));
