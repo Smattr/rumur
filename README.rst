@@ -7,9 +7,8 @@ Quickstart
 ----------
 First you will need to have the following dependencies installed:
 
-* A C++ compiler with `C++17`_ support (recent GCC_ or Clang_)
+* Either GCC_ or Clang_
 * CMake_
-* Ninja_ (you can get by with `GNU Make`_ but the experience will be worse)
 
 Then you can build this project using the standard CMake steps:
 
@@ -17,9 +16,9 @@ Then you can build this project using the standard CMake steps:
 
     mkdir build
     cd build
-    cmake -G Ninja ../src
-    ninja
-    ninja install
+    cmake ../src
+    make
+    make install
 
 To use a different C++ compiler or to change the target path to install files
 to, change the options passed to ``cmake``. You should now have the following
@@ -42,9 +41,6 @@ Legal
 Everything in this repository is in the public domain. Use in any way you see
 fit.
 
-.. _C++17: https://en.wikipedia.org/wiki/C%2B%2B17
 .. _CMake: https://cmake.org/
 .. _Clang: https://clang.llvm.org/
 .. _GCC: https://gcc.gnu.org/
-.. _GNU Make: https://www.gnu.org/software/make/
-.. _Ninja: https://ninja-build.org/
