@@ -47,7 +47,7 @@ void ConstDecl::validate() const {
 }
 
 void ConstDecl::generate(std::ostream &out) const {
-    out << "static const Literal ru_u_" << name << "(" << *value << ")";
+    out << "static const Number ru_u_" << name << "(" << *value << ")";
 }
 
 ConstDecl::~ConstDecl() {
