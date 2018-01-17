@@ -169,7 +169,7 @@ decl: CONST constdecls {
   $$ = $2;
 } | VAR vardecls {
   for (const rumur::VarDecl *d : $2) {
-    symtab.declare(d->name, rumur::Var(d, d->loc));
+    symtab.declare(d->name, *d);
   }
   std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
@@ -331,13 +331,13 @@ expr: expr '?' expr ':' expr {
   $$ = new rumur::Mod($1, $3, @$);
 } | FORALL quantifier {
     symtab.open_scope();
-    symtab.declare($2->var->name, rumur::Var($2->var, $2->loc));
+    symtab.declare($2->var->name, *$2->var);
   } DO expr endforall {
     $$ = new rumur::Forall($2, $5, @$);
     symtab.close_scope();
 } | EXISTS quantifier {
     symtab.open_scope();
-    symtab.declare($2->var->name, rumur::Var($2->var, $2->loc));
+    symtab.declare($2->var->name, *$2->var);
   } DO expr endexists {
     $$ = new rumur::Exists($2, $5, @$);
     symtab.close_scope();
