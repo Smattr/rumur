@@ -1,4 +1,0 @@
-It turns out there's a surprising amount of circular dependency relationships in
-a Murphi class hierarchy. It would be useful to circumvent a lot of this by
-having a single header that pre-declared all classes, which could then safely be
-included.

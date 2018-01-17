@@ -1,3 +1,0 @@
-As discussed in c89084bd1bb86b0cdcbb4e580fa8ad11203c7d0d, it would be desirable
-to enable -Wshadow, but we can't easily do this right now. The constructors need
-their argument lists adjusted.

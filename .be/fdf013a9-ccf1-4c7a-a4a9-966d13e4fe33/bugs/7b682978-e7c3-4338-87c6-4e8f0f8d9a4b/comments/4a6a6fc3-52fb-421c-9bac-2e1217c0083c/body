@@ -1,3 +1,0 @@
-It turns out, it's actually easier to introduce these forward declarations as
-needed. Setting them all up just adds unnecessary code to maintain. Closing as
-WONTFIX.
