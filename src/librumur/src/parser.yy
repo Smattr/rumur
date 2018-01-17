@@ -363,9 +363,9 @@ designator: designator '.' ID {
 } | designator '[' expr ']' {
   $$ = new rumur::Element($1, $3, @$);
 } | ID {
-  auto e = symtab.lookup<rumur::Expr>($1, @$);
-  assert(e != nullptr);
-  $$ = new rumur::ExprID($1, e, e->type(), @$);
+  auto d = symtab.lookup<rumur::Decl>($1, @$);
+  assert(d != nullptr);
+  $$ = new rumur::ExprID($1, d, @$);
 };
 
 endforall: END | ENDFORALL;

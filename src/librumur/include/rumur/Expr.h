@@ -9,6 +9,7 @@
 namespace rumur {
 
 // Forward declarations to avoid a circular #include
+class Decl;
 class TypeExpr;
 class VarDecl;
 
@@ -381,19 +382,10 @@ class ExprID : public Lvalue {
 
  public:
   std::string id;
-  Expr *value;
-
-  /* We use a raw pointer here because we don't own this object and using a
-   * std::shared_ptr would introduce a GC cycle. This is because the members
-   * of an Enum (ExprIDs) have a type_of that points back to the Enum itself.
-   * We set these in Enum's constructor so we can't easily use a std::weak_ptr
-   * either.
-   */
-  const TypeExpr *type_of;
+  Decl *value;
 
   ExprID() = delete;
-  ExprID(const std::string &id_, const Expr *value_,
-    const TypeExpr *type_of_, const location &loc_);
+  ExprID(const std::string &id_, const Decl *value_, const location &loc_);
   ExprID(const ExprID &other);
   ExprID &operator=(ExprID other);
   friend void swap(ExprID &x, ExprID &y) noexcept;

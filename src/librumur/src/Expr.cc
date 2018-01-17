@@ -665,13 +665,12 @@ int64_t Mod::constant_fold() const {
 Lvalue::~Lvalue() {
 }
 
-ExprID::ExprID(const std::string &id_, const Expr *value_,
-  const TypeExpr *type_of_, const location &loc_):
-  Lvalue(loc_), id(id_), value(value_->clone()), type_of(type_of_) {
+ExprID::ExprID(const std::string &id_, const Decl *value_, const location &loc_):
+  Lvalue(loc_), id(id_), value(value_->clone()) {
 }
 
 ExprID::ExprID(const ExprID &other):
-  Lvalue(other), id(other.id), value(other.value->clone()), type_of(other.type_of) {
+  Lvalue(other), id(other.id), value(other.value->clone()) {
 }
 
 ExprID &ExprID::operator=(ExprID other) {
@@ -684,7 +683,6 @@ void swap(ExprID &x, ExprID &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.id, y.id);
   swap(x.value, y.value);
-  swap(x.type_of, y.type_of);
 }
 
 ExprID *ExprID::clone() const {
@@ -692,17 +690,25 @@ ExprID *ExprID::clone() const {
 }
 
 bool ExprID::constant() const {
-  return value->constant();
+  return dynamic_cast<const ConstDecl*>(value) != nullptr;
 }
 
 void ExprID::validate() const {
   // FIXME: Is this relevant? An ExprID is just referencing another expression
   // we've probably already checked.
-  value->validate();
+  //value->validate();
 }
 
 const TypeExpr *ExprID::type() const {
-  return type_of;
+  if (dynamic_cast<const ConstDecl*>(value) != nullptr) {
+    return nullptr;
+  } else if (auto t = dynamic_cast<const TypeDecl*>(value)) {
+    return t->value;
+  } else if (auto v = dynamic_cast<const VarDecl*>(value)) {
+    return v->type;
+  }
+  assert(!"unreachable");
+  __builtin_unreachable();
 }
 
 void ExprID::generate(std::ostream &out) const {
