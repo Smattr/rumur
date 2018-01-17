@@ -43,6 +43,8 @@ class Expr : public Node {
     // If this expression is of boolean type.
     bool is_boolean() const;
 
+    virtual int64_t constant_fold() const = 0;
+
 };
 
 class Ternary : public Expr {
@@ -66,6 +68,7 @@ class Ternary : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -101,6 +104,7 @@ class Implication : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -116,6 +120,7 @@ class Or : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -131,6 +136,7 @@ class And : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -163,6 +169,7 @@ class Not : public UnaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -178,6 +185,7 @@ class Lt : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -193,6 +201,7 @@ class Leq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -208,6 +217,7 @@ class Gt : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -223,6 +233,7 @@ class Geq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -238,6 +249,7 @@ class Eq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -253,6 +265,7 @@ class Neq : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -268,6 +281,7 @@ class Add : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -283,6 +297,7 @@ class Sub : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -298,6 +313,7 @@ class Negative : public UnaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -313,6 +329,7 @@ class Mul : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -328,6 +345,7 @@ class Div : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -343,6 +361,7 @@ class Mod : public BinaryExpr {
     void validate() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -391,6 +410,7 @@ class ExprID : public Lvalue {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -411,6 +431,7 @@ class Var : public Lvalue {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -431,6 +452,7 @@ class Field : public Lvalue {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -451,6 +473,7 @@ class Element : public Lvalue {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -502,6 +525,7 @@ class Exists : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 
@@ -523,6 +547,7 @@ class Forall : public Expr {
     bool constant() const final;
     const TypeExpr *type() const final;
     void generate(std::ostream &out) const final;
+    int64_t constant_fold() const final;
 
 };
 

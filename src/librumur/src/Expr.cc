@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include "location.hh"
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
@@ -8,6 +9,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Indexer.h>
 #include <rumur/TypeExpr.h>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -98,6 +100,10 @@ void Ternary::generate(std::ostream &out) const {
     out << "(" << *cond << "?" << *lhs << ":" << *rhs << ")";
 }
 
+int64_t Ternary::constant_fold() const {
+    return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
+}
+
 BinaryExpr::BinaryExpr(Expr *lhs, Expr *rhs, const location &loc, Indexer&):
     Expr(loc), lhs(lhs), rhs(rhs) {
 }
@@ -151,6 +157,10 @@ void Implication::generate(std::ostream &out) const {
     out << "(!" << *lhs << "||" << *rhs << ")";
 }
 
+int64_t Implication::constant_fold() const {
+    return !lhs->constant_fold() || rhs->constant_fold();
+}
+
 Or &Or::operator=(Or other) {
     swap(*this, other);
     return *this;
@@ -175,6 +185,10 @@ void Or::generate(std::ostream &out) const {
     out << "(" << *lhs << "||" << *rhs << ")";
 }
 
+int64_t Or::constant_fold() const {
+    return lhs->constant_fold() || rhs->constant_fold();
+}
+
 And &And::operator=(And other) {
     swap(*this, other);
     return *this;
@@ -197,6 +211,10 @@ const TypeExpr *And::type() const {
 
 void And::generate(std::ostream &out) const {
     out << "(" << *lhs << "&&" << *rhs << ")";
+}
+
+int64_t And::constant_fold() const {
+    return lhs->constant_fold() && rhs->constant_fold();
 }
 
 UnaryExpr::UnaryExpr(Expr *rhs, const location &loc, Indexer&):
@@ -248,6 +266,10 @@ void Not::generate(std::ostream &out) const {
     out << "(!" << *rhs << ")";
 }
 
+int64_t Not::constant_fold() const {
+    return !rhs->constant_fold();
+}
+
 Lt &Lt::operator=(Lt other) {
     swap(*this, other);
     return *this;
@@ -270,6 +292,10 @@ const TypeExpr *Lt::type() const {
 
 void Lt::generate(std::ostream &out) const {
     out << "(" << *lhs << "<" << *rhs << ")";
+}
+
+int64_t Lt::constant_fold() const {
+    return lhs->constant_fold() < rhs->constant_fold();
 }
 
 Leq &Leq::operator=(Leq other) {
@@ -296,6 +322,10 @@ void Leq::generate(std::ostream &out) const {
     out << "(" << *lhs << "<=" << *rhs << ")";
 }
 
+int64_t Leq::constant_fold() const {
+    return lhs->constant_fold() <= rhs->constant_fold();
+}
+
 Gt &Gt::operator=(Gt other) {
     swap(*this, other);
     return *this;
@@ -320,6 +350,10 @@ void Gt::generate(std::ostream &out) const {
     out << "(" << *lhs << ">" << *rhs << ")";
 }
 
+int64_t Gt::constant_fold() const {
+    return lhs->constant_fold() > rhs->constant_fold();
+}
+
 Geq &Geq::operator=(Geq other) {
     swap(*this, other);
     return *this;
@@ -342,6 +376,10 @@ const TypeExpr *Geq::type() const {
 
 void Geq::generate(std::ostream &out) const {
     out << "(" << *lhs << ">=" << *rhs << ")";
+}
+
+int64_t Geq::constant_fold() const {
+    return lhs->constant_fold() >= rhs->constant_fold();
 }
 
 Eq &Eq::operator=(Eq other) {
@@ -378,6 +416,10 @@ void Eq::generate(std::ostream &out) const {
     out << "(" << *lhs << "==" << *rhs << ")";
 }
 
+int64_t Eq::constant_fold() const {
+    return lhs->constant_fold() == rhs->constant_fold();
+}
+
 Neq &Neq::operator=(Neq other) {
     swap(*this, other);
     return *this;
@@ -412,6 +454,10 @@ void Neq::generate(std::ostream &out) const {
     out << "(" << *lhs << "!=" << *rhs << ")";
 }
 
+int64_t Neq::constant_fold() const {
+    return lhs->constant_fold() != rhs->constant_fold();
+}
+
 Add &Add::operator=(Add other) {
     swap(*this, other);
     return *this;
@@ -434,6 +480,16 @@ const TypeExpr *Add::type() const {
 
 void Add::generate(std::ostream &out) const {
     out << "(" << *lhs << "+" << *rhs << ")";
+}
+
+int64_t Add::constant_fold() const {
+    int64_t r;
+    int64_t a = lhs->constant_fold();
+    int64_t b = rhs->constant_fold();
+    if (__builtin_add_overflow(a, b, &r))
+        throw std::overflow_error("overflow in " + std::to_string(a) + " + "
+          + std::to_string(b));
+    return r;
 }
 
 Sub &Sub::operator=(Sub other) {
@@ -460,6 +516,16 @@ void Sub::generate(std::ostream &out) const {
     out << "(" << *lhs << "-" << *rhs << ")";
 }
 
+int64_t Sub::constant_fold() const {
+    int64_t r;
+    int64_t a = lhs->constant_fold();
+    int64_t b = rhs->constant_fold();
+    if (__builtin_sub_overflow(a, b, &r))
+        throw std::overflow_error("overflow in " + std::to_string(a) + " - "
+          + std::to_string(b));
+    return r;
+}
+
 void Negative::validate() const {
     rhs->validate();
     expect_arithmetic(rhs);
@@ -480,6 +546,13 @@ const TypeExpr *Negative::type() const {
 
 void Negative::generate(std::ostream &out) const {
     out << "(-" << *rhs << ")";
+}
+
+int64_t Negative::constant_fold() const {
+    int64_t a = rhs->constant_fold();
+    if (a == std::numeric_limits<int64_t>::min())
+        throw std::overflow_error("overflow in -" + std::to_string(a));
+    return -a;
 }
 
 Mul &Mul::operator=(Mul other) {
@@ -506,6 +579,16 @@ void Mul::generate(std::ostream &out) const {
     out << "(" << *lhs << "*" << *rhs << ")";
 }
 
+int64_t Mul::constant_fold() const {
+    int64_t r;
+    int64_t a = lhs->constant_fold();
+    int64_t b = rhs->constant_fold();
+    if (__builtin_mul_overflow(a, b, &r))
+        throw std::overflow_error("overflow in " + std::to_string(a) + " * "
+          + std::to_string(b));
+    return r;
+}
+
 Div &Div::operator=(Div other) {
     swap(*this, other);
     return *this;
@@ -530,6 +613,18 @@ void Div::generate(std::ostream &out) const {
     out << "(" << *lhs << "/" << *rhs << ")";
 }
 
+int64_t Div::constant_fold() const {
+    int64_t a = lhs->constant_fold();
+    int64_t b = rhs->constant_fold();
+    if (b == 0)
+        throw std::out_of_range("division by 0 in " + std::to_string(a) + " / "
+          + std::to_string(b));
+    if (a == std::numeric_limits<int64_t>::min() && b == -1)
+        throw std::overflow_error("overflow in " + std::to_string(a) + " / "
+          + std::to_string(b));
+    return a / b;
+}
+
 Mod &Mod::operator=(Mod other) {
     swap(*this, other);
     return *this;
@@ -552,6 +647,18 @@ const TypeExpr *Mod::type() const {
 
 void Mod::generate(std::ostream &out) const {
     out << "(" << *lhs << "%" << *rhs << ")";
+}
+
+int64_t Mod::constant_fold() const {
+    int64_t a = lhs->constant_fold();
+    int64_t b = rhs->constant_fold();
+    if (b == 0)
+        throw std::out_of_range("mod by 0 in " + std::to_string(a) + " % "
+          + std::to_string(b));
+    if (a == std::numeric_limits<int64_t>::min() && b == -1)
+        throw std::overflow_error("overflow in " + std::to_string(a) + " % "
+          + std::to_string(b));
+    return a % b;
 }
 
 /* Cheap trick: this destructor is pure virtual in the class declaration, making
@@ -608,6 +715,10 @@ ExprID::~ExprID() {
     delete value;
 }
 
+int64_t ExprID::constant_fold() const {
+    throw std::invalid_argument("symbol is not a constant");
+}
+
 Var::Var(const VarDecl *decl, const location &loc, Indexer&)
   : Lvalue(loc), decl(decl->clone()) {
 }
@@ -645,6 +756,10 @@ Var::~Var() {
 
 void Var::generate(std::ostream &) const {
     // TODO
+}
+
+int64_t Var::constant_fold() const {
+    throw std::invalid_argument("variables cannot be used in constant expressions");
 }
 
 Field::Field(Lvalue *record, const std::string &field, const location &loc,
@@ -689,6 +804,10 @@ Field::~Field() {
     delete record;
 }
 
+int64_t Field::constant_fold() const {
+    throw std::invalid_argument("field expressions are not constant");
+}
+
 Element::Element(Lvalue *array, Expr *index, const location &loc, Indexer&)
   : Lvalue(loc), array(array), index(index) {
 }
@@ -729,6 +848,10 @@ const TypeExpr *Element::type() const {
 
 void Element::generate(std::ostream &out) const {
     out << "(" << *array << "[" << *index << "])";
+}
+
+int64_t Element::constant_fold() const {
+    throw std::invalid_argument("array element expressions are not constant");
 }
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
@@ -826,6 +949,10 @@ void Exists::generate(std::ostream &out) const {
       << "){ru_g_TODO=true;break;}}ru_g_TODO;})";
 }
 
+int64_t Exists::constant_fold() const {
+    throw std::invalid_argument("exists expressions are not constant");
+}
+
 Forall::Forall(Quantifier *quantifier, Expr *expr, const location &loc, Indexer&)
   : Expr(loc), quantifier(quantifier), expr(expr) {
 }
@@ -866,6 +993,10 @@ Forall::~Forall() {
 void Forall::generate(std::ostream &out) const {
     out << "({bool ru_g_TODO=true;" << *quantifier << "{if(" << *expr
       << "){ru_g_TODO=false;break;}}ru_g_TODO;})";
+}
+
+int64_t Forall::constant_fold() const {
+    throw std::invalid_argument("forall expressions are not constants");
 }
 
 }

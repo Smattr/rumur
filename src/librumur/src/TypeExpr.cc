@@ -61,7 +61,10 @@ Range::~Range() {
 }
 
 void Range::generate(std::ostream &out) const {
-    out << "RangeBase<" << *min << "," << *max << ">";
+    int64_t lb = min->constant_fold();
+    int64_t ub = max->constant_fold();
+    // TODO: catch overflow, not constant
+    out << "RangeBase<" << lb << "," << ub << ">";
 }
 
 Enum::Enum(const std::vector<std::pair<std::string, location>> &members, const location &loc,

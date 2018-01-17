@@ -89,7 +89,7 @@ TypeDecl::~TypeDecl() {
 }
 
 void TypeDecl::generate(std::ostream &out) const {
-    out << "class " << name << "{" << *value << "}";
+    out << "using ru_u_" << name << "=" << *value;
 }
 
 VarDecl::VarDecl(const std::string &name, TypeExpr *type,

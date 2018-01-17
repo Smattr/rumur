@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 #include "location.hh"
 #include <rumur/except.h>
@@ -42,6 +43,10 @@ const TypeExpr *Number::type() const {
 
 void Number::generate(std::ostream &out) const {
     out << "Number(INT64_C(" << value << "))";
+}
+
+int64_t Number::constant_fold() const {
+    return value;
 }
 
 }
