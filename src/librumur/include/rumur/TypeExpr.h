@@ -29,6 +29,7 @@ class TypeExpr : public Node {
   virtual bool is_simple() const;
 
   TypeExpr *clone() const override = 0;
+  virtual size_t size() const = 0;
 
 };
 
@@ -65,6 +66,7 @@ class Range : public SimpleTypeExpr {
 
   void validate() const final;
   void generate(std::ostream &out) const final;
+  size_t size() const final;
 
 };
 
@@ -84,6 +86,7 @@ class Enum : public SimpleTypeExpr {
   virtual ~Enum() { }
 
   void generate(std::ostream &out) const final;
+  size_t size() const final;
 
 };
 
@@ -101,6 +104,7 @@ class Record : public TypeExpr {
   virtual ~Record();
 
   void generate(std::ostream &out) const final;
+  size_t size() const final;
 
 };
 
@@ -119,6 +123,7 @@ class Array : public TypeExpr {
   virtual ~Array();
 
   void generate(std::ostream &out) const final;
+  size_t size() const final;
 
 };
 

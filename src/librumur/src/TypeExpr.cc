@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits.h>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
@@ -8,6 +9,12 @@
 #include <vector>
 
 namespace rumur {
+
+static size_t bits_for(unsigned long long v) {
+  if (v == 0)
+    return 0;
+  return sizeof(v) * CHAR_BIT - __builtin_clzll(v);
+}
 
 bool TypeExpr::is_simple() const {
   return false;
@@ -65,6 +72,25 @@ void Range::generate(std::ostream &out) const {
   out << "RangeBase<" << lb << "," << ub << ">";
 }
 
+size_t Range::size() const {
+  int64_t lb;
+  try {
+    lb = min->constant_fold();
+  } catch (RumurError e) {
+    throw RumurError("lower bound of range is not constant: ", e);
+  }
+  int64_t ub;
+  try {
+    ub = max->constant_fold();
+  } catch (RumurError e) {
+    throw RumurError("upper bound of range is not constant: ", e);
+  }
+  uint64_t range = ub;
+  if (__builtin_sub_overflow(ub, lb, &range))
+    throw RumurError("range calculation overflows uint64_t", loc);
+  return bits_for(range);
+}
+
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
   SimpleTypeExpr(loc_), members(members_) {
 }
@@ -83,6 +109,10 @@ void Enum::generate(std::ostream &out) const {
     first = false;
   }
   out << ">";
+}
+
+size_t Enum::size() const {
+  return bits_for(members.size());
 }
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
@@ -121,6 +151,16 @@ void Record::generate(std::ostream &out) const {
   out << "}";
 }
 
+size_t Record::size() const {
+  size_t s = 0;
+  for (const VarDecl *v : fields) {
+    size_t v_size = v->type->size();
+    if (__builtin_add_overflow(s, v_size, &s))
+      throw RumurError("overflow in calculating size of record", loc);
+  }
+  return s;
+}
+
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
 }
@@ -153,6 +193,15 @@ Array::~Array() {
 
 void Array::generate(std::ostream &out) const {
   out << "ArrayBase<" << *index_type << "," << *element_type << ">";
+}
+
+size_t Array::size() const {
+  size_t s;
+  size_t i = index_type->size();
+  size_t e = element_type->size();
+  if (__builtin_mul_overflow(i, e, &s))
+    throw RumurError("overflow in calculating size of array", loc);
+  return s;
 }
 
 }

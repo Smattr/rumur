@@ -14,7 +14,8 @@ class RumurError : public std::runtime_error {
  public:
   location loc;
 
-  RumurError(const std::string &message, const location &loc);
+  RumurError(const std::string &message, const location &loc_);
+  RumurError(const std::string &prefix, const RumurError &sub);
 
 };
 
