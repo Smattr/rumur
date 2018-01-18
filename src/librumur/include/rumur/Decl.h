@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <limits>
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
@@ -75,6 +76,12 @@ class VarDecl : public Decl {
    * ascend the AST.
    */
   bool state_variable = false;
+
+  /* Offset within the model state. This is only relevant if state_variable ==
+   * true. We initially set it to an invalid value and rely on Model::index
+   * setting this correctly later.
+   */
+  size_t offset = std::numeric_limits<size_t>::max();
 
   VarDecl() = delete;
   VarDecl(const std::string &name_, TypeExpr *type_,

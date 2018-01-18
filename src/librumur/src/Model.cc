@@ -15,6 +15,7 @@ namespace rumur {
 
 Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), rules(rules_) {
+  index();
 }
 
 Model::Model(const Model &other):
@@ -23,6 +24,7 @@ Model::Model(const Model &other):
     decls.push_back(d->clone());
   for (const Rule *r : other.rules)
     rules.push_back(r->clone());
+  index();
 }
 
 Model &Model::operator=(Model other) {
@@ -78,6 +80,16 @@ Model::~Model() {
 
 void Model::generate(std::ostream &) const {
   // TODO
+}
+
+void Model::index() {
+  size_t offset = 0;
+  for (Decl *d : decls) {
+    if (auto v = dynamic_cast<VarDecl*>(d)) {
+      v->offset = offset;
+      offset += v->type->size();
+    }
+  }
 }
 
 }

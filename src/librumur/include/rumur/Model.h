@@ -31,6 +31,10 @@ class Model : public Node {
 
   void generate(std::ostream &out) const final;
 
+ private:
+  // Set the 'offset' members of VarDecls.
+  void index();
+
 };
 
 }
