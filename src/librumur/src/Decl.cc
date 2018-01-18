@@ -119,7 +119,11 @@ VarDecl *VarDecl::clone() const {
 }
 
 void VarDecl::generate(std::ostream &out) const {
-  out << "TODO " << name;
+  if (state_variable) {
+    out << "using ru_u_" << name << " = Reference<State, " << offset << "ul, " << *type << ">";
+  } else {
+    out << "TODO " << name;
+  }
 }
 
 VarDecl::~VarDecl() {

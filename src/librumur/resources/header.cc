@@ -178,6 +178,7 @@ struct RangeBase {
 
  public:
   static const size_t COUNT = MAX - MIN + 1;
+  static const size_t SIZE = MAX - MIN == 0 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(MAX - MIN);
   int64_t value;
 
  public:
@@ -452,5 +453,24 @@ class Array {
 
   const ELEMENT_T &operator[](const Number &index) const {
     return data[INDEX_T(index.value).zero_based_value()];
+  }
+};
+
+template<typename STATE_T, size_t OFFSET, typename T>
+class Reference;
+
+template<typename STATE_T, size_t OFFSET, int64_t MIN, int64_t MAX>
+class Reference<STATE_T, OFFSET, RangeBase<MIN, MAX>> {
+
+ public:
+  STATE_T *s;
+
+  Reference &operator=(const RangeBase<MIN, MAX> &) {
+    // TODO
+    return *this;
+  }
+
+  operator RangeBase<MIN, MAX>() const {
+    return int64_t((s->data >> OFFSET).to_ullong()) & ((INT64_C(1) << RangeBase<MIN, MAX>::SIZE) - 1);
   }
 };
