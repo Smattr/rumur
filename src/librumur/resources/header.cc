@@ -177,6 +177,7 @@ template<int64_t MIN, int64_t MAX>
 struct RangeBase {
 
  public:
+  static const size_t COUNT = MAX - MIN + 1;
   int64_t value;
 
  public:
@@ -186,6 +187,13 @@ struct RangeBase {
   RangeBase(RangeBase&&) = default;
   RangeBase &operator=(const RangeBase&) = default;
   RangeBase &operator=(RangeBase&&) = default;
+
+  size_t zero_based_value() const {
+    size_t r;
+    if (__builtin_sub_overflow(value, MIN, &r))
+      throw Error("overflow in calculating index value");
+    return r;
+  }
 
   RangeBase operator+(const RangeBase &other) const {
     return add(value, other.value);
@@ -422,3 +430,27 @@ static bool operator>=(const Number &a, const RangeBase<MIN, MAX> &b) {
   }
   return a.value >= b.value;
 }
+
+template<typename INDEX_T, typename ELEMENT_T>
+class Array {
+
+ public:
+  ELEMENT_T data[INDEX_T::COUNT];
+
+ public:
+  ELEMENT_T &operator[](const INDEX_T &index) {
+    return data[index.zero_based_value()];
+  }
+
+  const ELEMENT_T &operator[](const INDEX_T &index) const {
+    return data[index.zero_based_value()];
+  }
+
+  ELEMENT_T &operator[](const Number &index) {
+    return data[INDEX_T(index.value).zero_based_value()];
+  }
+
+  const ELEMENT_T &operator[](const Number &index) const {
+    return data[INDEX_T(index.value).zero_based_value()];
+  }
+};
