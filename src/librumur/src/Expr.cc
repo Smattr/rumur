@@ -8,7 +8,6 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -485,8 +484,8 @@ int64_t Add::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (__builtin_add_overflow(a, b, &r))
-    throw std::overflow_error("overflow in " + std::to_string(a) + " + "
-      + std::to_string(b));
+    throw RumurError("overflow in " + std::to_string(a) + " + "
+      + std::to_string(b), loc);
   return r;
 }
 
@@ -519,8 +518,8 @@ int64_t Sub::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (__builtin_sub_overflow(a, b, &r))
-    throw std::overflow_error("overflow in " + std::to_string(a) + " - "
-      + std::to_string(b));
+    throw RumurError("overflow in " + std::to_string(a) + " - "
+      + std::to_string(b), loc);
   return r;
 }
 
@@ -549,7 +548,7 @@ void Negative::generate(std::ostream &out) const {
 int64_t Negative::constant_fold() const {
   int64_t a = rhs->constant_fold();
   if (a == std::numeric_limits<int64_t>::min())
-    throw std::overflow_error("overflow in -" + std::to_string(a));
+    throw RumurError("overflow in -" + std::to_string(a), loc);
   return -a;
 }
 
@@ -582,8 +581,8 @@ int64_t Mul::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (__builtin_mul_overflow(a, b, &r))
-    throw std::overflow_error("overflow in " + std::to_string(a) + " * "
-      + std::to_string(b));
+    throw RumurError("overflow in " + std::to_string(a) + " * "
+      + std::to_string(b), loc);
   return r;
 }
 
@@ -615,11 +614,11 @@ int64_t Div::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (b == 0)
-    throw std::out_of_range("division by 0 in " + std::to_string(a) + " / "
-      + std::to_string(b));
+    throw RumurError("division by 0 in " + std::to_string(a) + " / "
+      + std::to_string(b), loc);
   if (a == std::numeric_limits<int64_t>::min() && b == -1)
-    throw std::overflow_error("overflow in " + std::to_string(a) + " / "
-      + std::to_string(b));
+    throw RumurError("overflow in " + std::to_string(a) + " / "
+      + std::to_string(b), loc);
   return a / b;
 }
 
@@ -651,11 +650,11 @@ int64_t Mod::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (b == 0)
-    throw std::out_of_range("mod by 0 in " + std::to_string(a) + " % "
-      + std::to_string(b));
+    throw RumurError("mod by 0 in " + std::to_string(a) + " % "
+      + std::to_string(b), loc);
   if (a == std::numeric_limits<int64_t>::min() && b == -1)
-    throw std::overflow_error("overflow in " + std::to_string(a) + " % "
-      + std::to_string(b));
+    throw RumurError("overflow in " + std::to_string(a) + " % "
+      + std::to_string(b), loc);
   return a % b;
 }
 
@@ -726,7 +725,9 @@ ExprID::~ExprID() {
 }
 
 int64_t ExprID::constant_fold() const {
-  throw std::invalid_argument("symbol is not a constant");
+  if (auto c = dynamic_cast<const ConstDecl*>(value))
+    return c->value->constant_fold();
+  throw RumurError("symbol \"" + id + "\" is not a constant", loc);
 }
 
 Field::Field(Lvalue *record_, const std::string &field_, const location &loc_):
@@ -771,7 +772,7 @@ Field::~Field() {
 }
 
 int64_t Field::constant_fold() const {
-  throw std::invalid_argument("field expressions are not constant");
+  throw RumurError("field expression used in constant", loc);
 }
 
 Element::Element(Lvalue *array_, Expr *index_, const location &loc_):
@@ -817,7 +818,7 @@ void Element::generate(std::ostream &out) const {
 }
 
 int64_t Element::constant_fold() const {
-  throw std::invalid_argument("array element expressions are not constant");
+  throw RumurError("array element used in constant", loc);
 }
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
@@ -916,7 +917,7 @@ void Exists::generate(std::ostream &out) const {
 }
 
 int64_t Exists::constant_fold() const {
-  throw std::invalid_argument("exists expressions are not constant");
+  throw RumurError("exists expression used in constant", loc);
 }
 
 Forall::Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_):
@@ -962,7 +963,7 @@ void Forall::generate(std::ostream &out) const {
 }
 
 int64_t Forall::constant_fold() const {
-  throw std::invalid_argument("forall expressions are not constants");
+  throw RumurError("forall expression used in constant", loc);
 }
 
 }
