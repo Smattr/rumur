@@ -47,7 +47,8 @@ void ConstDecl::validate() const {
 }
 
 void ConstDecl::generate(std::ostream &out) const {
-  out << "static const Number ru_u_" << name << "(" << *value << ")";
+  int64_t v = value->constant_fold();
+  out << "static const Number ru_u_" << name << "(INT64_C(" << v << "))";
 }
 
 ConstDecl::~ConstDecl() {
