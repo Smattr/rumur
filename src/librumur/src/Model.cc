@@ -67,8 +67,12 @@ void Model::validate() const {
 }
 
 uint64_t Model::size_bits() const {
-  // TODO
-  return 1;
+  size_t s = 0;
+  for (const Decl *d : decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d))
+      s += v->type->size();
+  }
+  return s;
 }
 
 Model::~Model() {
