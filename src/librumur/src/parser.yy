@@ -201,18 +201,18 @@ typedecl: ID ':' typeexpr ';' {
 };
 
 typeexpr: ID {
-  const TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
+  const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
   if (t == nullptr) {
-    throw RumurError("unknown type ID \"" + $1 + "\"", @1);
+    throw rumur::RumurError("unknown type ID \"" + $1 + "\"", @1);
   }
-  $$ = new TypeExprID($1, t->clone(), @$);
+  $$ = new rumur::TypeExprID($1, t->clone(), @$);
 } | expr DOTDOT expr {
   $$ = new rumur::Range($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
   auto e = new rumur::Enum(std::move($3), @$);
   /* Register all the enum members so they can be referenced later. */
-  const TypeDecl td("", new Enum(*e), @$);
-  for (const std::pair<std::string, location> &m : e->members) {
+  const rumur::TypeDecl td("", new rumur::Enum(*e), @$);
+  for (const std::pair<std::string, rumur::location> &m : e->members) {
     symtab.declare(m.first, td);
   }
   $$ = e;
@@ -228,7 +228,7 @@ vardecls: vardecls vardecl {
 };
 
 vardecl: id_list_opt ':' typeexpr ';' {
-  for (const std::pair<std::string, location> &m : $1) {
+  for (const std::pair<std::string, rumur::location> &m : $1) {
     $$.push_back(new rumur::VarDecl(m.first, $3, m.second));
   }
 };
