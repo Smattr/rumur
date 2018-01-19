@@ -205,7 +205,7 @@ typeexpr: ID {
   if (t == nullptr) {
     throw RumurError("unknown type ID \"" + $1 + "\"", @1);
   }
-  $$ = t->clone();
+  $$ = new TypeExprID($1, t->clone(), @$);
 } | expr DOTDOT expr {
   $$ = new rumur::Range($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
