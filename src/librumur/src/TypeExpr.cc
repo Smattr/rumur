@@ -204,4 +204,39 @@ size_t Array::size() const {
   return s;
 }
 
+TypeExprID::TypeExprID(const std::string &name_, TypeExpr *referent_,
+  const location &loc_):
+  TypeExpr(loc_), name(name_), referent(referent_) { }
+
+TypeExprID::TypeExprID(const TypeExprID &other):
+  TypeExpr(other.loc), name(other.name), referent(other.referent->clone()) { }
+
+TypeExprID &TypeExprID::operator=(TypeExprID other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(TypeExprID &x, TypeExprID &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.name, y.name);
+  swap(x.referent, y.referent);
+}
+
+TypeExprID *TypeExprID::clone() const {
+  return new TypeExprID(*this);
+}
+
+TypeExprID::~TypeExprID() {
+  delete referent;
+}
+
+void TypeExprID::generate(std::ostream &out) const {
+  out << name;
+}
+
+size_t TypeExprID::size() const {
+  return referent->size();
+}
+
 }

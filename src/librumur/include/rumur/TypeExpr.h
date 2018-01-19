@@ -127,4 +127,22 @@ class Array : public TypeExpr {
 
 };
 
+class TypeExprID : public TypeExpr {
+
+ public:
+  std::string name;
+  TypeExpr *referent;
+
+  TypeExprID() = delete;
+  TypeExprID(const std::string &name_, TypeExpr *referent_, const location &loc_);
+  TypeExprID(const TypeExprID &other);
+  TypeExprID &operator=(TypeExprID other);
+  friend void swap(TypeExprID &x, TypeExprID &y) noexcept;
+  TypeExprID *clone() const final;
+  virtual ~TypeExprID();
+
+  void generate(std::ostream &out) const final;
+  size_t size() const final;
+};
+
 }
