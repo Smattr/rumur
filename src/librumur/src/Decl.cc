@@ -48,7 +48,7 @@ void ConstDecl::validate() const {
 
 void ConstDecl::generate(std::ostream &out) const {
   int64_t v = value->constant_fold();
-  out << "static const Number ru_u_" << name << "(INT64_C(" << v << "))";
+  out << "[[gnu::unused]] static const Number ru_u_" << name << "(INT64_C(" << v << "))";
 }
 
 ConstDecl::~ConstDecl() {
