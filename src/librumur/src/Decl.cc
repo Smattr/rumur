@@ -89,7 +89,7 @@ TypeDecl::~TypeDecl() {
 }
 
 void TypeDecl::generate(std::ostream &out) const {
-  out << "using ru_u_" << name << "=" << *value;
+  out << "using ru_u_" << name << " = " << *value;
 }
 
 VarDecl::VarDecl(const std::string &name_, TypeExpr *type_,
@@ -119,11 +119,7 @@ VarDecl *VarDecl::clone() const {
 }
 
 void VarDecl::generate(std::ostream &out) const {
-  if (state_variable) {
-    out << "using ru_u_" << name << " = Reference<State, " << offset << "ul, " << *type << ">";
-  } else {
-    out << "TODO " << name;
-  }
+  out << "using ru_u_" << name << " = " << *type;
 }
 
 VarDecl::~VarDecl() {
