@@ -474,3 +474,21 @@ class Reference<STATE_T, OFFSET, RangeBase<MIN, MAX>> {
     return int64_t((s->data >> OFFSET).to_ullong()) & ((INT64_C(1) << RangeBase<MIN, MAX>::SIZE) - 1);
   }
 };
+
+template<typename STATE_T>
+class boolean {
+
+ public:
+  bool in_state = false;
+  bool value = false;
+  STATE_T *s = nullptr;
+  size_t offset = 0;
+
+  boolean() = delete;
+  boolean(bool value_): in_state(false), value(value_) { }
+  boolean(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) { }
+  boolean(const boolean&) = default;
+  boolean(boolean&&) = default;
+  boolean &operator=(const boolean&) = default;
+  boolean &operator=(boolean&&) = default;
+};

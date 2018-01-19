@@ -37,7 +37,12 @@ int output_checker(const std::string &path, const Model &model,
     << "using StartState = StartStateBase<State>;\n"
     << "using Invariant = InvariantBase<State>;\n"
     << "using Rule = RuleBase<State>;\n"
-    << "using ModelError = ModelErrorBase<State>;\n\n";
+    << "using ModelError = ModelErrorBase<State>;\n\n"
+
+    // Boolean boiler plate
+    << "using ru_u_boolean = boolean<State>;\n"
+    << "[[gnu::unused]] static const ru_u_boolean ru_u_false(false);\n"
+    << "[[gnu::unused]] static const ru_u_boolean ru_u_true(true);\n\n";
 
   // Write out constants and type declarations.
   for (const Decl *d : model.decls)

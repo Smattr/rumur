@@ -232,7 +232,7 @@ TypeExprID::~TypeExprID() {
 }
 
 void TypeExprID::generate(std::ostream &out) const {
-  out << name;
+  out << "ru_u_" << name;
 }
 
 size_t TypeExprID::size() const {
