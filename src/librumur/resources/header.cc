@@ -40,7 +40,7 @@ struct StateBase {
       "cannot read a int64_t out of a std::bitset");
     assert(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
     assert(offset <= SIZE_BITS - 1 && "out of bounds read");
-    std::bitset<SIZE_BITS> v = (data >> offset) & std::bitset<SIZE_BITS>((1ul << width) - 1);
+    std::bitset<SIZE_BITS> v = (data >> offset) & std::bitset<SIZE_BITS>((UINT64_C(1) << width) - 1);
     if (sizeof(unsigned long) >= sizeof(int64_t)) {
       return v.to_ulong();
     }
@@ -52,8 +52,9 @@ struct StateBase {
       "cannot write a int64_t to a std::bitset");
     assert(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
     assert(1ul << width > (unsigned long)value && "write of too large a value");
-    std::bitset<SIZE_BITS> v((unsigned long)value);
-    // TODO
+    std::bitset<SIZE_BITS> v = std::bitset<SIZE_BITS>((unsigned long)value) << offset;
+    std::bitset<SIZE_BITS> mask = ~(std::bitset<SIZE_BITS>((UINT64_C(1) << width) - 1) << offset);
+    data = (data & mask) | v;
   }
 
  private:
