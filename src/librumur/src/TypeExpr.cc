@@ -69,7 +69,7 @@ void Range::generate(std::ostream &out) const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
   // TODO: catch overflow, not constant
-  out << "RangeBase<" << lb << "," << ub << ">";
+  out << "RangeBase<State, " << lb << ", " << ub << ">";
 }
 
 size_t Range::size() const {
@@ -192,7 +192,7 @@ Array::~Array() {
 }
 
 void Array::generate(std::ostream &out) const {
-  out << "ArrayBase<" << *index_type << "," << *element_type << ">";
+  out << "ArrayBase<State, " << *index_type << ", " << *element_type << ">";
 }
 
 size_t Array::size() const {

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <bitset>
 #include <cstdint>
 #include <cstdio>
@@ -34,45 +35,66 @@ struct StateBase {
     return !(*this == other);
   }
 
+  int64_t read(size_t offset, size_t width) const {
+    static_assert(sizeof(unsigned long long) >= sizeof(int64_t),
+      "cannot read a int64_t out of a std::bitset");
+    assert(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
+    assert(offset <= SIZE_BITS - 1 && "out of bounds read");
+    std::bitset<SIZE_BITS> v = (data >> offset) & std::bitset<SIZE_BITS>((1ul << width) - 1);
+    if (sizeof(unsigned long) >= sizeof(int64_t)) {
+      return v.to_ulong();
+    }
+    return v.to_ullong();
+  }
+
+  void write(size_t offset, size_t width, int64_t value) {
+    static_assert(sizeof(unsigned long) >= sizeof(int64_t),
+      "cannot write a int64_t to a std::bitset");
+    assert(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
+    assert(1ul << width > (unsigned long)value && "write of too large a value");
+    std::bitset<SIZE_BITS> v((unsigned long)value);
+    // TODO
+  }
+
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
 };
 
-template<typename STATE>
+template<typename STATE_T>
 struct StartStateBase {
 
  public:
   const std::string name;
-  const std::function<void(STATE&)> body;
+  const std::function<void(STATE_T&)> body;
 
  public:
-  StartStateBase(const std::string &name_, std::function<void(STATE&)> body_):
+  StartStateBase(const std::string &name_, std::function<void(STATE_T&)> body_):
     name(name_), body(body_) { }
 };
 
-template<typename STATE>
+template<typename STATE_T>
 struct InvariantBase {
 
  public:
   const std::string name;
-  const std::function<bool(const STATE&)> guard;
+  const std::function<bool(const STATE_T&)> guard;
 
  public:
-  InvariantBase(const std::string &name_, std::function<bool(const STATE&)> guard_):
+  InvariantBase(const std::string &name_, std::function<bool(const STATE_T&)> guard_):
     name(name_), guard(guard_) { }
 };
 
-template<typename STATE>
+template<typename STATE_T>
 struct RuleBase {
 
  public:
   const std::string name;
-  const std::function<bool(const STATE&)> guard;
-  const std::function<void(STATE&)> body;
+  const std::function<bool(const STATE_T&)> guard;
+  const std::function<void(STATE_T&)> body;
 
  public:
-  RuleBase(const std::string &name_, std::function<bool(const STATE&)> guard_,
-    std::function<void(STATE&)> body_):
+  RuleBase(const std::string &name_, std::function<bool(const STATE_T&)> guard_,
+    std::function<void(STATE_T&)> body_):
     name(name_), guard(guard_), body(body_) { }
 };
 
@@ -89,17 +111,17 @@ class Error : public std::runtime_error {
 /* An exception that is thrown at runtime if an error is detected during model
  * checking.
  */
-template<typename STATE>
+template<typename STATE_T>
 class ModelErrorBase : public std::runtime_error {
 
  public:
-  const STATE *state;
+  const STATE_T *state;
 
-  ModelErrorBase(const std::string &message, const STATE *state_ = nullptr):
+  ModelErrorBase(const std::string &message, const STATE_T *state_ = nullptr):
     std::runtime_error(message), state(state_) {
   }
 
-  ModelErrorBase(const ModelErrorBase &e, const STATE *state_):
+  ModelErrorBase(const ModelErrorBase &e, const STATE_T *state_):
     std::runtime_error(e.what()), state(state_) {
   }
 
@@ -173,38 +195,46 @@ struct Number {
   }
 };
 
-template<int64_t MIN, int64_t MAX>
+template<typename STATE_T, int64_t MIN, int64_t MAX>
 struct RangeBase {
 
  public:
   static const size_t COUNT = MAX - MIN + 1;
   static const size_t SIZE = MAX - MIN == 0 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(MAX - MIN);
-  int64_t value;
+
+  const bool in_state = false;
+  int64_t value = 0;
+  STATE_T *s = nullptr;
+  const size_t offset = 0;
 
  public:
   RangeBase() = delete;
   RangeBase(int64_t value_): value(value_) { }
+  RangeBase(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
   RangeBase(const RangeBase&) = default;
   RangeBase(RangeBase&&) = default;
-  RangeBase &operator=(const RangeBase&) = default;
-  RangeBase &operator=(RangeBase&&) = default;
+
+  RangeBase &operator=(const RangeBase &other) {
+    set_value(other.get_value());
+    return *this;
+  }
 
   size_t zero_based_value() const {
     size_t r;
-    if (__builtin_sub_overflow(value, MIN, &r))
+    if (__builtin_sub_overflow(get_value(), MIN, &r))
       throw Error("overflow in calculating index value");
     return r;
   }
 
   RangeBase operator+(const RangeBase &other) const {
-    return add(value, other.value);
+    return add(get_value(), other.get_value());
   }
 
   RangeBase operator+(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of the range");
     }
-    int64_t v = add(value, other.value);
+    int64_t v = add(get_value(), other.value);
     if (v < MIN || v > MAX) {
       throw Error("result of addition is out of range");
     }
@@ -212,14 +242,14 @@ struct RangeBase {
   }
 
   RangeBase operator-(const RangeBase &other) const {
-    return sub(value, other.value);
+    return sub(get_value(), other.get_value());
   }
 
   RangeBase operator-(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of the range");
     }
-    int64_t v = sub(value, other.value);
+    int64_t v = sub(get_value(), other.value);
     if (v < MIN || v > MAX) {
       throw Error("result of subtraction is out of range");
     }
@@ -227,14 +257,14 @@ struct RangeBase {
   }
 
   RangeBase operator*(const RangeBase &other) const {
-    return mul(value, other.value);
+    return mul(get_value(), other.get_value());
   }
 
   RangeBase operator*(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in multiplication");
     }
-    int64_t v = mul(value, other.value);
+    int64_t v = mul(get_value(), other.value);
     if (v < MIN || v > MAX) {
       throw Error("result of multiplication is out of range");
     }
@@ -242,14 +272,14 @@ struct RangeBase {
   }
 
   RangeBase operator/(const RangeBase &other) const {
-    return divide(value, other.value);
+    return divide(get_value(), other.get_value());
   }
 
   RangeBase operator/(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in division");
     }
-    int64_t v = divide(value, other.value);
+    int64_t v = divide(get_value(), other.value);
     if (v < MIN || v > MAX) {
       throw Error("result of division is out of range");
     }
@@ -257,14 +287,14 @@ struct RangeBase {
   }
 
   RangeBase operator%(const RangeBase &other) const {
-    return mod(value, other.value);
+    return mod(get_value(), other.get_value());
   }
 
   RangeBase operator%(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in mod");
     }
-    int64_t v = mod(value, other.value);
+    int64_t v = mod(get_value(), other.value);
     if (v < MIN || v > MAX) {
       throw Error("result of mod is out of range");
     }
@@ -272,173 +302,194 @@ struct RangeBase {
   }
 
   bool operator<(const RangeBase &other) const {
-    return value < other.value;
+    return get_value() < other.get_value();
   }
 
   bool operator<(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in <");
     }
-    return value < other.value;
+    return get_value() < other.value;
   }
 
   bool operator>(const RangeBase &other) const {
-    return value > other.value;
+    return get_value() > other.get_value();
   }
 
   bool operator>(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in >");
     }
-    return value > other.value;
+    return get_value() > other.value;
   }
 
   bool operator==(const RangeBase &other) const {
-    return value == other.value;
+    return get_value() == other.get_value();
   }
 
   bool operator==(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in ==");
     }
-    return value == other.value;
+    return get_value() == other.value;
   }
 
   bool operator!=(const RangeBase &other) const {
-    return value != other.value;
+    return get_value() != other.get_value();
   }
 
   bool operator!=(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in !=");
     }
-    return value != other.value;
+    return get_value() != other.value;
   }
 
   bool operator<=(const RangeBase &other) const {
-    return value <= other.value;
+    return get_value() <= other.get_value();
   }
 
   bool operator<=(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in <=");
     }
-    return value <= other.value;
+    return get_value() <= other.value;
   }
 
   bool operator>=(const RangeBase &other) const {
-    return value >= other.value;
+    return get_value() >= other.get_value();
   }
 
   bool operator>=(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in >=");
     }
-    return value >= other.value;
+    return get_value() >= other.value;
+  }
+
+  int64_t get_value() const {
+    if (in_state) {
+      assert(s != nullptr);
+      return s->read(offset, SIZE) + MIN;
+    }
+    return value;
+  }
+
+  void set_value(int64_t v) {
+    if (in_state) {
+      assert(s != nullptr);
+      s->write(offset, SIZE, v - MIN);
+    } else {
+      value = v;
+    }
   }
 };
 
-template<int64_t MIN, int64_t MAX>
-static RangeBase<MIN, MAX> operator+(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static RangeBase<STATE_T, MIN, MAX> operator+(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   return b + a;
 }
 
-template<int64_t MIN, int64_t MAX>
-static RangeBase<MIN, MAX> operator-(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static RangeBase<STATE_T, MIN, MAX> operator-(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range for subtraction");
   }
-  int64_t v = sub(a.value, b.value);
+  int64_t v = sub(a.value, b.get_value());
   if (v < MIN || v > MAX) {
     throw Error("result of subtraction is out of range");
   }
   return v;
 }
 
-template<int64_t MIN, int64_t MAX>
-static RangeBase<MIN, MAX> operator*(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static RangeBase<STATE_T, MIN, MAX> operator*(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   return b * a;
 }
 
-template<int64_t MIN, int64_t MAX>
-static RangeBase<MIN, MAX> operator/(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static RangeBase<STATE_T, MIN, MAX> operator/(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in division");
   }
-  int64_t v = divide(a.value, b.value);
+  int64_t v = divide(a.value, b.get_value());
   if (v < MIN || v > MAX) {
     throw Error("result of division is out of range");
   }
   return v;
 }
 
-template<int64_t MIN, int64_t MAX>
-static RangeBase<MIN, MAX> operator%(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static RangeBase<STATE_T, MIN, MAX> operator%(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in mod");
   }
-  int64_t v = mod(a.value, b.value);
+  int64_t v = mod(a.value, b.get_value());
   if (v < MIN || v > MAX) {
     throw Error("result of mod is out of range");
   }
   return v;
 }
 
-template<int64_t MIN, int64_t MAX>
-static bool operator<(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static bool operator<(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in <");
   }
-  return a.value < b.value;
+  return a.value < b.get_value();
 }
 
-template<int64_t MIN, int64_t MAX>
-static bool operator>(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static bool operator>(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in >");
   }
-  return a.value > b.value;
+  return a.value > b.get_value();
 }
 
-template<int64_t MIN, int64_t MAX>
-static bool operator==(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static bool operator==(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in ==");
   }
-  return a.value == b.value;
+  return a.value == b.get_value();
 }
 
-template<int64_t MIN, int64_t MAX>
-static bool operator!=(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static bool operator!=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in !=");
   }
-  return a.value != b.value;
+  return a.value != b.get_value();
 }
 
-template<int64_t MIN, int64_t MAX>
-static bool operator<=(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static bool operator<=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in <=");
   }
-  return a.value <= b.value;
+  return a.value <= b.get_value();
 }
 
-template<int64_t MIN, int64_t MAX>
-static bool operator>=(const Number &a, const RangeBase<MIN, MAX> &b) {
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+static bool operator>=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in >=");
   }
-  return a.value >= b.value;
+  return a.value >= b.get_value();
 }
 
-template<typename INDEX_T, typename ELEMENT_T>
+template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
 class Array {
 
  public:
+  const bool in_state = false;
   ELEMENT_T data[INDEX_T::COUNT];
+  STATE_T *s = nullptr;
+  const size_t offset = 0;
 
  public:
+  // TODO: support for state references below
   ELEMENT_T &operator[](const INDEX_T &index) {
     return data[index.zero_based_value()];
   }
@@ -456,39 +507,42 @@ class Array {
   }
 };
 
-template<typename STATE_T, size_t OFFSET, typename T>
-class Reference;
-
-template<typename STATE_T, size_t OFFSET, int64_t MIN, int64_t MAX>
-class Reference<STATE_T, OFFSET, RangeBase<MIN, MAX>> {
-
- public:
-  STATE_T *s;
-
-  Reference &operator=(const RangeBase<MIN, MAX> &) {
-    // TODO
-    return *this;
-  }
-
-  operator RangeBase<MIN, MAX>() const {
-    return int64_t((s->data >> OFFSET).to_ullong()) & ((INT64_C(1) << RangeBase<MIN, MAX>::SIZE) - 1);
-  }
-};
-
 template<typename STATE_T>
 class boolean {
 
  public:
-  bool in_state = false;
+  const bool in_state = false;
   bool value = false;
   STATE_T *s = nullptr;
-  size_t offset = 0;
+  const size_t offset = 0;
 
   boolean() = delete;
-  boolean(bool value_): in_state(false), value(value_) { }
-  boolean(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) { }
+  boolean(bool value_): value(value_) { }
+  boolean(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
   boolean(const boolean&) = default;
   boolean(boolean&&) = default;
-  boolean &operator=(const boolean&) = default;
-  boolean &operator=(boolean&&) = default;
+
+  boolean &operator=(const boolean &other) {
+    set_value(other.get_value());
+    return *this;
+  }
+
+  operator bool() const {
+    return get_value();
+  }
+
+  bool get_value() const {
+    if (in_state) {
+      return s->read(offset, 1);
+    }
+    return value;
+  }
+
+  void set_value(bool v) {
+    if (in_state) {
+      s->write(offset, 1, v);
+    } else {
+      value = v;
+    }
+  }
 };

@@ -46,7 +46,7 @@ void Assignment::validate() const {
 }
 
 void Assignment::generate(std::ostream &out) const {
-  out << *lhs << "=" << *rhs;
+  out << *lhs << " = " << *rhs;
 }
 
 }
