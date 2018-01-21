@@ -62,6 +62,9 @@
   #endif
   #define yylex sc.yylex
 
+  /* Current offset into model state. Used when declaring variables. */
+  static size_t offset;
+
 }
 
   /* Code that we need to include at the top of the implementation
@@ -152,8 +155,11 @@
 
 %%
 
-model: decls rules {
-  output = new rumur::Model(std::move($1), std::move($2), @$);
+model: {
+      /* Reset offset, in case we were previously parsing a model. */
+      offset = 0;
+    } decls rules {
+  output = new rumur::Model(std::move($2), std::move($3), @$);
 };
 
 decls: decls decl {
@@ -170,7 +176,11 @@ decl: CONST constdecls {
 } | VAR vardecls {
   for (rumur::VarDecl *d : $2) {
     // Account for whether this declaration is part of the state
-    d->state_variable = symtab.is_global_scope();
+    if (symtab.is_global_scope()) {
+      d->state_variable = true;
+      d->offset = offset;
+      offset += d->type->size();
+    }
     symtab.declare(d->name, *d);
   }
   std::move($2.begin(), $2.end(), std::back_inserter($$));
