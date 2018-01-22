@@ -93,6 +93,7 @@
 %parse-param { rumur::Symtab &symtab }
 
 %token ARROW
+%token ASSERT
 %token BEGIN_TOK
 %token BY
 %token COLON_EQ
@@ -306,7 +307,9 @@ stmts_cont: stmts_cont stmt ';' {
   $$.push_back($1);
 };
 
-stmt: designator COLON_EQ expr {
+stmt: ASSERT expr string_opt {
+  $$ = new rumur::Assert($2, $3, @$);
+} | designator COLON_EQ expr {
   $$ = new rumur::Assignment($1, $3, @$);
 } | ERROR STRING {
   $$ = new rumur::Error($2, @$);
@@ -315,7 +318,7 @@ stmt: designator COLON_EQ expr {
 endstartstate: END | ENDSTARTSTATE;
 
 string_opt: STRING {
-  $$ = $1.substr(1, $1.size() - 2); /* strip quotes */
+  $$ = $1;
 } | %empty {
   /* nothing required */
 };

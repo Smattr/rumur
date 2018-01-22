@@ -23,6 +23,25 @@ class Stmt : public Node {
 
 };
 
+class Assert : public Stmt {
+
+ public:
+  Expr *expr;
+  std::string message;
+
+  Assert() = delete;
+  Assert(Expr *expr_, const std::string &message_, const location &loc_);
+  Assert(const Assert &other);
+  Assert &operator=(Assert other);
+  friend void swap(Assert &x, Assert &y) noexcept;
+  Assert *clone() const final;
+  virtual ~Assert();
+
+  void validate() const final;
+
+  void generate(std::ostream &out) const final;
+};
+
 class Assignment : public Stmt {
 
  public:

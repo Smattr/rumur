@@ -9,6 +9,39 @@
 
 namespace rumur {
 
+Assert::Assert(Expr *expr_, const std::string &message_, const location &loc_):
+  Stmt(loc_), expr(expr_), message(message_) { }
+
+Assert::Assert(const Assert &other):
+  Stmt(other.loc), expr(other.expr), message(other.message) { }
+
+Assert &Assert::operator=(Assert other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Assert &x, Assert &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.expr, y.expr);
+  swap(x.message, y.message);
+}
+
+Assert *Assert::clone() const {
+  return new Assert(*this);
+}
+
+Assert::~Assert() {
+  delete expr;
+}
+
+void Assert::validate() const { }
+
+void Assert::generate(std::ostream &out) const {
+  out << "if (__builtin_expect(!" << *expr << ", 0)) {\nthrow Error(\""
+    << message << "\");\n}";
+}
+
 Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) {
 }

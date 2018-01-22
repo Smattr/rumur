@@ -41,6 +41,10 @@
   return rumur::parser::token::NUMBER;
 }
 
+assert {
+  return rumur::parser::token::ASSERT;
+}
+
 begin {
   return rumur::parser::token::BEGIN_TOK;
 }
