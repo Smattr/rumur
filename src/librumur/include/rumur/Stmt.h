@@ -4,6 +4,7 @@
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <string>
 
 namespace rumur {
 
@@ -40,6 +41,24 @@ class Assignment : public Stmt {
 
   void generate(std::ostream &out) const final;
 
+};
+
+class Error : public Stmt {
+
+  public:
+   std::string message;
+
+   Error() = delete;
+   Error(const std::string &message_, const location &loc_);
+   Error(const Error &other);
+   Error &operator=(Error other);
+   friend void swap(Error &x, Error &y) noexcept;
+   Error *clone() const final;
+   virtual ~Error() { }
+
+   void validate() const final;
+
+   void generate(std::ostream &out) const final;
 };
 
 }

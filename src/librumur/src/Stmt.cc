@@ -4,6 +4,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
+#include <string>
 #include <utility>
 
 namespace rumur {
@@ -47,6 +48,33 @@ void Assignment::validate() const {
 
 void Assignment::generate(std::ostream &out) const {
   out << *lhs << " = " << *rhs;
+}
+
+Error::Error(const std::string &message_, const location &loc_):
+  Stmt(loc_), message(message_) { }
+
+Error::Error(const Error &other):
+  Stmt(other.loc), message(other.message) { }
+
+Error &Error::operator=(Error other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Error &x, Error &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.message, y.message);
+}
+
+Error *Error::clone() const {
+  return new Error(*this);
+}
+
+void Error::validate() const { }
+
+void Error::generate(std::ostream &out) const {
+  out << "throw Error(\"" << message << "\")";
 }
 
 }

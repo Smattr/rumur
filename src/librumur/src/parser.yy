@@ -107,6 +107,7 @@
 %token ENDRULE
 %token ENDSTARTSTATE
 %token ENUM
+%token ERROR
 %token EXISTS
 %token FORALL
 %token GEQ
@@ -307,6 +308,8 @@ stmts_cont: stmts_cont stmt ';' {
 
 stmt: designator COLON_EQ expr {
   $$ = new rumur::Assignment($1, $3, @$);
+} | ERROR STRING {
+  $$ = new rumur::Error($2, @$);
 };
 
 endstartstate: END | ENDSTARTSTATE;

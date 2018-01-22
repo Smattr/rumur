@@ -1,5 +1,6 @@
 #include <cassert>
 #include <bitset>
+#include <cstdarg>
 #include <cstdint>
 #include <cstdio>
 #include <functional>

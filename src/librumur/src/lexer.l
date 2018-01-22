@@ -85,6 +85,10 @@ enum {
   return rumur::parser::token::ENUM;
 }
 
+error {
+  return rumur::parser::token::ERROR;
+}
+
 exists {
   return rumur::parser::token::EXISTS;
 }
@@ -141,8 +145,9 @@ var {
 
 [&!|:=><\-\%\+;{},\[\]\.()] { return YYText()[0]; }
 
-\"[^\n\r\l\f"]*\" {
-  lval->build<std::string>(YYText());
+\"[^\n\r\f\"]*\" {
+  std::string s(YYText());
+  lval->build<std::string>(s.substr(1, s.length() - 2).c_str());
   return rumur::parser::token::STRING;
 }
 
@@ -156,7 +161,7 @@ var {
 
 . {
   /* FIXME: the location here is bogus */
-  throw RumurError(std::string("unexpected character: '") + YYText() + "'", location());
+  throw rumur::RumurError(std::string("unexpected character: '") + YYText() + "'", location());
 }
 
   /* Comment handling. */
