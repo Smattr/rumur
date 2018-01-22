@@ -94,7 +94,7 @@ const TypeExpr *Ternary::type() const {
 }
 
 void Ternary::generate(std::ostream &out) const {
-  out << "(" << *cond << "?" << *lhs << ":" << *rhs << ")";
+  out << "(" << *cond << " ? " << *lhs << " : " << *rhs << ")";
 }
 
 int64_t Ternary::constant_fold() const {
@@ -151,7 +151,7 @@ const TypeExpr *Implication::type() const {
 }
 
 void Implication::generate(std::ostream &out) const {
-  out << "(!" << *lhs << "||" << *rhs << ")";
+  out << "(!" << *lhs << " || " << *rhs << ")";
 }
 
 int64_t Implication::constant_fold() const {
@@ -179,7 +179,7 @@ const TypeExpr *Or::type() const {
 }
 
 void Or::generate(std::ostream &out) const {
-  out << "(" << *lhs << "||" << *rhs << ")";
+  out << "(" << *lhs << " || " << *rhs << ")";
 }
 
 int64_t Or::constant_fold() const {
@@ -207,7 +207,7 @@ const TypeExpr *And::type() const {
 }
 
 void And::generate(std::ostream &out) const {
-  out << "(" << *lhs << "&&" << *rhs << ")";
+  out << "(" << *lhs << " && " << *rhs << ")";
 }
 
 int64_t And::constant_fold() const {
@@ -288,7 +288,7 @@ const TypeExpr *Lt::type() const {
 }
 
 void Lt::generate(std::ostream &out) const {
-  out << "(" << *lhs << "<" << *rhs << ")";
+  out << "(" << *lhs << " < " << *rhs << ")";
 }
 
 int64_t Lt::constant_fold() const {
@@ -316,7 +316,7 @@ const TypeExpr *Leq::type() const {
 }
 
 void Leq::generate(std::ostream &out) const {
-  out << "(" << *lhs << "<=" << *rhs << ")";
+  out << "(" << *lhs << " <= " << *rhs << ")";
 }
 
 int64_t Leq::constant_fold() const {
@@ -344,7 +344,7 @@ const TypeExpr *Gt::type() const {
 }
 
 void Gt::generate(std::ostream &out) const {
-  out << "(" << *lhs << ">" << *rhs << ")";
+  out << "(" << *lhs << " > " << *rhs << ")";
 }
 
 int64_t Gt::constant_fold() const {
@@ -372,7 +372,7 @@ const TypeExpr *Geq::type() const {
 }
 
 void Geq::generate(std::ostream &out) const {
-  out << "(" << *lhs << ">=" << *rhs << ")";
+  out << "(" << *lhs << " >= " << *rhs << ")";
 }
 
 int64_t Geq::constant_fold() const {
@@ -410,7 +410,7 @@ const TypeExpr *Eq::type() const {
 }
 
 void Eq::generate(std::ostream &out) const {
-  out << "(" << *lhs << "==" << *rhs << ")";
+  out << "(" << *lhs << " == " << *rhs << ")";
 }
 
 int64_t Eq::constant_fold() const {
@@ -448,7 +448,7 @@ const TypeExpr *Neq::type() const {
 }
 
 void Neq::generate(std::ostream &out) const {
-  out << "(" << *lhs << "!=" << *rhs << ")";
+  out << "(" << *lhs << " != " << *rhs << ")";
 }
 
 int64_t Neq::constant_fold() const {
@@ -476,7 +476,7 @@ const TypeExpr *Add::type() const {
 }
 
 void Add::generate(std::ostream &out) const {
-  out << "(" << *lhs << "+" << *rhs << ")";
+  out << "(" << *lhs << " + " << *rhs << ")";
 }
 
 int64_t Add::constant_fold() const {
@@ -510,7 +510,7 @@ const TypeExpr *Sub::type() const {
 }
 
 void Sub::generate(std::ostream &out) const {
-  out << "(" << *lhs << "-" << *rhs << ")";
+  out << "(" << *lhs << " - " << *rhs << ")";
 }
 
 int64_t Sub::constant_fold() const {
@@ -573,7 +573,7 @@ const TypeExpr *Mul::type() const {
 }
 
 void Mul::generate(std::ostream &out) const {
-  out << "(" << *lhs << "*" << *rhs << ")";
+  out << "(" << *lhs << " * " << *rhs << ")";
 }
 
 int64_t Mul::constant_fold() const {
@@ -607,7 +607,7 @@ const TypeExpr *Div::type() const {
 }
 
 void Div::generate(std::ostream &out) const {
-  out << "(" << *lhs << "/" << *rhs << ")";
+  out << "(" << *lhs << " / " << *rhs << ")";
 }
 
 int64_t Div::constant_fold() const {
@@ -643,7 +643,7 @@ const TypeExpr *Mod::type() const {
 }
 
 void Mod::generate(std::ostream &out) const {
-  out << "(" << *lhs << "%" << *rhs << ")";
+  out << "(" << *lhs << " % " << *rhs << ")";
 }
 
 int64_t Mod::constant_fold() const {
