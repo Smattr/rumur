@@ -231,6 +231,11 @@ struct RangeBase {
     return *this;
   }
 
+  RangeBase &operator=(const Number &other) {
+    set_value(other.value);
+    return *this;
+  }
+
   size_t zero_based_value() const {
     size_t r;
     if (__builtin_sub_overflow(get_value(), MIN, &r))
