@@ -57,6 +57,10 @@ struct StateBase {
     data = (data & mask) | v;
   }
 
+  size_t hash() const {
+    return std::hash<std::bitset<SIZE_BITS>>{}(data);
+  }
+
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
 };

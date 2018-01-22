@@ -77,8 +77,7 @@ static int64_t negate(int64_t a) {
 
 struct state_hash {
   size_t operator()(const State *s) const {
-    // TODO
-    return 0;
+    return s->hash();
   }
 };
 
