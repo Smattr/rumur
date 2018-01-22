@@ -226,10 +226,12 @@ struct RangeBase {
   STATE_T *s = nullptr;
   const size_t offset = 0;
 
+ private:
+  RangeBase(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
+
  public:
   RangeBase() = delete;
   RangeBase(int64_t value_): value(value_) { }
-  RangeBase(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
   RangeBase(const RangeBase&) = default;
   RangeBase(RangeBase&&) = default;
 
@@ -241,6 +243,14 @@ struct RangeBase {
   RangeBase &operator=(const Number &other) {
     set_value(other.value);
     return *this;
+  }
+
+  static RangeBase make(STATE_T &s, size_t offset) {
+    return RangeBase(s, offset);
+  }
+
+  static const RangeBase make(const STATE_T &s, size_t offset) {
+    return RangeBase(const_cast<STATE_T&>(s), offset);
   }
 
   size_t zero_based_value() const {
@@ -540,15 +550,26 @@ class boolean {
   STATE_T *s = nullptr;
   const size_t offset = 0;
 
+ private:
+  boolean(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
+
+ public:
   boolean() = delete;
   boolean(bool value_): value(value_) { }
-  boolean(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
   boolean(const boolean&) = default;
   boolean(boolean&&) = default;
 
   boolean &operator=(const boolean &other) {
     set_value(other.get_value());
     return *this;
+  }
+
+  static boolean make(STATE_T &s, size_t offset) {
+    return boolean(s, offset);
+  }
+
+  static const boolean make(const STATE_T &s, size_t offset) {
+    return boolean(const_cast<STATE_T&>(s), offset);
   }
 
   operator bool() const {
