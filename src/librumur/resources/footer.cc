@@ -154,8 +154,13 @@ int main(void) {
     // Completed state exploration successfully.
     print("%zu states covered, no errors found\n", seen.size());
 
+  } catch (Error e) {
+    printf("%zu states covered\n", seen.size());
+    fprint(stderr, "%s\n", e.what());
+    return EXIT_FAILURE;
   } catch (ModelError e) {
-    fputs(e.what(), stderr);
+    printf("%zu states covered\n", seen.size());
+    fprint(stderr, "%s\n", e.what());
     print_counterexample(e.state);
     return EXIT_FAILURE;
   }

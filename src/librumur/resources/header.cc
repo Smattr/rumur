@@ -18,6 +18,13 @@
   va_end(ap);
 }
 
+[[gnu::format(printf, 2, 3)]] static void fprint(FILE *f, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  (void)vfprintf(f, fmt, ap);
+  va_end(ap);
+}
+
 template<size_t SIZE_BITS>
 struct StateBase {
   std::bitset<SIZE_BITS> data;
