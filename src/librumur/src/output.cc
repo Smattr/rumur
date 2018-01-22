@@ -61,7 +61,7 @@ int output_checker(const std::string &path, const Model &model,
   out << "static const std::vector<Invariant> INVARIANTS = {\n";
   for (const Rule *r : model.rules) {
     if (auto i = dynamic_cast<const Invariant*>(r))
-      out << *i << ";\n";
+      out << *i << ",\n";
   }
   out << "};\n\n";
 
@@ -69,7 +69,7 @@ int output_checker(const std::string &path, const Model &model,
   out << "static const std::vector<Rule> RULES = {\n";
   for (const Rule *r : model.rules) {
     if (is_regular_rule(r))
-      out << *r << ";\n";
+      out << *r << ",\n";
   }
   out << "};\n\n";
 

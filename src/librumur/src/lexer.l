@@ -73,6 +73,10 @@ endrecord {
   return rumur::parser::token::ENDRECORD;
 }
 
+endrule {
+  return rumur::parser::token::ENDRULE;
+}
+
 endstartstate {
   return rumur::parser::token::ENDSTARTSTATE;
 }
@@ -91,6 +95,10 @@ forall {
 
 record {
   return rumur::parser::token::RECORD;
+}
+
+rule {
+  return rumur::parser::token::RULE;
 }
 
 startstate {
@@ -128,6 +136,7 @@ var {
 "->" { return rumur::parser::token::IMPLIES;   }
 "<=" { return rumur::parser::token::LEQ;       }
 "!=" { return rumur::parser::token::NEQ;       }
+"==>" { return rumur::parser::token::ARROW;    }
 "==" { return rumur::parser::token::DEQ;       }
 
 [&!|:=><\-\%\+;{},\[\]\.()] { return YYText()[0]; }

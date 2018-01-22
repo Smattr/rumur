@@ -44,19 +44,20 @@ void Rule::generate(std::ostream &out) const {
   out << "Rule(\"" << name << "\","
   
     // guard
-    << "[](const State &s [[gnu::unused]]){return ";
+    << "[](const State &s [[gnu::unused]]){\n"
+    << "return ";
   if (guard == nullptr) {
     out << "true";
   } else {
     out << *guard;
   }
-  out << ";},"
+  out << ";\n},"
 
     // body
-    << "[](State &s){";
+    << "[](State &s){\n";
   // TODO: decls
   for (const Stmt *s : body)
-    out << *s << ";";
+    out << *s << ";\n";
   out << "})";
 }
 

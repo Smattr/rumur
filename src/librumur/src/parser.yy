@@ -92,6 +92,7 @@
    */
 %parse-param { rumur::Symtab &symtab }
 
+%token ARROW
 %token BEGIN_TOK
 %token BY
 %token COLON_EQ
@@ -103,6 +104,7 @@
 %token ENDEXISTS
 %token ENDFORALL
 %token ENDRECORD
+%token ENDRULE
 %token ENDSTARTSTATE
 %token ENUM
 %token EXISTS
@@ -114,6 +116,7 @@
 %token NEQ
 %token <std::string> NUMBER
 %token RECORD
+%token RULE
 %token STARTSTATE
 %token <std::string> STRING
 %token TO
@@ -136,12 +139,14 @@
 %type <std::vector<rumur::Decl*>>                            decls_header
 %type <rumur::Lvalue*>                                       designator
 %type <rumur::Expr*>                                         expr
+%type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
 %type <rumur::Quantifier*>                                   quantifier
 %type <rumur::Rule*>                                         rule
 %type <std::vector<rumur::Rule*>>                            rules
 %type <std::vector<rumur::Rule*>>                            rules_cont
+%type <rumur::Rule*>                                         simplerule
 %type <rumur::StartState*>                                   startstate
 %type <rumur::Stmt*>                                         stmt
 %type <std::vector<rumur::Stmt*>>                            stmts
@@ -262,10 +267,22 @@ rules_cont: rules_cont rule ';' {
 
 rule: startstate {
   $$ = $1;
+} | simplerule {
+  $$ = $1;
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
   $$ = new rumur::StartState($2, std::move($3), std::move($4), @$);
+};
+
+simplerule: RULE string_opt guard_opt decls_header stmts endrule {
+  $$ = new rumur::Rule($2, $3, std::move($4), std::move($5), @$);
+};
+
+guard_opt: expr ARROW {
+  $$ = $1;
+} | %empty {
+  $$ = nullptr;
 };
 
 decls_header: decls BEGIN_TOK {
@@ -383,6 +400,8 @@ designator: designator '.' ID {
 endforall: END | ENDFORALL;
 
 endexists: END | ENDEXISTS;
+
+endrule: END | ENDRULE;
 
   /* Support optional trailing comma to make it easier for tools that generate
    * an input mdoels.
