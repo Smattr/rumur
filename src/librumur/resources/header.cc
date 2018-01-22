@@ -11,6 +11,13 @@
 #include <unordered_set>
 #include <utility>
 
+[[gnu::format(printf, 1, 2)]] static void print(const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  (void)vprintf(fmt, ap);
+  va_end(ap);
+}
+
 template<size_t SIZE_BITS>
 struct StateBase {
   std::bitset<SIZE_BITS> data;

@@ -152,6 +152,7 @@ int main(void) {
     }
 
     // Completed state exploration successfully.
+    print("%zu states covered, no errors found\n", seen.size());
 
   } catch (ModelError e) {
     fputs(e.what(), stderr);
