@@ -466,6 +466,50 @@ struct RangeBase {
       value = v;
     }
   }
+
+ private:
+  class iterator {
+
+   private:
+    int64_t value;
+
+   public:
+    iterator(int64_t value_): value(value_) { }
+
+    iterator operator+(int64_t v) const {
+      return iterator(value + v);
+    }
+
+    iterator &operator++() {
+      value++;
+      return *this;
+    }
+
+    iterator operator++(int) const {
+      return iterator(value + 1);
+    }
+
+    bool operator==(const iterator &other) const {
+      return value == other.value;
+    }
+
+    bool operator!=(const iterator &other) const {
+      return !(*this == other);
+    }
+
+    RangeBase operator*() const {
+      return RangeBase(value);
+    }
+  };
+
+ public:
+  iterator begin() const {
+    return iterator(MIN);
+  }
+
+  iterator end() const {
+    return iterator(MAX + 1);
+  }
 };
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
