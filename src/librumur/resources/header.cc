@@ -128,28 +128,6 @@ class Error : public std::runtime_error {
 
 };
 
-/* An exception that is thrown at runtime if an error is detected during model
- * checking.
- */
-template<typename STATE_T>
-class ModelErrorBase : public std::runtime_error {
-
- public:
-  const STATE_T *state;
-
-  ModelErrorBase(const std::string &message, const STATE_T *state_ = nullptr):
-    std::runtime_error(message), state(state_) {
-  }
-
-  ModelErrorBase(const ModelErrorBase &e, const STATE_T *state_):
-    std::runtime_error(e.what()), state(state_) {
-  }
-
-  ModelErrorBase(const ModelErrorBase&) = default;
-  ModelErrorBase(ModelErrorBase&&) = default;
-
-};
-
 [[gnu::unused]] static int64_t add(int64_t a, int64_t b);
 [[gnu::unused]] static int64_t sub(int64_t a, int64_t b);
 [[gnu::unused]] static int64_t mul(int64_t a, int64_t b);

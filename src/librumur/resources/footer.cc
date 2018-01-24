@@ -7,7 +7,7 @@ static int64_t add(int64_t a, int64_t b) {
   int64_t r;
   if (OVERFLOW_CHECKS_ENABLED) {
     if (__builtin_add_overflow(a, b, &r)) {
-      throw ModelError("integer overflow in addition");
+      throw Error("integer overflow in addition");
     }
   } else {
     r = a + b;
@@ -19,7 +19,7 @@ static int64_t sub(int64_t a, int64_t b) {
   int64_t r;
   if (OVERFLOW_CHECKS_ENABLED) {
     if (__builtin_sub_overflow(a, b, &r)) {
-      throw ModelError("integer overflow in subtraction");
+      throw Error("integer overflow in subtraction");
     }
   } else {
     r = a - b;
@@ -31,7 +31,7 @@ static int64_t mul(int64_t a, int64_t b) {
   int64_t r;
   if (OVERFLOW_CHECKS_ENABLED) {
     if (__builtin_mul_overflow(a, b, &r)) {
-      throw ModelError("integer overflow in multiplication");
+      throw Error("integer overflow in multiplication");
     }
   } else {
     r = a * b;
@@ -41,12 +41,12 @@ static int64_t mul(int64_t a, int64_t b) {
 
 static int64_t divide(int64_t a, int64_t b) {
   if (b == 0) {
-    throw ModelError("division by zero");
+    throw Error("division by zero");
   }
 
   if (OVERFLOW_CHECKS_ENABLED) {
     if (a == std::numeric_limits<int64_t>::min() && b == -1) {
-      throw ModelError("integer overflow in division");
+      throw Error("integer overflow in division");
     }
   }
   return a / b;
@@ -54,13 +54,13 @@ static int64_t divide(int64_t a, int64_t b) {
 
 static int64_t mod(int64_t a, int64_t b) {
   if (b == 0) {
-    throw ModelError("modulus by zero");
+    throw Error("modulus by zero");
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
   if (OVERFLOW_CHECKS_ENABLED) {
     if (a == std::numeric_limits<int64_t>::min() && b == -1) {
-      throw ModelError("integer overflow in modulo");
+      throw Error("integer overflow in modulo");
     }
   }
   return a % b;
@@ -69,7 +69,7 @@ static int64_t mod(int64_t a, int64_t b) {
 static int64_t negate(int64_t a) {
   if (OVERFLOW_CHECKS_ENABLED) {
     if (a == std::numeric_limits<int64_t>::min()) {
-      throw ModelError("integer overflow in negation");
+      throw Error("integer overflow in negation");
     }
   }
   return -a;
@@ -86,13 +86,6 @@ struct state_eq {
     return *a == *b;
   }
 };
-
-static void check_invariants(const State &s) {
-  for (const Invariant &inv : INVARIANTS) {
-    if (!inv.guard(s))
-      throw ModelError("invariant " + inv.name + " failed", &s);
-  }
-}
 
 static void print_counterexample(const State*) {
 }
@@ -120,7 +113,11 @@ int main(void) {
         continue;
       }
       // Check invariants eagerly.
-      check_invariants(*s);
+      for (const Invariant &inv : INVARIANTS) {
+        if (!inv.guard(*s)) {
+          throw Error("invariant " + inv.name + " failed");
+        }
+      }
       q.push(s);
     }
 
@@ -145,7 +142,11 @@ int main(void) {
           continue;
         }
 
-        check_invariants(*next);
+        for (const Invariant &inv : INVARIANTS) {
+          if (!inv.guard(*next)) {
+            throw Error("invariant " + inv.name + " failed");
+          }
+        }
         q.push(next);
       }
 
@@ -157,11 +158,6 @@ int main(void) {
   } catch (Error e) {
     printf("%zu states covered\n", seen.size());
     fprint(stderr, "%s\n", e.what());
-    return EXIT_FAILURE;
-  } catch (ModelError e) {
-    printf("%zu states covered\n", seen.size());
-    fprint(stderr, "%s\n", e.what());
-    print_counterexample(e.state);
     return EXIT_FAILURE;
   }
 
