@@ -241,16 +241,41 @@ bool Not::operator==(const Node &other) const {
 }
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
-  auto t1 = dynamic_cast<const Range*>(lhs.type());
-  auto t2 = dynamic_cast<const Range*>(rhs.type());
 
-  if (lhs.type() == nullptr)
-    return rhs.type() == nullptr || t2 != nullptr;
+  if (lhs.type() == nullptr) {
+    // LHS is a numeric literal
 
-  if (rhs.type() == nullptr)
-    return lhs.type() == nullptr || t1 != nullptr;
+    if (rhs.type() == nullptr)
+      return true;
 
-  return t1 != nullptr && t2 != nullptr && *t1 == *t2;
+    const TypeExpr *t = rhs.type()->resolve();
+
+    if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    return false;
+  }
+  
+  if (rhs.type() == nullptr) {
+    // RHS is a numeric literal
+
+    const TypeExpr *t = lhs.type()->resolve();
+
+    if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    return false;
+  }
+
+  const TypeExpr *t1 = lhs.type()->resolve();
+  const TypeExpr *t2 = rhs.type()->resolve();
+
+  if (auto r1 = dynamic_cast<const Range*>(t1)) {
+    if (auto r2 = dynamic_cast<const Range*>(t2))
+      return *r1 == *r2;
+  }
+
+  return false;
 }
 
 ComparisonBinaryExpr::ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
@@ -364,19 +389,46 @@ bool Geq::operator==(const Node &other) const {
 }
 
 static bool equatable(const Expr &lhs, const Expr &rhs) {
-  auto t1 = dynamic_cast<const Range*>(lhs.type());
-  auto t2 = dynamic_cast<const Range*>(rhs.type());
-  auto t3 = dynamic_cast<const Enum*>(lhs.type());
-  auto t4 = dynamic_cast<const Enum*>(rhs.type());
 
-  if (lhs.type() == nullptr)
-    return rhs.type() == nullptr || t2 != nullptr;
+  if (lhs.type() == nullptr) {
+    // LHS is a numeric literal
 
-  if (rhs.type() == nullptr)
-    return lhs.type() == nullptr || t1 != nullptr;
+    if (rhs.type() == nullptr)
+      return true;
 
-  return (t1 != nullptr && t2 != nullptr && *t1 == *t2)
-      || (t3 != nullptr && t4 != nullptr && *t3 == *t4);
+    const TypeExpr *t = rhs.type()->resolve();
+
+    if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    return false;
+  }
+  
+  if (rhs.type() == nullptr) {
+    // RHS is a numeric literal
+
+    const TypeExpr *t = lhs.type()->resolve();
+
+    if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    return false;
+  }
+
+  const TypeExpr *t1 = lhs.type()->resolve();
+  const TypeExpr *t2 = rhs.type()->resolve();
+
+  if (auto r1 = dynamic_cast<const Range*>(t1)) {
+    if (auto r2 = dynamic_cast<const Range*>(t2))
+      return *r1 == *r2;
+  }
+
+  if (auto e1 = dynamic_cast<const Enum*>(t1)) {
+    if (auto e2 = dynamic_cast<const Enum*>(t2))
+      return *e1 == *e2;
+  }
+
+  return false;
 }
 
 EquatableBinaryExpr::EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
@@ -438,16 +490,41 @@ bool Neq::operator==(const Node &other) const {
 }
 
 static bool arithmetic(const Expr &lhs, const Expr &rhs) {
-  auto t1 = dynamic_cast<const Range*>(lhs.type());
-  auto t2 = dynamic_cast<const Range*>(rhs.type());
 
-  if (lhs.type() == nullptr)
-    return rhs.type() == nullptr || t2 != nullptr;
+  if (lhs.type() == nullptr) {
+    // LHS is a numeric literal
 
-  if (rhs.type() == nullptr)
-    return lhs.type() == nullptr || t1 != nullptr;
+    if (rhs.type() == nullptr)
+      return true;
 
-  return t1 != nullptr && t2 != nullptr && *t1 == *t2;
+    const TypeExpr *t = rhs.type()->resolve();
+
+    if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    return false;
+  }
+  
+  if (rhs.type() == nullptr) {
+    // RHS is a numeric literal
+
+    const TypeExpr *t = lhs.type()->resolve();
+
+    if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    return false;
+  }
+
+  const TypeExpr *t1 = lhs.type()->resolve();
+  const TypeExpr *t2 = rhs.type()->resolve();
+
+  if (auto r1 = dynamic_cast<const Range*>(t1)) {
+    if (auto r2 = dynamic_cast<const Range*>(t2))
+      return *r1 == *r2;
+  }
+
+  return false;
 }
 
 ArithmeticBinaryExpr::ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
@@ -523,7 +600,7 @@ bool Sub::operator==(const Node &other) const {
 
 Negative::Negative(Expr *rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
-  if (rhs->type() != nullptr && dynamic_cast<const Range*>(rhs->type()) != nullptr)
+  if (rhs->type() != nullptr && dynamic_cast<const Range*>(rhs->type()->resolve()) != nullptr)
     throw RumurError("expression cannot be negated", rhs->loc);
 }
 
