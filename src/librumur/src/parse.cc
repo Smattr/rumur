@@ -2,6 +2,7 @@
 #include <iostream>
 #include "location.hh"
 #include "parser.yy.hh"
+#include <rumur/Boolean.h>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Model.h>
@@ -20,11 +21,9 @@ Model *parse(std::istream *input) {
   // Setup a symbol table that knows the built ins
   Symtab symtab;
   symtab.open_scope();
-  const Enum boolean({ { "false", location() }, { "true", location() } },
-    location());
-  symtab.declare("boolean", boolean);
-  symtab.declare("false", TypeDecl("boolean", new Enum(boolean), location()));
-  symtab.declare("true", TypeDecl("boolean", new Enum(boolean), location()));
+  symtab.declare("boolean", Boolean);
+  for (const std::pair<std::string, location> &m : Boolean.members)
+    symtab.declare(m.first, TypeDecl("boolean", new Enum(Boolean), location()));
 
   // Setup the parser
   scanner s(input);
