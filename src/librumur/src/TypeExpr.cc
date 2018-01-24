@@ -20,6 +20,10 @@ bool TypeExpr::is_simple() const {
   return false;
 }
 
+const TypeExpr *TypeExpr::resolve() const {
+  return this;
+}
+
 SimpleTypeExpr::SimpleTypeExpr(const location &loc_):
   TypeExpr(loc_) {
 }
@@ -237,6 +241,10 @@ void TypeExprID::generate(std::ostream &out) const {
 
 size_t TypeExprID::size() const {
   return referent->size();
+}
+
+const TypeExpr *TypeExprID::resolve() const {
+  return referent->resolve();
 }
 
 }

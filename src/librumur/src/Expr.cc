@@ -702,9 +702,9 @@ const TypeExpr *ExprID::type() const {
   if (dynamic_cast<const ConstDecl*>(value) != nullptr) {
     return nullptr;
   } else if (auto t = dynamic_cast<const TypeDecl*>(value)) {
-    return t->value;
+    return t->value->resolve();
   } else if (auto v = dynamic_cast<const VarDecl*>(value)) {
-    return v->type;
+    return v->type->resolve();
   }
   assert(!"unreachable");
   __builtin_unreachable();

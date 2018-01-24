@@ -30,7 +30,7 @@ class TypeExpr : public Node {
 
   TypeExpr *clone() const override = 0;
   virtual size_t size() const = 0;
-
+  virtual const TypeExpr *resolve() const;
 };
 
 class SimpleTypeExpr : public TypeExpr {
@@ -143,6 +143,7 @@ class TypeExprID : public TypeExpr {
 
   void generate(std::ostream &out) const final;
   size_t size() const final;
+  const TypeExpr *resolve() const final;
 };
 
 }
