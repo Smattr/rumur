@@ -13,19 +13,6 @@
 
 namespace rumur {
 
-bool Expr::is_arithmetic() const {
-
-  // Is this a literal?
-  if (type() == nullptr)
-    return true;
-
-  // Is this of a range type?
-  if (dynamic_cast<const Range*>(type()) != nullptr)
-    return true;
-
-  return false;
-}
-
 bool Expr::is_boolean() const {
   return type() != nullptr && *type()->resolve() == Boolean;
 }

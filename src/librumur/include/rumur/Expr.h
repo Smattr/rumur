@@ -34,12 +34,6 @@ class Expr : public Node {
    */
   virtual const TypeExpr *type() const = 0;
 
-  /* Whether this expression can participate in arithmetic expressions (e.g.
-   * addition). This is only true of literals and values of range types. That
-   * is, booleans, enums and complex types are not arithmetic.
-   */
-  bool is_arithmetic() const;
-
   // If this expression is of boolean type.
   bool is_boolean() const;
 
