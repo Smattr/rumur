@@ -69,6 +69,46 @@ Rule::~Rule() {
     delete s;
 }
 
+bool Rule::operator==(const Node &other) const {
+  if (dynamic_cast<const StartState*>(&other) != nullptr)
+    return false;
+  auto o = dynamic_cast<const Rule*>(&other);
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (guard == nullptr) {
+    if (o->guard != nullptr)
+      return false;
+  } else {
+    if (o->guard == nullptr || *guard != *o->guard)
+      return false;
+  }
+  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
+    if (it == decls.end()) {
+      if (it2 != o->decls.end())
+        return false;
+      break;
+    }
+    if (it2 == o->decls.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
+    if (it == body.end()) {
+      if (it2 != o->body.end())
+        return false;
+      break;
+    }
+    if (it2 == o->body.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
+}
+
 /* XXX: Why do we need the explicit moves here? I assumed that we could
  * transparently forward the rvalue references, but it seems they need to be
  * bound to lvalue references which does not happen automatically.
@@ -91,6 +131,44 @@ void StartState::generate(std::ostream &out) const {
   for (const Stmt *s : body)
     out << *s << ";\n";
   out << "})";
+}
+
+bool StartState::operator==(const Node &other) const {
+  auto o = dynamic_cast<const StartState*>(&other);
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (guard == nullptr) {
+    if (o->guard != nullptr)
+      return false;
+  } else {
+    if (o->guard == nullptr || *guard != *o->guard)
+      return false;
+  }
+  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
+    if (it == decls.end()) {
+      if (it2 != o->decls.end())
+        return false;
+      break;
+    }
+    if (it2 == o->decls.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
+    if (it == body.end()) {
+      if (it2 != o->body.end())
+        return false;
+      break;
+    }
+    if (it2 == o->body.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
 }
 
 Invariant::Invariant(const std::string &name_, Expr *guard_,
@@ -131,6 +209,22 @@ void Invariant::generate(std::ostream &out) const {
     << "[](const State &s){return "
     << *guard
     << ";})";
+}
+
+bool Invariant::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Invariant*>(&other);
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (guard == nullptr) {
+    if (o->guard != nullptr)
+      return false;
+  } else {
+    if (o->guard == nullptr || *guard != *o->guard)
+      return false;
+  }
+  return true;
 }
 
 }

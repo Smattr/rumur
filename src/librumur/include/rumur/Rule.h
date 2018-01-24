@@ -28,7 +28,7 @@ class Rule : public Node {
   virtual ~Rule();
   Rule *clone() const override;
   void generate(std::ostream &out) const override;
-
+  bool operator==(const Node &other) const override;
 };
 
 class StartState : public Rule {
@@ -44,7 +44,7 @@ class StartState : public Rule {
   virtual ~StartState() { }
   StartState *clone() const final;
   void generate(std::ostream &out) const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Invariant : public Node {
@@ -62,7 +62,7 @@ class Invariant : public Node {
   virtual ~Invariant();
   Invariant *clone() const final;
   void generate(std::ostream &out) const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 }

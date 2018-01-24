@@ -34,6 +34,11 @@ bool SimpleTypeExpr::is_simple() const {
 
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
   SimpleTypeExpr(loc_), min(min_), max(max_) {
+  if (!min->constant())
+    throw RumurError("lower bound of range is not a constant", min->loc);
+
+  if (!max->constant())
+    throw RumurError("upper bound of range is not a constant", max->loc);
 }
 
 Range::Range(const Range &other):
@@ -56,14 +61,6 @@ Range *Range::clone() const {
   return new Range(*this);
 }
 
-void Range::validate() const {
-  if (!min->constant())
-    throw RumurError("lower bound of range is not a constant", min->loc);
-
-  if (!max->constant())
-    throw RumurError("upper bound of range is not a constant", max->loc);
-}
-
 Range::~Range() {
   delete min;
   delete max;
@@ -72,27 +69,27 @@ Range::~Range() {
 void Range::generate(std::ostream &out) const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
-  // TODO: catch overflow, not constant
   out << "RangeBase<State, " << lb << ", " << ub << ">";
 }
 
 size_t Range::size() const {
-  int64_t lb;
-  try {
-    lb = min->constant_fold();
-  } catch (RumurError e) {
-    throw RumurError("lower bound of range is not constant: ", e);
-  }
-  int64_t ub;
-  try {
-    ub = max->constant_fold();
-  } catch (RumurError e) {
-    throw RumurError("upper bound of range is not constant: ", e);
-  }
+  int64_t lb = min->constant_fold();
+  int64_t ub = max->constant_fold();
   uint64_t range = ub;
   if (__builtin_sub_overflow(ub, lb, &range))
     throw RumurError("range calculation overflows uint64_t", loc);
   return bits_for(range);
+}
+
+bool Range::operator==(const Node &other) const {
+  if (auto o = dynamic_cast<const Range*>(&other))
+    return min->constant_fold() == o->min->constant_fold() &&
+           max->constant_fold() == o->max->constant_fold();
+
+  if (auto o = dynamic_cast<const TypeExprID*>(&other))
+    return *this == *o->referent;
+
+  return false;
 }
 
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
@@ -117,6 +114,16 @@ void Enum::generate(std::ostream &out) const {
 
 size_t Enum::size() const {
   return bits_for(members.size());
+}
+
+bool Enum::operator==(const Node &other) const {
+  if (auto o = dynamic_cast<const Enum*>(&other))
+    return members == o->members;
+
+  if (auto o = dynamic_cast<const TypeExprID*>(&other))
+    return *this == *o->referent;
+
+  return false;
 }
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
@@ -165,6 +172,24 @@ size_t Record::size() const {
   return s;
 }
 
+bool Record::operator==(const Node &other) const {
+  if (auto o = dynamic_cast<const Record*>(&other)) {
+    for (auto it = fields.begin(), it2 = o->fields.begin(); ; it++, it2++) {
+      if (it == fields.end())
+        return it2 == o->fields.end();
+      if (it2 == o->fields.end())
+        return false;
+      if (**it != **it2)
+        return false;
+    }
+  }
+
+  if (auto o = dynamic_cast<const TypeExprID*>(&other))
+    return *this == *o->referent;
+
+  return false;
+}
+
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
 }
@@ -208,6 +233,17 @@ size_t Array::size() const {
   return s;
 }
 
+bool Array::operator==(const Node &other) const {
+  if (auto o = dynamic_cast<const Array*>(&other))
+    return *index_type == *o->index_type
+        && *element_type == *o->element_type;
+
+  if (auto o = dynamic_cast<const TypeExprID*>(&other))
+    return *this == *o->referent;
+
+  return false;
+}
+
 TypeExprID::TypeExprID(const std::string &name_, TypeExpr *referent_,
   const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
@@ -241,6 +277,14 @@ void TypeExprID::generate(std::ostream &out) const {
 
 size_t TypeExprID::size() const {
   return referent->size();
+}
+
+bool TypeExprID::operator==(const Node &other) const {
+  return *this->referent == other;
+}
+
+bool TypeExprID::is_simple() const {
+  return referent->is_simple();
 }
 
 const TypeExpr *TypeExprID::resolve() const {

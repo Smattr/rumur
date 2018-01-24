@@ -63,12 +63,11 @@ class Ternary : public Expr {
   virtual ~Ternary();
 
   Ternary *clone() const final;
-  void validate() const final;
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class BinaryExpr : public Expr {
@@ -86,57 +85,60 @@ class BinaryExpr : public Expr {
   virtual ~BinaryExpr();
 
   BinaryExpr *clone() const override = 0;
-  void validate() const override;
   bool constant() const final;
-
 };
 
-class Implication : public BinaryExpr {
+class BooleanBinaryExpr : public BinaryExpr {
 
  public:
   using BinaryExpr::BinaryExpr;
+  BooleanBinaryExpr() = delete;
+  BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+};
+
+class Implication : public BooleanBinaryExpr {
+
+ public:
+  using BooleanBinaryExpr::BooleanBinaryExpr;
   Implication() = delete;
   Implication &operator=(Implication other);
   Implication *clone() const final;
   virtual ~Implication() { }
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Or : public BinaryExpr {
+class Or : public BooleanBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using BooleanBinaryExpr::BooleanBinaryExpr;
   Or() = delete;
   Or &operator=(Or other);
   virtual ~Or() { }
   Or *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class And : public BinaryExpr {
+class And : public BooleanBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using BooleanBinaryExpr::BooleanBinaryExpr;
   And() = delete;
   And &operator=(And other);
   virtual ~And() { }
   And *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class UnaryExpr : public Expr {
@@ -151,9 +153,7 @@ class UnaryExpr : public Expr {
   UnaryExpr *clone() const override = 0;
   virtual ~UnaryExpr();
 
-  void validate() const override;
   bool constant() const final;
-
 };
 
 class Not : public UnaryExpr {
@@ -161,143 +161,159 @@ class Not : public UnaryExpr {
  public:
   using UnaryExpr::UnaryExpr;
   Not() = delete;
+  Not(Expr *rhs_, const location &loc_);
   Not &operator=(Not other);
   virtual ~Not() { }
   Not *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Lt : public BinaryExpr {
+class ComparisonBinaryExpr : public BinaryExpr {
 
  public:
   using BinaryExpr::BinaryExpr;
+  ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+  ComparisonBinaryExpr() = delete;
+};
+
+class Lt : public ComparisonBinaryExpr {
+
+ public:
+  using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Lt() = delete;
   Lt &operator=(Lt other);
   virtual ~Lt() { }
   Lt *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Leq : public BinaryExpr {
+class Leq : public ComparisonBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Leq() = delete;
   Leq &operator=(Leq other);
   virtual ~Leq() { }
   Leq *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Gt : public BinaryExpr {
+class Gt : public ComparisonBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Gt() = delete;
   Gt &operator=(Gt other);
   virtual ~Gt() { }
   Gt *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Geq : public BinaryExpr {
+class Geq : public ComparisonBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Geq() = delete;
   Geq &operator=(Geq other);
   virtual ~Geq() { }
   Geq *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Eq : public BinaryExpr {
+class EquatableBinaryExpr : public BinaryExpr {
 
  public:
   using BinaryExpr::BinaryExpr;
+  EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+  EquatableBinaryExpr() = delete;
+};
+
+class Eq : public EquatableBinaryExpr {
+
+ public:
+  using EquatableBinaryExpr::EquatableBinaryExpr;
   Eq() = delete;
   Eq &operator=(Eq other);
   virtual ~Eq() { }
   Eq *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Neq : public BinaryExpr {
+class Neq : public EquatableBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using EquatableBinaryExpr::EquatableBinaryExpr;
   Neq() = delete;
   Neq &operator=(Neq other);
   virtual ~Neq() { }
   Neq *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Add : public BinaryExpr {
+class ArithmeticBinaryExpr : public BinaryExpr {
 
  public:
   using BinaryExpr::BinaryExpr;
+  ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc);
+  ArithmeticBinaryExpr() = delete;
+};
+
+class Add : public ArithmeticBinaryExpr {
+
+ public:
+  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Add() = delete;
   Add &operator=(Add other);
   virtual ~Add() { }
   Add *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Sub : public BinaryExpr {
+class Sub : public ArithmeticBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Sub() = delete;
   Sub &operator=(Sub other);
   virtual ~Sub() { }
   Sub *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Negative : public UnaryExpr {
@@ -305,63 +321,60 @@ class Negative : public UnaryExpr {
  public:
   using UnaryExpr::UnaryExpr;
   Negative() = delete;
+  Negative(Expr *rhs_, const location &loc_);
   Negative &operator=(Negative other);
   virtual ~Negative() { }
   Negative *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Mul : public BinaryExpr {
+class Mul : public ArithmeticBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Mul() = delete;
   Mul &operator=(Mul other);
   virtual ~Mul() { }
   Mul *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Div : public BinaryExpr {
+class Div : public ArithmeticBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Div() = delete;
   Div &operator=(Div other);
   virtual ~Div() { }
   Div *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
-class Mod : public BinaryExpr {
+class Mod : public ArithmeticBinaryExpr {
 
  public:
-  using BinaryExpr::BinaryExpr;
+  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Mod() = delete;
   Mod &operator=(Mod other);
   virtual ~Mod() { }
   Mod *clone() const final;
 
-  void validate() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Lvalue : public Expr {
@@ -396,12 +409,11 @@ class ExprID : public Lvalue {
    * results in us re-implementing any applicable method here. It would be
    * simpler if we could just redirect these in a less verbose way.
    */
-  void validate() const final;
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Field : public Lvalue {
@@ -422,7 +434,7 @@ class Field : public Lvalue {
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Element : public Lvalue {
@@ -443,7 +455,7 @@ class Element : public Lvalue {
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Quantifier : public Node {
@@ -464,6 +476,7 @@ class Quantifier : public Node {
   virtual ~Quantifier();
   Quantifier *clone() const final;
   void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
 
  private:
   /* This constructor is delegated to internally.
@@ -493,7 +506,7 @@ class Exists : public Expr {
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Forall : public Expr {
@@ -514,7 +527,7 @@ class Forall : public Expr {
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
   int64_t constant_fold() const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 }

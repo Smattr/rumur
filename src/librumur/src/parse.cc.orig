@@ -35,6 +35,12 @@ Model *parse(std::istream *input) {
   if (err != 0)
     throw RumurError("parsing failed", location());
 
+  /* Validate that the model makes sense. E.g. constant definitions are
+   * actually constant.
+   */
+  assert(m != nullptr);
+  m->validate();
+
   return m;
 }
 

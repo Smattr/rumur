@@ -24,17 +24,11 @@ class Model : public Node {
   virtual ~Model();
   Model *clone() const final;
 
-  void validate() const final;
-
   // Get the size of the state data in bits.
   uint64_t size_bits() const;
 
   void generate(std::ostream &out) const final;
-
- private:
-  // Set the 'offset' members of VarDecls.
-  void index();
-
+  bool operator==(const Node &other) const final;
 };
 
 }

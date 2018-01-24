@@ -15,38 +15,6 @@ namespace rumur {
 
 Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), rules(rules_) {
-  index();
-}
-
-Model::Model(const Model &other):
-  Node(other) {
-  for (const Decl *d : other.decls)
-    decls.push_back(d->clone());
-  for (const Rule *r : other.rules)
-    rules.push_back(r->clone());
-  index();
-}
-
-Model &Model::operator=(Model other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Model &x, Model &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.decls, y.decls);
-  swap(x.rules, y.rules);
-}
-
-Model *Model::clone() const {
-  return new Model(*this);
-}
-
-void Model::validate() const {
-
-  for (const Decl *d : decls)
-    d->validate();
 
   // Check we have at least one start state.
   auto is_start_state = [](const Rule *r) {
@@ -63,7 +31,30 @@ void Model::validate() const {
         throw RumurError("duplicate rule name " + r->name, r->loc);
     }
   }
+}
 
+Model::Model(const Model &other):
+  Node(other) {
+  for (const Decl *d : other.decls)
+    decls.push_back(d->clone());
+  for (const Rule *r : other.rules)
+    rules.push_back(r->clone());
+}
+
+Model &Model::operator=(Model other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Model &x, Model &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.decls, y.decls);
+  swap(x.rules, y.rules);
+}
+
+Model *Model::clone() const {
+  return new Model(*this);
 }
 
 uint64_t Model::size_bits() const {
@@ -86,14 +77,33 @@ void Model::generate(std::ostream &) const {
   // TODO
 }
 
-void Model::index() {
-  size_t offset = 0;
-  for (Decl *d : decls) {
-    if (auto v = dynamic_cast<VarDecl*>(d)) {
-      v->offset = offset;
-      offset += v->type->size();
+bool Model::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Model*>(&other);
+  if (o == nullptr)
+    return false;
+  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
+    if (it == decls.end()) {
+      if (it2 != o->decls.end())
+        return false;
+      break;
     }
+    if (it2 == o->decls.end())
+      return false;
+    if (**it != **it2)
+      return false;
   }
+  for (auto it = rules.begin(), it2 = o->rules.begin(); ; it++, it2++) {
+    if (it == rules.end()) {
+      if (it2 != o->rules.end())
+        return false;
+      break;
+    }
+    if (it2 == o->rules.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
 }
 
 }

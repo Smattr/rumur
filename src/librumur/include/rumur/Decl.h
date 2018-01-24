@@ -24,7 +24,6 @@ class Decl : public Node {
   virtual ~Decl() = 0;
 
   Decl *clone() const override = 0;
-
 };
 
 class ConstDecl : public Decl {
@@ -41,9 +40,8 @@ class ConstDecl : public Decl {
   ConstDecl *clone() const final;
   virtual ~ConstDecl();
 
-  void validate() const final;
   void generate(std::ostream &out) const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class TypeDecl : public Decl {
@@ -60,9 +58,8 @@ class TypeDecl : public Decl {
   TypeDecl *clone() const final;
   virtual ~TypeDecl();
 
-  void validate() const final;
   void generate(std::ostream &out) const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class VarDecl : public Decl {
@@ -93,7 +90,7 @@ class VarDecl : public Decl {
   virtual ~VarDecl();
 
   void generate(std::ostream &out) const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 }

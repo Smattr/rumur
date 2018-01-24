@@ -18,6 +18,8 @@ Decl::~Decl() {
 ConstDecl::ConstDecl(const std::string &name_, const Expr *value_,
   const location &loc_):
   Decl(name_, loc_), value(value_->clone()) {
+  if (!value->constant())
+    throw RumurError("const definition is not a constant", value->loc);
 }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
@@ -40,12 +42,6 @@ ConstDecl *ConstDecl::clone() const {
   return new ConstDecl(*this);
 }
 
-void ConstDecl::validate() const {
-  value->validate();
-  if (!value->constant())
-    throw RumurError("const definition is not a constant", value->loc);
-}
-
 void ConstDecl::generate(std::ostream &out) const {
   int64_t v = value->constant_fold();
   out << "[[gnu::unused]] static const Number ru_u_" << name << "(INT64_C(" << v << "))";
@@ -53,6 +49,11 @@ void ConstDecl::generate(std::ostream &out) const {
 
 ConstDecl::~ConstDecl() {
   delete value;
+}
+
+bool ConstDecl::operator==(const Node &other) const {
+  auto o = dynamic_cast<const ConstDecl*>(&other);
+  return o != nullptr && name == o->name && *value == *o->value;
 }
 
 TypeDecl::TypeDecl(const std::string &name_, TypeExpr *value_,
@@ -80,16 +81,17 @@ TypeDecl *TypeDecl::clone() const {
   return new TypeDecl(*this);
 }
 
-void TypeDecl::validate() const {
-  value->validate();
-}
-
 TypeDecl::~TypeDecl() {
   delete value;
 }
 
 void TypeDecl::generate(std::ostream &out) const {
   out << "using ru_u_" << name << " = " << *value;
+}
+
+bool TypeDecl::operator==(const Node &other) const {
+  auto o = dynamic_cast<const TypeDecl*>(&other);
+  return o != nullptr && name == o->name && *value == *o->value;
 }
 
 VarDecl::VarDecl(const std::string &name_, TypeExpr *type_,
@@ -125,6 +127,12 @@ void VarDecl::generate(std::ostream &out) const {
 
 VarDecl::~VarDecl() {
   delete type;
+}
+
+bool VarDecl::operator==(const Node &other) const {
+  auto o = dynamic_cast<const VarDecl*>(&other);
+  return o != nullptr && name == o->name && *type == *o->type
+      && state_variable == o->state_variable && offset == o->offset;
 }
 
 }

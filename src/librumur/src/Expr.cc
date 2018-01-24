@@ -26,24 +26,15 @@ bool Expr::is_arithmetic() const {
   return false;
 }
 
-static void expect_arithmetic(const Expr *e) {
-  if (!e->is_arithmetic())
-    throw RumurError("expected arithmetic expression is not arithmetic",
-      e->loc);
-}
-
 bool Expr::is_boolean() const {
-  return type() == &Boolean;
-}
-
-static void expect_boolean(const Expr *e) {
-  if (!e->is_boolean())
-    throw RumurError("expected boolean expression is not a boolean",
-      e->loc);
+  return type() != nullptr && *type()->resolve() == Boolean;
 }
 
 Ternary::Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
+
+  if (!cond->is_boolean())
+    throw RumurError("ternary condition is not a boolean", cond->loc);
 }
 
 Ternary::Ternary(const Ternary &other):
@@ -74,18 +65,13 @@ Ternary::~Ternary() {
   delete rhs;
 }
 
-void Ternary::validate() const {
-  cond->validate();
-  lhs->validate();
-  rhs->validate();
-
-  expect_boolean(cond);
-
-  // TODO: check lhs and rhs have the same type
-}
-
 bool Ternary::constant() const {
   return cond->constant() && lhs->constant() && rhs->constant();
+}
+
+bool Ternary::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Ternary*>(&other);
+  return o != nullptr && *cond == *o->cond && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 const TypeExpr *Ternary::type() const {
@@ -116,11 +102,6 @@ void swap(BinaryExpr &x, BinaryExpr &y) noexcept {
   swap(x.rhs, y.rhs);
 }
 
-void BinaryExpr::validate() const {
-  lhs->validate();
-  rhs->validate();
-}
-
 bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
 }
@@ -130,6 +111,16 @@ BinaryExpr::~BinaryExpr() {
   delete rhs;
 }
 
+BooleanBinaryExpr::BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+  BinaryExpr(lhs_, rhs_, loc_) {
+  if (!lhs->is_boolean())
+    throw RumurError("left hand side of expression is not a boolean", lhs->loc);
+
+  if (!rhs->is_boolean())
+    throw RumurError("right hand side of expression is not a boolean",
+      rhs->loc);
+}
+
 Implication &Implication::operator=(Implication other) {
   swap(*this, other);
   return *this;
@@ -137,13 +128,6 @@ Implication &Implication::operator=(Implication other) {
 
 Implication *Implication::clone() const {
   return new Implication(*this);
-}
-
-void Implication::validate() const {
-  BinaryExpr::validate();
-
-  expect_boolean(lhs);
-  expect_boolean(rhs);
 }
 
 const TypeExpr *Implication::type() const {
@@ -158,6 +142,11 @@ int64_t Implication::constant_fold() const {
   return !lhs->constant_fold() || rhs->constant_fold();
 }
 
+bool Implication::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Implication*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Or &Or::operator=(Or other) {
   swap(*this, other);
   return *this;
@@ -165,13 +154,6 @@ Or &Or::operator=(Or other) {
 
 Or *Or::clone() const {
   return new Or(*this);
-}
-
-void Or::validate() const {
-  BinaryExpr::validate();
-
-  expect_boolean(lhs);
-  expect_boolean(rhs);
 }
 
 const TypeExpr *Or::type() const {
@@ -186,6 +168,11 @@ int64_t Or::constant_fold() const {
   return lhs->constant_fold() || rhs->constant_fold();
 }
 
+bool Or::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Or*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 And &And::operator=(And other) {
   swap(*this, other);
   return *this;
@@ -193,13 +180,6 @@ And &And::operator=(And other) {
 
 And *And::clone() const {
   return new And(*this);
-}
-
-void And::validate() const {
-  BinaryExpr::validate();
-
-  expect_boolean(lhs);
-  expect_boolean(rhs);
 }
 
 const TypeExpr *And::type() const {
@@ -212,6 +192,11 @@ void And::generate(std::ostream &out) const {
 
 int64_t And::constant_fold() const {
   return lhs->constant_fold() && rhs->constant_fold();
+}
+
+bool And::operator==(const Node &other) const {
+  auto o = dynamic_cast<const And*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 UnaryExpr::UnaryExpr(Expr *rhs_, const location &loc_):
@@ -232,12 +217,14 @@ UnaryExpr::~UnaryExpr() {
   delete rhs;
 }
 
-void UnaryExpr::validate() const {
-  rhs->validate();
-}
-
 bool UnaryExpr::constant() const {
   return rhs->constant();
+}
+
+Not::Not(Expr *rhs_, const location &loc_):
+  UnaryExpr(rhs_, loc_) {
+  if (!rhs->is_boolean())
+    throw RumurError("argument to ! is not a boolean", rhs->loc);
 }
 
 Not &Not::operator=(Not other) {
@@ -247,12 +234,6 @@ Not &Not::operator=(Not other) {
 
 Not *Not::clone() const {
   return new Not(*this);
-}
-
-void Not::validate() const {
-  UnaryExpr::validate();
-
-  expect_boolean(rhs);
 }
 
 const TypeExpr *Not::type() const {
@@ -267,6 +248,30 @@ int64_t Not::constant_fold() const {
   return !rhs->constant_fold();
 }
 
+bool Not::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Not*>(&other);
+  return o != nullptr && *rhs == *o->rhs;
+}
+
+static bool comparable(const Expr &lhs, const Expr &rhs) {
+  auto t1 = dynamic_cast<const Range*>(lhs.type());
+  auto t2 = dynamic_cast<const Range*>(rhs.type());
+
+  if (lhs.type() == nullptr)
+    return rhs.type() == nullptr || t2 != nullptr;
+
+  if (rhs.type() == nullptr)
+    return lhs.type() == nullptr || t1 != nullptr;
+
+  return t1 != nullptr && t2 != nullptr && *t1 == *t2;
+}
+
+ComparisonBinaryExpr::ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+  BinaryExpr(lhs_, rhs_, loc_) {
+  if (!comparable(*lhs, *rhs))
+    throw RumurError("expressions are not comparable", loc);
+}
+
 Lt &Lt::operator=(Lt other) {
   swap(*this, other);
   return *this;
@@ -274,13 +279,6 @@ Lt &Lt::operator=(Lt other) {
 
 Lt *Lt::clone() const {
   return new Lt(*this);
-}
-
-void Lt::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Lt::type() const {
@@ -295,6 +293,11 @@ int64_t Lt::constant_fold() const {
   return lhs->constant_fold() < rhs->constant_fold();
 }
 
+bool Lt::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Lt*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Leq &Leq::operator=(Leq other) {
   swap(*this, other);
   return *this;
@@ -302,13 +305,6 @@ Leq &Leq::operator=(Leq other) {
 
 Leq *Leq::clone() const {
   return new Leq(*this);
-}
-
-void Leq::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Leq::type() const {
@@ -323,6 +319,11 @@ int64_t Leq::constant_fold() const {
   return lhs->constant_fold() <= rhs->constant_fold();
 }
 
+bool Leq::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Leq*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Gt &Gt::operator=(Gt other) {
   swap(*this, other);
   return *this;
@@ -330,13 +331,6 @@ Gt &Gt::operator=(Gt other) {
 
 Gt *Gt::clone() const {
   return new Gt(*this);
-}
-
-void Gt::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Gt::type() const {
@@ -351,6 +345,11 @@ int64_t Gt::constant_fold() const {
   return lhs->constant_fold() > rhs->constant_fold();
 }
 
+bool Gt::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Gt*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Geq &Geq::operator=(Geq other) {
   swap(*this, other);
   return *this;
@@ -358,13 +357,6 @@ Geq &Geq::operator=(Geq other) {
 
 Geq *Geq::clone() const {
   return new Geq(*this);
-}
-
-void Geq::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Geq::type() const {
@@ -379,6 +371,33 @@ int64_t Geq::constant_fold() const {
   return lhs->constant_fold() >= rhs->constant_fold();
 }
 
+bool Geq::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Geq*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+static bool equatable(const Expr &lhs, const Expr &rhs) {
+  auto t1 = dynamic_cast<const Range*>(lhs.type());
+  auto t2 = dynamic_cast<const Range*>(rhs.type());
+  auto t3 = dynamic_cast<const Enum*>(lhs.type());
+  auto t4 = dynamic_cast<const Enum*>(rhs.type());
+
+  if (lhs.type() == nullptr)
+    return rhs.type() == nullptr || t2 != nullptr;
+
+  if (rhs.type() == nullptr)
+    return lhs.type() == nullptr || t1 != nullptr;
+
+  return (t1 != nullptr && t2 != nullptr && *t1 == *t2)
+      || (t3 != nullptr && t4 != nullptr && *t3 == *t4);
+}
+
+EquatableBinaryExpr::EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+  BinaryExpr(lhs_, rhs_, loc_) {
+  if (!equatable(*lhs, *rhs))
+    throw RumurError("expressions are not comparable", loc);
+}
+
 Eq &Eq::operator=(Eq other) {
   swap(*this, other);
   return *this;
@@ -386,23 +405,6 @@ Eq &Eq::operator=(Eq other) {
 
 Eq *Eq::clone() const {
   return new Eq(*this);
-}
-
-void Eq::validate() const {
-  BinaryExpr::validate();
-
-  if (lhs->is_boolean()) {
-    if (!rhs->is_boolean()) {
-      throw RumurError("left hand side of comparison is boolean but "
-        "right hand side is not", loc);
-    }
-  } else if (lhs->is_arithmetic()) {
-    if (!rhs->is_arithmetic()) {
-      throw RumurError("left hand side of comparison is arithmetic but "
-        "right hand side is not", loc);
-    }
-  }
-  // TODO test other comparable pairs
 }
 
 const TypeExpr *Eq::type() const {
@@ -417,6 +419,11 @@ int64_t Eq::constant_fold() const {
   return lhs->constant_fold() == rhs->constant_fold();
 }
 
+bool Eq::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Eq*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Neq &Neq::operator=(Neq other) {
   swap(*this, other);
   return *this;
@@ -424,23 +431,6 @@ Neq &Neq::operator=(Neq other) {
 
 Neq *Neq::clone() const {
   return new Neq(*this);
-}
-
-void Neq::validate() const {
-  BinaryExpr::validate();
-
-  if (lhs->is_boolean()) {
-    if (!rhs->is_boolean()) {
-      throw RumurError("left hand side of comparison is boolean but "
-        "right hand side is not", loc);
-    }
-  } else if (lhs->is_arithmetic()) {
-    if (!rhs->is_arithmetic()) {
-      throw RumurError("left hand side of comparison is arithmetic but "
-        "right hand side is not", loc);
-    }
-  }
-  // TODO test other comparable pairs
 }
 
 const TypeExpr *Neq::type() const {
@@ -455,6 +445,31 @@ int64_t Neq::constant_fold() const {
   return lhs->constant_fold() != rhs->constant_fold();
 }
 
+bool Neq::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Neq*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+static bool arithmetic(const Expr &lhs, const Expr &rhs) {
+  auto t1 = dynamic_cast<const Range*>(lhs.type());
+  auto t2 = dynamic_cast<const Range*>(rhs.type());
+
+  if (lhs.type() == nullptr)
+    return rhs.type() == nullptr || t2 != nullptr;
+
+  if (rhs.type() == nullptr)
+    return lhs.type() == nullptr || t1 != nullptr;
+
+  return t1 != nullptr && t2 != nullptr && *t1 == *t2;
+}
+
+ArithmeticBinaryExpr::ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+  BinaryExpr(lhs_, rhs_, loc_) {
+  if (!arithmetic(*lhs, *rhs))
+    throw RumurError("expressions are incompatible in arithmetic expression",
+      loc);
+}
+
 Add &Add::operator=(Add other) {
   swap(*this, other);
   return *this;
@@ -462,13 +477,6 @@ Add &Add::operator=(Add other) {
 
 Add *Add::clone() const {
   return new Add(*this);
-}
-
-void Add::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Add::type() const {
@@ -489,6 +497,11 @@ int64_t Add::constant_fold() const {
   return r;
 }
 
+bool Add::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Add*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Sub &Sub::operator=(Sub other) {
   swap(*this, other);
   return *this;
@@ -496,13 +509,6 @@ Sub &Sub::operator=(Sub other) {
 
 Sub *Sub::clone() const {
   return new Sub(*this);
-}
-
-void Sub::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Sub::type() const {
@@ -523,9 +529,15 @@ int64_t Sub::constant_fold() const {
   return r;
 }
 
-void Negative::validate() const {
-  rhs->validate();
-  expect_arithmetic(rhs);
+bool Sub::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Sub*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+Negative::Negative(Expr *rhs_, const location &loc_):
+  UnaryExpr(rhs_, loc_) {
+  if (rhs->type() != nullptr && dynamic_cast<const Range*>(rhs->type()) != nullptr)
+    throw RumurError("expression cannot be negated", rhs->loc);
 }
 
 Negative &Negative::operator=(Negative other) {
@@ -552,6 +564,11 @@ int64_t Negative::constant_fold() const {
   return -a;
 }
 
+bool Negative::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Negative*>(&other);
+  return o != nullptr && *rhs == *o->rhs;
+}
+
 Mul &Mul::operator=(Mul other) {
   swap(*this, other);
   return *this;
@@ -559,13 +576,6 @@ Mul &Mul::operator=(Mul other) {
 
 Mul *Mul::clone() const {
   return new Mul(*this);
-}
-
-void Mul::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Mul::type() const {
@@ -586,6 +596,11 @@ int64_t Mul::constant_fold() const {
   return r;
 }
 
+bool Mul::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Mul*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Div &Div::operator=(Div other) {
   swap(*this, other);
   return *this;
@@ -593,13 +608,6 @@ Div &Div::operator=(Div other) {
 
 Div *Div::clone() const {
   return new Div(*this);
-}
-
-void Div::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Div::type() const {
@@ -622,6 +630,11 @@ int64_t Div::constant_fold() const {
   return a / b;
 }
 
+bool Div::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Div*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
 Mod &Mod::operator=(Mod other) {
   swap(*this, other);
   return *this;
@@ -629,13 +642,6 @@ Mod &Mod::operator=(Mod other) {
 
 Mod *Mod::clone() const {
   return new Mod(*this);
-}
-
-void Mod::validate() const {
-  BinaryExpr::validate();
-
-  expect_arithmetic(lhs);
-  expect_arithmetic(rhs);
 }
 
 const TypeExpr *Mod::type() const {
@@ -656,6 +662,11 @@ int64_t Mod::constant_fold() const {
     throw RumurError("overflow in " + std::to_string(a) + " % "
       + std::to_string(b), loc);
   return a % b;
+}
+
+bool Mod::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Mod*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 /* Cheap trick: this destructor is pure virtual in the class declaration, making
@@ -692,12 +703,6 @@ bool ExprID::constant() const {
   return dynamic_cast<const ConstDecl*>(value) != nullptr;
 }
 
-void ExprID::validate() const {
-  // FIXME: Is this relevant? An ExprID is just referencing another expression
-  // we've probably already checked.
-  //value->validate();
-}
-
 const TypeExpr *ExprID::type() const {
   if (dynamic_cast<const ConstDecl*>(value) != nullptr) {
     return nullptr;
@@ -728,6 +733,11 @@ int64_t ExprID::constant_fold() const {
   if (auto c = dynamic_cast<const ConstDecl*>(value))
     return c->value->constant_fold();
   throw RumurError("symbol \"" + id + "\" is not a constant", loc);
+}
+
+bool ExprID::operator==(const Node &other) const {
+  auto o = dynamic_cast<const ExprID*>(&other);
+  return o != nullptr && id == o->id && *value == *o->value;
 }
 
 Field::Field(Lvalue *record_, const std::string &field_, const location &loc_):
@@ -775,6 +785,11 @@ int64_t Field::constant_fold() const {
   throw RumurError("field expression used in constant", loc);
 }
 
+bool Field::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Field*>(&other);
+  return o != nullptr && *record == *o->record && field == o->field;
+}
+
 Element::Element(Lvalue *array_, Expr *index_, const location &loc_):
   Lvalue(loc_), array(array_), index(index_) {
 }
@@ -819,6 +834,11 @@ void Element::generate(std::ostream &out) const {
 
 int64_t Element::constant_fold() const {
   throw RumurError("array element used in constant", loc);
+}
+
+bool Element::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Element*>(&other);
+  return o != nullptr && *array == *o->array && *index == *o->index;
 }
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
@@ -874,8 +894,26 @@ void Quantifier::generate(std::ostream &out) const {
   out << "for(" << var->name << "...";
 }
 
+bool Quantifier::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Quantifier*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*var != *o->var)
+    return false;
+  if (step == nullptr) {
+    if (o->step != nullptr)
+      return false;
+  } else {
+    if (o->step == nullptr || *step != *o->step)
+      return false;
+  }
+  return true;
+}
+
 Exists::Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
+  if (!expr->is_boolean())
+    throw RumurError("expression in exists is not boolean", expr->loc);
 }
 
 Exists::Exists(const Exists &other):
@@ -911,6 +949,11 @@ Exists::~Exists() {
   delete expr;
 }
 
+bool Exists::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Exists*>(&other);
+  return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
+}
+
 void Exists::generate(std::ostream &out) const {
   out << "({bool ru_g_TODO=false;" << *quantifier << "{if(" << *expr
     << "){ru_g_TODO=true;break;}}ru_g_TODO;})";
@@ -922,6 +965,8 @@ int64_t Exists::constant_fold() const {
 
 Forall::Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
+  if (!expr->is_boolean())
+    throw RumurError("expression in forall is not boolean", expr->loc);
 }
 
 Forall::Forall(const Forall &other):
@@ -964,6 +1009,11 @@ void Forall::generate(std::ostream &out) const {
 
 int64_t Forall::constant_fold() const {
   throw RumurError("forall expression used in constant", loc);
+}
+
+bool Forall::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Forall*>(&other);
+  return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
 }
 
 }

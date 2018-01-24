@@ -35,15 +35,21 @@ Assert::~Assert() {
   delete expr;
 }
 
-void Assert::validate() const { }
-
 void Assert::generate(std::ostream &out) const {
   out << "if (__builtin_expect(!" << *expr << ", 0)) {\nthrow Error(\""
     << message << "\");\n}";
 }
 
+bool Assert::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Assert*>(&other);
+  return o != nullptr && *expr == *o->expr && message == o->message;
+}
+
 Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) {
+  if (!lhs->type()->is_simple())
+    throw RumurError("left hand side of assignment does not have a simple "
+      "type", lhs->loc);
 }
 
 Assignment::Assignment(const Assignment &other):
@@ -71,16 +77,13 @@ Assignment::~Assignment() {
   delete rhs;
 }
 
-void Assignment::validate() const {
-  lhs->validate();
-  if (dynamic_cast<const SimpleTypeExpr*>(lhs->type()) == nullptr)
-    throw RumurError("left hand side of assignment does not have a simple "
-      "type", lhs->loc);
-  rhs->validate();
-}
-
 void Assignment::generate(std::ostream &out) const {
   out << *lhs << " = " << *rhs;
+}
+
+bool Assignment::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Assignment*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 Error::Error(const std::string &message_, const location &loc_):
@@ -104,10 +107,13 @@ Error *Error::clone() const {
   return new Error(*this);
 }
 
-void Error::validate() const { }
-
 void Error::generate(std::ostream &out) const {
   out << "throw Error(\"" << message << "\")";
+}
+
+bool Error::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Error*>(&other);
+  return o != nullptr && message == o->message;
 }
 
 }

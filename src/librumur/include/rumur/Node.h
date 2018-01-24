@@ -18,11 +18,14 @@ class Node {
   Node &operator=(Node&&) = default;
   virtual ~Node() { }
 
-  virtual void validate() const {  }
-
   virtual Node *clone() const = 0;
 
   virtual void generate(std::ostream &out) const = 0;
+
+  virtual bool operator==(const Node &other) const = 0;
+  bool operator!=(const Node &other) const {
+    return !(*this == other);
+  }
 
 };
 

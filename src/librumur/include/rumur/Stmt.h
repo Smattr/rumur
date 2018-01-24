@@ -37,9 +37,8 @@ class Assert : public Stmt {
   Assert *clone() const final;
   virtual ~Assert();
 
-  void validate() const final;
-
   void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
 };
 
 class Assignment : public Stmt {
@@ -56,10 +55,8 @@ class Assignment : public Stmt {
   Assignment *clone() const final;
   virtual ~Assignment();
 
-  void validate() const final;
-
   void generate(std::ostream &out) const final;
-
+  bool operator==(const Node &other) const final;
 };
 
 class Error : public Stmt {
@@ -75,9 +72,8 @@ class Error : public Stmt {
    Error *clone() const final;
    virtual ~Error() { }
 
-   void validate() const final;
-
    void generate(std::ostream &out) const final;
+   bool operator==(const Node &other) const final;
 };
 
 }
