@@ -479,6 +479,7 @@ struct RangeBase {
     int64_t value;
 
    public:
+    // TODO: support a step value in the ctor?
     iterator(int64_t value_): value(value_) { }
 
     iterator operator+(int64_t v) const {

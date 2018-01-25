@@ -117,6 +117,7 @@ size_t Enum::size() const {
 }
 
 bool Enum::operator==(const Node &other) const {
+  // FIXME: ignore location of member definitions in the following comparison
   if (auto o = dynamic_cast<const Enum*>(&other))
     return members == o->members;
 
