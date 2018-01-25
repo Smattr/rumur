@@ -73,8 +73,54 @@ Model::~Model() {
     delete r;
 }
 
-void Model::generate(std::ostream &) const {
-  // TODO
+static bool is_regular_rule(const Rule *r) {
+  return dynamic_cast<const StartState*>(r) == nullptr &&
+         dynamic_cast<const Invariant*>(r) == nullptr;
+}
+
+void Model::generate(std::ostream &out) const {
+
+  out
+
+    // Specialise classes
+    << "using State = StateBase<" << size_bits() << ">;\n"
+    << "using StartState = StartStateBase<State>;\n"
+    << "using Invariant = InvariantBase<State>;\n"
+    << "using Rule = RuleBase<State>;\n\n"
+
+    // Boolean boiler plate
+    << "using ru_u_boolean = boolean<State>;\n"
+    << "[[gnu::unused]] static const ru_u_boolean ru_u_false(false);\n"
+    << "[[gnu::unused]] static const ru_u_boolean ru_u_true(true);\n\n";
+
+  // Write out constants and type declarations.
+  for (const Decl *d : decls)
+    out << *d << ";\n";
+  out << "\n";
+
+  // Write out the start state rules.
+  out << "static const std::vector<StartState> START_RULES = {\n";
+  for (const Rule *r : rules) {
+    if (auto s = dynamic_cast<const StartState*>(r))
+      out << *s << ",\n";
+  }
+  out << "};\n\n";
+
+  // Write out the invariant rules.
+  out << "static const std::vector<Invariant> INVARIANTS = {\n";
+  for (const Rule *r : rules) {
+    if (auto i = dynamic_cast<const Invariant*>(r))
+      out << *i << ",\n";
+  }
+  out << "};\n\n";
+
+  // Write out the regular rules.
+  out << "static const std::vector<Rule> RULES = {\n";
+  for (const Rule *r : rules) {
+    if (is_regular_rule(r))
+      out << *r << ",\n";
+  }
+  out << "};\n\n";
 }
 
 bool Model::operator==(const Node &other) const {
