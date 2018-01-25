@@ -1,4 +1,5 @@
 #include <cassert>
+#include <ctime>
 #include <bitset>
 #include <cstdarg>
 #include <cstdint>

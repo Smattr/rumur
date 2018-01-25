@@ -13,6 +13,12 @@ struct state_eq {
 static void print_counterexample(const State*) {
 }
 
+static const time_t START_TIME = time(nullptr);
+
+static unsigned long long gettime() {
+  return (unsigned long long)(time(nullptr) - START_TIME);
+}
+
 int main(void) {
 
   /* A queue of states to expand. A data structure invariant we maintain on
@@ -63,6 +69,12 @@ int main(void) {
         if (!seen.insert(next).second) {
           delete next;
           continue;
+        }
+
+        // Print progress every now and then
+        if (seen.size() % 1000 == 0) {
+          print("%zu states seen in %llu seconds, %zu states in queue\n",
+            seen.size(), gettime(), q.size());
         }
 
         for (const Invariant &inv : INVARIANTS) {
