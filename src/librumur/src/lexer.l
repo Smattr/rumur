@@ -164,8 +164,7 @@ var {
 [[:space:]] {}
 
 . {
-  /* FIXME: the location here is bogus */
-  throw rumur::RumurError(std::string("unexpected character: '") + YYText() + "'", location());
+  throw rumur::RumurError(std::string("unexpected character: '") + YYText() + "'", *loc);
 }
 
   /* Comment handling. */
