@@ -273,12 +273,12 @@ rule: startstate {
   $$ = $1;
 };
 
-startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-  $$ = new rumur::StartState($2, std::move($3), std::move($4), @$);
+startstate: STARTSTATE string_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endstartstate {
+  $$ = new rumur::StartState($2, std::move($4), std::move($5), @$);
 };
 
-simplerule: RULE string_opt guard_opt decls_header stmts endrule {
-  $$ = new rumur::Rule($2, $3, std::move($4), std::move($5), @$);
+simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endrule {
+  $$ = new rumur::Rule($2, $3, std::move($5), std::move($6), @$);
 };
 
 guard_opt: expr ARROW {
