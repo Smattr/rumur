@@ -122,7 +122,11 @@ VarDecl *VarDecl::clone() const {
 }
 
 void VarDecl::generate(std::ostream &out) const {
-  out << "using ru_u_" << name << " = " << *type;
+  if (state_variable) {
+    out << "using ru_u_" << name << " = " << *type;
+  } else {
+    out << "auto ru_u_" << name << " = " << *type << "::make()";
+  }
 }
 
 VarDecl::~VarDecl() {

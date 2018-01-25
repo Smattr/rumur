@@ -128,7 +128,8 @@ void StartState::generate(std::ostream &out) const {
 
     // body
     << "[](State &s){\n";
-  // TODO: decls
+  for (const Decl *d : decls)
+    out << *d << ";\n";
   for (const Stmt *s : body)
     out << *s << ";\n";
   out << "})";

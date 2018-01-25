@@ -295,6 +295,10 @@ struct RangeBase {
     return *this;
   }
 
+  static RangeBase make() {
+    return RangeBase(MIN);
+  }
+
   static RangeBase make(STATE_T &s, size_t offset) {
     return RangeBase(s, offset);
   }
@@ -650,6 +654,11 @@ class boolean {
  public:
   boolean() = delete;
   boolean(bool value_): value(value_) { }
+
+  static boolean make() {
+    return boolean(false);
+  }
+
   boolean(const boolean&) = default;
   boolean(boolean&&) = default;
 
