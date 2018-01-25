@@ -399,10 +399,6 @@ class ExprID : public Lvalue {
   virtual ~ExprID();
   ExprID *clone() const final;
 
-  /* FIXME: This object is basically a proxy for other expression types, which
-   * results in us re-implementing any applicable method here. It would be
-   * simpler if we could just redirect these in a less verbose way.
-   */
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out) const final;
