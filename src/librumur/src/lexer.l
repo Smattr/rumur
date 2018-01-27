@@ -101,6 +101,10 @@ forall {
   return rumur::parser::token::FORALL;
 }
 
+invariant {
+  return rumur::parser::token::INVARIANT;
+}
+
 record {
   return rumur::parser::token::RECORD;
 }

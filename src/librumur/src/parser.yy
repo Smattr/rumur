@@ -114,6 +114,7 @@
 %token GEQ
 %token <std::string> ID
 %token IMPLIES
+%token INVARIANT
 %token LEQ
 %token NEQ
 %token <std::string> NUMBER
@@ -144,6 +145,7 @@
 %type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
+%type <rumur::Invariant*>                                    invariant
 %type <rumur::Quantifier*>                                   quantifier
 %type <rumur::Rule*>                                         rule
 %type <std::vector<rumur::Rule*>>                            rules
@@ -271,6 +273,8 @@ rule: startstate {
   $$ = $1;
 } | simplerule {
   $$ = $1;
+} | invariant {
+  $$ = $1;
 };
 
 startstate: STARTSTATE string_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endstartstate {
@@ -280,6 +284,10 @@ startstate: STARTSTATE string_opt { symtab.open_scope(); } decls_header stmts { 
 simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endrule {
   $$ = new rumur::SimpleRule($2, $3, std::move($5), std::move($6), @$);
 };
+
+invariant: INVARIANT string_opt expr {
+  $$ = new rumur::Invariant($2, $3, @$);
+}
 
 guard_opt: expr ARROW {
   $$ = $1;
