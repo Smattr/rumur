@@ -73,11 +73,6 @@ Model::~Model() {
     delete r;
 }
 
-static bool is_regular_rule(const Rule *r) {
-  return dynamic_cast<const StartState*>(r) == nullptr &&
-         dynamic_cast<const Invariant*>(r) == nullptr;
-}
-
 void Model::generate(std::ostream &out) const {
 
   out
@@ -117,8 +112,8 @@ void Model::generate(std::ostream &out) const {
   // Write out the regular rules.
   out << "static const std::vector<Rule> RULES = {\n";
   for (const Rule *r : rules) {
-    if (is_regular_rule(r))
-      out << *r << ",\n";
+    if (auto s = dynamic_cast<const SimpleRule*>(r))
+      out << *s << ",\n";
   }
   out << "};\n\n";
 }

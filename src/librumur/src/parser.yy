@@ -148,7 +148,7 @@
 %type <rumur::Rule*>                                         rule
 %type <std::vector<rumur::Rule*>>                            rules
 %type <std::vector<rumur::Rule*>>                            rules_cont
-%type <rumur::Rule*>                                         simplerule
+%type <rumur::SimpleRule*>                                   simplerule
 %type <rumur::StartState*>                                   startstate
 %type <rumur::Stmt*>                                         stmt
 %type <std::vector<rumur::Stmt*>>                            stmts
@@ -278,7 +278,7 @@ startstate: STARTSTATE string_opt { symtab.open_scope(); } decls_header stmts { 
 };
 
 simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endrule {
-  $$ = new rumur::Rule($2, $3, std::move($5), std::move($6), @$);
+  $$ = new rumur::SimpleRule($2, $3, std::move($5), std::move($6), @$);
 };
 
 guard_opt: expr ARROW {
