@@ -204,7 +204,7 @@ constdecls: constdecls constdecl {
 
 constdecl: ID ':' expr ';' {
   $$ = new rumur::ConstDecl($1, $3, @$);
-  symtab.declare($1, *$3);
+  symtab.declare($1, *$$);
 };
 
 typedecls: typedecls typedecl {
