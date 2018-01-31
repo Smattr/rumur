@@ -10,7 +10,19 @@ struct state_eq {
   }
 };
 
-static void print_counterexample(const State*) {
+static unsigned print_counterexample(const State &s) {
+  /* Recurse so that we print the states in reverse-linked order, which
+   * corresponds to the order in which they were traversed.
+   */
+  unsigned step = 0;
+  if (s.previous != nullptr) {
+    step = print_counterexample(*s.previous) + 1;
+  }
+
+  print("State %u:\n", step);
+  print_state(s);
+  print("------------------------------------------------------------\n");
+  return step;
 }
 
 static const time_t START_TIME = time(nullptr);
