@@ -1,6 +1,7 @@
 #include <cassert>
 #include <ctime>
 #include <bitset>
+#include <cinttypes>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -262,6 +263,10 @@ struct Number {
   bool operator>=(const Number &other) const {
     return value >= other.value;
   }
+
+  void print(FILE *f, const char *title) const {
+    fprintf(f, "%s = %" PRId64, title, value);
+  }
 };
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
@@ -470,6 +475,10 @@ struct RangeBase {
     } else {
       value = v;
     }
+  }
+
+  void print(FILE *f, const char *title) const {
+    fprintf(f, "%s = %" PRId64, title, get_value());
   }
 
  private:
@@ -693,5 +702,9 @@ class boolean {
     } else {
       value = v;
     }
+  }
+
+  void print(FILE *f, const char *title) const {
+    fprintf(f, "%s = %s", title, get_value());
   }
 };
