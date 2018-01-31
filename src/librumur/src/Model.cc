@@ -26,7 +26,7 @@ Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const loc
   // Check all rule names are distinct.
   std::unordered_set<std::string> names;
   for (const Rule *r : rules) {
-    if (r->name != "") {
+    if (r->name != "<unnamed>") {
       if (!names.insert(r->name).second)
         throw RumurError("duplicate rule name " + r->name, r->loc);
     }
