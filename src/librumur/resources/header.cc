@@ -1,3 +1,7 @@
+#ifndef __OPTIMIZE__
+  #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
+#endif
+
 #include <cassert>
 #include <ctime>
 #include <bitset>
