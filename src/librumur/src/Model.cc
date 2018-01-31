@@ -116,6 +116,17 @@ void Model::generate(std::ostream &out) const {
       out << *s << ",\n";
   }
   out << "};\n\n";
+
+  // Write a function to print the state.
+  out << "static void print_state(const State &s) {\n";
+  for (const Decl *d : decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d)) {
+      out << "  ru_u_" << v->name << "::make(s, size_t(" << v->offset
+        << ")).print(stdout, \"" << v->name << "\");\n"
+        << "  print(\"\\n\");\n";
+    }
+  }
+  out << "}\n\n";
 }
 
 bool Model::operator==(const Node &other) const {
