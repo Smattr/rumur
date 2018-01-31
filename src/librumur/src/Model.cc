@@ -122,8 +122,8 @@ void Model::generate(std::ostream &out) const {
   for (const Decl *d : decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d)) {
       out << "  ru_u_" << v->name << "::make(s, size_t(" << v->offset
-        << ")).print(stdout, \"" << v->name << "\");\n"
-        << "  print(\"\\n\");\n";
+        << ")).print(stderr, \"" << v->name << "\");\n"
+        << "  fprint(stderr, \"\\n\");\n";
     }
   }
   out << "}\n\n";

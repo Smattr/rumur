@@ -19,9 +19,9 @@ static unsigned print_counterexample(const State &s) {
     step = print_counterexample(*s.previous) + 1;
   }
 
-  print("State %u:\n", step);
+  fprint(stderr, "State %u:\n", step);
   print_state(s);
-  print("------------------------------------------------------------\n");
+  fprint(stderr, "------------------------------------------------------------\n");
   return step;
 }
 
@@ -56,6 +56,7 @@ int main(void) {
       // Check invariants eagerly.
       for (const Invariant &inv : INVARIANTS) {
         if (!inv.guard(*s)) {
+          print_counterexample(*s);
           throw Error("invariant " + inv.name + " failed");
         }
       }
@@ -76,7 +77,12 @@ int main(void) {
           continue;
 
         State *next = s->duplicate();
-        rule.body(*next);
+        try {
+          rule.body(*next);
+        } catch (Error e) {
+          print_counterexample(*s);
+          throw Error("rule " + rule.name + " caused: " + e.what());
+        }
 
         if (!seen.insert(next).second) {
           delete next;
@@ -91,6 +97,7 @@ int main(void) {
 
         for (const Invariant &inv : INVARIANTS) {
           if (!inv.guard(*next)) {
+            print_counterexample(*next);
             throw Error("invariant " + inv.name + " failed");
           }
         }
