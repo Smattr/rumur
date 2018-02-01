@@ -122,6 +122,68 @@ struct RuleBase {
   RuleBase(const std::string &name_, std::function<bool(const STATE_T&)> guard_,
     std::function<void(STATE_T&)> body_):
     name(name_), guard(guard_), body(body_) { }
+
+ private:
+  class iterator {
+   private:
+    const RuleBase &rule;
+    STATE_T &origin;
+    bool end;
+
+   public:
+    iterator(const RuleBase &rule_, STATE_T &origin_, bool end_ = false):
+      rule(rule_), origin(origin_), end(end_) {
+      if (!end && !rule.guard(origin)) {
+        ++*this;
+      }
+    }
+
+    iterator &operator++() {
+      if (!end) {
+        end = true;
+      }
+      return *this;
+    }
+
+    bool operator==(const iterator &other) const {
+      // Note that we deliberately compare by pointer here.
+      return &rule == &other.rule && &origin == &other.origin && end == other.end;
+    }
+
+    bool operator!=(const iterator &other) const {
+      return !(*this == other);
+    }
+
+    STATE_T *operator*() const {
+      assert(!end);
+      STATE_T *d = origin.duplicate();
+      rule.body(*d);
+      return d;
+    }
+  };
+
+  class iterable {
+   private:
+    const RuleBase &rule;
+    STATE_T &origin;
+
+   public:
+    iterable(const RuleBase &rule_, STATE_T &origin_):
+      rule(rule_), origin(origin_) { }
+
+    iterator begin() const {
+      return iterator(rule, origin);
+    }
+
+    iterator end() const {
+      return iterator(rule, origin, true);
+    }
+  };
+
+ public:
+  iterable get_iterable(STATE_T &origin) const {
+    return iterable(*this, origin);
+  }
 };
 
 /* An exception that is thrown that is not related to a specific current state.

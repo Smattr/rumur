@@ -71,39 +71,33 @@ int main(void) {
 
       // Run each applicable rule on it, generating new states.
       for (const Rule &rule : RULES) {
-
-        // Only consider this rule if its guard evaluates to true.
-        if (!rule.guard(*s))
-          continue;
-
-        State *next = s->duplicate();
         try {
-          rule.body(*next);
+          for (State *next : rule.get_iterable(*s)) {
+
+            if (!seen.insert(next).second) {
+              delete next;
+              continue;
+            }
+
+            // Print progress every now and then
+            if (seen.size() % 1000 == 0) {
+              print("%zu states seen in %llu seconds, %zu states in queue\n",
+                seen.size(), gettime(), q.size());
+            }
+
+            for (const Invariant &inv : INVARIANTS) {
+              if (!inv.guard(*next)) {
+                s = next;
+                throw Error("invariant " + inv.name + " failed");
+              }
+            }
+            q.push(next);
+          }
         } catch (Error e) {
           print_counterexample(*s);
           throw Error("rule " + rule.name + " caused: " + e.what());
         }
-
-        if (!seen.insert(next).second) {
-          delete next;
-          continue;
-        }
-
-        // Print progress every now and then
-        if (seen.size() % 1000 == 0) {
-          print("%zu states seen in %llu seconds, %zu states in queue\n",
-            seen.size(), gettime(), q.size());
-        }
-
-        for (const Invariant &inv : INVARIANTS) {
-          if (!inv.guard(*next)) {
-            print_counterexample(*next);
-            throw Error("invariant " + inv.name + " failed");
-          }
-        }
-        q.push(next);
       }
-
     }
 
     // Completed state exploration successfully.
