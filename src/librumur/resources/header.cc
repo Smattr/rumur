@@ -495,17 +495,9 @@ struct RangeBase {
     // TODO: support a step value in the ctor?
     iterator(int64_t value_): value(value_) { }
 
-    iterator operator+(int64_t v) const {
-      return iterator(value + v);
-    }
-
     iterator &operator++() {
       value++;
       return *this;
-    }
-
-    iterator operator++(int) const {
-      return iterator(value + 1);
     }
 
     bool operator==(const iterator &other) const {
