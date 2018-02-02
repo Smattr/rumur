@@ -24,16 +24,8 @@ const TypeExpr *TypeExpr::resolve() const {
   return this;
 }
 
-SimpleTypeExpr::SimpleTypeExpr(const location &loc_):
-  TypeExpr(loc_) {
-}
-
-bool SimpleTypeExpr::is_simple() const {
-  return true;
-}
-
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
-  SimpleTypeExpr(loc_), min(min_), max(max_) {
+  TypeExpr(loc_), min(min_), max(max_) {
   if (!min->constant())
     throw RumurError("lower bound of range is not a constant", min->loc);
 
@@ -42,7 +34,7 @@ Range::Range(Expr *min_, Expr *max_, const location &loc_):
 }
 
 Range::Range(const Range &other):
-  SimpleTypeExpr(other), min(other.min->clone()), max(other.max->clone()) {
+  TypeExpr(other), min(other.min->clone()), max(other.max->clone()) {
 }
 
 Range &Range::operator=(Range other) {
@@ -92,8 +84,12 @@ bool Range::operator==(const Node &other) const {
   return false;
 }
 
+bool Range::is_simple() const {
+  return true;
+}
+
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
-  SimpleTypeExpr(loc_), members(members_) {
+  TypeExpr(loc_), members(members_) {
 }
 
 Enum *Enum::clone() const {
@@ -125,6 +121,10 @@ bool Enum::operator==(const Node &other) const {
     return *this == *o->referent;
 
   return false;
+}
+
+bool Enum::is_simple() const {
+  return true;
 }
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):

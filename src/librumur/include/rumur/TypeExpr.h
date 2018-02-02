@@ -33,24 +33,7 @@ class TypeExpr : public Node {
   virtual const TypeExpr *resolve() const;
 };
 
-class SimpleTypeExpr : public TypeExpr {
-
- public:
-  SimpleTypeExpr() = delete;
-  SimpleTypeExpr(const location &loc_);
-  SimpleTypeExpr(const SimpleTypeExpr&) = default;
-  SimpleTypeExpr(SimpleTypeExpr&&) = default;
-  SimpleTypeExpr &operator=(const SimpleTypeExpr&) = default;
-  SimpleTypeExpr &operator=(SimpleTypeExpr&&) = default;
-  virtual ~SimpleTypeExpr() { }
-
-  bool is_simple() const final;
-
-  SimpleTypeExpr *clone() const override = 0;
-
-};
-
-class Range : public SimpleTypeExpr {
+class Range : public TypeExpr {
 
  public:
   Expr *min;
@@ -67,9 +50,10 @@ class Range : public SimpleTypeExpr {
   void generate(std::ostream &out) const final;
   size_t size() const final;
   bool operator==(const Node &other) const final;
+  bool is_simple() const final;
 };
 
-class Enum : public SimpleTypeExpr {
+class Enum : public TypeExpr {
 
  public:
   std::vector<std::pair<std::string, location>> members;
@@ -87,6 +71,7 @@ class Enum : public SimpleTypeExpr {
   void generate(std::ostream &out) const final;
   size_t size() const final;
   bool operator==(const Node &other) const final;
+  bool is_simple() const final;
 };
 
 class Record : public TypeExpr {
