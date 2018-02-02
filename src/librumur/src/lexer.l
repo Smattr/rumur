@@ -129,7 +129,7 @@ var {
   return rumur::parser::token::VAR;
 }
 
-[[:alpha:][_[:alnum:]]* {
+[[:alpha:]][_[:alnum:]]* {
   lval->build<std::string>(YYText());
   return rumur::parser::token::ID;
 }
