@@ -92,6 +92,7 @@
    */
 %parse-param { rumur::Symtab &symtab }
 
+%token ARRAY
 %token ARROW
 %token ASSERT
 %token BEGIN_TOK
@@ -118,6 +119,7 @@
 %token LEQ
 %token NEQ
 %token <std::string> NUMBER
+%token OF
 %token RECORD
 %token RULE
 %token STARTSTATE
@@ -237,7 +239,9 @@ typeexpr: ID {
   $$ = e;
 } | RECORD vardecls endrecord {
   $$ = new rumur::Record(std::move($2), @$);
-};
+} | ARRAY '[' typeexpr ']' OF typeexpr {
+  $$ = new rumur::Array($3, $6, @$);
+}
 
 vardecls: vardecls vardecl {
   $$ = $1;

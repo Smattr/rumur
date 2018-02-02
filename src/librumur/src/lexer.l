@@ -41,6 +41,10 @@
   return rumur::parser::token::NUMBER;
 }
 
+Array {
+  return rumur::parser::token::ARRAY;
+}
+
 assert {
   return rumur::parser::token::ASSERT;
 }
@@ -103,6 +107,10 @@ forall {
 
 invariant {
   return rumur::parser::token::INVARIANT;
+}
+
+Of {
+  return rumur::parser::token::OF;
 }
 
 record {
