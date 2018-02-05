@@ -888,8 +888,11 @@ bool Element::constant() const {
 }
 
 const TypeExpr *Element::type() const {
-  // TODO
-  return nullptr;
+  const TypeExpr *t = array->type()->resolve();
+  const Array *a = dynamic_cast<const Array*>(t);
+  assert(a != nullptr &&
+    "array reference based on something that is not an array");
+  return a->element_type;
 }
 
 void Element::generate(std::ostream &out) const {
