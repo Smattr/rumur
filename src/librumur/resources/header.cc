@@ -339,9 +339,6 @@ template<typename STATE_T, int64_t MIN, int64_t MAX>
 struct RangeBase {
 
  public:
-  static const size_t COUNT = MAX - MIN + 1;
-  static const size_t SIZE = MAX - MIN == 0 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(MAX - MIN);
-
   const bool in_state = false;
   int64_t value = 0;
   STATE_T *s = nullptr;
@@ -529,7 +526,7 @@ struct RangeBase {
   int64_t get_value() const {
     if (in_state) {
       assert(s != nullptr);
-      return s->read(offset, SIZE) + MIN;
+      return s->read(offset, width()) + MIN;
     }
     return value;
   }
@@ -537,7 +534,7 @@ struct RangeBase {
   void set_value(int64_t v) {
     if (in_state) {
       assert(s != nullptr);
-      s->write(offset, SIZE, v - MIN);
+      s->write(offset, width(), v - MIN);
     } else {
       value = v;
     }
@@ -545,6 +542,14 @@ struct RangeBase {
 
   void print(FILE *f, const char *title) const {
     fprintf(f, "%s = %" PRId64, title, get_value());
+  }
+
+  static size_t count() {
+    return MAX - MIN + 1;
+  }
+
+  static size_t width() {
+    return MAX - MIN == 0 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(MAX - MIN);
   }
 
  private:
@@ -719,6 +724,14 @@ class ArrayBase {
     // TODO: We want something like a range-based for loop over the index type
     // calling print() on the element type
   }
+
+  static size_t count() {
+    return INDEX_T::count() * ELEMENT_T::count();
+  }
+
+  static size_t width() {
+    return INDEX_T::count() * ELEMENT_T::width();
+  }
 };
 
 template<typename STATE_T>
@@ -778,5 +791,13 @@ class boolean {
 
   void print(FILE *f, const char *title) const {
     fprintf(f, "%s = %s", title, get_value());
+  }
+
+  static size_t count() {
+    return 2; // "false" and "true"
+  }
+
+  static size_t width() {
+    return 1; // we can represent a bool in 1 bit
   }
 };
