@@ -684,11 +684,19 @@ class ArrayBase {
 
  public:
   const bool in_state = false;
-  ELEMENT_T data[INDEX_T::COUNT];
+  // ELEMENT_T data[INDEX_T::COUNT];
   STATE_T *s = nullptr;
   const size_t offset = 0;
 
+ private:
+  ArrayBase(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
+
  public:
+  static const ArrayBase make(const STATE_T &s, size_t offset) {
+    return ArrayBase(const_cast<STATE_T &>(s), offset);
+  }
+
+#if 0
   // TODO: support for state references below
   ELEMENT_T &operator[](const INDEX_T &index) {
     return data[index.zero_based_value()];
@@ -704,6 +712,12 @@ class ArrayBase {
 
   const ELEMENT_T &operator[](const Number &index) const {
     return data[INDEX_T(index.value).zero_based_value()];
+  }
+#endif
+
+  void print(FILE*, const char*) const {
+    // TODO: We want something like a range-based for loop over the index type
+    // calling print() on the element type
   }
 };
 
