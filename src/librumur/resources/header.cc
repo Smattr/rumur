@@ -680,7 +680,7 @@ static bool operator>=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
-class Array {
+class ArrayBase {
 
  public:
   const bool in_state = false;
