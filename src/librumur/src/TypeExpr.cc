@@ -193,6 +193,8 @@ bool Record::operator==(const Node &other) const {
 
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
+  if (!index_type->is_simple())
+    throw RumurError("array indices must be simple types", loc);
 }
 
 Array::Array(const Array &other):
