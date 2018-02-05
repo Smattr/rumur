@@ -705,16 +705,32 @@ class ArrayBase {
     return ArrayBase(const_cast<STATE_T &>(s), offset);
   }
 
+  static ArrayBase make(STATE_T &s, size_t offset) {
+    return ArrayBase(s, offset);
+  }
+
+  ELEMENT_T operator[](const INDEX_T &index) {
+    if (in_state) {
+      return ELEMENT_T::make(*s, offset + index.zero_based_value() * ELEMENT_T::width());
+    } else {
+      // TODO
+      //return data[index.zero_based_value()];
+      __builtin_unreachable();
+    }
+  }
+
+  const ELEMENT_T operator[](const INDEX_T &index) const {
+    if (in_state) {
+      return ELEMENT_T::make(*s, offset + index.zero_based_value() * ELEMENT_T::width());
+    } else {
+      // TODO
+      //return data[index.zero_based_value()];
+      __builtin_unreachable();
+    }
+  }
+
 #if 0
   // TODO: support for state references below
-  ELEMENT_T &operator[](const INDEX_T &index) {
-    return data[index.zero_based_value()];
-  }
-
-  const ELEMENT_T &operator[](const INDEX_T &index) const {
-    return data[index.zero_based_value()];
-  }
-
   ELEMENT_T &operator[](const Number &index) {
     return data[INDEX_T(index.value).zero_based_value()];
   }
