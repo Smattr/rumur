@@ -352,6 +352,10 @@ struct RangeBase {
   RangeBase(int64_t value_): value(value_) { }
   RangeBase(const RangeBase&) = default;
   RangeBase(RangeBase&&) = default;
+  RangeBase(const Number &value_): value(value_.value) {
+    assert(value >= MIN && value <= MAX &&
+      "implicit coercison from numeric literal to range with a value not in the range");
+  }
 
   RangeBase &operator=(const RangeBase &other) {
     set_value(other.get_value());
