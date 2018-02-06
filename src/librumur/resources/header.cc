@@ -343,6 +343,14 @@ struct isaNumber : public std::false_type { };
 template<>
 struct isaNumber<Number> : public std::true_type { };
 
+// FIXME: I think we should rephrase this as ArrayBase as an inheritance
+// hierarchy. Something like:
+//  RangeBase
+//   + RangeBaseStateReference
+//   + RangeBaseLocal
+// This could avoid branching on in_state and remove this member altogether. It
+// would also solve some messiness in ArrayBase where we might have to call the
+// default ELEMENT_T constructor otherwise.
 template<typename STATE_T, int64_t MIN, int64_t MAX>
 struct RangeBase {
 
