@@ -360,10 +360,6 @@ struct RangeBase {
   RangeBase(int64_t value_): value(value_) { }
   RangeBase(const RangeBase&) = default;
   RangeBase(RangeBase&&) = default;
-  RangeBase(const Number &value_): value(value_.value) {
-    assert(value >= MIN && value <= MAX &&
-      "implicit coercison from numeric literal to range with a value not in the range");
-  }
 
   RangeBase &operator=(const RangeBase &other) {
     set_value(other.get_value());
@@ -564,6 +560,14 @@ struct RangeBase {
     return MAX - MIN == 0 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(MAX - MIN);
   }
 
+  static int64_t min() {
+    return MIN;
+  }
+
+  static int64_t max() {
+    return MAX;
+  }
+
  private:
   class iterator {
 
@@ -723,6 +727,35 @@ class ArrayBase {
     return ArrayBase(s, offset);
   }
 
+  /* operator[] that takes a Number and is only valid if our index type is a
+   * range.
+   */
+  template<typename = typename std::enable_if<isaRangeBase<INDEX_T>::value>::type>
+  ELEMENT_T operator[](const Number &index) {
+    if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
+      throw Error("out of range access to array element " + std::to_string(index.value));
+    }
+    if (in_state) {
+      return ELEMENT_T::make(*s, offset + (index.value - INDEX_T::min()) * ELEMENT_T::width());
+    } else {
+      // TODO
+      __builtin_unreachable();
+    }
+  }
+
+  template<typename = typename std::enable_if<isaRangeBase<INDEX_T>::value>::type>
+  const ELEMENT_T operator[](const Number &index) const {
+    if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
+      throw Error("out of range access to array element " + std::to_string(index.value));
+    }
+    if (in_state) {
+      return ELEMENT_T::make(*s, offset + (index.value - INDEX_T::min()) * ELEMENT_T::width());
+    } else {
+      // TODO
+      __builtin_unreachable();
+    }
+  }
+
   ELEMENT_T operator[](const INDEX_T &index) {
     if (in_state) {
       return ELEMENT_T::make(*s, offset + index.zero_based_value() * ELEMENT_T::width());
@@ -742,17 +775,6 @@ class ArrayBase {
       __builtin_unreachable();
     }
   }
-
-#if 0
-  // TODO: support for state references below
-  ELEMENT_T &operator[](const Number &index) {
-    return data[INDEX_T(index.value).zero_based_value()];
-  }
-
-  const ELEMENT_T &operator[](const Number &index) const {
-    return data[INDEX_T(index.value).zero_based_value()];
-  }
-#endif
 
   void print(FILE*, const char*) const {
     // TODO: We want something like a range-based for loop over the index type
