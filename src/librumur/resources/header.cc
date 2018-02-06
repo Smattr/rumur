@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <unordered_set>
 #include <utility>
+#include <type_traits>
 
 [[gnu::format(printf, 1, 2)]] static void print(const char *fmt, ...) {
   va_list ap;
@@ -334,6 +335,13 @@ struct Number {
     fprintf(f, "%s = %" PRId64, title, value);
   }
 };
+
+/* Compile-time discrimination as to whether a type is Number. */
+template<typename>
+struct isaNumber : public std::false_type { };
+
+template<>
+struct isaNumber<Number> : public std::true_type { };
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
 struct RangeBase {
@@ -687,6 +695,12 @@ static bool operator>=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
   }
   return a.value >= b.get_value();
 }
+
+template<typename>
+struct isaRangeBase : public std::false_type { };
+
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+struct isaRangeBase<RangeBase<STATE_T, MIN, MAX>> : public std::true_type { };
 
 template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
 class ArrayBase {
