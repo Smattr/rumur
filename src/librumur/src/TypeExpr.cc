@@ -61,7 +61,7 @@ Range::~Range() {
 void Range::generate(std::ostream &out) const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
-  out << "RangeBase<State, " << lb << ", " << ub << ">";
+  out << "Range<State, " << lb << ", " << ub << ">";
 }
 
 size_t Range::size() const {
@@ -224,7 +224,7 @@ Array::~Array() {
 }
 
 void Array::generate(std::ostream &out) const {
-  out << "ArrayBase<State, " << *index_type << ", " << *element_type << ">";
+  out << "Array<State, " << *index_type << ", " << *element_type << ">";
 }
 
 size_t Array::size() const {

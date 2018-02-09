@@ -343,52 +343,40 @@ struct isaNumber : public std::false_type { };
 template<>
 struct isaNumber<Number> : public std::true_type { };
 
-// FIXME: I think we should rephrase this as ArrayBase as an inheritance
-// hierarchy. Something like:
-//  RangeBase
-//   + RangeBaseStateReference
-//   + RangeBaseLocal
-// This could avoid branching on in_state and remove this member altogether. It
-// would also solve some messiness in ArrayBase where we might have to call the
-// default ELEMENT_T constructor otherwise.
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-struct RangeBase {
+struct RangeReference;
+
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+struct RangeValue;
+
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+struct Range {
 
  public:
-  const bool in_state = false;
-  int64_t value = 0;
-  STATE_T *s = nullptr;
-  const size_t offset = 0;
-
- private:
-  RangeBase(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
+  using reference_type = RangeReference<STATE_T, MIN, MAX>;
+  using value_type = RangeValue<STATE_T, MIN, MAX>;
 
  public:
-  RangeBase() = delete;
-  RangeBase(int64_t value_): value(value_) { }
-  RangeBase(const RangeBase&) = default;
-  RangeBase(RangeBase&&) = default;
-
-  RangeBase &operator=(const RangeBase &other) {
+  Range &operator=(const Range &other) {
     set_value(other.get_value());
     return *this;
   }
 
-  RangeBase &operator=(const Number &other) {
+  Range &operator=(const Number &other) {
     set_value(other.value);
     return *this;
   }
 
-  static RangeBase make() {
-    return RangeBase(MIN);
+  static RangeValue<STATE_T, MIN, MAX> make() {
+    return RangeValue<STATE_T, MIN, MAX>(MIN);
   }
 
-  static RangeBase make(STATE_T &s, size_t offset) {
-    return RangeBase(s, offset);
+  static RangeReference<STATE_T, MIN, MAX> make(STATE_T &s, size_t offset) {
+    return RangeReference<STATE_T, MIN, MAX>(s, offset);
   }
 
-  static const RangeBase make(const STATE_T &s, size_t offset) {
-    return RangeBase(const_cast<STATE_T&>(s), offset);
+  static const RangeReference<STATE_T, MIN, MAX> make(const STATE_T &s, size_t offset) {
+    return RangeReference<STATE_T, MIN, MAX>(const_cast<STATE_T&>(s), offset);
   }
 
   size_t zero_based_value() const {
@@ -398,11 +386,11 @@ struct RangeBase {
     return r;
   }
 
-  RangeBase operator+(const RangeBase &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator+(const Range &other) const {
     return add(get_value(), other.get_value());
   }
 
-  RangeBase operator+(const Number &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator+(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of the range");
     }
@@ -413,11 +401,11 @@ struct RangeBase {
     return v;
   }
 
-  RangeBase operator-(const RangeBase &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator-(const Range &other) const {
     return sub(get_value(), other.get_value());
   }
 
-  RangeBase operator-(const Number &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator-(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of the range");
     }
@@ -428,11 +416,11 @@ struct RangeBase {
     return v;
   }
 
-  RangeBase operator*(const RangeBase &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator*(const Range &other) const {
     return mul(get_value(), other.get_value());
   }
 
-  RangeBase operator*(const Number &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator*(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in multiplication");
     }
@@ -443,11 +431,11 @@ struct RangeBase {
     return v;
   }
 
-  RangeBase operator/(const RangeBase &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator/(const Range &other) const {
     return divide(get_value(), other.get_value());
   }
 
-  RangeBase operator/(const Number &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator/(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in division");
     }
@@ -458,11 +446,11 @@ struct RangeBase {
     return v;
   }
 
-  RangeBase operator%(const RangeBase &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator%(const Range &other) const {
     return mod(get_value(), other.get_value());
   }
 
-  RangeBase operator%(const Number &other) const {
+  RangeValue<STATE_T, MIN, MAX> operator%(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in mod");
     }
@@ -473,7 +461,7 @@ struct RangeBase {
     return v;
   }
 
-  bool operator<(const RangeBase &other) const {
+  bool operator<(const Range &other) const {
     return get_value() < other.get_value();
   }
 
@@ -484,7 +472,7 @@ struct RangeBase {
     return get_value() < other.value;
   }
 
-  bool operator>(const RangeBase &other) const {
+  bool operator>(const Range &other) const {
     return get_value() > other.get_value();
   }
 
@@ -495,7 +483,7 @@ struct RangeBase {
     return get_value() > other.value;
   }
 
-  bool operator==(const RangeBase &other) const {
+  bool operator==(const Range &other) const {
     return get_value() == other.get_value();
   }
 
@@ -506,7 +494,7 @@ struct RangeBase {
     return get_value() == other.value;
   }
 
-  bool operator!=(const RangeBase &other) const {
+  bool operator!=(const Range &other) const {
     return get_value() != other.get_value();
   }
 
@@ -517,7 +505,7 @@ struct RangeBase {
     return get_value() != other.value;
   }
 
-  bool operator<=(const RangeBase &other) const {
+  bool operator<=(const Range &other) const {
     return get_value() <= other.get_value();
   }
 
@@ -528,7 +516,7 @@ struct RangeBase {
     return get_value() <= other.value;
   }
 
-  bool operator>=(const RangeBase &other) const {
+  bool operator>=(const Range &other) const {
     return get_value() >= other.get_value();
   }
 
@@ -539,42 +527,31 @@ struct RangeBase {
     return get_value() >= other.value;
   }
 
-  int64_t get_value() const {
-    if (in_state) {
-      assert(s != nullptr);
-      return s->read(offset, width()) + MIN;
-    }
-    return value;
-  }
+  virtual int64_t get_value() const = 0;
 
-  void set_value(int64_t v) {
-    if (in_state) {
-      assert(s != nullptr);
-      s->write(offset, width(), v - MIN);
-    } else {
-      value = v;
-    }
-  }
+  virtual void set_value(int64_t v) = 0;
 
   void print(FILE *f, const char *title) const {
     fprintf(f, "%s = %" PRId64, title, get_value());
   }
 
-  static size_t count() {
+  static constexpr size_t count() {
     return MAX - MIN + 1;
   }
 
-  static size_t width() {
+  static constexpr size_t width() {
     return MAX - MIN == 0 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(MAX - MIN);
   }
 
-  static int64_t min() {
+  static constexpr int64_t min() {
     return MIN;
   }
 
-  static int64_t max() {
+  static constexpr int64_t max() {
     return MAX;
   }
+
+#if 0
 
  private:
   class iterator {
@@ -612,15 +589,16 @@ struct RangeBase {
   iterator end() const {
     return iterator(MAX + 1);
   }
+#endif
 };
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeBase<STATE_T, MIN, MAX> operator+(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static RangeValue<STATE_T, MIN, MAX> operator+(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   return b + a;
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeBase<STATE_T, MIN, MAX> operator-(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static RangeValue<STATE_T, MIN, MAX> operator-(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range for subtraction");
   }
@@ -632,12 +610,12 @@ static RangeBase<STATE_T, MIN, MAX> operator-(const Number &a, const RangeBase<S
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeBase<STATE_T, MIN, MAX> operator*(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static RangeValue<STATE_T, MIN, MAX> operator*(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   return b * a;
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeBase<STATE_T, MIN, MAX> operator/(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static RangeValue<STATE_T, MIN, MAX> operator/(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in division");
   }
@@ -649,7 +627,7 @@ static RangeBase<STATE_T, MIN, MAX> operator/(const Number &a, const RangeBase<S
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeBase<STATE_T, MIN, MAX> operator%(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static RangeValue<STATE_T, MIN, MAX> operator%(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in mod");
   }
@@ -661,7 +639,7 @@ static RangeBase<STATE_T, MIN, MAX> operator%(const Number &a, const RangeBase<S
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator<(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static bool operator<(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in <");
   }
@@ -669,7 +647,7 @@ static bool operator<(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator>(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static bool operator>(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in >");
   }
@@ -677,7 +655,7 @@ static bool operator>(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator==(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static bool operator==(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in ==");
   }
@@ -685,7 +663,7 @@ static bool operator==(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator!=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static bool operator!=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in !=");
   }
@@ -693,7 +671,7 @@ static bool operator!=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator<=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static bool operator<=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in <=");
   }
@@ -701,7 +679,7 @@ static bool operator<=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator>=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
+static bool operator>=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in >=");
   }
@@ -709,149 +687,233 @@ static bool operator>=(const Number &a, const RangeBase<STATE_T, MIN, MAX> &b) {
 }
 
 template<typename>
-struct isaRangeBase : public std::false_type { };
+struct isaRange : public std::false_type { };
 
 template<typename STATE_T, int64_t MIN, int64_t MAX>
-struct isaRangeBase<RangeBase<STATE_T, MIN, MAX>> : public std::true_type { };
+struct isaRange<Range<STATE_T, MIN, MAX>> : public std::true_type { };
 
-template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
-class ArrayBase {
-
- public:
-  const bool in_state = false;
-  // ELEMENT_T data[INDEX_T::COUNT];
-  STATE_T *s = nullptr;
-  const size_t offset = 0;
-
- private:
-  ArrayBase(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+struct RangeReference : public Range<STATE_T, MIN, MAX> {
 
  public:
-  static const ArrayBase make(const STATE_T &s, size_t offset) {
-    return ArrayBase(const_cast<STATE_T &>(s), offset);
+  STATE_T *s;
+  const size_t offset;
+
+ public:
+  RangeReference() = delete;
+  RangeReference(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) { }
+  RangeReference(const RangeReference&) = default;
+  RangeReference(RangeReference&&) = default;
+
+  int64_t get_value() const final {
+    assert(s != nullptr);
+    return s->read(offset, width()) + MIN;
   }
 
-  static ArrayBase make(STATE_T &s, size_t offset) {
-    return ArrayBase(s, offset);
+  void set_value(int64_t v) final {
+    assert(s != nullptr);
+    s->write(offset, width(), v - MIN);
+  }
+
+  static constexpr size_t width() {
+    return Range<STATE_T, MIN, MAX>::width();
+  }
+};
+
+template<typename STATE_T, int64_t MIN, int64_t MAX>
+struct RangeValue : public Range<STATE_T, MIN, MAX> {
+
+ public:
+  int64_t value;
+
+ public:
+  RangeValue() = delete;
+  RangeValue(int64_t value_): value(value_) { }
+  RangeValue(const RangeValue&) = default;
+  RangeValue(RangeValue&&) = default;
+
+  int64_t get_value() const final {
+    return value;
+  }
+
+  void set_value(int64_t v) final {
+    value = v;
+  }
+};
+
+template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+class ArrayReference;
+
+template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+class ArrayValue;
+
+template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+class Array {
+
+ public:
+  static const ArrayReference<STATE_T, INDEX_T, ELEMENT_T> make(const STATE_T &s, size_t offset) {
+    return ArrayReference<STATE_T, INDEX_T, ELEMENT_T>(const_cast<STATE_T &>(s), offset);
+  }
+
+  static ArrayReference<STATE_T, INDEX_T, ELEMENT_T> make(STATE_T &s, size_t offset) {
+    return ArrayReference<STATE_T, INDEX_T, ELEMENT_T>(s, offset);
   }
 
   /* operator[] that takes a Number and is only valid if our index type is a
    * range.
    */
-  template<typename = typename std::enable_if<isaRangeBase<INDEX_T>::value>::type>
-  ELEMENT_T operator[](const Number &index) {
+  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  ELEMENT_T &operator[](const Number &index) {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
     }
-    if (in_state) {
-      return ELEMENT_T::make(*s, offset + (index.value - INDEX_T::min()) * ELEMENT_T::width());
-    } else {
-      // TODO
-      __builtin_unreachable();
-    }
+    return (*this)[index.value];
   }
 
-  template<typename = typename std::enable_if<isaRangeBase<INDEX_T>::value>::type>
-  const ELEMENT_T operator[](const Number &index) const {
+  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  const ELEMENT_T &operator[](const Number &index) const {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
     }
-    if (in_state) {
-      return ELEMENT_T::make(*s, offset + (index.value - INDEX_T::min()) * ELEMENT_T::width());
-    } else {
-      // TODO
-      __builtin_unreachable();
-    }
+    return (*this)[index.value];
   }
 
-  ELEMENT_T operator[](const INDEX_T &index) {
-    if (in_state) {
-      return ELEMENT_T::make(*s, offset + index.zero_based_value() * ELEMENT_T::width());
-    } else {
-      // TODO
-      //return data[index.zero_based_value()];
-      __builtin_unreachable();
-    }
+  ELEMENT_T &operator[](const INDEX_T &index) {
+    return (*this)[index.zero_based_value()];
   }
 
-  const ELEMENT_T operator[](const INDEX_T &index) const {
-    if (in_state) {
-      return ELEMENT_T::make(*s, offset + index.zero_based_value() * ELEMENT_T::width());
-    } else {
-      // TODO
-      //return data[index.zero_based_value()];
-      __builtin_unreachable();
-    }
+  const ELEMENT_T &operator[](const INDEX_T &index) const {
+    return (*this)[index.zero_based_value()];
   }
 
+ private:
+  virtual ELEMENT_T &operator[](size_t index) = 0;
+  virtual const ELEMENT_T &operator[](size_t index) const = 0;
+
+ public:
   void print(FILE*, const char*) const {
     // TODO: We want something like a range-based for loop over the index type
     // calling print() on the element type
   }
 
-  static size_t count() {
+  static constexpr size_t count() {
     return INDEX_T::count() * ELEMENT_T::count();
   }
 
-  static size_t width() {
+  static constexpr size_t width() {
     return INDEX_T::count() * ELEMENT_T::width();
   }
 };
 
-template<typename STATE_T>
-class boolean {
+template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+class ArrayReference : public Array<STATE_T, INDEX_T, ELEMENT_T> {
 
  public:
-  const bool in_state = false;
-  bool value = false;
-  STATE_T *s = nullptr;
-  const size_t offset = 0;
+  STATE_T *s;
+  const size_t offset;
+  std::vector<typename ELEMENT_T::reference_type> value;
+
+ public:
+  ArrayReference() = delete;
+  ArrayReference(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) {
+    size_t off = offset;
+    for (size_t i = 0; i < INDEX_T::count(); i++) {
+      value.push_back(ELEMENT_T::make(*s, off));
+      off += ELEMENT_T::width();
+    }
+  }
+  ArrayReference(const ArrayReference&) = default;
+  ArrayReference(ArrayReference&&) = default;
+
+  /* FIXME: For some reason the enable_if'd operator[] definitions don't get
+   * inherited and we need to repeat them to make them accessible. Is this
+   * related to them not depending on the class template parameters?
+   */
+ public:
+  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  ELEMENT_T &operator[](const Number &index) {
+    return static_cast<Array<STATE_T, INDEX_T, ELEMENT_T>&>(*this)[index];
+  }
+
+  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  const ELEMENT_T &operator[](const Number &index) const {
+    return static_cast<Array<STATE_T, INDEX_T, ELEMENT_T>&>(*this)[index];
+  }
 
  private:
-  boolean(STATE_T &s_, size_t offset_): in_state(true), s(&s_), offset(offset_) { }
+  typename ELEMENT_T::reference_type &operator[](size_t index) final {
+    return value[index];
+  }
+
+  const typename ELEMENT_T::reference_type &operator[](size_t index) const final {
+    return value[index];
+  }
+};
+
+template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+class ArrayValue : public Array<STATE_T, INDEX_T, ELEMENT_T> {
 
  public:
-  boolean() = delete;
-  boolean(bool value_): value(value_) { }
+  typename ELEMENT_T::value_type value[INDEX_T::count()];
 
-  static boolean make() {
-    return boolean(false);
+ public:
+  ArrayValue() = delete;
+
+ public:
+  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  ELEMENT_T &operator[](const Number &index) {
+    return Array<STATE_T, INDEX_T, ELEMENT_T>::operator[](index);
   }
 
-  boolean(const boolean&) = default;
-  boolean(boolean&&) = default;
+  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  const ELEMENT_T &operator[](const Number &index) const {
+    return Array<STATE_T, INDEX_T, ELEMENT_T>::operator[](index);
+  }
 
-  boolean &operator=(const boolean &other) {
+ private:
+  typename ELEMENT_T::value_type &operator[](size_t index) final {
+    return value[index];
+  }
+
+  const typename ELEMENT_T::value_type &operator[](size_t index) const final {
+    return value[index];
+  }
+};
+
+template<typename STATE_T>
+class BooleanReference;
+
+template<typename STATE_T>
+class BooleanValue;
+
+template<typename STATE_T>
+class Boolean {
+
+ public:
+  static BooleanValue<STATE_T> make() {
+    return BooleanValue<STATE_T>(false);
+  }
+
+  static BooleanReference<STATE_T> make(STATE_T &s, size_t offset) {
+    return BooleanReference<STATE_T>(s, offset);
+  }
+
+  static const BooleanReference<STATE_T> make(const STATE_T &s, size_t offset) {
+    return BooleanReference<STATE_T>(const_cast<STATE_T&>(s), offset);
+  }
+
+  Boolean &operator=(const Boolean &other) {
     set_value(other.get_value());
     return *this;
-  }
-
-  static boolean make(STATE_T &s, size_t offset) {
-    return boolean(s, offset);
-  }
-
-  static const boolean make(const STATE_T &s, size_t offset) {
-    return boolean(const_cast<STATE_T&>(s), offset);
   }
 
   operator bool() const {
     return get_value();
   }
 
-  bool get_value() const {
-    if (in_state) {
-      return s->read(offset, 1);
-    }
-    return value;
-  }
+  virtual bool get_value() const = 0;
 
-  void set_value(bool v) {
-    if (in_state) {
-      s->write(offset, 1, v);
-    } else {
-      value = v;
-    }
-  }
+  virtual void set_value(bool v) = 0;
 
   void print(FILE *f, const char *title) const {
     fprintf(f, "%s = %s", title, get_value());
@@ -861,7 +923,50 @@ class boolean {
     return 2; // "false" and "true"
   }
 
-  static size_t width() {
+  static constexpr size_t width() {
     return 1; // we can represent a bool in 1 bit
+  }
+};
+
+template<typename STATE_T>
+class BooleanReference : public Boolean<STATE_T> {
+
+ public:
+  STATE_T *s;
+  const size_t offset;
+
+ public:
+  BooleanReference() = delete;
+  BooleanReference(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) { }
+  BooleanReference(const BooleanReference&&) = default;
+  BooleanReference(BooleanReference&&) = default;
+
+  bool get_value() const final {
+    return s->read(offset, 1);
+  }
+
+  void set_value(bool v) final {
+    s->write(offset, 1, v);
+  }
+};
+
+template<typename STATE_T>
+class BooleanValue : public Boolean<STATE_T> {
+
+ public:
+  bool value;
+
+ public:
+  BooleanValue() = delete;
+  BooleanValue(bool value_): value(value_) { }
+  BooleanValue(const BooleanValue&) = default;
+  BooleanValue(BooleanValue&&) = default;
+
+  bool get_value() const final {
+    return value;
+  }
+
+  void set_value(bool v) final {
+    value = v;
   }
 };
