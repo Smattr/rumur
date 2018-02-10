@@ -742,6 +742,8 @@ struct RangeReference : public Range<MIN, MAX> {
   RangeReference(const RangeReference&) = default;
   RangeReference(RangeReference&&) = default;
 
+  using Range<MIN, MAX>::operator=;
+
   int64_t get_value() const final {
     ASSERT(container != nullptr);
     return container->read(offset, width()) + MIN;
@@ -768,6 +770,8 @@ struct RangeValue : public Range<MIN, MAX> {
   RangeValue(int64_t value_): value(value_) { }
   RangeValue(const RangeValue&) = default;
   RangeValue(RangeValue&&) = default;
+
+  using Range<MIN, MAX>::operator=;
 
   int64_t get_value() const final {
     return value;
