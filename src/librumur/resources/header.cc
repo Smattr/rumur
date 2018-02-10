@@ -369,18 +369,18 @@ struct isaNumber : public std::false_type { };
 template<>
 struct isaNumber<Number> : public std::true_type { };
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
+template<int64_t MIN, int64_t MAX>
 struct RangeReference;
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
+template<int64_t MIN, int64_t MAX>
 struct RangeValue;
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
+template<int64_t MIN, int64_t MAX>
 struct Range {
 
  public:
-  using reference_type = RangeReference<STATE_T, MIN, MAX>;
-  using value_type = RangeValue<STATE_T, MIN, MAX>;
+  using reference_type = RangeReference<MIN, MAX>;
+  using value_type = RangeValue<MIN, MAX>;
 
  public:
   Range &operator=(const Range &other) {
@@ -393,16 +393,16 @@ struct Range {
     return *this;
   }
 
-  static RangeValue<STATE_T, MIN, MAX> make() {
-    return RangeValue<STATE_T, MIN, MAX>(MIN);
+  static RangeValue<MIN, MAX> make() {
+    return RangeValue<MIN, MAX>(MIN);
   }
 
-  static RangeReference<STATE_T, MIN, MAX> make(STATE_T &s, size_t offset) {
-    return RangeReference<STATE_T, MIN, MAX>(s, offset);
+  static RangeReference<MIN, MAX> make(BitBlock &container, size_t offset) {
+    return RangeReference<MIN, MAX>(container, offset);
   }
 
-  static const RangeReference<STATE_T, MIN, MAX> make(const STATE_T &s, size_t offset) {
-    return RangeReference<STATE_T, MIN, MAX>(const_cast<STATE_T&>(s), offset);
+  static const RangeReference<MIN, MAX> make(const BitBlock &container, size_t offset) {
+    return RangeReference<MIN, MAX>(const_cast<BitBlock&>(container), offset);
   }
 
   size_t zero_based_value() const {
@@ -412,11 +412,11 @@ struct Range {
     return r;
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator+(const Range &other) const {
+  RangeValue<MIN, MAX> operator+(const Range &other) const {
     return add(get_value(), other.get_value());
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator+(const Number &other) const {
+  RangeValue<MIN, MAX> operator+(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of the range");
     }
@@ -427,11 +427,11 @@ struct Range {
     return v;
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator-(const Range &other) const {
+  RangeValue<MIN, MAX> operator-(const Range &other) const {
     return sub(get_value(), other.get_value());
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator-(const Number &other) const {
+  RangeValue<MIN, MAX> operator-(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of the range");
     }
@@ -442,11 +442,11 @@ struct Range {
     return v;
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator*(const Range &other) const {
+  RangeValue<MIN, MAX> operator*(const Range &other) const {
     return mul(get_value(), other.get_value());
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator*(const Number &other) const {
+  RangeValue<MIN, MAX> operator*(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in multiplication");
     }
@@ -457,11 +457,11 @@ struct Range {
     return v;
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator/(const Range &other) const {
+  RangeValue<MIN, MAX> operator/(const Range &other) const {
     return divide(get_value(), other.get_value());
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator/(const Number &other) const {
+  RangeValue<MIN, MAX> operator/(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in division");
     }
@@ -472,11 +472,11 @@ struct Range {
     return v;
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator%(const Range &other) const {
+  RangeValue<MIN, MAX> operator%(const Range &other) const {
     return mod(get_value(), other.get_value());
   }
 
-  RangeValue<STATE_T, MIN, MAX> operator%(const Number &other) const {
+  RangeValue<MIN, MAX> operator%(const Number &other) const {
     if (other.value < MIN || other.value > MAX) {
       throw Error(std::to_string(other.value) + " is out of range in mod");
     }
@@ -618,13 +618,13 @@ struct Range {
 #endif
 };
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeValue<STATE_T, MIN, MAX> operator+(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static RangeValue<MIN, MAX> operator+(const Number &a, const Range<MIN, MAX> &b) {
   return b + a;
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeValue<STATE_T, MIN, MAX> operator-(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static RangeValue<MIN, MAX> operator-(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range for subtraction");
   }
@@ -635,13 +635,13 @@ static RangeValue<STATE_T, MIN, MAX> operator-(const Number &a, const Range<STAT
   return v;
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeValue<STATE_T, MIN, MAX> operator*(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static RangeValue<MIN, MAX> operator*(const Number &a, const Range<MIN, MAX> &b) {
   return b * a;
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeValue<STATE_T, MIN, MAX> operator/(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static RangeValue<MIN, MAX> operator/(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in division");
   }
@@ -652,8 +652,8 @@ static RangeValue<STATE_T, MIN, MAX> operator/(const Number &a, const Range<STAT
   return v;
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static RangeValue<STATE_T, MIN, MAX> operator%(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static RangeValue<MIN, MAX> operator%(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in mod");
   }
@@ -664,48 +664,48 @@ static RangeValue<STATE_T, MIN, MAX> operator%(const Number &a, const Range<STAT
   return v;
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator<(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static bool operator<(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in <");
   }
   return a.value < b.get_value();
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator>(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static bool operator>(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in >");
   }
   return a.value > b.get_value();
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator==(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static bool operator==(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in ==");
   }
   return a.value == b.get_value();
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator!=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static bool operator!=(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in !=");
   }
   return a.value != b.get_value();
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator<=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static bool operator<=(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in <=");
   }
   return a.value <= b.get_value();
 }
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-static bool operator>=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
+template<int64_t MIN, int64_t MAX>
+static bool operator>=(const Number &a, const Range<MIN, MAX> &b) {
   if (a.value < MIN || a.value > MAX) {
     throw Error(std::to_string(a.value) + " is out of range in >=");
   }
@@ -715,39 +715,40 @@ static bool operator>=(const Number &a, const Range<STATE_T, MIN, MAX> &b) {
 template<typename>
 struct isaRange : public std::false_type { };
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-struct isaRange<Range<STATE_T, MIN, MAX>> : public std::true_type { };
+template<int64_t MIN, int64_t MAX>
+struct isaRange<Range<MIN, MAX>> : public std::true_type { };
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-struct RangeReference : public Range<STATE_T, MIN, MAX> {
+template<int64_t MIN, int64_t MAX>
+struct RangeReference : public Range<MIN, MAX> {
 
  public:
-  STATE_T *s;
+  BitBlock *container;
   const size_t offset;
 
  public:
   RangeReference() = delete;
-  RangeReference(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) { }
+  RangeReference(BitBlock &container_, size_t offset_):
+    container(&container_), offset(offset_) { }
   RangeReference(const RangeReference&) = default;
   RangeReference(RangeReference&&) = default;
 
   int64_t get_value() const final {
-    ASSERT(s != nullptr);
-    return s->read(offset, width()) + MIN;
+    ASSERT(container != nullptr);
+    return container->read(offset, width()) + MIN;
   }
 
   void set_value(int64_t v) final {
-    ASSERT(s != nullptr);
-    s->write(offset, width(), v - MIN);
+    ASSERT(container != nullptr);
+    container->write(offset, width(), v - MIN);
   }
 
   static constexpr size_t width() {
-    return Range<STATE_T, MIN, MAX>::width();
+    return Range<MIN, MAX>::width();
   }
 };
 
-template<typename STATE_T, int64_t MIN, int64_t MAX>
-struct RangeValue : public Range<STATE_T, MIN, MAX> {
+template<int64_t MIN, int64_t MAX>
+struct RangeValue : public Range<MIN, MAX> {
 
  public:
   int64_t value;
