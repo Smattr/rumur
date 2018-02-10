@@ -48,8 +48,17 @@
   va_end(ap);
 }
 
+class BitBlock {
+
+ public:
+  virtual int64_t read(size_t offset, size_t width) const = 0;
+  virtual void write(size_t offset, size_t width, int64_t value) = 0;
+
+  virtual ~BitBlock() { }
+};
+
 template<size_t SIZE_BITS>
-struct StateBase {
+struct StateBase : public BitBlock {
   std::bitset<SIZE_BITS> data;
   const StateBase *previous = nullptr;
 
@@ -72,7 +81,7 @@ struct StateBase {
     return !(*this == other);
   }
 
-  int64_t read(size_t offset, size_t width) const {
+  int64_t read(size_t offset, size_t width) const final {
     static_assert(sizeof(unsigned long long) >= sizeof(int64_t),
       "cannot read a int64_t out of a std::bitset");
     ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
@@ -84,7 +93,7 @@ struct StateBase {
     return v.to_ullong();
   }
 
-  void write(size_t offset, size_t width, int64_t value) {
+  void write(size_t offset, size_t width, int64_t value) final {
     static_assert(sizeof(unsigned long) >= sizeof(int64_t),
       "cannot write a int64_t to a std::bitset");
     ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
@@ -97,6 +106,8 @@ struct StateBase {
   size_t hash() const {
     return std::hash<std::bitset<SIZE_BITS>>{}(data);
   }
+
+  virtual ~StateBase() { }
 
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
