@@ -982,6 +982,8 @@ class BooleanReference : public Boolean<STATE_T> {
   BooleanReference(const BooleanReference&&) = default;
   BooleanReference(BooleanReference&&) = default;
 
+  using Boolean<STATE_T>::operator=;
+
   bool get_value() const final {
     return s->read(offset, 1);
   }
@@ -1002,6 +1004,8 @@ class BooleanValue : public Boolean<STATE_T> {
   BooleanValue(bool value_): value(value_) { }
   BooleanValue(const BooleanValue&) = default;
   BooleanValue(BooleanValue&&) = default;
+
+  using Boolean<STATE_T>::operator=;
 
   bool get_value() const final {
     return value;
