@@ -808,7 +808,7 @@ class Array {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
     }
-    return get(index.value);
+    return get(index.value - INDEX_T::min());
   }
 
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
@@ -816,7 +816,7 @@ class Array {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
     }
-    return get(index.value);
+    return get(index.value - INDEX_T::min());
   }
 
   typename ELEMENT_T::reference_type operator[](const INDEX_T &index) {
