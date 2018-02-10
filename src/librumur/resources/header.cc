@@ -19,6 +19,21 @@
 #include <utility>
 #include <type_traits>
 
+/* A more powerful assert that treats the assertion as an assumption when
+ * assertions are disabled.
+ */
+#ifndef NDEBUG
+  #define ASSERT(expr) assert(expr)
+#else
+  #define ASSERT(expr) \
+    do { \
+      /* The following is an idiom for teaching the compiler an assumption. */ \
+      if (!(expr)) { \
+        __builtin_unreachable(); \
+      } \
+    } while (0)
+#endif
+
 [[gnu::format(printf, 1, 2)]] static void print(const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -60,8 +75,8 @@ struct StateBase {
   int64_t read(size_t offset, size_t width) const {
     static_assert(sizeof(unsigned long long) >= sizeof(int64_t),
       "cannot read a int64_t out of a std::bitset");
-    assert(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
-    assert(offset <= SIZE_BITS - 1 && "out of bounds read");
+    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
+    ASSERT(offset <= SIZE_BITS - 1 && "out of bounds read");
     std::bitset<SIZE_BITS> v = (data >> offset) & std::bitset<SIZE_BITS>((UINT64_C(1) << width) - 1);
     if (sizeof(unsigned long) >= sizeof(int64_t)) {
       return v.to_ulong();
@@ -72,8 +87,8 @@ struct StateBase {
   void write(size_t offset, size_t width, int64_t value) {
     static_assert(sizeof(unsigned long) >= sizeof(int64_t),
       "cannot write a int64_t to a std::bitset");
-    assert(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
-    assert(1ul << width > (unsigned long)value && "write of too large a value");
+    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
+    ASSERT(1ul << width > (unsigned long)value && "write of too large a value");
     std::bitset<SIZE_BITS> v = std::bitset<SIZE_BITS>((unsigned long)value) << offset;
     std::bitset<SIZE_BITS> mask = ~(std::bitset<SIZE_BITS>((UINT64_C(1) << width) - 1) << offset);
     data = (data & mask) | v;
@@ -156,7 +171,7 @@ struct RuleBase {
     }
 
     STATE_T *operator*() const {
-      assert(!end);
+      ASSERT(!end);
       STATE_T *d = origin.duplicate();
       rule.body(*d);
       return d;
@@ -706,12 +721,12 @@ struct RangeReference : public Range<STATE_T, MIN, MAX> {
   RangeReference(RangeReference&&) = default;
 
   int64_t get_value() const final {
-    assert(s != nullptr);
+    ASSERT(s != nullptr);
     return s->read(offset, width()) + MIN;
   }
 
   void set_value(int64_t v) final {
-    assert(s != nullptr);
+    ASSERT(s != nullptr);
     s->write(offset, width(), v - MIN);
   }
 
