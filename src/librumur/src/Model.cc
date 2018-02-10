@@ -81,12 +81,7 @@ void Model::generate(std::ostream &out) const {
     << "using State = StateBase<" << size_bits() << ">;\n"
     << "using StartState = StartStateBase<State>;\n"
     << "using Invariant = InvariantBase<State>;\n"
-    << "using Rule = RuleBase<State>;\n\n"
-
-    // Boolean boiler plate
-    << "using ru_u_boolean = Boolean<State>;\n"
-    << "[[gnu::unused]] static const BooleanValue<State> ru_u_false(false);\n"
-    << "[[gnu::unused]] static const BooleanValue<State> ru_u_true(true);\n\n";
+    << "using Rule = RuleBase<State>;\n\n";
 
   // Write out constants and type declarations.
   for (const Decl *d : decls)

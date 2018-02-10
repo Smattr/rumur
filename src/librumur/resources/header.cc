@@ -920,26 +920,31 @@ class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
   }
 };
 
-template<typename STATE_T>
+template<typename = void>
 class BooleanReference;
 
-template<typename STATE_T>
+template<typename = void>
 class BooleanValue;
 
-template<typename STATE_T>
+/* XXX: We need to use a dummy template parameter to allow us to use the (as
+ * yet) undefined classes BooleanReference and BooleanValue in Boolean::make. By
+ * the time we instantiate this template, the compiler will have seen
+ * definitions of both. Perhaps there is a nicer way to achieve this?
+ */
+template<typename T = void>
 class Boolean {
 
  public:
-  static BooleanValue<STATE_T> make() {
-    return BooleanValue<STATE_T>(false);
+  static BooleanValue<T> make() {
+    return BooleanValue<T>(false);
   }
 
-  static BooleanReference<STATE_T> make(STATE_T &s, size_t offset) {
-    return BooleanReference<STATE_T>(s, offset);
+  static BooleanReference<T> make(BitBlock &container, size_t offset) {
+    return BooleanReference<T>(container, offset);
   }
 
-  static const BooleanReference<STATE_T> make(const STATE_T &s, size_t offset) {
-    return BooleanReference<STATE_T>(const_cast<STATE_T&>(s), offset);
+  static const BooleanReference<T> make(const BitBlock &container, size_t offset) {
+    return BooleanReference<T>(const_cast<BitBlock&>(container), offset);
   }
 
   Boolean &operator=(const Boolean &other) {
@@ -968,32 +973,33 @@ class Boolean {
   }
 };
 
-template<typename STATE_T>
-class BooleanReference : public Boolean<STATE_T> {
+template<typename>
+class BooleanReference : public Boolean<> {
 
  public:
-  STATE_T *s;
+  BitBlock *container;
   const size_t offset;
 
  public:
   BooleanReference() = delete;
-  BooleanReference(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) { }
+  BooleanReference(BitBlock &container_, size_t offset_):
+    container(&container_), offset(offset_) { }
   BooleanReference(const BooleanReference&&) = default;
   BooleanReference(BooleanReference&&) = default;
 
-  using Boolean<STATE_T>::operator=;
+  using Boolean<>::operator=;
 
   bool get_value() const final {
-    return s->read(offset, 1);
+    return container->read(offset, 1);
   }
 
   void set_value(bool v) final {
-    s->write(offset, 1, v);
+    container->write(offset, 1, v);
   }
 };
 
-template<typename STATE_T>
-class BooleanValue : public Boolean<STATE_T> {
+template<typename>
+class BooleanValue : public Boolean<> {
 
  public:
   bool value;
@@ -1004,7 +1010,7 @@ class BooleanValue : public Boolean<STATE_T> {
   BooleanValue(const BooleanValue&) = default;
   BooleanValue(BooleanValue&&) = default;
 
-  using Boolean<STATE_T>::operator=;
+  using Boolean<>::operator=;
 
   bool get_value() const final {
     return value;
@@ -1014,3 +1020,7 @@ class BooleanValue : public Boolean<STATE_T> {
     value = v;
   }
 };
+
+using ru_u_boolean = Boolean<>;
+[[gnu::unused]] static const BooleanValue<> ru_u_false(false);
+[[gnu::unused]] static const BooleanValue<> ru_u_true(true);
