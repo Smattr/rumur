@@ -782,54 +782,54 @@ struct RangeValue : public Range<MIN, MAX> {
   }
 };
 
-template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+template<typename INDEX_T, typename ELEMENT_T>
 class ArrayReference;
 
-template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+template<typename INDEX_T, typename ELEMENT_T>
 class ArrayValue;
 
-template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
+template<typename INDEX_T, typename ELEMENT_T>
 class Array {
 
  public:
-  static const ArrayReference<STATE_T, INDEX_T, ELEMENT_T> make(const STATE_T &s, size_t offset) {
-    return ArrayReference<STATE_T, INDEX_T, ELEMENT_T>(const_cast<STATE_T &>(s), offset);
+  static const ArrayReference<INDEX_T, ELEMENT_T> make(const BitBlock &container, size_t offset) {
+    return ArrayReference<INDEX_T, ELEMENT_T>(const_cast<BitBlock&>(container), offset);
   }
 
-  static ArrayReference<STATE_T, INDEX_T, ELEMENT_T> make(STATE_T &s, size_t offset) {
-    return ArrayReference<STATE_T, INDEX_T, ELEMENT_T>(s, offset);
+  static ArrayReference<INDEX_T, ELEMENT_T> make(BitBlock &container, size_t offset) {
+    return ArrayReference<INDEX_T, ELEMENT_T>(container, offset);
   }
 
   /* operator[] that takes a Number and is only valid if our index type is a
    * range.
    */
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
-  ELEMENT_T &operator[](const Number &index) {
+  typename ELEMENT_T::reference_type operator[](const Number &index) {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
     }
-    return (*this)[index.value];
+    return get(index.value);
   }
 
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
-  const ELEMENT_T &operator[](const Number &index) const {
+  const typename ELEMENT_T::reference_type operator[](const Number &index) const {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
     }
-    return (*this)[index.value];
+    return get(index.value);
   }
 
-  ELEMENT_T &operator[](const INDEX_T &index) {
-    return (*this)[index.zero_based_value()];
+  typename ELEMENT_T::reference_type operator[](const INDEX_T &index) {
+    return get(index.zero_based_value());
   }
 
-  const ELEMENT_T &operator[](const INDEX_T &index) const {
-    return (*this)[index.zero_based_value()];
+  const typename ELEMENT_T::reference_type operator[](const INDEX_T &index) const {
+    return get(index.zero_based_value());
   }
 
  private:
-  virtual ELEMENT_T &operator[](size_t index) = 0;
-  virtual const ELEMENT_T &operator[](size_t index) const = 0;
+  virtual typename ELEMENT_T::reference_type get(size_t index) = 0;
+  virtual const typename ELEMENT_T::reference_type get(size_t index) const = 0;
 
  public:
   void print(FILE*, const char*) const {
@@ -846,23 +846,17 @@ class Array {
   }
 };
 
-template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
-class ArrayReference : public Array<STATE_T, INDEX_T, ELEMENT_T> {
+template<typename INDEX_T, typename ELEMENT_T>
+class ArrayReference : public Array<INDEX_T, ELEMENT_T> {
 
  public:
-  STATE_T *s;
+  BitBlock *container;
   const size_t offset;
-  std::vector<typename ELEMENT_T::reference_type> value;
 
  public:
   ArrayReference() = delete;
-  ArrayReference(STATE_T &s_, size_t offset_): s(&s_), offset(offset_) {
-    size_t off = offset;
-    for (size_t i = 0; i < INDEX_T::count(); i++) {
-      value.push_back(ELEMENT_T::make(*s, off));
-      off += ELEMENT_T::width();
-    }
-  }
+  ArrayReference(BitBlock &container_, size_t offset_):
+    container(&container_), offset(offset_) { }
   ArrayReference(const ArrayReference&) = default;
   ArrayReference(ArrayReference&&) = default;
 
@@ -872,52 +866,57 @@ class ArrayReference : public Array<STATE_T, INDEX_T, ELEMENT_T> {
    */
  public:
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
-  ELEMENT_T &operator[](const Number &index) {
-    return static_cast<Array<STATE_T, INDEX_T, ELEMENT_T>&>(*this)[index];
+  typename ELEMENT_T::reference_type operator[](const Number &index) {
+    return static_cast<Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
 
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
-  const ELEMENT_T &operator[](const Number &index) const {
-    return static_cast<Array<STATE_T, INDEX_T, ELEMENT_T>&>(*this)[index];
+  const typename ELEMENT_T::reference_type operator[](const Number &index) const {
+    return static_cast<const Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
 
  private:
-  typename ELEMENT_T::reference_type &operator[](size_t index) final {
-    return value[index];
+  typename ELEMENT_T::reference_type get(size_t index) final {
+    return typename ELEMENT_T::reference_type(*container, offset + index * ELEMENT_T::width());
   }
 
-  const typename ELEMENT_T::reference_type &operator[](size_t index) const final {
-    return value[index];
+  const typename ELEMENT_T::reference_type get(size_t index) const final {
+    return typename ELEMENT_T::reference_type(*container, offset + index * ELEMENT_T::width());
   }
 };
 
-template<typename STATE_T, typename INDEX_T, typename ELEMENT_T>
-class ArrayValue : public Array<STATE_T, INDEX_T, ELEMENT_T> {
+template<typename INDEX_T, typename ELEMENT_T>
+class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
 
  public:
-  typename ELEMENT_T::value_type value[INDEX_T::count()];
-
- public:
-  ArrayValue() = delete;
+  std::bitset<ELEMENT_T::width() * INDEX_T::count()> value;
 
  public:
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
-  ELEMENT_T &operator[](const Number &index) {
-    return Array<STATE_T, INDEX_T, ELEMENT_T>::operator[](index);
+  typename ELEMENT_T::reference_type operator[](const Number &index) {
+    return static_cast<Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
 
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
-  const ELEMENT_T &operator[](const Number &index) const {
-    return Array<STATE_T, INDEX_T, ELEMENT_T>::operator[](index);
+  const typename ELEMENT_T::reference_type operator[](const Number &index) const {
+    return static_cast<const Array<INDEX_T, ELEMENT_T>&>(*this)[index];
+  }
+
+  int64_t read(size_t offset, size_t width) const final {
+    return read_bits(value, offset, width);
+  }
+
+  void write(size_t offset, size_t width, int64_t v) final {
+    write_bits(value, offset, width, v);
   }
 
  private:
-  typename ELEMENT_T::value_type &operator[](size_t index) final {
-    return value[index];
+  typename ELEMENT_T::reference_type get(size_t index) final {
+    return typename ELEMENT_T::reference_type(*this, index * ELEMENT_T::width());
   }
 
-  const typename ELEMENT_T::value_type &operator[](size_t index) const final {
-    return value[index];
+  const typename ELEMENT_T::reference_type get(size_t index) const final {
+    return typename ELEMENT_T::reference_type(const_cast<ArrayValue&>(*this), index * ELEMENT_T::width());
   }
 };
 

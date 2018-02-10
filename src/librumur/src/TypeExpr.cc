@@ -224,7 +224,7 @@ Array::~Array() {
 }
 
 void Array::generate(std::ostream &out) const {
-  out << "Array<State, " << *index_type << ", " << *element_type << ">";
+  out << "Array<" << *index_type << ", " << *element_type << ">";
 }
 
 size_t Array::size() const {
