@@ -57,6 +57,30 @@ class BitBlock {
   virtual ~BitBlock() { }
 };
 
+template<size_t SIZE>
+static int64_t read_bits(const std::bitset<SIZE> &data, size_t offset, size_t width) {
+  static_assert(sizeof(unsigned long long) >= sizeof(int64_t),
+    "cannot read a int64_t out of a std::bitset");
+  ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
+  ASSERT(offset <= SIZE - 1 && "out of bounds read");
+  std::bitset<SIZE> v = (data >> offset) & std::bitset<SIZE>((UINT64_C(1) << width) - 1);
+  if (sizeof(unsigned long) >= sizeof(int64_t)) {
+    return v.to_ulong();
+  }
+  return v.to_ullong();
+}
+
+template<size_t SIZE>
+static void write_bits(std::bitset<SIZE> &data, size_t offset, size_t width, int64_t value) {
+  static_assert(sizeof(unsigned long) >= sizeof(int64_t),
+    "cannot write a int64_t to a std::bitset");
+  ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
+  ASSERT(1ul << width > (unsigned long)value && "write of too large a value");
+  std::bitset<SIZE> v = std::bitset<SIZE>((unsigned long)value) << offset;
+  std::bitset<SIZE> mask = ~(std::bitset<SIZE>((UINT64_C(1) << width) - 1) << offset);
+  data = (data & mask) | v;
+}
+
 template<size_t SIZE_BITS>
 struct StateBase : public BitBlock {
   std::bitset<SIZE_BITS> data;
@@ -82,25 +106,11 @@ struct StateBase : public BitBlock {
   }
 
   int64_t read(size_t offset, size_t width) const final {
-    static_assert(sizeof(unsigned long long) >= sizeof(int64_t),
-      "cannot read a int64_t out of a std::bitset");
-    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
-    ASSERT(offset <= SIZE_BITS - 1 && "out of bounds read");
-    std::bitset<SIZE_BITS> v = (data >> offset) & std::bitset<SIZE_BITS>((UINT64_C(1) << width) - 1);
-    if (sizeof(unsigned long) >= sizeof(int64_t)) {
-      return v.to_ulong();
-    }
-    return v.to_ullong();
+    return read_bits(data, offset, width);
   }
 
   void write(size_t offset, size_t width, int64_t value) final {
-    static_assert(sizeof(unsigned long) >= sizeof(int64_t),
-      "cannot write a int64_t to a std::bitset");
-    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
-    ASSERT(1ul << width > (unsigned long)value && "write of too large a value");
-    std::bitset<SIZE_BITS> v = std::bitset<SIZE_BITS>((unsigned long)value) << offset;
-    std::bitset<SIZE_BITS> mask = ~(std::bitset<SIZE_BITS>((UINT64_C(1) << width) - 1) << offset);
-    data = (data & mask) | v;
+    write_bits(data, offset, width, value);
   }
 
   size_t hash() const {
