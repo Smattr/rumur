@@ -69,7 +69,7 @@ size_t Range::width() const {
   int64_t ub = max->constant_fold();
   uint64_t range;
   if (__builtin_sub_overflow(ub, lb, &range))
-    throw RumurError("range calculation overflows uint64_t", loc);
+    throw RumurError("overflow in calculating width of range", loc);
   return bits_for(range);
 }
 
@@ -79,7 +79,7 @@ size_t Range::count() const {
   size_t range;
   if (__builtin_sub_overflow(ub, lb, &range) ||
       __builtin_add_overflow(range, 1, &range))
-    throw RumurError("range calculation overflows size_t", loc);
+    throw RumurError("overflow in calculating count of range", loc);
   return range;
 }
 
