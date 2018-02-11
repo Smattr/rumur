@@ -73,6 +73,16 @@ size_t Range::width() const {
   return bits_for(range);
 }
 
+size_t Range::count() const {
+  int64_t lb = min->constant_fold();
+  int64_t ub = max->constant_fold();
+  size_t range;
+  if (__builtin_sub_overflow(ub, lb, &range) ||
+      __builtin_add_overflow(range, 1, &range))
+    throw RumurError("range calculation overflows size_t", loc);
+  return range;
+}
+
 bool Range::operator==(const Node &other) const {
   if (auto o = dynamic_cast<const Range*>(&other))
     return min->constant_fold() == o->min->constant_fold() &&
@@ -110,6 +120,10 @@ void Enum::generate(std::ostream &out) const {
 
 size_t Enum::width() const {
   return bits_for(members.size());
+}
+
+size_t Enum::count() const {
+  return members.size();
 }
 
 bool Enum::operator==(const Node &other) const {
@@ -169,6 +183,15 @@ size_t Record::width() const {
     size_t v_size = v->type->width();
     if (__builtin_add_overflow(s, v_size, &s))
       throw RumurError("overflow in calculating width of record", loc);
+  }
+  return s;
+}
+
+size_t Record::count() const {
+  size_t s = 1;
+  for (const VarDecl *v : fields) {
+    if (__builtin_mul_overflow(s, v->type->count(), &s))
+      throw RumurError("overflow in calculating count of record", loc);
   }
   return s;
 }
@@ -236,6 +259,15 @@ size_t Array::width() const {
   return s;
 }
 
+size_t Array::count() const {
+  size_t s = 1;
+  for (size_t i = 0; i < index_type->count(); i++) {
+    if (__builtin_mul_overflow(s, element_type->count(), &s))
+      throw RumurError("overflow in calculating count of array", loc);
+  }
+  return s;
+}
+
 bool Array::operator==(const Node &other) const {
   if (auto o = dynamic_cast<const Array*>(&other))
     return *index_type == *o->index_type
@@ -280,6 +312,10 @@ void TypeExprID::generate(std::ostream &out) const {
 
 size_t TypeExprID::width() const {
   return referent->width();
+}
+
+size_t TypeExprID::count() const {
+  return referent->count();
 }
 
 bool TypeExprID::operator==(const Node &other) const {
