@@ -190,7 +190,7 @@ decl: CONST constdecls {
     if (symtab.is_global_scope()) {
       d->state_variable = true;
       d->offset = offset;
-      offset += d->type->size();
+      offset += d->type->width();
     }
     symtab.declare(d->name, *d);
   }

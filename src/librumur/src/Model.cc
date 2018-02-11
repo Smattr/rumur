@@ -61,7 +61,7 @@ uint64_t Model::size_bits() const {
   size_t s = 0;
   for (const Decl *d : decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d))
-      s += v->type->size();
+      s += v->type->width();
   }
   return s;
 }

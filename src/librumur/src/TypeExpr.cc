@@ -64,7 +64,7 @@ void Range::generate(std::ostream &out) const {
   out << "Range<" << lb << ", " << ub << ">";
 }
 
-size_t Range::size() const {
+size_t Range::width() const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
   uint64_t range;
@@ -108,7 +108,7 @@ void Enum::generate(std::ostream &out) const {
   out << ">";
 }
 
-size_t Enum::size() const {
+size_t Enum::width() const {
   return bits_for(members.size());
 }
 
@@ -163,12 +163,12 @@ void Record::generate(std::ostream &out) const {
   out << "}";
 }
 
-size_t Record::size() const {
+size_t Record::width() const {
   size_t s = 0;
   for (const VarDecl *v : fields) {
-    size_t v_size = v->type->size();
+    size_t v_size = v->type->width();
     if (__builtin_add_overflow(s, v_size, &s))
-      throw RumurError("overflow in calculating size of record", loc);
+      throw RumurError("overflow in calculating width of record", loc);
   }
   return s;
 }
@@ -227,12 +227,12 @@ void Array::generate(std::ostream &out) const {
   out << "Array<" << *index_type << ", " << *element_type << ">";
 }
 
-size_t Array::size() const {
+size_t Array::width() const {
   size_t s;
-  size_t i = index_type->size();
-  size_t e = element_type->size();
+  size_t i = index_type->width();
+  size_t e = element_type->width();
   if (__builtin_mul_overflow(i, e, &s))
-    throw RumurError("overflow in calculating size of array", loc);
+    throw RumurError("overflow in calculating width of array", loc);
   return s;
 }
 
@@ -278,8 +278,8 @@ void TypeExprID::generate(std::ostream &out) const {
   out << "ru_u_" << name;
 }
 
-size_t TypeExprID::size() const {
-  return referent->size();
+size_t TypeExprID::width() const {
+  return referent->width();
 }
 
 bool TypeExprID::operator==(const Node &other) const {

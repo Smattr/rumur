@@ -29,7 +29,7 @@ class TypeExpr : public Node {
   virtual bool is_simple() const;
 
   TypeExpr *clone() const override = 0;
-  virtual size_t size() const = 0;
+  virtual size_t width() const = 0;
   virtual const TypeExpr *resolve() const;
 };
 
@@ -48,7 +48,7 @@ class Range : public TypeExpr {
   virtual ~Range();
 
   void generate(std::ostream &out) const final;
-  size_t size() const final;
+  size_t width() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
 };
@@ -69,7 +69,7 @@ class Enum : public TypeExpr {
   virtual ~Enum() { }
 
   void generate(std::ostream &out) const final;
-  size_t size() const final;
+  size_t width() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
 };
@@ -88,7 +88,7 @@ class Record : public TypeExpr {
   virtual ~Record();
 
   void generate(std::ostream &out) const final;
-  size_t size() const final;
+  size_t width() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -107,7 +107,7 @@ class Array : public TypeExpr {
   virtual ~Array();
 
   void generate(std::ostream &out) const final;
-  size_t size() const final;
+  size_t width() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -126,7 +126,7 @@ class TypeExprID : public TypeExpr {
   virtual ~TypeExprID();
 
   void generate(std::ostream &out) const final;
-  size_t size() const final;
+  size_t width() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   const TypeExpr *resolve() const final;
