@@ -67,7 +67,7 @@ void Range::generate(std::ostream &out) const {
 size_t Range::size() const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
-  uint64_t range = ub;
+  uint64_t range;
   if (__builtin_sub_overflow(ub, lb, &range))
     throw RumurError("range calculation overflows uint64_t", loc);
   return bits_for(range);
