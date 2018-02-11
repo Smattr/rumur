@@ -252,7 +252,7 @@ void Array::generate(std::ostream &out) const {
 
 size_t Array::width() const {
   size_t s;
-  size_t i = index_type->width();
+  size_t i = index_type->count();
   size_t e = element_type->width();
   if (__builtin_mul_overflow(i, e, &s))
     throw RumurError("overflow in calculating width of array", loc);
