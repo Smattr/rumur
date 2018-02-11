@@ -176,7 +176,7 @@ var {
 [[:space:]] {}
 
 . {
-  throw rumur::RumurError(std::string("unexpected character: '") + YYText() + "'", *loc);
+  throw rumur::Error(std::string("unexpected character: '") + YYText() + "'", *loc);
 }
 
   /* Comment handling. */

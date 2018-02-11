@@ -19,7 +19,7 @@ ConstDecl::ConstDecl(const std::string &name_, const Expr *value_,
   const location &loc_):
   Decl(name_, loc_), value(value_->clone()) {
   if (!value->constant())
-    throw RumurError("const definition is not a constant", value->loc);
+    throw Error("const definition is not a constant", value->loc);
 }
 
 ConstDecl::ConstDecl(const ConstDecl &other):

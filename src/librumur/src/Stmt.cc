@@ -48,7 +48,7 @@ bool Assert::operator==(const Node &other) const {
 Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) {
   if (!lhs->type()->is_simple())
-    throw RumurError("left hand side of assignment does not have a simple "
+    throw Error("left hand side of assignment does not have a simple "
       "type", lhs->loc);
 }
 
@@ -86,33 +86,33 @@ bool Assignment::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-Error::Error(const std::string &message_, const location &loc_):
+ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_):
   Stmt(loc_), message(message_) { }
 
-Error::Error(const Error &other):
+ErrorStmt::ErrorStmt(const ErrorStmt &other):
   Stmt(other.loc), message(other.message) { }
 
-Error &Error::operator=(Error other) {
+ErrorStmt &ErrorStmt::operator=(ErrorStmt other) {
   swap(*this, other);
   return *this;
 }
 
-void swap(Error &x, Error &y) noexcept {
+void swap(ErrorStmt &x, ErrorStmt &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.message, y.message);
 }
 
-Error *Error::clone() const {
-  return new Error(*this);
+ErrorStmt *ErrorStmt::clone() const {
+  return new ErrorStmt(*this);
 }
 
-void Error::generate(std::ostream &out) const {
+void ErrorStmt::generate(std::ostream &out) const {
   out << "throw Error(\"" << message << "\")";
 }
 
-bool Error::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Error*>(&other);
+bool ErrorStmt::operator==(const Node &other) const {
+  auto o = dynamic_cast<const ErrorStmt*>(&other);
   return o != nullptr && message == o->message;
 }
 

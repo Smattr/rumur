@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
   rumur::Model *m;
   try {
     m = rumur::parse(in);
-  } catch (rumur::RumurError &e) {
+  } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }

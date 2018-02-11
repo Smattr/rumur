@@ -9,13 +9,13 @@ namespace rumur {
 /* A basic exception to allow us to easily catch only the errors thrown by
  * ourselves.
  */
-class RumurError : public std::runtime_error {
+class Error : public std::runtime_error {
 
  public:
   location loc;
 
-  RumurError(const std::string &message, const location &loc_);
-  RumurError(const std::string &prefix, const RumurError &sub);
+  Error(const std::string &message, const location &loc_);
+  Error(const std::string &prefix, const Error &sub);
 
 };
 

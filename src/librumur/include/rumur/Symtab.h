@@ -67,7 +67,7 @@ class Symtab {
         }
       }
     }
-    throw RumurError("unknown symbol: " + name, loc);
+    throw Error("unknown symbol: " + name, loc);
   }
 
   ~Symtab() {

@@ -18,9 +18,9 @@ Number::Number(const std::string &value_, const location &loc_):
   try {
     value = int64_t(stoll(value_, nullptr, 0));
   } catch (std::invalid_argument &e) {
-    throw RumurError("invalid number: " + value_, loc);
+    throw Error("invalid number: " + value_, loc);
   } catch (std::out_of_range &e) {
-    throw RumurError("out of range number: " + value_, loc);
+    throw Error("out of range number: " + value_, loc);
   }
 }
 

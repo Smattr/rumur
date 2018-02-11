@@ -59,18 +59,18 @@ class Assignment : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
-class Error : public Stmt {
+class ErrorStmt : public Stmt {
 
   public:
    std::string message;
 
-   Error() = delete;
-   Error(const std::string &message_, const location &loc_);
-   Error(const Error &other);
-   Error &operator=(Error other);
-   friend void swap(Error &x, Error &y) noexcept;
-   Error *clone() const final;
-   virtual ~Error() { }
+   ErrorStmt() = delete;
+   ErrorStmt(const std::string &message_, const location &loc_);
+   ErrorStmt(const ErrorStmt &other);
+   ErrorStmt &operator=(ErrorStmt other);
+   friend void swap(ErrorStmt &x, ErrorStmt &y) noexcept;
+   ErrorStmt *clone() const final;
+   virtual ~ErrorStmt() { }
 
    void generate(std::ostream &out) const final;
    bool operator==(const Node &other) const final;

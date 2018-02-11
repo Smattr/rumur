@@ -21,14 +21,14 @@ Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const loc
     return dynamic_cast<const StartState*>(r) != nullptr;
   };
   if (find_if(rules.begin(), rules.end(), is_start_state) == rules.end())
-    throw RumurError("model has no start state", location());
+    throw Error("model has no start state", location());
 
   // Check all rule names are distinct.
   std::unordered_set<std::string> names;
   for (const Rule *r : rules) {
     if (r->name != "<unnamed>") {
       if (!names.insert(r->name).second)
-        throw RumurError("duplicate rule name " + r->name, r->loc);
+        throw Error("duplicate rule name " + r->name, r->loc);
     }
   }
 }

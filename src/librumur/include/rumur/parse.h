@@ -5,7 +5,7 @@
 
 namespace rumur {
 
-/* Parse in a model from an input stream. Throws RumurErrors on parsing errors.
+/* Parse in a model from an input stream. Throws Errors on parsing errors.
  *
  * This is a one-shot parsing API. That is, it fully parses the input model and
  * validates it. If you want to do something more flexible like parse a partial

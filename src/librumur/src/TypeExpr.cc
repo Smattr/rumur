@@ -27,10 +27,10 @@ const TypeExpr *TypeExpr::resolve() const {
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
   if (!min->constant())
-    throw RumurError("lower bound of range is not a constant", min->loc);
+    throw Error("lower bound of range is not a constant", min->loc);
 
   if (!max->constant())
-    throw RumurError("upper bound of range is not a constant", max->loc);
+    throw Error("upper bound of range is not a constant", max->loc);
 }
 
 Range::Range(const Range &other):
@@ -69,7 +69,7 @@ size_t Range::width() const {
   int64_t ub = max->constant_fold();
   uint64_t range;
   if (__builtin_sub_overflow(ub, lb, &range))
-    throw RumurError("overflow in calculating width of range", loc);
+    throw Error("overflow in calculating width of range", loc);
   return bits_for(range);
 }
 
@@ -79,7 +79,7 @@ size_t Range::count() const {
   size_t range;
   if (__builtin_sub_overflow(ub, lb, &range) ||
       __builtin_add_overflow(range, 1, &range))
-    throw RumurError("overflow in calculating count of range", loc);
+    throw Error("overflow in calculating count of range", loc);
   return range;
 }
 
@@ -182,7 +182,7 @@ size_t Record::width() const {
   for (const VarDecl *v : fields) {
     size_t v_size = v->type->width();
     if (__builtin_add_overflow(s, v_size, &s))
-      throw RumurError("overflow in calculating width of record", loc);
+      throw Error("overflow in calculating width of record", loc);
   }
   return s;
 }
@@ -191,7 +191,7 @@ size_t Record::count() const {
   size_t s = 1;
   for (const VarDecl *v : fields) {
     if (__builtin_mul_overflow(s, v->type->count(), &s))
-      throw RumurError("overflow in calculating count of record", loc);
+      throw Error("overflow in calculating count of record", loc);
   }
   return s;
 }
@@ -217,7 +217,7 @@ bool Record::operator==(const Node &other) const {
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
   if (!index_type->is_simple())
-    throw RumurError("array indices must be simple types", loc);
+    throw Error("array indices must be simple types", loc);
 }
 
 Array::Array(const Array &other):
@@ -255,7 +255,7 @@ size_t Array::width() const {
   size_t i = index_type->count();
   size_t e = element_type->width();
   if (__builtin_mul_overflow(i, e, &s))
-    throw RumurError("overflow in calculating width of array", loc);
+    throw Error("overflow in calculating width of array", loc);
   return s;
 }
 
@@ -263,7 +263,7 @@ size_t Array::count() const {
   size_t s = 1;
   for (size_t i = 0; i < index_type->count(); i++) {
     if (__builtin_mul_overflow(s, element_type->count(), &s))
-      throw RumurError("overflow in calculating count of array", loc);
+      throw Error("overflow in calculating count of array", loc);
   }
   return s;
 }

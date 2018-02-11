@@ -21,7 +21,7 @@ Ternary::Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
 
   if (!cond->is_boolean())
-    throw RumurError("ternary condition is not a boolean", cond->loc);
+    throw Error("ternary condition is not a boolean", cond->loc);
 }
 
 Ternary::Ternary(const Ternary &other):
@@ -101,10 +101,10 @@ BinaryExpr::~BinaryExpr() {
 BooleanBinaryExpr::BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   if (!lhs->is_boolean())
-    throw RumurError("left hand side of expression is not a boolean", lhs->loc);
+    throw Error("left hand side of expression is not a boolean", lhs->loc);
 
   if (!rhs->is_boolean())
-    throw RumurError("right hand side of expression is not a boolean",
+    throw Error("right hand side of expression is not a boolean",
       rhs->loc);
 }
 
@@ -211,7 +211,7 @@ bool UnaryExpr::constant() const {
 Not::Not(Expr *rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
   if (!rhs->is_boolean())
-    throw RumurError("argument to ! is not a boolean", rhs->loc);
+    throw Error("argument to ! is not a boolean", rhs->loc);
 }
 
 Not &Not::operator=(Not other) {
@@ -281,7 +281,7 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
 ComparisonBinaryExpr::ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   if (!comparable(*lhs, *rhs))
-    throw RumurError("expressions are not comparable", loc);
+    throw Error("expressions are not comparable", loc);
 }
 
 Lt &Lt::operator=(Lt other) {
@@ -434,7 +434,7 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
 EquatableBinaryExpr::EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   if (!equatable(*lhs, *rhs))
-    throw RumurError("expressions are not comparable", loc);
+    throw Error("expressions are not comparable", loc);
 }
 
 Eq &Eq::operator=(Eq other) {
@@ -530,7 +530,7 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 ArithmeticBinaryExpr::ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   if (!arithmetic(*lhs, *rhs))
-    throw RumurError("expressions are incompatible in arithmetic expression",
+    throw Error("expressions are incompatible in arithmetic expression",
       loc);
 }
 
@@ -556,7 +556,7 @@ int64_t Add::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (__builtin_add_overflow(a, b, &r))
-    throw RumurError("overflow in " + std::to_string(a) + " + "
+    throw Error("overflow in " + std::to_string(a) + " + "
       + std::to_string(b), loc);
   return r;
 }
@@ -588,7 +588,7 @@ int64_t Sub::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (__builtin_sub_overflow(a, b, &r))
-    throw RumurError("overflow in " + std::to_string(a) + " - "
+    throw Error("overflow in " + std::to_string(a) + " - "
       + std::to_string(b), loc);
   return r;
 }
@@ -601,7 +601,7 @@ bool Sub::operator==(const Node &other) const {
 Negative::Negative(Expr *rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
   if (rhs->type() != nullptr && dynamic_cast<const Range*>(rhs->type()->resolve()) != nullptr)
-    throw RumurError("expression cannot be negated", rhs->loc);
+    throw Error("expression cannot be negated", rhs->loc);
 }
 
 Negative &Negative::operator=(Negative other) {
@@ -624,7 +624,7 @@ void Negative::generate(std::ostream &out) const {
 int64_t Negative::constant_fold() const {
   int64_t a = rhs->constant_fold();
   if (a == std::numeric_limits<int64_t>::min())
-    throw RumurError("overflow in -" + std::to_string(a), loc);
+    throw Error("overflow in -" + std::to_string(a), loc);
   return -a;
 }
 
@@ -655,7 +655,7 @@ int64_t Mul::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (__builtin_mul_overflow(a, b, &r))
-    throw RumurError("overflow in " + std::to_string(a) + " * "
+    throw Error("overflow in " + std::to_string(a) + " * "
       + std::to_string(b), loc);
   return r;
 }
@@ -686,10 +686,10 @@ int64_t Div::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (b == 0)
-    throw RumurError("division by 0 in " + std::to_string(a) + " / "
+    throw Error("division by 0 in " + std::to_string(a) + " / "
       + std::to_string(b), loc);
   if (a == std::numeric_limits<int64_t>::min() && b == -1)
-    throw RumurError("overflow in " + std::to_string(a) + " / "
+    throw Error("overflow in " + std::to_string(a) + " / "
       + std::to_string(b), loc);
   return a / b;
 }
@@ -720,10 +720,10 @@ int64_t Mod::constant_fold() const {
   int64_t a = lhs->constant_fold();
   int64_t b = rhs->constant_fold();
   if (b == 0)
-    throw RumurError("mod by 0 in " + std::to_string(a) + " % "
+    throw Error("mod by 0 in " + std::to_string(a) + " % "
       + std::to_string(b), loc);
   if (a == std::numeric_limits<int64_t>::min() && b == -1)
-    throw RumurError("overflow in " + std::to_string(a) + " % "
+    throw Error("overflow in " + std::to_string(a) + " % "
       + std::to_string(b), loc);
   return a % b;
 }
@@ -796,7 +796,7 @@ ExprID::~ExprID() {
 int64_t ExprID::constant_fold() const {
   if (auto c = dynamic_cast<const ConstDecl*>(value))
     return c->value->constant_fold();
-  throw RumurError("symbol \"" + id + "\" is not a constant", loc);
+  throw Error("symbol \"" + id + "\" is not a constant", loc);
 }
 
 bool ExprID::operator==(const Node &other) const {
@@ -846,7 +846,7 @@ Field::~Field() {
 }
 
 int64_t Field::constant_fold() const {
-  throw RumurError("field expression used in constant", loc);
+  throw Error("field expression used in constant", loc);
 }
 
 bool Field::operator==(const Node &other) const {
@@ -900,7 +900,7 @@ void Element::generate(std::ostream &out) const {
 }
 
 int64_t Element::constant_fold() const {
-  throw RumurError("array element used in constant", loc);
+  throw Error("array element used in constant", loc);
 }
 
 bool Element::operator==(const Node &other) const {
@@ -980,7 +980,7 @@ bool Quantifier::operator==(const Node &other) const {
 Exists::Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
   if (!expr->is_boolean())
-    throw RumurError("expression in exists is not boolean", expr->loc);
+    throw Error("expression in exists is not boolean", expr->loc);
 }
 
 Exists::Exists(const Exists &other):
@@ -1027,13 +1027,13 @@ void Exists::generate(std::ostream &out) const {
 }
 
 int64_t Exists::constant_fold() const {
-  throw RumurError("exists expression used in constant", loc);
+  throw Error("exists expression used in constant", loc);
 }
 
 Forall::Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
   if (!expr->is_boolean())
-    throw RumurError("expression in forall is not boolean", expr->loc);
+    throw Error("expression in forall is not boolean", expr->loc);
 }
 
 Forall::Forall(const Forall &other):
@@ -1075,7 +1075,7 @@ void Forall::generate(std::ostream &out) const {
 }
 
 int64_t Forall::constant_fold() const {
-  throw RumurError("forall expression used in constant", loc);
+  throw Error("forall expression used in constant", loc);
 }
 
 bool Forall::operator==(const Node &other) const {

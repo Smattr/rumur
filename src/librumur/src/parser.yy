@@ -224,7 +224,7 @@ typedecl: ID ':' typeexpr ';' {
 typeexpr: ID {
   const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
   if (t == nullptr) {
-    throw rumur::RumurError("unknown type ID \"" + $1 + "\"", @1);
+    throw rumur::Error("unknown type ID \"" + $1 + "\"", @1);
   }
   $$ = new rumur::TypeExprID($1, t->clone(), @$);
 } | expr DOTDOT expr {
@@ -324,7 +324,7 @@ stmt: ASSERT expr string_opt {
 } | designator COLON_EQ expr {
   $$ = new rumur::Assignment($1, $3, @$);
 } | ERROR STRING {
-  $$ = new rumur::Error($2, @$);
+  $$ = new rumur::ErrorStmt($2, @$);
 };
 
 endstartstate: END | ENDSTARTSTATE;
@@ -441,5 +441,5 @@ comma_opt: ',' | %empty;
 %%
 
 void rumur::parser::error(const location_type &loc, const std::string &message) {
-  throw RumurError(message, loc);
+  throw Error(message, loc);
 }

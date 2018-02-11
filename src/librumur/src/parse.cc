@@ -33,7 +33,7 @@ Model *parse(std::istream *input) {
   // Parse the input model
   int err = p.parse();
   if (err != 0)
-    throw RumurError("parsing failed", location());
+    throw Error("parsing failed", location());
 
   return m;
 }

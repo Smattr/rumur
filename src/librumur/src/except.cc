@@ -5,11 +5,11 @@
 
 namespace rumur {
 
-RumurError::RumurError(const std::string &message, const location &loc_):
+Error::Error(const std::string &message, const location &loc_):
   std::runtime_error(message), loc(loc_) {
 }
 
-RumurError::RumurError(const std::string &prefix, const RumurError &sub):
+Error::Error(const std::string &prefix, const Error &sub):
   std::runtime_error(prefix + sub.what()), loc(sub.loc) { }
 
 }
