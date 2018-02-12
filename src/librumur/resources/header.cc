@@ -954,6 +954,11 @@ class Boolean {
     return *this;
   }
 
+  Boolean &operator=(bool other) {
+    set_value(other);
+    return *this;
+  }
+
   operator bool() const {
     return get_value();
   }
