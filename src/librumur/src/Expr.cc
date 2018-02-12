@@ -787,7 +787,7 @@ void ExprID::generate(std::ostream &out) const {
     }
   }
   const TypeExpr *t = type();
-  if (t != nullptr) {
+  if (t != nullptr && *t != Boolean) {
     if (auto e = dynamic_cast<const Enum*>(t)) {
       size_t i = 0;
       for (const std::pair<std::string, location> &m : e->members) {
