@@ -110,6 +110,8 @@ void Enum::generate(std::ostream &out) const {
   out << "Enum<";
   bool first = true;
   for (const std::pair<std::string, location> &m : members) {
+    if (!first)
+      out << ", ','";
     for (char c : m.first) {
       if (!first)
         out << ",";
