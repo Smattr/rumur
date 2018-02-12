@@ -1,5 +1,4 @@
 {
   "model":"model.m",
-  "extra_cxxflags":["-O3", "-fwhole-program"],
-  "run":false
+  "extra_cxxflags":["-O3", "-fwhole-program"]
 }
