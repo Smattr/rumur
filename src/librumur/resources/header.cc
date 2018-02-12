@@ -986,7 +986,7 @@ class BooleanReference : public Boolean<> {
   BooleanReference() = delete;
   BooleanReference(BitBlock &container_, size_t offset_):
     container(&container_), offset(offset_) { }
-  BooleanReference(const BooleanReference&&) = default;
+  BooleanReference(const BooleanReference&) = default;
   BooleanReference(BooleanReference&&) = default;
 
   using Boolean<>::operator=;
