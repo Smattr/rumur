@@ -370,7 +370,7 @@ struct Number {
   }
 
   void print(FILE *f, const char *title) const {
-    fprintf(f, "%s = %" PRId64, title, value);
+    fprint(f, "%s = %" PRId64, title, value);
   }
 };
 
@@ -570,7 +570,7 @@ struct Range {
   virtual void set_value(int64_t v) = 0;
 
   void print(FILE *f, const char *title) const {
-    fprintf(f, "%s = %" PRId64, title, get_value());
+    fprint(f, "%s = %" PRId64, title, get_value());
   }
 
   static constexpr size_t count() {
@@ -963,7 +963,7 @@ class Boolean {
   virtual void set_value(bool v) = 0;
 
   void print(FILE *f, const char *title) const {
-    fprintf(f, "%s = %s", title, get_value());
+    fprint(f, "%s = %s", title, get_value());
   }
 
   static constexpr size_t count() {
@@ -1070,7 +1070,7 @@ class Enum {
   virtual void set_value(uint64_t v) = 0;
 
   void print(FILE *f, const char *title) const {
-    fprintf(f, "%s = ", title);
+    fprint(f, "%s = ", title);
     uint64_t v = get_value();
     uint64_t i = 0;
     for (char c : std::array<char, sizeof...(MEMBERS)>{MEMBERS...}) {
@@ -1080,7 +1080,7 @@ class Enum {
         }
         i++;
       } else if (v == i) {
-        fputc(c, f);
+        fprint(f, "%c", c);
       }
     }
     ASSERT(v == i && "illegal out-of-range value stored in enum");
