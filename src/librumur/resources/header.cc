@@ -2,6 +2,8 @@
   #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
 #endif
 
+#include <algorithm>
+#include <array>
 #include <cassert>
 #include <ctime>
 #include <bitset>
@@ -964,7 +966,7 @@ class Boolean {
     fprintf(f, "%s = %s", title, get_value());
   }
 
-  static size_t count() {
+  static constexpr size_t count() {
     return 2; // "false" and "true"
   }
 
@@ -1024,3 +1026,143 @@ class BooleanValue : public Boolean<> {
 using ru_u_boolean = Boolean<>;
 [[gnu::unused]] static const BooleanValue<> ru_u_false(false);
 [[gnu::unused]] static const BooleanValue<> ru_u_true(true);
+
+template<char... MEMBERS>
+class EnumReference;
+
+template<char... MEMBERS>
+class EnumValue;
+
+template<char... MEMBERS>
+class Enum {
+
+ public:
+  using reference_type = EnumReference<MEMBERS...>;
+  using value_type = EnumValue<MEMBERS...>;
+
+ public:
+  static EnumValue<MEMBERS...> make(uint64_t value) {
+    return EnumValue<MEMBERS...>(value);
+  }
+
+  static EnumReference<MEMBERS...> make(BitBlock &container, size_t offset) {
+    return EnumReference<MEMBERS...>(container, offset);
+  }
+
+  static const EnumReference<MEMBERS...> make(const BitBlock &container, size_t offset) {
+    return EnumReference<MEMBERS...>(const_cast<BitBlock&>(container), offset);
+  }
+
+  Enum &operator=(const Enum &other) {
+    set_value(other.get_value());
+    return *this;
+  }
+
+  bool operator==(const Enum &other) const {
+    return get_value() == other.get_value();
+  }
+
+  bool operator!=(const Enum &other) const {
+    return get_value() != other.get_value();
+  }
+
+  virtual uint64_t get_value() const = 0;
+  virtual void set_value(uint64_t v) = 0;
+
+  void print(FILE *f, const char *title) const {
+    fprintf(f, "%s = ", title);
+    uint64_t v = get_value();
+    uint64_t i = 0;
+    for (char c : std::array<char, sizeof...(MEMBERS)>{MEMBERS...}) {
+      if (c == ',') {
+        if (v == i) {
+          break;
+        }
+        i++;
+      } else if (v == i) {
+        fputc(c, f);
+      }
+    }
+    ASSERT(v == i && "illegal out-of-range value stored in enum");
+  }
+
+  static constexpr size_t count() {
+    return sizeof...(MEMBERS) == 0
+      ? 0
+      : count_commas(std::array<char, sizeof...(MEMBERS)>{MEMBERS...}) + 1;
+  }
+
+  static constexpr size_t width() {
+    return count() < 2 ? 0 : sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(count() - 1);
+  }
+
+  // XXX: This function is only here so we can define count() as a C++11 constexpr.
+  // Perhaps we can find another way around this.
+  static constexpr size_t count_commas(const std::array<char, sizeof...(MEMBERS)> &cs) {
+    return std::count_if(cs.begin(), cs.end(), [](char c){ return c == ','; });
+  }
+};
+
+template<char... MEMBERS>
+class EnumReference : public Enum<MEMBERS...> {
+
+ public:
+  BitBlock *container;
+  const size_t offset;
+
+ public:
+  EnumReference() = delete;
+  EnumReference(BitBlock &container_, size_t offset_):
+    container(&container_), offset(offset_) { }
+  EnumReference(const EnumReference&) = default;
+  EnumReference(EnumReference&&) = default;
+
+  using Enum<MEMBERS...>::operator=;
+
+  uint64_t get_value() const final {
+    return container->read(offset, width());
+  }
+
+  void set_value(uint64_t v) final {
+    container->write(offset, width(), v);
+  }
+
+  static constexpr size_t count() {
+    return Enum<MEMBERS...>::count();
+  }
+
+  static constexpr size_t width() {
+    return Enum<MEMBERS...>::width();
+  }
+};
+
+template<char... MEMBERS>
+class EnumValue : public Enum<MEMBERS...> {
+
+ public:
+  uint64_t value;
+
+ public:
+  EnumValue() = delete;
+  EnumValue(uint64_t value_): value(value_) { }
+  EnumValue(const EnumValue&) = default;
+  EnumValue(EnumValue&&) = default;
+
+  using Enum<MEMBERS...>::operator=;
+
+  uint64_t get_value() const final {
+    return value;
+  }
+
+  void set_value(uint64_t v) final {
+    value = v;
+  }
+
+  static constexpr size_t count() {
+    return Enum<MEMBERS...>::count();
+  }
+
+  static constexpr size_t width() {
+    return Enum<MEMBERS...>::width();
+  }
+};

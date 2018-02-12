@@ -786,6 +786,19 @@ void ExprID::generate(std::ostream &out) const {
       return;
     }
   }
+  const TypeExpr *t = type();
+  if (t != nullptr) {
+    if (auto e = dynamic_cast<const Enum*>(t)) {
+      size_t i = 0;
+      for (const std::pair<std::string, location> &m : e->members) {
+        if (id == m.first) {
+          out << *e << "::value_type(UINT64_C(" << i << "))";
+          return;
+        }
+        i++;
+      }
+    }
+  }
   out << "ru_u_" << id;
 }
 

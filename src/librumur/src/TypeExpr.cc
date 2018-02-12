@@ -107,13 +107,15 @@ Enum *Enum::clone() const {
 }
 
 void Enum::generate(std::ostream &out) const {
-  out << "EnumBase<";
+  out << "Enum<";
   bool first = true;
   for (const std::pair<std::string, location> &m : members) {
-    if (!first)
-      out << ",";
-    out << "\"" << m.first << "\"";
-    first = false;
+    for (char c : m.first) {
+      if (!first)
+        out << ",";
+      out << "'" << c << "'";
+      first = false;
+    }
   }
   out << ">";
 }
