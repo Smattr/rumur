@@ -968,7 +968,7 @@ class Boolean {
   virtual void set_value(bool v) = 0;
 
   void print(FILE *f, const char *title) const {
-    fprint(f, "%s = %s", title, get_value());
+    fprint(f, "%s = %s", title, get_value() ? "true" : "false");
   }
 
   static constexpr size_t count() {
