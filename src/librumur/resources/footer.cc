@@ -38,7 +38,7 @@ int main(void) {
   /* A queue of states to expand. A data structure invariant we maintain on
    * this collection is that all states within pass all invariants.
    */
-  std::queue<State*> q;
+  Queue<State, THREADS> q;
 
   /* The states we have encountered. This collection will only ever grow while
    * checking the model.
@@ -65,11 +65,13 @@ int main(void) {
       q.push(s);
     }
 
-    while (!q.empty()) {
+    for (;;) {
 
       // Retrieve the next state to expand.
-      State *s = q.front();
-      q.pop();
+      State *s = q.pop();
+      if (s == nullptr) {
+        break;
+      }
 
       // Run each applicable rule on it, generating new states.
       for (const Rule &rule : RULES) {
@@ -81,10 +83,13 @@ int main(void) {
               continue;
             }
 
+            // Queue the state for expansion in future
+            size_t q_size = q.push(next);
+
             // Print progress every now and then
             if (seen.size() % 10000 == 0) {
               print("%zu states seen in %llu seconds, %zu states in queue\n",
-                seen.size(), gettime(), q.size() + 1);
+                seen.size(), gettime(), q_size);
             }
 
             for (const Invariant &inv : INVARIANTS) {
@@ -93,7 +98,6 @@ int main(void) {
                 throw Error("invariant " + inv.name + " failed");
               }
             }
-            q.push(next);
           }
         } catch (Error e) {
           print_counterexample(*s);

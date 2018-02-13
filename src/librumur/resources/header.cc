@@ -94,6 +94,55 @@ static RecursiveMutex<THREADS> print_lock;
   va_end(ap);
 }
 
+/* A queue of states that can be either thread-safe or not depending on whether
+ * we're running multithreaded.
+ */
+
+template<typename T, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
+class Queue;
+
+template<typename T, unsigned long THREAD_COUNT>
+class Queue<T, THREAD_COUNT, false> {
+
+ private:
+  std::queue<T*> q;
+
+ public:
+  size_t push(T *t) {
+    q.push(t);
+    return q.size();
+  }
+
+  T *pop() {
+    if (q.empty()) {
+      return nullptr;
+    }
+    T *t = q.front();
+    q.pop();
+    return t;
+  }
+};
+
+// TODO: in future we probably want to switch to per-thread queues instead of a
+// unified lock-protected one
+template<typename T, unsigned long THREAD_COUNT>
+class Queue<T, THREAD_COUNT, true> : Queue<T, THREAD_COUNT, false> {
+
+ private:
+  std::mutex mutex;
+
+ public:
+  size_t push(T *t) {
+    std::lock_guard<std::mutex> lock(mutex);
+    return Queue<T, THREAD_COUNT, false>::push(t);
+  }
+
+  T *pop() {
+    std::lock_guard<std::mutex> lock(mutex);
+    return Queue<T, THREAD_COUNT, false>::pop();
+  }
+};
+
 class BitBlock {
 
  public:
