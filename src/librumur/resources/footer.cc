@@ -82,7 +82,7 @@ int main(void) {
             // Print progress every now and then
             if (seen.size() % 10000 == 0) {
               print("%zu states seen in %llu seconds, %zu states in queue\n",
-                seen.size(), gettime(), q.size());
+                seen.size(), gettime(), q.size() + 1);
             }
 
             for (const Invariant &inv : INVARIANTS) {
