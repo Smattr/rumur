@@ -1,5 +1,9 @@
 #ifndef __OPTIMIZE__
-  #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
+  #ifdef __clang__
+    #warning you are compiling without optimizations enabled. I would suggest -O3.
+  #else
+    #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
+  #endif
 #endif
 
 #include <algorithm>
