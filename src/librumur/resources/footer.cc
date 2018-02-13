@@ -80,7 +80,7 @@ int main(void) {
             }
 
             // Print progress every now and then
-            if (seen.size() % 1000 == 0) {
+            if (seen.size() % 10000 == 0) {
               print("%zu states seen in %llu seconds, %zu states in queue\n",
                 seen.size(), gettime(), q.size());
             }
