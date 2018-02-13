@@ -163,6 +163,10 @@ struct StateBase : public BitBlock {
     return std::hash<std::bitset<SIZE_BITS>>{}(data);
   }
 
+  static size_t width() {
+    return SIZE_BITS;
+  }
+
   virtual ~StateBase() { }
 
  private:

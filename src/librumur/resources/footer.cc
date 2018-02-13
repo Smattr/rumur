@@ -33,6 +33,8 @@ static unsigned long long gettime() {
 
 int main(void) {
 
+  print("State size: %zu bits\n", State::width());
+
   /* A queue of states to expand. A data structure invariant we maintain on
    * this collection is that all states within pass all invariants.
    */
