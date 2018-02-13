@@ -143,6 +143,50 @@ class Queue<T, THREAD_COUNT, true> : Queue<T, THREAD_COUNT, false> {
   }
 };
 
+/* A set of states with either thread-safe or -unsafe methods based on how many
+ * threads we're using.
+ */
+
+template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
+class Set;
+
+template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
+class Set<T, HASH, EQ, THREAD_COUNT, false> {
+
+ private:
+  std::unordered_set<T*, HASH, EQ> s;
+
+ public:
+  std::pair<size_t, bool> insert(T *t) {
+    auto r = s.insert(t);
+    return std::pair<size_t, bool>(size(), r.second);
+  }
+
+  size_t size() const {
+    return s.size();
+  }
+};
+
+// TODO: As with the queue, we may want to do something more clever here for the
+// multithreaded case
+template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
+class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, THREAD_COUNT, false> {
+
+ private:
+  mutable std::mutex mutex;
+
+ public:
+  std::pair<size_t, bool> insert(T *t) {
+    std::lock_guard<std::mutex> lock(mutex);
+    return Set<T, HASH, EQ, THREAD_COUNT, false>::insert(t);
+  }
+
+  size_t size() const {
+    std::lock_guard<std::mutex> lock(mutex);
+    return Set<T, HASH, EQ, THREAD_COUNT, false>::size();
+  }
+};
+
 class BitBlock {
 
  public:

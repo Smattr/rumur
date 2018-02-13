@@ -43,7 +43,7 @@ int main(void) {
   /* The states we have encountered. This collection will only ever grow while
    * checking the model.
    */
-  std::unordered_set<State*, state_hash, state_eq> seen;
+  Set<State, state_hash, state_eq, THREADS> seen;
 
   try {
 
@@ -78,7 +78,8 @@ int main(void) {
         try {
           for (State *next : rule.get_iterable(*s)) {
 
-            if (!seen.insert(next).second) {
+            std::pair<size_t, bool> seen_result = seen.insert(next);
+            if (!seen_result.second) {
               delete next;
               continue;
             }
@@ -87,9 +88,9 @@ int main(void) {
             size_t q_size = q.push(next);
 
             // Print progress every now and then
-            if (seen.size() % 10000 == 0) {
+            if (seen_result.first % 10000 == 0) {
               print("%zu states seen in %llu seconds, %zu states in queue\n",
-                seen.size(), gettime(), q_size);
+                seen_result.first, gettime(), q_size);
             }
 
             for (const Invariant &inv : INVARIANTS) {
