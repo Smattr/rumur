@@ -10,6 +10,7 @@ static std::istream *in;
 static std::string *out;
 static rumur::OutputOptions output_options = {
   .overflow_checks = true,
+  .threads = 0,
 };
 
 static void parse_args(int argc, char **argv) {
@@ -18,11 +19,12 @@ static void parse_args(int argc, char **argv) {
     static struct option options[] = {
       { "help", no_argument, 0, '?' },
       { "output", required_argument, 0, 'o' },
+      { "threads", required_argument, 0, 't' },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "o:?", options, &option_index);
+    int c = getopt_long(argc, argv, "o:t:?", options, &option_index);
 
     if (c == -1)
       break;
@@ -33,6 +35,15 @@ static void parse_args(int argc, char **argv) {
         if (out != nullptr)
           delete out;
         out = new std::string(optarg);
+        break;
+
+      case 't':
+        try {
+          output_options.threads = std::stoul(optarg);
+        } catch (std::exception) {
+          std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
         break;
 
       case '?':
@@ -60,6 +71,16 @@ static void parse_args(int argc, char **argv) {
   if (out == nullptr) {
     std::cerr << "output file is required\n";
     exit(EXIT_FAILURE);
+  }
+
+  if (output_options.threads == 0) {
+    // automatic
+    long r = sysconf(_SC_NPROCESSORS_ONLN);
+    if (r < 1) {
+      output_options.threads = 1;
+    } else {
+      output_options.threads = static_cast<unsigned long>(r);
+    }
   }
 }
 

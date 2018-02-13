@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <functional>
 #include <limits>
+#include <mutex>
 #include <queue>
 #include <stdexcept>
 #include <string>
@@ -40,7 +41,45 @@
     } while (0)
 #endif
 
+/* Define our own recursive mutex that collapses to no-ops if we're not running
+ * multithreaded.
+ */
+
+template<unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
+class RecursiveMutex;
+
+template<unsigned long THREAD_COUNT>
+class RecursiveMutex<THREAD_COUNT, false> {
+
+ public:
+  void lock() { };
+  void unlock() { };
+};
+
+template<unsigned long THREAD_COUNT>
+class RecursiveMutex<THREAD_COUNT, true> {
+
+ private:
+  std::recursive_mutex mutex;
+
+ public:
+  void lock() {
+    mutex.lock();
+  }
+
+  void unlock() {
+    mutex.unlock();
+  }
+};
+
+/* A lock that should be held whenever printing to stdout or stderr. This is a
+ * way to prevent the output of one thread being interleaved with the output of
+ * another.
+ */
+static RecursiveMutex<THREADS> print_lock;
+
 [[gnu::format(printf, 1, 2)]] static void print(const char *fmt, ...) {
+  std::lock_guard<decltype(print_lock)> lock(print_lock);
   va_list ap;
   va_start(ap, fmt);
   (void)vprintf(fmt, ap);
@@ -48,6 +87,7 @@
 }
 
 [[gnu::format(printf, 2, 3)]] static void fprint(FILE *f, const char *fmt, ...) {
+  std::lock_guard<decltype(print_lock)> lock(print_lock);
   va_list ap;
   va_start(ap, fmt);
   (void)vfprintf(f, fmt, ap);
