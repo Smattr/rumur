@@ -31,6 +31,57 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(nullptr) - START_TIME);
 }
 
+using StateQueue = Queue<State, THREADS>;
+using StateSet = Set<State, state_hash, state_eq, THREADS>;
+
+static int explore(StateQueue &q, StateSet &seen) {
+  for (;;) {
+
+    // Retrieve the next state to expand.
+    State *s = q.pop();
+    if (s == nullptr) {
+      break;
+    }
+
+    // Run each applicable rule on it, generating new states.
+    for (const Rule &rule : RULES) {
+      try {
+        for (State *next : rule.get_iterable(*s)) {
+
+          std::pair<size_t, bool> seen_result = seen.insert(next);
+          if (!seen_result.second) {
+            delete next;
+            continue;
+          }
+
+          // Queue the state for expansion in future
+          size_t q_size = q.push(next);
+
+          // Print progress every now and then
+          if (seen_result.first % 10000 == 0) {
+            print("%zu states seen in %llu seconds, %zu states in queue\n",
+              seen_result.first, gettime(), q_size);
+          }
+
+          for (const Invariant &inv : INVARIANTS) {
+            if (!inv.guard(*next)) {
+              s = next;
+              throw Error("invariant " + inv.name + " failed");
+            }
+          }
+        }
+      } catch (Error e) {
+        print_counterexample(*s);
+        fprint(stderr, "rule %s caused: %s\n", rule.name.c_str(), e.what());
+        return EXIT_FAILURE;
+      }
+    }
+  }
+
+  // Completed state exploration successfully.
+  return EXIT_SUCCESS;
+}
+
 int main(void) {
 
   print("State size: %zu bits\n", State::width());
@@ -38,83 +89,41 @@ int main(void) {
   /* A queue of states to expand. A data structure invariant we maintain on
    * this collection is that all states within pass all invariants.
    */
-  Queue<State, THREADS> q;
+  StateQueue q;
 
   /* The states we have encountered. This collection will only ever grow while
    * checking the model.
    */
-  Set<State, state_hash, state_eq, THREADS> seen;
+  StateSet seen;
 
-  try {
-
-    for (const StartState &rule : START_RULES) {
-      State *s = new State;
+  for (const StartState &rule : START_RULES) {
+    State *s = new State;
+    try {
       rule.body(*s);
-      // Skip this state if we've already seen it.
-      if (!seen.insert(s).second) {
-        delete s;
-        continue;
-      }
-      // Check invariants eagerly.
-      for (const Invariant &inv : INVARIANTS) {
-        if (!inv.guard(*s)) {
-          print_counterexample(*s);
-          throw Error("invariant " + inv.name + " failed");
-        }
-      }
-      q.push(s);
+    } catch (Error e) {
+      fprint(stderr, "in start state %s: %s\n", rule.name.c_str(), e.what());
+      return EXIT_FAILURE;
     }
-
-    for (;;) {
-
-      // Retrieve the next state to expand.
-      State *s = q.pop();
-      if (s == nullptr) {
-        break;
-      }
-
-      // Run each applicable rule on it, generating new states.
-      for (const Rule &rule : RULES) {
-        try {
-          for (State *next : rule.get_iterable(*s)) {
-
-            std::pair<size_t, bool> seen_result = seen.insert(next);
-            if (!seen_result.second) {
-              delete next;
-              continue;
-            }
-
-            // Queue the state for expansion in future
-            size_t q_size = q.push(next);
-
-            // Print progress every now and then
-            if (seen_result.first % 10000 == 0) {
-              print("%zu states seen in %llu seconds, %zu states in queue\n",
-                seen_result.first, gettime(), q_size);
-            }
-
-            for (const Invariant &inv : INVARIANTS) {
-              if (!inv.guard(*next)) {
-                s = next;
-                throw Error("invariant " + inv.name + " failed");
-              }
-            }
-          }
-        } catch (Error e) {
-          print_counterexample(*s);
-          throw Error("rule " + rule.name + " caused: " + e.what());
-        }
+    // Skip this state if we've already seen it.
+    if (!seen.insert(s).second) {
+      delete s;
+      continue;
+    }
+    // Check invariants eagerly.
+    for (const Invariant &inv : INVARIANTS) {
+      if (!inv.guard(*s)) {
+        fprint(stderr, "start state %s failed invariant %s\n",
+          rule.name.c_str(), inv.name.c_str());
+        return EXIT_FAILURE;
       }
     }
-
-    // Completed state exploration successfully.
-    print("%zu states covered, no errors found\n", seen.size());
-
-  } catch (Error e) {
-    printf("%zu states covered\n", seen.size());
-    fprint(stderr, "%s\n", e.what());
-    return EXIT_FAILURE;
+    q.push(s);
   }
 
-  return EXIT_SUCCESS;
+  int ret = explore(q, seen);
+
+  print("%zu states covered%s\n", seen.size(),
+    ret == EXIT_SUCCESS ? ", no errors found" : "");
+
+  return ret;
 }
