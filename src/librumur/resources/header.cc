@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <ctime>
 #include <bitset>
@@ -21,10 +22,74 @@
 #include <queue>
 #include <stdexcept>
 #include <string>
+#include <thread>
+#include <type_traits>
 #include <unistd.h>
 #include <unordered_set>
 #include <utility>
-#include <type_traits>
+#include <vector>
+
+#ifdef __APPLE__
+  /* Apparently Apple is too cool to implement POSIX semaphores. */
+  #include <dispatch/dispatch.h>
+
+  class Semaphore {
+  
+   private:
+    dispatch_semaphore_t sem;
+  
+   public:
+    Semaphore() {
+      sem = dispatch_semaphore_create(0);
+      if (sem == nullptr) {
+        throw std::runtime_error("failed to initialise semaphore");
+      }
+    }
+
+    void post(unsigned count = 1) {
+      for (unsigned i = 0; i < count; i++) {
+        (void)dispatch_semaphore_signal(sem);
+      }
+    }
+
+    void wait() {
+      (void)dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    }
+  };
+#else
+  #include <semaphore.h>
+
+  class Semaphore {
+
+   private:
+    sem_t sem;
+
+   public:
+    Semaphore_() {
+      if (sem_init(&sem, 0, 0) < 0) {
+        throw std::runtime_error("failed to initialise semaphore");
+      }
+    }
+
+    void post(unsigned count = 1) {
+      for (unsigned i = 0; i < count; i++) {
+        if (sem_post(&sem) < 0) {
+          throw std::runtime_error("semaphore post failed");
+        }
+      }
+    }
+
+    void wait() {
+      if (sem_wait(&sem) < 0) {
+        throw std::runtime_error("semaphore wait failed");
+      }
+    }
+
+    ~Semaphore_() {
+      (void)sem_destroy(&sem);
+    }
+  };
+#endif
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.

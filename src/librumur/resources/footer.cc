@@ -34,8 +34,32 @@ static unsigned long long gettime() {
 using StateQueue = Queue<State, THREADS>;
 using StateSet = Set<State, state_hash, state_eq, THREADS>;
 
-static int explore(StateQueue &q, StateSet &seen) {
+struct ThreadData {
+  Semaphore barrier;
+  std::vector<std::thread> threads;
+  std::atomic_bool done;
+  int exit_code;
+};
+
+static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, StateSet &seen) {
+
+  /* Phase of state exploration. This is only relevant in multithreaded mode and
+   * then only relevant to the primary thread.
+   */
+  enum {
+    WARM_UP,
+    GO,
+  } phase = WARM_UP;
+
+  if (thread_id > 0) {
+    data.barrier.wait();
+  }
+
   for (;;) {
+
+    if (data.done.load()) {
+      return;
+    }
 
     // Retrieve the next state to expand.
     State *s = q.pop();
@@ -57,6 +81,11 @@ static int explore(StateQueue &q, StateSet &seen) {
           // Queue the state for expansion in future
           size_t q_size = q.push(next);
 
+          if (phase == WARM_UP && THREADS > 1 && q_size >= THREADS * 2) {
+            data.barrier.post(THREADS - 1);
+            phase = GO;
+          }
+
           // Print progress every now and then
           if (seen_result.first % 10000 == 0) {
             print("%zu states seen in %llu seconds, %zu states in queue\n",
@@ -71,15 +100,19 @@ static int explore(StateQueue &q, StateSet &seen) {
           }
         }
       } catch (Error e) {
+        bool done = false;
+        if (!data.done.compare_exchange_strong(done, true)) {
+          return;
+        }
         print_counterexample(*s);
         fprint(stderr, "rule %s caused: %s\n", rule.name.c_str(), e.what());
-        return EXIT_FAILURE;
+        data.exit_code = EXIT_FAILURE;
+        return;
       }
     }
   }
 
   // Completed state exploration successfully.
-  return EXIT_SUCCESS;
 }
 
 int main(void) {
@@ -120,10 +153,29 @@ int main(void) {
     q.push(s);
   }
 
-  int ret = explore(q, seen);
+  ThreadData data;
+  data.done = false;
+  data.exit_code = EXIT_SUCCESS;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-compare"
+  for (unsigned long i = 0; i < THREADS - 1; i++) {
+#pragma GCC diagnostic pop
+    data.threads.emplace_back(explore, i + 1, std::ref(data), std::ref(q), std::ref(seen));
+  }
+
+  explore(0, data, q, seen);
+
+  /* Pump the thread barrier in case we never actually woke up the secondary
+   * threads.
+   */
+  data.barrier.post(THREADS - 1);
+
+  for (std::thread &t : data.threads) {
+    t.join();
+  }
 
   print("%zu states covered%s\n", seen.size(),
-    ret == EXIT_SUCCESS ? ", no errors found" : "");
+    data.exit_code == EXIT_SUCCESS ? ", no errors found" : "");
 
-  return ret;
+  return data.exit_code;
 }
