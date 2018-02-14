@@ -100,10 +100,16 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
           }
         }
       } catch (Error e) {
+
+        /* Flag that we've found an error and are exiting. */
         bool done = false;
         if (!data.done.compare_exchange_strong(done, true)) {
+          /* Someone else beat us to it and already found an error. Exit and let
+           * only their's be reported.
+           */
           return;
         }
+
         print_counterexample(*s);
         fprint(stderr, "rule %s caused: %s\n", rule.name.c_str(), e.what());
         data.exit_code = EXIT_FAILURE;
