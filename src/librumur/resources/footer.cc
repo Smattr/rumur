@@ -43,6 +43,14 @@ struct ThreadData {
 
 static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, StateSet &seen) {
 
+  /* In a multithreaded checker, there is one primary thread and at least one
+   * secondary thread. The secondary threads initially block and then wait for
+   * the primary thread to exit the "warm up" phase and notify them that they
+   * should begin exploration.
+   */
+  const bool primary = THREADS > 1 && thread_id == 0;
+  const bool secondary = THREADS > 1 && thread_id > 0;
+
   /* Phase of state exploration. This is only relevant in multithreaded mode and
    * then only relevant to the primary thread.
    */
@@ -51,7 +59,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
     GO,
   } phase = WARM_UP;
 
-  if (thread_id > 0) {
+  if (secondary) {
     data.barrier.wait();
   }
 
@@ -81,7 +89,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
           // Queue the state for expansion in future
           size_t q_size = q.push(next);
 
-          if (thread_id == 0 && phase == WARM_UP && THREADS > 1 && q_size >= THREADS * 2) {
+          if (primary && phase == WARM_UP && q_size >= THREADS * 2) {
             data.barrier.post(THREADS - 1);
             phase = GO;
           }
