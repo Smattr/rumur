@@ -188,23 +188,44 @@ class Queue<T, THREAD_COUNT, false> {
   }
 };
 
-// TODO: in future we probably want to switch to per-thread queues instead of a
-// unified lock-protected one
 template<typename T, unsigned long THREAD_COUNT>
-class Queue<T, THREAD_COUNT, true> : Queue<T, THREAD_COUNT, false> {
+class Queue<T, THREAD_COUNT, true> {
 
  private:
-  std::mutex mutex;
+  std::array<std::atomic<T*>, THREAD_COUNT> q;
+  std::atomic_size_t size;
 
  public:
+  Queue(): size(0) {
+    for (T *head : q) {
+      head = nullptr;
+    }
+  }
+
   size_t push(T *t, unsigned long queue_id) {
-    std::lock_guard<std::mutex> lock(mutex);
-    return Queue<T, THREAD_COUNT, false>::push(t, queue_id);
+    ASSERT(queue_id < q.size());
+    do {
+      t->queue_link = q[queue_id];
+    } while (!q[queue_id].compare_exchange_weak(t->queue_link, t));
+    return ++size;
   }
 
   T *pop(unsigned long &queue_id) {
-    std::lock_guard<std::mutex> lock(mutex);
-    return Queue<T, THREAD_COUNT, false>::pop(queue_id);
+    ASSERT(queue_id < q.size());
+    for (size_t i = 0; i < q.size(); i++) {
+retry:
+      T *t = q[queue_id];
+      if (t == nullptr) {
+        queue_id = (queue_id + 1) % q.size();
+      } else {
+        if (q[queue_id].compare_exchange_weak(t, t->queue_link)) {
+          size--;
+          return t;
+        }
+        goto retry;
+      }
+    }
+    return nullptr;
   }
 };
 
@@ -285,8 +306,18 @@ static void write_bits(std::bitset<SIZE> &data, size_t offset, size_t width, int
   data = (data & mask) | v;
 }
 
-template<size_t SIZE_BITS>
-struct StateBase : public BitBlock {
+struct Empty {
+};
+
+template<typename T>
+struct QueueLink {
+  T *queue_link = nullptr;
+};
+
+template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
+struct StateBase : public BitBlock,
+  public std::conditional<THREAD_COUNT == 1, Empty, QueueLink<StateBase<SIZE_BITS, THREAD_COUNT>>>::type {
+
   std::bitset<SIZE_BITS> data;
   const StateBase *previous = nullptr;
 

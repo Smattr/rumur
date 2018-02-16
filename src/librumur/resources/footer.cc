@@ -99,6 +99,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
           }
 
           if (primary && phase == WARM_UP && q_size >= THREADS * 2) {
+            last_queue_id = 0;
             data.barrier.post(THREADS - 1);
             phase = GO;
           }
