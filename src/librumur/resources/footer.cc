@@ -81,7 +81,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
           // Queue the state for expansion in future
           size_t q_size = q.push(next);
 
-          if (phase == WARM_UP && THREADS > 1 && q_size >= THREADS * 2) {
+          if (thread_id == 0 && phase == WARM_UP && THREADS > 1 && q_size >= THREADS * 2) {
             data.barrier.post(THREADS - 1);
             phase = GO;
           }
