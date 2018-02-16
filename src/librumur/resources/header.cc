@@ -206,7 +206,7 @@ class Queue<T, THREAD_COUNT, true> {
     ASSERT(queue_id < q.size());
     do {
       t->queue_link = q[queue_id];
-    } while (!q[queue_id].compare_exchange_weak(t->queue_link, t));
+    } while (!q[queue_id].compare_exchange_strong(t->queue_link, t));
     return ++size;
   }
 
@@ -218,7 +218,7 @@ retry:
       if (t == nullptr) {
         queue_id = (queue_id + 1) % q.size();
       } else {
-        if (q[queue_id].compare_exchange_weak(t, t->queue_link)) {
+        if (q[queue_id].compare_exchange_strong(t, t->queue_link)) {
           size--;
           return t;
         }
