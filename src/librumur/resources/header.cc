@@ -173,12 +173,12 @@ class Queue<T, THREAD_COUNT, false> {
   std::queue<T*> q;
 
  public:
-  size_t push(T *t) {
+  size_t push(T *t, unsigned long) {
     q.push(t);
     return q.size();
   }
 
-  T *pop() {
+  T *pop(unsigned long&) {
     if (q.empty()) {
       return nullptr;
     }
@@ -197,14 +197,14 @@ class Queue<T, THREAD_COUNT, true> : Queue<T, THREAD_COUNT, false> {
   std::mutex mutex;
 
  public:
-  size_t push(T *t) {
+  size_t push(T *t, unsigned long queue_id) {
     std::lock_guard<std::mutex> lock(mutex);
-    return Queue<T, THREAD_COUNT, false>::push(t);
+    return Queue<T, THREAD_COUNT, false>::push(t, queue_id);
   }
 
-  T *pop() {
+  T *pop(unsigned long &queue_id) {
     std::lock_guard<std::mutex> lock(mutex);
-    return Queue<T, THREAD_COUNT, false>::pop();
+    return Queue<T, THREAD_COUNT, false>::pop(queue_id);
   }
 };
 

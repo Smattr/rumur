@@ -63,6 +63,8 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
     data.barrier.wait();
   }
 
+  unsigned long last_queue_id = thread_id;
+
   for (;;) {
 
     if (data.done.load()) {
@@ -70,7 +72,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
     }
 
     // Retrieve the next state to expand.
-    State *s = q.pop();
+    State *s = q.pop(last_queue_id);
     if (s == nullptr) {
       break;
     }
@@ -87,7 +89,14 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
           }
 
           // Queue the state for expansion in future
-          size_t q_size = q.push(next);
+          size_t q_size;
+          if (primary && phase == WARM_UP) {
+            q_size = q.push(next, last_queue_id);
+            last_queue_id = (last_queue_id + 1) % THREADS;
+          } else {
+            q_size = q.push(next, thread_id);
+            last_queue_id = thread_id;
+          }
 
           if (primary && phase == WARM_UP && q_size >= THREADS * 2) {
             data.barrier.post(THREADS - 1);
@@ -164,7 +173,7 @@ int main(void) {
         return EXIT_FAILURE;
       }
     }
-    q.push(s);
+    q.push(s, 0);
   }
 
   ThreadData data;
