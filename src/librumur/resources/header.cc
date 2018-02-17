@@ -34,7 +34,7 @@
   /* Apparently Apple is too cool to implement POSIX semaphores. */
   #include <dispatch/dispatch.h>
 
-  class Semaphore {
+  namespace { class Semaphore {
   
    private:
     dispatch_semaphore_t sem;
@@ -56,11 +56,11 @@
     void wait() {
       (void)dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
-  };
+  }; }
 #else
   #include <semaphore.h>
 
-  class Semaphore {
+  namespace { class Semaphore {
 
    private:
     sem_t sem;
@@ -89,7 +89,7 @@
     ~Semaphore() {
       (void)sem_destroy(&sem);
     }
-  };
+  }; }
 #endif
 
 /* A more powerful assert that treats the assertion as an assumption when
@@ -111,9 +111,12 @@
  * multithreaded.
  */
 
+namespace {
 template<unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
 class RecursiveMutex;
+}
 
+namespace {
 template<unsigned long THREAD_COUNT>
 class RecursiveMutex<THREAD_COUNT, false> {
 
@@ -121,7 +124,9 @@ class RecursiveMutex<THREAD_COUNT, false> {
   void lock() { };
   void unlock() { };
 };
+}
 
+namespace {
 template<unsigned long THREAD_COUNT>
 class RecursiveMutex<THREAD_COUNT, true> {
 
@@ -137,6 +142,7 @@ class RecursiveMutex<THREAD_COUNT, true> {
     mutex.unlock();
   }
 };
+}
 
 /* A lock that should be held whenever printing to stdout or stderr. This is a
  * way to prevent the output of one thread being interleaved with the output of
@@ -164,9 +170,12 @@ static RecursiveMutex<THREADS> print_lock;
  * we're running multithreaded.
  */
 
+namespace {
 template<typename T, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
 class Queue;
+}
 
+namespace {
 template<typename T, unsigned long THREAD_COUNT>
 class Queue<T, THREAD_COUNT, false> {
 
@@ -188,7 +197,9 @@ class Queue<T, THREAD_COUNT, false> {
     return t;
   }
 };
+}
 
+namespace {
 template<typename T, unsigned long THREAD_COUNT>
 class Queue<T, THREAD_COUNT, true> {
 
@@ -229,11 +240,13 @@ retry:
     return nullptr;
   }
 };
+}
 
 /* A set of states with either thread-safe or -unsafe methods based on how many
  * threads we're using.
  */
 
+namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
 class Set;
 
@@ -256,7 +269,9 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
   void sync_all() {
   }
 };
+}
 
+namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
 class Set<T, HASH, EQ, THREAD_COUNT, true> {
 
@@ -303,7 +318,9 @@ class Set<T, HASH, EQ, THREAD_COUNT, true> {
     pending[set_id].clear();
   }
 };
+}
 
+namespace {
 class BitBlock {
 
  public:
@@ -312,6 +329,7 @@ class BitBlock {
 
   virtual ~BitBlock() { }
 };
+}
 
 template<size_t SIZE>
 static int64_t read_bits(const std::bitset<SIZE> &data, size_t offset, size_t width) {
@@ -337,14 +355,19 @@ static void write_bits(std::bitset<SIZE> &data, size_t offset, size_t width, int
   data = (data & mask) | v;
 }
 
+namespace {
 struct Empty {
 };
+}
 
+namespace {
 template<typename T>
 struct QueueLink {
   T *queue_link = nullptr;
 };
+}
 
+namespace {
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
 struct StateBase : public BitBlock,
   public std::conditional<THREAD_COUNT == 1, Empty, QueueLink<StateBase<SIZE_BITS, THREAD_COUNT>>>::type {
@@ -392,7 +415,9 @@ struct StateBase : public BitBlock,
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
 };
+}
 
+namespace {
 template<typename STATE_T>
 struct StartStateBase {
 
@@ -404,7 +429,9 @@ struct StartStateBase {
   StartStateBase(const std::string &name_, std::function<void(STATE_T&)> body_):
     name(name_), body(body_) { }
 };
+}
 
+namespace {
 template<typename STATE_T>
 struct InvariantBase {
 
@@ -416,7 +443,9 @@ struct InvariantBase {
   InvariantBase(const std::string &name_, std::function<bool(const STATE_T&)> guard_):
     name(name_), guard(guard_) { }
 };
+}
 
+namespace {
 template<typename STATE_T>
 struct RuleBase {
 
@@ -492,16 +521,19 @@ struct RuleBase {
     return iterable(*this, origin);
   }
 };
+}
 
 /* An exception that is thrown that is not related to a specific current state.
  * This is used within infrastructure code.
  */
+namespace {
 class Error : public std::runtime_error {
 
  public:
   using std::runtime_error::runtime_error;
 
 };
+}
 
 /* Overflow-safe helpers for doing 64-bit arithmetic. The compiler built-ins
  * used are implemented in modern GCC and Clang. If you're using another
@@ -580,6 +612,7 @@ class Error : public std::runtime_error {
   return -a;
 }
 
+namespace {
 struct Number {
 
  public:
@@ -641,20 +674,30 @@ struct Number {
     fprint(f, "%s = %" PRId64, title, value);
   }
 };
+}
 
 /* Compile-time discrimination as to whether a type is Number. */
+namespace {
 template<typename>
 struct isaNumber : public std::false_type { };
+}
 
+namespace {
 template<>
 struct isaNumber<Number> : public std::true_type { };
+}
 
+namespace {
 template<int64_t MIN, int64_t MAX>
 struct RangeReference;
+}
 
+namespace {
 template<int64_t MIN, int64_t MAX>
 struct RangeValue;
+}
 
+namespace {
 template<int64_t MIN, int64_t MAX>
 struct Range {
 
@@ -897,6 +940,7 @@ struct Range {
   }
 #endif
 };
+}
 
 template<int64_t MIN, int64_t MAX>
 static RangeValue<MIN, MAX> operator+(const Number &a, const Range<MIN, MAX> &b) {
@@ -992,12 +1036,17 @@ static bool operator>=(const Number &a, const Range<MIN, MAX> &b) {
   return a.value >= b.get_value();
 }
 
+namespace {
 template<typename>
 struct isaRange : public std::false_type { };
+}
 
+namespace {
 template<int64_t MIN, int64_t MAX>
 struct isaRange<Range<MIN, MAX>> : public std::true_type { };
+}
 
+namespace {
 template<int64_t MIN, int64_t MAX>
 struct RangeReference : public Range<MIN, MAX> {
 
@@ -1028,7 +1077,9 @@ struct RangeReference : public Range<MIN, MAX> {
     return Range<MIN, MAX>::width();
   }
 };
+}
 
+namespace {
 template<int64_t MIN, int64_t MAX>
 struct RangeValue : public Range<MIN, MAX> {
 
@@ -1051,13 +1102,19 @@ struct RangeValue : public Range<MIN, MAX> {
     value = v;
   }
 };
+}
 
+namespace {
 template<typename INDEX_T, typename ELEMENT_T>
 class ArrayReference;
+}
 
+namespace {
 template<typename INDEX_T, typename ELEMENT_T>
 class ArrayValue;
+}
 
+namespace {
 template<typename INDEX_T, typename ELEMENT_T>
 class Array {
 
@@ -1115,7 +1172,9 @@ class Array {
     return INDEX_T::count() * ELEMENT_T::width();
   }
 };
+}
 
+namespace {
 template<typename INDEX_T, typename ELEMENT_T>
 class ArrayReference : public Array<INDEX_T, ELEMENT_T> {
 
@@ -1154,7 +1213,9 @@ class ArrayReference : public Array<INDEX_T, ELEMENT_T> {
     return typename ELEMENT_T::reference_type(*container, offset + index * ELEMENT_T::width());
   }
 };
+}
 
+namespace {
 template<typename INDEX_T, typename ELEMENT_T>
 class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
 
@@ -1189,18 +1250,24 @@ class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
     return typename ELEMENT_T::reference_type(const_cast<ArrayValue&>(*this), index * ELEMENT_T::width());
   }
 };
+}
 
+namespace {
 template<typename = void>
 class BooleanReference;
+}
 
+namespace {
 template<typename = void>
 class BooleanValue;
+}
 
 /* XXX: We need to use a dummy template parameter to allow us to use the (as
  * yet) undefined classes BooleanReference and BooleanValue in Boolean::make. By
  * the time we instantiate this template, the compiler will have seen
  * definitions of both. Perhaps there is a nicer way to achieve this?
  */
+namespace {
 template<typename T = void>
 class Boolean {
 
@@ -1247,7 +1314,9 @@ class Boolean {
     return 1; // we can represent a bool in 1 bit
   }
 };
+}
 
+namespace {
 template<typename>
 class BooleanReference : public Boolean<> {
 
@@ -1272,7 +1341,9 @@ class BooleanReference : public Boolean<> {
     container->write(offset, 1, v);
   }
 };
+}
 
+namespace {
 template<typename>
 class BooleanValue : public Boolean<> {
 
@@ -1295,17 +1366,25 @@ class BooleanValue : public Boolean<> {
     value = v;
   }
 };
+}
 
+namespace {
 using ru_u_boolean = Boolean<>;
+}
 [[gnu::unused]] static const BooleanValue<> ru_u_false(false);
 [[gnu::unused]] static const BooleanValue<> ru_u_true(true);
 
+namespace {
 template<char... MEMBERS>
 class EnumReference;
+}
 
+namespace {
 template<char... MEMBERS>
 class EnumValue;
+}
 
+namespace {
 template<char... MEMBERS>
 class Enum {
 
@@ -1375,7 +1454,9 @@ class Enum {
     return std::count_if(cs.begin(), cs.end(), [](char c){ return c == ','; });
   }
 };
+}
 
+namespace {
 template<char... MEMBERS>
 class EnumReference : public Enum<MEMBERS...> {
 
@@ -1408,7 +1489,9 @@ class EnumReference : public Enum<MEMBERS...> {
     return Enum<MEMBERS...>::width();
   }
 };
+}
 
+namespace {
 template<char... MEMBERS>
 class EnumValue : public Enum<MEMBERS...> {
 
@@ -1439,3 +1522,4 @@ class EnumValue : public Enum<MEMBERS...> {
     return Enum<MEMBERS...>::width();
   }
 };
+}

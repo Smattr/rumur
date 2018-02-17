@@ -1,14 +1,18 @@
+namespace {
 struct state_hash {
   size_t operator()(const State *s) const {
     return s->hash();
   }
 };
+}
 
+namespace {
 struct state_eq {
   bool operator()(const State *a, const State *b) const {
     return *a == *b;
   }
 };
+}
 
 static unsigned print_counterexample(const State &s) {
   /* Recurse so that we print the states in reverse-linked order, which
@@ -31,15 +35,21 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(nullptr) - START_TIME);
 }
 
+namespace {
 using StateQueue = Queue<State, THREADS>;
+}
+namespace {
 using StateSet = Set<State, state_hash, state_eq, THREADS>;
+}
 
+namespace {
 struct ThreadData {
   Semaphore barrier;
   std::vector<std::thread> threads;
   std::atomic_bool done;
   int exit_code;
 };
+}
 
 static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, StateSet &seen) {
 
