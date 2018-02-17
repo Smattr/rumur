@@ -244,7 +244,7 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
   std::unordered_set<T*, HASH, EQ> s;
 
  public:
-  std::pair<size_t, bool> insert(T *t) {
+  std::pair<size_t, bool> insert(T *t, unsigned long) {
     auto r = s.insert(t);
     return std::pair<size_t, bool>(size(), r.second);
   }
@@ -271,7 +271,7 @@ class Set<T, HASH, EQ, THREAD_COUNT, true> {
     }
   }
 
-  std::pair<size_t, bool> insert(T *t) {
+  std::pair<size_t, bool> insert(T *t, unsigned long) {
     t->set_link = nullptr;
     size_t index = HASH()(t) % s.size();
     for (std::atomic<T*> *next = &s[index]; ; next = &next->load()->set_link) {

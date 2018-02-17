@@ -82,7 +82,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
       try {
         for (State *next : rule.get_iterable(*s)) {
 
-          std::pair<size_t, bool> seen_result = seen.insert(next);
+          std::pair<size_t, bool> seen_result = seen.insert(next, thread_id);
           if (!seen_result.second) {
             delete next;
             continue;
@@ -162,7 +162,7 @@ int main(void) {
       return EXIT_FAILURE;
     }
     // Skip this state if we've already seen it.
-    if (!seen.insert(s).second) {
+    if (!seen.insert(s, 0).second) {
       delete s;
       continue;
     }
