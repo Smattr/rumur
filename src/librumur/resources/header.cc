@@ -253,23 +253,46 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
   }
 };
 
-// TODO: As with the queue, we may want to do something more clever here for the
-// multithreaded case
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, THREAD_COUNT, false> {
-
- private:
-  mutable std::mutex mutex;
+class Set<T, HASH, EQ, THREAD_COUNT, true> {
 
  public:
+  enum { HASH_BUCKETS = 8192 };
+
+ private:
+  std::array<std::atomic<T*>, HASH_BUCKETS> s;
+  std::atomic_size_t elements;
+
+ public:
+  Set(): elements(0) {
+    for (std::atomic<T*> &head : s) {
+      head = nullptr;
+    }
+  }
+
   std::pair<size_t, bool> insert(T *t) {
-    std::lock_guard<std::mutex> lock(mutex);
-    return Set<T, HASH, EQ, THREAD_COUNT, false>::insert(t);
+    t->set_link = nullptr;
+    size_t index = HASH()(t) % s.size();
+    for (std::atomic<T*> *next = &s[index]; ; next = &next->load()->set_link) {
+retry:
+      if (next->load() == nullptr) {
+        T *null = nullptr;
+        if (next->compare_exchange_strong(null, t)) {
+          return std::pair<size_t, bool>(++elements, true);;
+        } else {
+          goto retry;
+        }
+      } else {
+        if (EQ()(t, next->load())) {
+          return std::pair<size_t, bool>(elements.load(), false);
+        }
+      }
+    }
+    __builtin_unreachable();
   }
 
   size_t size() const {
-    std::lock_guard<std::mutex> lock(mutex);
-    return Set<T, HASH, EQ, THREAD_COUNT, false>::size();
+    return elements.load();
   }
 };
 
@@ -312,6 +335,7 @@ struct Empty {
 template<typename T>
 struct QueueLink {
   T *queue_link = nullptr;
+  std::atomic<T*> set_link;
 };
 
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
