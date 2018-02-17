@@ -92,7 +92,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
       try {
         for (State *next : rule.get_iterable(*s)) {
 
-          std::pair<size_t, bool> seen_result = seen.insert(next, thread_id);
+          std::pair<size_t, bool> seen_result = seen.insert(next);
           if (!seen_result.second) {
             delete next;
             continue;
@@ -172,7 +172,7 @@ int main(void) {
       return EXIT_FAILURE;
     }
     // Skip this state if we've already seen it.
-    if (!seen.insert(s, 0).second) {
+    if (!seen.insert(s).second) {
       delete s;
       continue;
     }
@@ -186,11 +186,6 @@ int main(void) {
     }
     q.push(s, 0);
   }
-
-  /* Synchronise all seen sets to help us start more productively with fewer
-   * redundant path explorations.
-   */
-  seen.sync_all();
 
   ThreadData data;
   data.done = false;
@@ -212,9 +207,6 @@ int main(void) {
   for (std::thread &t : data.threads) {
     t.join();
   }
-
-  /* Synchronise seen sets so we have a valid, final master set. */
-  seen.sync_all();
 
   print("%zu states covered%s\n", seen.size(),
     data.exit_code == EXIT_SUCCESS ? ", no errors found" : "");
