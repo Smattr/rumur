@@ -252,48 +252,55 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
   size_t size() const {
     return s.size();
   }
+
+  void sync_all() {
+  }
 };
 
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
 class Set<T, HASH, EQ, THREAD_COUNT, true> {
 
- public:
-  enum { HASH_BUCKETS = 8192 };
+ private:
+  enum { SYNC_WINDOW = 1000 };
 
  private:
-  std::array<std::atomic<T*>, HASH_BUCKETS> s;
-  std::atomic_size_t elements;
+  std::unordered_set<T*, HASH, EQ> master;
+  mutable std::mutex master_lock;
+
+  std::unordered_set<T*, HASH, EQ> local[THREAD_COUNT];
+  std::vector<T*> pending[THREAD_COUNT];
 
  public:
-  Set(): elements(0) {
-    for (std::atomic<T*> &head : s) {
-      head = nullptr;
-    }
-  }
-
-  std::pair<size_t, bool> insert(T *t, unsigned long) {
-    t->set_link = nullptr;
-    size_t index = HASH()(t) % s.size();
-    for (std::atomic<T*> *next = &s[index]; ; next = &next->load()->set_link) {
-retry:
-      if (next->load() == nullptr) {
-        T *null = nullptr;
-        if (next->compare_exchange_strong(null, t)) {
-          return std::pair<size_t, bool>(++elements, true);;
-        } else {
-          goto retry;
-        }
-      } else {
-        if (EQ()(t, next->load())) {
-          return std::pair<size_t, bool>(elements.load(), false);
-        }
+  std::pair<size_t, bool> insert(T *t, unsigned long set_id) {
+    auto it = local[set_id].insert(t);
+    if (it.second) {
+      pending[set_id].push_back(t);
+      if (local[set_id].size() % SYNC_WINDOW == 0) {
+        sync(set_id);
       }
     }
-    __builtin_unreachable();
+    return std::pair<size_t, bool>(local[set_id].size(), it.second);
   }
 
   size_t size() const {
-    return elements.load();
+    std::lock_guard<decltype(master_lock)> lock(master_lock);
+    return master.size();
+  }
+
+  void sync_all() {
+    for (unsigned long i = 0; i < THREAD_COUNT; i++) {
+      sync(i);
+    }
+  }
+
+ private:
+  void sync(unsigned long set_id) {
+    std::lock_guard<decltype(master_lock)> lock(master_lock);
+    for (T *t : pending[set_id]) {
+      (void)master.insert(t);
+    }
+    local[set_id] = master;
+    pending[set_id].clear();
   }
 };
 
@@ -336,7 +343,6 @@ struct Empty {
 template<typename T>
 struct QueueLink {
   T *queue_link = nullptr;
-  std::atomic<T*> set_link;
 };
 
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
