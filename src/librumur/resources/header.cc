@@ -66,7 +66,7 @@
     sem_t sem;
 
    public:
-    Semaphore_() {
+    Semaphore() {
       if (sem_init(&sem, 0, 0) < 0) {
         throw std::runtime_error("failed to initialise semaphore");
       }
@@ -86,7 +86,7 @@
       }
     }
 
-    ~Semaphore_() {
+    ~Semaphore() {
       (void)sem_destroy(&sem);
     }
   };
