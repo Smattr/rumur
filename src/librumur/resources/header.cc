@@ -197,7 +197,7 @@ class Queue<T, THREAD_COUNT, true> {
 
  public:
   Queue(): size(0) {
-    for (T *head : q) {
+    for (std::atomic<T*> &head : q) {
       head = nullptr;
     }
   }
