@@ -13,6 +13,7 @@
 #include <ctime>
 #include <bitset>
 #include <cinttypes>
+#include <climits>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
