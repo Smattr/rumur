@@ -20,12 +20,16 @@ class scanner : public yyFlexLexer {
  * a different type signature. The cleanest way I've found around it is to
  * toggle off the warning here.
  */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverloaded-virtual"
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Woverloaded-virtual"
+#endif
   // Force a new available type signature for yylex
   virtual int yylex(parser::semantic_type *const lval,
     parser::location_type *loc);
-#pragma clang diagnostic pop
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#endif
 
 };
 
