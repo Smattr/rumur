@@ -73,6 +73,7 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
     data.barrier.wait();
   }
 
+  size_t queued = q.size();
   unsigned long last_queue_id = thread_id;
 
   for (;;) {
@@ -86,6 +87,8 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
     if (s == nullptr) {
       break;
     }
+    ASSERT(queued > 0);
+    queued--;
 
     // Run each applicable rule on it, generating new states.
     for (const Rule &rule : RULES) {
@@ -107,8 +110,9 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
             q_size = q.push(next, thread_id);
             last_queue_id = thread_id;
           }
+          queued++;
 
-          if (primary && phase == WARM_UP && q_size >= THREADS * 2) {
+          if (primary && phase == WARM_UP && queued >= THREADS * 2) {
             last_queue_id = 0;
             data.barrier.post(THREADS - 1);
             phase = GO;

@@ -196,6 +196,10 @@ class Queue<T, THREAD_COUNT, false> {
     q.pop();
     return t;
   }
+
+  size_t size() const {
+    return q.size();
+  }
 };
 }
 
@@ -204,40 +208,38 @@ template<typename T, unsigned long THREAD_COUNT>
 class Queue<T, THREAD_COUNT, true> {
 
  private:
-  std::array<std::atomic<T*>, THREAD_COUNT> q;
-  std::atomic_size_t size;
+  std::array<std::mutex, THREAD_COUNT> lock;
+  std::array<std::queue<T*>, THREAD_COUNT> q;
 
  public:
-  Queue(): size(0) {
-    for (std::atomic<T*> &head : q) {
-      head = nullptr;
-    }
-  }
-
   size_t push(T *t, unsigned long queue_id) {
     ASSERT(queue_id < q.size());
-    do {
-      t->queue_link = q[queue_id];
-    } while (!q[queue_id].compare_exchange_strong(t->queue_link, t));
-    return ++size;
+    std::lock_guard<std::mutex> l(lock[queue_id]);
+    q[queue_id].push(t);
+    return q[queue_id].size();
   }
 
   T *pop(unsigned long &queue_id) {
     ASSERT(queue_id < q.size());
     for (size_t i = 0; i < q.size(); i++) {
-retry:
-      T *t = q[queue_id];
-      if (t == nullptr) {
-        queue_id = (queue_id + 1) % q.size();
-      } else {
-        if (q[queue_id].compare_exchange_strong(t, t->queue_link)) {
-          size--;
+      {
+        std::lock_guard<std::mutex> l(lock[queue_id]);
+        if (!q[queue_id].empty()) {
+          T *t = q[queue_id].front();
+          q[queue_id].pop();
           return t;
         }
-        goto retry;
       }
     }
     return nullptr;
+  }
+
+  size_t size() const {
+    size_t s = 0;
+    for (size_t i = 0; i < q.size(); i++) {
+      s += q[i].size();
+    }
+    return s;
   }
 };
 }
