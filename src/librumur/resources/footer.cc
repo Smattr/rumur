@@ -116,8 +116,14 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
 
           // Print progress every now and then
           if (seen_result.first % 10000 == 0) {
-            print("thread %lu: %zu states seen in %llu seconds, %zu states in queue\n",
-              thread_id, seen_result.first, gettime(), q_size);
+            if (THREADS > 1) {
+              print("thread %lu: %zu states seen in %llu seconds, %zu states "
+                "in local queue\n", thread_id, seen_result.first, gettime(),
+                q_size);
+            } else {
+              print("%zu states seen in %llu seconds, %zu states in queue\n",
+                seen_result.first, gettime(), q_size);
+            }
           }
 
           for (const Invariant &inv : INVARIANTS) {
