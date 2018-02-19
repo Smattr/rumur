@@ -14,31 +14,31 @@ startstate begin
 end;
 
 rule
-  x < 10000000 ==>
+  x < 100000000 ==>
 begin
   x := x + 1;
 end;
 
 rule
-  x < 9999995 ==>
+  x < 99999995 ==>
 begin
   x := x + 5;
 end;
 
 rule
-  x < 9999990 ==>
+  x < 99999990 ==>
 begin
   x := x + 10;
 end;
 
 rule
-  x < 9999980 ==>
+  x < 99999980 ==>
 begin
   x := x + 20;
 end;
 
 rule
-  x < 9999950 ==>
+  x < 99999950 ==>
 begin
   x := x + 50;
 end;
