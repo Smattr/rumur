@@ -270,45 +270,20 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
 
 namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, THREAD_COUNT, true> {
+class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, THREAD_COUNT, false> {
+
+ private:
+  mutable std::mutex lock;
 
  public:
-  enum { HASH_BUCKETS = 8192 };
-
- public:
-  std::array<std::atomic<T*>, HASH_BUCKETS> s;
-  std::atomic_size_t elements;
-
- public:
-  Set(): elements(0) {
-    for (std::atomic<T*> &head : s) {
-      head = nullptr;
-    }
-  }
-
   std::pair<size_t, bool> insert(T *t) {
-    t->set_link = nullptr;
-    size_t index = HASH()(t) % s.size();
-    for (std::atomic<T*> *next = &s[index]; ; next = &next->load()->set_link) {
-retry:
-      if (next->load() == nullptr) {
-        T *null = nullptr;
-        if (next->compare_exchange_strong(null, t)) {
-          return std::pair<size_t, bool>(++elements, true);;
-        } else {
-          goto retry;
-        }
-      } else {
-        if (EQ()(t, next->load())) {
-          return std::pair<size_t, bool>(elements.load(), false);
-        }
-      }
-    }
-    __builtin_unreachable();
+    std::lock_guard<decltype(lock)> l(lock);
+    return Set<T, HASH, EQ, THREAD_COUNT, false>::insert(t);
   }
 
   size_t size() const {
-    return elements.load();
+    std::lock_guard<decltype(lock)> l(lock);
+    return Set<T, HASH, EQ, THREAD_COUNT, false>::size();
   }
 };
 }
