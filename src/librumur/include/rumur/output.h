@@ -8,6 +8,7 @@ namespace rumur {
 struct OutputOptions {
   bool overflow_checks;
   unsigned long threads;
+  bool debug;
 };
 
 int output_checker(const std::string &path, const Model &model,

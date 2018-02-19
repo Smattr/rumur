@@ -11,12 +11,14 @@ static std::string *out;
 static rumur::OutputOptions output_options = {
   .overflow_checks = true,
   .threads = 0,
+  .debug = false,
 };
 
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
+      { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, '?' },
       { "output", required_argument, 0, 'o' },
       { "threads", required_argument, 0, 't' },
@@ -24,12 +26,16 @@ static void parse_args(int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "o:t:?", options, &option_index);
+    int c = getopt_long(argc, argv, "do:t:?", options, &option_index);
 
     if (c == -1)
       break;
 
     switch (c) {
+
+      case 'd':
+        output_options.debug = true;
+        break;
 
       case 'o':
         if (out != nullptr)
