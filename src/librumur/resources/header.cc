@@ -14,6 +14,7 @@
 #include <bitset>
 #include <cinttypes>
 #include <climits>
+#include <condition_variable>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -30,67 +31,34 @@
 #include <utility>
 #include <vector>
 
-#ifdef __APPLE__
-  /* Apparently Apple is too cool to implement POSIX semaphores. */
-  #include <dispatch/dispatch.h>
+namespace { class Semaphore {
 
-  namespace { class Semaphore {
-  
-   private:
-    dispatch_semaphore_t sem;
-  
-   public:
-    Semaphore() {
-      sem = dispatch_semaphore_create(0);
-      if (sem == nullptr) {
-        throw std::runtime_error("failed to initialise semaphore");
-      }
+ private:
+  long value = 0;
+  std::condition_variable cv;
+  std::mutex lock;
+
+ public:
+  void post(unsigned count = 1) {
+    std::unique_lock<std::mutex> lk(lock);
+    while (value < 0 && count > 0) {
+      value++;
+      count--;
+      lk.unlock();
+      cv.notify_one();
+      lk.lock();
     }
+    value += count;
+  }
 
-    void post(unsigned count = 1) {
-      for (unsigned i = 0; i < count; i++) {
-        (void)dispatch_semaphore_signal(sem);
-      }
+  void wait() {
+    std::unique_lock<std::mutex> lk(lock);
+    value--;
+    if (value < 0) {
+      cv.wait(lk);
     }
-
-    void wait() {
-      (void)dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-    }
-  }; }
-#else
-  #include <semaphore.h>
-
-  namespace { class Semaphore {
-
-   private:
-    sem_t sem;
-
-   public:
-    Semaphore() {
-      if (sem_init(&sem, 0, 0) < 0) {
-        throw std::runtime_error("failed to initialise semaphore");
-      }
-    }
-
-    void post(unsigned count = 1) {
-      for (unsigned i = 0; i < count; i++) {
-        if (sem_post(&sem) < 0) {
-          throw std::runtime_error("semaphore post failed");
-        }
-      }
-    }
-
-    void wait() {
-      if (sem_wait(&sem) < 0) {
-        throw std::runtime_error("semaphore wait failed");
-      }
-    }
-
-    ~Semaphore() {
-      (void)sem_destroy(&sem);
-    }
-  }; }
-#endif
+  }
+}; }
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
