@@ -307,6 +307,35 @@ struct QueueLink {
 }
 
 namespace {
+template<typename T>
+struct Allocator {
+
+ private:
+  T *cached = nullptr;
+
+ public:
+  T *alloc() {
+    if (cached != nullptr) {
+      T *t = cached;
+      cached = nullptr;
+      return t;
+    }
+    T *t = reinterpret_cast<T*>(new unsigned char[sizeof(T)]);
+    return t;
+  }
+
+  void free(T *t) {
+    ASSERT(cached == nullptr);
+    cached = t;
+  }
+
+  ~Allocator() {
+    delete[] reinterpret_cast<unsigned char*>(cached);
+  }
+};
+}
+
+namespace {
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
 struct StateBase : public BitBlock,
   public std::conditional<THREAD_COUNT == 1, Empty, QueueLink<StateBase<SIZE_BITS, THREAD_COUNT>>>::type {
@@ -321,8 +350,8 @@ struct StateBase : public BitBlock,
   StateBase &operator=(const StateBase&) = default;
   StateBase &operator=(StateBase&&) = default;
 
-  StateBase *duplicate() const {
-    return new StateBase(this);
+  StateBase *duplicate(Allocator<StateBase> &a) const {
+    return new(a.alloc()) StateBase(this);
   }
 
   bool operator==(const StateBase &other) const {
@@ -403,11 +432,12 @@ struct RuleBase {
    private:
     const RuleBase &rule;
     STATE_T &origin;
+    Allocator<STATE_T> *allocator;
     bool end;
 
    public:
-    iterator(const RuleBase &rule_, STATE_T &origin_, bool end_ = false):
-      rule(rule_), origin(origin_), end(end_) {
+    iterator(const RuleBase &rule_, STATE_T &origin_, Allocator<STATE_T> &allocator_, bool end_ = false):
+      rule(rule_), origin(origin_), allocator(&allocator_), end(end_) {
       if (!end && !rule.guard(origin)) {
         ++*this;
       }
@@ -431,7 +461,7 @@ struct RuleBase {
 
     STATE_T *operator*() const {
       ASSERT(!end);
-      STATE_T *d = origin.duplicate();
+      STATE_T *d = origin.duplicate(*allocator);
       rule.body(*d);
       return d;
     }
@@ -441,23 +471,24 @@ struct RuleBase {
    private:
     const RuleBase &rule;
     STATE_T &origin;
+    Allocator<STATE_T> *allocator;
 
    public:
-    iterable(const RuleBase &rule_, STATE_T &origin_):
-      rule(rule_), origin(origin_) { }
+    iterable(const RuleBase &rule_, STATE_T &origin_, Allocator<STATE_T> &allocator_):
+      rule(rule_), origin(origin_), allocator(&allocator_) { }
 
     iterator begin() const {
-      return iterator(rule, origin);
+      return iterator(rule, origin, *allocator);
     }
 
     iterator end() const {
-      return iterator(rule, origin, true);
+      return iterator(rule, origin, *allocator, true);
     }
   };
 
  public:
-  iterable get_iterable(STATE_T &origin) const {
-    return iterable(*this, origin);
+  iterable get_iterable(STATE_T &origin, Allocator<STATE_T> &allocator) const {
+    return iterable(*this, origin, allocator);
   }
 };
 }

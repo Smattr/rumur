@@ -48,6 +48,7 @@ struct ThreadData {
   std::vector<std::thread> threads;
   std::atomic_bool done;
   int exit_code;
+  std::array<Allocator<State>, THREADS> allocator;
 };
 }
 
@@ -93,11 +94,11 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
     // Run each applicable rule on it, generating new states.
     for (const Rule &rule : RULES) {
       try {
-        for (State *next : rule.get_iterable(*s)) {
+        for (State *next : rule.get_iterable(*s, data.allocator[thread_id])) {
 
           std::pair<size_t, bool> seen_result = seen.insert(next);
           if (!seen_result.second) {
-            delete next;
+            data.allocator[thread_id].free(next);
             continue;
           }
 
