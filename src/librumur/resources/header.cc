@@ -294,19 +294,6 @@ static void write_bits(std::bitset<SIZE> &data, size_t offset, size_t width, int
 }
 
 namespace {
-struct Empty {
-};
-}
-
-namespace {
-template<typename T>
-struct QueueLink {
-  T *queue_link = nullptr;
-  std::atomic<T*> set_link;
-};
-}
-
-namespace {
 template<typename T>
 struct Allocator {
 
@@ -337,8 +324,7 @@ struct Allocator {
 
 namespace {
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
-struct StateBase : public BitBlock,
-  public std::conditional<THREAD_COUNT == 1, Empty, QueueLink<StateBase<SIZE_BITS, THREAD_COUNT>>>::type {
+struct StateBase : public BitBlock {
 
   std::bitset<SIZE_BITS> data;
   const StateBase *previous = nullptr;
