@@ -11,13 +11,13 @@
 #include <atomic>
 #include <cassert>
 #include <ctime>
-#include <bitset>
 #include <cinttypes>
 #include <climits>
 #include <condition_variable>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <functional>
 #include <limits>
 #include <mutex>
@@ -269,28 +269,30 @@ class BitBlock {
 };
 }
 
+// FIXME: the following assume little endian
+
 template<size_t SIZE>
-static int64_t read_bits(const std::bitset<SIZE> &data, size_t offset, size_t width) {
-  static_assert(sizeof(unsigned long long) >= sizeof(int64_t),
-    "cannot read a int64_t out of a std::bitset");
+static int64_t read_bits(const std::array<uint8_t, SIZE> &data, size_t offset, size_t width) {
   ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
-  ASSERT(offset <= SIZE - 1 && "out of bounds read");
-  std::bitset<SIZE> v = (data >> offset) & std::bitset<SIZE>((UINT64_C(1) << width) - 1);
-  if (sizeof(unsigned long) >= sizeof(int64_t)) {
-    return v.to_ulong();
-  }
-  return v.to_ullong();
+  ASSERT(offset <= SIZE * 8 - 1 && "out of bounds read");
+  unsigned __int128 v = 0;
+  size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
+  memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
+  v >>= offset % 8;
+  v &= (static_cast<unsigned __int128>(1) << width) - 1;
+  return static_cast<int64_t>(v);
 }
 
 template<size_t SIZE>
-static void write_bits(std::bitset<SIZE> &data, size_t offset, size_t width, int64_t value) {
-  static_assert(sizeof(unsigned long) >= sizeof(int64_t),
-    "cannot write a int64_t to a std::bitset");
+static void write_bits(std::array<uint8_t, SIZE> &data, size_t offset, size_t width, int64_t value) {
   ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
-  ASSERT(1ul << width > (unsigned long)value && "write of too large a value");
-  std::bitset<SIZE> v = std::bitset<SIZE>((unsigned long)value) << offset;
-  std::bitset<SIZE> mask = ~(std::bitset<SIZE>((UINT64_C(1) << width) - 1) << offset);
-  data = (data & mask) | v;
+  ASSERT(width == 64 || (UINT64_C(1) << width > uint64_t(value) && "write of too large a value"));
+  unsigned __int128 v = 0;
+  size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
+  memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
+  v = (v & ~(((static_cast<unsigned __int128>(1) << width) - 1) << (offset % 8)))
+    | (static_cast<unsigned __int128>(value) << (offset % 8));
+  memcpy(static_cast<uint8_t*>(data.data()) + (offset / 8), &v, window);
 }
 
 namespace {
@@ -326,7 +328,7 @@ namespace {
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
 struct StateBase : public BitBlock {
 
-  std::bitset<SIZE_BITS> data;
+  std::array<uint8_t, SIZE_BITS / 8 + (SIZE_BITS % 8 == 0 ? 0 : 1)> data;
   const StateBase *previous = nullptr;
 
  public:
@@ -357,7 +359,11 @@ struct StateBase : public BitBlock {
   }
 
   size_t hash() const {
-    return std::hash<std::bitset<SIZE_BITS>>{}(data);
+    // FIXME: a proper hash function that works for larger SIZE_BITS
+    static_assert(SIZE_BITS <= sizeof(size_t) * CHAR_BIT, "FIXME");
+    size_t s = 0;
+    memcpy(&s, data.data(), data.size());
+    return s;
   }
 
   static size_t width() {
@@ -1176,7 +1182,8 @@ template<typename INDEX_T, typename ELEMENT_T>
 class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
 
  public:
-  std::bitset<ELEMENT_T::width() * INDEX_T::count()> value;
+  std::array<uint8_t, ELEMENT_T::width() * INDEX_T::count() / 8 + 
+    (ELEMENT_T::width() * INDEX_T::count() % 8 == 0 ? 0 : 1)> value;
 
  public:
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
