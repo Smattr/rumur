@@ -331,6 +331,9 @@ namespace {
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
 struct StateBase : public BitBlock {
 
+ public:
+  static const StateBase *ORIGIN;
+
   std::array<uint8_t, SIZE_BITS / 8 + (SIZE_BITS % 8 == 0 ? 0 : 1)> data;
   const StateBase *previous = nullptr;
 
@@ -378,6 +381,9 @@ struct StateBase : public BitBlock {
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
 };
+
+template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
+const StateBase<SIZE_BITS, THREAD_COUNT> *StateBase<SIZE_BITS, THREAD_COUNT>::ORIGIN = reinterpret_cast<const StateBase*>(-1);
 }
 
 namespace {

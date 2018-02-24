@@ -19,7 +19,7 @@ static unsigned print_counterexample(const State &s) {
    * corresponds to the order in which they were traversed.
    */
   unsigned step = 0;
-  if (s.previous != nullptr) {
+  if (s.previous != State::ORIGIN) {
     step = print_counterexample(*s.previous) + 1;
   }
 
@@ -186,6 +186,7 @@ int main(void) {
 
   for (const StartState &rule : START_RULES) {
     State *s = new State;
+    s->previous = State::ORIGIN;
     try {
       rule.body(*s);
     } catch (Error e) {
