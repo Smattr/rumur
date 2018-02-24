@@ -135,6 +135,18 @@ static RecursiveMutex<THREADS> print_lock;
   va_end(ap);
 }
 
+/* An exception that is thrown that is not related to a specific current state.
+ * This is used within infrastructure code.
+ */
+namespace {
+class Error : public std::runtime_error {
+
+ public:
+  using std::runtime_error::runtime_error;
+
+};
+}
+
 /* A queue of states that can be either thread-safe or not depending on whether
  * we're running multithreaded.
  */
@@ -491,18 +503,6 @@ struct RuleBase {
   iterable get_iterable(STATE_T &origin, Allocator<STATE_T> &allocator) const {
     return iterable(*this, origin, allocator);
   }
-};
-}
-
-/* An exception that is thrown that is not related to a specific current state.
- * This is used within infrastructure code.
- */
-namespace {
-class Error : public std::runtime_error {
-
- public:
-  using std::runtime_error::runtime_error;
-
 };
 }
 
