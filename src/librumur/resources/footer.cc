@@ -39,7 +39,7 @@ namespace {
 using StateQueue = Queue<State, THREADS>;
 }
 namespace {
-using StateSet = Set<State, state_hash, state_eq, THREADS>;
+using StateSet = Set<State, state_hash, state_eq, 0, THREADS>;
 }
 
 namespace {

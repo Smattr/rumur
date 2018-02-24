@@ -218,13 +218,13 @@ class Queue<T, THREAD_COUNT, true> {
  */
 
 namespace {
-template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
+template<typename T, class HASH, class EQ, size_t CAPACITY, unsigned long THREAD_COUNT, bool DYNAMIC = CAPACITY == 0, bool NEEDS_MUTEX = THREAD_COUNT != 1>
 class Set;
 }
 
 namespace {
 template<typename T, class HASH, class EQ>
-class Set<T, HASH, EQ, 1, false> {
+class Set<T, HASH, EQ, 0, 1, true, false> {
 
  private:
   std::unordered_set<T*, HASH, EQ> s;
@@ -243,7 +243,7 @@ class Set<T, HASH, EQ, 1, false> {
 
 namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, 1, false> {
+class Set<T, HASH, EQ, 0, THREAD_COUNT, true, true> : Set<T, HASH, EQ, 0, 1, true, false> {
 
  private:
   mutable std::mutex lock;
@@ -251,12 +251,12 @@ class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, 1, false> {
  public:
   std::tuple<size_t, bool, T*> insert(T *t) {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, 1, false>::insert(t);
+    return Set<T, HASH, EQ, 0, 1, true, false>::insert(t);
   }
 
   size_t size() const {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, 1, false>::size();
+    return Set<T, HASH, EQ, 0, 1, true, false>::size();
   }
 };
 }
