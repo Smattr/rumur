@@ -274,6 +274,64 @@ class Set<T, HASH, EQ, 0, THREAD_COUNT, true, true> : Set<T, HASH, EQ, 0, 1, tru
 }
 
 namespace {
+template<typename T, class HASH, class EQ, size_t CAPACITY>
+class Set<T, HASH, EQ, CAPACITY, 1, false, false> {
+
+ private:
+  std::array<T, CAPACITY / sizeof(T)> s;
+  size_t used = 0;
+
+ public:
+  std::tuple<size_t, bool, T*> insert(T *t) {
+    if (s.size() != 0) {
+      size_t slot = HASH()(t) % s.size();
+      for (size_t i = 0; i < s.size(); i++) {
+        if (is_empty(slot)) {
+          s[slot] = *t;
+          used++;
+          return std::tuple<size_t, bool, T*>(used, true, &s[slot]);
+        } else if (EQ()(t, &s[slot])) {
+          return std::tuple<size_t, bool, T*>(used, false, t);
+        }
+        slot = (slot + 1) % s.size();
+      }
+    }
+    throw Error("closed hash set full");
+  }
+
+  size_t size() const {
+    return used;
+  }
+
+ private:
+  bool is_empty(size_t slot) const {
+    ASSERT(slot < s.size());
+    return s[slot].previous == nullptr;
+  }
+};
+}
+
+namespace {
+template<typename T, class HASH, class EQ, size_t CAPACITY, unsigned long THREAD_COUNT>
+class Set<T, HASH, EQ, CAPACITY, THREAD_COUNT, false, true> : Set<T, HASH, EQ, CAPACITY, 1, false, false> {
+
+ private:
+  mutable std::mutex lock;
+
+ public:
+  std::tuple<size_t, bool, T*> insert(T *t) {
+    std::lock_guard<decltype(lock)> l(lock);
+    return Set<T, HASH, EQ, CAPACITY, 1, false, false>::insert(t);
+  }
+
+  size_t size() const {
+    std::lock_guard<decltype(lock)> l(lock);
+    return Set<T, HASH, EQ, CAPACITY, 1, false, false>::size();
+  }
+};
+}
+
+namespace {
 class BitBlock {
 
  public:
