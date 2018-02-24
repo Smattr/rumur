@@ -12,6 +12,7 @@ static rumur::OutputOptions output_options = {
   .overflow_checks = true,
   .threads = 0,
   .debug = false,
+  .set_capacity = 0,
 };
 
 static void parse_args(int argc, char **argv) {
@@ -21,12 +22,13 @@ static void parse_args(int argc, char **argv) {
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, '?' },
       { "output", required_argument, 0, 'o' },
+      { "set-capacity", required_argument, 0, 's' },
       { "threads", required_argument, 0, 't' },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "do:t:?", options, &option_index);
+    int c = getopt_long(argc, argv, "do:s:t:?", options, &option_index);
 
     if (c == -1)
       break;
@@ -41,6 +43,15 @@ static void parse_args(int argc, char **argv) {
         if (out != nullptr)
           delete out;
         out = new std::string(optarg);
+        break;
+
+      case 's':
+        try {
+          output_options.set_capacity = std::stoul(optarg);
+        } catch (std::exception) {
+          std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
         break;
 
       case 't':
