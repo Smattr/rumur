@@ -96,10 +96,20 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
       try {
         for (State *next : rule.get_iterable(*s, data.allocator[thread_id])) {
 
-          std::pair<size_t, bool> seen_result = seen.insert(next);
-          if (!seen_result.second) {
+          std::tuple<size_t, bool, State*> seen_result = seen.insert(next);
+          size_t seen_size = std::get<0>(seen_result);
+          bool seen_inserted = std::get<1>(seen_result);
+          if (!seen_inserted) {
             data.allocator[thread_id].free(next);
             continue;
+          }
+
+          /* If the set insertion juggled our pointers, make sure we reference
+           * the set-contained one from this point forward.
+           */
+          if (std::get<2>(seen_result) != next) {
+            data.allocator[thread_id].free(next);
+            next = std::get<2>(seen_result);
           }
 
           // Queue the state for expansion in future
@@ -120,14 +130,14 @@ static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, St
           }
 
           // Print progress every now and then
-          if (seen_result.first % 10000 == 0) {
+          if (seen_size % 10000 == 0) {
             if (THREADS > 1) {
               print("thread %lu: %zu states seen in %llu seconds, %zu states "
-                "in local queue\n", thread_id, seen_result.first, gettime(),
+                "in local queue\n", thread_id, seen_size, gettime(),
                 q_size);
             } else {
               print("%zu states seen in %llu seconds, %zu states in queue\n",
-                seen_result.first, gettime(), q_size);
+                seen_size, gettime(), q_size);
             }
           }
 
@@ -182,11 +192,22 @@ int main(void) {
       fprint(stderr, "in start state %s: %s\n", rule.name.c_str(), e.what());
       return EXIT_FAILURE;
     }
+    std::tuple<size_t, bool, State*> seen_result = seen.insert(s);
+    bool seen_inserted = std::get<1>(seen_result);
     // Skip this state if we've already seen it.
-    if (!seen.insert(s).second) {
+    if (!seen_inserted) {
       delete s;
       continue;
     }
+
+    /* If the insertion juggled our pointers, ensure we reference the
+     * set-contained one from this point on.
+     */
+    if (std::get<2>(seen_result) != s) {
+      delete s;
+      s = std::get<2>(seen_result);
+    }
+
     // Check invariants eagerly.
     for (const Invariant &inv : INVARIANTS) {
       if (!inv.guard(*s)) {

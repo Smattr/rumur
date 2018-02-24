@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <type_traits>
 #include <unistd.h>
 #include <unordered_set>
@@ -227,9 +228,9 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
   std::unordered_set<T*, HASH, EQ> s;
 
  public:
-  std::pair<size_t, bool> insert(T *t) {
+  std::tuple<size_t, bool, T*> insert(T *t) {
     auto r = s.insert(t);
-    return std::pair<size_t, bool>(size(), r.second);
+    return std::tuple<size_t, bool, T*>(size(), r.second, t);
   }
 
   size_t size() const {
@@ -246,7 +247,7 @@ class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, THREAD_COUNT, fals
   mutable std::mutex lock;
 
  public:
-  std::pair<size_t, bool> insert(T *t) {
+  std::tuple<size_t, bool, T*> insert(T *t) {
     std::lock_guard<decltype(lock)> l(lock);
     return Set<T, HASH, EQ, THREAD_COUNT, false>::insert(t);
   }
