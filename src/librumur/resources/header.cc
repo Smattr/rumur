@@ -145,8 +145,8 @@ class Queue;
 }
 
 namespace {
-template<typename T, unsigned long THREAD_COUNT>
-class Queue<T, THREAD_COUNT, false> {
+template<typename T>
+class Queue<T, 1, false> {
 
  private:
   std::queue<T*> q;
