@@ -223,8 +223,8 @@ class Set;
 }
 
 namespace {
-template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, THREAD_COUNT, false> {
+template<typename T, class HASH, class EQ>
+class Set<T, HASH, EQ, 1, false> {
 
  private:
   std::unordered_set<T*, HASH, EQ> s;
@@ -243,7 +243,7 @@ class Set<T, HASH, EQ, THREAD_COUNT, false> {
 
 namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, THREAD_COUNT, false> {
+class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, 1, false> {
 
  private:
   mutable std::mutex lock;
@@ -251,12 +251,12 @@ class Set<T, HASH, EQ, THREAD_COUNT, true> : Set<T, HASH, EQ, THREAD_COUNT, fals
  public:
   std::tuple<size_t, bool, T*> insert(T *t) {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, THREAD_COUNT, false>::insert(t);
+    return Set<T, HASH, EQ, 1, false>::insert(t);
   }
 
   size_t size() const {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, THREAD_COUNT, false>::size();
+    return Set<T, HASH, EQ, 1, false>::size();
   }
 };
 }
