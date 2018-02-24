@@ -220,7 +220,9 @@ class Queue<T, THREAD_COUNT, true> {
 namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
 class Set;
+}
 
+namespace {
 template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
 class Set<T, HASH, EQ, THREAD_COUNT, false> {
 
