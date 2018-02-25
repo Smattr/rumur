@@ -52,7 +52,17 @@ struct ThreadData {
 };
 }
 
-static void explore(unsigned long thread_id, ThreadData &data, StateQueue &q, StateSet &seen) {
+/* The states we have encountered. This collection will only ever grow while
+ * checking the model.
+ */
+static StateSet seen;
+
+/* A queue of states to expand. A data structure invariant we maintain on
+ * this collection is that all states within pass all invariants.
+ */
+static StateQueue q;
+
+static void explore(unsigned long thread_id, ThreadData &data) {
 
   /* In a multithreaded checker, there is one primary thread and at least one
    * secondary thread. The secondary threads initially block and then wait for
@@ -174,16 +184,6 @@ int main(void) {
 
   print("State size: %zu bits\n", State::width());
 
-  /* A queue of states to expand. A data structure invariant we maintain on
-   * this collection is that all states within pass all invariants.
-   */
-  StateQueue q;
-
-  /* The states we have encountered. This collection will only ever grow while
-   * checking the model.
-   */
-  StateSet seen;
-
   for (const StartState &rule : START_RULES) {
     State *s = new State;
     s->previous = State::ORIGIN;
@@ -227,10 +227,10 @@ int main(void) {
 #pragma GCC diagnostic ignored "-Wtautological-compare"
   for (unsigned long i = 0; i < THREADS - 1; i++) {
 #pragma GCC diagnostic pop
-    data.threads.emplace_back(explore, i + 1, std::ref(data), std::ref(q), std::ref(seen));
+    data.threads.emplace_back(explore, i + 1, std::ref(data));
   }
 
-  explore(0, data, q, seen);
+  explore(0, data);
 
   /* Pump the thread barrier in case we never actually woke up the secondary
    * threads.
