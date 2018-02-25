@@ -42,15 +42,12 @@ namespace {
 using StateSet = Set<State, state_hash, state_eq, SET_CAPACITY, THREADS>;
 }
 
-namespace {
-struct ThreadData {
-  Semaphore barrier;
-  std::vector<std::thread> threads;
-  std::atomic_bool done;
-  int exit_code;
-  std::array<Allocator<State>, THREADS> allocator;
-};
-}
+/* Thread data. */
+static Semaphore barrier;
+static std::vector<std::thread> threads;
+static std::atomic_bool done;
+static int exit_code;
+static std::array<Allocator<State>, THREADS> allocator;
 
 /* The states we have encountered. This collection will only ever grow while
  * checking the model.
@@ -62,7 +59,7 @@ static StateSet seen;
  */
 static StateQueue q;
 
-static void explore(unsigned long thread_id, ThreadData &data) {
+static void explore(unsigned long thread_id) {
 
   /* In a multithreaded checker, there is one primary thread and at least one
    * secondary thread. The secondary threads initially block and then wait for
@@ -81,7 +78,7 @@ static void explore(unsigned long thread_id, ThreadData &data) {
   } phase = WARM_UP;
 
   if (secondary) {
-    data.barrier.wait();
+    barrier.wait();
   }
 
   size_t queued = q.size();
@@ -89,7 +86,7 @@ static void explore(unsigned long thread_id, ThreadData &data) {
 
   for (;;) {
 
-    if (data.done.load()) {
+    if (done.load()) {
       return;
     }
 
@@ -104,13 +101,13 @@ static void explore(unsigned long thread_id, ThreadData &data) {
     // Run each applicable rule on it, generating new states.
     for (const Rule &rule : RULES) {
       try {
-        for (State *next : rule.get_iterable(*s, data.allocator[thread_id])) {
+        for (State *next : rule.get_iterable(*s, allocator[thread_id])) {
 
           std::tuple<size_t, bool, State*> seen_result = seen.insert(next);
           size_t seen_size = std::get<0>(seen_result);
           bool seen_inserted = std::get<1>(seen_result);
           if (!seen_inserted) {
-            data.allocator[thread_id].free(next);
+            allocator[thread_id].free(next);
             continue;
           }
 
@@ -118,7 +115,7 @@ static void explore(unsigned long thread_id, ThreadData &data) {
            * the set-contained one from this point forward.
            */
           if (std::get<2>(seen_result) != next) {
-            data.allocator[thread_id].free(next);
+            allocator[thread_id].free(next);
             next = std::get<2>(seen_result);
           }
 
@@ -135,7 +132,7 @@ static void explore(unsigned long thread_id, ThreadData &data) {
 
           if (primary && phase == WARM_UP && queued >= THREADS * 2) {
             last_queue_id = 0;
-            data.barrier.post(THREADS - 1);
+            barrier.post(THREADS - 1);
             phase = GO;
           }
 
@@ -161,8 +158,8 @@ static void explore(unsigned long thread_id, ThreadData &data) {
       } catch (Error e) {
 
         /* Flag that we've found an error and are exiting. */
-        bool done = false;
-        if (!data.done.compare_exchange_strong(done, true)) {
+        bool d = false;
+        if (!done.compare_exchange_strong(d, true)) {
           /* Someone else beat us to it and already found an error. Exit and let
            * only their's be reported.
            */
@@ -171,7 +168,7 @@ static void explore(unsigned long thread_id, ThreadData &data) {
 
         print_counterexample(*s);
         fprint(stderr, "rule %s caused: %s\n", rule.name.c_str(), e.what());
-        data.exit_code = EXIT_FAILURE;
+        exit_code = EXIT_FAILURE;
         return;
       }
     }
@@ -220,29 +217,28 @@ int main(void) {
     q.push(s, 0);
   }
 
-  ThreadData data;
-  data.done = false;
-  data.exit_code = EXIT_SUCCESS;
+  done = false;
+  exit_code = EXIT_SUCCESS;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtautological-compare"
   for (unsigned long i = 0; i < THREADS - 1; i++) {
 #pragma GCC diagnostic pop
-    data.threads.emplace_back(explore, i + 1, std::ref(data));
+    threads.emplace_back(explore, i + 1);
   }
 
-  explore(0, data);
+  explore(0);
 
   /* Pump the thread barrier in case we never actually woke up the secondary
    * threads.
    */
-  data.barrier.post(THREADS - 1);
+  barrier.post(THREADS - 1);
 
-  for (std::thread &t : data.threads) {
+  for (std::thread &t : threads) {
     t.join();
   }
 
   print("%zu states covered%s\n", seen.size(),
-    data.exit_code == EXIT_SUCCESS ? ", no errors found" : "");
+    exit_code == EXIT_SUCCESS ? ", no errors found" : "");
 
-  return data.exit_code;
+  return exit_code;
 }
