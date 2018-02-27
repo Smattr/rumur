@@ -17,6 +17,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <limits>
@@ -277,23 +278,46 @@ namespace {
 template<typename T, class HASH, class EQ, size_t CAPACITY>
 class Set<T, HASH, EQ, CAPACITY, 1, false, false> {
 
+ public:
+  enum { COUNT = CAPACITY / sizeof(T) };
+
  private:
-  std::array<T, CAPACITY / sizeof(T)> s;
+  T *s;
   size_t used = 0;
 
  public:
+  Set(): s(static_cast<T*>(calloc(COUNT, sizeof(T)))) {
+    if (s == nullptr) {
+      throw Error("failed to allocate closed hash set");
+    }
+  }
+
   std::tuple<size_t, bool, T*> insert(T *t) {
-    if (s.size() != 0) {
-      size_t slot = HASH()(t) % s.size();
-      for (size_t i = 0; i < s.size(); i++) {
+    if (COUNT != 0) {
+      size_t slot = HASH()(t) % COUNT;
+      for (size_t i = 0; i < COUNT; i++) {
         if (is_empty(slot)) {
-          s[slot] = *t;
+          /* FIXME: This is somewhat awkward. We really want to just do
+           * `s[slot] = *t` here. However, we got the memory backing `s` from
+           * `calloc` so the vtables of the states were never initialised (to
+           * non-null). Of course the assignment operator doesn't write to the
+           * vtables because it thinks they've already been initialized. The
+           * result is that using the assignment operator here appears to work
+           * fine but then later operations that access the vtable segfault. As
+           * you can imagine, this was not fun to debug. For now we call the
+           * copy constructor to ensure we initialise the vtable, but I think a
+           * better long term solution is to make StateBase non-virtual and
+           * hence remove its vtable. To do this, we need something else to
+           * inherit from BitBlock in place of StateBase and it in turn
+           * reference a StateBase.
+           */
+          new (&s[slot]) T(*t);
           used++;
           return std::tuple<size_t, bool, T*>(used, true, &s[slot]);
         } else if (EQ()(t, &s[slot])) {
           return std::tuple<size_t, bool, T*>(used, false, t);
         }
-        slot = (slot + 1) % s.size();
+        slot = (slot + 1) % COUNT;
       }
     }
     throw Error("closed hash set full");
@@ -303,9 +327,13 @@ class Set<T, HASH, EQ, CAPACITY, 1, false, false> {
     return used;
   }
 
+  ~Set() {
+    free(s);
+  }
+
  private:
   bool is_empty(size_t slot) const {
-    ASSERT(slot < s.size());
+    ASSERT(slot < COUNT);
     return s[slot].previous == nullptr;
   }
 };
