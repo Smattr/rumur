@@ -359,32 +359,6 @@ class Set<T, HASH, EQ, CAPACITY, THREAD_COUNT, false, true> : Set<T, HASH, EQ, C
 };
 }
 
-// FIXME: the following assume little endian
-
-template<size_t SIZE>
-static int64_t read_bits(const std::array<uint8_t, SIZE> &data, size_t offset, size_t width) {
-  ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
-  ASSERT(offset <= SIZE * 8 - 1 && "out of bounds read");
-  unsigned __int128 v = 0;
-  size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
-  memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
-  v >>= offset % 8;
-  v &= (static_cast<unsigned __int128>(1) << width) - 1;
-  return static_cast<int64_t>(v);
-}
-
-template<size_t SIZE>
-static void write_bits(std::array<uint8_t, SIZE> &data, size_t offset, size_t width, int64_t value) {
-  ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
-  ASSERT(width == 64 || (UINT64_C(1) << width > uint64_t(value) && "write of too large a value"));
-  unsigned __int128 v = 0;
-  size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
-  memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
-  v = (v & ~(((static_cast<unsigned __int128>(1) << width) - 1) << (offset % 8)))
-    | (static_cast<unsigned __int128>(value) << (offset % 8));
-  memcpy(static_cast<uint8_t*>(data.data()) + (offset / 8), &v, window);
-}
-
 namespace {
 template<typename T>
 struct Allocator {
@@ -443,12 +417,28 @@ struct StateBase {
     return !(*this == other);
   }
 
+  // FIXME: the following assume little endian
+
   int64_t read(size_t offset, size_t width) const {
-    return read_bits(data, offset, width);
+    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
+    ASSERT(offset <= data.size() * 8 - 1 && "out of bounds read");
+    unsigned __int128 v = 0;
+    size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
+    memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
+    v >>= offset % 8;
+    v &= (static_cast<unsigned __int128>(1) << width) - 1;
+    return static_cast<int64_t>(v);
   }
 
   void write(size_t offset, size_t width, int64_t value) {
-    write_bits(data, offset, width, value);
+    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
+    ASSERT(width == 64 || (UINT64_C(1) << width > uint64_t(value) && "write of too large a value"));
+    unsigned __int128 v = 0;
+    size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
+    memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
+    v = (v & ~(((static_cast<unsigned __int128>(1) << width) - 1) << (offset % 8)))
+      | (static_cast<unsigned __int128>(value) << (offset % 8));
+    memcpy(static_cast<uint8_t*>(data.data()) + (offset / 8), &v, window);
   }
 
   size_t hash() const {
