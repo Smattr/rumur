@@ -778,12 +778,12 @@ struct Range {
     return RangeValue<MIN, MAX>(MIN);
   }
 
-  static RangeReference<MIN, MAX> make(BitBlock &container, size_t offset) {
+  static RangeReference<MIN, MAX> make(State &container, size_t offset) {
     return RangeReference<MIN, MAX>(container, offset);
   }
 
-  static const RangeReference<MIN, MAX> make(const BitBlock &container, size_t offset) {
-    return RangeReference<MIN, MAX>(const_cast<BitBlock&>(container), offset);
+  static const RangeReference<MIN, MAX> make(const State &container, size_t offset) {
+    return RangeReference<MIN, MAX>(const_cast<State&>(container), offset);
   }
 
   size_t zero_based_value() const {
@@ -1109,12 +1109,12 @@ template<int64_t MIN, int64_t MAX>
 struct RangeReference : public Range<MIN, MAX> {
 
  public:
-  BitBlock *container;
+  State *container;
   const size_t offset;
 
  public:
   RangeReference() = delete;
-  RangeReference(BitBlock &container_, size_t offset_):
+  RangeReference(State &container_, size_t offset_):
     container(&container_), offset(offset_) { }
   RangeReference(const RangeReference&) = default;
   RangeReference(RangeReference&&) = default;
@@ -1177,11 +1177,11 @@ template<typename INDEX_T, typename ELEMENT_T>
 class Array {
 
  public:
-  static const ArrayReference<INDEX_T, ELEMENT_T> make(const BitBlock &container, size_t offset) {
-    return ArrayReference<INDEX_T, ELEMENT_T>(const_cast<BitBlock&>(container), offset);
+  static const ArrayReference<INDEX_T, ELEMENT_T> make(const State &container, size_t offset) {
+    return ArrayReference<INDEX_T, ELEMENT_T>(const_cast<State&>(container), offset);
   }
 
-  static ArrayReference<INDEX_T, ELEMENT_T> make(BitBlock &container, size_t offset) {
+  static ArrayReference<INDEX_T, ELEMENT_T> make(State &container, size_t offset) {
     return ArrayReference<INDEX_T, ELEMENT_T>(container, offset);
   }
 
@@ -1237,12 +1237,12 @@ template<typename INDEX_T, typename ELEMENT_T>
 class ArrayReference : public Array<INDEX_T, ELEMENT_T> {
 
  public:
-  BitBlock *container;
+  State *container;
   const size_t offset;
 
  public:
   ArrayReference() = delete;
-  ArrayReference(BitBlock &container_, size_t offset_):
+  ArrayReference(State &container_, size_t offset_):
     container(&container_), offset(offset_) { }
   ArrayReference(const ArrayReference&) = default;
   ArrayReference(ArrayReference&&) = default;
@@ -1275,11 +1275,10 @@ class ArrayReference : public Array<INDEX_T, ELEMENT_T> {
 
 namespace {
 template<typename INDEX_T, typename ELEMENT_T>
-class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
+class ArrayValue : public Array<INDEX_T, ELEMENT_T> {
 
  public:
-  std::array<uint8_t, ELEMENT_T::width() * INDEX_T::count() / 8 + 
-    (ELEMENT_T::width() * INDEX_T::count() % 8 == 0 ? 0 : 1)> value;
+  std::array<typename ELEMENT_T::value_type, INDEX_T::count()> value;
 
  public:
   template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
@@ -1292,21 +1291,13 @@ class ArrayValue : public Array<INDEX_T, ELEMENT_T>, public BitBlock {
     return static_cast<const Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
 
-  int64_t read(size_t offset, size_t width) const final {
-    return read_bits(value, offset, width);
-  }
-
-  void write(size_t offset, size_t width, int64_t v) final {
-    write_bits(value, offset, width, v);
-  }
-
  private:
-  typename ELEMENT_T::reference_type get(size_t index) final {
-    return typename ELEMENT_T::reference_type(*this, index * ELEMENT_T::width());
+  typename ELEMENT_T::value_type &get(size_t index) final {
+    return value[index];
   }
 
-  const typename ELEMENT_T::reference_type get(size_t index) const final {
-    return typename ELEMENT_T::reference_type(const_cast<ArrayValue&>(*this), index * ELEMENT_T::width());
+  const typename ELEMENT_T::value_type get(size_t index) const final {
+    return value[index];
   }
 };
 }
@@ -1335,12 +1326,12 @@ class Boolean {
     return BooleanValue<T>(false);
   }
 
-  static BooleanReference<T> make(BitBlock &container, size_t offset) {
+  static BooleanReference<T> make(State &container, size_t offset) {
     return BooleanReference<T>(container, offset);
   }
 
-  static const BooleanReference<T> make(const BitBlock &container, size_t offset) {
-    return BooleanReference<T>(const_cast<BitBlock&>(container), offset);
+  static const BooleanReference<T> make(const State &container, size_t offset) {
+    return BooleanReference<T>(const_cast<State&>(container), offset);
   }
 
   Boolean &operator=(const Boolean &other) {
@@ -1380,12 +1371,12 @@ template<typename>
 class BooleanReference : public Boolean<> {
 
  public:
-  BitBlock *container;
+  State *container;
   const size_t offset;
 
  public:
   BooleanReference() = delete;
-  BooleanReference(BitBlock &container_, size_t offset_):
+  BooleanReference(State &container_, size_t offset_):
     container(&container_), offset(offset_) { }
   BooleanReference(const BooleanReference&) = default;
   BooleanReference(BooleanReference&&) = default;
@@ -1456,12 +1447,12 @@ class Enum {
     return EnumValue<MEMBERS...>(value);
   }
 
-  static EnumReference<MEMBERS...> make(BitBlock &container, size_t offset) {
+  static EnumReference<MEMBERS...> make(State &container, size_t offset) {
     return EnumReference<MEMBERS...>(container, offset);
   }
 
-  static const EnumReference<MEMBERS...> make(const BitBlock &container, size_t offset) {
-    return EnumReference<MEMBERS...>(const_cast<BitBlock&>(container), offset);
+  static const EnumReference<MEMBERS...> make(const State &container, size_t offset) {
+    return EnumReference<MEMBERS...>(const_cast<State&>(container), offset);
   }
 
   Enum &operator=(const Enum &other) {
@@ -1520,12 +1511,12 @@ template<char... MEMBERS>
 class EnumReference : public Enum<MEMBERS...> {
 
  public:
-  BitBlock *container;
+  State *container;
   const size_t offset;
 
  public:
   EnumReference() = delete;
-  EnumReference(BitBlock &container_, size_t offset_):
+  EnumReference(State &container_, size_t offset_):
     container(&container_), offset(offset_) { }
   EnumReference(const EnumReference&) = default;
   EnumReference(EnumReference&&) = default;
