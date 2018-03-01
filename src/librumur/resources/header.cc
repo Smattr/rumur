@@ -485,6 +485,10 @@ const StateBase<SIZE_BITS, THREAD_COUNT> *StateBase<SIZE_BITS, THREAD_COUNT>::OR
 }
 
 namespace {
+using State = StateBase<STATE_SIZE_BITS, THREADS>;
+}
+
+namespace {
 template<typename STATE_T>
 struct StartStateBase {
 

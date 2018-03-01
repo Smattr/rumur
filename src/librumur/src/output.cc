@@ -33,6 +33,8 @@ int output_checker(const std::string &path, const Model &model,
       << "ul;\n\n"
     << "static constexpr size_t SET_CAPACITY = " << options.set_capacity
       << "ul;\n\n"
+    << "static constexpr size_t STATE_SIZE_BITS = " << model.size_bits()
+      << "ul;\n\n"
 
     // Static boiler plate code
     << std::string((const char*)resources_header_cc, (size_t)resources_header_cc_len)
