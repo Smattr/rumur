@@ -463,8 +463,6 @@ struct StateBase {
     return SIZE_BITS;
   }
 
-  virtual ~StateBase() { }
-
  private:
   StateBase(const StateBase *s): data(s->data), previous(s) { }
 };
