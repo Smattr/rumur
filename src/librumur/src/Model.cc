@@ -78,7 +78,6 @@ void Model::generate(std::ostream &out) const {
   out
 
     // Specialise classes
-    << "using Invariant = InvariantBase<State>;\n"
     << "using Rule = RuleBase<State>;\n\n";
 
   // Write out constants and type declarations.

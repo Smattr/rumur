@@ -502,15 +502,14 @@ struct StartState {
 }
 
 namespace {
-template<typename STATE_T>
-struct InvariantBase {
+struct Invariant {
 
  public:
   const std::string name;
-  const std::function<bool(const STATE_T&)> guard;
+  const std::function<bool(const State&)> guard;
 
  public:
-  InvariantBase(const std::string &name_, std::function<bool(const STATE_T&)> guard_):
+  Invariant(const std::string &name_, std::function<bool(const State&)> guard_):
     name(name_), guard(guard_) { }
 };
 }
