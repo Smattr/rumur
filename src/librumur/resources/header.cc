@@ -359,17 +359,6 @@ class Set<T, HASH, EQ, CAPACITY, THREAD_COUNT, false, true> : Set<T, HASH, EQ, C
 };
 }
 
-namespace {
-class BitBlock {
-
- public:
-  virtual int64_t read(size_t offset, size_t width) const = 0;
-  virtual void write(size_t offset, size_t width, int64_t value) = 0;
-
-  virtual ~BitBlock() { }
-};
-}
-
 // FIXME: the following assume little endian
 
 template<size_t SIZE>
@@ -427,7 +416,7 @@ struct Allocator {
 
 namespace {
 template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
-struct StateBase : public BitBlock {
+struct StateBase {
 
  public:
   static const StateBase *ORIGIN;
@@ -454,11 +443,11 @@ struct StateBase : public BitBlock {
     return !(*this == other);
   }
 
-  int64_t read(size_t offset, size_t width) const final {
+  int64_t read(size_t offset, size_t width) const {
     return read_bits(data, offset, width);
   }
 
-  void write(size_t offset, size_t width, int64_t value) final {
+  void write(size_t offset, size_t width, int64_t value) {
     write_bits(data, offset, width, value);
   }
 
