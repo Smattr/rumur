@@ -489,15 +489,14 @@ using State = StateBase<STATE_SIZE_BITS, THREADS>;
 }
 
 namespace {
-template<typename STATE_T>
-struct StartStateBase {
+struct StartState {
 
  public:
   const std::string name;
-  const std::function<void(STATE_T&)> body;
+  const std::function<void(State&)> body;
 
  public:
-  StartStateBase(const std::string &name_, std::function<void(STATE_T&)> body_):
+  StartState(const std::string &name_, std::function<void(State&)> body_):
     name(name_), body(body_) { }
 };
 }

@@ -78,7 +78,6 @@ void Model::generate(std::ostream &out) const {
   out
 
     // Specialise classes
-    << "using StartState = StartStateBase<State>;\n"
     << "using Invariant = InvariantBase<State>;\n"
     << "using Rule = RuleBase<State>;\n\n";
 
