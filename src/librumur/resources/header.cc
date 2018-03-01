@@ -515,29 +515,28 @@ struct Invariant {
 }
 
 namespace {
-template<typename STATE_T>
-struct RuleBase {
+struct Rule {
 
  public:
   const std::string name;
-  const std::function<bool(const STATE_T&)> guard;
-  const std::function<void(STATE_T&)> body;
+  const std::function<bool(const State&)> guard;
+  const std::function<void(State&)> body;
 
  public:
-  RuleBase(const std::string &name_, std::function<bool(const STATE_T&)> guard_,
-    std::function<void(STATE_T&)> body_):
+  Rule(const std::string &name_, std::function<bool(const State&)> guard_,
+    std::function<void(State&)> body_):
     name(name_), guard(guard_), body(body_) { }
 
  private:
   class iterator {
    private:
-    const RuleBase &rule;
-    STATE_T &origin;
-    Allocator<STATE_T> *allocator;
+    const Rule &rule;
+    State &origin;
+    Allocator<State> *allocator;
     bool end;
 
    public:
-    iterator(const RuleBase &rule_, STATE_T &origin_, Allocator<STATE_T> &allocator_, bool end_ = false):
+    iterator(const Rule &rule_, State &origin_, Allocator<State> &allocator_, bool end_ = false):
       rule(rule_), origin(origin_), allocator(&allocator_), end(end_) {
       if (!end && !rule.guard(origin)) {
         ++*this;
@@ -560,9 +559,9 @@ struct RuleBase {
       return !(*this == other);
     }
 
-    STATE_T *operator*() const {
+    State *operator*() const {
       ASSERT(!end);
-      STATE_T *d = origin.duplicate(*allocator);
+      State *d = origin.duplicate(*allocator);
       rule.body(*d);
       return d;
     }
@@ -570,12 +569,12 @@ struct RuleBase {
 
   class iterable {
    private:
-    const RuleBase &rule;
-    STATE_T &origin;
-    Allocator<STATE_T> *allocator;
+    const Rule &rule;
+    State &origin;
+    Allocator<State> *allocator;
 
    public:
-    iterable(const RuleBase &rule_, STATE_T &origin_, Allocator<STATE_T> &allocator_):
+    iterable(const Rule &rule_, State &origin_, Allocator<State> &allocator_):
       rule(rule_), origin(origin_), allocator(&allocator_) { }
 
     iterator begin() const {
@@ -588,7 +587,7 @@ struct RuleBase {
   };
 
  public:
-  iterable get_iterable(STATE_T &origin, Allocator<STATE_T> &allocator) const {
+  iterable get_iterable(State &origin, Allocator<State> &allocator) const {
     return iterable(*this, origin, allocator);
   }
 };

@@ -75,11 +75,6 @@ Model::~Model() {
 
 void Model::generate(std::ostream &out) const {
 
-  out
-
-    // Specialise classes
-    << "using Rule = RuleBase<State>;\n\n";
-
   // Write out constants and type declarations.
   for (const Decl *d : decls)
     out << *d << ";\n";
