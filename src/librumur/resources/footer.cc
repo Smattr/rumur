@@ -20,7 +20,7 @@ static unsigned long long gettime() {
 }
 
 namespace {
-using StateQueue = Queue<State, THREADS>;
+using StateQueue = Queue<>;
 }
 namespace {
 using StateSet = Set<State, state_hash, state_eq, SET_CAPACITY, THREADS>;

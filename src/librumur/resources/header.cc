@@ -272,28 +272,28 @@ struct state_eq {
  */
 
 namespace {
-template<typename T, unsigned long THREAD_COUNT, bool NEEDS_MUTEX = THREAD_COUNT != 1>
+template<bool NEEDS_MUTEX = THREADS != 1>
 class Queue;
 }
 
 namespace {
-template<typename T>
-class Queue<T, 1, false> {
+template<>
+class Queue<false> {
 
  private:
-  std::queue<T*> q;
+  std::queue<State*> q;
 
  public:
-  size_t push(T *t, unsigned long) {
+  size_t push(State *t, unsigned long) {
     q.push(t);
     return q.size();
   }
 
-  T *pop(unsigned long&) {
+  State *pop(unsigned long&) {
     if (q.empty()) {
       return nullptr;
     }
-    T *t = q.front();
+    State *t = q.front();
     q.pop();
     return t;
   }
@@ -305,28 +305,28 @@ class Queue<T, 1, false> {
 }
 
 namespace {
-template<typename T, unsigned long THREAD_COUNT>
-class Queue<T, THREAD_COUNT, true> {
+template<>
+class Queue<true> {
 
  private:
-  std::array<std::mutex, THREAD_COUNT> lock;
-  std::array<std::queue<T*>, THREAD_COUNT> q;
+  std::array<std::mutex, THREADS> lock;
+  std::array<std::queue<State*>, THREADS> q;
 
  public:
-  size_t push(T *t, unsigned long queue_id) {
+  size_t push(State *t, unsigned long queue_id) {
     ASSERT(queue_id < q.size());
     std::lock_guard<std::mutex> l(lock[queue_id]);
     q[queue_id].push(t);
     return q[queue_id].size();
   }
 
-  T *pop(unsigned long &queue_id) {
+  State *pop(unsigned long &queue_id) {
     ASSERT(queue_id < q.size());
     for (size_t i = 0; i < q.size(); i++) {
       {
         std::lock_guard<std::mutex> l(lock[queue_id]);
         if (!q[queue_id].empty()) {
-          T *t = q[queue_id].front();
+          State *t = q[queue_id].front();
           q[queue_id].pop();
           return t;
         }
