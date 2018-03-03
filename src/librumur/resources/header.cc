@@ -33,6 +33,9 @@
 #include <utility>
 #include <vector>
 
+/* The size of the compressed state data in bytes. */
+static constexpr size_t STATE_SIZE_BYTES = STATE_SIZE_BITS / 8 + (STATE_SIZE_BITS % 8 == 0 ? 0 : 1);
+
 namespace { class Semaphore {
 
  private:
@@ -389,31 +392,30 @@ struct Allocator {
 }
 
 namespace {
-template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
-struct StateBase {
+struct State {
 
  public:
-  static const StateBase *ORIGIN;
+  static const State *ORIGIN;
 
-  std::array<uint8_t, SIZE_BITS / 8 + (SIZE_BITS % 8 == 0 ? 0 : 1)> data;
-  const StateBase *previous = nullptr;
+  std::array<uint8_t, STATE_SIZE_BYTES> data;
+  const State *previous = nullptr;
 
  public:
-  StateBase() = default;
-  StateBase(const StateBase&) = default;
-  StateBase(StateBase&&) = default;
-  StateBase &operator=(const StateBase&) = default;
-  StateBase &operator=(StateBase&&) = default;
+  State() = default;
+  State(const State&) = default;
+  State(State&&) = default;
+  State &operator=(const State&) = default;
+  State &operator=(State&&) = default;
 
-  StateBase *duplicate(Allocator<StateBase> &a) const {
-    return new(a.alloc()) StateBase(this);
+  State *duplicate(Allocator<State> &a) const {
+    return new(a.alloc()) State(this);
   }
 
-  bool operator==(const StateBase &other) const {
+  bool operator==(const State &other) const {
     return data == other.data;
   }
 
-  bool operator!=(const StateBase &other) const {
+  bool operator!=(const State &other) const {
     return !(*this == other);
   }
 
@@ -443,26 +445,21 @@ struct StateBase {
 
   size_t hash() const {
     // FIXME: a proper hash function that works for larger SIZE_BITS
-    static_assert(SIZE_BITS <= sizeof(size_t) * CHAR_BIT, "FIXME");
+    static_assert(STATE_SIZE_BITS <= sizeof(size_t) * CHAR_BIT, "FIXME");
     size_t s = 0;
     memcpy(&s, data.data(), data.size());
     return s;
   }
 
   static size_t width() {
-    return SIZE_BITS;
+    return STATE_SIZE_BITS;
   }
 
  private:
-  StateBase(const StateBase *s): data(s->data), previous(s) { }
+  State(const State *s): data(s->data), previous(s) { }
 };
 
-template<size_t SIZE_BITS, unsigned long THREAD_COUNT>
-const StateBase<SIZE_BITS, THREAD_COUNT> *StateBase<SIZE_BITS, THREAD_COUNT>::ORIGIN = reinterpret_cast<const StateBase*>(-1);
-}
-
-namespace {
-using State = StateBase<STATE_SIZE_BITS, THREADS>;
+const State *State::ORIGIN = reinterpret_cast<const State*>(-1);
 }
 
 namespace {
