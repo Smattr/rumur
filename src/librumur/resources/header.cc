@@ -151,6 +151,122 @@ class Error : public std::runtime_error {
 };
 }
 
+namespace {
+template<typename T>
+struct Allocator {
+
+ private:
+  T *cached = nullptr;
+
+ public:
+  T *alloc() {
+    if (cached != nullptr) {
+      T *t = cached;
+      cached = nullptr;
+      return t;
+    }
+    T *t = reinterpret_cast<T*>(new unsigned char[sizeof(T)]);
+    return t;
+  }
+
+  void free(T *t) {
+    ASSERT(cached == nullptr);
+    cached = t;
+  }
+
+  ~Allocator() {
+    delete[] reinterpret_cast<unsigned char*>(cached);
+  }
+};
+}
+
+namespace {
+struct State {
+
+ public:
+  static const State *ORIGIN;
+
+  std::array<uint8_t, STATE_SIZE_BYTES> data;
+  const State *previous = nullptr;
+
+ public:
+  State() = default;
+  State(const State&) = default;
+  State(State&&) = default;
+  State &operator=(const State&) = default;
+  State &operator=(State&&) = default;
+
+  State *duplicate(Allocator<State> &a) const {
+    return new(a.alloc()) State(this);
+  }
+
+  bool operator==(const State &other) const {
+    return data == other.data;
+  }
+
+  bool operator!=(const State &other) const {
+    return !(*this == other);
+  }
+
+  // FIXME: the following assume little endian
+
+  int64_t read(size_t offset, size_t width) const {
+    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
+    ASSERT(offset <= data.size() * 8 - 1 && "out of bounds read");
+    unsigned __int128 v = 0;
+    size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
+    memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
+    v >>= offset % 8;
+    v &= (static_cast<unsigned __int128>(1) << width) - 1;
+    return static_cast<int64_t>(v);
+  }
+
+  void write(size_t offset, size_t width, int64_t value) {
+    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
+    ASSERT(width == 64 || (UINT64_C(1) << width > uint64_t(value) && "write of too large a value"));
+    unsigned __int128 v = 0;
+    size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
+    memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
+    v = (v & ~(((static_cast<unsigned __int128>(1) << width) - 1) << (offset % 8)))
+      | (static_cast<unsigned __int128>(value) << (offset % 8));
+    memcpy(static_cast<uint8_t*>(data.data()) + (offset / 8), &v, window);
+  }
+
+  size_t hash() const {
+    // FIXME: a proper hash function that works for larger SIZE_BITS
+    static_assert(STATE_SIZE_BITS <= sizeof(size_t) * CHAR_BIT, "FIXME");
+    size_t s = 0;
+    memcpy(&s, data.data(), data.size());
+    return s;
+  }
+
+  static size_t width() {
+    return STATE_SIZE_BITS;
+  }
+
+ private:
+  State(const State *s): data(s->data), previous(s) { }
+};
+
+const State *State::ORIGIN = reinterpret_cast<const State*>(-1);
+}
+
+namespace {
+struct state_hash {
+  size_t operator()(const State *s) const {
+    return s->hash();
+  }
+};
+}
+
+namespace {
+struct state_eq {
+  bool operator()(const State *a, const State *b) const {
+    return *a == *b;
+  }
+};
+}
+
 /* A queue of states that can be either thread-safe or not depending on whether
  * we're running multithreaded.
  */
@@ -358,122 +474,6 @@ class Set<T, HASH, EQ, CAPACITY, THREAD_COUNT, false, true> : Set<T, HASH, EQ, C
   size_t size() const {
     std::lock_guard<decltype(lock)> l(lock);
     return Set<T, HASH, EQ, CAPACITY, 1, false, false>::size();
-  }
-};
-}
-
-namespace {
-template<typename T>
-struct Allocator {
-
- private:
-  T *cached = nullptr;
-
- public:
-  T *alloc() {
-    if (cached != nullptr) {
-      T *t = cached;
-      cached = nullptr;
-      return t;
-    }
-    T *t = reinterpret_cast<T*>(new unsigned char[sizeof(T)]);
-    return t;
-  }
-
-  void free(T *t) {
-    ASSERT(cached == nullptr);
-    cached = t;
-  }
-
-  ~Allocator() {
-    delete[] reinterpret_cast<unsigned char*>(cached);
-  }
-};
-}
-
-namespace {
-struct State {
-
- public:
-  static const State *ORIGIN;
-
-  std::array<uint8_t, STATE_SIZE_BYTES> data;
-  const State *previous = nullptr;
-
- public:
-  State() = default;
-  State(const State&) = default;
-  State(State&&) = default;
-  State &operator=(const State&) = default;
-  State &operator=(State&&) = default;
-
-  State *duplicate(Allocator<State> &a) const {
-    return new(a.alloc()) State(this);
-  }
-
-  bool operator==(const State &other) const {
-    return data == other.data;
-  }
-
-  bool operator!=(const State &other) const {
-    return !(*this == other);
-  }
-
-  // FIXME: the following assume little endian
-
-  int64_t read(size_t offset, size_t width) const {
-    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "read of too large value");
-    ASSERT(offset <= data.size() * 8 - 1 && "out of bounds read");
-    unsigned __int128 v = 0;
-    size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
-    memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
-    v >>= offset % 8;
-    v &= (static_cast<unsigned __int128>(1) << width) - 1;
-    return static_cast<int64_t>(v);
-  }
-
-  void write(size_t offset, size_t width, int64_t value) {
-    ASSERT(width <= sizeof(int64_t) * CHAR_BIT && "write of too large a value");
-    ASSERT(width == 64 || (UINT64_C(1) << width > uint64_t(value) && "write of too large a value"));
-    unsigned __int128 v = 0;
-    size_t window = width / 8 + ((offset + width) % 8 == 0 ? 0 : 1);
-    memcpy(&v, static_cast<const uint8_t*>(data.data()) + (offset / 8), window);
-    v = (v & ~(((static_cast<unsigned __int128>(1) << width) - 1) << (offset % 8)))
-      | (static_cast<unsigned __int128>(value) << (offset % 8));
-    memcpy(static_cast<uint8_t*>(data.data()) + (offset / 8), &v, window);
-  }
-
-  size_t hash() const {
-    // FIXME: a proper hash function that works for larger SIZE_BITS
-    static_assert(STATE_SIZE_BITS <= sizeof(size_t) * CHAR_BIT, "FIXME");
-    size_t s = 0;
-    memcpy(&s, data.data(), data.size());
-    return s;
-  }
-
-  static size_t width() {
-    return STATE_SIZE_BITS;
-  }
-
- private:
-  State(const State *s): data(s->data), previous(s) { }
-};
-
-const State *State::ORIGIN = reinterpret_cast<const State*>(-1);
-}
-
-namespace {
-struct state_hash {
-  size_t operator()(const State *s) const {
-    return s->hash();
-  }
-};
-}
-
-namespace {
-struct state_eq {
-  bool operator()(const State *a, const State *b) const {
-    return *a == *b;
   }
 };
 }
