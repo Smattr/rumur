@@ -350,21 +350,21 @@ class Queue<true> {
  */
 
 namespace {
-template<typename T, class HASH, class EQ, size_t CAPACITY, unsigned long THREAD_COUNT, bool DYNAMIC = CAPACITY == 0, bool NEEDS_MUTEX = THREAD_COUNT != 1>
+template<bool DYNAMIC = SET_CAPACITY == 0, bool NEEDS_MUTEX = THREADS != 1>
 class Set;
 }
 
 namespace {
-template<typename T, class HASH, class EQ>
-class Set<T, HASH, EQ, 0, 1, true, false> {
+template<>
+class Set<true, false> {
 
  private:
-  std::unordered_set<T*, HASH, EQ> s;
+  std::unordered_set<State*, state_hash, state_eq> s;
 
  public:
-  std::tuple<size_t, bool, T*> insert(T *t) {
+  std::tuple<size_t, bool, State*> insert(State *t) {
     auto r = s.insert(t);
-    return std::tuple<size_t, bool, T*>(size(), r.second, t);
+    return std::tuple<size_t, bool, State*>(size(), r.second, t);
   }
 
   size_t size() const {
@@ -374,46 +374,46 @@ class Set<T, HASH, EQ, 0, 1, true, false> {
 }
 
 namespace {
-template<typename T, class HASH, class EQ, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, 0, THREAD_COUNT, true, true> : Set<T, HASH, EQ, 0, 1, true, false> {
+template<>
+class Set<true, true> : Set<true, false> {
 
  private:
   mutable std::mutex lock;
 
  public:
-  std::tuple<size_t, bool, T*> insert(T *t) {
+  std::tuple<size_t, bool, State*> insert(State *t) {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, 0, 1, true, false>::insert(t);
+    return Set<true, false>::insert(t);
   }
 
   size_t size() const {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, 0, 1, true, false>::size();
+    return Set<true, false>::size();
   }
 };
 }
 
 namespace {
-template<typename T, class HASH, class EQ, size_t CAPACITY>
-class Set<T, HASH, EQ, CAPACITY, 1, false, false> {
+template<>
+class Set<false, false> {
 
  public:
-  enum { COUNT = CAPACITY / sizeof(T) };
+  enum { COUNT = SET_CAPACITY / sizeof(State) };
 
  private:
-  T *s;
+  State *s;
   size_t used = 0;
 
  public:
-  Set(): s(static_cast<T*>(calloc(COUNT, sizeof(T)))) {
+  Set(): s(static_cast<State*>(calloc(COUNT, sizeof(State)))) {
     if (s == nullptr) {
       throw Error("failed to allocate closed hash set");
     }
   }
 
-  std::tuple<size_t, bool, T*> insert(T *t) {
+  std::tuple<size_t, bool, State*> insert(State *t) {
     if (COUNT != 0) {
-      size_t slot = HASH()(t) % COUNT;
+      size_t slot = state_hash()(t) % COUNT;
       for (size_t i = 0; i < COUNT; i++) {
         if (is_empty(slot)) {
           /* FIXME: This is somewhat awkward. We really want to just do
@@ -430,11 +430,11 @@ class Set<T, HASH, EQ, CAPACITY, 1, false, false> {
            * inherit from BitBlock in place of StateBase and it in turn
            * reference a StateBase.
            */
-          new (&s[slot]) T(*t);
+          new (&s[slot]) State(*t);
           used++;
-          return std::tuple<size_t, bool, T*>(used, true, &s[slot]);
-        } else if (EQ()(t, &s[slot])) {
-          return std::tuple<size_t, bool, T*>(used, false, t);
+          return std::tuple<size_t, bool, State*>(used, true, &s[slot]);
+        } else if (state_eq()(t, &s[slot])) {
+          return std::tuple<size_t, bool, State*>(used, false, t);
         }
         slot = (slot + 1) % COUNT;
       }
@@ -459,21 +459,21 @@ class Set<T, HASH, EQ, CAPACITY, 1, false, false> {
 }
 
 namespace {
-template<typename T, class HASH, class EQ, size_t CAPACITY, unsigned long THREAD_COUNT>
-class Set<T, HASH, EQ, CAPACITY, THREAD_COUNT, false, true> : Set<T, HASH, EQ, CAPACITY, 1, false, false> {
+template<>
+class Set<false, true> : Set<false, false> {
 
  private:
   mutable std::mutex lock;
 
  public:
-  std::tuple<size_t, bool, T*> insert(T *t) {
+  std::tuple<size_t, bool, State*> insert(State *t) {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, CAPACITY, 1, false, false>::insert(t);
+    return Set<false, false>::insert(t);
   }
 
   size_t size() const {
     std::lock_guard<decltype(lock)> l(lock);
-    return Set<T, HASH, EQ, CAPACITY, 1, false, false>::size();
+    return Set<false, false>::size();
   }
 };
 }

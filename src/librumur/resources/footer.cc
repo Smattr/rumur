@@ -23,7 +23,7 @@ namespace {
 using StateQueue = Queue<>;
 }
 namespace {
-using StateSet = Set<State, state_hash, state_eq, SET_CAPACITY, THREADS>;
+using StateSet = Set<>;
 }
 
 /* Thread data. */
