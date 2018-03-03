@@ -416,21 +416,31 @@ class Set<false, false> {
       size_t slot = state_hash()(t) % COUNT;
       for (size_t i = 0; i < COUNT; i++) {
         if (is_empty(slot)) {
-          /* FIXME: This is somewhat awkward. We really want to just do
-           * `s[slot] = *t` here. However, we got the memory backing `s` from
-           * `calloc` so the vtables of the states were never initialised (to
-           * non-null). Of course the assignment operator doesn't write to the
-           * vtables because it thinks they've already been initialized. The
-           * result is that using the assignment operator here appears to work
-           * fine but then later operations that access the vtable segfault. As
-           * you can imagine, this was not fun to debug. For now we call the
-           * copy constructor to ensure we initialise the vtable, but I think a
-           * better long term solution is to make StateBase non-virtual and
-           * hence remove its vtable. To do this, we need something else to
-           * inherit from BitBlock in place of StateBase and it in turn
-           * reference a StateBase.
-           */
-          new (&s[slot]) State(*t);
+          {
+            /* If State has a vtable, the entries of our array 's' will not have
+             * their vtables initialised (as they are zeroed). Hence the
+             * assignment we do below will leave us with a malformed State in
+             * 's[slot]'. I.e. an object with the correct data but a vtable full
+             * of null pointers.
+             *
+             * A sensible compiler should not emit a vtable for State but
+             * perhaps the user's compiler does something foolish or perhaps a
+             * careless refactoring of the resource files adds a vtable to
+             * State. In either event we'd like to catch this problem instead of
+             * leaving the user to confront a confusing segfault at runtime.
+             *
+             * The following is a hacky check for whether State has a vtable. By
+             * comparing its size of an equivalent object that is certainly a
+             * POD we should be able to detect if the compiler laid out the two
+             * differently.
+             */
+            struct pod {
+              std::array<uint8_t, STATE_SIZE_BYTES> data;
+              State *previous;
+            };
+            static_assert(sizeof(pod) == sizeof(State), "State has a vtable");
+          }
+          s[slot] = *t;
           used++;
           return std::tuple<size_t, bool, State*>(used, true, &s[slot]);
         } else if (state_eq()(t, &s[slot])) {
