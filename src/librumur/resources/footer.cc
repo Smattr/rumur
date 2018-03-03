@@ -1,19 +1,3 @@
-namespace {
-struct state_hash {
-  size_t operator()(const State *s) const {
-    return s->hash();
-  }
-};
-}
-
-namespace {
-struct state_eq {
-  bool operator()(const State *a, const State *b) const {
-    return *a == *b;
-  }
-};
-}
-
 static unsigned print_counterexample(const State &s) {
   /* Recurse so that we print the states in reverse-linked order, which
    * corresponds to the order in which they were traversed.

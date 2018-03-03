@@ -463,6 +463,22 @@ const State *State::ORIGIN = reinterpret_cast<const State*>(-1);
 }
 
 namespace {
+struct state_hash {
+  size_t operator()(const State *s) const {
+    return s->hash();
+  }
+};
+}
+
+namespace {
+struct state_eq {
+  bool operator()(const State *a, const State *b) const {
+    return *a == *b;
+  }
+};
+}
+
+namespace {
 struct StartState {
 
  public:
