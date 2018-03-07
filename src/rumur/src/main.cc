@@ -66,7 +66,32 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case '?':
-        std::cerr << "usage: " << argv[0] << " --output FILE [FILE]\n";
+        std::cerr
+          << "usage: " << argv[0] << " [options...] --output FILE [FILE]\n"
+          << "\n"
+          << "options:\n\n"
+          << " --debug | -d\n"
+          << "     Enable debugging options in the generated checker. This\n"
+          << "     includes enabling runtime assertions.\n\n"
+          << " --help\n"
+          << "     Display the present information.\n\n"
+          << " --set-capacity SIZE | -s SIZE\n"
+          << "     Specify a static size (in bytes) of the seen state set. When\n"
+          << "     this size is reached, the checker will abort if it has not\n"
+          << "     yet covered the state space. A size of 0 indicates a\n"
+          << "     dynamically expanding seen state set which is the default.\n\n"
+          << " --threads COUNT | -t COUNT\n"
+          << "     Specify the number of threads the checker should use. If you\n"
+          << "     do not specify this parameter or pass 0, the number of\n"
+          << "     threads will be chosen based on the available hardware\n"
+          << "     threads on the platform on which you generate the model.\n\n"
+          << " --tbb\n"
+          << "     Use Intel Thread Building Blocks. When using a dynamically\n"
+          << "     expanding state set, Intel TBB's concurrent_unordered_set\n"
+          << "     will be used to store states which can potentially result in\n"
+          << "     a speed up. This requires you to have the TBB headers and\n"
+          << "     library available when building the checker and will only be\n"
+          << "     used by a multithreaded checker.\n";
         exit(EXIT_FAILURE);
 
       case 128:
