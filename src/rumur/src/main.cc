@@ -13,6 +13,7 @@ static rumur::OutputOptions output_options = {
   .threads = 0,
   .debug = false,
   .set_capacity = 0,
+  .tbb = false,
 };
 
 static void parse_args(int argc, char **argv) {
@@ -24,6 +25,7 @@ static void parse_args(int argc, char **argv) {
       { "output", required_argument, 0, 'o' },
       { "set-capacity", required_argument, 0, 's' },
       { "threads", required_argument, 0, 't' },
+      { "tbb", no_argument, 0, 128 },
       { 0, 0, 0, 0 },
     };
 
@@ -66,6 +68,10 @@ static void parse_args(int argc, char **argv) {
       case '?':
         std::cerr << "usage: " << argv[0] << " --output FILE [FILE]\n";
         exit(EXIT_FAILURE);
+
+      case 128:
+        output_options.tbb = true;
+        break;
 
       default:
         std::cerr << "unexpected error\n";

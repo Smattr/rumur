@@ -33,6 +33,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef USE_TBB
+  #include <tbb/concurrent_unordered_set.h>
+#endif
+
 /* The size of the compressed state data in bytes. */
 static constexpr size_t STATE_SIZE_BYTES = STATE_SIZE_BITS / 8 + (STATE_SIZE_BITS % 8 == 0 ? 0 : 1);
 
@@ -374,6 +378,24 @@ class Set<true, false> {
 }
 
 namespace {
+#ifdef USE_TBB
+template<>
+class Set<true, true> {
+
+ private:
+  tbb::concurrent_unordered_set<State*, state_hash, state_eq> s;
+
+ public:
+  std::tuple<size_t, bool, State*> insert(State *t) {
+    auto r = s.insert(t);
+    return std::tuple<size_t, bool, State*>(size(), r.second, t);
+  }
+
+  size_t size() const {
+    return s.size();
+  }
+};
+#else
 template<>
 class Set<true, true> : Set<true, false> {
 
@@ -391,6 +413,7 @@ class Set<true, true> : Set<true, false> {
     return Set<true, false>::size();
   }
 };
+#endif
 }
 
 namespace {

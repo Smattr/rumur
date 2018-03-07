@@ -20,6 +20,9 @@ int output_checker(const std::string &path, const Model &model,
   if (!options.debug)
     out << "#define NDEBUG 1\n\n";
 
+  if (options.tbb)
+    out << "#define USE_TBB 1\n\n";
+
   out
 
     // Some headers we need before we even emit settings

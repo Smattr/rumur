@@ -10,6 +10,9 @@ struct OutputOptions {
   unsigned long threads;
   bool debug;
   size_t set_capacity;
+
+  // Use Intel Thread Building Blocks
+  bool tbb;
 };
 
 int output_checker(const std::string &path, const Model &model,
