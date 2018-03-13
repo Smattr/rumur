@@ -1345,6 +1345,10 @@ template<typename T = void>
 class Boolean {
 
  public:
+  using reference_type = BooleanReference<T>;
+  using value_type = BooleanValue<T>;
+
+ public:
   static BooleanValue<T> make() {
     return BooleanValue<T>(false);
   }
