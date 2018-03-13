@@ -1144,6 +1144,10 @@ struct RangeReference : public Range<MIN, MAX> {
 
   using Range<MIN, MAX>::operator=;
 
+  RangeReference &operator=(const RangeReference &other) {
+    return static_cast<RangeReference&>(Range<MIN, MAX>::operator=(other));
+  }
+
   int64_t get_value() const final {
     ASSERT(container != nullptr);
     return container->read(offset, width()) + MIN;
@@ -1174,6 +1178,10 @@ struct RangeValue : public Range<MIN, MAX> {
   RangeValue(RangeValue&&) = default;
 
   using Range<MIN, MAX>::operator=;
+
+  RangeValue &operator=(const RangeValue &other) {
+    return static_cast<RangeValue&>(Range<MIN, MAX>::operator=(other));
+  }
 
   int64_t get_value() const final {
     return value;
@@ -1410,6 +1418,10 @@ class BooleanReference : public Boolean<> {
 
   using Boolean<>::operator=;
 
+  BooleanReference &operator=(const BooleanReference &other) {
+    return static_cast<BooleanReference&>(Boolean<>::operator=(other));
+  }
+
   bool get_value() const final {
     return container->read(offset, 1);
   }
@@ -1434,6 +1446,10 @@ class BooleanValue : public Boolean<> {
   BooleanValue(BooleanValue&&) = default;
 
   using Boolean<>::operator=;
+
+  BooleanValue &operator=(const BooleanValue &other) {
+    return static_cast<BooleanValue&>(Boolean<>::operator=(other));
+  }
 
   bool get_value() const final {
     return value;
@@ -1550,6 +1566,10 @@ class EnumReference : public Enum<MEMBERS...> {
 
   using Enum<MEMBERS...>::operator=;
 
+  EnumReference &operator=(const EnumReference &other) {
+    return static_cast<EnumReference&>(Enum<MEMBERS...>::operator=(other));
+  }
+
   uint64_t get_value() const final {
     return container->read(offset, width());
   }
@@ -1582,6 +1602,10 @@ class EnumValue : public Enum<MEMBERS...> {
   EnumValue(EnumValue&&) = default;
 
   using Enum<MEMBERS...>::operator=;
+
+  EnumValue &operator=(const EnumValue &other) {
+    return static_cast<EnumValue&>(Enum<MEMBERS...>::operator=(other));
+  }
 
   uint64_t get_value() const final {
     return value;
