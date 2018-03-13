@@ -1387,6 +1387,10 @@ class Boolean {
     return get_value();
   }
 
+  size_t zero_based_value() const {
+    return get_value() ? 1 : 0;
+  }
+
   virtual bool get_value() const = 0;
 
   virtual void set_value(bool v) = 0;
