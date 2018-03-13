@@ -1219,7 +1219,7 @@ class Array {
   /* operator[] that takes a Number and is only valid if our index type is a
    * range.
    */
-  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  template<typename T = INDEX_T, typename std::enable_if<isaRange<T>::value>::type* = nullptr>
   typename ELEMENT_T::reference_type operator[](const Number &index) {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
@@ -1227,7 +1227,7 @@ class Array {
     return get(index.value - INDEX_T::min());
   }
 
-  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  template<typename T = INDEX_T, typename std::enable_if<isaRange<T>::value>::type* = nullptr>
   const typename ELEMENT_T::reference_type operator[](const Number &index) const {
     if (index.value < INDEX_T::min() || index.value > INDEX_T::max()) {
       throw Error("out of range access to array element " + std::to_string(index.value));
@@ -1283,15 +1283,17 @@ class ArrayReference : public Array<INDEX_T, ELEMENT_T> {
    * related to them not depending on the class template parameters?
    */
  public:
-  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  template<typename T = INDEX_T, typename std::enable_if<isaRange<T>::value>::type* = nullptr>
   typename ELEMENT_T::reference_type operator[](const Number &index) {
     return static_cast<Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
 
-  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  template<typename T = INDEX_T, typename std::enable_if<isaRange<T>::value>::type* = nullptr>
   const typename ELEMENT_T::reference_type operator[](const Number &index) const {
     return static_cast<const Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
+
+  using Array<INDEX_T, ELEMENT_T>::operator[];
 
  private:
   typename ELEMENT_T::reference_type get(size_t index) final {
@@ -1312,15 +1314,17 @@ class ArrayValue : public Array<INDEX_T, ELEMENT_T> {
   std::array<typename ELEMENT_T::value_type, INDEX_T::count()> value;
 
  public:
-  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  template<typename T = INDEX_T, typename std::enable_if<isaRange<T>::value>::type* = nullptr>
   typename ELEMENT_T::reference_type operator[](const Number &index) {
     return static_cast<Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
 
-  template<typename = typename std::enable_if<isaRange<INDEX_T>::value>::type>
+  template<typename T = INDEX_T, typename std::enable_if<isaRange<T>::value>::type* = nullptr>
   const typename ELEMENT_T::reference_type operator[](const Number &index) const {
     return static_cast<const Array<INDEX_T, ELEMENT_T>&>(*this)[index];
   }
+
+  using Array<INDEX_T, ELEMENT_T>::operator[];
 
  private:
   typename ELEMENT_T::value_type &get(size_t index) final {
