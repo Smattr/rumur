@@ -704,8 +704,8 @@ struct Number {
   constexpr Number(int64_t value_): value(value_) { }
   Number(const Number&) = default;
   Number(Number&&) = default;
-  Number &operator=(const Number&) = default;
-  Number &operator=(Number&&) = default;
+  Number &operator=(const Number&) = delete;
+  Number &operator=(Number&&) = delete;
 
   Number operator+(const Number &other) const {
     return add(value, other.value);
