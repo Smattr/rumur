@@ -176,8 +176,13 @@ Record::~Record() {
 }
 
 void Record::generate(std::ostream &out) const {
-  out << "class : public Record {\n";
-  // TODO
+  out << "class : public Record {\n"
+      << " public:\n"
+      << "  // TODO: how to do reference_type and value_type?\n";
+  for (const VarDecl *v : fields) {
+    out << "  virtual " << *v->type << " &" << v->name << "() = 0;\n"
+        << "  virtual const " << *v->type << " &" << v->name << "() const = 0;\n";
+  }
   out << "}";
 }
 
