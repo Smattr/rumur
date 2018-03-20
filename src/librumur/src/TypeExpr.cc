@@ -176,7 +176,7 @@ Record::~Record() {
 }
 
 void Record::generate(std::ostream &out) const {
-  out << "class:public RecordBase{";
+  out << "class : public Record {\n";
   // TODO
   out << "}";
 }

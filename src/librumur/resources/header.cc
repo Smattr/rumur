@@ -1632,3 +1632,8 @@ class EnumValue : public Enum<MEMBERS...> {
   }
 };
 }
+
+namespace {
+class Record {
+};
+}
