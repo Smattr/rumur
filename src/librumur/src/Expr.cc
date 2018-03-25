@@ -846,8 +846,18 @@ bool Field::constant() const {
 }
 
 const TypeExpr *Field::type() const {
-  // TODO
-  return nullptr;
+  const TypeExpr *root = record->type();
+  assert(root != nullptr);
+  const TypeExpr *resolved = root->resolve();
+  assert(root != nullptr);
+  if (auto r = dynamic_cast<const Record*>(resolved)) {
+    for (const VarDecl *f : r->fields) {
+      if (f->name == field)
+        return f->type;
+    }
+    throw Error("no field named \"" + field + "\" in record", loc);
+  }
+  throw Error("left hand side of field expression is not a record", loc);
 }
 
 void Field::generate(std::ostream &out) const {
