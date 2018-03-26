@@ -35,7 +35,7 @@ def test_template(self, manifest):
 
     if data.get('compile', True):
 
-      cxxflags = data.get('cxxflags', ['-std=c++11']) + \
+      cxxflags = data.get('cxxflags', ['-std=c++14']) + \
         data.get('extra_cxxflags', [])
 
       model_bin = tmp / 'model.bin'
