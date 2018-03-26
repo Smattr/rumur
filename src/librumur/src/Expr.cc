@@ -861,7 +861,22 @@ const TypeExpr *Field::type() const {
 }
 
 void Field::generate(std::ostream &out) const {
-  out << "(" << *record << "." << field << ")";
+  const TypeExpr *root = record->type();
+  assert(root != nullptr);
+  const TypeExpr *resolved = root->resolve();
+  assert(resolved != nullptr);
+  if (auto r = dynamic_cast<const Record*>(resolved)) {
+    size_t index = 0;
+    for (const VarDecl *f : r->fields) {
+      if (f->name == field) {
+        out << "(*std::get<" << index << ">(" << *record << ".get()))";
+        return;
+      }
+      index++;
+    }
+    throw Error("no field named \"" + field + "\" in record", loc);
+  }
+  throw Error("left hand side of field expression is not a record", loc);
 }
 
 Field::~Field() {

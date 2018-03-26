@@ -1634,6 +1634,92 @@ class EnumValue : public Enum<MEMBERS...> {
 }
 
 namespace {
+template<typename... FIELDS>
+class RecordReference;
+}
+
+namespace {
+template<typename... FIELDS>
+class RecordValue;
+}
+
+namespace {
+template<typename... FIELDS>
 class Record {
+
+ public:
+  using reference_type = RecordReference<FIELDS...>;
+  using value_type = RecordValue<FIELDS...>;
+
+ public:
+  static reference_type make(State &s, size_t offset) {
+    return reference_type(s, offset);
+  }
+
+  static const reference_type make(const State &s, size_t offset) {
+    return reference_type(const_cast<State&>(s), offset);
+  }
+
+  virtual std::tuple<FIELDS*...> get() = 0;
+  virtual std::tuple<const FIELDS*...> get() const = 0;
+
+  void print(FILE *, const char*) const {
+    ASSERT(!"TODO");
+  }
+};
+}
+
+namespace {
+template<typename... FIELDS>
+class RecordReference : public Record<FIELDS...> {
+
+ public:
+  State *container;
+  const size_t offset;
+  std::tuple<typename FIELDS::reference_type...> fields;
+
+ public:
+  RecordReference() = delete;
+  RecordReference(State &container_, size_t offset_):
+    container(&container_), offset(offset_), fields{FIELDS::make(container_, offset_)...} {
+    // FIXME: It's not correct to just pass 'offset_' to FIELDS::make
+  }
+
+  std::tuple<FIELDS*...> get() final {
+    ASSERT(!"TODO");
+  }
+
+  std::tuple<const FIELDS*...> get() const final {
+    ASSERT(!"TODO");
+  }
+};
+}
+
+namespace {
+template<typename... FIELDS>
+class RecordValue : public Record<FIELDS...> {
+
+ public:
+  std::tuple<typename FIELDS::value_type...> fields;
+
+  std::tuple<FIELDS*...> get() final {
+    return make_tuple(std::make_index_sequence<sizeof...(FIELDS)>{});
+  }
+
+  std::tuple<const FIELDS*...> get() const final {
+    return make_tuple(std::make_index_sequence<sizeof...(FIELDS)>{});
+  }
+
+ private:
+  template<size_t... IS>
+  std::tuple<FIELDS*...> make_tuple(std::index_sequence<IS...>) {
+    return std::make_tuple(&fields[IS]...);
+  }
+
+  template<size_t... IS>
+  std::tuple<const FIELDS*...> make_tuple(std::index_sequence<IS...>) const {
+    return std::make_tuple(&fields[IS]...);
+  }
+
 };
 }
