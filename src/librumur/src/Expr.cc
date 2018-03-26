@@ -849,7 +849,7 @@ const TypeExpr *Field::type() const {
   const TypeExpr *root = record->type();
   assert(root != nullptr);
   const TypeExpr *resolved = root->resolve();
-  assert(root != nullptr);
+  assert(resolved != nullptr);
   if (auto r = dynamic_cast<const Record*>(resolved)) {
     for (const VarDecl *f : r->fields) {
       if (f->name == field)
