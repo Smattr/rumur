@@ -48,7 +48,6 @@ class Range : public TypeExpr {
   Range *clone() const final;
   virtual ~Range();
 
-  void generate(std::ostream &out) const final;
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
@@ -70,7 +69,6 @@ class Enum : public TypeExpr {
   Enum *clone() const final;
   virtual ~Enum() { }
 
-  void generate(std::ostream &out) const final;
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
@@ -90,7 +88,6 @@ class Record : public TypeExpr {
   Record *clone() const final;
   virtual ~Record();
 
-  void generate(std::ostream &out) const final;
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
@@ -110,7 +107,6 @@ class Array : public TypeExpr {
   Array *clone() const final;
   virtual ~Array();
 
-  void generate(std::ostream &out) const final;
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
@@ -130,7 +126,6 @@ class TypeExprID : public TypeExpr {
   TypeExprID *clone() const final;
   virtual ~TypeExprID();
 
-  void generate(std::ostream &out) const final;
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;

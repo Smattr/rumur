@@ -39,7 +39,15 @@ class Expr : public Node {
 
   virtual int64_t constant_fold() const = 0;
 
+  // Write out some C code that implements this expression.
+  virtual void generate_rvalue(std::ostream &out) const = 0;
+
 };
+
+static inline std::ostream &operator<<(std::ostream &out, const Expr &e) {
+  e.generate_rvalue(out);
+  return out;
+}
 
 class Ternary : public Expr {
 
@@ -59,7 +67,7 @@ class Ternary : public Expr {
   Ternary *clone() const final;
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -100,7 +108,7 @@ class Implication : public BooleanBinaryExpr {
   virtual ~Implication() { }
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -115,7 +123,7 @@ class Or : public BooleanBinaryExpr {
   Or *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -130,7 +138,7 @@ class And : public BooleanBinaryExpr {
   And *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -161,7 +169,7 @@ class Not : public UnaryExpr {
   Not *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -184,7 +192,7 @@ class Lt : public ComparisonBinaryExpr {
   Lt *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -199,7 +207,7 @@ class Leq : public ComparisonBinaryExpr {
   Leq *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -214,7 +222,7 @@ class Gt : public ComparisonBinaryExpr {
   Gt *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -229,7 +237,7 @@ class Geq : public ComparisonBinaryExpr {
   Geq *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -252,7 +260,7 @@ class Eq : public EquatableBinaryExpr {
   Eq *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -267,7 +275,7 @@ class Neq : public EquatableBinaryExpr {
   Neq *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -290,7 +298,7 @@ class Add : public ArithmeticBinaryExpr {
   Add *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -305,7 +313,7 @@ class Sub : public ArithmeticBinaryExpr {
   Sub *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -321,7 +329,7 @@ class Negative : public UnaryExpr {
   Negative *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -336,7 +344,7 @@ class Mul : public ArithmeticBinaryExpr {
   Mul *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -351,7 +359,7 @@ class Div : public ArithmeticBinaryExpr {
   Div *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -366,7 +374,7 @@ class Mod : public ArithmeticBinaryExpr {
   Mod *clone() const final;
 
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -380,6 +388,9 @@ class Lvalue : public Expr {
   Lvalue(Lvalue&&) = default;
   Lvalue &operator=(const Lvalue&) = default;
   Lvalue &operator=(Lvalue&&) = default;
+  void generate_rvalue(std::ostream &out) const final;
+  void generate_lvalue(std::ostream &out) const;
+  virtual void generate(std::ostream &out, bool lvalue) const = 0;
   virtual ~Lvalue() = 0;
   virtual Lvalue *clone() const = 0;
 
@@ -401,7 +412,7 @@ class ExprID : public Lvalue {
 
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate(std::ostream &out, bool lvalue) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -422,7 +433,7 @@ class Field : public Lvalue {
 
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate(std::ostream &out, bool lvalue) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -443,7 +454,7 @@ class Element : public Lvalue {
 
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate(std::ostream &out, bool lvalue) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -465,8 +476,10 @@ class Quantifier : public Node {
   friend void swap(Quantifier &x, Quantifier &y) noexcept;
   virtual ~Quantifier();
   Quantifier *clone() const final;
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
+
+  void generate_header(std::ostream &out) const;
+  void generate_footer(std::ostream &out) const;
 
  private:
   /* This constructor is delegated to internally.
@@ -494,7 +507,7 @@ class Exists : public Expr {
 
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
@@ -515,7 +528,7 @@ class Forall : public Expr {
 
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };

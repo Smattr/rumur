@@ -3,7 +3,7 @@
 import json, pathlib, re, shutil, subprocess, sys, tempfile, unittest
 
 RUMUR_BIN = pathlib.Path('rumur/rumur').resolve()
-CXX = pathlib.Path(subprocess.check_output(['which', 'c++'],
+CC = pathlib.Path(subprocess.check_output(['which', 'cc'],
   universal_newlines=True).strip())
 
 class TemporaryDirectory(object):
@@ -30,16 +30,15 @@ def test_template(self, manifest):
 
   with TemporaryDirectory() as tmp:
 
-    model_cc = tmp / 'model.cc'
-    subprocess.check_call([RUMUR_BIN, '--output', model_cc, model])
+    model_c = tmp / 'model.c'
+    subprocess.check_call([RUMUR_BIN, '--output', model_c, model])
 
     if data.get('compile', True):
 
-      cxxflags = data.get('cxxflags', ['-std=c++14']) + \
-        data.get('extra_cxxflags', [])
+      cflags = data.get('cflags', ['-std=c11']) + data.get('extra_cflags', [])
 
       model_bin = tmp / 'model.bin'
-      subprocess.check_call([CXX] + cxxflags + ['-o', model_bin, model_cc])
+      subprocess.check_call([CC] + cflags + ['-o', model_bin, model_c])
 
       if data.get('run', True):
         subprocess.check_call([model_bin])

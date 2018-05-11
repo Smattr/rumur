@@ -75,45 +75,152 @@ Model::~Model() {
 
 void Model::generate(std::ostream &out) const {
 
-  // Write out constants and type declarations.
-  for (const Decl *d : decls)
-    out << *d << ";\n";
+  // Write out constants
+  for (const Decl *d : decls) {
+    if (auto c = dynamic_cast<const ConstDecl*>(d)) {
+      c->generate(out);
+      out << ";\n";
+    }
+  }
+
   out << "\n";
 
   // Write out the start state rules.
-  out << "static const std::vector<StartState> START_RULES = {\n";
-  for (const Rule *r : rules) {
-    if (auto s = dynamic_cast<const StartState*>(r))
-      out << *s << ",\n";
-  }
-  out << "};\n\n";
-
-  // Write out the invariant rules.
-  out << "static const std::vector<Invariant> INVARIANTS = {\n";
-  for (const Rule *r : rules) {
-    if (auto i = dynamic_cast<const Invariant*>(r))
-      out << *i << ",\n";
-  }
-  out << "};\n\n";
-
-  // Write out the regular rules.
-  out << "static const std::vector<Rule> RULES = {\n";
-  for (const Rule *r : rules) {
-    if (auto s = dynamic_cast<const SimpleRule*>(r))
-      out << *s << ",\n";
-  }
-  out << "};\n\n";
-
-  // Write a function to print the state.
-  out << "static void print_state(const State &s) {\n";
-  for (const Decl *d : decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d)) {
-      out << "  ru_u_" << v->name << "::make(s, size_t(" << v->offset
-        << ")).print(stderr, \"" << v->name << "\");\n"
-        << "  fprint(stderr, \"\\n\");\n";
+  {
+    size_t index = 0;
+    for (const Rule *r : rules) {
+      if (auto s = dynamic_cast<const StartState*>(r)) {
+        out << "static void startstate" << index << "(struct state *s) {\n";
+        for (const Stmt *st : s->body)
+          out << "  " << *st << ";\n";
+        out << "}\n\n";
+        index++;
+      }
     }
   }
-  out << "}\n\n";
+
+  // Write out the invariant rules.
+  {
+    size_t index = 0;
+    for (const Rule *r : rules) {
+      if (auto i = dynamic_cast<const Invariant*>(r)) {
+        out << "static bool invariant" << index << "(const struct state *s) "
+          "{\n  return ";
+        i->guard->generate_rvalue(out);
+        out << ";\n}\n\n";
+        index++;
+      }
+    }
+  }
+
+  // Write out the regular rules.
+  {
+    size_t index = 0;
+    for (const Rule *r : rules) {
+      if (auto s = dynamic_cast<const SimpleRule*>(r)) {
+
+        // Write the guard
+        out << "static bool guard" << index << "(const struct state *s";
+        if (s->guard == nullptr)
+          out << " __attribute__((unused))";
+        out << ") {\n  return ";
+        if (s->guard == nullptr) {
+          out << "true";
+        } else {
+          s->guard->generate_rvalue(out);
+        }
+        out << ";\n}\n\n";
+
+        // Write the body
+        out << "static void rule" << index << "(struct state *s) {\n";
+        for (const Stmt *st : s->body)
+          out << "  " << *st << ";\n";
+        out << "}\n\n";
+
+        index++;
+      }
+    }
+  }
+
+  // Write invariant checker
+  {
+    out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
+    size_t index = 0;
+    for (const Rule *r : rules) {
+      if (auto i = dynamic_cast<const Invariant*>(r)) {
+        out
+          << "  if (!invariant(s)) {\n"
+          << "    error(s, \"failed invariant\");\n"
+          << "  }\n";
+        index++;
+      }
+    }
+    out << "}\n\n";
+  }
+
+  // Write initialisation
+  {
+    out << "static void init(void) {\n";
+    size_t index = 0;
+    for (const Rule *r : rules) {
+      if (auto s = dynamic_cast<const StartState*>(r)) {
+        out
+          << "  {\n"
+          << "    struct state *s = state_new();\n"
+          << "    startstate" << index << "(s);\n"
+          << "    check_invariants(s);\n"
+          << "    size_t size;\n"
+          << "    if (set_insert(s, &size)) {\n"
+          << "      queue_enqueue(s);\n"
+          << "    }\n"
+          << "  }\n";
+        index++;
+      }
+    }
+    out << "}\n\n";
+  }
+
+  // Write exploration logic
+  {
+    out
+      << "static int explore(void) {\n"
+      << "  for (;;) {\n"
+      << "    struct state *s = queue_dequeue();\n"
+      << "    if (s == NULL) {\n"
+      << "      break;\n"
+      << "    }\n";
+    size_t index = 0;
+    for (const Rule *r : rules) {
+      if (auto s = dynamic_cast<const SimpleRule*>(r)) {
+        out
+          << "    if (guard" << index << "(s)) {\n"
+          << "      struct state *n = state_dup(s);\n"
+          << "      rule" << index << "(n);\n"
+          << "      check_invariants(n);\n"
+          << "      size_t size;\n"
+          << "      if (set_insert(n, &size)) {\n"
+          << "        queue_enqueue(n);\n"
+          << "        if (size % 10000 == 0) {\n"
+          << "          print(\"%zu states seen in %llu seconds\\n\", size, gettime());\n"
+          << "        }\n"
+          << "      } else {\n"
+          << "        free(n);\n"
+          << "      }\n"
+          << "    }\n";
+        index++;
+      }
+    }
+    out
+      << "  }\n"
+      << "  return EXIT_SUCCESS;\n"
+      << "}\n\n";
+  }
+
+  // Write a function to print the state.
+  out
+    << "static void state_print(const struct state *s) {\n"
+    << "  // TODO\n"
+    << "}\n\n";
 }
 
 bool Model::operator==(const Node &other) const {

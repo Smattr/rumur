@@ -20,34 +20,22 @@ int output_checker(const std::string &path, const Model &model,
   if (!options.debug)
     out << "#define NDEBUG 1\n\n";
 
-  if (options.tbb)
-    out << "#define USE_TBB 1\n\n";
-
   out
 
-    // Some headers we need before we even emit settings
-    << "#include <cstddef>\n"
-    << "#include <cstdint>\n\n"
+    // #includes
+    << std::string((const char*)resources_includes_c, (size_t)resources_includes_c_len)
+    << "\n"
 
-    // Settings that are used in header.cc
-    << "static constexpr bool OVERFLOW_CHECKS_ENABLED = " <<
-    (options.overflow_checks ? "true" : "false") << ";\n\n"
-    << "static constexpr unsigned long THREADS = " << options.threads
-      << "ul;\n\n"
-    << "static constexpr size_t SET_CAPACITY = " << options.set_capacity
-      << "ul;\n\n"
-    << "static constexpr size_t STATE_SIZE_BITS = " << model.size_bits()
-      << "ul;\n\n"
+    // Settings that are used in header.c
+    << "enum { THREADS = " << options.threads << "ul };\n\n"
+    << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
 
     // Static boiler plate code
-    << std::string((const char*)resources_header_cc, (size_t)resources_header_cc_len)
+    << std::string((const char*)resources_header_c, (size_t)resources_header_c_len)
     << "\n"
 
     // the model itself
-    << model
-
-    // Final boiler plate
-    << std::string((const char*)resources_footer_cc, (size_t)resources_footer_cc_len);
+    << model;
 
   return 0;
 

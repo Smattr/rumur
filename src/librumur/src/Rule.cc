@@ -46,28 +46,6 @@ SimpleRule *SimpleRule::clone() const {
   return new SimpleRule(*this);
 }
 
-void SimpleRule::generate(std::ostream &out) const {
-  out << "Rule(\"" << name << "\","
-  
-    // guard
-    << "[](const State &s [[gnu::unused]]){\n"
-    << "return ";
-  if (guard == nullptr) {
-    out << "true";
-  } else {
-    out << *guard;
-  }
-  out << ";\n},"
-
-    // body
-    << "[](State &s){\n";
-  for (const Decl *d : decls)
-    out << *d << ";\n";
-  for (const Stmt *s : body)
-    out << *s << ";\n";
-  out << "})";
-}
-
 SimpleRule::~SimpleRule() {
   delete guard;
   for (Decl *d : decls)
@@ -143,18 +121,6 @@ StartState *StartState::clone() const {
   return new StartState(*this);
 }
 
-void StartState::generate(std::ostream &out) const {
-  out << "StartState(\"" << name << "\","
-
-    // body
-    << "[](State &s){\n";
-  for (const Decl *d : decls)
-    out << *d << ";\n";
-  for (const Stmt *s : body)
-    out << *s << ";\n";
-  out << "})";
-}
-
 bool StartState::operator==(const Node &other) const {
   auto o = dynamic_cast<const StartState*>(&other);
   if (o == nullptr)
@@ -213,17 +179,6 @@ Invariant *Invariant::clone() const {
 
 Invariant::~Invariant() {
   delete guard;
-}
-
-void Invariant::generate(std::ostream &out) const {
-  assert(guard != nullptr && "BUG: invariant with no body");
-
-  out << "Invariant(\"" << name << "\","
-  
-    // guard
-    << "[](const State &s){return "
-    << *guard
-    << ";})";
 }
 
 bool Invariant::operator==(const Node &other) const {

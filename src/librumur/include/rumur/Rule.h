@@ -40,7 +40,6 @@ class SimpleRule : public Rule {
   friend void swap(SimpleRule &x, SimpleRule &y) noexcept;
   virtual ~SimpleRule();
   SimpleRule *clone() const override;
-  void generate(std::ostream &out) const override;
   bool operator==(const Node &other) const override;
 };
 
@@ -58,7 +57,6 @@ class StartState : public Rule {
   friend void swap(StartState &x, StartState &y) noexcept;
   virtual ~StartState() { }
   StartState *clone() const final;
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -75,7 +73,6 @@ class Invariant : public Rule {
   friend void swap(Invariant &x, Invariant &y) noexcept;
   virtual ~Invariant();
   Invariant *clone() const final;
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 

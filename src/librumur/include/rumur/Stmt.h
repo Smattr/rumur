@@ -20,8 +20,14 @@ class Stmt : public Node {
   Stmt &operator=(Stmt&&) = default;
   virtual ~Stmt() { }
   virtual Stmt *clone() const = 0;
+  virtual void generate(std::ostream &out) const = 0;
 
 };
+
+static inline std::ostream &operator<<(std::ostream &out, const Stmt &s) {
+  s.generate(out);
+  return out;
+}
 
 class Assert : public Stmt {
 

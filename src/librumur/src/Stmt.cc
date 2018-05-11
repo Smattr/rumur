@@ -78,7 +78,9 @@ Assignment::~Assignment() {
 }
 
 void Assignment::generate(std::ostream &out) const {
-  out << *lhs << " = " << *rhs;
+  out << "handle_write(";
+  lhs->generate_lvalue(out);
+  out << ", " << *rhs << ")";
 }
 
 bool Assignment::operator==(const Node &other) const {

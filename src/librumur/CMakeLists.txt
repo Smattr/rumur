@@ -18,14 +18,14 @@ set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-register)
 
 # Define resources.
 add_custom_command(
-  OUTPUT resources_header.cc
-  COMMAND xxd -include resources/header.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
-  MAIN_DEPENDENCY resources/header.cc
+  OUTPUT resources_includes.cc
+  COMMAND xxd -include resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
+  MAIN_DEPENDENCY resources/includes.c
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
-  OUTPUT resources_footer.cc
-  COMMAND xxd -include resources/footer.cc ${CMAKE_CURRENT_BINARY_DIR}/resources_footer.cc
-  MAIN_DEPENDENCY resources/footer.cc
+  OUTPUT resources_header.cc
+  COMMAND xxd -include resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  MAIN_DEPENDENCY resources/header.c
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(librumur
@@ -41,8 +41,8 @@ add_library(librumur
   src/Rule.cc
   src/Stmt.cc
   src/TypeExpr.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
-  ${CMAKE_CURRENT_BINARY_DIR}/resources_footer.cc
   ${FLEX_lexer_OUTPUTS}
   ${BISON_parser_OUTPUTS})
 

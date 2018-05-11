@@ -66,7 +66,7 @@ const TypeExpr *Ternary::type() const {
   return lhs->type();
 }
 
-void Ternary::generate(std::ostream &out) const {
+void Ternary::generate_rvalue(std::ostream &out) const {
   out << "(" << *cond << " ? " << *lhs << " : " << *rhs << ")";
 }
 
@@ -121,7 +121,7 @@ const TypeExpr *Implication::type() const {
   return &Boolean;
 }
 
-void Implication::generate(std::ostream &out) const {
+void Implication::generate_rvalue(std::ostream &out) const {
   out << "(!" << *lhs << " || " << *rhs << ")";
 }
 
@@ -147,7 +147,7 @@ const TypeExpr *Or::type() const {
   return &Boolean;
 }
 
-void Or::generate(std::ostream &out) const {
+void Or::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " || " << *rhs << ")";
 }
 
@@ -173,7 +173,7 @@ const TypeExpr *And::type() const {
   return &Boolean;
 }
 
-void And::generate(std::ostream &out) const {
+void And::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " && " << *rhs << ")";
 }
 
@@ -227,7 +227,7 @@ const TypeExpr *Not::type() const {
   return &Boolean;
 }
 
-void Not::generate(std::ostream &out) const {
+void Not::generate_rvalue(std::ostream &out) const {
   out << "(!" << *rhs << ")";
 }
 
@@ -297,7 +297,7 @@ const TypeExpr *Lt::type() const {
   return &Boolean;
 }
 
-void Lt::generate(std::ostream &out) const {
+void Lt::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " < " << *rhs << ")";
 }
 
@@ -323,7 +323,7 @@ const TypeExpr *Leq::type() const {
   return &Boolean;
 }
 
-void Leq::generate(std::ostream &out) const {
+void Leq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " <= " << *rhs << ")";
 }
 
@@ -349,7 +349,7 @@ const TypeExpr *Gt::type() const {
   return &Boolean;
 }
 
-void Gt::generate(std::ostream &out) const {
+void Gt::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " > " << *rhs << ")";
 }
 
@@ -375,7 +375,7 @@ const TypeExpr *Geq::type() const {
   return &Boolean;
 }
 
-void Geq::generate(std::ostream &out) const {
+void Geq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " >= " << *rhs << ")";
 }
 
@@ -450,7 +450,7 @@ const TypeExpr *Eq::type() const {
   return &Boolean;
 }
 
-void Eq::generate(std::ostream &out) const {
+void Eq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " == " << *rhs << ")";
 }
 
@@ -476,7 +476,7 @@ const TypeExpr *Neq::type() const {
   return &Boolean;
 }
 
-void Neq::generate(std::ostream &out) const {
+void Neq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " != " << *rhs << ")";
 }
 
@@ -527,6 +527,72 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
+static std::string lower_bound(const TypeExpr *t) {
+
+  if (t == nullptr)
+    return "VALUE_MIN";
+
+  const TypeExpr *t2 = t->resolve();
+  assert(t2 != nullptr);
+
+  if (auto r = dynamic_cast<const Range*>(t2))
+    return "VALUE_C(" + std::to_string(r->min->constant_fold()) + ")";
+
+  assert(dynamic_cast<const Enum*>(t2) != nullptr &&
+    "lower_bound() called with complex type");
+
+  return "0";
+}
+
+static std::string lower_bound(const TypeExpr *t1, const TypeExpr *t2) {
+
+  if (t1 == nullptr)
+    return lower_bound(t2);
+
+  return lower_bound(t1);
+}
+
+static std::string lower_bound(const Expr &lhs, const Expr &rhs) {
+  return lower_bound(lhs.type(), rhs.type());
+}
+
+static std::string lower_bound(const Expr &rhs) {
+  return lower_bound(rhs.type());
+}
+
+static std::string upper_bound(const TypeExpr *t) {
+
+  if (t == nullptr)
+    return "VALUE_MAX";
+
+  const TypeExpr *t2 = t->resolve();
+  assert(t2 != nullptr);
+
+  if (auto r = dynamic_cast<const Range*>(t2))
+    return "VALUE_C(" + std::to_string(r->max->constant_fold()) + ")";
+
+  auto e = dynamic_cast<const Enum*>(t2);
+  assert(e != nullptr && "lower_bound() called with complex type");
+
+  return "VALUE_C(" + std::to_string(int64_t(e->count()) - 1) + ")";
+}
+
+static std::string upper_bound(const TypeExpr *t1, const TypeExpr *t2) {
+
+  if (t1 == nullptr)
+    return upper_bound(t2);
+
+  return upper_bound(t1);
+}
+
+static std::string upper_bound(const Expr &lhs, const Expr &rhs) {
+  return upper_bound(lhs.type(), rhs.type());
+}
+
+static std::string upper_bound(const Expr &rhs) {
+  return upper_bound(rhs.type());
+}
+
 ArithmeticBinaryExpr::ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   if (!arithmetic(*lhs, *rhs))
@@ -547,8 +613,9 @@ const TypeExpr *Add::type() const {
   return nullptr;
 }
 
-void Add::generate(std::ostream &out) const {
-  out << "(" << *lhs << " + " << *rhs << ")";
+void Add::generate_rvalue(std::ostream &out) const {
+  out << "add(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
+    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 int64_t Add::constant_fold() const {
@@ -579,8 +646,9 @@ const TypeExpr *Sub::type() const {
   return nullptr;
 }
 
-void Sub::generate(std::ostream &out) const {
-  out << "(" << *lhs << " - " << *rhs << ")";
+void Sub::generate_rvalue(std::ostream &out) const {
+  out << "sub(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
+    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 int64_t Sub::constant_fold() const {
@@ -617,8 +685,9 @@ const TypeExpr *Negative::type() const {
   return rhs->type();
 }
 
-void Negative::generate(std::ostream &out) const {
-  out << "(-" << *rhs << ")";
+void Negative::generate_rvalue(std::ostream &out) const {
+  out << "negate(s, " << lower_bound(*rhs) << ", " << upper_bound(*rhs) << ", "
+    << *rhs << ")";
 }
 
 int64_t Negative::constant_fold() const {
@@ -646,8 +715,9 @@ const TypeExpr *Mul::type() const {
   return nullptr;
 }
 
-void Mul::generate(std::ostream &out) const {
-  out << "(" << *lhs << " * " << *rhs << ")";
+void Mul::generate_rvalue(std::ostream &out) const {
+  out << "mul(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
+    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 int64_t Mul::constant_fold() const {
@@ -678,8 +748,9 @@ const TypeExpr *Div::type() const {
   return nullptr;
 }
 
-void Div::generate(std::ostream &out) const {
-  out << "(" << *lhs << " / " << *rhs << ")";
+void Div::generate_rvalue(std::ostream &out) const {
+  out << "divide(s, " << lower_bound(*lhs, *rhs) << ", " <<
+    upper_bound(*lhs, *rhs) << ", " << *lhs << ", " << *rhs << ")";
 }
 
 int64_t Div::constant_fold() const {
@@ -712,8 +783,9 @@ const TypeExpr *Mod::type() const {
   return nullptr;
 }
 
-void Mod::generate(std::ostream &out) const {
-  out << "(" << *lhs << " % " << *rhs << ")";
+void Mod::generate_rvalue(std::ostream &out) const {
+  out << "mod(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
+    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 int64_t Mod::constant_fold() const {
@@ -731,6 +803,14 @@ int64_t Mod::constant_fold() const {
 bool Mod::operator==(const Node &other) const {
   auto o = dynamic_cast<const Mod*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+void Lvalue::generate_rvalue(std::ostream &out) const {
+  generate(out, false);
+}
+
+void Lvalue::generate_lvalue(std::ostream &out) const {
+  generate(out, true);
 }
 
 /* Cheap trick: this destructor is pure virtual in the class declaration, making
@@ -779,27 +859,67 @@ const TypeExpr *ExprID::type() const {
   __builtin_unreachable();
 }
 
-void ExprID::generate(std::ostream &out) const {
+void ExprID::generate(std::ostream &out, bool lvalue) const {
+
+  // FIXME: what if this is a const? Does type() return nullptr?
+  const TypeExpr *t = type()->resolve();
+  assert(t != nullptr && "untyped literal somehow an identifier");
+
+  // Case 1, this is a state variable.
   if (auto v = dynamic_cast<const VarDecl*>(value)) {
     if (v->state_variable) {
-      out << "ru_u_" << id << "::make(s, size_t(" << v->offset << "ul))";
+
+      /* If this is a scalar and we're in an rvalue context, we want to actually
+       * read the value of the variable out into an unboxed value as this is
+       * what our parent will be expecting.
+       */
+      if (!lvalue && t->is_simple())
+        out << "handle_read(s, ";
+
+      /* Note that we need to cast away the const-ness of `s->data` here because
+       * we may be within a guard or invariant. In such a situation, the state
+       * remains morally read-only.
+       */
+      out << "((struct handle){ .base = (uint8_t*)s->data, .offset = "
+        << v->offset << "ul, .width = " << t->width() << "ul })";
+
+      if (!lvalue && t->is_simple())
+        out << ")";
       return;
+
     }
   }
-  const TypeExpr *t = type();
-  if (t != nullptr && *t != Boolean) {
-    if (auto e = dynamic_cast<const Enum*>(t)) {
-      size_t i = 0;
-      for (const std::pair<std::string, location> &m : e->members) {
-        if (id == m.first) {
-          out << *e << "::value_type(UINT64_C(" << i << "))";
-          return;
-        }
-        i++;
+
+  // Case 2, this is an enum member.
+  if (auto e = dynamic_cast<const Enum*>(t)) {
+    assert(!lvalue && "enum member appearing as an lvalue");
+    size_t i = 0;
+    for (const std::pair<std::string, location> &m : e->members) {
+      if (id == m.first) {
+        out << "VALUE_C(" << i << ")";
+        return;
       }
+      i++;
     }
+    assert(false && "identifier references an enum member that does not exist");
   }
+
+  // Case 3, this is a reference to a const
+  if (auto c = dynamic_cast<const ConstDecl*>(t)) {
+    assert(!lvalue && "const appearing as an lvalue");
+    out << "ru_" << id;
+    return;
+  }
+
+  // Case 4, this is a reference to a local variable.
+  if (!lvalue && t->is_simple())
+    out << "handle_read(s, ";
   out << "ru_u_" << id;
+  if (!lvalue && t->is_simple())
+    out << ")";
+
+  // FIXME: there's another case here where it's a reference to a quanitified
+  // variable. I suspect we should just handle that the same way as a local.
 }
 
 ExprID::~ExprID() {
@@ -860,19 +980,25 @@ const TypeExpr *Field::type() const {
   throw Error("left hand side of field expression is not a record", loc);
 }
 
-void Field::generate(std::ostream &out) const {
+void Field::generate(std::ostream &out, bool lvalue) const {
   const TypeExpr *root = record->type();
   assert(root != nullptr);
   const TypeExpr *resolved = root->resolve();
   assert(resolved != nullptr);
   if (auto r = dynamic_cast<const Record*>(resolved)) {
-    size_t index = 0;
+    size_t offset = 0;
     for (const VarDecl *f : r->fields) {
       if (f->name == field) {
-        out << "(*std::get<" << index << ">(" << *record << ".get()))";
+        if (!lvalue && f->type->is_simple())
+          out << "handle_read(s, ";
+        out << "handle_narrow(";
+        record->generate(out, lvalue);
+        out << ", " << offset << ", " << f->type->width() << ")";
+        if (!lvalue && f->type->is_simple())
+          out << ")";
         return;
       }
-      index++;
+      offset += f->type->width();
     }
     throw Error("no field named \"" + field + "\" in record", loc);
   }
@@ -933,8 +1059,46 @@ const TypeExpr *Element::type() const {
   return a->element_type;
 }
 
-void Element::generate(std::ostream &out) const {
-  out << "(" << *array << "[" << *index << "])";
+void Element::generate(std::ostream &out, bool lvalue) const {
+
+  // First, determine the width of the array's elements
+
+  const TypeExpr *t1 = array->type();
+  assert(t1 != nullptr && "array with invalid type");
+  const TypeExpr *t2 = t1->resolve();
+  assert(t2 != nullptr && "array with invalid type");
+
+  auto a = dynamic_cast<const Array&>(*t2);
+  size_t element_width = a.element_type->width();
+
+  // Second, determine the minimum and maximum values of the array's index type
+
+  const TypeExpr *t3 = a.index_type->resolve();
+  assert(t3 != nullptr && "array with invalid index type");
+
+  int64_t min, max;
+  if (auto r = dynamic_cast<const Range*>(t3)) {
+    min = r->min->constant_fold();
+    max = r->max->constant_fold();
+  } else if (auto e = dynamic_cast<const Enum*>(t3)) {
+    min = 0;
+    max = int64_t(e->count()) - 1;
+  } else {
+    assert(false && "array with invalid index type");
+  }
+
+  if (!lvalue && a.element_type->is_simple())
+    out << "handle_read(s, ";
+
+  out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
+    << "), VALUE_C(" << max << "), ";
+  array->generate(out, lvalue);
+  out << ", ";
+  index->generate_rvalue(out);
+  out << ")";
+
+  if (!lvalue && a.element_type->is_simple())
+    out << ")";
 }
 
 int64_t Element::constant_fold() const {
@@ -994,9 +1158,18 @@ Quantifier::~Quantifier() {
   delete step;
 }
 
-void Quantifier::generate(std::ostream &out) const {
-  // TODO: needs some more work
-  out << "for(" << var->name << "...";
+void Quantifier::generate_header(std::ostream &out) const {
+
+  // FIXME: Accesses to this variable within the loop will expect to access it
+  // via handle_read, as opposed to it being an immediate int64_t.
+  // FIXME: support steps that are not 1
+  out << "for (value_t ru_" << var->name << " = " << lower_bound(var->type)
+    << "; ; ru_" << var->name << "++) {";
+}
+
+void Quantifier::generate_footer(std::ostream &out) const {
+  out << "if (ru_" << var->name << " == " << upper_bound(var->type)
+    << ") { break; } }";
 }
 
 bool Quantifier::operator==(const Node &other) const {
@@ -1059,9 +1232,14 @@ bool Exists::operator==(const Node &other) const {
   return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
 }
 
-void Exists::generate(std::ostream &out) const {
-  out << "({bool ru_g_TODO=false;" << *quantifier << "{if(" << *expr
-    << "){ru_g_TODO=true;break;}}ru_g_TODO;})";
+void Exists::generate_rvalue(std::ostream &out) const {
+  out << "({ bool result = false; ";
+  quantifier->generate_header(out);
+  out << "if (";
+  expr->generate_rvalue(out);
+  out << ") { result = true; break; }";
+  quantifier->generate_footer(out);
+  out << " result; })";
 }
 
 int64_t Exists::constant_fold() const {
@@ -1107,9 +1285,14 @@ Forall::~Forall() {
   delete expr;
 }
 
-void Forall::generate(std::ostream &out) const {
-  out << "({bool ru_g_TODO=true;" << *quantifier << "{if(" << *expr
-    << "){ru_g_TODO=false;break;}}ru_g_TODO;})";
+void Forall::generate_rvalue(std::ostream &out) const {
+  out << "({ bool result = true; ";
+  quantifier->generate_header(out);
+  out << "if (!";
+  expr->generate_rvalue(out);
+  out << ") { result = false; break; }";
+  quantifier->generate_footer(out);
+  out << " result; })";
 }
 
 int64_t Forall::constant_fold() const {

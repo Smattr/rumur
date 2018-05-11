@@ -40,7 +40,7 @@ class ConstDecl : public Decl {
   ConstDecl *clone() const final;
   virtual ~ConstDecl();
 
-  void generate(std::ostream &out) const final;
+  void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
 };
 
@@ -58,7 +58,6 @@ class TypeDecl : public Decl {
   TypeDecl *clone() const final;
   virtual ~TypeDecl();
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -89,7 +88,6 @@ class VarDecl : public Decl {
   VarDecl *clone() const final;
   virtual ~VarDecl();
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 

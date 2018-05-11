@@ -58,12 +58,6 @@ Range::~Range() {
   delete max;
 }
 
-void Range::generate(std::ostream &out) const {
-  int64_t lb = min->constant_fold();
-  int64_t ub = max->constant_fold();
-  out << "Range<" << lb << ", " << ub << ">";
-}
-
 size_t Range::width() const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
@@ -104,22 +98,6 @@ Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const
 
 Enum *Enum::clone() const {
   return new Enum(*this);
-}
-
-void Enum::generate(std::ostream &out) const {
-  out << "Enum<";
-  bool first = true;
-  for (const std::pair<std::string, location> &m : members) {
-    if (!first)
-      out << ", ','";
-    for (char c : m.first) {
-      if (!first)
-        out << ",";
-      out << "'" << c << "'";
-      first = false;
-    }
-  }
-  out << ">";
 }
 
 size_t Enum::width() const {
@@ -173,18 +151,6 @@ Record *Record::clone() const {
 Record::~Record() {
   for (VarDecl *v : fields)
     delete v;
-}
-
-void Record::generate(std::ostream &out) const {
-  out << "Record<";
-  bool first = true;
-  for (const VarDecl *v : fields) {
-    if (!first)
-      out << ", ";
-    out << *v->type;
-    first = false;
-  }
-  out << ">";
 }
 
 size_t Record::width() const {
@@ -256,10 +222,6 @@ Array::~Array() {
   delete element_type;
 }
 
-void Array::generate(std::ostream &out) const {
-  out << "Array<" << *index_type << ", " << *element_type << ">";
-}
-
 size_t Array::width() const {
   size_t s;
   size_t i = index_type->count();
@@ -314,10 +276,6 @@ TypeExprID *TypeExprID::clone() const {
 
 TypeExprID::~TypeExprID() {
   delete referent;
-}
-
-void TypeExprID::generate(std::ostream &out) const {
-  out << "ru_u_" << name;
 }
 
 size_t TypeExprID::width() const {

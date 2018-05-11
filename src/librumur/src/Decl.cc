@@ -44,7 +44,7 @@ ConstDecl *ConstDecl::clone() const {
 
 void ConstDecl::generate(std::ostream &out) const {
   int64_t v = value->constant_fold();
-  out << "[[gnu::unused]] static const Number ru_u_" << name << "(INT64_C(" << v << "))";
+  out << "static __attribute__((unused)) const value_t ru_" << name << " = VALUE_C(" << v << ")";
 }
 
 ConstDecl::~ConstDecl() {
@@ -85,9 +85,11 @@ TypeDecl::~TypeDecl() {
   delete value;
 }
 
+#if 0
 void TypeDecl::generate(std::ostream &out) const {
   out << "using ru_u_" << name << " = " << *value;
 }
+#endif
 
 bool TypeDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const TypeDecl*>(&other);
@@ -121,6 +123,7 @@ VarDecl *VarDecl::clone() const {
   return new VarDecl(*this);
 }
 
+#if 0
 void VarDecl::generate(std::ostream &out) const {
   if (state_variable) {
     out << "using ru_u_" << name << " = " << *type;
@@ -128,6 +131,7 @@ void VarDecl::generate(std::ostream &out) const {
     out << "auto ru_u_" << name << " = " << *type << "::make()";
   }
 }
+#endif
 
 VarDecl::~VarDecl() {
   delete type;

@@ -20,18 +20,11 @@ class Node {
 
   virtual Node *clone() const = 0;
 
-  virtual void generate(std::ostream &out) const = 0;
-
   virtual bool operator==(const Node &other) const = 0;
   bool operator!=(const Node &other) const {
     return !(*this == other);
   }
 
 };
-
-static inline std::ostream &operator<<(std::ostream &out, const Node &n) {
-  n.generate(out);
-  return out;
-}
 
 }

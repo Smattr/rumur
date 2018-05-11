@@ -27,8 +27,13 @@ class Model : public Node {
   // Get the size of the state data in bits.
   uint64_t size_bits() const;
 
-  void generate(std::ostream &out) const final;
+  void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
 };
+
+static inline std::ostream &operator<<(std::ostream &out, const Model &m) {
+  m.generate(out);
+  return out;
+}
 
 }
