@@ -60,6 +60,11 @@ enum { STATE_SIZE_BYTES = STATE_SIZE_BITS / 8 + (STATE_SIZE_BITS % 8 == 0 ? 0 : 
  */
 static atomic_bool done;
 
+/* GNU provides this under a different name. */
+#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER
+  #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+#endif
+
 /* A lock that should be held whenever printing to stdout or stderr. This is a
  * way to prevent the output of one thread being interleaved with the output of
  * another.
