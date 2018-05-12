@@ -147,7 +147,7 @@ void Model::generate(std::ostream &out) const {
     out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
     for (const Rule *r : rules) {
-      if (auto i = dynamic_cast<const Invariant*>(r)) {
+      if (dynamic_cast<const Invariant*>(r) != nullptr) {
         out
           << "  if (!invariant(s)) {\n"
           << "    error(s, \"failed invariant\");\n"
@@ -163,7 +163,7 @@ void Model::generate(std::ostream &out) const {
     out << "static void init(void) {\n";
     size_t index = 0;
     for (const Rule *r : rules) {
-      if (auto s = dynamic_cast<const StartState*>(r)) {
+      if (dynamic_cast<const StartState*>(r) != nullptr) {
         out
           << "  {\n"
           << "    struct state *s = state_new();\n"
@@ -191,7 +191,7 @@ void Model::generate(std::ostream &out) const {
       << "    }\n";
     size_t index = 0;
     for (const Rule *r : rules) {
-      if (auto s = dynamic_cast<const SimpleRule*>(r)) {
+      if (dynamic_cast<const SimpleRule*>(r) != nullptr) {
         out
           << "    if (guard" << index << "(s)) {\n"
           << "      struct state *n = state_dup(s);\n"

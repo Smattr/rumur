@@ -905,7 +905,7 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
   }
 
   // Case 3, this is a reference to a const
-  if (auto c = dynamic_cast<const ConstDecl*>(t)) {
+  if (dynamic_cast<const ConstDecl*>(t) != nullptr) {
     assert(!lvalue && "const appearing as an lvalue");
     out << "ru_" << id;
     return;
