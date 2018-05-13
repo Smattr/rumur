@@ -5,3 +5,6 @@ extern unsigned int resources_includes_c_len;
 
 extern unsigned char resources_header_c[];
 extern unsigned int resources_header_c_len;
+
+extern unsigned char resources_xxhash_h[];
+extern unsigned int resources_xxhash_h_len;

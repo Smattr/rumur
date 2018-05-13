@@ -26,6 +26,10 @@ int output_checker(const std::string &path, const Model &model,
     << std::string((const char*)resources_includes_c, (size_t)resources_includes_c_len)
     << "\n"
 
+    // xxHash source
+    << std::string((const char*)resources_xxhash_h, (size_t)resources_xxhash_h_len)
+    << "\n"
+
     // Settings that are used in header.c
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"

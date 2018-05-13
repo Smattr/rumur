@@ -166,12 +166,7 @@ static struct state *state_dup(const struct state *s) {
 }
 
 static size_t state_hash(const struct state *s) {
-  // TODO: better hash
-  size_t h = 0;
-  for (size_t i = 0; i < sizeof(s->data); i++) {
-    h += s->data[i];
-  }
-  return h;
+  return (size_t)XXH64(s->data, sizeof(s->data), 0);
 }
 
 static unsigned print_counterexample(const struct state *s) {

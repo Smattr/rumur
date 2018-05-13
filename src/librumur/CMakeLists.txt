@@ -27,6 +27,11 @@ add_custom_command(
   COMMAND xxd -include resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   MAIN_DEPENDENCY resources/header.c
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(
+  OUTPUT resources_xxhash_h.cc
+  COMMAND xxd -include resources/xxhash.h ${CMAKE_CURRENT_BINARY_DIR}/resources_xxhash_h.cc
+  MAIN_DEPENDENCY resources/xxhash.h
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(librumur
   src/Boolean.cc
@@ -43,6 +48,7 @@ add_library(librumur
   src/TypeExpr.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_xxhash_h.cc
   ${FLEX_lexer_OUTPUTS}
   ${BISON_parser_OUTPUTS})
 

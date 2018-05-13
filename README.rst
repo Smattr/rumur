@@ -40,8 +40,10 @@ At a glance, some differences between Rumur and CMurphi:
 
 Legal
 -----
-Everything in this repository is in the public domain. Use in any way you see
-fit.
+Everything in this repository is in the public domain, with the exception of:
+
+* xxHash code in src/librumur/resources/xxhash.*. This is BSD licensed as
+  indicated in the file headers.
 
 .. _CMake: https://cmake.org/
 .. _Clang: https://clang.llvm.org/
