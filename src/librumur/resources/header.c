@@ -96,6 +96,12 @@ static __attribute__((format(printf, 1, 2))) void eprint(const char *fmt, ...) {
 /* The state of the current model. */
 struct state {
   const struct state *previous;
+
+  /* Pointer to the next node in the linked-list in the hash bucket containing
+   * this node in the state set.
+   */
+  struct state *set_link;
+
   uint8_t data[STATE_SIZE_BYTES];
 };
 
@@ -501,35 +507,23 @@ struct state *queue_dequeue(void) {
  * removing elements, only thread-safe insertion of elements.                  *
  ******************************************************************************/
 
-struct set_node {
-  struct state *s;
-  struct set_node *next;
-};
-
 /* The states we have encountered. This collection will only ever grow while
  * checking the model.
  */
 static struct {
-  struct set_node *bucket[BUCKET_COUNT];
+  struct state *bucket[BUCKET_COUNT];
   size_t count;
 } seen;
 
-static bool set_insert_at(struct set_node **pointer, struct set_node *value,
+static bool set_insert_at(struct state **pointer, struct state *value,
   struct state *s, size_t *size) {
 
-  /* Allocate a new node to contain the state */
-  struct set_node *new = malloc(sizeof(*new));
-  if (new == NULL) {
-    error(NULL, "out of memory");
-  }
-  new->s = s;
-  new->next = value;
+  s->set_link = value;
 
   /* Try to insert the new node. */
-  if (!__atomic_compare_exchange(pointer, &value, &new, false, __ATOMIC_SEQ_CST,
+  if (!__atomic_compare_exchange(pointer, &value, &s, false, __ATOMIC_SEQ_CST,
       __ATOMIC_SEQ_CST)) {
     /* Failed */
-    free(new);
     return false;
   }
 
@@ -541,9 +535,9 @@ static bool set_insert_at(struct set_node **pointer, struct set_node *value,
 bool set_insert(struct state *s, size_t *size) {
   size_t index = state_hash(s) % (sizeof(seen.bucket) / sizeof(seen.bucket[0]));
 
-  for (struct set_node **n = &seen.bucket[index]; ; n = &__atomic_load_n(n, __ATOMIC_SEQ_CST)->next) {
+  for (struct state **n = &seen.bucket[index]; ; n = &__atomic_load_n(n, __ATOMIC_SEQ_CST)->set_link) {
 retry:;
-    struct set_node *c = __atomic_load_n(n, __ATOMIC_SEQ_CST);
+    struct state *c = __atomic_load_n(n, __ATOMIC_SEQ_CST);
 
     /* If we've reached the end of the linked-list, try to insert here. */
     if (c == NULL) {
@@ -554,7 +548,7 @@ retry:;
       return true;
     }
 
-    int cmp = state_cmp(s, c->s);
+    int cmp = state_cmp(s, c);
 
     /* If the state is ordered before the current node, insert it here. */
     if (cmp < 0) {
