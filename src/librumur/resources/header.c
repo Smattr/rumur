@@ -35,7 +35,7 @@ typedef int64_t value_t;
 #endif
 
 // TODO: define this dynamically
-enum { BUCKET_COUNT = 512 };
+enum { BUCKET_COUNT = 1 << 20 };
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
