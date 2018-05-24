@@ -497,8 +497,9 @@ struct state *queue_dequeue(void) {
  * removing elements, only thread-safe insertion of elements.                  *
  ******************************************************************************/
 
-// FIXME: we really want the next power of 2 above STATE_SIZE_BYTES instead of STATE_SIZE_BYTES
-enum { INITIAL_SET_SIZE = SET_CAPACITY / sizeof(struct state*) / STATE_SIZE_BYTES };
+enum { INITIAL_SET_SIZE = SET_CAPACITY / sizeof(struct state*) /
+  (1 << (__builtin_ffs(STATE_SIZE_BYTES) +
+    (__builtin_popcount(STATE_SIZE_BYTES) == 1 ? 0 : 1))) };
 
 /* The states we have encountered. This collection will only ever grow while
  * checking the model.
