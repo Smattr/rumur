@@ -97,11 +97,6 @@ static __attribute__((format(printf, 1, 2))) void eprint(const char *fmt, ...) {
 struct state {
   const struct state *previous;
 
-  /* Pointer to the next node in the linked-list in the hash bucket containing
-   * this node in the state set.
-   */
-  struct state *set_link;
-
   uint8_t data[STATE_SIZE_BYTES];
 };
 
@@ -502,66 +497,86 @@ struct state *queue_dequeue(void) {
  * removing elements, only thread-safe insertion of elements.                  *
  ******************************************************************************/
 
+// FIXME: we really want the next power of 2 above STATE_SIZE_BYTES instead of STATE_SIZE_BYTES
+enum { INITIAL_SET_SIZE = SET_CAPACITY / sizeof(struct state*) / STATE_SIZE_BYTES };
+
 /* The states we have encountered. This collection will only ever grow while
  * checking the model.
  */
 static struct {
-  struct state *bucket[BUCKET_COUNT];
+  struct state **bucket;
+  size_t size;
   size_t count;
 } seen;
 
-static bool set_insert_at(struct state **pointer, struct state *value,
-  struct state *s, size_t *size) {
-
-  s->set_link = value;
-
-  /* Try to insert the new node. */
-  if (!__atomic_compare_exchange(pointer, &value, &s, false, __ATOMIC_SEQ_CST,
-      __ATOMIC_SEQ_CST)) {
-    /* Failed */
-    return false;
-  }
-
-  /* Success */
-  *size = __atomic_add_fetch(&seen.count, 1, __ATOMIC_SEQ_CST);
-  return true;
+static void set_init(void) {
+  seen.size = INITIAL_SET_SIZE;
+  seen.bucket = xcalloc(seen.size, sizeof(seen.bucket[0]));
 }
 
-bool set_insert(struct state *s, size_t *size) {
-  size_t index = state_hash(s) % (sizeof(seen.bucket) / sizeof(seen.bucket[0]));
+// TODO: parallelise/thread-safe this
+static void set_expand(void) {
 
-  for (struct state **n = &seen.bucket[index]; ; n = &__atomic_load_n(n, __ATOMIC_SEQ_CST)->set_link) {
+  /* Create a set of double the size. */
+  size_t new_size = seen.size * 2;
+  struct state **bucket = xcalloc(new_size, sizeof(bucket[0]));
+
+  /* Migrate all elements. */
+  for (size_t i = 0; i < seen.size; i++) {
+    if (seen.bucket[i] != NULL) {
+      size_t index = state_hash(seen.bucket[i]) % new_size;
+      for (size_t j = index; ; j = (j + 1) % new_size) {
+        if (bucket[j] == NULL) {
+          bucket[j] = seen.bucket[i];
+          break;
+        }
+      }
+    }
+  }
+
+  /* Free the old set and install the new one. */
+  free(seen.bucket);
+  seen.bucket = bucket;
+  seen.size = new_size;
+}
+
+static bool set_insert(struct state *s, size_t *count) {
+
+  if (seen.count * 100 / seen.size >= SET_EXPAND_THRESHOLD)
+    set_expand();
+
+  size_t index = state_hash(s) % seen.size;
+
+  size_t attempts = 0;
+  for (size_t i = index; attempts < seen.size; i = (i + 1) % seen.size) {
+
 retry:;
-    struct state *c = __atomic_load_n(n, __ATOMIC_SEQ_CST);
+    struct state *c = __atomic_load_n(&seen.bucket[i], __ATOMIC_SEQ_CST);
 
-    /* If we've reached the end of the linked-list, try to insert here. */
+    /* If this slot is empty, try to insert it here. */
     if (c == NULL) {
-      if (!set_insert_at(n, c, s, size)) {
+      if (!__atomic_compare_exchange(&seen.bucket[i], &c, &s, false,
+          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        /* Failed */
         goto retry;
       }
-      TRACE("added state %p, set size is now %zu", s, *size);
+      *count = __atomic_add_fetch(&seen.count, 1, __ATOMIC_SEQ_CST);
+      TRACE("added state %p, set size is now %zu", s, *count);
       return true;
     }
 
-    int cmp = state_cmp(s, c);
-
-    /* If the state is ordered before the current node, insert it here. */
-    if (cmp < 0) {
-      if (!set_insert_at(n, c, s, size)) {
-        goto retry;
-      }
-      TRACE("added state %p, set size is now %zu", s, *size);
-      return true;
-    }
-
-    /* If the state is equal to the current node, we don't need to insert it. */
-    if (cmp == 0) {
+    /* If we find this already in the set, we're done. */
+    if (state_eq(s, c)) {
       TRACE("skipped adding state %p that was already in set", s);
       return false;
     }
+
+    attempts++;
   }
 
-  ASSERT(!"unreachable");
+  /* If we reach here, the set is full. Expand it and retry the insertion. */
+  set_expand();
+  return set_insert(s, count);
 }
 
 /******************************************************************************/
@@ -581,6 +596,8 @@ int main(void) {
   print("State size: %zu bits\n", (size_t)STATE_SIZE_BITS);
 
   START_TIME = time(NULL);
+
+  set_init();
 
   init();
   int r = explore();

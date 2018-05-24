@@ -26,6 +26,9 @@ int output_checker(const std::string &path, const Model &model,
     << std::string((const char*)resources_includes_c, (size_t)resources_includes_c_len)
     << "\n"
 
+    << "enum { SET_CAPACITY = " << options.set_capacity << "ul };\n\n"
+    << "enum { SET_EXPAND_THRESHOLD = " << options.set_expand_threshold << " };\n\n"
+
     // xxHash source
     << std::string((const char*)resources_xxhash_h, (size_t)resources_xxhash_h_len)
     << "\n"

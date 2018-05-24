@@ -12,7 +12,8 @@ static rumur::OutputOptions output_options = {
   .overflow_checks = true,
   .threads = 0,
   .debug = false,
-  .set_capacity = 0,
+  .set_capacity = 8 * 1024 * 1024,
+  .set_expand_threshold = 65,
   .tbb = false,
 };
 
@@ -24,13 +25,14 @@ static void parse_args(int argc, char **argv) {
       { "help", no_argument, 0, '?' },
       { "output", required_argument, 0, 'o' },
       { "set-capacity", required_argument, 0, 's' },
+      { "set-expand-threshold", required_argument, 0, 'e' },
       { "threads", required_argument, 0, 't' },
       { "tbb", no_argument, 0, 128 },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "do:s:t:?", options, &option_index);
+    int c = getopt_long(argc, argv, "de:o:s:t:?", options, &option_index);
 
     if (c == -1)
       break;
@@ -39,6 +41,20 @@ static void parse_args(int argc, char **argv) {
 
       case 'd':
         output_options.debug = true;
+        break;
+
+      case 'e':
+        try {
+          output_options.set_expand_threshold = std::stoul(optarg);
+        } catch (std::exception) {
+          std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        if (output_options.set_expand_threshold < 1 ||
+            output_options.set_expand_threshold > 100) {
+          std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
         break;
 
       case 'o':
@@ -80,6 +96,9 @@ static void parse_args(int argc, char **argv) {
           << "     this size is reached, the checker will abort if it has not\n"
           << "     yet covered the state space. A size of 0 indicates a\n"
           << "     dynamically expanding seen state set which is the default.\n\n"
+          << " --set-expand-threshold PERCENT | -e PERCENT\n"
+          << "     Expand the state set when its occupancy exceeds this\n"
+          << "     percentage. Default 65, valid values 1 - 100.\n\n"
           << " --threads COUNT | -t COUNT\n"
           << "     Specify the number of threads the checker should use. If you\n"
           << "     do not specify this parameter or pass 0, the number of\n"

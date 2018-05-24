@@ -11,6 +11,11 @@ struct OutputOptions {
   bool debug;
   size_t set_capacity;
 
+  /* Limit (percentage occupancy) at which we expand the capacity of the state
+   * set.
+   */
+  unsigned long set_expand_threshold;
+
   // Use Intel Thread Building Blocks
   bool tbb;
 };
