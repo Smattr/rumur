@@ -865,8 +865,9 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
   const TypeExpr *t = type()->resolve();
   assert(t != nullptr && "untyped literal somehow an identifier");
 
-  // Case 1, this is a state variable.
   if (auto v = dynamic_cast<const VarDecl*>(value)) {
+
+    // Case 1, this is a state variable.
     if (v->state_variable) {
 
       /* If this is a scalar and we're in an rvalue context, we want to actually
@@ -888,9 +889,22 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
       return;
 
     }
+
+    // Case 2, this is a local variable
+    else {
+
+      if (!lvalue && t->is_simple())
+        out << "handle_read(s, ";
+
+      out << "ru_" << id;
+
+      if (!lvalue && t->is_simple())
+        out << ")";
+      return;
+    }
   }
 
-  // Case 2, this is an enum member.
+  // Case 3, this is an enum member.
   if (auto e = dynamic_cast<const Enum*>(t)) {
     assert(!lvalue && "enum member appearing as an lvalue");
     size_t i = 0;
@@ -904,19 +918,12 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
     assert(false && "identifier references an enum member that does not exist");
   }
 
-  // Case 3, this is a reference to a const
+  // Case 4, this is a reference to a const
   if (dynamic_cast<const ConstDecl*>(t) != nullptr) {
     assert(!lvalue && "const appearing as an lvalue");
     out << "ru_" << id;
     return;
   }
-
-  // Case 4, this is a reference to a local variable.
-  if (!lvalue && t->is_simple())
-    out << "handle_read(s, ";
-  out << "ru_u_" << id;
-  if (!lvalue && t->is_simple())
-    out << ")";
 
   // FIXME: there's another case here where it's a reference to a quanitified
   // variable. I suspect we should just handle that the same way as a local.
