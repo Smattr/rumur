@@ -52,8 +52,10 @@ enum { BUCKET_COUNT = 1 << 20 };
     } while (0)
 #endif
 
+#define BITS_TO_BYTES(size) (size / 8 + (size % 8 == 0 ? 0 : 1))
+
 /* The size of the compressed state data in bytes. */
-enum { STATE_SIZE_BYTES = STATE_SIZE_BITS / 8 + (STATE_SIZE_BITS % 8 == 0 ? 0 : 1) };
+enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
 /* Whether we've encountered an error or not. If a thread sees this set, they
  * should attempt to exit gracefully as soon as possible.

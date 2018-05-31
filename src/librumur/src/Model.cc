@@ -91,6 +91,16 @@ void Model::generate(std::ostream &out) const {
     for (const Rule *r : rules) {
       if (auto s = dynamic_cast<const StartState*>(r)) {
         out << "static void startstate" << index << "(struct state *s) {\n";
+
+        for (const Decl *d : s->decls) {
+          if (auto v = dynamic_cast<const VarDecl*>(d))
+            out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
+              << v->type->width() << ")] = { 0 };\n"
+              << "  struct handle ru_" << v->name << " = { .base = _ru_"
+              << v->name << ", .offset = 0, .width = SIZE_C("
+              << v->type->width() << ") };\n";
+        }
+
         for (const Stmt *st : s->body)
           out << "  " << *st << ";\n";
         out << "}\n\n";
@@ -133,6 +143,16 @@ void Model::generate(std::ostream &out) const {
 
         // Write the body
         out << "static void rule" << index << "(struct state *s) {\n";
+
+        for (const Decl *d : s->decls) {
+          if (auto v = dynamic_cast<const VarDecl*>(d))
+            out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
+              << v->type->width() << ")] = { 0 };\n"
+              << "  struct handle ru_" << v->name << " = { .base = _ru_"
+              << v->name << ", .offset = 0, .width = SIZE_C("
+              << v->type->width() << ") };\n";
+        }
+
         for (const Stmt *st : s->body)
           out << "  " << *st << ";\n";
         out << "}\n\n";
