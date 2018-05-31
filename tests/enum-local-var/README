@@ -1,0 +1,2 @@
+The model in this directory previously triggered a bug wherein Rumur would
+segfault during code generation.
