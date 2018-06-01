@@ -197,4 +197,71 @@ bool Invariant::operator==(const Node &other) const {
   return true;
 }
 
+Ruleset::Ruleset(std::vector<Quantifier*> &&quantifiers_,
+  std::vector<Rule*> &&rules_, const location &loc_):
+  Rule("", loc_), quantifiers(quantifiers_), rules(rules_) { }
+
+Ruleset::Ruleset(const Ruleset &other):
+  Rule(other) {
+  for (const Quantifier *q : other.quantifiers)
+    quantifiers.push_back(q->clone());
+  for (const Rule *r : other.rules)
+    rules.push_back(r->clone());
+}
+
+Ruleset &Ruleset::operator=(Ruleset other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Ruleset &x, Ruleset &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.name, y.name);
+  swap(x.quantifiers, y.quantifiers);
+  swap(x.rules, y.rules);
+}
+
+Ruleset *Ruleset::clone() const {
+  return new Ruleset(*this);
+}
+
+Ruleset::~Ruleset() {
+  for (Quantifier *q : quantifiers)
+    delete q;
+  for (Rule *r : rules)
+    delete r;
+}
+
+bool Ruleset::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Ruleset*>(&other);
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
+    if (it == quantifiers.end()) {
+      if (it2 != o->quantifiers.end())
+        return false;
+      break;
+    }
+    if (it2 == o->quantifiers.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  for (auto it = rules.begin(), it2 = o->rules.begin(); ; it++, it2++) {
+    if (it == rules.end()) {
+      if (it2 != o->rules.end())
+        return false;
+      break;
+    }
+    if (it2 == o->rules.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
+}
+
 }

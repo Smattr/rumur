@@ -107,6 +107,7 @@
 %token ENDFORALL
 %token ENDRECORD
 %token ENDRULE
+%token ENDRULESET
 %token ENDSTARTSTATE
 %token ENUM
 %token ERROR
@@ -122,6 +123,7 @@
 %token OF
 %token RECORD
 %token RULE
+%token RULESET
 %token STARTSTATE
 %token <std::string> STRING
 %token TO
@@ -149,7 +151,9 @@
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
 %type <rumur::Invariant*>                                    invariant
 %type <rumur::Quantifier*>                                   quantifier
+%type <std::vector<rumur::Quantifier*>>                      quantifiers
 %type <rumur::Rule*>                                         rule
+%type <rumur::Ruleset*>                                      ruleset
 %type <std::vector<rumur::Rule*>>                            rules
 %type <std::vector<rumur::Rule*>>                            rules_cont
 %type <rumur::SimpleRule*>                                   simplerule
@@ -279,6 +283,8 @@ rule: startstate {
   $$ = $1;
 } | invariant {
   $$ = $1;
+} | ruleset {
+  $$ = $1;
 };
 
 startstate: STARTSTATE string_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endstartstate {
@@ -292,6 +298,10 @@ simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmt
 invariant: INVARIANT string_opt expr {
   $$ = new rumur::Invariant($2, $3, @$);
 }
+
+ruleset: RULESET quantifiers DO rules endruleset {
+  $$ = new rumur::Ruleset(std::move($2), std::move($4), @$);
+};
 
 guard_opt: expr ARROW {
   $$ = $1;
@@ -405,6 +415,13 @@ quantifier: ID ':' typeexpr {
   $$ = new rumur::Quantifier($1, $3, $5, @$);
 };
 
+quantifiers: quantifiers ';' quantifier {
+  $$ = $1;
+  $$.push_back($3);
+} | quantifier {
+  $$.push_back($1);
+};
+
 designator: designator '.' ID {
   $$ = new rumur::Field($1, $3, @$);
 } | designator '[' expr ']' {
@@ -420,6 +437,8 @@ endforall: END | ENDFORALL;
 endexists: END | ENDEXISTS;
 
 endrule: END | ENDRULE;
+
+endruleset: END | ENDRULESET;
 
   /* Support optional trailing comma to make it easier for tools that generate
    * an input mdoels.

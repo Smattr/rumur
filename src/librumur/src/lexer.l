@@ -85,6 +85,10 @@ endrule {
   return rumur::parser::token::ENDRULE;
 }
 
+endruleset {
+  return rumur::parser::token::ENDRULESET;
+}
+
 endstartstate {
   return rumur::parser::token::ENDSTARTSTATE;
 }
@@ -119,6 +123,10 @@ record {
 
 rule {
   return rumur::parser::token::RULE;
+}
+
+ruleset {
+  return rumur::parser::token::RULESET;
 }
 
 startstate {

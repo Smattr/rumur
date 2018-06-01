@@ -76,4 +76,21 @@ class Invariant : public Rule {
   bool operator==(const Node &other) const final;
 };
 
+class Ruleset : public Rule {
+
+ public:
+  std::vector<Quantifier*> quantifiers;
+  std::vector<Rule*> rules;
+
+  Ruleset() = delete;
+  Ruleset(std::vector<Quantifier*> &&quantifiers_, std::vector<Rule*> &&rules_,
+    const location &loc_);
+  Ruleset(const Ruleset &other);
+  Ruleset &operator=(Ruleset other);
+  friend void swap(Ruleset &x, Ruleset &y) noexcept;
+  virtual ~Ruleset();
+  Ruleset *clone() const final;
+  bool operator==(const Node &other) const final;
+};
+
 }
