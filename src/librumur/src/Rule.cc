@@ -27,6 +27,8 @@ SimpleRule::SimpleRule(const SimpleRule &other):
     decls.push_back(d->clone());
   for (const Stmt *s : other.body)
     body.push_back(s->clone());
+  for (const Quantifier *q : other.quantifiers)
+    quantifiers.push_back(q->clone());
 }
 
 SimpleRule &SimpleRule::operator=(SimpleRule other) {
@@ -40,6 +42,7 @@ void swap(SimpleRule &x, SimpleRule &y) noexcept {
   swap(x.name, y.name);
   swap(x.decls, y.decls);
   swap(x.body, y.body);
+  swap(x.quantifiers, y.quantifiers);
 }
 
 SimpleRule *SimpleRule::clone() const {
@@ -52,6 +55,8 @@ SimpleRule::~SimpleRule() {
     delete d;
   for (Stmt *s : body)
     delete s;
+  for (Quantifier *q : quantifiers)
+    delete q;
 }
 
 bool SimpleRule::operator==(const Node &other) const {
@@ -85,6 +90,17 @@ bool SimpleRule::operator==(const Node &other) const {
       break;
     }
     if (it2 == o->body.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
+    if (it == quantifiers.end()) {
+      if (it2 != o->quantifiers.end())
+        return false;
+      break;
+    }
+    if (it2 == o->quantifiers.end())
       return false;
     if (**it != **it2)
       return false;

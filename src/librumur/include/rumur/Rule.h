@@ -31,6 +31,7 @@ class SimpleRule : public Rule {
   Expr *guard;
   std::vector<Decl*> decls;
   std::vector<Stmt*> body;
+  std::vector<Quantifier*> quantifiers;
 
   SimpleRule() = delete;
   SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
