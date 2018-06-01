@@ -19,6 +19,10 @@ Rule::Rule(const Rule &other):
     quantifiers.push_back(q->clone());
 }
 
+std::vector<Rule*> Rule::flatten() const {
+  return { clone() };
+}
+
 Rule::~Rule() {
   for (Quantifier *q : quantifiers)
     delete q;
@@ -302,6 +306,18 @@ bool Ruleset::operator==(const Node &other) const {
       return false;
   }
   return true;
+}
+
+std::vector<Rule*> Ruleset::flatten() const {
+  std::vector<Rule*> rs;
+  for (const Rule *r : rules) {
+    for (Rule *f : r->flatten()) {
+      f->quantifiers.insert(f->quantifiers.begin(), quantifiers.begin(),
+        quantifiers.end());
+      rs.push_back(f);
+    }
+  }
+  return rs;
 }
 
 }

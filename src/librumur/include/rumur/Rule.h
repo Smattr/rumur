@@ -23,6 +23,8 @@ class Rule : public Node {
 
   Rule *clone() const override = 0;
 
+  virtual std::vector<Rule*> flatten() const;
+
   virtual ~Rule();
 };
 
@@ -92,6 +94,8 @@ class Ruleset : public Rule {
   virtual ~Ruleset();
   Ruleset *clone() const final;
   bool operator==(const Node &other) const final;
+
+  std::vector<Rule*> flatten() const final;
 };
 
 }
