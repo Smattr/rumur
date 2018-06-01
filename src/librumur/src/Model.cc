@@ -85,10 +85,20 @@ void Model::generate(std::ostream &out) const {
 
   out << "\n";
 
+  /* Generate a set of flattened (non-hierarchical) rules. The purpose of this
+   * is to essentially remove rulesets from the cases we need to deal with
+   * below.
+   */
+  std::vector<Rule*> flat_rules;
+  for (const Rule *r : rules) {
+    std::vector<Rule*> rs = r->flatten();
+    flat_rules.insert(flat_rules.end(), rs.begin(), rs.end());
+  }
+
   // Write out the start state rules.
   {
     size_t index = 0;
-    for (const Rule *r : rules) {
+    for (const Rule *r : flat_rules) {
       if (auto s = dynamic_cast<const StartState*>(r)) {
         out << "static void startstate" << index << "(struct state *s) {\n";
 
@@ -112,7 +122,7 @@ void Model::generate(std::ostream &out) const {
   // Write out the invariant rules.
   {
     size_t index = 0;
-    for (const Rule *r : rules) {
+    for (const Rule *r : flat_rules) {
       if (auto i = dynamic_cast<const Invariant*>(r)) {
         out << "static bool invariant" << index << "(const struct state *s) "
           "{\n  return ";
@@ -126,7 +136,7 @@ void Model::generate(std::ostream &out) const {
   // Write out the regular rules.
   {
     size_t index = 0;
-    for (const Rule *r : rules) {
+    for (const Rule *r : flat_rules) {
       if (auto s = dynamic_cast<const SimpleRule*>(r)) {
 
         // Write the guard
@@ -166,7 +176,7 @@ void Model::generate(std::ostream &out) const {
   {
     out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
-    for (const Rule *r : rules) {
+    for (const Rule *r : flat_rules) {
       if (dynamic_cast<const Invariant*>(r) != nullptr) {
         out
           << "  if (!invariant(s)) {\n"
@@ -182,7 +192,7 @@ void Model::generate(std::ostream &out) const {
   {
     out << "static void init(void) {\n";
     size_t index = 0;
-    for (const Rule *r : rules) {
+    for (const Rule *r : flat_rules) {
       if (dynamic_cast<const StartState*>(r) != nullptr) {
         out
           << "  {\n"
@@ -210,7 +220,7 @@ void Model::generate(std::ostream &out) const {
       << "      break;\n"
       << "    }\n";
     size_t index = 0;
-    for (const Rule *r : rules) {
+    for (const Rule *r : flat_rules) {
       if (dynamic_cast<const SimpleRule*>(r) != nullptr) {
         out
           << "    if (guard" << index << "(s)) {\n"
@@ -241,6 +251,9 @@ void Model::generate(std::ostream &out) const {
     << "static void state_print(const struct state *s) {\n"
     << "  // TODO\n"
     << "}\n\n";
+
+  for (Rule *r : flat_rules)
+    delete r;
 }
 
 bool Model::operator==(const Node &other) const {
