@@ -15,6 +15,7 @@ class Rule : public Node {
 
  public:
   std::string name;
+  std::vector<Quantifier*> quantifiers;
 
   Rule() = delete;
   Rule(const std::string &name_, const location &loc_);
@@ -22,7 +23,7 @@ class Rule : public Node {
 
   Rule *clone() const override = 0;
 
-  virtual ~Rule() { }
+  virtual ~Rule();
 };
 
 class SimpleRule : public Rule {
@@ -31,7 +32,6 @@ class SimpleRule : public Rule {
   Expr *guard;
   std::vector<Decl*> decls;
   std::vector<Stmt*> body;
-  std::vector<Quantifier*> quantifiers;
 
   SimpleRule() = delete;
   SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,

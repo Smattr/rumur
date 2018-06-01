@@ -14,7 +14,15 @@ Rule::Rule(const std::string &name_, const location &loc_):
   Node(loc_), name(name_ == "" ? "<unnamed>" : name_) { }
 
 Rule::Rule(const Rule &other):
-  Node(other), name(other.name) { }
+  Node(other), name(other.name) {
+  for (const Quantifier *q : other.quantifiers)
+    quantifiers.push_back(q->clone());
+}
+
+Rule::~Rule() {
+  for (Quantifier *q : quantifiers)
+    delete q;
+}
 
 SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
   std::vector<Stmt*> &&body_, const location &loc_):
@@ -27,8 +35,6 @@ SimpleRule::SimpleRule(const SimpleRule &other):
     decls.push_back(d->clone());
   for (const Stmt *s : other.body)
     body.push_back(s->clone());
-  for (const Quantifier *q : other.quantifiers)
-    quantifiers.push_back(q->clone());
 }
 
 SimpleRule &SimpleRule::operator=(SimpleRule other) {
@@ -55,8 +61,6 @@ SimpleRule::~SimpleRule() {
     delete d;
   for (Stmt *s : body)
     delete s;
-  for (Quantifier *q : quantifiers)
-    delete q;
 }
 
 bool SimpleRule::operator==(const Node &other) const {
@@ -65,6 +69,17 @@ bool SimpleRule::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
+  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
+    if (it == quantifiers.end()) {
+      if (it2 != o->quantifiers.end())
+        return false;
+      break;
+    }
+    if (it2 == o->quantifiers.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
   if (guard == nullptr) {
     if (o->guard != nullptr)
       return false;
@@ -90,17 +105,6 @@ bool SimpleRule::operator==(const Node &other) const {
       break;
     }
     if (it2 == o->body.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
-    if (it == quantifiers.end()) {
-      if (it2 != o->quantifiers.end())
-        return false;
-      break;
-    }
-    if (it2 == o->quantifiers.end())
       return false;
     if (**it != **it2)
       return false;
@@ -131,6 +135,7 @@ void swap(StartState &x, StartState &y) noexcept {
   swap(x.name, y.name);
   swap(x.decls, y.decls);
   swap(x.body, y.body);
+  swap(x.quantifiers, y.quantifiers);
 }
 
 StartState *StartState::clone() const {
@@ -143,6 +148,17 @@ bool StartState::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
+  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
+    if (it == quantifiers.end()) {
+      if (it2 != o->quantifiers.end())
+        return false;
+      break;
+    }
+    if (it2 == o->quantifiers.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
   for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
     if (it == decls.end()) {
       if (it2 != o->decls.end())
@@ -187,6 +203,7 @@ void swap(Invariant &x, Invariant &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.name, y.name);
   swap(x.guard, y.guard);
+  swap(x.quantifiers, y.quantifiers);
 }
 
 Invariant *Invariant::clone() const {
@@ -203,6 +220,17 @@ bool Invariant::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
+  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
+    if (it == quantifiers.end()) {
+      if (it2 != o->quantifiers.end())
+        return false;
+      break;
+    }
+    if (it2 == o->quantifiers.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
   if (guard == nullptr) {
     if (o->guard != nullptr)
       return false;
@@ -219,8 +247,6 @@ Ruleset::Ruleset(std::vector<Quantifier*> &&quantifiers_,
 
 Ruleset::Ruleset(const Ruleset &other):
   Rule(other) {
-  for (const Quantifier *q : other.quantifiers)
-    quantifiers.push_back(q->clone());
   for (const Rule *r : other.rules)
     rules.push_back(r->clone());
 }
@@ -234,8 +260,8 @@ void swap(Ruleset &x, Ruleset &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.name, y.name);
-  swap(x.quantifiers, y.quantifiers);
   swap(x.rules, y.rules);
+  swap(x.quantifiers, y.quantifiers);
 }
 
 Ruleset *Ruleset::clone() const {
@@ -243,8 +269,6 @@ Ruleset *Ruleset::clone() const {
 }
 
 Ruleset::~Ruleset() {
-  for (Quantifier *q : quantifiers)
-    delete q;
   for (Rule *r : rules)
     delete r;
 }
