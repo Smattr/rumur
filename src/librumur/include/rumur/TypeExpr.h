@@ -32,6 +32,12 @@ class TypeExpr : public Node {
   virtual size_t width() const = 0;
   virtual size_t count() const = 0;
   virtual const TypeExpr *resolve() const;
+
+  /* Numeric bounds of this type as valid C code. These are only valid to use on
+   * TypeExprs for which is_simple() returns true.
+   */
+  virtual std::string lower_bound() const;
+  virtual std::string upper_bound() const;
 };
 
 class Range : public TypeExpr {
@@ -52,6 +58,9 @@ class Range : public TypeExpr {
   size_t count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
+
+  std::string lower_bound() const final;
+  std::string upper_bound() const final;
 };
 
 class Enum : public TypeExpr {
@@ -73,6 +82,9 @@ class Enum : public TypeExpr {
   size_t count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
+
+  std::string lower_bound() const final;
+  std::string upper_bound() const final;
 };
 
 class Record : public TypeExpr {
@@ -131,6 +143,9 @@ class TypeExprID : public TypeExpr {
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   const TypeExpr *resolve() const final;
+
+  std::string lower_bound() const final;
+  std::string upper_bound() const final;
 };
 
 }

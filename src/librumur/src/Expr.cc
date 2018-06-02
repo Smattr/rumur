@@ -532,16 +532,7 @@ static std::string lower_bound(const TypeExpr *t) {
   if (t == nullptr)
     return "VALUE_MIN";
 
-  const TypeExpr *t2 = t->resolve();
-  assert(t2 != nullptr);
-
-  if (auto r = dynamic_cast<const Range*>(t2))
-    return "VALUE_C(" + std::to_string(r->min->constant_fold()) + ")";
-
-  assert(dynamic_cast<const Enum*>(t2) != nullptr &&
-    "lower_bound() called with complex type");
-
-  return "0";
+  return t->lower_bound();
 }
 
 static std::string lower_bound(const TypeExpr *t1, const TypeExpr *t2) {
@@ -565,16 +556,7 @@ static std::string upper_bound(const TypeExpr *t) {
   if (t == nullptr)
     return "VALUE_MAX";
 
-  const TypeExpr *t2 = t->resolve();
-  assert(t2 != nullptr);
-
-  if (auto r = dynamic_cast<const Range*>(t2))
-    return "VALUE_C(" + std::to_string(r->max->constant_fold()) + ")";
-
-  auto e = dynamic_cast<const Enum*>(t2);
-  assert(e != nullptr && "lower_bound() called with complex type");
-
-  return "VALUE_C(" + std::to_string(int64_t(e->count()) - 1) + ")";
+  return t->upper_bound();
 }
 
 static std::string upper_bound(const TypeExpr *t1, const TypeExpr *t2) {

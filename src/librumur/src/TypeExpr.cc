@@ -24,6 +24,14 @@ const TypeExpr *TypeExpr::resolve() const {
   return this;
 }
 
+std::string TypeExpr::lower_bound() const {
+  throw Error("complex types do not have valid lower bounds", loc);
+}
+
+std::string TypeExpr::upper_bound() const {
+  throw Error("complex types do not have valid upper bounds", loc);
+}
+
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
   if (!min->constant())
@@ -92,6 +100,14 @@ bool Range::is_simple() const {
   return true;
 }
 
+std::string Range::lower_bound() const {
+  return "VALUE_C(" + std::to_string(min->constant_fold()) + ")";
+}
+
+std::string Range::upper_bound() const {
+  return "VALUE_C(" + std::to_string(max->constant_fold()) + ")";
+}
+
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
   TypeExpr(loc_), members(members_) {
 }
@@ -121,6 +137,14 @@ bool Enum::operator==(const Node &other) const {
 
 bool Enum::is_simple() const {
   return true;
+}
+
+std::string Enum::lower_bound() const {
+  return "0";
+}
+
+std::string Enum::upper_bound() const {
+  return "VALUE_C(" + std::to_string(int64_t(count()) - 1) + ")";
 }
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
@@ -296,6 +320,14 @@ bool TypeExprID::is_simple() const {
 
 const TypeExpr *TypeExprID::resolve() const {
   return referent->resolve();
+}
+
+std::string TypeExprID::lower_bound() const {
+  return referent->lower_bound();
+}
+
+std::string TypeExprID::upper_bound() const {
+  return referent->upper_bound();
 }
 
 }
