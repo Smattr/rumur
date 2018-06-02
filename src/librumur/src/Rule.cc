@@ -1,7 +1,6 @@
 #include <cassert>
 #include <iostream>
 #include "location.hh"
-#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Rule.h>
@@ -20,8 +19,8 @@ Rule::Rule(const Rule &other):
     quantifiers.push_back(q->clone());
 }
 
-std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
-  return { std::shared_ptr<Rule>(clone()) };
+std::vector<Rule*> Rule::flatten() const {
+  return { clone() };
 }
 
 Rule::~Rule() {
@@ -309,10 +308,10 @@ bool Ruleset::operator==(const Node &other) const {
   return true;
 }
 
-std::vector<std::shared_ptr<Rule>> Ruleset::flatten() const {
-  std::vector<std::shared_ptr<Rule>> rs;
+std::vector<Rule*> Ruleset::flatten() const {
+  std::vector<Rule*> rs;
   for (const Rule *r : rules) {
-    for (std::shared_ptr<Rule> f : r->flatten()) {
+    for (Rule *f : r->flatten()) {
       f->quantifiers.insert(f->quantifiers.begin(), quantifiers.begin(),
         quantifiers.end());
       rs.push_back(f);

@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cstdint>
 #include "location.hh"
-#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Model.h>
@@ -90,17 +89,17 @@ void Model::generate(std::ostream &out) const {
    * is to essentially remove rulesets from the cases we need to deal with
    * below.
    */
-  std::vector<std::shared_ptr<Rule>> flat_rules;
+  std::vector<Rule*> flat_rules;
   for (const Rule *r : rules) {
-    std::vector<std::shared_ptr<Rule>> rs = r->flatten();
+    std::vector<Rule*> rs = r->flatten();
     flat_rules.insert(flat_rules.end(), rs.begin(), rs.end());
   }
 
   // Write out the start state rules.
   {
     size_t index = 0;
-    for (const std::shared_ptr<Rule> r : flat_rules) {
-      if (auto s = std::dynamic_pointer_cast<const StartState>(r)) {
+    for (const Rule *r : flat_rules) {
+      if (auto s = dynamic_cast<const StartState*>(r)) {
         out << "static void startstate" << index << "(struct state *s) {\n";
 
         for (const Decl *d : s->decls) {
@@ -123,8 +122,8 @@ void Model::generate(std::ostream &out) const {
   // Write out the invariant rules.
   {
     size_t index = 0;
-    for (const std::shared_ptr<Rule> r : flat_rules) {
-      if (auto i = std::dynamic_pointer_cast<const Invariant>(r)) {
+    for (const Rule *r : flat_rules) {
+      if (auto i = dynamic_cast<const Invariant*>(r)) {
         out << "static bool invariant" << index << "(const struct state *s) "
           "{\n  return ";
         i->guard->generate_rvalue(out);
@@ -137,8 +136,8 @@ void Model::generate(std::ostream &out) const {
   // Write out the regular rules.
   {
     size_t index = 0;
-    for (const std::shared_ptr<Rule> r : flat_rules) {
-      if (auto s = std::dynamic_pointer_cast<const SimpleRule>(r)) {
+    for (const Rule *r : flat_rules) {
+      if (auto s = dynamic_cast<const SimpleRule*>(r)) {
 
         // Write the guard
         out << "static bool guard" << index << "(const struct state *s";
@@ -177,8 +176,8 @@ void Model::generate(std::ostream &out) const {
   {
     out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
-    for (const std::shared_ptr<Rule> r : flat_rules) {
-      if (std::dynamic_pointer_cast<const Invariant>(r) != nullptr) {
+    for (const Rule *r : flat_rules) {
+      if (dynamic_cast<const Invariant*>(r) != nullptr) {
         out
           << "  if (!invariant(s)) {\n"
           << "    error(s, \"failed invariant\");\n"
@@ -193,8 +192,8 @@ void Model::generate(std::ostream &out) const {
   {
     out << "static void init(void) {\n";
     size_t index = 0;
-    for (const std::shared_ptr<Rule> r : flat_rules) {
-      if (std::dynamic_pointer_cast<const StartState>(r) != nullptr) {
+    for (const Rule *r : flat_rules) {
+      if (dynamic_cast<const StartState*>(r) != nullptr) {
         out
           << "  {\n"
           << "    struct state *s = state_new();\n"
@@ -221,8 +220,8 @@ void Model::generate(std::ostream &out) const {
       << "      break;\n"
       << "    }\n";
     size_t index = 0;
-    for (const std::shared_ptr<Rule> r : flat_rules) {
-      if (std::dynamic_pointer_cast<const SimpleRule>(r) != nullptr) {
+    for (const Rule *r : flat_rules) {
+      if (dynamic_cast<const SimpleRule*>(r) != nullptr) {
         out
           << "    if (guard" << index << "(s)) {\n"
           << "      struct state *n = state_dup(s);\n"
@@ -252,6 +251,9 @@ void Model::generate(std::ostream &out) const {
     << "static void state_print(const struct state *s) {\n"
     << "  // TODO\n"
     << "}\n\n";
+
+  for (Rule *r : flat_rules)
+    delete r;
 }
 
 bool Model::operator==(const Node &other) const {
