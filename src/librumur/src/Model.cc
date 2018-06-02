@@ -143,6 +143,8 @@ void Model::generate(std::ostream &out) const {
         out << "static bool guard" << index << "(const struct state *s";
         if (s->guard == nullptr)
           out << " __attribute__((unused))";
+        for (const Quantifier *q : s->quantifiers)
+          out << ", struct handle ru_" << q->var->name;
         out << ") {\n  return ";
         if (s->guard == nullptr) {
           out << "true";
@@ -152,7 +154,10 @@ void Model::generate(std::ostream &out) const {
         out << ";\n}\n\n";
 
         // Write the body
-        out << "static void rule" << index << "(struct state *s) {\n";
+        out << "static void rule" << index << "(struct state *s";
+        for (const Quantifier *q : s->quantifiers)
+          out << ", struct handle ru_" << q->var->name;
+        out << ") {\n";
 
         for (const Decl *d : s->decls) {
           if (auto v = dynamic_cast<const VarDecl*>(d))
@@ -222,21 +227,61 @@ void Model::generate(std::ostream &out) const {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (dynamic_cast<const SimpleRule*>(r) != nullptr) {
-        out
-          << "    if (guard" << index << "(s)) {\n"
-          << "      struct state *n = state_dup(s);\n"
-          << "      rule" << index << "(n);\n"
-          << "      check_invariants(n);\n"
-          << "      size_t size;\n"
-          << "      if (set_insert(n, &size)) {\n"
-          << "        queue_enqueue(n);\n"
-          << "        if (size % 10000 == 0) {\n"
-          << "          print(\"%zu states seen in %llu seconds\\n\", size, gettime());\n"
+
+        // Open a scope so we don't have to think about name collisions.
+        out << "    {\n";
+
+        /* Set up quantifiers. It might be surprising to notice that there is an
+         * extra level of indirection here. A variable 'x' results in loop
+         * counter '_ru1_x', storage array '_ru2_x' and handle 'ru_x'. We use
+         * three variables rather than two in order to avoid rules that modify
+         * the ruleset parameters (uncommon) affecting the loop counter.
+         */
+        // TODO: some sanity checks on the emitted loop
+        for (const Quantifier *q : r->quantifiers)
+          out
+            << "      for (value_t _ru1_" << q->var->name << " = "
+              << q->var->type->lower_bound() << "; _ru1_" << q->var->name
+              << " <= " << q->var->type->upper_bound() << "; _ru1_"
+              << q->var->name << " += " << (q->step == nullptr ? "VALUE_C(1)" :
+              "VALUE_C(" + std::to_string(q->step->constant_fold()) + ")")
+              << ") {\n"
+            << "        uint8_t _ru2_" << q->var->name << "[BITS_TO_BYTES("
+              << q->var->type->width() << ")] = { 0 };\n"
+            << "        struct handle ru_" << q->var->name
+              << " = { .base = _ru2_" << q->var->name
+              << ", .offset = 0, .width = SIZE_C(" << q->var->type->width()
+              << ") };\n"
+            << "        handle_write(ru_" << q->var->name << ", _ru1_"
+              << q->var->name << ");\n";
+
+        out << "      if (guard" << index << "(s";
+        for (const Quantifier *q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ")) {\n"
+          << "        struct state *n = state_dup(s);\n"
+          << "        rule" << index << "(n";
+        for (const Quantifier *q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ");\n"
+          << "        check_invariants(n);\n"
+          << "        size_t size;\n"
+          << "        if (set_insert(n, &size)) {\n"
+          << "          queue_enqueue(n);\n"
+          << "          if (size % 10000 == 0) {\n"
+          << "            print(\"%zu states seen in %llu seconds\\n\", size, gettime());\n"
+          << "          }\n"
+          << "        } else {\n"
+          << "          free(n);\n"
           << "        }\n"
-          << "      } else {\n"
-          << "        free(n);\n"
-          << "      }\n"
-          << "    }\n";
+          << "      }\n";
+
+        // Close the quantifier loops.
+        out << std::string(r->quantifiers.size(), '}') << "\n";
+
+        // Close this rule's scope.
+        out << "}\n";
+
         index++;
       }
     }
