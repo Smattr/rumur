@@ -299,8 +299,8 @@ invariant: INVARIANT string_opt expr {
   $$ = new rumur::Invariant($2, $3, @$);
 }
 
-ruleset: RULESET quantifiers DO rules endruleset {
-  $$ = new rumur::Ruleset(std::move($2), std::move($4), @$);
+ruleset: RULESET { symtab.open_scope(); } quantifiers DO rules { symtab.close_scope(); } endruleset {
+  $$ = new rumur::Ruleset(std::move($3), std::move($5), @$);
 };
 
 guard_opt: expr ARROW {
@@ -417,8 +417,10 @@ quantifier: ID ':' typeexpr {
 
 quantifiers: quantifiers ';' quantifier {
   $$ = $1;
+  symtab.declare($3->var->name, *$3->var);
   $$.push_back($3);
 } | quantifier {
+  symtab.declare($1->var->name, *$1->var);
   $$.push_back($1);
 };
 
