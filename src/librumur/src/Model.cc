@@ -227,6 +227,8 @@ void Model::generate(std::ostream &out) const {
           << "    size_t size;\n"
           << "    if (set_insert(s, &size)) {\n"
           << "      queue_enqueue(s);\n"
+          << "    } else {\n"
+          << "      free(s);\n"
           << "    }\n";
 
         // Close the quantifier loops.
