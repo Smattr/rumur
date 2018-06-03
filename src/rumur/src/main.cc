@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <getopt.h>
@@ -151,6 +152,17 @@ static void parse_args(int argc, char **argv) {
   }
 }
 
+static void validate(const rumur::Model &m) {
+
+  // Check whether we have a start state.
+  auto is_start_state = [](const rumur::Rule *r) {
+    return dynamic_cast<const rumur::StartState*>(r) != nullptr;
+  };
+  if (std::find_if(m.rules.begin(), m.rules.end(), is_start_state) == m.rules.end())
+    std::cerr << "warning: model has no start state\n";
+
+}
+
 int main(int argc, char **argv) {
 
   // Parse command line options
@@ -165,8 +177,10 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  assert(out != nullptr);
   assert(m != nullptr);
+  validate(*m);
+
+  assert(out != nullptr);
   if (rumur::output_checker(*out, *m, output_options) != 0)
     return EXIT_FAILURE;
 

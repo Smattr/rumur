@@ -16,13 +16,6 @@ namespace rumur {
 Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), rules(rules_) {
 
-  // Check we have at least one start state.
-  auto is_start_state = [](const Rule *r) {
-    return dynamic_cast<const StartState*>(r) != nullptr;
-  };
-  if (find_if(rules.begin(), rules.end(), is_start_state) == rules.end())
-    throw Error("model has no start state", location());
-
   // Check all rule names are distinct.
   std::unordered_set<std::string> names;
   for (const Rule *r : rules) {
