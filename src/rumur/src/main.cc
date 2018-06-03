@@ -152,13 +152,24 @@ static void parse_args(int argc, char **argv) {
   }
 }
 
+template<typename T, typename U>
+static bool contains(const T &container, U predicate) {
+  return std::find_if(container.begin(), container.end(), predicate)
+    != container.end();
+}
+
+static bool has_start_state(const rumur::Rule *r) {
+  if (dynamic_cast<const rumur::StartState*>(r))
+    return true;
+  if (auto s = dynamic_cast<const rumur::Ruleset*>(r))
+    return contains(s->rules, has_start_state);
+  return false;
+}
+
 static void validate(const rumur::Model &m) {
 
   // Check whether we have a start state.
-  auto is_start_state = [](const rumur::Rule *r) {
-    return dynamic_cast<const rumur::StartState*>(r) != nullptr;
-  };
-  if (std::find_if(m.rules.begin(), m.rules.end(), is_start_state) == m.rules.end())
+  if (!contains(m.rules, has_start_state))
     std::cerr << "warning: model has no start state\n";
 
 }
