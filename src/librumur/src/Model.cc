@@ -93,7 +93,10 @@ void Model::generate(std::ostream &out) const {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (auto s = dynamic_cast<const StartState*>(r)) {
-        out << "static void startstate" << index << "(struct state *s) {\n";
+        out << "static void startstate" << index << "(struct state *s";
+        for (const Quantifier *q : s->quantifiers)
+          out << ", struct handle ru_" << q->var->name;
+        out << ") {\n";
 
         for (const Decl *d : s->decls) {
           if (auto v = dynamic_cast<const VarDecl*>(d))
@@ -192,16 +195,46 @@ void Model::generate(std::ostream &out) const {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (dynamic_cast<const StartState*>(r) != nullptr) {
+
+        // Open a scope so we don't have to think about name collisions.
+        out << "  {\n";
+
+        // Set up quantifiers.
+        for (const Quantifier *q : r->quantifiers)
+          out
+            << "      for (value_t _ru1_" << q->var->name << " = "
+              << q->var->type->lower_bound() << "; _ru1_" << q->var->name
+              << " <= " << q->var->type->upper_bound() << "; _ru1_"
+              << q->var->name << " += " << (q->step == nullptr ? "VALUE_C(1)" :
+              "VALUE_C(" + std::to_string(q->step->constant_fold()) + ")")
+              << ") {\n"
+            << "        uint8_t _ru2_" << q->var->name << "[BITS_TO_BYTES("
+              << q->var->type->width() << ")] = { 0 };\n"
+            << "        struct handle ru_" << q->var->name
+              << " = { .base = _ru2_" << q->var->name
+              << ", .offset = 0, .width = SIZE_C(" << q->var->type->width()
+              << ") };\n"
+            << "        handle_write(ru_" << q->var->name << ", _ru1_"
+              << q->var->name << ");\n";
+
         out
-          << "  {\n"
           << "    struct state *s = state_new();\n"
-          << "    startstate" << index << "(s);\n"
+          << "    startstate" << index << "(s";
+        for (const Quantifier *q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ");\n"
           << "    check_invariants(s);\n"
           << "    size_t size;\n"
           << "    if (set_insert(s, &size)) {\n"
           << "      queue_enqueue(s);\n"
-          << "    }\n"
-          << "  }\n";
+          << "    }\n";
+
+        // Close the quantifier loops.
+        out << std::string(r->quantifiers.size(), '}') << "\n";
+
+        // Close this startstate's scope.
+        out << "  }\n";
+
         index++;
       }
     }
