@@ -1,0 +1,4 @@
+{
+  "model":"model.m",
+  "extra_cflags":["-O3", "-fwhole-program"]
+}
