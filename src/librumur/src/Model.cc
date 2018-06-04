@@ -180,7 +180,7 @@ void Model::generate(std::ostream &out) const {
     for (const Rule *r : flat_rules) {
       if (dynamic_cast<const Invariant*>(r) != nullptr) {
         out
-          << "  if (!invariant(s)) {\n"
+          << "  if (!invariant" << index << "(s)) {\n"
           << "    error(s, \"failed invariant\");\n"
           << "  }\n";
         index++;
