@@ -120,8 +120,11 @@ void Model::generate(std::ostream &out) const {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (auto i = dynamic_cast<const Invariant*>(r)) {
-        out << "static bool invariant" << index << "(const struct state *s) "
-          "{\n  return ";
+        out << "static bool invariant" << index << "(const struct state *s";
+        for (const Quantifier *q : i->quantifiers)
+          out << ", struct handle ru_" << q->var->name;
+        out << ") {\n"
+          << "  return ";
         i->guard->generate_rvalue(out);
         out << ";\n}\n\n";
         index++;
@@ -179,10 +182,41 @@ void Model::generate(std::ostream &out) const {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (dynamic_cast<const Invariant*>(r) != nullptr) {
-        out
-          << "  if (!invariant" << index << "(s)) {\n"
-          << "    error(s, \"failed invariant\");\n"
-          << "  }\n";
+
+        // Open a scope so we don't have to think about name collisions.
+        out << "  {\n";
+
+        // Set up quantifiers.
+        for (const Quantifier *q : r->quantifiers)
+          out
+            << "      for (value_t _ru1_" << q->var->name << " = "
+              << q->var->type->lower_bound() << "; _ru1_" << q->var->name
+              << " <= " << q->var->type->upper_bound() << "; _ru1_"
+              << q->var->name << " += " << (q->step == nullptr ? "VALUE_C(1)" :
+              "VALUE_C(" + std::to_string(q->step->constant_fold()) + ")")
+              << ") {\n"
+            << "        uint8_t _ru2_" << q->var->name << "[BITS_TO_BYTES("
+              << q->var->type->width() << ")] = { 0 };\n"
+            << "        struct handle ru_" << q->var->name
+              << " = { .base = _ru2_" << q->var->name
+              << ", .offset = 0, .width = SIZE_C(" << q->var->type->width()
+              << ") };\n"
+            << "        handle_write(ru_" << q->var->name << ", _ru1_"
+              << q->var->name << ");\n";
+
+        out << "    if (!invariant" << index << "(s";
+        for (const Quantifier *q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ")) {\n"
+          << "      error(s, \"failed invariant\");\n"
+          << "    }\n";
+
+        // Close the quantifier loops.
+        out << std::string(r->quantifiers.size(), '}') << "\n";
+
+        // Close this invariant's scope.
+        out << "  }\n";
+
         index++;
       }
     }
