@@ -124,6 +124,7 @@
 %token RECORD
 %token RULE
 %token RULESET
+%token SCALARSET
 %token STARTSTATE
 %token <std::string> STRING
 %token TO
@@ -245,7 +246,10 @@ typeexpr: ID {
   $$ = new rumur::Record(std::move($2), @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {
   $$ = new rumur::Array($3, $6, @$);
-}
+} | SCALARSET '(' expr ')' {
+  // TODO: proper scalarset support
+  $$ = new rumur::Range(new rumur::Number("0", rumur::location()), $3, @$);
+};
 
 vardecls: vardecls vardecl {
   $$ = $1;

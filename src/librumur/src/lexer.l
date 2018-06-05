@@ -129,6 +129,10 @@ ruleset {
   return rumur::parser::token::RULESET;
 }
 
+scalarset {
+  return rumur::parser::token::SCALARSET;
+}
+
 startstate {
   return rumur::parser::token::STARTSTATE;
 }
