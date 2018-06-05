@@ -21,26 +21,21 @@ class TemporaryDirectory(object):
 class Tests(unittest.TestCase):
   pass
 
-def test_template(self, manifest):
-  with open(manifest, 'rt') as f:
-    data = json.load(f)
-
-  model = os.path.join(os.path.dirname(manifest), data['model'])
+def test_template(self, model, optimised):
 
   with TemporaryDirectory() as tmp:
 
     model_c = os.path.join(tmp, 'model.c')
     subprocess.check_call([RUMUR_BIN, '--output', model_c, model])
 
-    if data.get('compile', True):
+    cflags = ['-std=c11']
+    if optimised:
+      cflags.extend(['-O3', '-fwhole-program'])
 
-      cflags = data.get('cflags', ['-std=c11']) + data.get('extra_cflags', [])
+    model_bin = os.path.join(tmp, 'model.bin')
+    subprocess.check_call([CC] + cflags + ['-o', model_bin, model_c])
 
-      model_bin = os.path.join(tmp, 'model.bin')
-      subprocess.check_call([CC] + cflags + ['-o', model_bin, model_c])
-
-      if data.get('run', True):
-        subprocess.check_call([model_bin])
+    subprocess.check_call([model_bin])
 
 def main(argv):
 
@@ -51,25 +46,24 @@ def main(argv):
   # Find test cases in subdirectories.
 
   root = os.path.dirname(os.path.abspath(__file__))
-  for d in (os.path.join(root, d) for d in os.listdir(root)):
+  for m in (os.path.join(root, m) for m in os.listdir(root)):
 
-    if not os.path.isdir(d):
+    if not os.path.isfile(m) or os.path.splitext(m)[1] != '.m':
       continue
 
-    for m in (os.path.join(d, m) for m in os.listdir(d)):
+    m_name = os.path.basename(m)
 
-      if not os.path.isfile(m) or os.path.splitext(m)[1] != '.json':
-        continue
+    test_name = re.sub(r'[^\w]', '_', 'test_unoptimised_{}'.format(m_name))
+    if hasattr(Tests, test_name):
+      raise Exception('{} collides with an existing test name'.format(m))
 
-      d_name = os.path.basename(d)
-      m_name = os.path.basename(m)
+    setattr(Tests, test_name,
+      lambda self, model=m: test_template(self, model, False))
 
-      test_name = re.sub(r'[^\w]', '_', 'test_{}_{}'.format(d_name, m_name))
-      if hasattr(Tests, test_name):
-        raise Exception('{} collides with an existing test name'.format(m))
+    test_name = re.sub(r'[^\w]', '_', 'test_optimised_{}'.format(m_name))
 
-      setattr(Tests, test_name,
-        lambda self, manifest=m: test_template(self, manifest))
+    setattr(Tests, test_name,
+      lambda self, model=m: test_template(self, model, True))
 
   unittest.main()
 

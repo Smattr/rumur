@@ -1,3 +1,6 @@
+-- This model previously triggered a bug wherein Rumur would segfault during
+-- code generation.
+
 type
   en: enum { A, B };
 
