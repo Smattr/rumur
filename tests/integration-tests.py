@@ -5,6 +5,11 @@ import json, os, re, shutil, subprocess, sys, tempfile, unittest
 RUMUR_BIN = os.path.abspath('rumur/rumur')
 CC = subprocess.check_output(['which', 'cc'], universal_newlines=True).strip()
 
+def run(args):
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout, stderr = p.communicate()
+  return p.returncode, stdout, stderr
+
 class TemporaryDirectory(object):
 
   def __init__(self):
@@ -26,16 +31,28 @@ def test_template(self, model, optimised):
   with TemporaryDirectory() as tmp:
 
     model_c = os.path.join(tmp, 'model.c')
-    subprocess.check_call([RUMUR_BIN, '--output', model_c, model])
+    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
 
     cflags = ['-std=c11']
     if optimised:
       cflags.extend(['-O3', '-fwhole-program'])
 
     model_bin = os.path.join(tmp, 'model.bin')
-    subprocess.check_call([CC] + cflags + ['-o', model_bin, model_c])
+    ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
 
-    subprocess.check_call([model_bin])
+    ret, stdout, stderr = run([model_bin])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
 
 def main(argv):
 
