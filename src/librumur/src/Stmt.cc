@@ -6,6 +6,7 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace rumur {
 
@@ -116,6 +117,62 @@ void ErrorStmt::generate(std::ostream &out) const {
 bool ErrorStmt::operator==(const Node &other) const {
   auto o = dynamic_cast<const ErrorStmt*>(&other);
   return o != nullptr && message == o->message;
+}
+
+For::For(Quantifier *quantifier_, std::vector<Stmt*> &&body_,
+  const location &loc_):
+  Stmt(loc_), quantifier(quantifier_), body(body_) { }
+
+For::For(const For &other):
+  Stmt(other.loc), quantifier(other.quantifier->clone()) {
+  for (const Stmt *s : other.body)
+    body.push_back(s->clone());
+}
+
+For &For::operator=(For other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(For &x, For &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.quantifier, y.quantifier);
+  swap(x.body, y.body);
+}
+
+For *For::clone() const {
+  return new For(*this);
+}
+
+void For::generate(std::ostream &out) const {
+  // TODO
+}
+
+bool For::operator==(const Node &other) const {
+  auto o = dynamic_cast<const For*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*quantifier != *o->quantifier)
+    return false;
+  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
+    if (it == body.end()) {
+      if (it2 != o->body.end())
+        return false;
+      break;
+    }
+    if (it2 == o->body.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
+}
+
+For::~For() {
+  delete quantifier;
+  for (Stmt *s : body)
+    delete s;
 }
 
 }

@@ -73,6 +73,10 @@ endexists {
   return rumur::parser::token::ENDEXISTS;
 }
 
+endfor {
+  return rumur::parser::token::ENDFOR;
+}
+
 endforall {
   return rumur::parser::token::ENDFORALL;
 }
@@ -103,6 +107,10 @@ error {
 
 exists {
   return rumur::parser::token::EXISTS;
+}
+
+for {
+  return rumur::parser::token::FOR;
 }
 
 forall {

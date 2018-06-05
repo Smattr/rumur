@@ -104,6 +104,7 @@
 %token DOTDOT
 %token END
 %token ENDEXISTS
+%token ENDFOR
 %token ENDFORALL
 %token ENDRECORD
 %token ENDRULE
@@ -112,6 +113,7 @@
 %token ENUM
 %token ERROR
 %token EXISTS
+%token FOR
 %token FORALL
 %token GEQ
 %token <std::string> ID
@@ -339,6 +341,8 @@ stmt: ASSERT expr string_opt {
   $$ = new rumur::Assignment($1, $3, @$);
 } | ERROR STRING {
   $$ = new rumur::ErrorStmt($2, @$);
+} | FOR quantifier DO stmts endfor {
+  $$ = new rumur::For($2, std::move($4), @$);
 };
 
 endstartstate: END | ENDSTARTSTATE;
@@ -437,6 +441,8 @@ designator: designator '.' ID {
   assert(d != nullptr);
   $$ = new rumur::ExprID($1, d, @$);
 };
+
+endfor: END | ENDFOR;
 
 endforall: END | ENDFORALL;
 

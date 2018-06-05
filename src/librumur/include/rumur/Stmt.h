@@ -5,6 +5,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <string>
+#include <vector>
 
 namespace rumur {
 
@@ -80,6 +81,24 @@ class ErrorStmt : public Stmt {
 
    void generate(std::ostream &out) const final;
    bool operator==(const Node &other) const final;
+};
+
+class For : public Stmt {
+
+ public:
+  Quantifier *quantifier;
+  std::vector<Stmt*> body;
+
+  For() = delete;
+  For(Quantifier *quantifier_, std::vector<Stmt*> &&body_, const location &loc_);
+  For(const For &other);
+  For &operator=(For other);
+  friend void swap(For &x, For &y) noexcept;
+  virtual ~For();
+  For *clone() const final;
+
+  void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
 };
 
 }
