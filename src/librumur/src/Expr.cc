@@ -1149,16 +1149,36 @@ Quantifier::~Quantifier() {
 
 void Quantifier::generate_header(std::ostream &out) const {
 
-  // FIXME: Accesses to this variable within the loop will expect to access it
-  // via handle_read, as opposed to it being an immediate int64_t.
-  // FIXME: support steps that are not 1
-  out << "for (value_t ru_" << var->name << " = " << lower_bound(var->type)
-    << "; ; ru_" << var->name << "++) {";
+  std::string const counter = "_ru1_" + var->name;
+  std::string const lb = var->type->lower_bound();
+  std::string const ub = var->type->upper_bound();
+  std::string const inc = step == nullptr
+    ? "VALUE_C(1)"
+    : "VALUE_C(" + std::to_string(step->constant_fold()) + ")";
+
+  std::string const block = "_ru2_" + var->name;
+  size_t width = var->type->width();
+
+  std::string const handle = "ru_" + var->name;
+
+  out
+    << "for (value_t " << counter << " = " << lb << "; " << counter << " <= "
+      << ub << "; " << counter << " += " << inc << ") {\n"
+    << "  uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
+    << "  struct handle " << handle << " = { .base = " << block
+      << ", .offset = 0, .width = SIZE_C(" << width << ") };\n"
+    << "  handle_write(" << handle << ", " << counter << ");\n";
 }
 
 void Quantifier::generate_footer(std::ostream &out) const {
-  out << "if (ru_" << var->name << " == " << upper_bound(var->type)
-    << ") { break; } }";
+
+  std::string const counter = "_ru1_" + var->name;
+
+  out
+    << "  if (" << counter << " == VALUE_MAX) {\n"
+    << "    break;\n"
+    << "  }\n"
+    << "}\n";
 }
 
 bool Quantifier::operator==(const Node &other) const {

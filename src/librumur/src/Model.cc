@@ -188,21 +188,7 @@ void Model::generate(std::ostream &out) const {
 
         // Set up quantifiers.
         for (const Quantifier *q : r->quantifiers)
-          out
-            << "      for (value_t _ru1_" << q->var->name << " = "
-              << q->var->type->lower_bound() << "; _ru1_" << q->var->name
-              << " <= " << q->var->type->upper_bound() << "; _ru1_"
-              << q->var->name << " += " << (q->step == nullptr ? "VALUE_C(1)" :
-              "VALUE_C(" + std::to_string(q->step->constant_fold()) + ")")
-              << ") {\n"
-            << "        uint8_t _ru2_" << q->var->name << "[BITS_TO_BYTES("
-              << q->var->type->width() << ")] = { 0 };\n"
-            << "        struct handle ru_" << q->var->name
-              << " = { .base = _ru2_" << q->var->name
-              << ", .offset = 0, .width = SIZE_C(" << q->var->type->width()
-              << ") };\n"
-            << "        handle_write(ru_" << q->var->name << ", _ru1_"
-              << q->var->name << ");\n";
+          q->generate_header(out);
 
         out << "    if (!invariant" << index << "(s";
         for (const Quantifier *q : r->quantifiers)
@@ -212,7 +198,8 @@ void Model::generate(std::ostream &out) const {
           << "    }\n";
 
         // Close the quantifier loops.
-        out << std::string(r->quantifiers.size(), '}') << "\n";
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          (*it)->generate_footer(out);
 
         // Close this invariant's scope.
         out << "  }\n";
@@ -235,21 +222,7 @@ void Model::generate(std::ostream &out) const {
 
         // Set up quantifiers.
         for (const Quantifier *q : r->quantifiers)
-          out
-            << "      for (value_t _ru1_" << q->var->name << " = "
-              << q->var->type->lower_bound() << "; _ru1_" << q->var->name
-              << " <= " << q->var->type->upper_bound() << "; _ru1_"
-              << q->var->name << " += " << (q->step == nullptr ? "VALUE_C(1)" :
-              "VALUE_C(" + std::to_string(q->step->constant_fold()) + ")")
-              << ") {\n"
-            << "        uint8_t _ru2_" << q->var->name << "[BITS_TO_BYTES("
-              << q->var->type->width() << ")] = { 0 };\n"
-            << "        struct handle ru_" << q->var->name
-              << " = { .base = _ru2_" << q->var->name
-              << ", .offset = 0, .width = SIZE_C(" << q->var->type->width()
-              << ") };\n"
-            << "        handle_write(ru_" << q->var->name << ", _ru1_"
-              << q->var->name << ");\n";
+          q->generate_header(out);
 
         out
           << "    struct state *s = state_new();\n"
@@ -266,7 +239,8 @@ void Model::generate(std::ostream &out) const {
           << "    }\n";
 
         // Close the quantifier loops.
-        out << std::string(r->quantifiers.size(), '}') << "\n";
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          (*it)->generate_footer(out);
 
         // Close this startstate's scope.
         out << "  }\n";
@@ -301,21 +275,7 @@ void Model::generate(std::ostream &out) const {
          */
         // TODO: some sanity checks on the emitted loop
         for (const Quantifier *q : r->quantifiers)
-          out
-            << "      for (value_t _ru1_" << q->var->name << " = "
-              << q->var->type->lower_bound() << "; _ru1_" << q->var->name
-              << " <= " << q->var->type->upper_bound() << "; _ru1_"
-              << q->var->name << " += " << (q->step == nullptr ? "VALUE_C(1)" :
-              "VALUE_C(" + std::to_string(q->step->constant_fold()) + ")")
-              << ") {\n"
-            << "        uint8_t _ru2_" << q->var->name << "[BITS_TO_BYTES("
-              << q->var->type->width() << ")] = { 0 };\n"
-            << "        struct handle ru_" << q->var->name
-              << " = { .base = _ru2_" << q->var->name
-              << ", .offset = 0, .width = SIZE_C(" << q->var->type->width()
-              << ") };\n"
-            << "        handle_write(ru_" << q->var->name << ", _ru1_"
-              << q->var->name << ");\n";
+          q->generate_header(out);
 
         out << "      if (guard" << index << "(s";
         for (const Quantifier *q : r->quantifiers)
@@ -339,7 +299,8 @@ void Model::generate(std::ostream &out) const {
           << "      }\n";
 
         // Close the quantifier loops.
-        out << std::string(r->quantifiers.size(), '}') << "\n";
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          (*it)->generate_footer(out);
 
         // Close this rule's scope.
         out << "}\n";
