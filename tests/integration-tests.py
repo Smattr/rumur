@@ -8,7 +8,7 @@ CC = subprocess.check_output(['which', 'cc'], universal_newlines=True).strip()
 def run(args):
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout, stderr = p.communicate()
-  return p.returncode, stdout, stderr
+  return p.returncode, stdout.decode('utf-8', 'replace'), stderr.decode('utf-8', 'replace')
 
 class TemporaryDirectory(object):
 
