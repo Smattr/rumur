@@ -123,7 +123,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 
     // TODO
   }
-  pthread_exit((void*)EXIT_FAILURE);
+  exit(EXIT_FAILURE);
 }
 
 static void *xmalloc(size_t size) {
