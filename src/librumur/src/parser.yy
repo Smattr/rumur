@@ -341,8 +341,12 @@ stmt: ASSERT expr string_opt {
   $$ = new rumur::Assignment($1, $3, @$);
 } | ERROR STRING {
   $$ = new rumur::ErrorStmt($2, @$);
-} | FOR quantifier DO stmts endfor {
-  $$ = new rumur::For($2, std::move($4), @$);
+} | FOR quantifier {
+    symtab.open_scope();
+    symtab.declare($2->var->name, *$2->var);
+  } DO stmts endfor {
+  $$ = new rumur::For($2, std::move($5), @$);
+  symtab.close_scope();
 };
 
 endstartstate: END | ENDSTARTSTATE;
