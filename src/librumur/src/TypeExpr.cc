@@ -125,9 +125,20 @@ size_t Enum::count() const {
 }
 
 bool Enum::operator==(const Node &other) const {
-  // FIXME: ignore location of member definitions in the following comparison
-  if (auto o = dynamic_cast<const Enum*>(&other))
-    return members == o->members;
+  if (auto o = dynamic_cast<const Enum*>(&other)) {
+    for (auto it = members.begin(), it2 = o->members.begin(); ; it++, it2++) {
+      if (it == members.end()) {
+        if (it2 != o->members.end())
+          return false;
+        break;
+      }
+      if (it2 == o->members.end())
+        return false;
+      if ((*it).first != (*it2).first)
+        return false;
+    }
+    return true;
+  }
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
     return *this == *o->referent;
