@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <cctype>
 #include "location.hh"
 #include <rumur/except.h>
 #include <rumur/Node.h>
@@ -11,32 +10,10 @@
 
 namespace rumur {
 
-static inline std::string tolower(const std::string &s) {
-  std::string r;
-  for (const char &c : s)
-    r += ::tolower(c);
-  return r;
-}
-
 class Symtab {
 
  private:
-  // Case-insensitive string hash
-  struct hash {
-    std::size_t operator()(const std::string &s) const noexcept {
-      return std::hash<std::string>()(tolower(s));
-    }
-  };
-
-  // Case-insensitive string comparison
-  struct equal_to {
-    bool operator()(const std::string &a, const std::string &b) const {
-      return tolower(a) == tolower(b);
-    }
-  };
-
- private:
-  std::vector<std::unordered_map<std::string, Node*, hash, equal_to>> scope;
+  std::vector<std::unordered_map<std::string, Node*>> scope;
 
  public:
   void open_scope() {
