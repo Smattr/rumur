@@ -267,13 +267,6 @@ void Model::generate(std::ostream &out) const {
         // Open a scope so we don't have to think about name collisions.
         out << "    {\n";
 
-        /* Set up quantifiers. It might be surprising to notice that there is an
-         * extra level of indirection here. A variable 'x' results in loop
-         * counter '_ru1_x', storage array '_ru2_x' and handle 'ru_x'. We use
-         * three variables rather than two in order to avoid rules that modify
-         * the ruleset parameters (uncommon) affecting the loop counter.
-         */
-        // TODO: some sanity checks on the emitted loop
         for (const Quantifier *q : r->quantifiers)
           q->generate_header(out);
 

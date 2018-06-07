@@ -1161,6 +1161,12 @@ void Quantifier::generate_header(std::ostream &out) const {
 
   std::string const handle = "ru_" + var->name;
 
+  /* Set up quantifiers. It might be surprising to notice that there is an extra
+   * level of indirection here. A variable 'x' results in loop counter '_ru1_x',
+   * storage array '_ru2_x' and handle 'ru_x'. We use three variables rather
+   * than two in order to avoid rules that modify the ruleset parameters
+   * (uncommon) affecting the loop counter.
+   */
   out
     << "for (value_t " << counter << " = " << lb << "; " << counter << " <= "
       << ub << "; " << counter << " += " << inc << ") {\n"
