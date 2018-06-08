@@ -101,4 +101,38 @@ class For : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
+class IfClause : public Node {
+
+ public:
+  Expr *condition;
+  std::vector<Stmt*> body;
+
+  IfClause() = delete;
+  IfClause(Expr *condition_, std::vector<Stmt*> &&body_, const location &loc_);
+  IfClause(const IfClause &other);
+  IfClause &operator=(IfClause other);
+  friend void swap(IfClause &x, IfClause &y) noexcept;
+  virtual ~IfClause();
+  IfClause *clone() const final;
+
+  bool operator==(const Node &other) const final;
+};
+
+class If : public Stmt {
+
+ public:
+  std::vector<IfClause> clauses;
+
+  If() = delete;
+  If(std::vector<IfClause> &&clauses_, const location &loc_);
+  If(const If &other);
+  If &operator=(If other);
+  friend void swap(If &x, If &y) noexcept;
+  virtual ~If() { };
+  If *clone() const final;
+
+  void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
+};
+
 }

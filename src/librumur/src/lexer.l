@@ -47,10 +47,13 @@ begin         { return rumur::parser::token::BEGIN_TOK;     }
 by            { return rumur::parser::token::BY;            }
 const         { return rumur::parser::token::CONST;         }
 do            { return rumur::parser::token::DO;            }
+else          { return rumur::parser::token::ELSE;          }
+elsif         { return rumur::parser::token::ELSIF;         }
 end           { return rumur::parser::token::END;           }
 endexists     { return rumur::parser::token::ENDEXISTS;     }
 endfor        { return rumur::parser::token::ENDFOR;        }
 endforall     { return rumur::parser::token::ENDFORALL;     }
+endif         { return rumur::parser::token::ENDIF;         }
 endrecord     { return rumur::parser::token::ENDRECORD;     }
 endrule       { return rumur::parser::token::ENDRULE;       }
 endruleset    { return rumur::parser::token::ENDRULESET;    }
@@ -60,6 +63,7 @@ error         { return rumur::parser::token::ERROR;         }
 exists        { return rumur::parser::token::EXISTS;        }
 for           { return rumur::parser::token::FOR;           }
 forall        { return rumur::parser::token::FORALL;        }
+if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
 of            { return rumur::parser::token::OF;            }
 record        { return rumur::parser::token::RECORD;        }
@@ -67,6 +71,7 @@ rule          { return rumur::parser::token::RULE;          }
 ruleset       { return rumur::parser::token::RULESET;       }
 scalarset     { return rumur::parser::token::SCALARSET;     }
 startstate    { return rumur::parser::token::STARTSTATE;    }
+then          { return rumur::parser::token::THEN;          }
 to            { return rumur::parser::token::TO;            }
 type          { return rumur::parser::token::TYPE;          }
 var           { return rumur::parser::token::VAR;           }

@@ -102,10 +102,13 @@
 %token DEQ
 %token DO
 %token DOTDOT
+%token ELSE
+%token ELSIF
 %token END
 %token ENDEXISTS
 %token ENDFOR
 %token ENDFORALL
+%token ENDIF
 %token ENDRECORD
 %token ENDRULE
 %token ENDRULESET
@@ -117,6 +120,7 @@
 %token FORALL
 %token GEQ
 %token <std::string> ID
+%token IF
 %token IMPLIES
 %token INVARIANT
 %token LEQ
@@ -129,6 +133,7 @@
 %token SCALARSET
 %token STARTSTATE
 %token <std::string> STRING
+%token THEN
 %token TO
 %token TYPE
 %token VAR
@@ -148,6 +153,8 @@
 %type <std::vector<rumur::Decl*>>                            decls
 %type <std::vector<rumur::Decl*>>                            decls_header
 %type <rumur::Lvalue*>                                       designator
+%type <std::vector<rumur::IfClause>>                         else_opt
+%type <std::vector<rumur::IfClause>>                         elsifs
 %type <rumur::Expr*>                                         expr
 %type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
@@ -347,7 +354,26 @@ stmt: ASSERT expr string_opt {
   } DO stmts endfor {
   $$ = new rumur::For($2, std::move($5), @$);
   symtab.close_scope();
+} | IF expr THEN stmts elsifs else_opt endif {
+  std::vector<rumur::IfClause> cs = {
+    rumur::IfClause($2, std::move($4), rumur::location(@1.begin, @4.end)) };
+  cs.insert(cs.end(), $5.begin(), $5.end());
+  cs.insert(cs.end(), $6.begin(), $6.end());
+  $$ = new rumur::If(std::move(cs), @$);
 };
+
+elsifs: elsifs ELSIF expr THEN stmts {
+  $$ = $1;
+  $$.push_back(rumur::IfClause($3, std::move($5), rumur::location(@2.begin, @5.end)));
+} | %empty {
+};
+
+else_opt: ELSE stmts {
+  $$.push_back(rumur::IfClause(nullptr, std::move($2), @$));
+} | %empty {
+};
+
+endif: END | ENDIF;
 
 endstartstate: END | ENDSTARTSTATE;
 

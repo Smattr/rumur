@@ -175,4 +175,113 @@ For::~For() {
     delete s;
 }
 
+IfClause::IfClause(Expr *condition_, std::vector<Stmt*> &&body_,
+  const location &loc):
+  Node(loc), condition(condition_), body(body_) { }
+
+IfClause::IfClause(const IfClause &other):
+  Node(other.loc),
+  condition(other.condition == nullptr ? nullptr : other.condition->clone()) {
+  for (const Stmt *s : other.body)
+    body.push_back(s->clone());
+}
+
+IfClause &IfClause::operator=(IfClause other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(IfClause &x, IfClause &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.condition, y.condition);
+  swap(x.body, y.body);
+}
+
+IfClause::~IfClause() {
+  delete condition;
+  for (Stmt *s : body)
+    delete s;
+}
+
+IfClause *IfClause::clone() const {
+  return new IfClause(*this);
+}
+
+bool IfClause::operator==(const Node &other) const {
+  auto o = dynamic_cast<const IfClause*>(&other);
+  if (o == nullptr)
+    return false;
+  if (condition == nullptr) {
+    if (o->condition != nullptr)
+      return false;
+  } else if (o->condition == nullptr) {
+    return false;
+  } else if (*condition != *o->condition) {
+    return false;
+  }
+  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
+    if (it == body.end()) {
+      if (it2 != o->body.end())
+        return false;
+      break;
+    }
+    if (it2 == o->body.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
+}
+
+If::If(std::vector<IfClause> &&clauses_, const location &loc_):
+  Stmt(loc_), clauses(clauses_) { }
+
+If::If(const If &other):
+  Stmt(other.loc), clauses(other.clauses) { }
+
+If &If::operator=(If other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(If &x, If &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.clauses, y.clauses);
+}
+
+If *If::clone() const {
+  return new If(*this);
+}
+
+void If::generate(std::ostream &out) const {
+  bool first = true;
+  for (const IfClause &c : clauses) {
+    if (!first)
+      out << "else ";
+    if (c.condition != nullptr) {
+      out << "if (";
+      c.condition->generate_rvalue(out);
+      out  << ") ";
+    }
+    out << " {\n";
+    for (const Stmt *s : c.body) {
+      s->generate(out);
+      out << ";\n";
+    }
+    out << "}\n";
+    first = false;
+  }
+}
+
+bool If::operator==(const Node &other) const {
+  auto o = dynamic_cast<const If*>(&other);
+  if (o == nullptr)
+    return false;
+  if (clauses != o->clauses)
+    return false;
+  return true;
+}
+
 }
