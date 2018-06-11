@@ -70,7 +70,8 @@ size_t Range::width() const {
   int64_t lb = min->constant_fold();
   int64_t ub = max->constant_fold();
   uint64_t range;
-  if (__builtin_sub_overflow(ub, lb, &range))
+  if (__builtin_sub_overflow(ub, lb, &range) ||
+      __builtin_add_overflow(range, 1, &range))
     throw Error("overflow in calculating width of range", loc);
   return bits_for(range);
 }
@@ -80,7 +81,7 @@ size_t Range::count() const {
   int64_t ub = max->constant_fold();
   size_t range;
   if (__builtin_sub_overflow(ub, lb, &range) ||
-      __builtin_add_overflow(range, 1, &range))
+      __builtin_add_overflow(range, 2, &range))
     throw Error("overflow in calculating count of range", loc);
   return range;
 }
@@ -121,7 +122,10 @@ size_t Enum::width() const {
 }
 
 size_t Enum::count() const {
-  return members.size();
+  size_t r;
+  if (__builtin_add_overflow(members.size(), 1, &r))
+    throw Error("overflow in calculating count of enum", loc);
+  return r;
 }
 
 bool Enum::operator==(const Node &other) const {
@@ -155,7 +159,8 @@ std::string Enum::lower_bound() const {
 }
 
 std::string Enum::upper_bound() const {
-  return "VALUE_C(" + std::to_string(int64_t(count()) - 1) + ")";
+  return "VALUE_C("
+    + std::to_string(members.size() == 0 ? 0 : members.size() - 1) + ")";
 }
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):

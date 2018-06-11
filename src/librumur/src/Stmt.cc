@@ -79,7 +79,11 @@ Assignment::~Assignment() {
 }
 
 void Assignment::generate(std::ostream &out) const {
-  out << "handle_write(";
+
+  const std::string lb = lhs->type()->lower_bound();
+  const std::string ub = lhs->type()->upper_bound();
+
+  out << "handle_write(s, " << lb << ", " << ub << ", ";
   lhs->generate_lvalue(out);
   out << ", " << *rhs << ")";
 }

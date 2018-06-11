@@ -230,9 +230,9 @@ static void handle_insert(struct handle h, unsigned __int128 v) {
   }
 }
 
-static __attribute__((unused)) value_t handle_read(const struct state *s, struct handle h) {
+static __attribute__((unused)) value_t handle_read_raw(struct handle h) {
   static_assert(sizeof(unsigned __int128) > sizeof(value_t),
-    "handle_read() is implemented by reading data into a 128-bit scalar, "
+    "handle_read_raw() is implemented by reading data into a 128-bit scalar, "
     "potentially reading more than the width of a value. Value type is larger "
     "than 128 bits which prevents this.");
 
@@ -249,23 +249,41 @@ static __attribute__((unused)) value_t handle_read(const struct state *s, struct
 
   value_t dest = (value_t)v;
 
-#if 0
-  if (dest == 0) {
-    error(s, "read of undefined value");
-  }
-#endif
-
   TRACE("read value %" PRIVAL " from handle { %p, %zu, %zu }", dest,
     h.base, h.offset, h.width);
 
   return dest;
 }
 
-static __attribute__((unused)) void handle_write(struct handle h, value_t value) {
+static __attribute__((unused)) value_t handle_read(const struct state *s,
+    value_t lb, value_t ub, struct handle h) {
+
+  value_t dest = handle_read_raw(h);
+
+  if (dest == 0) {
+    error(s, "read of undefined value");
+  }
+
+  if (__builtin_sub_overflow(dest, 1, &dest) ||
+      __builtin_add_overflow(dest, lb, &dest) || dest < lb || dest > ub) {
+    error(s, "read of out-of-range value");
+  }
+
+  return dest;
+}
+
+static __attribute__((unused)) void handle_write(const struct state *s,
+    value_t lb, value_t ub, struct handle h, value_t value) {
+
   static_assert(sizeof(unsigned __int128) > sizeof(value_t),
     "handle_write() is implemented by reading data into a 128-bit scalar and "
     "then operating on it using 128-bit operations. Value type is larger than "
     "128 bits which prevents this.");
+
+  if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
+      __builtin_add_overflow(value, 1, &value)) {
+    error(s, "write of out-of-range value");
+  }
 
   TRACE("writing value %" PRIVAL " to handle { %p, %zu, %zu }", value, h.base,
     h.offset, h.width);

@@ -856,8 +856,11 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
        * read the value of the variable out into an unboxed value as this is
        * what our parent will be expecting.
        */
-      if (!lvalue && t->is_simple())
-        out << "handle_read(s, ";
+      if (!lvalue && t->is_simple()) {
+        const std::string lb = t->lower_bound();
+        const std::string ub = t->upper_bound();
+        out << "handle_read(s, " << lb << ", " << ub << ", ";
+      }
 
       /* Note that we need to cast away the const-ness of `s->data` here because
        * we may be within a guard or invariant. In such a situation, the state
@@ -875,8 +878,11 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
     // Case 2, this is a local variable
     else {
 
-      if (!lvalue && t->is_simple())
-        out << "handle_read(s, ";
+      if (!lvalue && t->is_simple()) {
+        const std::string lb = t->lower_bound();
+        const std::string ub = t->upper_bound();
+        out << "handle_read(s, " << lb << ", " << ub << ", ";
+      }
 
       out << "ru_" << id;
 
@@ -978,8 +984,11 @@ void Field::generate(std::ostream &out, bool lvalue) const {
     size_t offset = 0;
     for (const VarDecl *f : r->fields) {
       if (f->name == field) {
-        if (!lvalue && f->type->is_simple())
-          out << "handle_read(s, ";
+        if (!lvalue && f->type->is_simple()) {
+          const std::string lb = f->type->lower_bound();
+          const std::string ub = f->type->upper_bound();
+          out << "handle_read(s, " << lb << ", " << ub << ", ";
+        }
         out << "handle_narrow(";
         record->generate(out, lvalue);
         out << ", " << offset << ", " << f->type->width() << ")";
@@ -1076,8 +1085,11 @@ void Element::generate(std::ostream &out, bool lvalue) const {
     assert(false && "array with invalid index type");
   }
 
-  if (!lvalue && a.element_type->is_simple())
-    out << "handle_read(s, ";
+  if (!lvalue && a.element_type->is_simple()) {
+    const std::string lb = a.element_type->lower_bound();
+    const std::string ub = a.element_type->upper_bound();
+    out << "handle_read(s, " << lb << ", " << ub << ", ";
+  }
 
   out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
     << "), VALUE_C(" << max << "), ";
@@ -1173,7 +1185,8 @@ void Quantifier::generate_header(std::ostream &out) const {
     << "  uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "  struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = SIZE_C(" << width << ") };\n"
-    << "  handle_write(" << handle << ", " << counter << ");\n";
+    << "  handle_write(s, " << lb << ", " << ub << ", " << handle << ", "
+      << counter << ");\n";
 }
 
 void Quantifier::generate_footer(std::ostream &out) const {

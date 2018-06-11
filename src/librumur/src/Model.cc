@@ -220,12 +220,17 @@ void Model::generate(std::ostream &out) const {
         // Open a scope so we don't have to think about name collisions.
         out << "  {\n";
 
+        /* Define the state variable because the code emitted for quantifiers
+         * expects it. They do not need a non-NULL value.
+         */
+        out << "    struct state *s = NULL;\n";
+
         // Set up quantifiers.
         for (const Quantifier *q : r->quantifiers)
           q->generate_header(out);
 
         out
-          << "    struct state *s = state_new();\n"
+          << "    s = state_new();\n"
           << "    startstate" << index << "(s";
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
