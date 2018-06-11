@@ -1113,7 +1113,7 @@ bool Element::operator==(const Node &other) const {
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,
   const location &loc_)
-  : Node(loc_), var(new VarDecl(name, type, loc_)) {
+  : Node(loc_), var(new VarDecl(name, type, loc_)), step(nullptr) {
 }
 
 Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to,
