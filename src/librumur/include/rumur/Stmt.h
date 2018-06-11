@@ -135,4 +135,21 @@ class If : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
+class Undefine : public Stmt {
+
+ public:
+  Lvalue *rhs;
+
+  Undefine() = delete;
+  Undefine(Lvalue *rhs_, const location &loc_);
+  Undefine(const Undefine &other);
+  Undefine &operator=(Undefine other);
+  friend void swap(Undefine &x, Undefine &y) noexcept;
+  virtual ~Undefine();
+  Undefine *clone() const final;
+
+  void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
+};
+
 }

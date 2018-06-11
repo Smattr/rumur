@@ -272,18 +272,8 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
   return dest;
 }
 
-static __attribute__((unused)) void handle_write(const struct state *s,
-    value_t lb, value_t ub, struct handle h, value_t value) {
-
-  static_assert(sizeof(unsigned __int128) > sizeof(value_t),
-    "handle_write() is implemented by reading data into a 128-bit scalar and "
-    "then operating on it using 128-bit operations. Value type is larger than "
-    "128 bits which prevents this.");
-
-  if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
-      __builtin_add_overflow(value, 1, &value)) {
-    error(s, "write of out-of-range value");
-  }
+static __attribute__((unused)) void handle_write_raw(struct handle h,
+    value_t value) {
 
   TRACE("writing value %" PRIVAL " to handle { %p, %zu, %zu }", value, h.base,
     h.offset, h.width);
@@ -308,6 +298,22 @@ static __attribute__((unused)) void handle_write(const struct state *s,
 
   /* Write back this data into the target location. */
   handle_insert(aligned, v);
+}
+
+static __attribute__((unused)) void handle_write(const struct state *s,
+    value_t lb, value_t ub, struct handle h, value_t value) {
+
+  static_assert(sizeof(unsigned __int128) > sizeof(value_t),
+    "handle_write() is implemented by reading data into a 128-bit scalar and "
+    "then operating on it using 128-bit operations. Value type is larger than "
+    "128 bits which prevents this.");
+
+  if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
+      __builtin_add_overflow(value, 1, &value)) {
+    error(s, "write of out-of-range value");
+  }
+
+  handle_write_raw(h, value);
 }
 
 static __attribute__((unused)) struct handle handle_narrow(struct handle h,

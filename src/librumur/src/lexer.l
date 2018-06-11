@@ -74,6 +74,7 @@ startstate    { return rumur::parser::token::STARTSTATE;    }
 then          { return rumur::parser::token::THEN;          }
 to            { return rumur::parser::token::TO;            }
 type          { return rumur::parser::token::TYPE;          }
+undefine      { return rumur::parser::token::UNDEFINE;      }
 var           { return rumur::parser::token::VAR;           }
 
 [[:alpha:]][_[:alnum:]]* {

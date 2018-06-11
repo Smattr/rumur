@@ -288,4 +288,50 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
+Undefine::Undefine(Lvalue *rhs_, const location &loc_):
+  Stmt(loc_), rhs(rhs_) { }
+
+Undefine::Undefine(const Undefine &other):
+  Stmt(other.loc), rhs(other.rhs->clone()) { }
+
+Undefine &Undefine::operator=(Undefine other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Undefine &x, Undefine &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.rhs, y.rhs);
+}
+
+Undefine::~Undefine() {
+  delete rhs;
+}
+
+Undefine *Undefine::clone() const {
+  return new Undefine(*this);
+}
+
+void Undefine::generate(std::ostream &out) const {
+  if (rhs->type()->is_simple()) {
+    const std::string lb = rhs->type()->lower_bound();
+    const std::string ub = rhs->type()->upper_bound();
+    out << "handle_write(s, " << lb << ", " << ub << ", ";
+    rhs->generate_lvalue(out);
+    out << ", 0)";
+  } else {
+    assert(!"TODO");
+  }
+}
+
+bool Undefine::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Undefine*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*rhs != *o->rhs)
+    return false;
+  return true;
+}
+
 }

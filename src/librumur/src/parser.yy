@@ -136,6 +136,7 @@
 %token THEN
 %token TO
 %token TYPE
+%token UNDEFINE
 %token VAR
 
 %nonassoc '?' ':'
@@ -360,6 +361,8 @@ stmt: ASSERT expr string_opt {
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = new rumur::If(std::move(cs), @$);
+} | UNDEFINE designator {
+  $$ = new rumur::Undefine($2, @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {
