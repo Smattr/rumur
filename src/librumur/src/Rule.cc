@@ -312,8 +312,8 @@ std::vector<Rule*> Ruleset::flatten() const {
   std::vector<Rule*> rs;
   for (const Rule *r : rules) {
     for (Rule *f : r->flatten()) {
-      f->quantifiers.insert(f->quantifiers.begin(), quantifiers.begin(),
-        quantifiers.end());
+      for (const Quantifier *q : quantifiers)
+        f->quantifiers.insert(f->quantifiers.begin(), q->clone());
       rs.push_back(f);
     }
   }
