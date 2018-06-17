@@ -184,9 +184,9 @@ static unsigned print_counterexample(const struct state *s) {
    */
   unsigned step = print_counterexample(s->previous) + 1;
 
-  fprintf(stderr, "State %u:\n", step);
+  fprintf(stderr, " --- begin state %u ---\n", step);
   state_print(s);
-  fprintf(stderr, "------------------------------------------------------------\n");
+  fprintf(stderr, " --- end state %u ---\n", step);
   return step;
 }
 
