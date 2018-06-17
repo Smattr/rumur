@@ -151,4 +151,10 @@ size_t VarDecl::count() const {
   return type->count();
 }
 
+void VarDecl::generate_print(std::ostream &out, const std::string &prefix,
+  size_t preceding_offset) const {
+
+  type->generate_print(out, prefix + name, preceding_offset);
+}
+
 }

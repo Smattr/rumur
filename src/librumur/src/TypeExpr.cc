@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <limits.h>
 #include <rumur/Decl.h>
@@ -109,6 +110,26 @@ std::string Range::upper_bound() const {
   return "VALUE_C(" + std::to_string(max->constant_fold()) + ")";
 }
 
+void Range::generate_print(std::ostream &out, std::string const &prefix,
+  size_t preceding_offset) const {
+
+  std::string const lb = lower_bound();
+  std::string const ub = upper_bound();
+
+  out
+    << "{\n"
+    << "  fprintf(stderr, \"" << prefix << ": \");\n"
+    << "  value_t v = handle_read_raw((struct handle){ .base = "
+      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
+    << "  if (v == 0) {\n"
+    << "    fprintf(stderr, \"undefined\\n\");\n"
+    << "  } else {\n"
+    << "    fprintf(stderr, \"%\" PRIVAL \"\\n\", decode_value(" << lb << ", "
+      << ub << ", v));\n"
+    << "  }\n"
+    << "}\n";
+}
+
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
   TypeExpr(loc_), members(members_) {
 }
@@ -161,6 +182,30 @@ std::string Enum::lower_bound() const {
 std::string Enum::upper_bound() const {
   return "VALUE_C("
     + std::to_string(members.size() == 0 ? 0 : members.size() - 1) + ")";
+}
+
+void Enum::generate_print(std::ostream &out, std::string const &prefix,
+  size_t preceding_offset) const {
+
+  out
+    << "{\n"
+    << "  fprintf(stderr, \"" << prefix << ": \");\n"
+    << "  value_t v = handle_read_raw((struct handle){ .base = "
+      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
+    << "  if (v == 0) {\n"
+    << "    fprintf(stderr, \"undefined\\n\");\n";
+  size_t i = 0;
+  for (std::pair<std::string, location> const &m : members) {
+    out
+      << "  } else if (v == VALUE_C(" << i << ")) {\n"
+      << "    fprintf(stderr, \"%s\\n\", \"" << m.first << "\");\n";
+    i++;
+  }
+  out
+    << "  } else {\n"
+    << "    fprintf(stderr, \"ILLEGAL VALUE\\n\");\n"
+    << "  }\n"
+    << "}\n";
 }
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
@@ -230,6 +275,15 @@ bool Record::operator==(const Node &other) const {
   return false;
 }
 
+void Record::generate_print(std::ostream &out, std::string const &prefix,
+  size_t preceding_offset) const {
+
+  for (VarDecl const *f : fields) {
+    f->generate_print(out, prefix + ".", preceding_offset);
+    preceding_offset += f->width();
+  }
+}
+
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
   if (!index_type->is_simple())
@@ -291,6 +345,46 @@ bool Array::operator==(const Node &other) const {
   return false;
 }
 
+void Array::generate_print(std::ostream &out, std::string const &prefix,
+  size_t preceding_offset) const {
+
+  TypeExpr const *t = index_type->resolve();
+
+  if (auto r = dynamic_cast<Range const*>(t)) {
+
+    int64_t lb = r->min->constant_fold();
+    int64_t ub = r->max->constant_fold();
+
+    // FIXME: Unrolling this loop at generation time is not great if the index
+    // type is big. E.g. if someone has an 'array [0..10000] of ...' this is
+    // going to generate quite unpleasant code.
+    for (int64_t i = lb; i <= ub; i++) {
+
+      element_type->generate_print(out, prefix + "[" + std::to_string(i) + "]",
+        preceding_offset);
+      preceding_offset += element_type->width();
+
+      if (ub == INT64_MAX && i == INT64_MAX)
+        break;
+    }
+
+    return;
+  }
+
+  if (auto e = dynamic_cast<Enum const*>(t)) {
+
+    for (std::pair<std::string, location> const &m : e->members) {
+      element_type->generate_print(out, prefix + "[" + m.first + "]",
+        preceding_offset);
+      preceding_offset += element_type->width();
+    }
+
+    return;
+  }
+
+  assert(!"non-range, non-enum used as array index");
+}
+
 TypeExprID::TypeExprID(const std::string &name_, TypeExpr *referent_,
   const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
@@ -344,6 +438,11 @@ std::string TypeExprID::lower_bound() const {
 
 std::string TypeExprID::upper_bound() const {
   return referent->upper_bound();
+}
+
+void TypeExprID::generate_print(std::ostream &out, std::string const &prefix,
+  size_t preceding_offset) const {
+  referent->generate_print(out, prefix, preceding_offset);
 }
 
 }

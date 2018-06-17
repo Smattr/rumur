@@ -92,6 +92,8 @@ class VarDecl : public Decl {
   size_t width() const;
 
   bool operator==(const Node &other) const final;
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const;
 };
 
 }

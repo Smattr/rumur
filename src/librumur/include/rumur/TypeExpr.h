@@ -38,6 +38,9 @@ class TypeExpr : public Node {
    */
   virtual std::string lower_bound() const;
   virtual std::string upper_bound() const;
+
+  virtual void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const = 0;
 };
 
 class Range : public TypeExpr {
@@ -61,6 +64,9 @@ class Range : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const final;
 };
 
 class Enum : public TypeExpr {
@@ -85,6 +91,9 @@ class Enum : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const final;
 };
 
 class Record : public TypeExpr {
@@ -103,6 +112,9 @@ class Record : public TypeExpr {
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
+
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const final;
 };
 
 class Array : public TypeExpr {
@@ -122,6 +134,9 @@ class Array : public TypeExpr {
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
+
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const final;
 };
 
 class TypeExprID : public TypeExpr {
@@ -146,6 +161,9 @@ class TypeExprID : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const final;
 };
 
 }

@@ -314,9 +314,15 @@ void Model::generate(std::ostream &out) const {
 
   // Write a function to print the state.
   out
-    << "static void state_print(const struct state *s) {\n"
-    << "  fprintf(stderr, \"TODO state\\n\");\n"
-    << "  // TODO\n"
+    << "static void state_print(const struct state *s) {\n";
+  size_t offset = 0;
+  for (const Decl *d : decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d)) {
+      v->generate_print(out, "", offset);
+      offset += v->width();
+    }
+  }
+  out
     << "}\n\n";
 
   for (Rule *r : flat_rules)
