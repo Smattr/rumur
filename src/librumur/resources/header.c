@@ -262,6 +262,18 @@ static __attribute__((unused)) value_t handle_read_raw(struct handle h) {
   return dest;
 }
 
+static value_t decode_value(value_t lb, value_t ub, value_t v) {
+
+  value_t dest = v;
+
+  bool r __attribute__((unused)) = __builtin_sub_overflow(dest, 1, &dest) ||
+    __builtin_add_overflow(dest, lb, &dest) || dest < lb || dest > ub;
+
+  ASSERT(!r && "read of out-of-range value");
+
+  return dest;
+}
+
 static __attribute__((unused)) value_t handle_read(const struct state *s,
     value_t lb, value_t ub, struct handle h) {
 
@@ -271,12 +283,7 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
     error(s, "read of undefined value");
   }
 
-  if (__builtin_sub_overflow(dest, 1, &dest) ||
-      __builtin_add_overflow(dest, lb, &dest) || dest < lb || dest > ub) {
-    error(s, "read of out-of-range value");
-  }
-
-  return dest;
+  return decode_value(lb, ub, dest);
 }
 
 static __attribute__((unused)) void handle_write_raw(struct handle h,
