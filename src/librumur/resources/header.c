@@ -102,8 +102,8 @@ struct state {
   uint8_t data[STATE_SIZE_BYTES];
 };
 
-/* Print a state to stderr. This function is generated. */
-static void state_print(const struct state *s);
+/* Print a counterexample trace terminating at the given state. */
+static unsigned print_counterexample(const struct state *s);
 
 static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   const struct state *s, const char *fmt, ...) {
@@ -117,11 +117,15 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
     assert(r == 0);
     (void)vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
-    r = pthread_mutex_unlock(&print_lock);
-    assert(r == 0);
     va_end(ap);
 
-    // TODO
+    if (s != NULL) {
+      fprintf(stderr, "Counterexample:\n");
+      print_counterexample(s);
+    }
+
+    r = pthread_mutex_unlock(&print_lock);
+    assert(r == 0);
   }
   exit(EXIT_FAILURE);
 }
@@ -166,6 +170,9 @@ static size_t state_hash(const struct state *s) {
   return (size_t)XXH64(s->data, sizeof(s->data), 0);
 }
 
+/* Print a state to stderr. This function is generated. */
+static void state_print(const struct state *s);
+
 static unsigned print_counterexample(const struct state *s) {
 
   if (s == NULL) {
@@ -177,9 +184,9 @@ static unsigned print_counterexample(const struct state *s) {
    */
   unsigned step = print_counterexample(s->previous) + 1;
 
-  eprint("State %u:\n", step);
+  fprintf(stderr, "State %u:\n", step);
   state_print(s);
-  eprint("------------------------------------------------------------\n");
+  fprintf(stderr, "------------------------------------------------------------\n");
   return step;
 }
 

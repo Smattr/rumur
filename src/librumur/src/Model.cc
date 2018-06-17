@@ -315,6 +315,7 @@ void Model::generate(std::ostream &out) const {
   // Write a function to print the state.
   out
     << "static void state_print(const struct state *s) {\n"
+    << "  fprintf(stderr, \"TODO state\\n\");\n"
     << "  // TODO\n"
     << "}\n\n";
 
