@@ -482,7 +482,7 @@ static struct {
   size_t count;
 } q;
 
-void queue_enqueue(struct state *s) {
+size_t queue_enqueue(struct state *s) {
   struct queue_node *n = malloc(sizeof(*n));
   if (n == NULL) {
     error(NULL, "out of memory");
@@ -498,8 +498,12 @@ void queue_enqueue(struct state *s) {
 
   TRACE("enqueued state %p, queue length is now %zu", s, q.count);
 
+  size_t count = q.count;
+
   r = pthread_mutex_unlock(&q.lock);
   ASSERT(r == 0);
+
+  return count;
 }
 
 struct state *queue_dequeue(void) {
