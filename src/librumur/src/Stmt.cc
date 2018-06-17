@@ -150,7 +150,13 @@ For *For::clone() const {
 }
 
 void For::generate(std::ostream &out) const {
-  // TODO
+  quantifier->generate_header(out);
+  for (Stmt const *s : body) {
+    out << "  ";
+    s->generate(out);
+    out << ";\n";
+  }
+  quantifier->generate_footer(out);
 }
 
 bool For::operator==(const Node &other) const {
