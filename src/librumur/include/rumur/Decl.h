@@ -88,6 +88,9 @@ class VarDecl : public Decl {
   VarDecl *clone() const final;
   virtual ~VarDecl();
 
+  size_t count() const;
+  size_t width() const;
+
   bool operator==(const Node &other) const final;
 };
 

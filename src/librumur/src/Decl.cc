@@ -143,4 +143,12 @@ bool VarDecl::operator==(const Node &other) const {
       && state_variable == o->state_variable && offset == o->offset;
 }
 
+size_t VarDecl::width() const {
+  return type->width();
+}
+
+size_t VarDecl::count() const {
+  return type->count();
+}
+
 }
