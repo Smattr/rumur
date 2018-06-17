@@ -1192,9 +1192,10 @@ void Quantifier::generate_header(std::ostream &out) const {
 void Quantifier::generate_footer(std::ostream &out) const {
 
   std::string const counter = "_ru1_" + var->name;
+  std::string const ub = var->type->upper_bound();
 
   out
-    << "  if (" << counter << " == VALUE_MAX) {\n"
+    << "  if (" << ub << " == VALUE_MAX && " << counter << " == VALUE_MAX) {\n"
     << "    break;\n"
     << "  }\n"
     << "}\n";
