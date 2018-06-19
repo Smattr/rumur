@@ -28,31 +28,63 @@ class Tests(unittest.TestCase):
 
 def test_template(self, model, optimised):
 
+  # Default options to use for this test.
+  option = {
+    'rumur_flags':[], # Flags to pass to rumur when generating the checker.
+    'rumur_exit_code':0, # Expected exit status of rumur.
+    'c_flags':None, # Flags to pass to cc when compiling.
+    'c_exit_code':0, # Expected exit status of cc.
+    'checker_exit_code':0, # Expected exit status of the checker.
+  }
+
+  # Check for special lines at the start of the current model overriding the
+  # defaults.
+  with open(model, 'rt') as f:
+    for line in f:
+      m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
+      if m is None:
+        break
+      key = m.group('key')
+      value = m.group('value').strip()
+      option[key] = eval(value)
+
   with TemporaryDirectory() as tmp:
 
     model_c = os.path.join(tmp, 'model.c')
-    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model])
+    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model] +
+      option['rumur_flags'])
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, option['rumur_exit_code'])
 
-    cflags = ['-std=c11']
-    if optimised:
-      cflags.extend(['-O3', '-fwhole-program'])
+    # If model generation was supposed to fail, we're done.
+    if option['rumur_exit_code'] != 0:
+      return
+
+    if option['c_flags'] is None:
+      cflags = ['-std=c11']
+      if optimised:
+        cflags.extend(['-O3', '-fwhole-program'])
+    else:
+      cflags = option['c_flags']
 
     model_bin = os.path.join(tmp, 'model.bin')
     ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c])
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, option['c_exit_code'])
+
+    # If compilation was supposed to fail, we're done.
+    if option['c_exit_code'] != 0:
+      return
 
     ret, stdout, stderr = run([model_bin])
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+    self.assertEqual(ret, option['checker_exit_code'])
 
 def main(argv):
 
