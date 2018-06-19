@@ -15,7 +15,6 @@ static rumur::OutputOptions output_options = {
   .debug = false,
   .set_capacity = 8 * 1024 * 1024,
   .set_expand_threshold = 65,
-  .tbb = false,
 };
 
 static void parse_args(int argc, char **argv) {
@@ -28,7 +27,6 @@ static void parse_args(int argc, char **argv) {
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "threads", required_argument, 0, 't' },
-      { "tbb", no_argument, 0, 128 },
       { 0, 0, 0, 0 },
     };
 
@@ -104,19 +102,8 @@ static void parse_args(int argc, char **argv) {
           << "     Specify the number of threads the checker should use. If you\n"
           << "     do not specify this parameter or pass 0, the number of\n"
           << "     threads will be chosen based on the available hardware\n"
-          << "     threads on the platform on which you generate the model.\n\n"
-          << " --tbb\n"
-          << "     Use Intel Thread Building Blocks. When using a dynamically\n"
-          << "     expanding state set, Intel TBB's concurrent_unordered_set\n"
-          << "     will be used to store states which can potentially result in\n"
-          << "     a speed up. This requires you to have the TBB headers and\n"
-          << "     library available when building the checker and will only be\n"
-          << "     used by a multithreaded checker.\n";
+          << "     threads on the platform on which you generate the model.\n";
         exit(EXIT_FAILURE);
-
-      case 128:
-        output_options.tbb = true;
-        break;
 
       default:
         std::cerr << "unexpected error\n";

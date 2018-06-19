@@ -15,9 +15,6 @@ struct OutputOptions {
    * set.
    */
   unsigned long set_expand_threshold;
-
-  // Use Intel Thread Building Blocks
-  bool tbb;
 };
 
 int output_checker(const std::string &path, const Model &model,
