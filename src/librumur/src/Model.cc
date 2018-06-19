@@ -260,6 +260,7 @@ void Model::generate(std::ostream &out) const {
   {
     out
       << "static int explore(void) {\n"
+      << "  size_t last_queue_size = 0;\n"
       << "  for (;;) {\n"
       << "    struct state *s = queue_dequeue();\n"
       << "    if (s == NULL) {\n"
@@ -289,7 +290,8 @@ void Model::generate(std::ostream &out) const {
           << "        if (set_insert(n, &size)) {\n"
           << "          size_t queue_size = queue_enqueue(n);\n"
           << "          if (size % 10000 == 0) {\n"
-          << "            print(\"\\t %zu states explored in %llus, with %zu states in the queue.\\n\", size, gettime(), queue_size);\n"
+          << "            print(\"\\t %zu states explored in %llus, with %s%zu%s states in the queue.\\n\", size, gettime(), queue_size > last_queue_size ? yellow() : green(), queue_size, reset());\n"
+          << "            last_queue_size = queue_size;\n"
           << "          }\n"
           << "        } else {\n"
           << "          free(n);\n"

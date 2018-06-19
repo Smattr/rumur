@@ -67,6 +67,47 @@ static atomic_bool done;
   #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 #endif
 
+// ANSI colour code support.
+// FIXME: thread safety
+
+static int istty = -1;
+
+static const char *green() {
+  switch (COLOR) {
+    case OFF:  return "";
+    case ON:   return "\033[32m";
+    case AUTO:
+      if (istty == -1) {
+        istty = isatty(STDOUT_FILENO);
+      }
+      return istty ? "\033[32m" : "";
+  }
+}
+
+static const char *yellow() {
+  switch (COLOR) {
+    case OFF:  return "";
+    case ON:   return "\033[33m";
+    case AUTO:
+      if (istty == -1) {
+        istty = isatty(STDOUT_FILENO);
+      }
+      return istty ? "\033[33m" : "";
+  }
+}
+
+static const char *reset() {
+  switch (COLOR) {
+    case OFF:  return "";
+    case ON:   return "\033[0m";
+    case AUTO:
+      if (istty == -1) {
+        istty = isatty(STDOUT_FILENO);
+      }
+      return istty ? "\033[0m" : "";
+  }
+}
+
 /* A lock that should be held whenever printing to stdout or stderr. This is a
  * way to prevent the output of one thread being interleaved with the output of
  * another.

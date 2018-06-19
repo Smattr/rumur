@@ -5,6 +5,12 @@
 
 namespace rumur {
 
+enum tristate {
+  OFF,
+  ON,
+  AUTO,
+};
+
 struct OutputOptions {
   bool overflow_checks;
   unsigned long threads;
@@ -15,6 +21,9 @@ struct OutputOptions {
    * set.
    */
   unsigned long set_expand_threshold;
+
+  // Whether to use ANSI colour codes in the checker's output.
+  tristate color;
 };
 
 int output_checker(const std::string &path, const Model &model,

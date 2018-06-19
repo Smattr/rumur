@@ -15,14 +15,19 @@ static rumur::OutputOptions output_options = {
   .debug = false,
   .set_capacity = 8 * 1024 * 1024,
   .set_expand_threshold = 65,
+  .color = rumur::AUTO,
 };
 
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
+      { "color", no_argument, 0, 128 },
+      { "colour", no_argument, 0, 128 },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, '?' },
+      { "no-color", no_argument, 0, 129 },
+      { "no-colour", no_argument, 0, 129 },
       { "output", required_argument, 0, 'o' },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
@@ -85,6 +90,10 @@ static void parse_args(int argc, char **argv) {
           << "usage: " << argv[0] << " [options...] --output FILE [FILE]\n"
           << "\n"
           << "options:\n\n"
+          << " --[no-]colour\n"
+          << "     Enable or disable the use of ANSI colour codes in the\n"
+          << "     checker's output. The default is to auto-detect based on\n"
+          << "     whether the checker's stdout is a TTY.\n\n"
           << " --debug | -d\n"
           << "     Enable debugging options in the generated checker. This\n"
           << "     includes enabling runtime assertions.\n\n"
@@ -104,6 +113,14 @@ static void parse_args(int argc, char **argv) {
           << "     threads will be chosen based on the available hardware\n"
           << "     threads on the platform on which you generate the model.\n";
         exit(EXIT_FAILURE);
+
+      case 128:
+        output_options.color = rumur::ON;
+        break;
+
+      case 129:
+        output_options.color = rumur::OFF;
+        break;
 
       default:
         std::cerr << "unexpected error\n";

@@ -28,6 +28,8 @@ int output_checker(const std::string &path, const Model &model,
 
     << "enum { SET_CAPACITY = " << options.set_capacity << "ul };\n\n"
     << "enum { SET_EXPAND_THRESHOLD = " << options.set_expand_threshold << " };\n\n"
+    << "static enum { OFF, ON, AUTO } COLOR = " << (options.color == OFF ? "OFF" :
+      options.color == ON ? "ON" : "AUTO") << ";\n\n"
 
     // xxHash source
     << std::string((const char*)resources_xxhash_h, (size_t)resources_xxhash_h_len)
