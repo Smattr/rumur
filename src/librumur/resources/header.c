@@ -68,44 +68,25 @@ static atomic_bool done;
 #endif
 
 // ANSI colour code support.
-// FIXME: thread safety
 
-static int istty = -1;
+static bool istty;
 
 static const char *green() {
-  switch (COLOR) {
-    case OFF:  return "";
-    case ON:   return "\033[32m";
-    case AUTO:
-      if (istty == -1) {
-        istty = isatty(STDOUT_FILENO);
-      }
-      return istty ? "\033[32m" : "";
-  }
+  if (COLOR == ON || (COLOR == AUTO && istty))
+    return "\033[32m";
+  return "";
 }
 
 static const char *yellow() {
-  switch (COLOR) {
-    case OFF:  return "";
-    case ON:   return "\033[33m";
-    case AUTO:
-      if (istty == -1) {
-        istty = isatty(STDOUT_FILENO);
-      }
-      return istty ? "\033[33m" : "";
-  }
+  if (COLOR == ON || (COLOR == AUTO && istty))
+    return "\033[33m";
+  return "";
 }
 
 static const char *reset() {
-  switch (COLOR) {
-    case OFF:  return "";
-    case ON:   return "\033[0m";
-    case AUTO:
-      if (istty == -1) {
-        istty = isatty(STDOUT_FILENO);
-      }
-      return istty ? "\033[0m" : "";
-  }
+  if (COLOR == ON || (COLOR == AUTO && istty))
+    return "\033[0m";
+  return "";
 }
 
 /* A lock that should be held whenever printing to stdout or stderr. This is a
@@ -682,6 +663,9 @@ int main(void) {
   print("State size: %zu bits\n", (size_t)STATE_SIZE_BITS);
 
   START_TIME = time(NULL);
+
+  if (COLOR == AUTO)
+    istty = isatty(STDOUT_FILENO) != 0;
 
   set_init();
 
