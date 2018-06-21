@@ -1,8 +1,16 @@
 #ifndef __OPTIMIZE__
   #ifdef __clang__
-    #warning you are compiling without optimizations enabled. I would suggest -O3.
+    #ifdef __x86_64__
+      #warning you are compiling without optimizations enabled. I would suggest -O3 -mcx16.
+    #else
+      #warning you are compiling without optimizations enabled. I would suggest -O3.
+    #endif
   #else
-    #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
+    #ifdef __x86_64__
+      #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program -mcx16.
+    #else
+      #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
+    #endif
   #endif
 #endif
 
@@ -602,6 +610,246 @@ struct state *queue_dequeue(void) {
 /******************************************************************************/
 
 /*******************************************************************************
+ * Reference counted pointers                                                  *
+ *                                                                             *
+ * These are capable of encapsulating any generic pointer (void*). Note that   *
+ * we rely on the existence of double-word atomics. On x86-64, you need to     *
+ * use compiler flag '-mcx16' to get an efficient 128-bit cmpxchg.             *
+ *                                                                             *
+ * Of these functions, only the following are thread safe:                     *
+ *                                                                             *
+ *   * refcounted_ptr_get                                                      *
+ *   * refcounted_ptr_put                                                      *
+ *                                                                             *
+ * The caller is expected to coordinate with other threads to exclude them     *
+ * operating on the relevant refcounted_ptr_t when using one of the other      *
+ * functions:                                                                  *
+ *                                                                             *
+ *   * refcounted_ptr_set                                                      *
+ *   * refcounted_ptr_shift                                                    *
+ *                                                                             *
+ ******************************************************************************/
+
+struct refcounted_ptr {
+  void *ptr;
+  size_t count;
+};
+
+#if __SIZEOF_POINTER__ <= 4
+  typedef uint64_t refcounted_ptr_t;
+#elif __SIZEOF_POINTER__ <= 8
+  typedef unsigned __int128 refcounted_ptr_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for refcounted_ptr_t?"
+#endif
+
+static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
+  "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
+  "on it atomically");
+
+static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
+
+  /* Read the current state of the pointer. Note, we don't bother doing this
+   * atomically as it's only for debugging and no one else should be using the
+   * pointer source right now.
+   */
+  struct refcounted_ptr p2;
+  memcpy(&p2, p, sizeof(*p));
+  ASSERT(p2.count == 0 && "overwriting a pointer source while someone still "
+    "has a reference to this pointer");
+
+  /* Set the current source pointer with no outstanding references. */
+  p2.ptr = ptr;
+  p2.count = 0;
+
+  /* Commit the result. Again, we do not operate atomically because no one else
+   * should be using the pointer source.
+   */
+  memcpy(p, &p2, sizeof(*p));
+}
+
+static void *refcounted_ptr_get(refcounted_ptr_t *p) {
+
+  refcounted_ptr_t old, new;
+  void *ret;
+
+  do {
+
+    /* Read the current state of the pointer. */
+    old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
+    struct refcounted_ptr p2;
+    memcpy(&p2, &old, sizeof(old));
+
+    /* Take a reference to it. */
+    p2.count++;
+    ret = p2.ptr;
+
+    /* Try to commit our results. */
+    memcpy(&new, &p2, sizeof(new));
+  } while (!__atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST));
+
+  return ret;
+}
+
+static size_t refcounted_ptr_put(refcounted_ptr_t *p,
+  void *ptr __attribute__((unused))) {
+
+  refcounted_ptr_t old, new;
+  size_t ret;
+
+  do {
+
+    /* Read the current state of the pointer. */
+    old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
+    struct refcounted_ptr p2;
+    memcpy(&p2, &old, sizeof(old));
+
+    /* Release our reference to it. */
+    ASSERT(p2.ptr == ptr && "releasing a reference to a pointer after someone "
+      "has changed the pointer source");
+    ASSERT(p2.count > 0 && "releasing a reference to a pointer when it had no "
+      "outstanding references");
+    p2.count--;
+    ret = p2.count;
+
+    /* Try to commit our results. */
+    memcpy(&new, &p2, sizeof(new));
+  } while (!__atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST));
+
+  return ret;
+}
+
+static void refcounted_ptr_shift(refcounted_ptr_t *current, refcounted_ptr_t *next) {
+
+  /* None of the operations in this function are performed atomically because we
+   * assume the caller has synchronised with other threads via other means.
+   */
+
+  /* The pointer we're about to overwrite should not be referenced. */
+  struct refcounted_ptr p __attribute__((unused));
+  memcpy(&p, current, sizeof(*current));
+  ASSERT(p.count == 0 && "overwriting a pointer that still has outstanding "
+    "references");
+
+  /* Shift the next value into the current pointer. */
+  *current = *next;
+
+  /* Blank the value we just shifted over. */
+  *next = 0;
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Thread rendezvous support                                                   *
+ *                                                                             *
+ * Expected usage is something like:                                           *
+ *                                                                             *
+ *   bool leader = rendezvous_arrive();                                        *
+ *   if (leader) {                                                             *
+ *     // single-threaded critical region                                      *
+ *     ...                                                                     *
+ *   }                                                                         *
+ *   rendezvous_depart(leader);                                                *
+ *                                                                             *
+ ******************************************************************************/
+
+static size_t rendezvous_pending = 1; // TODO: this should eventually be 'THREADS'
+static semaphore_t rendezvous_barrier;
+
+static void rendezvous_init(void) {
+  if (semaphore_init(&rendezvous_barrier, 0) < 0) {
+    perror("semaphore_init");
+    exit(EXIT_FAILURE);
+  }
+}
+
+/* Call this at the start of a rendezvous point.
+ *
+ * @return True if the caller was the last to arrive and henceforth dubbed the
+ *   'leader'.
+ */
+static bool rendezvous_arrive(void) {
+
+  /* Take a token from the rendezvous down-counter. */
+  size_t id = __atomic_sub_fetch(&rendezvous_pending, 1, __ATOMIC_SEQ_CST);
+
+  /* If we were the last to arrive then it was our arrival that dropped the
+   * counter to zero.
+   */
+  return id == 0;
+}
+
+/* Call this at the end of a rendezvous point.
+ *
+ * @param leader Whether the caller is the 'leader'. If you call this when you
+ *   are the 'leader' it will unblock all 'followers' at the rendezvous point.
+ */
+static void rendezvous_depart(bool leader) {
+  if (leader) {
+
+    /* Reset the counter for the next rendezvous. */
+    rendezvous_pending = 1; // TODO: should be 'THREADS'
+
+    // TODO: This condition should become 'i < THREADS - 1'
+    for (size_t i = 0; i < 0; i++) {
+      int r __attribute__((unused)) = semaphore_post(&rendezvous_barrier);
+      ASSERT(r == 0);
+    }
+  } else {
+    int r __attribute__((unused)) = semaphore_wait(&rendezvous_barrier);
+    ASSERT(r == 0);
+  }
+}
+
+/* A trivial rendezvous (no critical section). */
+static void rendezvous(void) {
+  bool leader = rendezvous_arrive();
+  rendezvous_depart(leader);
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * 'Slots', an opaque wrapper around a state pointer                           *
+ *                                                                             *
+ * See usage of this in the state set below for its purpose.                   *
+ ******************************************************************************/
+
+typedef uintptr_t slot_t;
+
+static slot_t slot_empty(void) {
+  return 0;
+}
+
+static bool slot_is_empty(slot_t s) {
+  return s == slot_empty();
+}
+
+static bool slot_is_tombstone(slot_t s) {
+  return (s & 0x1) == 0x1;
+}
+
+static slot_t slot_bury(slot_t s) {
+  ASSERT(!slot_is_tombstone(s));
+  return s | 0x1;
+}
+
+static struct state *slot_to_state(slot_t s) {
+  ASSERT(!slot_is_empty(s));
+  ASSERT(!slot_is_tombstone(s));
+  return (struct state*)s;
+}
+
+static slot_t state_to_slot(const struct state *s) {
+  return (slot_t)s;
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State set                                                                   *
  *                                                                             *
  * The following implementation provides a set for storing the seen states.    *
@@ -613,73 +861,234 @@ enum { INITIAL_SET_SIZE = SET_CAPACITY / sizeof(struct state*) /
   (1 << (__builtin_ffs(STATE_SIZE_BYTES) +
     (__builtin_popcount(STATE_SIZE_BYTES) == 1 ? 0 : 1))) };
 
-/* The states we have encountered. This collection will only ever grow while
- * checking the model.
- */
-static struct {
-  struct state **bucket;
+struct set {
+  slot_t *bucket;
   size_t size;
   size_t count;
-} seen;
+};
 
-static void set_init(void) {
-  seen.size = INITIAL_SET_SIZE;
-  seen.bucket = xcalloc(seen.size, sizeof(seen.bucket[0]));
+/* The states we have encountered. This collection will only ever grow while
+ * checking the model. Note that we have a global reference-counted pointer and
+ * a local bare pointer. See below for an explanation.
+ */
+static refcounted_ptr_t global_seen;
+static _Thread_local struct set *local_seen;
+
+/* The "next" 'global_seen' value. See below for an explanation. */
+static refcounted_ptr_t next_global_seen;
+
+/* Now the explanation I teased... When the set capacity exceeds a threshold
+ * (see 'set_expand' related logic below) it is expanded and the reference
+ * tracking within the 'refcounted_ptr_t's comes in to play. We need to allocate
+ * a new seen set ('next_global_seen'), copy over all the elements (done in
+ * 'set_migrate'), and then "shift" the new set to become the current set. The
+ * role of the reference counts of both 'global_seen' and 'next_global_seen' in
+ * all of this is to detect when the last thread releases its reference to the
+ * old seen set and hence can deallocate it.
+ */
+
+/* The next chunk to migrate from the old set to the new set. What exactly a
+ * "chunk" is is covered in 'set_migrate'.
+ */
+static size_t next_migration;
+
+/* A mechanism for synchronisation in 'set_expand'. */
+static pthread_mutex_t set_expand_mutex;
+
+static void set_expand_lock(void) {
+  int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
+  ASSERT(r == 0);
 }
 
-// TODO: parallelise/thread-safe this
-static void set_expand(void) {
+static void set_expand_unlock(void) {
+  int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
+  ASSERT(r == 0);
+}
 
-  /* Create a set of double the size. */
-  size_t new_size = seen.size * 2;
-  struct state **bucket = xcalloc(new_size, sizeof(bucket[0]));
 
-  /* Migrate all elements. */
-  for (size_t i = 0; i < seen.size; i++) {
-    if (seen.bucket[i] != NULL) {
-      size_t index = state_hash(seen.bucket[i]) % new_size;
-      for (size_t j = index; ; j = (j + 1) % new_size) {
-        if (bucket[j] == NULL) {
-          bucket[j] = seen.bucket[i];
-          break;
+static void set_init(void) {
+
+  if (pthread_mutex_init(&set_expand_mutex, NULL) < 0) {
+    perror("pthread_mutex_init");
+    exit(EXIT_FAILURE);
+  }
+
+  /* Allocate the set we'll store seen states in at some conservative initial
+   * size.
+   */
+  struct set *set = xmalloc(sizeof(*set));
+  set->size = INITIAL_SET_SIZE;
+  set->bucket = xcalloc(set->size, sizeof(set->bucket[0]));
+
+  /* Stash this somewhere for threads to later retrieve it from. Note that we
+   * initialize its reference count to zero as we (the setup logic) are not
+   * using it beyond this function.
+   */
+  refcounted_ptr_set(&global_seen, set);
+}
+
+static void set_thread_init(void) {
+  /* Take a local reference to the global seen set. */
+  local_seen = refcounted_ptr_get(&global_seen);
+}
+
+static void set_migrate(void) {
+
+  /* Size of a migration chunk. Threads in this function grab a chunk at a time
+   * to migrate.
+   */
+  enum { CHUNK_SIZE = 4096 / sizeof(local_seen->bucket[0]) /* slots */ };
+
+  /* Take a pointer to the target set for the migration. */
+  struct set *next = refcounted_ptr_get(&next_global_seen);
+
+  for (;;) {
+
+    size_t chunk = __atomic_fetch_add(&next_migration, 1, __ATOMIC_SEQ_CST);
+    size_t start = chunk * CHUNK_SIZE;
+    size_t end = start + CHUNK_SIZE;
+
+    /* Bail out if we've finished migrating all of the set. */
+    if (start >= local_seen->size) {
+      break;
+    }
+
+    // TODO: The following algorithm assumes insertions can collide. That is, it
+    // operates atomically on slots because another thread could be migrating
+    // and also targeting the same slot. If we were to more closely wick to the
+    // Maier design this would not be required.
+
+    for (size_t i = start; i < end; i++) {
+retry:;
+
+      /* Retrieve the slot element and try to mark it as migrated. */
+      slot_t s = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+      ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
+      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &s, slot_bury(s),
+          false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        goto retry;
+      }
+
+      /* If the current slot contained a state, rehash it and insert it into the
+       * new set. Note we don't need to do any state comparisons because we know
+       * everything in the old state is unique.
+       */
+      if (!slot_is_empty(s)) {
+        size_t index = state_hash(slot_to_state(s)) % next->size;
+        for (size_t j = index; ; j = (j + 1) % next->size) {
+          slot_t expected = slot_empty();
+          if (__atomic_compare_exchange_n(&next->bucket[j], &expected, s, false,
+              __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+            /* Found an empty slot and inserted successfully. */
+            break;
+          }
         }
       }
     }
+
   }
 
-  /* Free the old set and install the new one. */
-  free(seen.bucket);
-  seen.bucket = bucket;
-  seen.size = new_size;
+  /* Release our reference to the old set now we're done with it. */
+  size_t count = refcounted_ptr_put(&global_seen, local_seen);
+
+  if (count == 0) {
+    /* We were the last thread to release our reference to the old set. Clean it
+     * up now. Note that we're using the pointer we just gave up our reference
+     * count to, but we know no one else will be invalidating it.
+     */
+    free(local_seen->bucket);
+    free(local_seen);
+
+    /* Update the global pointer to the new set. We know all the above
+     * migrations have completed and no one needs the old set.
+     */
+    refcounted_ptr_shift(&global_seen, &next_global_seen);
+  }
+
+  /* Now we need to make sure all the threads get to this point before any one
+   * thread leaves. The purpose of this is to guarantee we only ever have at
+   * most two seen sets "in flight". Without this rendezvous, one thread could
+   * race ahead, fill the new set, and then decide to expand again while some
+   * are still working on the old set. It's possible to make such a scheme work
+   * but the synchronisation requirements just seem too complicated.
+   */
+  rendezvous();
+
+  /* We're now ready to resume model checking. Note that we already have a
+   * (reference counted) pointer to the now-current global seen set, so we don't
+   * need to take a fresh reference to it.
+   */
+  local_seen = next;
+}
+
+static void set_expand(void) {
+
+  set_expand_lock();
+
+  /* Check if another thread beat us to expanding the set. */
+  struct set *s = refcounted_ptr_get(&next_global_seen);
+  (void)refcounted_ptr_put(&next_global_seen, s);
+  if (s != NULL) {
+    /* Someone else already expanded it. Join them in the migration effort. */
+    set_expand_unlock();
+    set_migrate();
+    return;
+  }
+
+  /* Create a set of double the size. */
+  struct set *set = xmalloc(sizeof(*set));
+  set->size = local_seen->size * 2;
+  set->bucket = xcalloc(set->size, sizeof(set->bucket[0]));
+  set->count = local_seen->count; /* will be true after migration */
+
+  /* Advertise this as the newly expanded global set. */
+  refcounted_ptr_set(&next_global_seen, set);
+
+  /* We now need to migrate all slots from the old set to the new one, but we
+   * can do this multithreaded.
+   */
+  next_migration = 0; /* initialise migration state */
+  set_expand_unlock();
+  set_migrate();
 }
 
 static bool set_insert(struct state *s, size_t *count) {
 
-  if (seen.count * 100 / seen.size >= SET_EXPAND_THRESHOLD)
+restart:;
+
+  if (local_seen->count * 100 / local_seen->size >= SET_EXPAND_THRESHOLD)
     set_expand();
 
-  size_t index = state_hash(s) % seen.size;
+  size_t index = state_hash(s) % local_seen->size;
 
   size_t attempts = 0;
-  for (size_t i = index; attempts < seen.size; i = (i + 1) % seen.size) {
-
+  for (size_t i = index; attempts < local_seen->size; i = (i + 1) % local_seen->size) {
 retry:;
-    struct state *c = __atomic_load_n(&seen.bucket[i], __ATOMIC_SEQ_CST);
+
+    slot_t c = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
 
     /* If this slot is empty, try to insert it here. */
-    if (c == NULL) {
-      if (!__atomic_compare_exchange(&seen.bucket[i], &c, &s, false,
-          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+    if (slot_is_empty(c)) {
+      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
+          state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
         /* Failed */
         goto retry;
       }
-      *count = __atomic_add_fetch(&seen.count, 1, __ATOMIC_SEQ_CST);
+      *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
       TRACE("added state %p, set size is now %zu", s, *count);
       return true;
     }
 
+    if (slot_is_tombstone(c)) {
+      /* This slot has been migrated. We need to rendezvous with other migrating
+       * threads and restart our insertion attempt on the newly expanded set.
+       */
+      set_migrate();
+      goto restart;
+    }
+
     /* If we find this already in the set, we're done. */
-    if (state_eq(s, c)) {
+    if (state_eq(s, slot_to_state(c))) {
       TRACE("skipped adding state %p that was already in set", s);
       return false;
     }
@@ -713,12 +1122,17 @@ int main(void) {
   if (COLOR == AUTO)
     istty = isatty(STDOUT_FILENO) != 0;
 
+  rendezvous_init();
+
   set_init();
+
+  // TODO: Initialise after spawing new threads
+  set_thread_init();
 
   init();
   int r = explore();
 
-  print("%zu states covered%s\n", seen.count,
+  print("%zu states covered%s\n", local_seen->count,
     r == EXIT_SUCCESS ? ", no errors found" : "");
 
   return r;
