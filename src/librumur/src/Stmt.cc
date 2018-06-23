@@ -186,8 +186,8 @@ For::~For() {
 }
 
 IfClause::IfClause(Expr *condition_, std::vector<Stmt*> &&body_,
-  const location &loc):
-  Node(loc), condition(condition_), body(body_) { }
+  const location &loc_):
+  Node(loc_), condition(condition_), body(body_) { }
 
 IfClause::IfClause(const IfClause &other):
   Node(other.loc),
