@@ -1,0 +1,85 @@
+.TH RUMUR 1
+.SH NAME
+rumur \- Yet another explicit state model checker
+.SH SYNOPSIS
+.B \fBrumur\fR \fBoptions\fR \fB--output\fR \fIFILE\fR [\fIFILE\fR]\fR
+.SH DESCRIPTION
+Rumur is a reimplementation of the model checker CMurphi with an expanded
+feature set and improved performance.
+.SH OPTIONS
+\fB--[no-colour]\fR
+.RS
+Enable or disable the use of ANSI colour codes in the checker's output. The
+default is to auto-detect based on whether the checker's stdout is a TTY.
+.RE
+.PP
+\fB--debug\fR or \fB-d\fR
+.RS
+Enable debugging options in the generated checker. This includes enabling
+runtime assertions.
+.RE
+.PP
+\fB--help\fR
+.RS
+Display this information.
+.RE
+.PP
+\fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
+.RS
+FIXME: The following is not correct.
+Specify a static size (in bytes) of the seen state set. When this size is
+reached, the checker will abort if it has not yet covered the state space. A
+size of \fI0\fR indicates a dynamically expanding state set which is the
+default.
+.RE
+.PP
+\fB--set-expand-threshold\fR \fIPERCENT\fR or \fB-e\fR \fIPERCENT\fR
+.RS
+Expand the state set when its occupancy exceeds this percentage. Default is
+\fI65\fR, valid values are \fI1\fR - \fI100\fR.
+.RE
+.PP
+\fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR
+.RS
+Specify the number of threads the checker should use. If you do not specify this
+parameter or pass \fI0\fR, the number of threads will be chosen based on the
+available hardware threads on the platform on which you generate the model.
+.RE
+.SH AUTHOR
+All comments, questions and complaints should be directed to Matthew Fernandez
+<matthew.fernandez@gmail.com>.
+.SH NOTES
+This tool is free and open source. It includes the xxHash code whose licence
+follows.
+.PP
+.RS
+xxHash Library
+.br
+Copyright (c) 2012-2014, Yann Collet
+.br
+All rights reserved.
+.PP
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+.PP
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+following disclaimer.
+.PP
+* Redistributions in binary form must reproduce the above copyright notice, this
+  list of conditions and the following disclaimer in the documentation and/or
+  other materials provided with the distribution.
+.PP
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.PP
+.RE
+All other elements of this program are in the public domain.

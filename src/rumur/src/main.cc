@@ -3,6 +3,7 @@
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
+#include "resources_manpage.h"
 #include <rumur/rumur.h>
 #include <string>
 #include <unistd.h>
@@ -17,6 +18,36 @@ static rumur::OutputOptions output_options = {
   .set_expand_threshold = 65,
   .color = rumur::AUTO,
 };
+
+static void help(const char *arg0) {
+
+  // Construct a path to where we expect the manpage to be.
+  std::string const cmd(arg0);
+  auto pos = cmd.rfind('/');
+  std::string manpage;
+  if (pos != std::string::npos)
+    manpage += cmd.substr(0, pos + 1);
+  manpage += "rumur.1";
+
+  // If it is indeed there, try to run `man`.
+  if (access(manpage.c_str(), R_OK) == 0) {
+
+    char const *args[] = { "man",
+#ifndef __APPLE__
+      "--local-file",
+#endif
+      manpage.c_str(), nullptr };
+    execvp(args[0], const_cast<char**>(args));
+
+    // If we failed to exec, fall through to the option below.
+  }
+
+  // Fall back option: just print the pre-formatted manpage data.
+  std::cout << std::string((const char*)resources_manpage_text,
+    (size_t)resources_manpage_text_len);
+
+  exit(EXIT_SUCCESS);
+}
 
 static void parse_args(int argc, char **argv) {
 
@@ -86,33 +117,8 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case '?':
-        std::cerr
-          << "usage: " << argv[0] << " [options...] --output FILE [FILE]\n"
-          << "\n"
-          << "options:\n\n"
-          << " --[no-]colour\n"
-          << "     Enable or disable the use of ANSI colour codes in the\n"
-          << "     checker's output. The default is to auto-detect based on\n"
-          << "     whether the checker's stdout is a TTY.\n\n"
-          << " --debug | -d\n"
-          << "     Enable debugging options in the generated checker. This\n"
-          << "     includes enabling runtime assertions.\n\n"
-          << " --help\n"
-          << "     Display the present information.\n\n"
-          << " --set-capacity SIZE | -s SIZE\n"
-          << "     Specify a static size (in bytes) of the seen state set. When\n"
-          << "     this size is reached, the checker will abort if it has not\n"
-          << "     yet covered the state space. A size of 0 indicates a\n"
-          << "     dynamically expanding seen state set which is the default.\n\n"
-          << " --set-expand-threshold PERCENT | -e PERCENT\n"
-          << "     Expand the state set when its occupancy exceeds this\n"
-          << "     percentage. Default 65, valid values 1 - 100.\n\n"
-          << " --threads COUNT | -t COUNT\n"
-          << "     Specify the number of threads the checker should use. If you\n"
-          << "     do not specify this parameter or pass 0, the number of\n"
-          << "     threads will be chosen based on the available hardware\n"
-          << "     threads on the platform on which you generate the model.\n";
-        exit(EXIT_FAILURE);
+        help(argv[0]);
+        __builtin_unreachable();
 
       case 128:
         output_options.color = rumur::ON;
