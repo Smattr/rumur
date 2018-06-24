@@ -1,15 +1,15 @@
 #ifndef __OPTIMIZE__
   #ifdef __clang__
     #ifdef __x86_64__
-      #warning you are compiling without optimizations enabled. I would suggest -O3 -mcx16.
+      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -mcx16.
     #else
-      #warning you are compiling without optimizations enabled. I would suggest -O3.
+      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3.
     #endif
   #else
     #ifdef __x86_64__
-      #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program -mcx16.
+      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -fwhole-program -mcx16.
     #else
-      #warning you are compiling without optimizations enabled. I would suggest -O3 -fwhole-program.
+      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -fwhole-program.
     #endif
   #endif
 #endif
