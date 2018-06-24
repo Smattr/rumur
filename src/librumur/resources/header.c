@@ -409,7 +409,7 @@ static __attribute__((unused)) void handle_write(const struct state *s,
 static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   size_t offset, size_t width) {
 
-  ASSERT(h.offset + offset + width <= h.offset + width &&
+  ASSERT(h.offset + offset + width <= h.offset + h.width &&
     "narrowing a handle with values that actually expand it");
 
   return (struct handle){
