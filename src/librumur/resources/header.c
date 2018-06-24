@@ -891,15 +891,24 @@ static slot_t state_to_slot(const struct state *s) {
  * removing elements, only thread-safe insertion of elements.                  *
  ******************************************************************************/
 
-enum { INITIAL_SET_SIZE = SET_CAPACITY / sizeof(struct state*) /
-  (1 << (__builtin_ffs(STATE_SIZE_BYTES) +
-    (__builtin_popcount(STATE_SIZE_BYTES) == 1 ? 0 : 1))) };
+enum { INITIAL_SET_SIZE_EXPONENT = sizeof(unsigned long long) * 8 - 1 -
+  __builtin_clzll(SET_CAPACITY / sizeof(struct state*) / sizeof(struct state)) };
 
 struct set {
   slot_t *bucket;
-  size_t size;
+  size_t size_exponent;
   size_t count;
 };
+
+/* Some utility functions for dealing with exponents. */
+
+static size_t set_size(const struct set *set) {
+  return ((size_t)1) << set->size_exponent;
+}
+
+static size_t set_index(const struct set *set, size_t index) {
+  return index & (set_size(set) - 1);
+}
 
 /* The states we have encountered. This collection will only ever grow while
  * checking the model. Note that we have a global reference-counted pointer and
@@ -951,8 +960,8 @@ static void set_init(void) {
    * size.
    */
   struct set *set = xmalloc(sizeof(*set));
-  set->size = INITIAL_SET_SIZE;
-  set->bucket = xcalloc(set->size, sizeof(set->bucket[0]));
+  set->size_exponent = INITIAL_SET_SIZE_EXPONENT;
+  set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
 
   /* Stash this somewhere for threads to later retrieve it from. Note that we
    * initialize its reference count to zero as we (the setup logic) are not
@@ -983,7 +992,7 @@ static void set_migrate(void) {
     size_t end = start + CHUNK_SIZE;
 
     /* Bail out if we've finished migrating all of the set. */
-    if (start >= local_seen->size) {
+    if (start >= set_size(local_seen)) {
       break;
     }
 
@@ -1008,8 +1017,8 @@ retry:;
        * everything in the old state is unique.
        */
       if (!slot_is_empty(s)) {
-        size_t index = state_hash(slot_to_state(s)) % next->size;
-        for (size_t j = index; ; j = (j + 1) % next->size) {
+        size_t index = set_index(next, state_hash(slot_to_state(s)));
+        for (size_t j = index; ; j = set_index(next, j + 1)) {
           slot_t expected = slot_empty();
           if (__atomic_compare_exchange_n(&next->bucket[j], &expected, s, false,
               __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
@@ -1071,8 +1080,8 @@ static void set_expand(void) {
 
   /* Create a set of double the size. */
   struct set *set = xmalloc(sizeof(*set));
-  set->size = local_seen->size * 2;
-  set->bucket = xcalloc(set->size, sizeof(set->bucket[0]));
+  set->size_exponent = local_seen->size_exponent + 1;
+  set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
   set->count = local_seen->count; /* will be true after migration */
 
   /* Advertise this as the newly expanded global set. */
@@ -1090,13 +1099,13 @@ static bool set_insert(struct state *s, size_t *count) {
 
 restart:;
 
-  if (local_seen->count * 100 / local_seen->size >= SET_EXPAND_THRESHOLD)
+  if (local_seen->count * 100 / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
     set_expand();
 
-  size_t index = state_hash(s) % local_seen->size;
+  size_t index = set_index(local_seen, state_hash(s));
 
   size_t attempts = 0;
-  for (size_t i = index; attempts < local_seen->size; i = (i + 1) % local_seen->size) {
+  for (size_t i = index; attempts < set_size(local_seen); i = set_index(local_seen, i + 1)) {
 
     /* Guess that the current slot is empty and try to insert here. */
     slot_t c = slot_empty();
