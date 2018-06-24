@@ -45,6 +45,27 @@ Specify the number of threads the checker should use. If you do not specify this
 parameter or pass \fI0\fR, the number of threads will be chosen based on the
 available hardware threads on the platform on which you generate the model.
 .RE
+.PP
+\fB--trace\fR \fICATEGORY\fR
+.RS
+Enable tracing of specific events while checking. This option is for debugging
+Rumur itself, and lets you generate a checker that writes events to stderr.
+Available event categories are:
+.PP
+.RS
+* \fIhandle_reads\fR Reads from variable handles
+.br
+* \fIhandle_writes\fR Writes to variable handles
+.br
+* \fIqueue\fR Events relating to the pending state queue
+.br
+* \fIset\fR Events relating to the seen state set
+.RE
+.PP
+More than one of these can be enabled at once by passing the \fB--trace\fR
+argument multiple times. Note that enabling tracing will significantly slow the
+checker and is only intended for debugging purposes.
+.RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez
 <matthew.fernandez@gmail.com>.

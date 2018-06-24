@@ -17,6 +17,7 @@ static rumur::OutputOptions output_options = {
   .set_capacity = 8 * 1024 * 1024,
   .set_expand_threshold = 65,
   .color = rumur::AUTO,
+  .traces = 0,
 };
 
 static void help(const char *arg0) {
@@ -63,6 +64,7 @@ static void parse_args(int argc, char **argv) {
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "threads", required_argument, 0, 't' },
+      { "trace", required_argument, 0, 130 },
       { 0, 0, 0, 0 },
     };
 
@@ -126,6 +128,24 @@ static void parse_args(int argc, char **argv) {
 
       case 129:
         output_options.color = rumur::OFF;
+        break;
+
+      case 130:
+        if (strcmp(optarg, "handle_reads") == 0) {
+          output_options.traces |= rumur::TC_HANDLE_READS;
+        } else if (strcmp(optarg, "handle_writes") == 0) {
+          output_options.traces |= rumur::TC_HANDLE_WRITES;
+        } else if (strcmp(optarg, "queue") == 0) {
+          output_options.traces |= rumur::TC_QUEUE;
+        } else if (strcmp(optarg, "set") == 0) {
+          output_options.traces |= rumur::TC_SET;
+        } else {
+          std::cerr
+            << "invalid --trace argument \"" << optarg << "\"\n"
+            << "valid arguments are \"handle_reads\", \"handle_writes\", "
+              "\"queue\", and \"set\"\n";
+          exit(EXIT_FAILURE);
+        }
         break;
 
       default:

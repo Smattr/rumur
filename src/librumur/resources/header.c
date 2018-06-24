@@ -14,18 +14,6 @@
   #endif
 #endif
 
-/* Uncomment this to enable full checker trace output when debugging Rumur
- * itself on a small model.
- */
-#if 0
-  #define TRACE(fmt, args...)                                                  \
-    eprint("%sTRACE%s: " fmt "\n",                                             \
-      isatty(STDERR_FILENO) ? "\033[33m" : "",                                 \
-      isatty(STDERR_FILENO) ? "\033[0m" : "" , ## args)
-#else
-  #define TRACE(args...) do { } while (0)
-#endif
-
 /* Abstraction over the type we use for scalar values. Other code should be
  * agnostic to what the underlying type is, so if you are porting this code to a
  * future platform where you need a wider type, modifying these lines should be
@@ -169,6 +157,30 @@ static __attribute__((format(printf, 1, 2))) void eprint(const char *fmt, ...) {
   r = pthread_mutex_unlock(&print_lock);
   assert(r == 0);
   va_end(ap);
+}
+
+/* Supporting for tracing specific operations. This can be enabled during
+ * checker generation with '--trace ...' and is useful for debugging Rumur
+ * itself.
+ */
+static __attribute__((format(printf, 2, 3))) void trace(
+  enum trace_category_t category, const char *fmt, ...) {
+
+  if (category & TRACES_ENABLED) {
+    va_list ap;
+    va_start(ap, fmt);
+
+    int r __attribute__((unused)) = pthread_mutex_lock(&print_lock);
+    assert(r == 0);
+
+    (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
+    (void)vfprintf(stderr, fmt, ap);
+    (void)fprintf(stderr, "\n");
+
+    r = pthread_mutex_unlock(&print_lock);
+    assert(r == 0);
+    va_end(ap);
+  }
 }
 
 /* The state of the current model. */
@@ -320,8 +332,8 @@ static __attribute__((unused)) value_t handle_read_raw(struct handle h) {
     "than 128 bits which prevents this.");
 
   if (h.width == 0) {
-    TRACE("read value %" PRIVAL " from handle { %p, %zu, %zu }", (value_t)0,
-      h.base, h.offset, h.width);
+    trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
+      (value_t)0, h.base, h.offset, h.width);
     return 0;
   }
 
@@ -332,8 +344,8 @@ static __attribute__((unused)) value_t handle_read_raw(struct handle h) {
 
   value_t dest = (value_t)v;
 
-  TRACE("read value %" PRIVAL " from handle { %p, %zu, %zu }", dest,
-    h.base, h.offset, h.width);
+  trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
+    dest, h.base, h.offset, h.width);
 
   return dest;
 }
@@ -365,8 +377,8 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
 static __attribute__((unused)) void handle_write_raw(struct handle h,
     value_t value) {
 
-  TRACE("writing value %" PRIVAL " to handle { %p, %zu, %zu }", value, h.base,
-    h.offset, h.width);
+  trace(TC_HANDLE_WRITES, "writing value %" PRIVAL " to handle { %p, %zu, %zu }",
+    value, h.base, h.offset, h.width);
 
   if (h.width == 0) {
     return;
@@ -572,7 +584,7 @@ size_t queue_enqueue(struct state *s) {
   q.head = n;
   q.count++;
 
-  TRACE("enqueued state %p, queue length is now %zu", s, q.count);
+  trace(TC_QUEUE, "enqueued state %p, queue length is now %zu", s, q.count);
 
   size_t count = q.count;
 
@@ -593,7 +605,7 @@ struct state *queue_dequeue(void) {
   if (n != NULL) {
     q.head = n->next;
     q.count--;
-    TRACE("dequeued state %p, queue length is now %zu", n->s, q.count);
+    trace(TC_QUEUE, "dequeued state %p, queue length is now %zu", n->s, q.count);
   }
 
   r = pthread_mutex_unlock(&q.lock);
@@ -1113,7 +1125,7 @@ restart:;
         state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
       /* Success */
       *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
-      TRACE("added state %p, set size is now %zu", s, *count);
+      trace(TC_SET, "added state %p, set size is now %zu", s, *count);
       return true;
     }
 
@@ -1127,7 +1139,7 @@ restart:;
 
     /* If we find this already in the set, we're done. */
     if (state_eq(s, slot_to_state(c))) {
-      TRACE("skipped adding state %p that was already in set", s);
+      trace(TC_SET, "skipped adding state %p that was already in set", s);
       return false;
     }
 
