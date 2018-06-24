@@ -1097,17 +1097,12 @@ restart:;
 
   size_t attempts = 0;
   for (size_t i = index; attempts < local_seen->size; i = (i + 1) % local_seen->size) {
-retry:;
 
-    slot_t c = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
-
-    /* If this slot is empty, try to insert it here. */
-    if (slot_is_empty(c)) {
-      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
-          state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
-        /* Failed */
-        goto retry;
-      }
+    /* Guess that the current slot is empty and try to insert here. */
+    slot_t c = slot_empty();
+    if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
+        state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+      /* Success */
       *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
       TRACE("added state %p, set size is now %zu", s, *count);
       return true;
