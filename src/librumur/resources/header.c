@@ -672,11 +672,20 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
 
   refcounted_ptr_t old, new;
   void *ret;
+  bool r;
 
   do {
 
     /* Read the current state of the pointer. */
+#ifdef __x86_64__
+    /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit
+     * naturally aligned memory. The way to work around this is apparently the
+     * following degenerate CMPXCHG.
+     */
+    old = __sync_val_compare_and_swap(p, *p, *p);
+#else
     old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
+#endif
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -686,8 +695,16 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-  } while (!__atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST));
+#ifdef __x86_64__
+    /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+     * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+     */
+    r = __sync_bool_compare_and_swap(p, old, new);
+#else
+    r = __atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
+      __ATOMIC_SEQ_CST);
+#endif
+  } while (!r);
 
   return ret;
 }
@@ -697,11 +714,20 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
 
   refcounted_ptr_t old, new;
   size_t ret;
+  bool r;
 
   do {
 
     /* Read the current state of the pointer. */
+#ifdef __x86_64__
+    /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit
+     * naturally aligned memory. The way to work around this is apparently the
+     * following degenerate CMPXCHG.
+     */
+    old = __sync_val_compare_and_swap(p, *p, *p);
+#else
     old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
+#endif
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -715,8 +741,16 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-  } while (!__atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST));
+#ifdef __x86_64__
+    /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+     * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+     */
+    r = __sync_bool_compare_and_swap(p, old, new);
+#else
+    r = __atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
+      __ATOMIC_SEQ_CST);
+#endif
+  } while (!r);
 
   return ret;
 }
