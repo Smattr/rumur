@@ -1153,7 +1153,13 @@ static int explore(void);
 
 int main(void) {
 
-  print("State size: %zu bits\n", (size_t)STATE_SIZE_BITS);
+  printf("Memory usage:\n"
+         "\n"
+         "\t* The size of each state is %zu bits (rounded up to %zu bytes).\n"
+         "\t* The size of the hash table is %zu slots.\n"
+         "\n",
+         (size_t)STATE_SIZE_BITS, (size_t)STATE_SIZE_BYTES,
+         ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
 
   START_TIME = time(NULL);
 
@@ -1168,10 +1174,23 @@ int main(void) {
   set_thread_init();
 
   init();
+
+  printf("Progress Report:\n\n");
+
   int r = explore();
 
-  print("%zu states covered%s\n", local_seen->count,
-    r == EXIT_SUCCESS ? ", no errors found" : "");
+  printf("\n"
+         "==========================================================================\n"
+         "\n"
+         "Status:\n"
+         "\n"
+         "\t%s.\n"
+         "\n"
+         "State Space Explored:\n"
+         "\n"
+         "\t%zu states, in %llus.\n",
+         r == EXIT_SUCCESS ? "No error found" : "Error found",
+         local_seen->count, gettime());
 
   return r;
 }
