@@ -568,10 +568,7 @@ static struct {
 } q;
 
 size_t queue_enqueue(struct state *s) {
-  struct queue_node *n = malloc(sizeof(*n));
-  if (n == NULL) {
-    error(NULL, "out of memory");
-  }
+  struct queue_node *n = xmalloc(sizeof(*n));
   n->s = s;
 
   int r __attribute__((unused)) = pthread_mutex_lock(&q.lock);
