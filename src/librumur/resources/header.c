@@ -30,9 +30,6 @@ typedef int64_t value_t;
   #define SIZE_C(x) x ## ul
 #endif
 
-// TODO: define this dynamically
-enum { BUCKET_COUNT = 1 << 20 };
-
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
  */
