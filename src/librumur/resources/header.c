@@ -215,10 +215,16 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   exit(EXIT_FAILURE);
 }
 
+/* Signal an out-of-memory condition and terminate abruptly. */
+static _Noreturn void oom(void) {
+  fputs("out of memory", stderr);
+  exit(EXIT_FAILURE);
+}
+
 static void *xmalloc(size_t size) {
   void *p = malloc(size);
   if (p == NULL) {
-    error(NULL, "out of memory");
+    oom();
   }
   return p;
 }
@@ -226,7 +232,7 @@ static void *xmalloc(size_t size) {
 static void *xcalloc(size_t count, size_t size) {
   void *p = calloc(count, size);
   if (p == NULL) {
-    error(NULL, "out of memory");
+    oom();
   }
   return p;
 }
