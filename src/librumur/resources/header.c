@@ -50,6 +50,21 @@ typedef int64_t value_t;
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
+/* Number of threads currently running. This is only necessary for mechanisms
+ * like 'rendezvous' that require knowing how many threads have not yet exited.
+ */
+static atomic_size_t running_count = 1; // FIXME: we should initialise this at runtime to THREADS
+
+/* Identifier of the current thread. This counts up from 0 and thus is suitable
+ * to use for, e.g., indexing into arrays. The initial thread has ID 0.
+ */
+static _Thread_local size_t thread_id;
+
+/* The threads themselves. Note that we have no element for the initial thread,
+ * so *your* thread is 'threads[thread_id - 1]'.
+ */
+static pthread_t threads[THREADS - 1];
+
 /* Whether we've encountered an error or not. If a thread sees this set, they
  * should attempt to exit gracefully as soon as possible.
  */
@@ -190,6 +205,12 @@ struct state {
 /* Print a counterexample trace terminating at the given state. */
 static unsigned print_counterexample(const struct state *s);
 
+/* "Exit" the current thread. This takes into account which thread we are. I.e.
+ * the correct way to exit the checker is for every thread to eventually call
+ * this function.
+ */
+static _Noreturn int exit_with(int status);
+
 static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   const struct state *s, const char *fmt, ...) {
 
@@ -212,7 +233,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
     r = pthread_mutex_unlock(&print_lock);
     assert(r == 0);
   }
-  exit(EXIT_FAILURE);
+  exit_with(EXIT_FAILURE);
 }
 
 /* Signal an out-of-memory condition and terminate abruptly. */
@@ -837,7 +858,7 @@ static void rendezvous_depart(bool leader) {
   if (leader) {
 
     /* Reset the counter for the next rendezvous. */
-    rendezvous_pending = 1; // TODO: should be 'THREADS'
+    rendezvous_pending += running_count;
 
     // TODO: This condition should become 'i < THREADS - 1'
     for (size_t i = 0; i < 0; i++) {
@@ -854,6 +875,44 @@ static void rendezvous_depart(bool leader) {
 static void rendezvous(void) {
   bool leader = rendezvous_arrive();
   rendezvous_depart(leader);
+}
+
+/* Remove the caller from the pool of threads who participate in this
+ * rendezvous.
+ */
+static void rendezvous_thread_deinit(void) {
+
+retry:;
+
+  /* "Arrive" at the rendezvous to decrement the count of outstanding threads.
+   */
+  bool leader = rendezvous_arrive();
+
+  if (leader) {
+    /* There are two possible scenarios here:
+     *
+     *   1. We unfortunately opted out of this rendezvous while the remaining
+     *      threads were arriving at one and we were the last to arrive.
+     *   2. All other threads have already opted out of the rendezvous (begun
+     *      exiting).
+     */
+
+    if (running_count > 0) {
+      /* Case 1. Let's pretend we are also participating in the rendezvous and
+       * just depart. This only works if the rendezvous point requires no
+       * interstice action by the leader. Note that we need to bump the
+       * rendezvous counter while we still have exclusive access to cause its
+       * final state to be 'running + 1' when we retry.
+       */
+      rendezvous_pending++;
+      rendezvous_depart(leader);
+
+      /* Try to opt out again. */
+      goto retry;
+    }
+
+    /* Case 2. We're fine, nothing to do. */
+  }
 }
 
 /******************************************************************************/
@@ -1161,7 +1220,52 @@ static unsigned long long gettime() {
 
 /* Prototypes for generated functions. */
 static void init(void);
-static int explore(void);
+static _Noreturn void explore(void);
+
+static int exit_with(int status) {
+
+  /* Mark ourselves as no longer active. */
+  running_count--;
+
+  /* Opt out of the thread-wide rendezvous protocol. */
+  rendezvous_thread_deinit();
+
+  if (thread_id == 0) {
+    /* We are the initial thread. Wait on the others before exiting. */
+    // TODO: the following condition shoud be 'i < sizeof(threads) / sizeof(thread[0])'
+    for (size_t i = 0; i < 0; i++) {
+      void *ret;
+      int r = pthread_join(threads[i], &ret);
+      if (r != 0) {
+        int r2 __attribute__((unused)) = pthread_mutex_lock(&print_lock);
+        assert(r2 == 0);
+        perror("failed to join thread");
+        r2 = pthread_mutex_unlock(&print_lock);
+        assert(r2 == 0);
+        continue;
+      }
+      status |= (int)(intptr_t)ret;
+    }
+
+    /* We're now single-threaded again. */
+    printf("\n"
+           "==========================================================================\n"
+           "\n"
+           "Status:\n"
+           "\n"
+           "\t%s.\n"
+           "\n"
+           "State Space Explored:\n"
+           "\n"
+           "\t%zu states, in %llus.\n",
+           status == EXIT_SUCCESS ? "No error found" : "Error found",
+           local_seen->count, gettime());
+
+    exit(status);
+  } else {
+    pthread_exit((void*)(intptr_t)status);
+  }
+}
 
 int main(void) {
 
@@ -1189,20 +1293,5 @@ int main(void) {
 
   printf("Progress Report:\n\n");
 
-  int r = explore();
-
-  printf("\n"
-         "==========================================================================\n"
-         "\n"
-         "Status:\n"
-         "\n"
-         "\t%s.\n"
-         "\n"
-         "State Space Explored:\n"
-         "\n"
-         "\t%zu states, in %llus.\n",
-         r == EXIT_SUCCESS ? "No error found" : "Error found",
-         local_seen->count, gettime());
-
-  return r;
+  explore();
 }

@@ -259,7 +259,7 @@ void Model::generate(std::ostream &out) const {
   // Write exploration logic
   {
     out
-      << "static int explore(void) {\n"
+      << "static void explore(void) {\n"
       << "  size_t last_queue_size = 0;\n"
       << "  for (;;) {\n"
       << "    struct state *s = queue_dequeue();\n"
@@ -310,7 +310,7 @@ void Model::generate(std::ostream &out) const {
     }
     out
       << "  }\n"
-      << "  return EXIT_SUCCESS;\n"
+      << "  exit_with(EXIT_SUCCESS);\n"
       << "}\n\n";
   }
 
