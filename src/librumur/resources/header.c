@@ -50,6 +50,22 @@ typedef int64_t value_t;
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
+/* A word about atomics... There are three different atomic operation mechanisms
+ * used in this code and it may not immediately be obvious why one was not
+ * sufficient. The three are:
+ *
+ *   1. C11 atomics: used for variables that are consistently accessed with
+ *      atomic semantics. This mechanism is simple, concise and standardised.
+ *   2. GCC __atomic built-ins: Used for variables that are sometimes accessed
+ *      with atomic semantics and sometimes as regular memory operations. The
+ *      C11 atomics cannot give us this and the __atomic built-ins are
+ *      implemented by the major compilers.
+ *   3. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
+ *      seems the __atomic built-ins do not result in a CMPXCHG instruction, but
+ *      rather in a less efficient library call. See
+ *      https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+ */
+
 /* Number of threads currently running. This is only necessary for mechanisms
  * like 'rendezvous' that require knowing how many threads have not yet exited.
  */
