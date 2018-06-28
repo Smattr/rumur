@@ -37,6 +37,7 @@ At a glance, some differences between Rumur and CMurphi:
   alias of ``=`` to ease life for C/C++ programmers.
 * Rumur does not support floating point numbers (``real`` data type in CMurphi)
   and there are no current plans to add such support.
+* Rumur supports various single character operator alternatives, e.g. ``≤``.
 
 Legal
 -----

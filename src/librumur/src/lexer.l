@@ -77,6 +77,9 @@ type          { return rumur::parser::token::TYPE;          }
 undefine      { return rumur::parser::token::UNDEFINE;      }
 var           { return rumur::parser::token::VAR;           }
 
+"∀"           { return rumur::parser::token::FORALL;        }
+"∃"           { return rumur::parser::token::EXISTS;        }
+
 [[:alpha:]][_[:alnum:]]* {
   lval->build<std::string>(YYText());
   return rumur::parser::token::ID;
@@ -91,12 +94,18 @@ var           { return rumur::parser::token::VAR;           }
 }
 
 ":=" { return rumur::parser::token::COLON_EQ;  }
+"≔"  { return rumur::parser::token::COLON_EQ;  }
 ".." { return rumur::parser::token::DOTDOT;    }
 ">=" { return rumur::parser::token::GEQ;       }
+"≥"  { return rumur::parser::token::GEQ;       }
 "->" { return rumur::parser::token::IMPLIES;   }
+"→"  { return rumur::parser::token::IMPLIES;   }
 "<=" { return rumur::parser::token::LEQ;       }
+"≤"  { return rumur::parser::token::LEQ;       }
 "!=" { return rumur::parser::token::NEQ;       }
+"≠"  { return rumur::parser::token::NEQ;       }
 "==>" { return rumur::parser::token::ARROW;    }
+"⇒"  { return rumur::parser::token::ARROW;    }
 "==" { return rumur::parser::token::DEQ;       }
 
 [&!|:=><\-\%\+;{},\[\]\.()] { return YYText()[0]; }
