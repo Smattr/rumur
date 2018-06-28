@@ -13,6 +13,15 @@ Enable or disable the use of ANSI colour codes in the checker's output. The
 default is to auto-detect based on whether the checker's stdout is a TTY.
 .RE
 .PP
+\fB--[no-]deadlock-detection\fR
+.RS
+Enable or disable deadlock detection. Rumur has the ability to generate a
+checker that notices when there is no valid transition out of a state and raise
+an error in this scenario. This is enabled by default. However, whether such a
+deadlock actually represents a problem depends on the properties of the system
+you are modelling. Hence you may want to disable deadlock detection.
+.RE
+.PP
 \fB--debug\fR or \fB-d\fR
 .RS
 Enable debugging options in the generated checker. This includes enabling

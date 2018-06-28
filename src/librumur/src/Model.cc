@@ -271,7 +271,9 @@ void Model::generate(std::ostream &out) const {
       << "    struct state *s = queue_dequeue();\n"
       << "    if (s == NULL) {\n"
       << "      break;\n"
-      << "    }\n";
+      << "    }\n"
+      << "\n"
+      << "    bool possible_deadlock = true;\n";
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (dynamic_cast<const SimpleRule*>(r) != nullptr) {
@@ -286,6 +288,7 @@ void Model::generate(std::ostream &out) const {
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
         out << ")) {\n"
+          << "        possible_deadlock = false;\n"
           << "        struct state *n = state_dup(s);\n"
           << "        rule" << index << "(n";
         for (const Quantifier *q : r->quantifiers)
@@ -315,6 +318,13 @@ void Model::generate(std::ostream &out) const {
       }
     }
     out
+      << "    /* If we did not toggle 'possible_deadlock' off by this point, we\n"
+      << "     * have a deadlock.\n"
+      << "     */\n"
+      << "    if (DEADLOCK_DETECTION && possible_deadlock) {\n"
+      << "      error(s, \"deadlock\");\n"
+      << "    }\n"
+      << "\n"
       << "  }\n"
       << "  exit_with(EXIT_SUCCESS);\n"
       << "}\n\n";

@@ -34,6 +34,9 @@ struct OutputOptions {
 
   // Bitmask of enabled tracing
   uint64_t traces;
+
+  // deadlock detection enabled?
+  bool deadlock_detection;
 };
 
 int output_checker(const std::string &path, const Model &model,

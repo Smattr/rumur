@@ -36,6 +36,7 @@ int output_checker(const std::string &path, const Model &model,
     << "  TC_QUEUE         = " << TC_QUEUE << ",\n"
     << "  TC_SET           = " << TC_SET << ",\n"
     << "} TRACES_ENABLED = " << options.traces << ";\n\n"
+    << "enum { DEADLOCK_DETECTION = " << options.deadlock_detection << " };\n\n"
 
     // xxHash source
     << std::string((const char*)resources_xxhash_h, (size_t)resources_xxhash_h_len)

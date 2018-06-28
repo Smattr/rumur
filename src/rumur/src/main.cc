@@ -18,6 +18,7 @@ static rumur::OutputOptions output_options = {
   .set_expand_threshold = 65,
   .color = rumur::AUTO,
   .traces = 0,
+  .deadlock_detection = true,
 };
 
 static void help(const char *arg0) {
@@ -56,10 +57,12 @@ static void parse_args(int argc, char **argv) {
     static struct option options[] = {
       { "color", no_argument, 0, 128 },
       { "colour", no_argument, 0, 128 },
+      { "deadlock-detection", no_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, '?' },
       { "no-color", no_argument, 0, 129 },
       { "no-colour", no_argument, 0, 129 },
+      { "no-deadlock-detection", no_argument, 0, 132 },
       { "output", required_argument, 0, 'o' },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
@@ -146,6 +149,14 @@ static void parse_args(int argc, char **argv) {
               "\"queue\", and \"set\"\n";
           exit(EXIT_FAILURE);
         }
+        break;
+
+      case 131:
+        output_options.deadlock_detection = true;
+        break;
+
+      case 132:
+        output_options.deadlock_detection = false;
         break;
 
       default:
