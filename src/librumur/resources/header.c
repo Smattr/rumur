@@ -49,7 +49,10 @@ typedef int64_t value_t;
 
 /* XXX: intypes.h does not seem to give us this. */
 #ifndef SIZE_C
-  #define SIZE_C(x) x ## ul
+  #define SIZE_C(x) _Generic((size_t)1,                                        \
+    unsigned: x ## u,                                                          \
+    unsigned long: x ## ul,                                                    \
+    unsigned long long: x ## ull)
 #endif
 
 /* A more powerful assert that treats the assertion as an assumption when
