@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
