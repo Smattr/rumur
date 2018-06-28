@@ -53,7 +53,7 @@ def test_template(self, model, optimised):
     model_c = os.path.join(tmp, 'model.c')
     ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model] +
       option['rumur_flags'])
-    if ret != 0:
+    if ret != option['rumur_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['rumur_exit_code'])
@@ -71,7 +71,7 @@ def test_template(self, model, optimised):
 
     model_bin = os.path.join(tmp, 'model.bin')
     ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c])
-    if ret != 0:
+    if ret != option['c_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['c_exit_code'])
@@ -81,7 +81,7 @@ def test_template(self, model, optimised):
       return
 
     ret, stdout, stderr = run([model_bin])
-    if ret != 0:
+    if ret != option['checker_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['checker_exit_code'])
