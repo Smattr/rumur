@@ -635,6 +635,14 @@ static struct {
   size_t count;
 } q;
 
+static void queue_init(void) {
+  int r = pthread_mutex_init(&q.lock, NULL);
+  if (r < 0) {
+    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
+    exit(EXIT_FAILURE);
+  }
+}
+
 size_t queue_enqueue(struct state *s) {
   struct queue_node *n = xmalloc(sizeof(*n));
   n->s = s;
@@ -1326,6 +1334,7 @@ int main(void) {
   rendezvous_init();
 
   set_init();
+  queue_init();
 
   // TODO: Initialise after spawing new threads
   set_thread_init();
