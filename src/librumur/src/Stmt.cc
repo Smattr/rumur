@@ -323,7 +323,7 @@ void Undefine::generate(std::ostream &out) const {
   if (rhs->type()->is_simple()) {
     const std::string lb = rhs->type()->lower_bound();
     const std::string ub = rhs->type()->upper_bound();
-    out << "handle_write(s, " << lb << ", " << ub << ", ";
+    out << "handle_write_raw(";
     rhs->generate_lvalue(out);
     out << ", 0)";
   } else {
