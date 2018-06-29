@@ -1071,8 +1071,9 @@ static void set_expand_unlock(void) {
 
 static void set_init(void) {
 
-  if (pthread_mutex_init(&set_expand_mutex, NULL) < 0) {
-    perror("pthread_mutex_init");
+  int r = pthread_mutex_init(&set_expand_mutex, NULL);
+  if (r < 0) {
+    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
     exit(EXIT_FAILURE);
   }
 
