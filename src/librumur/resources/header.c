@@ -436,8 +436,7 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
   return decode_value(lb, ub, dest);
 }
 
-static __attribute__((unused)) void handle_write_raw(struct handle h,
-    value_t value) {
+static void handle_write_raw(struct handle h, value_t value) {
 
   trace(TC_HANDLE_WRITES, "writing value %" PRIVAL " to handle { %p, %zu, %zu }",
     value, h.base, h.offset, h.width);
@@ -478,6 +477,36 @@ static __attribute__((unused)) void handle_write(const struct state *s,
   }
 
   handle_write_raw(h, value);
+}
+
+static __attribute__((unused)) void handle_zero(struct handle h) {
+
+  uint8_t *p = h.base + h.offset / 8;
+
+  /* Zero out up to a byte-aligned offset. */
+  if (h.offset % 8 != 0) {
+    uint8_t mask = (UINT8_C(1) << (h.offset % 8)) - 1;
+    if (h.width < 8 - h.offset % 8) {
+      mask |= UINT8_MAX & ~((UINT8_C(1) << (h.offset % 8 + h.width)) - 1);
+    }
+    *p &= mask;
+    p++;
+    if (h.width < 8 - h.offset % 8) {
+      return;
+    }
+    h.width -= 8 - h.offset % 8;
+  }
+
+  /* Zero out as many bytes as we can. */
+  memset(p, 0, h.width / 8);
+  p += h.width / 8;
+  h.width -= h.width / 8 * 8;
+
+  /* Zero out the trailing bits in the final byte. */
+  if (h.width > 0) {
+    uint8_t mask = ~((UINT8_C(1) << h.width) - 1);
+    *p &= mask;
+  }
 }
 
 static __attribute__((unused)) struct handle handle_narrow(struct handle h,
