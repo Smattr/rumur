@@ -111,11 +111,6 @@ static pthread_t threads[THREADS - 1];
  */
 static atomic_bool done;
 
-/* GNU provides this under a different name. */
-#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER
-  #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-#endif
-
 /*******************************************************************************
  * Cross-platform semaphores.                                                  *
  *                                                                             *
@@ -200,28 +195,16 @@ static const char *reset() {
  * way to prevent the output of one thread being interleaved with the output of
  * another.
  */
-static pthread_mutex_t print_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+static pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static __attribute__((format(printf, 1, 2))) void print(const char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  int r __attribute__((unused)) = pthread_mutex_lock(&print_lock);
+static void print_lock(void) {
+  int r __attribute__((unused)) = pthread_mutex_lock(&print_mutex);
   assert(r == 0);
-  (void)vprintf(fmt, ap);
-  r = pthread_mutex_unlock(&print_lock);
-  assert(r == 0);
-  va_end(ap);
 }
 
-static __attribute__((format(printf, 1, 2))) void eprint(const char *fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  int r __attribute__((unused)) = pthread_mutex_lock(&print_lock);
+static void print_unlock(void) {
+  int r __attribute__((unused)) = pthread_mutex_unlock(&print_mutex);
   assert(r == 0);
-  (void)vfprintf(stderr, fmt, ap);
-  r = pthread_mutex_unlock(&print_lock);
-  assert(r == 0);
-  va_end(ap);
 }
 
 /* Supporting for tracing specific operations. This can be enabled during
@@ -235,15 +218,13 @@ static __attribute__((format(printf, 2, 3))) void trace(
     va_list ap;
     va_start(ap, fmt);
 
-    int r __attribute__((unused)) = pthread_mutex_lock(&print_lock);
-    assert(r == 0);
+    print_lock();
 
     (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
     (void)vfprintf(stderr, fmt, ap);
     (void)fprintf(stderr, "\n");
 
-    r = pthread_mutex_unlock(&print_lock);
-    assert(r == 0);
+    print_unlock();
     va_end(ap);
   }
 }
@@ -255,7 +236,9 @@ struct state {
   uint8_t data[STATE_SIZE_BYTES];
 };
 
-/* Print a counterexample trace terminating at the given state. */
+/* Print a counterexample trace terminating at the given state. This function
+ * assumes that the caller already holds print_mutex.
+ */
 static unsigned print_counterexample(const struct state *s);
 
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
@@ -272,8 +255,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 
     va_list ap;
     va_start(ap, fmt);
-    int r __attribute__((unused)) = pthread_mutex_lock(&print_lock);
-    assert(r == 0);
+    print_lock();
     fputs(red(), stderr);
     fputs(bold(), stderr);
     (void)vfprintf(stderr, fmt, ap);
@@ -286,8 +268,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
       print_counterexample(s);
     }
 
-    r = pthread_mutex_unlock(&print_lock);
-    assert(r == 0);
+    print_unlock();
   }
   exit_with(EXIT_FAILURE);
 }
@@ -338,7 +319,9 @@ static size_t state_hash(const struct state *s) {
   return (size_t)XXH64(s->data, sizeof(s->data), 0);
 }
 
-/* Print a state to stderr. This function is generated. */
+/* Print a state to stderr. This function is generated. This function assumes
+ * that the caller already holds print_mutex.
+ */
 static void state_print(const struct state *s);
 
 static unsigned print_counterexample(const struct state *s) {
@@ -1314,11 +1297,9 @@ static int exit_with(int status) {
       void *ret;
       int r = pthread_join(threads[i], &ret);
       if (r != 0) {
-        int r2 __attribute__((unused)) = pthread_mutex_lock(&print_lock);
-        assert(r2 == 0);
+        print_lock();
         perror("failed to join thread");
-        r2 = pthread_mutex_unlock(&print_lock);
-        assert(r2 == 0);
+        print_unlock();
         continue;
       }
       status |= (int)(intptr_t)ret;
