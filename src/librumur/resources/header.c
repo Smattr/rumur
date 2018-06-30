@@ -1098,6 +1098,7 @@ static void set_init(void) {
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = INITIAL_SET_SIZE_EXPONENT;
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
+  set->count = 0;
 
   /* Stash this somewhere for threads to later retrieve it from. Note that we
    * initialize its reference count to zero as we (the setup logic) are not
