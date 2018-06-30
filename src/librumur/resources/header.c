@@ -1298,7 +1298,7 @@ static int exit_with(int status) {
       int r = pthread_join(threads[i], &ret);
       if (r != 0) {
         print_lock();
-        perror("failed to join thread");
+        fprintf(stderr, "failed to join thread: %s\n", strerror(r));
         print_unlock();
         continue;
       }
