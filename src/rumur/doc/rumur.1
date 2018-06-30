@@ -35,17 +35,19 @@ Display this information.
 .PP
 \fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
 .RS
-FIXME: The following is not correct.
-Specify a static size (in bytes) of the seen state set. When this size is
-reached, the checker will abort if it has not yet covered the state space. A
-size of \fI0\fR indicates a dynamically expanding state set which is the
-default.
+The size of the initial set to allocate for storing seen states. This is given
+in bytes and is interpreted to mean the desired size of the set when it is
+completely full. That is, the initial allocation performed will be for a number
+of "state slots" that, when all occupied, will consume this much memory. Default
+value for this 8MB.
 .RE
 .PP
 \fB--set-expand-threshold\fR \fIPERCENT\fR or \fB-e\fR \fIPERCENT\fR
 .RS
 Expand the state set when its occupancy exceeds this percentage. Default is
-\fI65\fR, valid values are \fI1\fR - \fI100\fR.
+\fI65\fR, valid values are \fI1\fR - \fI100\fR. Setting a value of 100 will
+result in the set only expanding when completely full. This may sound ideal, but
+will actually result in a much longer runtime.
 .RE
 .PP
 \fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR
