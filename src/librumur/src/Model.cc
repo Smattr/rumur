@@ -139,11 +139,11 @@ void Model::generate(std::ostream &out) const {
       if (auto s = dynamic_cast<const SimpleRule*>(r)) {
 
         // Write the guard
-        out << "static bool guard" << index << "(const struct state *s";
-        if (s->guard == nullptr)
-          out << " __attribute__((unused))";
+        out << "static bool guard" << index << "(const struct state *s "
+          "__attribute__((unused))";
         for (const Quantifier *q : s->quantifiers)
-          out << ", struct handle ru_" << q->var->name;
+          out << ", struct handle ru_" << q->var->name
+            << " __attribute__((unused))";
         out << ") {\n  return ";
         if (s->guard == nullptr) {
           out << "true";
