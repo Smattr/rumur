@@ -30,12 +30,13 @@ int output_checker(const std::string &path, const Model &model,
     << "enum { SET_EXPAND_THRESHOLD = " << options.set_expand_threshold << " };\n\n"
     << "static const enum { OFF, ON, AUTO } COLOR = " << (options.color == OFF ? "OFF" :
       options.color == ON ? "ON" : "AUTO") << ";\n\n"
-    << "static const enum trace_category_t {\n"
+    << "enum trace_category_t {\n"
     << "  TC_HANDLE_READS  = " << TC_HANDLE_READS << ",\n"
     << "  TC_HANDLE_WRITES = " << TC_HANDLE_WRITES << ",\n"
     << "  TC_QUEUE         = " << TC_QUEUE << ",\n"
     << "  TC_SET           = " << TC_SET << ",\n"
-    << "} TRACES_ENABLED = " << options.traces << ";\n\n"
+    << "};\n"
+    << "static const uint64_t TRACES_ENABLED = UINT64_C(" << options.traces << ");\n\n"
     << "enum { DEADLOCK_DETECTION = " << options.deadlock_detection << " };\n\n"
 
     // xxHash source

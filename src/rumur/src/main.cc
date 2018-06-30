@@ -143,6 +143,8 @@ static void parse_args(int argc, char **argv) {
           output_options.traces |= rumur::TC_QUEUE;
         } else if (strcmp(optarg, "set") == 0) {
           output_options.traces |= rumur::TC_SET;
+        } else if (strcmp(optarg, "all") == 0) {
+          output_options.traces = uint64_t(-1);
         } else {
           std::cerr
             << "invalid --trace argument \"" << optarg << "\"\n"
