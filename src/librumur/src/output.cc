@@ -28,9 +28,9 @@ int output_checker(const std::string &path, const Model &model,
 
     << "enum { SET_CAPACITY = " << options.set_capacity << "ul };\n\n"
     << "enum { SET_EXPAND_THRESHOLD = " << options.set_expand_threshold << " };\n\n"
-    << "static enum { OFF, ON, AUTO } COLOR = " << (options.color == OFF ? "OFF" :
+    << "static const enum { OFF, ON, AUTO } COLOR = " << (options.color == OFF ? "OFF" :
       options.color == ON ? "ON" : "AUTO") << ";\n\n"
-    << "static enum trace_category_t {\n"
+    << "static const enum trace_category_t {\n"
     << "  TC_HANDLE_READS  = " << TC_HANDLE_READS << ",\n"
     << "  TC_HANDLE_WRITES = " << TC_HANDLE_WRITES << ",\n"
     << "  TC_QUEUE         = " << TC_QUEUE << ",\n"
