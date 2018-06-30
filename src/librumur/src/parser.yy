@@ -257,8 +257,7 @@ typeexpr: ID {
 } | ARRAY '[' typeexpr ']' OF typeexpr {
   $$ = new rumur::Array($3, $6, @$);
 } | SCALARSET '(' expr ')' {
-  // TODO: proper scalarset support
-  $$ = new rumur::Range(new rumur::Number("0", rumur::location()), $3, @$);
+  $$ = new rumur::Scalarset($3, @$);
 };
 
 vardecls: vardecls vardecl {

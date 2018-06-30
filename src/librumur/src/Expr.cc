@@ -401,6 +401,9 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
     if (dynamic_cast<const Range*>(t) != nullptr)
       return true;
 
+    if (dynamic_cast<const Scalarset*>(t) != nullptr)
+      return true;
+
     return false;
   }
   
@@ -410,6 +413,9 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
     const TypeExpr *t = lhs.type()->resolve();
 
     if (dynamic_cast<const Range*>(t) != nullptr)
+      return true;
+
+    if (dynamic_cast<const Scalarset*>(t) != nullptr)
       return true;
 
     return false;
@@ -426,6 +432,11 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
   if (auto e1 = dynamic_cast<const Enum*>(t1)) {
     if (auto e2 = dynamic_cast<const Enum*>(t2))
       return *e1 == *e2;
+  }
+
+  if (auto s1 = dynamic_cast<const Scalarset*>(t1)) {
+    if (auto s2 = dynamic_cast<const Scalarset*>(t2))
+      return *s1 == *s2;
   }
 
   return false;
@@ -1081,6 +1092,9 @@ void Element::generate(std::ostream &out, bool lvalue) const {
   } else if (auto e = dynamic_cast<const Enum*>(t3)) {
     min = 0;
     max = int64_t(e->count()) - 1;
+  } else if (auto s = dynamic_cast<const Scalarset*>(t3)) {
+    min = 0;
+    max = s->bound->constant_fold() - 1;
   } else {
     assert(false && "array with invalid index type");
   }

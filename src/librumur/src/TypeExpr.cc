@@ -130,6 +130,98 @@ void Range::generate_print(std::ostream &out, std::string const &prefix,
     << "}\n";
 }
 
+Scalarset::Scalarset(Expr *bound_, const location &loc_):
+  TypeExpr(loc_), bound(bound_) {
+
+  if (!bound->constant())
+    throw Error("bound of scalarset is not a constant", bound->loc);
+
+  if (bound->constant_fold() <= 0)
+    throw Error("bound of scalarset is not positive", bound->loc);
+}
+
+Scalarset::Scalarset(const Scalarset &other):
+  TypeExpr(other), bound(other.bound->clone()) { }
+
+Scalarset &Scalarset::operator=(Scalarset other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Scalarset &x, Scalarset &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.bound, y.bound);
+}
+
+Scalarset *Scalarset::clone() const {
+  return new Scalarset(*this);
+}
+
+Scalarset::~Scalarset() {
+  delete bound;
+}
+
+size_t Scalarset::width() const {
+  int64_t b = bound->constant_fold();
+  assert(b > 0 && "non-positive bound for scalarset");
+
+  uint64_t range;
+  if (__builtin_add_overflow(b, 1, &range))
+    throw Error("overflow in calculating width of scalarset", loc);
+
+  return bits_for(range);
+}
+
+size_t Scalarset::count() const {
+  int64_t b = bound->constant_fold();
+  assert(b > 0 && "non-positive bound for scalarset");
+
+  uint64_t range;
+  if (__builtin_add_overflow(b, 2, &range))
+    throw Error("overflow in calculating count of scalarset", loc);
+
+  return range;
+}
+
+bool Scalarset::operator==(const Node &other) const {
+  if (auto o = dynamic_cast<const Scalarset*>(&other))
+    return bound->constant_fold() == o->bound->constant_fold();
+
+  if (auto o = dynamic_cast<const TypeExprID*>(&other))
+    return *this == *o->referent;
+
+  return false;
+}
+
+bool Scalarset::is_simple() const {
+  return true;
+}
+
+std::string Scalarset::lower_bound() const {
+  return "VALUE_C(0)";
+}
+
+std::string Scalarset::upper_bound() const {
+  return "VALUE_C(" + std::to_string(bound->constant_fold() - 1) + ")";
+}
+
+void Scalarset::generate_print(std::ostream &out, std::string const &prefix,
+  size_t preceding_offset) const {
+
+  out
+    << "{\n"
+    << "  fprintf(stderr, \"" << prefix << ": \");\n"
+    << "  value_t v = handle_read_raw((struct handle){ .base = "
+      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
+    << "  if (v == 0) {\n"
+    << "    fprintf(stderr, \"undefined\\n\");\n"
+    << "  } else {\n"
+    << "    fprintf(stderr, \"%\" PRIVAL \"\\n\", v - 1);\n"
+    << "  }\n"
+    << "}\n";
+}
+
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
   TypeExpr(loc_), members(members_) {
 }
@@ -366,6 +458,19 @@ void Array::generate_print(std::ostream &out, std::string const &prefix,
 
       if (ub == INT64_MAX && i == INT64_MAX)
         break;
+    }
+
+    return;
+  }
+
+  if (auto s = dynamic_cast<Scalarset const*>(t)) {
+
+    int64_t b = s->bound->constant_fold();
+
+    for (int64_t i = 0; i < b; i++) {
+      element_type->generate_print(out, prefix + "[" + std::to_string(i) + "]",
+        preceding_offset);
+      preceding_offset += element_type->width();
     }
 
     return;

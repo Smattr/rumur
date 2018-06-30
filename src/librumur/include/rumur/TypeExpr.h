@@ -69,6 +69,31 @@ class Range : public TypeExpr {
     size_t preceding_offset = 0) const final;
 };
 
+class Scalarset : public TypeExpr {
+
+ public:
+  Expr *bound;
+
+  Scalarset() = delete;
+  Scalarset(Expr *bound_, const location &loc_);
+  Scalarset(const Scalarset &other);
+  Scalarset &operator=(Scalarset other);
+  friend void swap(Scalarset &x, Scalarset &y) noexcept;
+  Scalarset *clone() const final;
+  virtual ~Scalarset();
+
+  size_t width() const final;
+  size_t count() const final;
+  bool operator==(const Node &other) const final;
+  bool is_simple() const final;
+
+  std::string lower_bound() const final;
+  std::string upper_bound() const final;
+
+  void generate_print(std::ostream &out, std::string const &prefix = "",
+    size_t preceding_offset = 0) const final;
+};
+
 class Enum : public TypeExpr {
 
  public:
