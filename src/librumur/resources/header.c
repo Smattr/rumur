@@ -1114,6 +1114,8 @@ static void set_thread_init(void) {
 
 static void set_migrate(void) {
 
+  trace(TC_SET, "assisting in set migration...");
+
   /* Size of a migration chunk. Threads in this function grab a chunk at a time
    * to migrate.
    */
@@ -1172,6 +1174,9 @@ retry:;
   size_t count = refcounted_ptr_put(&global_seen, local_seen);
 
   if (count == 0) {
+
+    trace(TC_SET, "arrived at rendezvous point as leader");
+
     /* We were the last thread to release our reference to the old set. Clean it
      * up now. Note that we're using the pointer we just gave up our reference
      * count to, but we know no one else will be invalidating it.
@@ -1211,9 +1216,15 @@ static void set_expand(void) {
   if (s != NULL) {
     /* Someone else already expanded it. Join them in the migration effort. */
     set_expand_unlock();
+    trace(TC_SET, "attempted expansion failed because another thread got there "
+      "first");
     set_migrate();
     return;
   }
+
+  trace(TC_SET, "expanding set from %zu slots to %zu slots...",
+    (((size_t)1) << local_seen->size_exponent) / sizeof(slot_t),
+    (((size_t)1) << (local_seen->size_exponent + 1)) / sizeof(slot_t));
 
   /* Create a set of double the size. */
   struct set *set = xmalloc(sizeof(*set));
