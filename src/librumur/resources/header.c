@@ -303,8 +303,7 @@ static int state_cmp(const struct state *a, const struct state *b) {
   return memcmp(a->data, b->data, sizeof(a->data));
 }
 
-// FIXME: do we need this function?
-static __attribute__((unused)) bool state_eq(const struct state *a, const struct state *b) {
+static bool state_eq(const struct state *a, const struct state *b) {
   return state_cmp(a, b) == 0;
 }
 
