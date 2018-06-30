@@ -38,6 +38,8 @@ At a glance, some differences between Rumur and CMurphi:
 * Rumur does not support floating point numbers (``real`` data type in CMurphi)
   and there are no current plans to add such support.
 * Rumur supports various single character operator alternatives, e.g. ``≤``.
+* Rumur is designed to run on any POSIX operating system, while CMurphi only
+  supports Linux.
 
 Legal
 -----
