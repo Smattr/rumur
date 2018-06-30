@@ -172,9 +172,21 @@ static const char *green() {
   return "";
 }
 
+static const char *red() {
+  if (COLOR == ON || (COLOR == AUTO && istty))
+    return "\033[31m";
+  return "";
+}
+
 static const char *yellow() {
   if (COLOR == ON || (COLOR == AUTO && istty))
     return "\033[33m";
+  return "";
+}
+
+static const char *bold() {
+  if (COLOR == ON || (COLOR == AUTO && istty))
+    return "\033[1m";
   return "";
 }
 
@@ -262,7 +274,10 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
     va_start(ap, fmt);
     int r __attribute__((unused)) = pthread_mutex_lock(&print_lock);
     assert(r == 0);
+    fputs(red(), stderr);
+    fputs(bold(), stderr);
     (void)vfprintf(stderr, fmt, ap);
+    fputs(reset(), stderr);
     fprintf(stderr, "\n");
     va_end(ap);
 
@@ -1303,12 +1318,13 @@ static int exit_with(int status) {
            "\n"
            "Status:\n"
            "\n"
-           "\t%s.\n"
+           "\t%s%s%s%s\n"
            "\n"
            "State Space Explored:\n"
            "\n"
-           "\t%zu states, in %llus.\n",
-           status == EXIT_SUCCESS ? "No error found" : "Error found",
+           "\t%zu states, in %llus.\n", bold(),
+           status == EXIT_SUCCESS ? green() : red(),
+           status == EXIT_SUCCESS ? "No error found." : "Error found.", reset(),
            local_seen->count, gettime());
 
     exit(status);
