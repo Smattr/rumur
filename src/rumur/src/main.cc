@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <getopt.h>
@@ -61,6 +62,8 @@ static void parse_args(int argc, char **argv) {
       { "deadlock-detection", no_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, '?' },
+      { "monopolise", no_argument, 0, 133 },
+      { "monopolize", no_argument, 0, 133 },
       { "no-color", no_argument, 0, 129 },
       { "no-colour", no_argument, 0, 129 },
       { "no-deadlock-detection", no_argument, 0, 132 },
@@ -126,15 +129,15 @@ static void parse_args(int argc, char **argv) {
         help(argv[0]);
         __builtin_unreachable();
 
-      case 128:
+      case 128: // --colour
         output_options.color = rumur::ON;
         break;
 
-      case 129:
+      case 129: // --no-colour
         output_options.color = rumur::OFF;
         break;
 
-      case 130:
+      case 130: // --trace ...
         if (strcmp(optarg, "handle_reads") == 0) {
           output_options.traces |= rumur::TC_HANDLE_READS;
         } else if (strcmp(optarg, "handle_writes") == 0) {
@@ -154,13 +157,39 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 131:
+      case 131: // --deadlock-detection
         output_options.deadlock_detection = true;
         break;
 
-      case 132:
+      case 132: // --no-deadlock-detection
         output_options.deadlock_detection = false;
         break;
+
+      case 133: { // --monopolise
+
+        long pagesize = sysconf(_SC_PAGESIZE);
+        if (pagesize < 0) {
+          perror("failed to retrieve page size");
+          exit(EXIT_FAILURE);
+        }
+
+        long physpages = sysconf(_SC_PHYS_PAGES);
+        if (physpages < 0) {
+          perror("failed to retrieve physical pages");
+          exit(EXIT_FAILURE);
+        }
+
+        /* Allocate a set that will eventually cover all of memory upfront. Note
+         * that this will never actually reach 100% occupancy because memory
+         * also needs to contain our code and data as well as the OS.
+         */
+        output_options.set_capacity = size_t(pagesize) * size_t(physpages);
+
+        // Never expand the set.
+        output_options.set_expand_threshold = 100;
+
+        break;
+      }
 
       default:
         std::cerr << "unexpected error\n";

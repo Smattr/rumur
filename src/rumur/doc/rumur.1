@@ -33,6 +33,16 @@ runtime assertions.
 Display this information.
 .RE
 .PP
+\fB--monopolise\fR
+.RS
+Assume that the machine the generated checker will run on is the current host
+and that it will be the only process running. This flag causes the checker to
+upfront allocate a seen set that will eventually occupy all of memory. That is,
+it is the same as passing \fB--set-expand-threshold 100\fR and
+\fB--set-capacity\fR with the total amount of physical memory available on the
+current machine.
+.RE
+.PP
 \fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
 .RS
 The size of the initial set to allocate for storing seen states. This is given
