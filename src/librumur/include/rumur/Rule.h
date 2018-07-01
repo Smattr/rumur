@@ -82,7 +82,6 @@ class Invariant : public Rule {
 class Ruleset : public Rule {
 
  public:
-  std::vector<Quantifier*> quantifiers;
   std::vector<Rule*> rules;
 
   Ruleset() = delete;

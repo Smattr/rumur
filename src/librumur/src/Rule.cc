@@ -247,7 +247,9 @@ bool Invariant::operator==(const Node &other) const {
 
 Ruleset::Ruleset(std::vector<Quantifier*> &&quantifiers_,
   std::vector<Rule*> &&rules_, const location &loc_):
-  Rule("", loc_), quantifiers(quantifiers_), rules(rules_) { }
+  Rule("", loc_), rules(rules_) {
+  quantifiers = quantifiers_;
+}
 
 Ruleset::Ruleset(const Ruleset &other):
   Rule(other) {
@@ -264,8 +266,8 @@ void swap(Ruleset &x, Ruleset &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.name, y.name);
-  swap(x.rules, y.rules);
   swap(x.quantifiers, y.quantifiers);
+  swap(x.rules, y.rules);
 }
 
 Ruleset *Ruleset::clone() const {
