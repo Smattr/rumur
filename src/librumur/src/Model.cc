@@ -16,12 +16,26 @@ namespace rumur {
 Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), rules(rules_) {
 
+  // Check all state variable names are distinct.
+  {
+    std::unordered_set<std::string> names;
+    for (const Decl *d : decls) {
+      if (auto v = dynamic_cast<const VarDecl*>(d)) {
+        if (!names.insert(v->name).second)
+          throw Error("duplicate state variable name \"" + v->name + "\"",
+            v->loc);
+      }
+    }
+  }
+
   // Check all rule names are distinct.
-  std::unordered_set<std::string> names;
-  for (const Rule *r : rules) {
-    if (r->name != "<unnamed>") {
-      if (!names.insert(r->name).second)
-        throw Error("duplicate rule name " + r->name, r->loc);
+  {
+    std::unordered_set<std::string> names;
+    for (const Rule *r : rules) {
+      if (r->name != "<unnamed>") {
+        if (!names.insert(r->name).second)
+          throw Error("duplicate rule name " + r->name, r->loc);
+      }
     }
   }
 }
