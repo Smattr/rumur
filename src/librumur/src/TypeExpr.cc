@@ -6,6 +6,7 @@
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -302,6 +303,12 @@ void Enum::generate_print(std::ostream &out, std::string const &prefix,
 
 Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
   TypeExpr(loc_), fields(fields_) {
+
+  std::unordered_set<std::string> names;
+  for (const VarDecl *f : fields) {
+    if (!names.insert(f->name).second)
+      throw Error("duplicate field name \"" + f->name + "\"", f->loc);
+  }
 }
 
 Record::Record(const Record &other):
