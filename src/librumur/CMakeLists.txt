@@ -45,6 +45,7 @@ add_library(librumur
   src/parse.cc
   src/Rule.cc
   src/Stmt.cc
+  src/traverse.cc
   src/TypeExpr.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc

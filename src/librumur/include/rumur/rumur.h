@@ -17,5 +17,6 @@
 #include <rumur/scanner.h>
 #include <rumur/Stmt.h>
 #include <rumur/Symtab.h>
+#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 // stack.hh is deliberately not included; just use std::stack
