@@ -458,4 +458,6 @@ void Traversal::visit(VarDecl &n) {
   visit(*n.type);
 }
 
+Traversal::~Traversal() { }
+
 }

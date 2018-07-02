@@ -69,6 +69,9 @@ class Traversal {
    */
   void visit(Node &n);
 
+  // Force class to be abstract
+  virtual ~Traversal() = 0;
+
  private:
   void visit(BinaryExpr &n);
   void visit(UnaryExpr &n);
