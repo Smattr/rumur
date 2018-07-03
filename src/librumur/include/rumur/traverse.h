@@ -67,7 +67,7 @@ class Traversal {
    * because we do not anticipate use cases where this behaviour needs to
    * change.
    */
-  void visit(Node &n);
+  void dispatch(Node &n);
 
   // Force class to be abstract
   virtual ~Traversal() = 0;

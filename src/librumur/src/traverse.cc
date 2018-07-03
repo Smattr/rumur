@@ -17,26 +17,26 @@ void Traversal::visit(And &n) {
 }
 
 void Traversal::visit(Array &n) {
-  visit(*n.index_type);
-  visit(*n.element_type);
+  dispatch(*n.index_type);
+  dispatch(*n.element_type);
 }
 
 void Traversal::visit(Assert &n) {
-  visit(*n.expr);
+  dispatch(*n.expr);
 }
 
 void Traversal::visit(Assignment &n) {
-  visit(*n.lhs);
-  visit(*n.rhs);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit(BinaryExpr &n) {
-  visit(*n.lhs);
-  visit(*n.rhs);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit(ConstDecl &n) {
-  visit(*n.value);
+  dispatch(*n.value);
 }
 
 void Traversal::visit(Div &n) {
@@ -44,8 +44,8 @@ void Traversal::visit(Div &n) {
 }
 
 void Traversal::visit(Element &n) {
-  visit(*n.array);
-  visit(*n.index);
+  dispatch(*n.array);
+  dispatch(*n.index);
 }
 
 void Traversal::visit(Enum&) { }
@@ -57,27 +57,27 @@ void Traversal::visit(Eq &n) {
 void Traversal::visit(ErrorStmt&) { }
 
 void Traversal::visit(Exists &n) {
-  visit(*n.quantifier);
-  visit(*n.expr);
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
 }
 
 void Traversal::visit(ExprID &n) {
-  visit(*n.value);
+  dispatch(*n.value);
 }
 
 void Traversal::visit(Field &n) {
-  visit(*n.record);
+  dispatch(*n.record);
 }
 
 void Traversal::visit(For &n) {
-  visit(*n.quantifier);
+  dispatch(*n.quantifier);
   for (Stmt *s : n.body)
-    visit(*s);
+    dispatch(*s);
 }
 
 void Traversal::visit(Forall &n) {
-  visit(*n.quantifier);
-  visit(*n.expr);
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
 }
 
 void Traversal::visit(Geq &n) {
@@ -90,14 +90,14 @@ void Traversal::visit(Gt &n) {
 
 void Traversal::visit(If &n) {
   for (IfClause &c : n.clauses)
-    visit(c);
+    dispatch(c);
 }
 
 void Traversal::visit(IfClause &n) {
   if (n.condition != nullptr)
-    visit(*n.condition);
+    dispatch(*n.condition);
   for (Stmt *s : n.body)
-    visit(*s);
+    dispatch(*s);
 }
 
 void Traversal::visit(Implication &n) {
@@ -106,9 +106,9 @@ void Traversal::visit(Implication &n) {
 
 void Traversal::visit(Invariant &n) {
   for (Quantifier *q : n.quantifiers)
-    visit(*q);
+    dispatch(*q);
   if (n.guard != nullptr)
-    visit(*n.guard);
+    dispatch(*n.guard);
 }
 
 void Traversal::visit(Leq &n) {
@@ -125,9 +125,9 @@ void Traversal::visit(Mod &n) {
 
 void Traversal::visit(Model &n) {
   for (Decl *d : n.decls)
-    visit(*d);
+    dispatch(*d);
   for (Rule *r : n.rules)
-    visit(*r);
+    dispatch(*r);
 }
 
 void Traversal::visit(Mul &n) {
@@ -142,7 +142,7 @@ void Traversal::visit(Neq &n) {
   visit(static_cast<BinaryExpr&>(n));
 }
 
-void Traversal::visit(Node &n) {
+void Traversal::dispatch(Node &n) {
 
   if (auto i = dynamic_cast<Add*>(&n)) {
     visit(*i);
@@ -383,49 +383,49 @@ void Traversal::visit(Or &n) {
 }
 
 void Traversal::visit(Quantifier &n) {
-  visit(*n.var);
-  visit(*n.step);
+  dispatch(*n.var);
+  dispatch(*n.step);
 }
 
 void Traversal::visit(Range &n) {
-  visit(*n.min);
-  visit(*n.max);
+  dispatch(*n.min);
+  dispatch(*n.max);
 }
 
 void Traversal::visit(Record &n) {
   for (VarDecl *f : n.fields)
-    visit(*f);
+    dispatch(*f);
 }
 
 void Traversal::visit(Ruleset &n) {
   for (Quantifier *q : n.quantifiers)
-    visit(*q);
+    dispatch(*q);
   for (Rule *r : n.rules)
-    visit(*r);
+    dispatch(*r);
 }
 
 void Traversal::visit(Scalarset &n) {
-  visit(*n.bound);
+  dispatch(*n.bound);
 }
 
 void Traversal::visit(SimpleRule &n) {
   for (Quantifier *q : n.quantifiers)
-    visit(*q);
+    dispatch(*q);
   if (n.guard != nullptr)
-    visit(*n.guard);
+    dispatch(*n.guard);
   for (Decl *d : n.decls)
-    visit(*d);
+    dispatch(*d);
   for (Stmt *s : n.body)
-    visit(*s);
+    dispatch(*s);
 }
 
 void Traversal::visit(StartState &n) {
   for (Quantifier *q : n.quantifiers)
-    visit(*q);
+    dispatch(*q);
   for (Decl *d : n.decls)
-    visit(*d);
+    dispatch(*d);
   for (Stmt *s : n.body)
-    visit(*s);
+    dispatch(*s);
 }
 
 void Traversal::visit(Sub &n) {
@@ -433,29 +433,29 @@ void Traversal::visit(Sub &n) {
 }
 
 void Traversal::visit(Ternary &n) {
-  visit(*n.cond);
-  visit(*n.lhs);
-  visit(*n.rhs);
+  dispatch(*n.cond);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit(TypeDecl &n) {
-  visit(*n.value);
+  dispatch(*n.value);
 }
 
 void Traversal::visit(TypeExprID &n) {
-  visit(*n.referent);
+  dispatch(*n.referent);
 }
 
 void Traversal::visit(UnaryExpr &n) {
-  visit(*n.rhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit(Undefine &n) {
-  visit(*n.rhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit(VarDecl &n) {
-  visit(*n.type);
+  dispatch(*n.type);
 }
 
 Traversal::~Traversal() { }
