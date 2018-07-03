@@ -294,6 +294,53 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
+Return::Return(Expr *expr_, const location &loc_):
+  Stmt(loc_), expr(expr_) { }
+
+Return::Return(const Return &other):
+  Stmt(other.loc), expr(other.expr == nullptr ? nullptr : other.expr->clone()) { }
+
+Return &Return::operator=(Return other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Return &x, Return &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.expr, y.expr);
+}
+
+Return::~Return() {
+  delete expr;
+}
+
+Return *Return::clone() const {
+  return new Return(*this);
+}
+
+void Return::generate(std::ostream &out) const {
+  out << "return";
+
+  if (expr != nullptr)
+    assert(!"TODO");
+}
+
+bool Return::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Return*>(&other);
+  if (o == nullptr)
+    return false;
+  if (expr == nullptr) {
+    if (o->expr != nullptr)
+      return false;
+  } else if (o->expr == nullptr) {
+    return false;
+  } else if (*expr != *o->expr) {
+    return false;
+  }
+  return true;
+}
+
 Undefine::Undefine(Lvalue *rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 

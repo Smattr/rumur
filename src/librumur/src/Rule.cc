@@ -2,13 +2,37 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Decl.h>
+#include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
+#include <rumur/traverse.h>
 #include <string>
 #include <vector>
 
 namespace rumur {
+
+namespace {
+  /* A traversal pass that checks any return statements within a rule do not
+   * have a trailing expression.
+   */
+  class ReturnChecker : public Traversal {
+
+   public:
+    void visit(Return &n) final {
+      if (n.expr != nullptr)
+        throw Error("return statement in rule or startstate returns a value",
+          n.loc);
+
+      // No need to recurse into the return statement's child.
+    }
+
+    static void check(Node &n) {
+      ReturnChecker c;
+      c.dispatch(n);
+    }
+  };
+}
 
 Rule::Rule(const std::string &name_, const location &loc_):
   Node(loc_), name(name_ == "" ? "<unnamed>" : name_) { }
@@ -31,6 +55,8 @@ Rule::~Rule() {
 SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
   std::vector<Stmt*> &&body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) {
+
+  ReturnChecker::check(*this);
 }
 
 SimpleRule::SimpleRule(const SimpleRule &other):
@@ -118,7 +144,10 @@ bool SimpleRule::operator==(const Node &other) const {
 
 StartState::StartState(const std::string &name_, std::vector<Decl*> &&decls_,
   std::vector<Stmt*> &&body_, const location &loc_):
-  Rule(name_, loc_), decls(decls_), body(body_) { }
+  Rule(name_, loc_), decls(decls_), body(body_) {
+
+  ReturnChecker::check(*this);
+}
 
 StartState::StartState(const StartState &other):
   Rule(other) {

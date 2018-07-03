@@ -128,6 +128,7 @@
 %token <std::string> NUMBER
 %token OF
 %token RECORD
+%token RETURN
 %token RULE
 %token RULESET
 %token SCALARSET
@@ -360,6 +361,10 @@ stmt: ASSERT expr string_opt {
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = new rumur::If(std::move(cs), @$);
+} | RETURN {
+  $$ = new rumur::Return(nullptr, @$);
+} | RETURN expr {
+  $$ = new rumur::Return($2, @$);
 } | UNDEFINE designator {
   $$ = new rumur::Undefine($2, @$);
 };

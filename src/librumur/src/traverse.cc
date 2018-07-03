@@ -319,6 +319,11 @@ void Traversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Return*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Ruleset*>(&n)) {
     visit(*i);
     return;
@@ -395,6 +400,11 @@ void Traversal::visit(Range &n) {
 void Traversal::visit(Record &n) {
   for (VarDecl *f : n.fields)
     dispatch(*f);
+}
+
+void Traversal::visit(Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
 }
 
 void Traversal::visit(Ruleset &n) {

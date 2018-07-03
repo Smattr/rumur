@@ -135,6 +135,23 @@ class If : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
+class Return : public Stmt {
+
+ public:
+  Expr *expr;
+
+  Return() = delete;
+  Return(Expr *expr_, const location &loc_);
+  Return(const Return &other);
+  Return &operator=(Return other);
+  friend void swap(Return &x, Return &y) noexcept;
+  virtual ~Return();
+  Return *clone() const final;
+
+  void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
+};
+
 class Undefine : public Stmt {
 
  public:

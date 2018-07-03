@@ -51,6 +51,7 @@ class Traversal {
   virtual void visit(Quantifier &n);
   virtual void visit(Range &n);
   virtual void visit(Record &n);
+  virtual void visit(Return &n);
   virtual void visit(Ruleset &n);
   virtual void visit(Scalarset &n);
   virtual void visit(SimpleRule &n);
