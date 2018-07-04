@@ -35,8 +35,11 @@ struct OutputOptions {
   // Bitmask of enabled tracing
   uint64_t traces;
 
-  // deadlock detection enabled?
+  // Deadlock detection enabled?
   bool deadlock_detection;
+
+  // Symmetry reduction enabled?
+  bool symmetry_reduction;
 };
 
 int output_checker(const std::string &path, const Model &model,

@@ -60,6 +60,17 @@ result in the set only expanding when completely full. This may sound ideal, but
 will actually result in a much longer runtime.
 .RE
 .PP
+\fB--symmetry-reduction\fR [\fBon\fR | \fBoff\fR]
+.RS
+Enable or disable symmetry reduction. Symmetry reduction is an optimisation that
+decreases the state space that must be searched by deriving a canonical
+representation of each state. While two states may not be directly equal, if
+their canonical representations are the same only one of them need be expanded.
+To take advantage of this optimisation you must be using named \fBscalarset\fR
+types. For more information, refer to the Murphi user manual. This option is
+enabled by default.
+.RE
+.PP
 \fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR
 .RS
 Specify the number of threads the checker should use. If you do not specify this

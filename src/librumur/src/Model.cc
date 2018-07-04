@@ -6,6 +6,7 @@
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Rule.h>
+#include <rumur/symmetry-reduction.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <unordered_set>
@@ -224,6 +225,10 @@ void Model::generate(std::ostream &out) const {
     out << "}\n\n";
   }
 
+  // Write out the symmetry reduction canonicalisation function
+  generate_canonicalise(*this, out);
+  out << "\n\n";
+
   // Write initialisation
   {
     out << "static void init(void) {\n";
@@ -250,6 +255,9 @@ void Model::generate(std::ostream &out) const {
           out << ", ru_" << q->var->name;
         out << ");\n"
           << "    check_invariants(s);\n"
+          << "    if (SYMMETRY_REDUCTION) {\n"
+          << "      state_canonicalise(s);\n"
+          << "    }\n"
           << "    size_t size;\n"
           << "    if (set_insert(s, &size)) {\n"
           << "      (void)queue_enqueue(s);\n"
@@ -309,6 +317,9 @@ void Model::generate(std::ostream &out) const {
           out << ", ru_" << q->var->name;
         out << ");\n"
           << "        check_invariants(n);\n"
+          << "        if (SYMMETRY_REDUCTION) {\n"
+          << "          state_canonicalise(s);\n"
+          << "        }\n"
           << "        size_t size;\n"
           << "        if (set_insert(n, &size)) {\n"
           << "          size_t queue_size = queue_enqueue(n);\n"

@@ -21,6 +21,7 @@ static rumur::OutputOptions output_options = {
   .color = rumur::AUTO,
   .traces = 0,
   .deadlock_detection = true,
+  .symmetry_reduction = true,
 };
 
 static void help(const char *arg0) {
@@ -70,6 +71,7 @@ static void parse_args(int argc, char **argv) {
       { "output", required_argument, 0, 'o' },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
+      { "symmetry_reduction", required_argument, 0, 134 },
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, 130 },
       { 0, 0, 0, 0 },
@@ -190,6 +192,18 @@ static void parse_args(int argc, char **argv) {
 
         break;
       }
+
+      case 134: // --symmetry-reduction ...
+        if (strcmp(optarg, "on") == 0) {
+          output_options.symmetry_reduction = true;
+        } else if (strcmp(optarg, "off") == 0) {
+          output_options.symmetry_reduction = false;
+        } else {
+          std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
+            << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
 
       default:
         std::cerr << "unexpected error\n";
