@@ -389,7 +389,8 @@ void Traversal::visit(Or &n) {
 
 void Traversal::visit(Quantifier &n) {
   dispatch(*n.var);
-  dispatch(*n.step);
+  if (n.step != nullptr)
+    dispatch(*n.step);
 }
 
 void Traversal::visit(Range &n) {
