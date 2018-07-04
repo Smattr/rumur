@@ -515,6 +515,10 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   ASSERT(h.offset + offset + width <= h.offset + h.width &&
     "narrowing a handle with values that actually expand it");
 
+  size_t r __attribute__((unused));
+  assert(!__builtin_add_overflow(h.offset, offset, &r) &&
+    "narrowing handle overflows a size_t");
+
   return (struct handle){
     .base = h.base,
     .offset = h.offset + offset,
@@ -535,6 +539,10 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
       __builtin_mul_overflow(r1, element_width, &r2)) {
     error(s, "overflow when indexing array");
   }
+
+  size_t r __attribute__((unused));
+  assert(!__builtin_add_overflow(root.offset, r2, &r) &&
+    "indexing handle overflows a size_t");
 
   return (struct handle){
     .base = root.base,
