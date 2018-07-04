@@ -1,3 +1,5 @@
+#include <cassert>
+#include <iostream>
 #include <rumur/Expr.h>
 #include <rumur/Model.h>
 #include <rumur/Number.h>
@@ -5,6 +7,7 @@
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <typeinfo>
 
 namespace rumur {
 
@@ -374,6 +377,9 @@ void Traversal::dispatch(Node &n) {
     return;
   }
 
+#ifndef NDEBUG
+  std::cerr << "missed case in Traversal::visit: " << typeid(n).name() << "\n";
+#endif
   assert(!"missed case in Traversal::visit");
 }
 
