@@ -387,7 +387,7 @@ static void handle_insert(struct handle h, unsigned __int128 v) {
   }
 }
 
-static __attribute__((unused)) value_t handle_read_raw(struct handle h) {
+static value_t handle_read_raw(struct handle h) {
   static_assert(sizeof(unsigned __int128) > sizeof(value_t),
     "handle_read_raw() is implemented by reading data into a 128-bit scalar, "
     "potentially reading more than the width of a value. Value type is larger "
