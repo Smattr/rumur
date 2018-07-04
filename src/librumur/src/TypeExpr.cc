@@ -293,7 +293,7 @@ void Enum::generate_print(std::ostream &out, std::string const &prefix,
   size_t i = 0;
   for (std::pair<std::string, location> const &m : members) {
     out
-      << "  } else if (v == VALUE_C(" << i << ")) {\n"
+      << "  } else if (v == VALUE_C(" << (i + 1) << ")) {\n"
       << "    fprintf(stderr, \"%s\\n\", \"" << m.first << "\");\n";
     i++;
   }
