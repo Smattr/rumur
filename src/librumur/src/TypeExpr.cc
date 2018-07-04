@@ -121,7 +121,8 @@ void Range::generate_print(std::ostream &out, std::string const &prefix,
     << "{\n"
     << "  fprintf(stderr, \"" << prefix << ":\");\n"
     << "  value_t v = handle_read_raw((struct handle){ .base = "
-      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
+      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
+      << "), .width = SIZE_C(" << width() << ") });\n"
     << "  if (v == 0) {\n"
     << "    fprintf(stderr, \"Undefined\\n\");\n"
     << "  } else {\n"
@@ -214,7 +215,8 @@ void Scalarset::generate_print(std::ostream &out, std::string const &prefix,
     << "{\n"
     << "  fprintf(stderr, \"" << prefix << ":\");\n"
     << "  value_t v = handle_read_raw((struct handle){ .base = "
-      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
+      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
+      << "), .width = SIZE_C(" << width() << ") });\n"
     << "  if (v == 0) {\n"
     << "    fprintf(stderr, \"Undefined\\n\");\n"
     << "  } else {\n"
@@ -284,7 +286,8 @@ void Enum::generate_print(std::ostream &out, std::string const &prefix,
     << "{\n"
     << "  fprintf(stderr, \"" << prefix << ":\");\n"
     << "  value_t v = handle_read_raw((struct handle){ .base = "
-      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
+      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
+      << "), .width = SIZE_C(" << width() << ") });\n"
     << "  if (v == 0) {\n"
     << "    fprintf(stderr, \"Undefined\\n\");\n";
   size_t i = 0;
