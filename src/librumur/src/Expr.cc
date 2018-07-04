@@ -1207,9 +1207,13 @@ void Quantifier::generate_footer(std::ostream &out) const {
 
   std::string const counter = "_ru1_" + var->name;
   std::string const ub = var->type->upper_bound();
+  std::string const inc = step == nullptr
+    ? "VALUE_C(1)"
+    : "VALUE_C(" + std::to_string(step->constant_fold()) + ")";
 
   out
-    << "  if (" << ub << " == VALUE_MAX && " << counter << " == VALUE_MAX) {\n"
+    << "  if (VALUE_MAX - " << inc << " < " << ub << " && " << counter
+      << " > VALUE_MAX - " << inc << ") {\n"
     << "    break;\n"
     << "  }\n"
     << "}\n";
