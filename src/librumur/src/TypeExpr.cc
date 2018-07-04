@@ -119,11 +119,11 @@ void Range::generate_print(std::ostream &out, std::string const &prefix,
 
   out
     << "{\n"
-    << "  fprintf(stderr, \"" << prefix << ": \");\n"
+    << "  fprintf(stderr, \"" << prefix << ":\");\n"
     << "  value_t v = handle_read_raw((struct handle){ .base = "
       << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
     << "  if (v == 0) {\n"
-    << "    fprintf(stderr, \"undefined\\n\");\n"
+    << "    fprintf(stderr, \"Undefined\\n\");\n"
     << "  } else {\n"
     << "    fprintf(stderr, \"%\" PRIVAL \"\\n\", decode_value(" << lb << ", "
       << ub << ", v));\n"
@@ -212,11 +212,11 @@ void Scalarset::generate_print(std::ostream &out, std::string const &prefix,
 
   out
     << "{\n"
-    << "  fprintf(stderr, \"" << prefix << ": \");\n"
+    << "  fprintf(stderr, \"" << prefix << ":\");\n"
     << "  value_t v = handle_read_raw((struct handle){ .base = "
       << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
     << "  if (v == 0) {\n"
-    << "    fprintf(stderr, \"undefined\\n\");\n"
+    << "    fprintf(stderr, \"Undefined\\n\");\n"
     << "  } else {\n"
     << "    fprintf(stderr, \"%\" PRIVAL \"\\n\", v - 1);\n"
     << "  }\n"
@@ -282,11 +282,11 @@ void Enum::generate_print(std::ostream &out, std::string const &prefix,
 
   out
     << "{\n"
-    << "  fprintf(stderr, \"" << prefix << ": \");\n"
+    << "  fprintf(stderr, \"" << prefix << ":\");\n"
     << "  value_t v = handle_read_raw((struct handle){ .base = "
       << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset << ") });\n"
     << "  if (v == 0) {\n"
-    << "    fprintf(stderr, \"undefined\\n\");\n";
+    << "    fprintf(stderr, \"Undefined\\n\");\n";
   size_t i = 0;
   for (std::pair<std::string, location> const &m : members) {
     out

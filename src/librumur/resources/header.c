@@ -253,20 +253,35 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   bool expected = false;
   if (atomic_compare_exchange_strong(&done, &expected, true)) {
 
-    va_list ap;
-    va_start(ap, fmt);
     print_lock();
-    fputs(red(), stderr);
-    fputs(bold(), stderr);
+
+    if (s != NULL) {
+      fprintf(stderr, "The following is the error trace for the error:\n\n");
+    } else {
+      fprintf(stderr, "Result:\n\n");
+    }
+
+    fprintf(stderr, "\t%s%s", red(), bold());
+    va_list ap, ap2;
+    va_start(ap, fmt);
+    va_copy(ap2, ap);
     (void)vfprintf(stderr, fmt, ap);
-    fputs(reset(), stderr);
-    fprintf(stderr, "\n");
+    fprintf(stderr, "%s\n\n", reset());
     va_end(ap);
 
     if (s != NULL) {
-      fprintf(stderr, "Counterexample:\n");
       print_counterexample(s);
+      fprintf(stderr, "End of the error trace.\n\n");
     }
+
+    fprintf(stderr, "==========================================================================\n"
+                    "\n"
+                    "Result:\n"
+                    "\n"
+                    "\t%s%s", red(), bold());
+    vfprintf(stderr, fmt, ap2);
+    va_end(ap2);
+    fprintf(stderr, "%s\n\n", reset());
 
     print_unlock();
   }
@@ -334,9 +349,8 @@ static unsigned print_counterexample(const struct state *s) {
    */
   unsigned step = print_counterexample(s->previous) + 1;
 
-  fprintf(stderr, " --- begin state %u ---\n", step);
   state_print(s);
-  fprintf(stderr, " --- end state %u ---\n", step);
+  fprintf(stderr, "----------\n\n");
   return step;
 }
 
@@ -1342,19 +1356,20 @@ static int exit_with(int status) {
     }
 
     /* We're now single-threaded again. */
-    printf("\n"
-           "==========================================================================\n"
+
+    if (status == EXIT_SUCCESS) {
+      printf("\n"
+             "==========================================================================\n"
+             "\n"
+             "Status:\n"
+             "\n"
+             "\t%s%sNo error found.%s\n"
+             "\n", green(), bold(), reset());
+    }
+
+    printf("State Space Explored:\n"
            "\n"
-           "Status:\n"
-           "\n"
-           "\t%s%s%s%s\n"
-           "\n"
-           "State Space Explored:\n"
-           "\n"
-           "\t%zu states, in %llus.\n", bold(),
-           status == EXIT_SUCCESS ? green() : red(),
-           status == EXIT_SUCCESS ? "No error found." : "Error found.", reset(),
-           local_seen->count, gettime());
+           "\t%zu states, in %llus.\n", local_seen->count, gettime());
 
     exit(status);
   } else {
