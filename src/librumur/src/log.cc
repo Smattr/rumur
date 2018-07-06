@@ -18,7 +18,7 @@ static std::ostream null_stream(&null_buffer);
 
 namespace rumur {
 
-Log::Log(std::ostream &out, LogLevel level):
+Log::Log(std::ostream &out, Level level):
   warn(level >= WARNINGS ? out : null_stream),
   info(level >= INFORMATIONAL ? out : null_stream),
   debug(level >= DEBUG ? out : null_stream) { }

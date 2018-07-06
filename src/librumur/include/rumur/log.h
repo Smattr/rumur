@@ -11,7 +11,7 @@ namespace rumur {
 class Log {
 
  public:
-  enum LogLevel {
+  enum Level {
     SILENT,
     WARNINGS,
     INFORMATIONAL,
@@ -22,7 +22,7 @@ class Log {
   std::ostream &info;
   std::ostream &debug;
 
-  Log(std::ostream &out, LogLevel level);
+  Log(std::ostream &out, Level level);
 };
 
 /* A logger that discards all messages. Use this if you do not need logging
