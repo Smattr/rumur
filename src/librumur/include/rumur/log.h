@@ -25,10 +25,10 @@ class Log {
   Log(std::ostream &stream = std::cerr, Level level_ = WARNING);
 
   // Change the current log level.
-  void set_log_level(Level level_);
+  void set_level(Level level_);
 
   // Change the stream log messages are written to.
-  void set_log_stream(std::ostream &stream);
+  void set_stream(std::ostream &stream);
 
  private:
   std::ostream *out;

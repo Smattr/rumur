@@ -23,12 +23,12 @@ Log::Log(std::ostream &stream, Level level_):
   update_streams();
 }
 
-void Log::set_log_level(Log::Level level_) {
+void Log::set_level(Log::Level level_) {
   level = level_;
   update_streams();
 }
 
-void Log::set_log_stream(std::ostream &stream) {
+void Log::set_stream(std::ostream &stream) {
   out = &stream;
   update_streams();
 }
