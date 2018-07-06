@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <rumur/Model.h>
+#include <rumur/log.h>
 
 namespace rumur {
 
@@ -9,6 +10,7 @@ namespace rumur {
  * generates this whether you have symmetry reduction enabled or not, but it
  * will only be used when symmetry reduction is enabled.
  */
-void generate_canonicalise(const Model &m, std::ostream &out);
+void generate_canonicalise(const Model &m, std::ostream &out,
+  Log &log = null_log);
 
 }

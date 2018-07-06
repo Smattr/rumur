@@ -1,5 +1,6 @@
 #include <iostream>
 #include <rumur/Decl.h>
+#include <rumur/log.h>
 #include <rumur/Model.h>
 #include <rumur/symmetry-reduction.h>
 #include <rumur/traverse.h>
@@ -43,7 +44,7 @@ static void generate_pivot_data(const TypeDecl &t, std::ostream &out) {
     << "  bool pivoted_" << t.name << " __attribute__((unused)) = false;\n";
 }
 
-void generate_canonicalise(const Model &m, std::ostream &out) {
+void generate_canonicalise(const Model &m, std::ostream &out, Log &log) {
 
   // Write the function header
   out
@@ -52,6 +53,8 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
 
   // Define the schedule and pivot
   std::vector<const TypeDecl*> ss = find_scalarsets(m);
+  log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
+    "types\n";
   for (const TypeDecl *t : ss)
     generate_pivot_data(*t, out);
 
