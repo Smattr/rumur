@@ -25,7 +25,8 @@ you are modelling. Hence you may want to disable deadlock detection.
 \fB--debug\fR or \fB-d\fR
 .RS
 Enable debugging options in the generated checker. This includes enabling
-runtime assertions.
+runtime assertions. This will also output debugging messages while generating
+the checker.
 .RE
 .PP
 \fB--help\fR
@@ -41,6 +42,11 @@ upfront allocate a seen set that will eventually occupy all of memory. That is,
 it is the same as passing \fB--set-expand-threshold 100\fR and
 \fB--set-capacity\fR with the total amount of physical memory available on the
 current machine.
+.RE
+.PP
+\fB--quiet\fR or \fB-q\fR
+.RS
+Don't output any messages while generating the checker.
 .RE
 .PP
 \fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
@@ -99,6 +105,11 @@ Available event categories are:
 More than one of these can be enabled at once by passing the \fB--trace\fR
 argument multiple times. Note that enabling tracing will significantly slow the
 checker and is only intended for debugging purposes.
+.RE
+.PP
+\fB--verbose\fR or \fB-v\fR
+.RS
+Output informational messages while generating the checker.
 .RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez

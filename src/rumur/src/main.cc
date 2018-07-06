@@ -69,16 +69,18 @@ static void parse_args(int argc, char **argv) {
       { "no-colour", no_argument, 0, 129 },
       { "no-deadlock-detection", no_argument, 0, 132 },
       { "output", required_argument, 0, 'o' },
+      { "quiet", no_argument, 0, 'q' },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "symmetry_reduction", required_argument, 0, 134 },
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, 130 },
+      { "verbose", no_argument, 0, 'v' },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "de:o:s:t:?", options, &option_index);
+    int c = getopt_long(argc, argv, "de:o:qs:t:v?", options, &option_index);
 
     if (c == -1)
       break;
@@ -87,6 +89,7 @@ static void parse_args(int argc, char **argv) {
 
       case 'd':
         output_options.debug = true;
+        rumur::log.set_level(rumur::Log::DEBUG);
         break;
 
       case 'e':
@@ -109,6 +112,10 @@ static void parse_args(int argc, char **argv) {
         out = new std::string(optarg);
         break;
 
+      case 'q': // --quiet
+        rumur::log.set_level(rumur::Log::SILENT);
+        break;
+
       case 's':
         try {
           output_options.set_capacity = std::stoul(optarg);
@@ -125,6 +132,10 @@ static void parse_args(int argc, char **argv) {
           std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
+        break;
+
+      case 'v': // --verbose
+        rumur::log.set_level(rumur::Log::INFO);
         break;
 
       case '?':
