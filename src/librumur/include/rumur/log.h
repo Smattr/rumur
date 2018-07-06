@@ -4,9 +4,9 @@
 
 namespace rumur {
 
-/* Logging interface. Some other parts of librumur expect one of these to be
- * provided and will use it for logging messages. Errors are not logged using
- * one of these, but are instead thrown as exceptions.
+/* Logging interface. This is expected to be used through a singleton instance,
+ * declared below. Errors are not logged using this, but are instead thrown as
+ * exceptions.
  */
 class Log {
 
@@ -18,16 +18,26 @@ class Log {
     DEBUG,
   };
 
-  std::ostream &warn;
-  std::ostream &info;
-  std::ostream &debug;
+  std::ostream *warn;
+  std::ostream *info;
+  std::ostream *debug;
 
-  Log(std::ostream &out, Level level);
+  Log(std::ostream &stream = std::cerr, Level level_ = WARNINGS);
+
+  // Change the current log level.
+  void set_log_level(Level level_);
+
+  // Change the stream log messages are written to.
+  void set_log_stream(std::ostream &stream);
+
+ private:
+  std::ostream *out;
+  Level level;
+
+  void update_streams(void);
 };
 
-/* A logger that discards all messages. Use this if you do not need logging
- * diagnostics.
- */
-extern Log null_log;
+// The log itself that should be used.
+extern Log log;
 
 }

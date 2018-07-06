@@ -44,7 +44,7 @@ static void generate_pivot_data(const TypeDecl &t, std::ostream &out) {
     << "  bool pivoted_" << t.name << " __attribute__((unused)) = false;\n";
 }
 
-void generate_canonicalise(const Model &m, std::ostream &out, Log &log) {
+void generate_canonicalise(const Model &m, std::ostream &out) {
 
   // Write the function header
   out
@@ -53,7 +53,7 @@ void generate_canonicalise(const Model &m, std::ostream &out, Log &log) {
 
   // Define the schedule and pivot
   std::vector<const TypeDecl*> ss = find_scalarsets(m);
-  log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
+  *log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
     "types\n";
   for (const TypeDecl *t : ss)
     generate_pivot_data(*t, out);
