@@ -34,8 +34,8 @@ void Log::set_log_stream(std::ostream &stream) {
 }
 
 void Log::update_streams(void) {
-  warn = level >= WARNINGS ? out : &null_stream;
-  info = level >= INFORMATIONAL ? out : &null_stream;
+  warn = level >= WARNING ? out : &null_stream;
+  info = level >= INFO ? out : &null_stream;
   debug = level >= DEBUG ? out : &null_stream;
 }
 

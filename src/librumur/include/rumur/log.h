@@ -13,8 +13,8 @@ class Log {
  public:
   enum Level {
     SILENT,
-    WARNINGS,
-    INFORMATIONAL,
+    WARNING,
+    INFO,
     DEBUG,
   };
 
@@ -22,7 +22,7 @@ class Log {
   std::ostream *info;
   std::ostream *debug;
 
-  Log(std::ostream &stream = std::cerr, Level level_ = WARNINGS);
+  Log(std::ostream &stream = std::cerr, Level level_ = WARNING);
 
   // Change the current log level.
   void set_log_level(Level level_);
