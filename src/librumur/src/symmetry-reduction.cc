@@ -43,6 +43,9 @@ static unsigned score(const TypeExpr &t) {
   if (auto s = dynamic_cast<const Scalarset*>(&t))
     return 1;
 
+  if (auto i = dynamic_cast<const TypeExprID*>(&t))
+    return score(*i->referent);
+
   return 0;
 }
 
