@@ -66,8 +66,11 @@ namespace { struct Pivot {
 
   bool is_eligible_component(const VarDecl &v) const {
 
+    // First, fully resolve the type in case it is a typedef.
+    const TypeExpr *vtype = v.type->resolve();
+
     // For now, we only consider using arrays as pivot components...
-    auto a = dynamic_cast<const Array*>(v.type);
+    auto a = dynamic_cast<const Array*>(vtype);
     if (a == nullptr)
       return false;
 
