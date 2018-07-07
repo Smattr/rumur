@@ -28,34 +28,41 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
  * many times is a scalarset used in this type?" We currently only ever call it
  * with scalarset-indexed arrays, so nothing ever scores below 1.
  */
-static unsigned score(const TypeExpr &t) {
+static unsigned score_type(const TypeExpr &t) {
 
   if (auto r = dynamic_cast<const Record*>(&t)) {
     unsigned s = 0;
     for (const VarDecl *f : r->fields)
-      s += score(*f->type);
+      s += score_type(*f->type);
     return s;
   }
 
   if (auto a = dynamic_cast<const Array*>(&t))
-    return score(*a->index_type) + score(*a->element_type);
+    return score_type(*a->index_type) + score_type(*a->element_type);
 
   if (auto s = dynamic_cast<const Scalarset*>(&t))
     return 1;
 
   if (auto i = dynamic_cast<const TypeExprID*>(&t))
-    return score(*i->referent);
+    return score_type(*i->referent);
 
   return 0;
 }
 
+/* A "pivot," a collection of state components that we can sort at runtime to
+ * provide a canonical ordering for a given scalarset type.
+ */
 namespace { struct Pivot {
 
-  const Model &model;
-  const std::string name;
+  const Model *model;
+  const TypeDecl *type;
   std::vector<std::pair<size_t, const VarDecl*>> components;
 
-  Pivot(const Model &m, const std::string &name_): model(m), name(name_) { }
+  Pivot(const Model &m, const TypeDecl &type_): model(&m), type(&type_) { }
+  Pivot(const Pivot&) = default;
+  Pivot(Pivot&&) = default;
+  Pivot &operator=(Pivot&&) = default;
+  Pivot &operator=(const Pivot&) = default;
 
   bool is_eligible_component(const VarDecl &v) const {
 
@@ -68,7 +75,7 @@ namespace { struct Pivot {
     auto t = dynamic_cast<const TypeExprID*>(a->index_type);
     if (t == nullptr)
       return false;
-    if (t->name != name)
+    if (t->name != type->name)
       return false;
 
     return true;
@@ -81,9 +88,9 @@ namespace { struct Pivot {
      * pivot code eventually.
      */
     // TODO: We could amortise this by storing scores instead of recomputing them
-    unsigned s = score(*v.type);
+    unsigned s = score_type(*v.type);
     for (auto it = components.begin(); it != components.end(); it++) {
-      if (score(*it->second->type) > s) {
+      if (score_type(*it->second->type) > s) {
         components.insert(it, std::make_pair(offset, &v));
         return;
       }
@@ -113,12 +120,14 @@ namespace { struct Pivot {
     }
   }
 
+  // Construct a pivot for the given scalarset declaration.
   static Pivot derive(const Model &m, const TypeDecl &t) {
     assert(dynamic_cast<const Scalarset*>(t.value) != nullptr &&
-      "non-scalarset typedecl passed to find_pivot");
+      "non-scalarset typedecl passed to Pivot::derive");
 
-    Pivot p(m, t.name);
+    Pivot p(m, t);
 
+    // Look through the model state to find suitable components.
     size_t offset = 0;
     for (const Decl *d : m.decls) {
       if (auto v = dynamic_cast<const VarDecl*>(d)) {
@@ -130,31 +139,28 @@ namespace { struct Pivot {
     return p;
   }
 
+  // Score this pivot as a whole based on its components.
+  unsigned score(void) const {
+    unsigned s = 0;
+    for (const std::pair<size_t, const VarDecl*> &c : components)
+      s += score_type(*c.second->type);
+    return s;
+  }
+
+  void generate_definitions(std::ostream &out) const {
+    auto s = dynamic_cast<const Scalarset&>(*type->value);
+    int64_t b = s.bound->constant_fold();
+
+      /* An array indicating how to sort the given scalarset. For example, if we
+       * have a scalarset(4), this array may end up as { 3, 1, 0, 2 }. This
+       * would indicate any other scalarset state data encountered should map 0
+       * to 3, 1 to itself, 2 to 0, and 3 to 2.
+       */
+    out << "  size_t schedule_" << type->name << "[" << b << "] "
+      << "__attribute__((unused));\n";
+  }
+
 }; }
-
-static void generate_pivot_data(const TypeDecl &t, std::ostream &out) {
-
-  auto s = dynamic_cast<const Scalarset&>(*t.value);
-  int64_t b = s.bound->constant_fold();
-
-  out
-    /* An array indicating how to sort the given scalarset. For example, if we
-     * have a scalarset(4), this array may end up as { 3, 1, 0, 2 }. This would
-     * indicate any other scalarset state data encountered should map 0 to 3, 1
-     * to itself, 2 to 0, and 3 to 2.
-     */
-    << "  size_t schedule_" << t.name << "[" << b << "] "
-      << "__attribute__((unused));\n"
-
-    /* A flag indicating whether we have yet found a "pivot," an array indexed
-     * by this scalarset whose contents can be sorted to derive a "schedule"
-     * (above). The contents of the schedule should not be considered valid
-     * until this flag is true. Conversely if we encounter a sorting candidate
-     * and this flag is false, we can consider the candidate the pivot and
-     * write the schedule.
-     */
-    << "  bool pivoted_" << t.name << " __attribute__((unused)) = false;\n";
-}
 
 void generate_canonicalise(const Model &m, std::ostream &out) {
 
@@ -163,16 +169,30 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
     << "static void state_canonicalise(struct state *s "
       << "__attribute__((unused))) {\n";
 
-  // Define the schedule and pivot
+  // Find the named scalarset types.
   std::vector<const TypeDecl*> ss = find_scalarsets(m);
   *log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
     "types\n";
-  for (const TypeDecl *t : ss)
-    generate_pivot_data(*t, out);
 
+  // Derive a pivot for each one, keeping the list sorted by ascending score.
   std::vector<Pivot> pivots;
-  for (const TypeDecl *t : ss)
-    pivots.push_back(Pivot::derive(m, *t));
+  for (const TypeDecl *t : ss) {
+    Pivot p = Pivot::derive(m, *t);
+    bool found = false;
+    for (auto it = pivots.begin(); it != pivots.end(); it++) {
+      if (p.score() <= it->score()) {
+        pivots.insert(it, p);
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      pivots.push_back(p);
+  }
+
+  // Output code to perform the actual canonicalisation
+  for (const Pivot &p : pivots)
+    p.generate_definitions(out);
 
   out << "}";
 }
