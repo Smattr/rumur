@@ -28,23 +28,23 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
  * many times is a scalarset used in this type?" We currently only ever call it
  * with scalarset-indexed arrays, so nothing ever scores below 1.
  */
-static unsigned score_type(const TypeExpr &t) {
+static unsigned interdependence(const TypeExpr &t) {
 
   if (auto r = dynamic_cast<const Record*>(&t)) {
     unsigned s = 0;
     for (const VarDecl *f : r->fields)
-      s += score_type(*f->type);
+      s += interdependence(*f->type);
     return s;
   }
 
   if (auto a = dynamic_cast<const Array*>(&t))
-    return score_type(*a->index_type) + score_type(*a->element_type);
+    return interdependence(*a->index_type) + interdependence(*a->element_type);
 
   if (auto s = dynamic_cast<const Scalarset*>(&t))
     return 1;
 
   if (auto i = dynamic_cast<const TypeExprID*>(&t))
-    return score_type(*i->referent);
+    return interdependence(*i->referent);
 
   return 0;
 }
@@ -84,13 +84,13 @@ namespace { struct Pivot {
   // Add a component to this pivot.
   void add_component(size_t offset, const VarDecl &v) {
 
-    /* Insert it in order of increasing score so that we can output more optimal
-     * pivot code eventually.
+    /* Insert it in order of increasing interdependence so that we can output
+     * more optimal pivot code eventually.
      */
     // TODO: We could amortise this by storing scores instead of recomputing them
-    unsigned s = score_type(*v.type);
+    unsigned i = interdependence(*v.type);
     for (auto it = components.begin(); it != components.end(); it++) {
-      if (score_type(*it->second->type) > s) {
+      if (i <= interdependence(*it->second->type)) {
         components.insert(it, std::make_pair(offset, &v));
         return;
       }
@@ -139,11 +139,14 @@ namespace { struct Pivot {
     return p;
   }
 
-  // Score this pivot as a whole based on its components.
-  unsigned score(void) const {
+  /* Score this pivot as a whole based on its components. This is a measure of
+   * how much reshuffling based on this pivot will degrade the ability of other
+   * pivots. As with 'interdependence,' lower is better.
+   */
+  unsigned interference(void) const {
     unsigned s = 0;
     for (const std::pair<size_t, const VarDecl*> &c : components)
-      s += score_type(*c.second->type);
+      s += interdependence(*c.second->type);
     return s;
   }
 
@@ -174,13 +177,15 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
   *log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
     "types\n";
 
-  // Derive a pivot for each one, keeping the list sorted by ascending score.
+  /* Derive a pivot for each one, keeping the list sorted by ascending
+   * interference.
+   */
   std::vector<Pivot> pivots;
   for (const TypeDecl *t : ss) {
     Pivot p = Pivot::derive(m, *t);
     bool found = false;
     for (auto it = pivots.begin(); it != pivots.end(); it++) {
-      if (p.score() <= it->score()) {
+      if (p.interference() <= it->interference()) {
         pivots.insert(it, p);
         found = true;
         break;
