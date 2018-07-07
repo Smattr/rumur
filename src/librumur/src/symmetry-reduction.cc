@@ -25,8 +25,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
 
 /* Derive a metric for a given type based on its utility as a pivot component
  * (see below). In this scheme lower is better. The score is essentially "how
- * many times is a scalarset used in this type?" We currently only ever call it
- * with scalarset-indexed arrays, so nothing ever scores below 1.
+ * many times is a scalarset used in this type?"
  */
 static unsigned interdependence(const TypeExpr &t) {
 
@@ -54,9 +53,15 @@ static unsigned interdependence(const TypeExpr &t) {
  */
 namespace { struct Pivot {
 
+  struct Component {
+    size_t offset;
+    const VarDecl *decl;
+    unsigned interdependence;
+  };
+
   const Model *model;
   const TypeDecl *type;
-  std::vector<std::pair<size_t, const VarDecl*>> components;
+  std::vector<Component> components;
 
   Pivot(const Model &m, const TypeDecl &type_): model(&m), type(&type_) { }
   Pivot(const Pivot&) = default;
@@ -87,14 +92,26 @@ namespace { struct Pivot {
   // Add a component to this pivot.
   void add_component(size_t offset, const VarDecl &v) {
 
-    /* Insert it in order of increasing interdependence so that we can output
-     * more optimal pivot code eventually.
+    /* Find the representative type against which we'll score this VarDecl on
+     * interdependence. E.g. in the case of a scalarset-indexed array, we score
+     * the VarDecl based on the element type alone because we know the
+     * (positive) effect of the index type.
      */
-    // TODO: We could amortise this by storing scores instead of recomputing them
-    unsigned i = interdependence(*v.type);
+    const TypeExpr *vtype = v.type->resolve();
+    if (auto a = dynamic_cast<const Array*>(vtype))
+      vtype = a->element_type;
+
+    // Assess how much interaction this component has with other scalarsets.
+    unsigned i = interdependence(*vtype);
+
+    Component c = { offset, &v, i };
+
+    /* Insert the component in order of increasing interdependence so that we
+     * can output more optimal pivot code eventually.
+     */
     for (auto it = components.begin(); it != components.end(); it++) {
-      if (i <= interdependence(*it->second->type)) {
-        components.insert(it, std::make_pair(offset, &v));
+      if (c.interdependence <= it->interdependence) {
+        components.insert(it, c);
         return;
       }
     }
@@ -102,7 +119,7 @@ namespace { struct Pivot {
     /* The element to insert scored higher than every existing component. Insert
      * at the end.
      */
-    components.emplace_back(std::make_pair(offset, &v));
+    components.emplace_back(c);
   }
 
   // Recursively find and add components
@@ -148,8 +165,8 @@ namespace { struct Pivot {
    */
   unsigned interference(void) const {
     unsigned s = 0;
-    for (const std::pair<size_t, const VarDecl*> &c : components)
-      s += interdependence(*c.second->type);
+    for (const Component &c : components)
+      s += c.interdependence;
     return s;
   }
 
