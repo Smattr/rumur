@@ -203,6 +203,10 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
   std::vector<Pivot> pivots;
   for (const TypeDecl *t : ss) {
     Pivot p = Pivot::derive(m, *t);
+    *log.debug << __func__ << ":" << __LINE__ << ": symmetry reduction: pivot "
+      << "for scalarset type " << t->name << " has an interference score of "
+      << p.interference() << (p.interference() == 0 ? " (perfect)" : "")
+      << "\n";
     bool found = false;
     for (auto it = pivots.begin(); it != pivots.end(); it++) {
       if (p.interference() <= it->interference()) {
