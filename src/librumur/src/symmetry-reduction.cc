@@ -48,6 +48,92 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   return 0;
 }
 
+// Generate part of a memcmp-style comparator
+static void generate_compare(std::ostream &out, const std::string &offset_a,
+  const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
+
+  const TypeExpr *t = type.resolve();
+
+  const std::string indent = std::string((depth + 1) * 2, ' ');
+
+  if (t->is_simple()) {
+    const std::string width = "SIZE_C(" + std::to_string(t->width()) + ")";
+    out
+
+      /* Open a scope so we don't need to think about redeclaring/shadowing 'x'
+       * and 'y'.
+       */
+      << indent << "{\n"
+
+      // Directly compare the two pieces of data
+      << indent << "  value_t x = handle_read_raw((struct handle){ .base = "
+        << "(uint8_t*)s, .offset = " << offset_a << ", .width = " << width
+        << " });\n"
+      << indent << "  value_t y = handle_read_raw((struct handle){ .base = "
+        << "(uint8_t*)s, .offset = " << offset_b << ", .width = " << width
+        << " });\n"
+      << indent << "  if (x < y) {\n"
+      << indent << "    return -1;\n"
+      << indent << "  } else if (x > y) {\n"
+      << indent << "    return 1;\n"
+      << indent << "  }\n"
+      << indent << "  /* Fall through to comparison of next item. */\n"
+
+      // Close scope
+      << indent << "}\n";
+
+    return;
+  }
+
+  if (auto a = dynamic_cast<const Array*>(t)) {
+
+    // The number of elements in this array as a C code string
+    const std::string ub = "SIZE_C(" + std::to_string(a->index_type->count()) +
+      ")";
+
+    // The bit size of each array as a C code string
+    const std::string width = "SIZE_C(" +
+      std::to_string(a->element_type->width()) + ")";
+
+    // Generate a loop to iterate over all the elements
+    const std::string var = "i" + std::to_string(depth);
+    out << indent << "for (size_t " << var << " = 0; " << var << " < " << ub
+      << "; " << var << "++) {\n";
+
+    // Generate code to compare each element
+    const std::string off_a = offset_a + " + " + var + " * " + width;
+    const std::string off_b = offset_b + " + " + var + " * " + width;
+    generate_compare(out, off_a, off_b, *a->element_type, depth + 1);
+
+    // Close the loop
+    out << indent << "}\n";
+
+    return;
+  }
+
+  if (auto r = dynamic_cast<const Record*>(t)) {
+
+    std::string off_a = offset_a;
+    std::string off_b = offset_b;
+
+    for (const VarDecl *f : r->fields) {
+
+      // Generate code to compare this field
+      generate_compare(out, off_a, off_b, *f->type, depth);
+
+      // Jump over this field to get the offset of the next field
+      const std::string width = "SIZE_C(" + std::to_string(f->type->width()) +
+        ")";
+      off_a += " + " + width;
+      off_b += " + " + width;
+    }
+
+    return;
+  }
+
+  assert(!"missed case in generate_compare");
+}
+
 namespace {
 
   /* A "pivot," a collection of state components that we can sort at runtime to
@@ -198,8 +284,43 @@ namespace {
          * would indicate any other scalarset state data encountered should map 0
          * to 3, 1 to itself, 2 to 0, and 3 to 2.
          */
-      out << "  size_t schedule_" << type->name << "[" << b << "] "
-        << "__attribute__((unused));\n";
+      out
+        << "  size_t schedule_ru_" << type->name << "[" << b << "] "
+          << "__attribute__((unused));\n"
+        << "  for (size_t i = 0; i < SIZE_C(" << b << "); i++) {\n"
+        << "    schedule_ru_" << type->name << "[i] = i;\n"
+        << "  }\n";
+    }
+
+    virtual void generate_comparison(std::ostream &out) const {
+
+      out
+        << "static int compare_ru_" << type->name << "(const struct state *s, "
+          << "size_t a, size_t b) {\n";
+
+      for (const Component &c : components) {
+
+        auto a = dynamic_cast<const Array*>(c.type);
+        assert(a != nullptr && "non-array type in Pivot; maybe an inheritor of "
+          "Pivot isn't overriding generate_comparison?");
+
+        // Find the coordinates of this pivot component
+        const std::string offset = "SIZE_C(" + std::to_string(c.offset) + ")";
+        const std::string width = "SIZE_C(" +
+          std::to_string(a->index_type->width()) + ")";
+        const std::string offset_a = offset + " + a * " + width;
+        const std::string offset_b = offset + " + b * " + width;
+
+        // Generate comparison code for this component
+        generate_compare(out, offset_a, offset_b, *a->element_type);
+      }
+
+      out
+        /* Generated code will eventually fall through to this return statement
+         * if all pivot components for the given scalarset values are equal.
+         */
+        << "  return 0;\n"
+        << "}";
     }
 
     virtual ~Pivot(void) { }
@@ -281,6 +402,11 @@ namespace {
       return true;
     }
 
+    /* A field pivot needs no comparator, as it relies on ordering based on
+     * offsets into the state data.
+     */
+    void generate_comparison(std::ostream&) const final { }
+
     virtual ~FieldPivot(void) { }
 
     static FieldPivot *create(const Model &m, const TypeDecl &t) {
@@ -345,11 +471,6 @@ namespace {
 
 void generate_canonicalise(const Model &m, std::ostream &out) {
 
-  // Write the function header
-  out
-    << "static void state_canonicalise(struct state *s "
-      << "__attribute__((unused))) {\n";
-
   // Find the named scalarset types.
   std::vector<const TypeDecl*> ss = find_scalarsets(m);
   *log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
@@ -381,6 +502,17 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
     if (!found)
       pivots.push_back(p);
   }
+
+  // Output a comparison function to be used in each pivot
+  for (const Pivot *p : pivots) {
+    p->generate_comparison(out);
+    out << "\n\n";
+  }
+
+  // Write the function header
+  out
+    << "static void state_canonicalise(struct state *s "
+      << "__attribute__((unused))) {\n";
 
   // Output code to perform the actual canonicalisation
   for (const Pivot *p : pivots)
