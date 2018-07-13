@@ -275,7 +275,7 @@ namespace {
       return s;
     }
 
-    void generate_definitions(std::ostream &out) const {
+    void generate_schedule_define(std::ostream &out) const {
       auto s = dynamic_cast<const Scalarset&>(*type->value);
       int64_t b = s.bound->constant_fold();
 
@@ -286,10 +286,24 @@ namespace {
          */
       out
         << "  size_t schedule_ru_" << type->name << "[" << b << "] "
-          << "__attribute__((unused));\n"
-        << "  for (size_t i = 0; i < SIZE_C(" << b << "); i++) {\n"
-        << "    schedule_ru_" << type->name << "[i] = i;\n"
-        << "  }\n";
+          << "__attribute__((unused));\n";
+    }
+
+    virtual void generate_schedule_sort(std::ostream &out) const {
+      const std::string schedule = "schedule_ru_" + type->name;
+
+      out
+
+        // Initialise the schedule array to describe the existing order
+        << "  for (size_t i = 0; i < sizeof(" << schedule << ") / sizeof("
+          << schedule << "[0]); i++) {\n"
+        << "    " << schedule << "[i] = i;\n"
+        << "  }\n"
+
+        // Sort the schedule array
+        << "  sort(compare_ru_" << type->name << ", " << schedule << ", s, 0, "
+          << "sizeof(" << schedule << ") / sizeof(" << schedule
+          << "[0]) - 1);\n";
     }
 
     virtual void generate_comparison(std::ostream &out) const {
@@ -400,6 +414,63 @@ namespace {
         "typedef");
 
       return true;
+    }
+
+    void generate_schedule_sort(std::ostream &out) const final {
+      const std::string schedule = "schedule_ru_" + type->name;
+
+      out
+        // Initialise the schedule array full of "invalid" sentinels
+        << "  for (size_t i = 0; i < sizeof(" << schedule << ") / sizeof("
+          << schedule << "[0]); i++) {\n"
+        << "    " << schedule << "[i] = SIZE_MAX;\n"
+        << "  }\n"
+
+        // Open a new scope so we don't need to care about aliasing/shadowing
+        << "  {\n"
+
+        // Counter of how many unique values of our type we've seen
+        << "    size_t i = 0;\n";
+
+      for (const Component &c : components)
+        out
+
+          // Another scope so we can re-use 'v' for each component
+          << "    {\n"
+
+          // Read the (raw) value of this field
+          << "      size_t v = (size_t)handle_read_raw((struct handle){ "
+            << ".base = (uint8_t*)s->data, .offset = SIZE_C(" << c.offset
+            << "), .width = SIZE_C(" << c.type->width() << ") });\n"
+
+          << "      assert((v == 0 || v - 1 < sizeof(" << schedule
+            << ") / sizeof(" << schedule << "[0])) && \"out of bounds access "
+            << "in state_canonicalise()\");\n"
+
+          /* If it's not undefined and its corresponding entry in the schedule
+           * array is invalid, claim it.
+           */
+          << "      if (v != 0 && " << schedule << "[v - 1] != SIZE_MAX) {\n"
+          << "        " << schedule << "[v - 1] = i;\n"
+          << "        i++;\n"
+          << "      }\n"
+
+          // Close 'v' scope
+          << "    }\n";
+
+      out
+        /* Use the remaining values of this type linearly to set the remaining
+         * invalid slots.
+         */
+        << "    for (size_t j = 0; j < sizeof(" << schedule << ") / sizeof(" << schedule << "[0]); j++) {\n"
+        << "      if (" << schedule << "[j] == SIZE_MAX) {\n"
+        << "        " << schedule << "[j] = i;\n"
+        << "        i++;\n"
+        << "      }\n"
+        << "    }\n"
+
+        // Close our scope
+        << "  }\n";
     }
 
     /* A field pivot needs no comparator, as it relies on ordering based on
@@ -515,8 +586,10 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
       << "__attribute__((unused))) {\n";
 
   // Output code to perform the actual canonicalisation
-  for (const Pivot *p : pivots)
-    p->generate_definitions(out);
+  for (const Pivot *p : pivots) {
+    p->generate_schedule_define(out);
+    p->generate_schedule_sort(out);
+  }
 
   out << "}";
 
