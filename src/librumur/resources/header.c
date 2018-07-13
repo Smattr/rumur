@@ -663,6 +663,46 @@ static __attribute__((unused)) value_t negate(const struct state *s,
   return r;
 }
 
+/* A version of quicksort that operates on "schedules," arrays of indices that
+ * serve as a proxy for the collection being sorted.
+ */
+static __attribute__((unused)) void sort(
+  int (*compare)(const struct state *s, size_t a, size_t b),
+  size_t *schedule, const struct state *s, size_t lower, size_t upper) {
+
+  /* If we have nothing to sort, bail out. */
+  if (lower > upper) {
+    return;
+  }
+
+  /* Use Hoare's partitioning algorithm to apply quicksort. */
+  size_t i = lower - 1;
+  size_t j = upper + 1;
+
+  for (;;) {
+
+    do {
+      i++;
+    } while (compare(s, schedule[i], schedule[lower]) < 0);
+
+    do {
+      j--;
+    } while (compare(s, schedule[j], schedule[lower]) > 0);
+
+    if (i >= j) {
+      break;
+    }
+
+    /* Swap elements i and j. */
+    size_t temp = schedule[i];
+    schedule[i] = schedule[j];
+    schedule[j] = temp;
+  }
+
+  sort(compare, schedule, s, lower, j);
+  sort(compare, schedule, s, j + 1, upper);
+}
+
 /*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
