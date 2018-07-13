@@ -67,10 +67,10 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
 
       // Directly compare the two pieces of data
       << indent << "  value_t x = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s, .offset = " << offset_a << ", .width = " << width
+        << "(uint8_t*)s->data, .offset = " << offset_a << ", .width = " << width
         << " });\n"
       << indent << "  value_t y = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s, .offset = " << offset_b << ", .width = " << width
+        << "(uint8_t*)s->data, .offset = " << offset_b << ", .width = " << width
         << " });\n"
       << indent << "  if (x < y) {\n"
       << indent << "    return -1;\n"
