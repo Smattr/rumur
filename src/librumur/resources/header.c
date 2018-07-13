@@ -671,7 +671,7 @@ static __attribute__((unused)) void sort(
   size_t *schedule, const struct state *s, size_t lower, size_t upper) {
 
   /* If we have nothing to sort, bail out. */
-  if (lower > upper) {
+  if (lower >= upper) {
     return;
   }
 
@@ -683,10 +683,12 @@ static __attribute__((unused)) void sort(
 
     do {
       i++;
+      assert(i >= lower && i <= upper && "out of bounds access in sort()");
     } while (compare(s, schedule[i], schedule[lower]) < 0);
 
     do {
       j--;
+      assert(j >= lower && j <= upper && "out of bounds access in sort()");
     } while (compare(s, schedule[j], schedule[lower]) > 0);
 
     if (i >= j) {
