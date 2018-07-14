@@ -12,12 +12,6 @@
 
 namespace rumur {
 
-static size_t bits_for(unsigned long long v) {
-  if (v == 0)
-    return 0;
-  return sizeof(v) * CHAR_BIT - __builtin_clzll(v);
-}
-
 bool TypeExpr::is_simple() const {
   return false;
 }
@@ -32,6 +26,13 @@ std::string TypeExpr::lower_bound() const {
 
 std::string TypeExpr::upper_bound() const {
   throw Error("complex types do not have valid upper bounds", loc);
+}
+
+size_t TypeExpr::width() const {
+  auto c = (unsigned long long)count();
+  if (c <= 1)
+    return 0;
+  return sizeof(c) * CHAR_BIT - __builtin_clzll(c);
 }
 
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
@@ -66,16 +67,6 @@ Range *Range::clone() const {
 Range::~Range() {
   delete min;
   delete max;
-}
-
-size_t Range::width() const {
-  int64_t lb = min->constant_fold();
-  int64_t ub = max->constant_fold();
-  uint64_t range;
-  if (__builtin_sub_overflow(ub, lb, &range) ||
-      __builtin_add_overflow(range, 1, &range))
-    throw Error("overflow in calculating width of range", loc);
-  return bits_for(range);
 }
 
 size_t Range::count() const {
@@ -164,23 +155,12 @@ Scalarset::~Scalarset() {
   delete bound;
 }
 
-size_t Scalarset::width() const {
-  int64_t b = bound->constant_fold();
-  assert(b > 0 && "non-positive bound for scalarset");
-
-  uint64_t range;
-  if (__builtin_add_overflow(b, 1, &range))
-    throw Error("overflow in calculating width of scalarset", loc);
-
-  return bits_for(range);
-}
-
 size_t Scalarset::count() const {
   int64_t b = bound->constant_fold();
   assert(b > 0 && "non-positive bound for scalarset");
 
   uint64_t range;
-  if (__builtin_add_overflow(b, 2, &range))
+  if (__builtin_add_overflow(b, 1, &range))
     throw Error("overflow in calculating count of scalarset", loc);
 
   return range;
@@ -231,10 +211,6 @@ Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const
 
 Enum *Enum::clone() const {
   return new Enum(*this);
-}
-
-size_t Enum::width() const {
-  return bits_for(members.size());
 }
 
 size_t Enum::count() const {
@@ -340,23 +316,20 @@ Record::~Record() {
     delete v;
 }
 
-size_t Record::width() const {
-  size_t s = 0;
-  for (const VarDecl *v : fields) {
-    size_t v_size = v->type->width();
-    if (__builtin_add_overflow(s, v_size, &s))
-      throw Error("overflow in calculating width of record", loc);
-  }
-  return s;
-}
-
 size_t Record::count() const {
+  bool seen_non_zero = false;
+
   size_t s = 1;
   for (const VarDecl *v : fields) {
-    if (__builtin_mul_overflow(s, v->type->count(), &s))
-      throw Error("overflow in calculating count of record", loc);
+    size_t c = v->type->count();
+    if (c != 0) {
+      seen_non_zero = true;
+      if (__builtin_mul_overflow(s, v->type->count(), &s))
+        throw Error("overflow in calculating count of record", loc);
+    }
   }
-  return s;
+
+  return seen_non_zero ? s : 0;
 }
 
 bool Record::operator==(const Node &other) const {
@@ -418,19 +391,20 @@ Array::~Array() {
   delete element_type;
 }
 
-size_t Array::width() const {
-  size_t s;
-  size_t i = index_type->count();
-  size_t e = element_type->width();
-  if (__builtin_mul_overflow(i, e, &s))
-    throw Error("overflow in calculating width of array", loc);
-  return s;
-}
-
 size_t Array::count() const {
+
+  size_t i = index_type->count();
+  size_t e = element_type->count();
+
+  assert(i >= 1 && "index count apparently does not include undefined");
+  i--;
+
+  if (i == 0)
+    return 0;
+
   size_t s = 1;
-  for (size_t i = 0; i < index_type->count(); i++) {
-    if (__builtin_mul_overflow(s, element_type->count(), &s))
+  for (size_t j = 0; j < i; j++) {
+    if (__builtin_mul_overflow(s, e, &s))
       throw Error("overflow in calculating count of array", loc);
   }
   return s;
@@ -525,10 +499,6 @@ TypeExprID *TypeExprID::clone() const {
 
 TypeExprID::~TypeExprID() {
   delete referent;
-}
-
-size_t TypeExprID::width() const {
-  return referent->width();
 }
 
 size_t TypeExprID::count() const {
