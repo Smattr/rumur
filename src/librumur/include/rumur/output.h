@@ -12,10 +12,11 @@ enum tristate {
 };
 
 enum trace_category_t {
-  TC_HANDLE_READS  = 0x1,
-  TC_HANDLE_WRITES = 0x2,
-  TC_QUEUE         = 0x4,
-  TC_SET           = 0x8,
+  TC_HANDLE_READS       =  0x1,
+  TC_HANDLE_WRITES      =  0x2,
+  TC_QUEUE              =  0x4,
+  TC_SET                =  0x8,
+  TC_SYMMETRY_REDUCTION = 0x10,
 };
 
 struct OutputOptions {

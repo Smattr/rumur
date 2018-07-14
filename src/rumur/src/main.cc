@@ -159,13 +159,15 @@ static void parse_args(int argc, char **argv) {
           output_options.traces |= rumur::TC_QUEUE;
         } else if (strcmp(optarg, "set") == 0) {
           output_options.traces |= rumur::TC_SET;
+        } else if (strcmp(optarg, "symmetry_reduction") == 0) {
+          output_options.traces |= rumur::TC_SYMMETRY_REDUCTION;
         } else if (strcmp(optarg, "all") == 0) {
           output_options.traces = uint64_t(-1);
         } else {
           std::cerr
             << "invalid --trace argument \"" << optarg << "\"\n"
             << "valid arguments are \"handle_reads\", \"handle_writes\", "
-              "\"queue\", and \"set\"\n";
+              "\"queue\", \"set\", and \"symmetry_reduction\"\n";
           exit(EXIT_FAILURE);
         }
         break;
