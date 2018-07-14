@@ -29,7 +29,7 @@ class TypeExpr : public Node {
   virtual bool is_simple() const;
 
   TypeExpr *clone() const override = 0;
-  size_t width() const;
+  virtual size_t width() const;
   virtual size_t count() const = 0;
   virtual const TypeExpr *resolve() const;
 
@@ -131,6 +131,7 @@ class Record : public TypeExpr {
   Record *clone() const final;
   virtual ~Record();
 
+  size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
 
@@ -152,6 +153,7 @@ class Array : public TypeExpr {
   Array *clone() const final;
   virtual ~Array();
 
+  size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
 
@@ -173,6 +175,7 @@ class TypeExprID : public TypeExpr {
   TypeExprID *clone() const final;
   virtual ~TypeExprID();
 
+  size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;

@@ -32,7 +32,7 @@ size_t TypeExpr::width() const {
   auto c = (unsigned long long)count();
   if (c <= 1)
     return 0;
-  return sizeof(c) * CHAR_BIT - __builtin_clzll(c);
+  return sizeof(c) * CHAR_BIT - __builtin_clzll(c - 1);
 }
 
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
@@ -316,20 +316,22 @@ Record::~Record() {
     delete v;
 }
 
-size_t Record::count() const {
-  bool seen_non_zero = false;
+size_t Record::width() const {
+  size_t s = 0;
+  for (const VarDecl *v : fields) {
+    if (__builtin_add_overflow(s, v->type->width(), &s))
+      throw Error("overflow in calculating width of record", loc);
+  }
+  return s;
+}
 
+size_t Record::count() const {
   size_t s = 1;
   for (const VarDecl *v : fields) {
-    size_t c = v->type->count();
-    if (c != 0) {
-      seen_non_zero = true;
-      if (__builtin_mul_overflow(s, v->type->count(), &s))
-        throw Error("overflow in calculating count of record", loc);
-    }
+    if (__builtin_mul_overflow(s, v->type->count(), &s))
+      throw Error("overflow in calculating count of record", loc);
   }
-
-  return seen_non_zero ? s : 0;
+  return s;
 }
 
 bool Record::operator==(const Node &other) const {
@@ -389,6 +391,21 @@ Array *Array::clone() const {
 Array::~Array() {
   delete index_type;
   delete element_type;
+}
+
+size_t Array::width() const {
+
+  size_t i = index_type->count();
+  size_t e = element_type->width();
+
+  assert(i >= 1 && "index count apparently does not include undefined");
+  i--;
+
+  size_t r;
+  if (__builtin_mul_overflow(i, e, &r))
+    throw Error("overflow in calculating width of array", loc);
+
+  return r;
 }
 
 size_t Array::count() const {
@@ -499,6 +516,10 @@ TypeExprID *TypeExprID::clone() const {
 
 TypeExprID::~TypeExprID() {
   delete referent;
+}
+
+size_t TypeExprID::width() const {
+  return referent->width();
 }
 
 size_t TypeExprID::count() const {
