@@ -72,7 +72,7 @@ static void parse_args(int argc, char **argv) {
       { "quiet", no_argument, 0, 'q' },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
-      { "symmetry_reduction", required_argument, 0, 134 },
+      { "symmetry-reduction", required_argument, 0, 134 },
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, 130 },
       { "verbose", no_argument, 0, 'v' },
