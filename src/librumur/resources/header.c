@@ -441,6 +441,13 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
 static __attribute__((unused)) value_t handle_read(const struct state *s,
     value_t lb, value_t ub, struct handle h) {
 
+  /* If we happen to be reading from the current state, do a sanity check that
+   * we're only reading within bounds.
+   */
+  assert((h.base != (uint8_t*)s->data /* not a read from the current state */
+    || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
+    && "out of bounds read in handle_read()");
+
   value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
@@ -484,6 +491,13 @@ static __attribute__((unused)) void handle_write(const struct state *s,
     "handle_write() is implemented by reading data into a 128-bit scalar and "
     "then operating on it using 128-bit operations. Value type is larger than "
     "128 bits which prevents this.");
+
+  /* If we happen to be writing to the current state, do a sanity check that
+   * we're only writing within bounds.
+   */
+  assert((h.base != (uint8_t*)s->data /* not a write to the current state */
+    || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
+    && "out of bounds write in handle_write()");
 
   if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
       __builtin_add_overflow(value, 1, &value)) {
