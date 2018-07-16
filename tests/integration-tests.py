@@ -26,7 +26,7 @@ class TemporaryDirectory(object):
 class Tests(unittest.TestCase):
   pass
 
-def test_template(self, model, optimised):
+def test_template(self, model, optimised, debug):
 
   # Default options to use for this test.
   option = {
@@ -51,8 +51,10 @@ def test_template(self, model, optimised):
   with TemporaryDirectory() as tmp:
 
     model_c = os.path.join(tmp, 'model.c')
-    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model] +
-      option['rumur_flags'])
+    rumur_flags = ['--output', model_c, model]
+    if debug:
+      rumur_flags.append('--debug')
+    ret, stdout, stderr = run([RUMUR_BIN] + rumur_flags + option['rumur_flags'])
     if ret != option['rumur_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
@@ -102,17 +104,18 @@ def main(argv):
 
     m_name = os.path.basename(m)
 
-    test_name = re.sub(r'[^\w]', '_', 'test_unoptimised_{}'.format(m_name))
-    if hasattr(Tests, test_name):
-      raise Exception('{} collides with an existing test name'.format(m))
+    for optimised in (False, True):
+      for debug in (False, True):
 
-    setattr(Tests, test_name,
-      lambda self, model=m: test_template(self, model, False))
+        test_name = re.sub(r'[^\w]', '_', 'test_{}{}_{}'.format(
+          'debug_' if debug else '',
+          'optimised' if optimised else 'unoptimised', m_name))
 
-    test_name = re.sub(r'[^\w]', '_', 'test_optimised_{}'.format(m_name))
+        if hasattr(Tests, test_name):
+          raise Exception('{} collides with an existing test name'.format(m))
 
-    setattr(Tests, test_name,
-      lambda self, model=m: test_template(self, model, True))
+        setattr(Tests, test_name,
+          lambda self, model=m: test_template(self, model, optimised, debug))
 
   unittest.main()
 
