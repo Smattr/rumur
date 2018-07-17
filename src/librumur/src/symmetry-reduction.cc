@@ -321,7 +321,7 @@ namespace {
         // Find the coordinates of this pivot component
         const std::string offset = "SIZE_C(" + std::to_string(c.offset) + ")";
         const std::string width = "SIZE_C(" +
-          std::to_string(a->index_type->width()) + ")";
+          std::to_string(a->element_type->width()) + ")";
         const std::string offset_a = offset + " + a * " + width;
         const std::string offset_b = offset + " + b * " + width;
 
