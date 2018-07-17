@@ -379,6 +379,18 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
+struct handle state_handle(const struct state *s, size_t offset, size_t width) {
+
+  assert(sizeof(s->data) * CHAR_BIT - width >= offset && "generating an out of "
+    "bounds handle in state_handle()");
+
+  return (struct handle){
+    .base = (uint8_t*)s->data,
+    .offset = offset,
+    .width = width,
+  };
+}
+
 static unsigned __int128 handle_extract(struct handle h) {
 
   ASSERT(handle_aligned(h) && "extraction of unaligned handle");

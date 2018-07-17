@@ -66,12 +66,10 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
       << indent << "{\n"
 
       // Directly compare the two pieces of data
-      << indent << "  value_t x = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = " << offset_a << ", .width = " << width
-        << " });\n"
-      << indent << "  value_t y = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = " << offset_b << ", .width = " << width
-        << " });\n"
+      << indent << "  value_t x = handle_read_raw(state_handle(s, " << offset_a
+        << ", " << width << "));\n"
+      << indent << "  value_t y = handle_read_raw(state_handle(s, " << offset_b
+        << ", " << width << "));\n"
       << indent << "  if (x < y) {\n"
       << indent << "    return -1;\n"
       << indent << "  } else if (x > y) {\n"
@@ -146,18 +144,14 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
 
     out
       << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
-      << indent << "  value_t a = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = " << offset_a << ", .width = SIZE_C("
-        << t->width() << ") });\n"
-      << indent << "  value_t b = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = " << offset_b << ", .width = SIZE_C("
-        << t->width() << ") });\n"
-      << indent << "  handle_write_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = " << offset_b << ", .width = SIZE_C("
-        << t->width() << ") }, a);\n"
-      << indent << "  handle_write_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = " << offset_a << ", .width = SIZE_C("
-        << t->width() << ") }, b);\n"
+      << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
+        << ", SIZE_C(" << t->width() << ")));\n"
+      << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
+        << ", SIZE_C(" << t->width() << ")));\n"
+      << indent << "  handle_write_raw(state_handle(s, " << offset_b
+        << ", SIZE_C(" << t->width() << ")), a);\n"
+      << indent << "  handle_write_raw(state_handle(s, " << offset_a
+        << ", SIZE_C(" << t->width() << ")), b);\n"
       << indent << "}\n";
     return;
   }
@@ -404,13 +398,11 @@ namespace {
         if (t->name == type->name) {
           out
             << indent << "{\n"
-            << indent << "  value_t v = handle_read_raw((struct handle){ .base "
-              << "= (uint8_t*)s->data, .offset = " << offset
-              << ", .width = SIZE_C(" << t->width() << ") });\n"
+            << indent << "  value_t v = handle_read_raw(state_handle(s, "
+              << offset << ", SIZE_C(" << t->width() << ")));\n"
             << indent << "  if (v != 0) {\n"
-            << indent << "    handle_write_raw((struct handle){ .base = "
-              << "(uint8_t*)s->data, .offset = " << offset
-              << ", .width = SIZE_C(" << t->width() << ") }, " << schedule
+            << indent << "    handle_write_raw(state_handle(s, "
+              << offset << ", SIZE_C(" << t->width() << ")), " << schedule
               << "[v - 1] + 1);\n"
             << indent << "  }\n"
             << indent << "}\n";
@@ -629,9 +621,8 @@ namespace {
           << "    {\n"
 
           // Read the (raw) value of this field
-          << "      size_t v = (size_t)handle_read_raw((struct handle){ "
-            << ".base = (uint8_t*)s->data, .offset = SIZE_C(" << c.offset
-            << "), .width = SIZE_C(" << c.type->width() << ") });\n"
+          << "      size_t v = (size_t)handle_read_raw(state_handle(s, SIZE_C("
+            << c.offset << "), SIZE_C(" << c.type->width() << ")));\n"
 
           << "      assert((v == 0 || v - 1 < sizeof(" << schedule
             << ") / sizeof(" << schedule << "[0])) && \"out of bounds access "
