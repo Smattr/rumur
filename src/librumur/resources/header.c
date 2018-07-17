@@ -682,7 +682,7 @@ static __attribute__((unused)) value_t negate(const struct state *s,
  */
 static __attribute__((unused)) void sort(
   int (*compare)(const struct state *s, size_t a, size_t b),
-  size_t *schedule, const struct state *s, size_t lower, size_t upper) {
+  size_t *schedule, struct state *s, size_t lower, size_t upper) {
 
   /* If we have nothing to sort, bail out. */
   if (lower >= upper) {
