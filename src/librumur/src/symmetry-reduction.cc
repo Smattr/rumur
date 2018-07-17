@@ -88,8 +88,8 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
   if (auto a = dynamic_cast<const Array*>(t)) {
 
     // The number of elements in this array as a C code string
-    const std::string ub = "SIZE_C(" + std::to_string(a->index_type->count()) +
-      ")";
+    const std::string ub = "SIZE_C("
+      + std::to_string(a->index_type->count() - 1) + ")";
 
     // The bit size of each array as a C code string
     const std::string width = "SIZE_C(" +
@@ -132,6 +132,69 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
   }
 
   assert(!"missed case in generate_compare");
+}
+
+// Generate application of a schedule
+static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
+  const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
+
+  const TypeExpr *t = type.resolve();
+
+  const std::string indent = std::string((depth + 1) * 2, ' ');
+
+  if (t->is_simple()) {
+
+    out
+      << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
+      << indent << "  value_t a = handle_read_raw((struct handle){ .base = "
+        << "(uint8_t*)s->data, .offset = " << offset_a << ", .width = SIZE_C("
+        << t->width() << ") });\n"
+      << indent << "  value_t b = handle_read_raw((struct handle){ .base = "
+        << "(uint8_t*)s->data, .offset = " << offset_b << ", .width = SIZE_C("
+        << t->width() << ") });\n"
+      << indent << "  handle_write_raw((struct handle){ .base = "
+        << "(uint8_t*)s->data, .offset = " << offset_b << ", .width = SIZE_C("
+        << t->width() << ") }, a);\n"
+      << indent << "  handle_write_raw((struct handle){ .base = "
+        << "(uint8_t*)s->data, .offset = " << offset_a << ", .width = SIZE_C("
+        << t->width() << ") }, b);\n"
+      << indent << "}\n";
+    return;
+  }
+
+  if (auto a = dynamic_cast<const Array*>(t)) {
+    const std::string var = "i" + std::to_string(depth);
+    const std::string len = "SIZE_C("
+      + std::to_string(a->index_type->count() - 1) + ")";
+    const std::string width = "SIZE_C("
+      + std::to_string(a->element_type->width()) + ")";
+
+    out << indent << "for (size_t " << var << " = 0; " << var << " < " << len
+      << "; " << var << "++) {\n";
+
+    const std::string off_a = offset_a + " + " + var + " * " + width;
+    const std::string off_b = offset_b + " + " + var + " * " + width;
+
+    generate_apply_swap(out, off_a, off_b, *a->element_type, depth + 1);
+
+    out << indent << "}\n";
+    return;
+  }
+
+  if (auto r = dynamic_cast<const Record*>(t)) {
+    std::string off_a = offset_a;
+    std::string off_b = offset_b;
+
+    for (const VarDecl *f : r->fields) {
+      generate_apply_swap(out, off_a, off_b, *f->type, depth);
+
+      off_a += " + SIZE_C(" + std::to_string(f->width()) + ")";
+      off_b += " + SIZE_C(" + std::to_string(f->width()) + ")";
+    }
+    return;
+  }
+
+  assert(!"missed case in generate_apply_swap");
 }
 
 namespace {
@@ -306,6 +369,123 @@ namespace {
           << "[0]) - 1);\n";
     }
 
+    void generate_schedule_apply(std::ostream &out) const {
+
+      const std::string schedule = "schedule_ru_" + type->name;
+
+      out
+        << "  trace(TC_SYMMETRY_REDUCTION, \"symmetry reduction schedule for "
+          << "%s:\", \"" << type->name << "\");\n"
+        << "  for (size_t i = 0; i < sizeof(" << schedule << ") / sizeof("
+          << schedule << "[0]); i++) {\n"
+        << "    trace(TC_SYMMETRY_REDUCTION, \" %zu: %zu\", i, " << schedule
+          << "[i]);\n"
+        << "  }\n";
+
+      std::string offset = "SIZE_C(0)";
+
+      for (const Decl *d : model->decls) {
+        if (auto v = dynamic_cast<const VarDecl*>(d)) {
+          generate_apply(out, offset, *v->type, 0);
+
+          offset += " + SIZE_C(" + std::to_string(v->width()) + ")";
+        }
+      }
+
+    }
+
+    void generate_apply(std::ostream &out, const std::string &offset,
+      const TypeExpr &type_, size_t depth) const {
+
+      const std::string schedule = "schedule_ru_" + type->name;
+      const std::string indent = std::string((depth + 1) * 2, ' ');
+
+      if (auto t = dynamic_cast<const TypeExprID*>(&type_)) {
+        if (t->name == type->name) {
+          out
+            << indent << "{\n"
+            << indent << "  value_t v = handle_read_raw((struct handle){ .base "
+              << "= (uint8_t*)s->data, .offset = " << offset
+              << ", .width = SIZE_C(" << t->width() << ") });\n"
+            << indent << "  if (v != 0) {\n"
+            << indent << "    handle_write_raw((struct handle){ .base = "
+              << "(uint8_t*)s->data, .offset = " << offset
+              << ", .width = SIZE_C(" << t->width() << ") }, " << schedule
+              << "[v - 1] + 1);\n"
+            << indent << "  }\n"
+            << indent << "}\n";
+          return;
+        }
+      }
+
+      const TypeExpr *t = type_.resolve();
+
+      if (auto a = dynamic_cast<const Array*>(t)) {
+
+        const std::string width = "SIZE_C("
+          + std::to_string(a->element_type->width()) + ")";
+
+        const std::string var = "i" + std::to_string(depth);
+
+        auto i = dynamic_cast<const TypeExprID*>(a->index_type);
+        if (i != nullptr && i->name == type->name) {
+
+          const std::string src = "source" + std::to_string(depth);
+          const std::string dst = "destination" + std::to_string(depth);
+
+          out
+            << indent << "for (size_t " << var << " = 0; " << var
+              << " < sizeof(" << schedule << ") / sizeof(" << schedule
+              << "[0]); " << var << "++) {\n"
+            << indent << "  size_t " << src << " = " << var << ";\n"
+            << indent << "  size_t " << dst << " = " << schedule << "[" << src
+              << "];\n"
+            << indent << "  while (" << dst << " < " << src << ") {\n"
+            << indent << "    " << dst << " = " << schedule << "[" << dst
+              << "];\n"
+            << indent << "  }\n"
+            << indent << "  if (" << dst << " != " << src << ") {\n";
+
+          const std::string off_a = offset + " + " + src + " * " + width;
+          const std::string off_b = offset + " + " + dst + " * " + width;;
+
+          generate_apply_swap(out, off_a, off_b, *a->element_type, depth + 2);
+
+          out
+            << indent << "  }\n"
+            << indent << "}\n";
+
+        }
+
+        const std::string len = "SIZE_C("
+          + std::to_string(a->index_type->count() - 1) + ")";
+
+        out
+          << indent << "for (size_t " << var << " = 0; " << var << " < "
+            << len << "; " << var << "++) {\n";
+
+        const std::string off = offset + " + " + var + " * " + width;
+
+        generate_apply(out, off, *a->element_type, depth + 1);
+
+        out << indent << "}\n";
+
+        return;
+      }
+
+      if (auto r = dynamic_cast<const Record*>(t)) {
+        std::string off = offset;
+
+        for (const VarDecl *f : r->fields) {
+          generate_apply(out, off, *f->type, depth);
+
+          off += " + SIZE_C(" + std::to_string(f->width()) + ")";
+        }
+
+        return;
+      }
+    }
+
     virtual void generate_comparison(std::ostream &out) const {
 
       out
@@ -335,6 +515,16 @@ namespace {
          */
         << "  return 0;\n"
         << "}";
+    }
+
+    virtual void generate_checks(std::ostream &out) const {
+      out
+        << "  for (size_t i = 1; i < SIZE_C(" << (type->value->count() - 1)
+          << "); i++) {\n"
+        << "    assert(compare_ru_" << type->name << "(s, i - 1, i) <= 0 && "
+          << "\"after applying " << type->name << " schedule, state is not "
+          << "sorted\");\n"
+        << "  }\n";
     }
 
     virtual ~Pivot(void) { }
@@ -478,6 +668,8 @@ namespace {
      */
     void generate_comparison(std::ostream&) const final { }
 
+    void generate_checks(std::ostream&) const final { }
+
     virtual ~FieldPivot(void) { }
 
     static FieldPivot *create(const Model &m, const TypeDecl &t) {
@@ -587,8 +779,11 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
 
   // Output code to perform the actual canonicalisation
   for (const Pivot *p : pivots) {
+    out << "  /* Symmetry reduction for type " << p->type->name << " */\n";
     p->generate_schedule_define(out);
     p->generate_schedule_sort(out);
+    p->generate_schedule_apply(out);
+    p->generate_checks(out);
   }
 
   out << "}";
