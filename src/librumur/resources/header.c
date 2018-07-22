@@ -1363,6 +1363,15 @@ restart:;
       /* Success */
       *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
       trace(TC_SET, "added state %p, set size is now %zu", s, *count);
+
+      /* The maximum possible size of the seen state set should be constrained
+       * by the number of possible states based on how many bits we are using to
+       * represent the state data.
+       */
+      assert(STATE_SIZE_BITS > sizeof(size_t) * CHAR_BIT - 1 ||
+        *count <= SIZE_C(1) << STATE_SIZE_BITS && "seen set size exceeds "
+        "total possible number of states");
+
       return true;
     }
 
