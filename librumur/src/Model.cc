@@ -290,7 +290,7 @@ void Model::generate(std::ostream &out) const {
       << "      break;\n"
       << "    }\n"
       << "\n"
-      << "    struct state *s = queue_dequeue();\n"
+      << "    const struct state *s = queue_dequeue();\n"
       << "    if (s == NULL) {\n"
       << "      break;\n"
       << "    }\n"

@@ -780,9 +780,9 @@ size_t queue_enqueue(struct state *s) {
   return count;
 }
 
-struct state *queue_dequeue(void) {
+const struct state *queue_dequeue(void) {
 
-  struct state *s = NULL;
+  const struct state *s = NULL;
 
   int r __attribute__((unused)) = pthread_mutex_lock(&q.lock);
   ASSERT(r == 0);
