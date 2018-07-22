@@ -11,4 +11,4 @@ add_subdirectory(librumur)
 add_subdirectory(rumur)
 
 enable_testing()
-add_test(integration ${CMAKE_CURRENT_SOURCE_DIR}/../tests/integration-tests.py)
+add_test(integration ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration-tests.py)
