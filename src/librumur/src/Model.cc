@@ -318,7 +318,7 @@ void Model::generate(std::ostream &out) const {
         out << ");\n"
           << "        check_invariants(n);\n"
           << "        if (SYMMETRY_REDUCTION) {\n"
-          << "          state_canonicalise(s);\n"
+          << "          state_canonicalise(n);\n"
           << "        }\n"
           << "        size_t size;\n"
           << "        if (set_insert(n, &size)) {\n"
