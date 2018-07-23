@@ -316,6 +316,7 @@ void Model::generate(std::ostream &out) const {
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
         out << ");\n"
+          << "        rules_fired_local++;\n"
           << "        check_invariants(n);\n"
           << "        if (SYMMETRY_REDUCTION) {\n"
           << "          state_canonicalise(n);\n"
@@ -325,7 +326,10 @@ void Model::generate(std::ostream &out) const {
           << "          size_t queue_size = queue_enqueue(n);\n"
           << "          if (size % 10000 == 0) {\n"
           << "            print_lock();\n"
-          << "            printf(\"\\t %zu states explored in %llus, with %s%zu%s states in the queue.\\n\", size, gettime(), queue_size > last_queue_size ? yellow() : green(), queue_size, reset());\n"
+          << "            printf(\"\\t %zu states explored in %llus, with %\" PRIuMAX \" rules \"\n"
+          << "              \"fired and %s%zu%s states in the queue.\\n\", size, gettime(),\n"
+          << "              rules_fired_local, queue_size > last_queue_size ? yellow() : green(),\n"
+          << "              queue_size, reset());\n"
           << "            print_unlock();\n"
           << "            last_queue_size = queue_size;\n"
           << "          }\n"

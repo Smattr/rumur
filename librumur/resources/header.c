@@ -111,6 +111,17 @@ static pthread_t threads[THREADS - 1];
  */
 static atomic_bool done;
 
+/* Number of rules that have been processed. There are two representations of
+ * this: a thread-local count of how many rules we have fired thus far and a
+ * global array of *final* counts of fired rules per-thread that is updated and
+ * used as threads are exiting. The purpose of this duplication is to let the
+ * compiler layout the thread-local variable in a cache-friendly way and use
+ * this during checking, rather than having all threads contending on the global
+ * array whose entries are likely all within the same cache line.
+ */
+static _Thread_local uintmax_t rules_fired_local;
+static uintmax_t rules_fired[THREADS];
+
 /*******************************************************************************
  * Cross-platform semaphores.                                                  *
  *                                                                             *
@@ -1417,6 +1428,9 @@ static int exit_with(int status) {
   /* Opt out of the thread-wide rendezvous protocol. */
   rendezvous_thread_deinit();
 
+  /* Make fired rule count visible globally. */
+  rules_fired[thread_id] = rules_fired_local;
+
   if (thread_id == 0) {
     /* We are the initial thread. Wait on the others before exiting. */
     // TODO: the following condition shoud be 'i < sizeof(threads) / sizeof(thread[0])'
@@ -1444,9 +1458,16 @@ static int exit_with(int status) {
              "\n", green(), bold(), reset());
     }
 
+    /* Calculate the total number of rules fired. */
+    uintmax_t fire_count = 0;
+    for (size_t i = 0; i < sizeof(rules_fired) / sizeof(rules_fired[0]); i++) {
+      fire_count += rules_fired[i];
+    }
+
     printf("State Space Explored:\n"
            "\n"
-           "\t%zu states, in %llus.\n", local_seen->count, gettime());
+           "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
+           local_seen->count, fire_count, gettime());
 
     exit(status);
   } else {
