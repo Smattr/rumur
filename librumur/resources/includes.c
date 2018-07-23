@@ -11,6 +11,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+  #include <sandbox.h>
+#endif
+
 /* Tell xxHash it is being compiled into a standalone binary. */
 #define XXH_PRIVATE_API 1
 #define XXH_STATIC_LINKING_API 1

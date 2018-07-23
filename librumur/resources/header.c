@@ -168,6 +168,41 @@ static int semaphore_post(semaphore_t *sem) {
 
 /******************************************************************************/
 
+/*******************************************************************************
+ * Sandbox support.                                                            *
+ *                                                                             *
+ * Because we're running generated code, it seems wise to use OS mechanisms to *
+ * reduce our privileges, where possible.                                      *
+ ******************************************************************************/
+
+static void sandbox(void) {
+
+#ifndef NDEBUG
+  fprintf(stderr, "sandbox disabled due to debug mode\n");
+  return;
+#endif
+
+#ifdef __APPLE__
+  {
+    char *err;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    int r = sandbox_init(kSBXProfilePureComputation, SANDBOX_NAMED, &err);
+#pragma clang diagnostic pop
+
+    if (r != 0) {
+      fprintf(stderr, "sandbox_init failed: %s\n", err);
+      free(err);
+    }
+  }
+#endif
+
+  /* Fallback: no sandboxing. */
+  fprintf(stderr, "warning: no sandboxing facilities available\n");
+}
+
+/******************************************************************************/
+
 // ANSI colour code support.
 
 static bool istty;
@@ -1476,6 +1511,8 @@ static int exit_with(int status) {
 }
 
 int main(void) {
+
+  sandbox();
 
   printf("Memory usage:\n"
          "\n"
