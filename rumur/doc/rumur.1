@@ -49,6 +49,16 @@ current machine.
 Don't output any messages while generating the checker.
 .RE
 .PP
+\fB--sandbox\fR [\fBon\fR | \fBoff\fR]
+.RS
+Control whether the generated checker uses your operating system's sandboxing
+facilities to limit its own operations. The checker does not intentionally
+perform any malicious or dangerous operations, but at the end of the day it is a
+generated program that you are going to execute. To safeguard against a bug in
+the code generator, it is recommended to constrain the operations the checker is
+allowed to perform. By default this is enabled.
+.RE
+.PP
 \fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
 .RS
 The size of the initial set to allocate for storing seen states. This is given

@@ -182,6 +182,10 @@ static void sandbox(void) {
   return;
 #endif
 
+  if (!SANDBOX_ENABLED) {
+    return;
+  }
+
 #ifdef __APPLE__
   {
     char *err;

@@ -41,6 +41,9 @@ struct OutputOptions {
 
   // Symmetry reduction enabled?
   bool symmetry_reduction;
+
+  // Use OS mechanisms to sandbox the checker?
+  bool sandbox_enabled;
 };
 
 int output_checker(const std::string &path, const Model &model,

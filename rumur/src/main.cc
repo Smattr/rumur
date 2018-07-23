@@ -22,6 +22,7 @@ static rumur::OutputOptions output_options = {
   .traces = 0,
   .deadlock_detection = true,
   .symmetry_reduction = true,
+  .sandbox_enabled = true,
 };
 
 static void help(const char *arg0) {
@@ -70,6 +71,7 @@ static void parse_args(int argc, char **argv) {
       { "no-deadlock-detection", no_argument, 0, 132 },
       { "output", required_argument, 0, 'o' },
       { "quiet", no_argument, 0, 'q' },
+      { "sandbox", required_argument, 0, 135 },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "symmetry-reduction", required_argument, 0, 134 },
@@ -214,6 +216,17 @@ static void parse_args(int argc, char **argv) {
         } else {
           std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
             << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+
+      case 135: // --sandbox ...
+        if (strcmp(optarg, "on") == 0) {
+          output_options.sandbox_enabled = true;
+        } else if (strcmp(optarg, "off") == 0) {
+          output_options.sandbox_enabled = false;
+        } else {
+          std::cerr << "invalid argument to --sandbox, \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;

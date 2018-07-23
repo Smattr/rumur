@@ -40,6 +40,7 @@ int output_checker(const std::string &path, const Model &model,
     << "static const uint64_t TRACES_ENABLED = UINT64_C(" << options.traces << ");\n\n"
     << "enum { DEADLOCK_DETECTION = " << options.deadlock_detection << " };\n\n"
     << "enum { SYMMETRY_REDUCTION = " << options.symmetry_reduction << " };\n\n"
+    << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
 
     // xxHash source
     << std::string((const char*)resources_xxhash_h, (size_t)resources_xxhash_h_len)
