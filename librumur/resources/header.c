@@ -799,57 +799,72 @@ static struct {
   pthread_mutex_t lock;
   struct queue_node *head;
   size_t count;
-} q;
+} q[THREADS];
 
 static void queue_init(void) {
-  int r = pthread_mutex_init(&q.lock, NULL);
-  if (r < 0) {
-    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-    exit(EXIT_FAILURE);
+  for (size_t i = 0; i < sizeof(q) / sizeof(q[0]); i++) {
+    int r = pthread_mutex_init(&q[i].lock, NULL);
+    if (r < 0) {
+      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
+      exit(EXIT_FAILURE);
+    }
   }
 }
 
-size_t queue_enqueue(struct state *s) {
+size_t queue_enqueue(struct state *s, size_t queue_id) {
+  assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
+
   struct queue_node *n = xmalloc(sizeof(*n));
   n->s = s;
 
-  int r __attribute__((unused)) = pthread_mutex_lock(&q.lock);
+  int r __attribute__((unused)) = pthread_mutex_lock(&q[queue_id].lock);
   ASSERT(r == 0);
 
-  n->next = q.head;
-  q.head = n;
-  q.count++;
+  n->next = q[queue_id].head;
+  q[queue_id].head = n;
+  q[queue_id].count++;
 
-  trace(TC_QUEUE, "enqueued state %p, queue length is now %zu", s, q.count);
+  trace(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
+    s, queue_id, q[queue_id].count);
 
-  size_t count = q.count;
+  size_t count = q[queue_id].count;
 
-  r = pthread_mutex_unlock(&q.lock);
+  r = pthread_mutex_unlock(&q[queue_id].lock);
   ASSERT(r == 0);
 
   return count;
 }
 
-const struct state *queue_dequeue(void) {
+const struct state *queue_dequeue(size_t *queue_id) {
+  assert(queue_id != NULL && *queue_id < sizeof(q) / sizeof(q[0]) &&
+    "out of bounds queue access");
 
   const struct state *s = NULL;
 
-  int r __attribute__((unused)) = pthread_mutex_lock(&q.lock);
-  ASSERT(r == 0);
+  for (size_t attempts = 0; attempts < sizeof(q) / sizeof(q[0]); attempts++) {
 
-  struct queue_node *n = q.head;
-  if (n != NULL) {
-    q.head = n->next;
-    q.count--;
-    trace(TC_QUEUE, "dequeued state %p, queue length is now %zu", n->s, q.count);
-  }
+    int r __attribute__((unused)) = pthread_mutex_lock(&q[*queue_id].lock);
+    ASSERT(r == 0);
 
-  r = pthread_mutex_unlock(&q.lock);
-  ASSERT(r == 0);
+    struct queue_node *n = q[*queue_id].head;
+    if (n != NULL) {
+      q[*queue_id].head = n->next;
+      q[*queue_id].count--;
+      trace(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
+        "%zu", n->s, *queue_id, q[*queue_id].count);
+    }
 
-  if (n != NULL) {
-    s = n->s;
-    free(n);
+    r = pthread_mutex_unlock(&q[*queue_id].lock);
+    ASSERT(r == 0);
+
+    if (n != NULL) {
+      s = n->s;
+      free(n);
+      break;
+    }
+
+    /* Move to the next queue to try. */
+    *queue_id = (*queue_id + 1) % (sizeof(q) / sizeof(q[0]));
   }
 
   return s;
