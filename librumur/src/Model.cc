@@ -231,7 +231,10 @@ void Model::generate(std::ostream &out) const {
 
   // Write initialisation
   {
-    out << "static void init(void) {\n";
+    out
+      << "static void init(void) {\n"
+      << "  size_t queue_id = 0;\n";
+
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (dynamic_cast<const StartState*>(r) != nullptr) {
@@ -260,7 +263,8 @@ void Model::generate(std::ostream &out) const {
           << "    }\n"
           << "    size_t size;\n"
           << "    if (set_insert(s, &size)) {\n"
-          << "      (void)queue_enqueue(s, thread_id);\n"
+          << "      (void)queue_enqueue(s, queue_id);\n"
+          << "      queue_id = (queue_id + 1) % 1; // TODO: (sizeof(q) / sizeof(q[0]);\n"
           << "    } else {\n"
           << "      free(s);\n"
           << "    }\n";
