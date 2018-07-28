@@ -149,9 +149,11 @@ static void sandbox(void) {
 #pragma clang diagnostic pop
 
     if (r != 0) {
-      fprintf(stderr, "sandbox_init failed: %s\n", err);
+      fprintf(stderr, "warning: sandbox_init failed: %s\n", err);
       free(err);
     }
+
+    return;
   }
 #endif
 
