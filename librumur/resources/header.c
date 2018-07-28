@@ -1440,9 +1440,10 @@ restart:;
        * by the number of possible states based on how many bits we are using to
        * represent the state data.
        */
-      assert(STATE_SIZE_BITS > sizeof(size_t) * CHAR_BIT - 1 ||
-        *count <= SIZE_C(1) << STATE_SIZE_BITS && "seen set size exceeds "
-        "total possible number of states");
+      if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
+        assert(*count <= SIZE_C(1) << STATE_SIZE_BITS && "seen set size "
+          "exceeds total possible number of states");
+      }
 
       return true;
     }
