@@ -123,52 +123,6 @@ static _Thread_local uintmax_t rules_fired_local;
 static uintmax_t rules_fired[THREADS];
 
 /*******************************************************************************
- * Cross-platform semaphores.                                                  *
- *                                                                             *
- * Sigh, Apple.                                                                *
- ******************************************************************************/
-
-#ifdef __APPLE__
-  #include <dispatch/dispatch.h>
-#else
-  #include <semaphore.h>
-#endif
-
-#ifdef __APPLE__
-  typedef dispatch_semaphore_t semaphore_t;
-#else
-  typedef sem_t semaphore_t;
-#endif
-
-static int semaphore_init(semaphore_t *sem, unsigned int value) {
-#ifdef __APPLE__
-  *sem = dispatch_semaphore_create((long)value);
-  return 0;
-#else
-  return sem_init(sem, 0, value);
-#endif
-}
-
-static int semaphore_wait(semaphore_t *sem) {
-#ifdef __APPLE__
-  return dispatch_semaphore_wait(*sem, DISPATCH_TIME_FOREVER);
-#else
-  return sem_wait(sem);
-#endif
-}
-
-static int semaphore_post(semaphore_t *sem) {
-#ifdef __APPLE__
-  (void)dispatch_semaphore_signal(*sem);
-  return 0;
-#else
-  return sem_post(sem);
-#endif
-}
-
-/******************************************************************************/
-
-/*******************************************************************************
  * Sandbox support.                                                            *
  *                                                                             *
  * Because we're running generated code, it seems wise to use OS mechanisms to *
