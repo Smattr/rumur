@@ -1350,6 +1350,11 @@ retry:;
 
     trace(TC_SET, "arrived at rendezvous point as leader");
 
+    /* At this point, we know no one is still updating the old set's count, so
+     * we can migrate its value to the next set.
+     */
+    next->count = local_seen->count;
+
     /* We were the last thread to release our reference to the old set. Clean it
      * up now. Note that we're using the pointer we just gave up our reference
      * count to, but we know no one else will be invalidating it.
@@ -1403,7 +1408,7 @@ static void set_expand(void) {
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = local_seen->size_exponent + 1;
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
-  set->count = local_seen->count; /* will be true after migration */
+  set->count = 0; /* will be updated in set_migrate(). */
 
   /* Advertise this as the newly expanded global set. */
   refcounted_ptr_set(&next_global_seen, set);
@@ -1525,6 +1530,17 @@ static int exit_with(int status) {
     for (size_t i = 0; i < sizeof(rules_fired) / sizeof(rules_fired[0]); i++) {
       fire_count += rules_fired[i];
     }
+
+    /* Paranoid check that we didn't miscount during set insertions/expansions.
+     */
+    size_t count = 0;
+    for (size_t i = 0; i < set_size(local_seen); i++) {
+      if (!slot_is_empty(local_seen->bucket[i])) {
+        count++;
+      }
+    }
+    assert(count == local_seen->count && "seen set count is inconsistent at "
+      "exit");
 
     printf("State Space Explored:\n"
            "\n"
