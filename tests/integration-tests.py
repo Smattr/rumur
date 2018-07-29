@@ -35,6 +35,7 @@ def test_template(self, model, optimised, debug):
     'rumur_flags':[], # Flags to pass to rumur when generating the checker.
     'rumur_exit_code':0, # Expected exit status of rumur.
     'c_flags':None, # Flags to pass to cc when compiling.
+    'ld_flags':None, # Flags to pass to cc last.
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
   }
@@ -75,8 +76,14 @@ def test_template(self, model, optimised, debug):
     else:
       cflags = option['c_flags']
 
+    if option['ld_flags'] is None:
+      ldflags = ['-lpthread']
+    else:
+      ldflags = []
+
     model_bin = os.path.join(tmp, 'model.bin')
-    ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c])
+    args = [CC] + cflags + ['-o', model_bin, model_c] + ldflags
+    ret, stdout, stderr = run(args)
     if ret != option['c_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
