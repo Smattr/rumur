@@ -39,7 +39,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   if (auto a = dynamic_cast<const Array*>(&t))
     return interdependence(*a->index_type) + interdependence(*a->element_type);
 
-  if (auto s = dynamic_cast<const Scalarset*>(&t))
+  if (dynamic_cast<const Scalarset*>(&t) != nullptr)
     return 1;
 
   if (auto i = dynamic_cast<const TypeExprID*>(&t))
