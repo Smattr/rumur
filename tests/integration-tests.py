@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-import json, os, re, shutil, subprocess, sys, tempfile, unittest
+import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
 
 RUMUR_BIN = os.path.abspath('rumur/rumur')
 CC = subprocess.check_output(['which', 'cc'], universal_newlines=True).strip()
+
+X86_64 = platform.machine() == 'x86_64'
 
 def run(args):
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -66,6 +68,8 @@ def test_template(self, model, optimised, debug):
 
     if option['c_flags'] is None:
       cflags = ['-std=c11']
+      if X86_64:
+        cflags.append('-mcx16')
       if optimised:
         cflags.extend(['-O3', '-fwhole-program'])
     else:
