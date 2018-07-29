@@ -1453,11 +1453,20 @@ static int exit_with(int status) {
 
   if (thread_id == 0) {
     /* We are the initial thread. Wait on the others before exiting. */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-compare"
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
     for (size_t i = 0; phase == RUN &&
          i < sizeof(threads) / sizeof(threads[0]); i++) {
-#pragma clang diagnostic pop
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
       void *ret;
       int r = pthread_join(threads[i], &ret);
       if (r != 0) {
@@ -1534,10 +1543,19 @@ static void start_secondary_threads(void) {
   assert(rendezvous_pending == 1);
   rendezvous_pending = THREADS;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-compare"
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
   for (size_t i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
-#pragma clang diagnostic pop
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
     int r = pthread_create(&threads[i], NULL, thread_main,
       (void*)(uintptr_t)(i + 1));
     if (r != 0) {
