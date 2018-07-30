@@ -2,8 +2,9 @@
 
 import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
 
-RUMUR_BIN = os.path.abspath('rumur/rumur')
-CC = subprocess.check_output(['which', 'cc'], universal_newlines=True).strip()
+RUMUR_BIN = os.path.abspath(os.environ.get('RUMUR', 'rumur/rumur'))
+CC = os.environ.get('CC', subprocess.check_output(['which', 'cc'],
+  universal_newlines=True).strip())
 
 X86_64 = platform.machine() == 'x86_64'
 
