@@ -157,6 +157,107 @@ static void sandbox(void) {
   }
 #endif
 
+#if defined(__linux__)
+  #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+  {
+    /* Disable the addition of new privileges via execve and friends. */
+    int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+    if (r != 0) {
+      perror("warning: prctl(PR_SET_NO_NEW_PRIVS) failed");
+      return;
+    }
+
+    /* A BPF program that traps on any syscall we want to disallow. */
+    static struct sock_filter filter[] = {
+
+#if 0
+      // TODO: The following will require some pesky ifdef mess because the
+      // Linux headers don't seem to define a "current architecture" constant.
+      /* Validate that we're running on the same architecture we were compiled
+       * for. If not, the syscall numbers we're using may be wrong.
+       */
+      BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, arch)),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, ARCH_NR, 1, 0),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_TRAP),
+#endif
+
+      /* Load syscall number. */
+      BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, nr)),
+
+      /* Enable exiting. */
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit_group, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+
+      /* Enable syscalls used by printf. */
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_write, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+
+      /* Enable syscalls used by malloc. */
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_brk, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_munmap, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+
+      /* If a colour setting was not specified, enable ioctl which will be used
+       * by isatty. TODO: lock this down to a specific ioctl number.
+       */
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_ioctl, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, COLOR == AUTO ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+
+      /* If we're running multithreaded, enable syscalls that used by pthreads.
+       */
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clone, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_close, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_futex, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_get_robust_list, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_madvise, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mprotect, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      // XXX: it would be nice to avoid open() but pthreads seems to open libgcc.
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_open, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_read, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_set_robust_list, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+
+      /* Deny everything else. On a disallowed syscall, we trap instead of
+       * killing to allow the user to debug the failure. If you are debugging
+       * seccomp denials, strace the checker and find the number of the denied
+       * syscall in the first si_value parameter reported in the terminating
+       * SIG_SYS.
+       */
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_TRAP),
+    };
+
+    static const struct sock_fprog filter_program = {
+      .len = sizeof(filter) / sizeof(filter[0]),
+      .filter = filter,
+    };
+
+    /* Apply the above filter to ourselves. */
+    r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
+    if (r != 0) {
+      perror("warning: prctl(PR_SET_SECCOMP) failed");
+      return;
+    }
+
+    return;
+  }
+  #endif
+#endif
+
   /* Fallback: no sandboxing. */
   fprintf(stderr, "warning: no sandboxing facilities available\n");
 }
