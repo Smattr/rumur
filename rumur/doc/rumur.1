@@ -56,7 +56,8 @@ facilities to limit its own operations. The checker does not intentionally
 perform any malicious or dangerous operations, but at the end of the day it is a
 generated program that you are going to execute. To safeguard against a bug in
 the code generator, it is recommended to constrain the operations the checker is
-allowed to perform. By default this is enabled.
+allowed to perform if you are using a model you did not write yourself. By
+default this is \fBoff\fR.
 .RE
 .PP
 \fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR

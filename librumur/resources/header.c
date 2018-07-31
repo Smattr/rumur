@@ -131,11 +131,6 @@ static uintmax_t rules_fired[THREADS];
 
 static void sandbox(void) {
 
-#ifndef NDEBUG
-  fprintf(stderr, "sandbox disabled due to debug mode\n");
-  return;
-#endif
-
   if (!SANDBOX_ENABLED) {
     return;
   }
@@ -149,8 +144,9 @@ static void sandbox(void) {
 #pragma clang diagnostic pop
 
     if (r != 0) {
-      fprintf(stderr, "warning: sandbox_init failed: %s\n", err);
+      fprintf(stderr, "sandbox_init failed: %s\n", err);
       free(err);
+      exit(EXIT_FAILURE);
     }
 
     return;
@@ -163,8 +159,8 @@ static void sandbox(void) {
     /* Disable the addition of new privileges via execve and friends. */
     int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
     if (r != 0) {
-      perror("warning: prctl(PR_SET_NO_NEW_PRIVS) failed");
-      return;
+      perror("prctl(PR_SET_NO_NEW_PRIVS) failed");
+      exit(EXIT_FAILURE);
     }
 
     /* A BPF program that traps on any syscall we want to disallow. */
@@ -249,8 +245,8 @@ static void sandbox(void) {
     /* Apply the above filter to ourselves. */
     r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
     if (r != 0) {
-      perror("warning: prctl(PR_SET_SECCOMP) failed");
-      return;
+      perror("prctl(PR_SET_SECCOMP) failed");
+      exit(EXIT_FAILURE);
     }
 
     return;
@@ -258,8 +254,9 @@ static void sandbox(void) {
   #endif
 #endif
 
-  /* Fallback: no sandboxing. */
-  fprintf(stderr, "warning: no sandboxing facilities available\n");
+  /* No sandbox available. */
+  fprintf(stderr, "no sandboxing facilities available\n");
+  exit(EXIT_FAILURE);
 }
 
 /******************************************************************************/

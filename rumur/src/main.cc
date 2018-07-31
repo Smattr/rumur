@@ -22,7 +22,7 @@ static rumur::OutputOptions output_options = {
   .traces = 0,
   .deadlock_detection = true,
   .symmetry_reduction = true,
-  .sandbox_enabled = true,
+  .sandbox_enabled = false,
 };
 
 static void help(const char *arg0) {
