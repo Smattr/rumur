@@ -40,7 +40,7 @@ void PropertyStmt::generate(std::ostream &out) const {
     case Property::ASSERTION:
       out << "if (__builtin_expect(!";
       property.generate(out);
-      out << ", 0)) {\nthrow Error(\"" << message << "\");\n}";
+      out << ", 0)) {\nerror(s, \"" << message << "\");\n}";
       break;
 
     default:
