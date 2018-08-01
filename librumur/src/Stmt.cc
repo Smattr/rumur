@@ -11,8 +11,8 @@
 
 namespace rumur {
 
-PropertyStmt::PropertyStmt(Property &&property_, const std::string &message_,
-  const location &loc_):
+PropertyStmt::PropertyStmt(const Property &property_,
+  const std::string &message_, const location &loc_):
   Stmt(loc_), property(property_), message(message_) { }
 
 PropertyStmt::PropertyStmt(const PropertyStmt &other):
