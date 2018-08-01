@@ -347,7 +347,10 @@ stmts_cont: stmts_cont stmt ';' {
   $$.push_back($1);
 };
 
-stmt: ASSERT expr string_opt {
+stmt: ASSERT STRING expr {
+  rumur::Property p(rumur::Property::ASSERTION, $3, @3);
+  $$ = new rumur::PropertyStmt(p, $2, @$);
+} | ASSERT expr string_opt {
   rumur::Property p(rumur::Property::ASSERTION, $2, @2);
   $$ = new rumur::PropertyStmt(p, $3, @$);
 } | designator COLON_EQ expr {
