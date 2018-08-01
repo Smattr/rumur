@@ -103,12 +103,6 @@ void Traversal::visit(Implication &n) {
   visit(static_cast<BinaryExpr&>(n));
 }
 
-void Traversal::visit(Invariant &n) {
-  for (Quantifier *q : n.quantifiers)
-    dispatch(*q);
-  dispatch(n.property);
-}
-
 void Traversal::visit(Leq &n) {
   visit(static_cast<BinaryExpr&>(n));
 }
@@ -242,11 +236,6 @@ void Traversal::dispatch(Node &n) {
     return;
   }
 
-  if (auto i = dynamic_cast<Invariant*>(&n)) {
-    visit(*i);
-    return;
-  }
-
   if (auto i = dynamic_cast<Leq*>(&n)) {
     visit(*i);
     return;
@@ -298,6 +287,11 @@ void Traversal::dispatch(Node &n) {
   }
 
   if (auto i = dynamic_cast<Property*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<PropertyRule*>(&n)) {
     visit(*i);
     return;
   }
@@ -395,6 +389,12 @@ void Traversal::visit(Or &n) {
 
 void Traversal::visit(Property &n) {
   dispatch(*n.expr);
+}
+
+void Traversal::visit(PropertyRule &n) {
+  for (Quantifier *q : n.quantifiers)
+    dispatch(*q);
+  dispatch(n.property);
 }
 
 void Traversal::visit(PropertyStmt &n) {

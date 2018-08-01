@@ -36,7 +36,6 @@ class Traversal {
   virtual void visit(If &n);
   virtual void visit(IfClause &n);
   virtual void visit(Implication &n);
-  virtual void visit(Invariant &n);
   virtual void visit(Leq &n);
   virtual void visit(Lt &n);
   virtual void visit(Model &n);
@@ -48,6 +47,7 @@ class Traversal {
   virtual void visit(Number &n);
   virtual void visit(Or &n);
   virtual void visit(Property &n);
+  virtual void visit(PropertyRule &n);
   virtual void visit(PropertyStmt &n);
   virtual void visit(Quantifier &n);
   virtual void visit(Range &n);

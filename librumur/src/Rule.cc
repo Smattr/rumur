@@ -217,21 +217,21 @@ bool StartState::operator==(const Node &other) const {
   return true;
 }
 
-Invariant::Invariant(const std::string &name_, const Property &property_,
+PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
   const location &loc_):
   Rule(name_, loc_), property(property_) {
 }
 
-Invariant::Invariant(const Invariant &other):
+PropertyRule::PropertyRule(const PropertyRule &other):
   Rule(other), property(other.property) {
 }
 
-Invariant &Invariant::operator=(Invariant other) {
+PropertyRule &PropertyRule::operator=(PropertyRule other) {
   swap(*this, other);
   return *this;
 }
 
-void swap(Invariant &x, Invariant &y) noexcept {
+void swap(PropertyRule &x, PropertyRule &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.name, y.name);
@@ -239,12 +239,12 @@ void swap(Invariant &x, Invariant &y) noexcept {
   swap(x.quantifiers, y.quantifiers);
 }
 
-Invariant *Invariant::clone() const {
-  return new Invariant(*this);
+PropertyRule *PropertyRule::clone() const {
+  return new PropertyRule(*this);
 }
 
-bool Invariant::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Invariant*>(&other);
+bool PropertyRule::operator==(const Node &other) const {
+  auto o = dynamic_cast<const PropertyRule*>(&other);
   if (o == nullptr)
     return false;
   if (name != o->name)

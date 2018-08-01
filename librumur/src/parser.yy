@@ -161,7 +161,7 @@
 %type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
-%type <rumur::Invariant*>                                    invariant
+%type <rumur::PropertyRule*>                                 property
 %type <rumur::Quantifier*>                                   quantifier
 %type <std::vector<rumur::Quantifier*>>                      quantifiers
 %type <rumur::Rule*>                                         rule
@@ -295,7 +295,7 @@ rule: startstate {
   $$ = $1;
 } | simplerule {
   $$ = $1;
-} | invariant {
+} | property {
   $$ = $1;
 } | ruleset {
   $$ = $1;
@@ -309,9 +309,9 @@ simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmt
   $$ = new rumur::SimpleRule($2, $3, std::move($5), std::move($6), @$);
 };
 
-invariant: INVARIANT string_opt expr {
+property: INVARIANT string_opt expr {
   rumur::Property p(rumur::Property::ASSERTION, $3, @3);
-  $$ = new rumur::Invariant($2, p, @$);
+  $$ = new rumur::PropertyRule($2, p, @$);
 }
 
 ruleset: RULESET { symtab.open_scope(); } quantifiers DO rules { symtab.close_scope(); } endruleset {

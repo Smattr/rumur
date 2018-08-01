@@ -61,18 +61,18 @@ struct StartState : public Rule {
   bool operator==(const Node &other) const final;
 };
 
-struct Invariant : public Rule {
+struct PropertyRule : public Rule {
 
   Property property;
 
-  Invariant() = delete;
-  Invariant(const std::string &name_, const Property &property_,
+  PropertyRule() = delete;
+  PropertyRule(const std::string &name_, const Property &property_,
     const location &loc_);
-  Invariant(const Invariant &other);
-  Invariant &operator=(Invariant other);
-  friend void swap(Invariant &x, Invariant &y) noexcept;
-  virtual ~Invariant() { }
-  Invariant *clone() const final;
+  PropertyRule(const PropertyRule &other);
+  PropertyRule &operator=(PropertyRule other);
+  friend void swap(PropertyRule &x, PropertyRule &y) noexcept;
+  virtual ~PropertyRule() { }
+  PropertyRule *clone() const final;
   bool operator==(const Node &other) const final;
 };
 

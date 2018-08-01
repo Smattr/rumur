@@ -130,12 +130,12 @@ void Model::generate(std::ostream &out) const {
     }
   }
 
-  // Write out the invariant rules.
+  // Write out the property rules.
   {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
-      if (auto i = dynamic_cast<const Invariant*>(r)) {
-        out << "static bool invariant" << index << "(const struct state *s";
+      if (auto i = dynamic_cast<const PropertyRule*>(r)) {
+        out << "static bool property" << index << "(const struct state *s";
         for (const Quantifier *q : i->quantifiers)
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n"
@@ -196,29 +196,31 @@ void Model::generate(std::ostream &out) const {
     out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
     for (const Rule *r : flat_rules) {
-      if (dynamic_cast<const Invariant*>(r) != nullptr) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r)) {
+        if (p->property.category == Property::ASSERTION) {
 
-        // Open a scope so we don't have to think about name collisions.
-        out << "  {\n";
+          // Open a scope so we don't have to think about name collisions.
+          out << "  {\n";
 
-        // Set up quantifiers.
-        for (const Quantifier *q : r->quantifiers)
-          q->generate_header(out);
+          // Set up quantifiers.
+          for (const Quantifier *q : r->quantifiers)
+            q->generate_header(out);
 
-        out << "    if (!invariant" << index << "(s";
-        for (const Quantifier *q : r->quantifiers)
-          out << ", ru_" << q->var->name;
-        out << ")) {\n"
-          << "      error(s, \"failed invariant\");\n"
-          << "    }\n";
+          out << "    if (!property" << index << "(s";
+          for (const Quantifier *q : r->quantifiers)
+            out << ", ru_" << q->var->name;
+          out << ")) {\n"
+            << "      error(s, \"failed invariant\");\n"
+            << "    }\n";
 
-        // Close the quantifier loops.
-        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          (*it)->generate_footer(out);
+          // Close the quantifier loops.
+          for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+            (*it)->generate_footer(out);
 
-        // Close this invariant's scope.
-        out << "  }\n";
+          // Close this invariant's scope.
+          out << "  }\n";
 
+        }
         index++;
       }
     }
