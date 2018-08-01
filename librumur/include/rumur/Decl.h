@@ -10,9 +10,8 @@
 
 namespace rumur {
 
-class Decl : public Node {
+struct Decl : public Node {
 
- public:
   std::string name;
 
   Decl() = delete;
@@ -26,9 +25,8 @@ class Decl : public Node {
   Decl *clone() const override = 0;
 };
 
-class ConstDecl : public Decl {
+struct ConstDecl : public Decl {
 
- public:
   Expr *value;
 
   ConstDecl() = delete;
@@ -44,9 +42,8 @@ class ConstDecl : public Decl {
   bool operator==(const Node &other) const final;
 };
 
-class TypeDecl : public Decl {
+struct TypeDecl : public Decl {
 
- public:
   TypeExpr *value;
 
   TypeDecl() = delete;
@@ -61,9 +58,8 @@ class TypeDecl : public Decl {
   bool operator==(const Node &other) const final;
 };
 
-class VarDecl : public Decl {
+struct VarDecl : public Decl {
 
- public:
   TypeExpr *type;
 
   /* Whether this variable is part of the model state. If not, it is either a

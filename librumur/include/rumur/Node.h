@@ -5,9 +5,8 @@
 
 namespace rumur {
 
-class Node {
+struct Node {
 
- public:
   location loc;
 
   Node() = delete;

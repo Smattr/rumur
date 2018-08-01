@@ -10,9 +10,8 @@
 
 namespace rumur {
 
-class Model : public Node {
+struct Model : public Node {
 
- public:
   std::vector<Decl*> decls;
   std::vector<Rule*> rules;
 

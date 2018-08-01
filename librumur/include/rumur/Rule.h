@@ -11,9 +11,8 @@
 
 namespace rumur {
 
-class Rule : public Node {
+struct Rule : public Node {
 
- public:
   std::string name;
   std::vector<Quantifier*> quantifiers;
 
@@ -28,9 +27,8 @@ class Rule : public Node {
   virtual ~Rule();
 };
 
-class SimpleRule : public Rule {
+struct SimpleRule : public Rule {
 
- public:
   Expr *guard;
   std::vector<Decl*> decls;
   std::vector<Stmt*> body;
@@ -46,9 +44,8 @@ class SimpleRule : public Rule {
   bool operator==(const Node &other) const override;
 };
 
-class StartState : public Rule {
+struct StartState : public Rule {
 
- public:
   std::vector<Decl*> decls;
   std::vector<Stmt*> body;
 
@@ -63,9 +60,8 @@ class StartState : public Rule {
   bool operator==(const Node &other) const final;
 };
 
-class Invariant : public Rule {
+struct Invariant : public Rule {
 
- public:
   Expr *guard;
 
   Invariant() = delete;
@@ -79,9 +75,8 @@ class Invariant : public Rule {
   bool operator==(const Node &other) const final;
 };
 
-class Ruleset : public Rule {
+struct Ruleset : public Rule {
 
- public:
   std::vector<Rule*> rules;
 
   Ruleset() = delete;

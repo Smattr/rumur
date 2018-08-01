@@ -9,9 +9,8 @@
 
 namespace rumur {
 
-class Stmt : public Node {
+struct Stmt : public Node {
 
- public:
   using Node::Node;
 
   Stmt() = delete;
@@ -30,9 +29,8 @@ static inline std::ostream &operator<<(std::ostream &out, const Stmt &s) {
   return out;
 }
 
-class Assert : public Stmt {
+struct Assert : public Stmt {
 
- public:
   Expr *expr;
   std::string message;
 
@@ -48,9 +46,8 @@ class Assert : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
-class Assignment : public Stmt {
+struct Assignment : public Stmt {
 
- public:
   Lvalue *lhs;
   Expr *rhs;
 
@@ -66,9 +63,8 @@ class Assignment : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
-class ErrorStmt : public Stmt {
+struct ErrorStmt : public Stmt {
 
-  public:
    std::string message;
 
    ErrorStmt() = delete;
@@ -83,9 +79,8 @@ class ErrorStmt : public Stmt {
    bool operator==(const Node &other) const final;
 };
 
-class For : public Stmt {
+struct For : public Stmt {
 
- public:
   Quantifier *quantifier;
   std::vector<Stmt*> body;
 
@@ -101,9 +96,8 @@ class For : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
-class IfClause : public Node {
+struct IfClause : public Node {
 
- public:
   Expr *condition;
   std::vector<Stmt*> body;
 
@@ -118,9 +112,8 @@ class IfClause : public Node {
   bool operator==(const Node &other) const final;
 };
 
-class If : public Stmt {
+struct If : public Stmt {
 
- public:
   std::vector<IfClause> clauses;
 
   If() = delete;
@@ -135,9 +128,8 @@ class If : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
-class Return : public Stmt {
+struct Return : public Stmt {
 
- public:
   Expr *expr;
 
   Return() = delete;
@@ -152,9 +144,8 @@ class Return : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
-class Undefine : public Stmt {
+struct Undefine : public Stmt {
 
- public:
   Lvalue *rhs;
 
   Undefine() = delete;

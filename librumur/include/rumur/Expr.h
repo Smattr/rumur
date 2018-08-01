@@ -9,13 +9,12 @@
 namespace rumur {
 
 // Forward declarations to avoid a circular #include
-class Decl;
-class TypeExpr;
-class VarDecl;
+struct Decl;
+struct TypeExpr;
+struct VarDecl;
 
-class Expr : public Node {
+struct Expr : public Node {
 
- public:
   using Node::Node;
   Expr() = delete;
   Expr(const Expr&) = default;
@@ -49,9 +48,8 @@ static inline std::ostream &operator<<(std::ostream &out, const Expr &e) {
   return out;
 }
 
-class Ternary : public Expr {
+struct Ternary : public Expr {
 
- public:
   Expr *cond;
   Expr *lhs;
   Expr *rhs;
@@ -72,9 +70,8 @@ class Ternary : public Expr {
   bool operator==(const Node &other) const final;
 };
 
-class BinaryExpr : public Expr {
+struct BinaryExpr : public Expr {
 
- public:
   Expr *lhs;
   Expr *rhs;
 
@@ -90,17 +87,15 @@ class BinaryExpr : public Expr {
   bool constant() const final;
 };
 
-class BooleanBinaryExpr : public BinaryExpr {
+struct BooleanBinaryExpr : public BinaryExpr {
 
- public:
   using BinaryExpr::BinaryExpr;
   BooleanBinaryExpr() = delete;
   BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
 };
 
-class Implication : public BooleanBinaryExpr {
+struct Implication : public BooleanBinaryExpr {
 
- public:
   using BooleanBinaryExpr::BooleanBinaryExpr;
   Implication() = delete;
   Implication &operator=(Implication other);
@@ -113,9 +108,8 @@ class Implication : public BooleanBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Or : public BooleanBinaryExpr {
+struct Or : public BooleanBinaryExpr {
 
- public:
   using BooleanBinaryExpr::BooleanBinaryExpr;
   Or() = delete;
   Or &operator=(Or other);
@@ -128,9 +122,8 @@ class Or : public BooleanBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class And : public BooleanBinaryExpr {
+struct And : public BooleanBinaryExpr {
 
- public:
   using BooleanBinaryExpr::BooleanBinaryExpr;
   And() = delete;
   And &operator=(And other);
@@ -143,9 +136,8 @@ class And : public BooleanBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class UnaryExpr : public Expr {
+struct UnaryExpr : public Expr {
 
- public:
   Expr *rhs;
 
   UnaryExpr() = delete;
@@ -158,9 +150,8 @@ class UnaryExpr : public Expr {
   bool constant() const final;
 };
 
-class Not : public UnaryExpr {
+struct Not : public UnaryExpr {
 
- public:
   using UnaryExpr::UnaryExpr;
   Not() = delete;
   Not(Expr *rhs_, const location &loc_);
@@ -174,17 +165,15 @@ class Not : public UnaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class ComparisonBinaryExpr : public BinaryExpr {
+struct ComparisonBinaryExpr : public BinaryExpr {
 
- public:
   using BinaryExpr::BinaryExpr;
   ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
   ComparisonBinaryExpr() = delete;
 };
 
-class Lt : public ComparisonBinaryExpr {
+struct Lt : public ComparisonBinaryExpr {
 
- public:
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Lt() = delete;
   Lt &operator=(Lt other);
@@ -197,9 +186,8 @@ class Lt : public ComparisonBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Leq : public ComparisonBinaryExpr {
+struct Leq : public ComparisonBinaryExpr {
 
- public:
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Leq() = delete;
   Leq &operator=(Leq other);
@@ -212,9 +200,8 @@ class Leq : public ComparisonBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Gt : public ComparisonBinaryExpr {
+struct Gt : public ComparisonBinaryExpr {
 
- public:
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Gt() = delete;
   Gt &operator=(Gt other);
@@ -227,9 +214,8 @@ class Gt : public ComparisonBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Geq : public ComparisonBinaryExpr {
+struct Geq : public ComparisonBinaryExpr {
 
- public:
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Geq() = delete;
   Geq &operator=(Geq other);
@@ -242,17 +228,15 @@ class Geq : public ComparisonBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class EquatableBinaryExpr : public BinaryExpr {
+struct EquatableBinaryExpr : public BinaryExpr {
 
- public:
   using BinaryExpr::BinaryExpr;
   EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
   EquatableBinaryExpr() = delete;
 };
 
-class Eq : public EquatableBinaryExpr {
+struct Eq : public EquatableBinaryExpr {
 
- public:
   using EquatableBinaryExpr::EquatableBinaryExpr;
   Eq() = delete;
   Eq &operator=(Eq other);
@@ -265,9 +249,8 @@ class Eq : public EquatableBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Neq : public EquatableBinaryExpr {
+struct Neq : public EquatableBinaryExpr {
 
- public:
   using EquatableBinaryExpr::EquatableBinaryExpr;
   Neq() = delete;
   Neq &operator=(Neq other);
@@ -280,17 +263,15 @@ class Neq : public EquatableBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class ArithmeticBinaryExpr : public BinaryExpr {
+struct ArithmeticBinaryExpr : public BinaryExpr {
 
- public:
   using BinaryExpr::BinaryExpr;
   ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc);
   ArithmeticBinaryExpr() = delete;
 };
 
-class Add : public ArithmeticBinaryExpr {
+struct Add : public ArithmeticBinaryExpr {
 
- public:
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Add() = delete;
   Add &operator=(Add other);
@@ -303,9 +284,8 @@ class Add : public ArithmeticBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Sub : public ArithmeticBinaryExpr {
+struct Sub : public ArithmeticBinaryExpr {
 
- public:
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Sub() = delete;
   Sub &operator=(Sub other);
@@ -318,9 +298,8 @@ class Sub : public ArithmeticBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Negative : public UnaryExpr {
+struct Negative : public UnaryExpr {
 
- public:
   using UnaryExpr::UnaryExpr;
   Negative() = delete;
   Negative(Expr *rhs_, const location &loc_);
@@ -334,9 +313,8 @@ class Negative : public UnaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Mul : public ArithmeticBinaryExpr {
+struct Mul : public ArithmeticBinaryExpr {
 
- public:
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Mul() = delete;
   Mul &operator=(Mul other);
@@ -349,9 +327,8 @@ class Mul : public ArithmeticBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Div : public ArithmeticBinaryExpr {
+struct Div : public ArithmeticBinaryExpr {
 
- public:
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Div() = delete;
   Div &operator=(Div other);
@@ -364,9 +341,8 @@ class Div : public ArithmeticBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Mod : public ArithmeticBinaryExpr {
+struct Mod : public ArithmeticBinaryExpr {
 
- public:
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Mod() = delete;
   Mod &operator=(Mod other);
@@ -379,9 +355,8 @@ class Mod : public ArithmeticBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-class Lvalue : public Expr {
+struct Lvalue : public Expr {
 
- public:
   using Expr::Expr;
   Lvalue() = delete;
   Lvalue(const Lvalue&) = default;
@@ -396,9 +371,8 @@ class Lvalue : public Expr {
 
 };
 
-class ExprID : public Lvalue {
+struct ExprID : public Lvalue {
 
- public:
   std::string id;
   Decl *value;
 
@@ -417,9 +391,8 @@ class ExprID : public Lvalue {
   bool operator==(const Node &other) const final;
 };
 
-class Field : public Lvalue {
+struct Field : public Lvalue {
 
- public:
   Lvalue *record;
   std::string field;
 
@@ -438,9 +411,8 @@ class Field : public Lvalue {
   bool operator==(const Node &other) const final;
 };
 
-class Element : public Lvalue {
+struct Element : public Lvalue {
 
- public:
   Lvalue *array;
   Expr *index;
 
@@ -459,9 +431,8 @@ class Element : public Lvalue {
   bool operator==(const Node &other) const final;
 };
 
-class Quantifier : public Node {
+struct Quantifier : public Node {
 
- public:
   VarDecl *var;
   Expr *step;
 
@@ -491,9 +462,8 @@ class Quantifier : public Node {
 
 };
 
-class Exists : public Expr {
+struct Exists : public Expr {
 
- public:
   Quantifier *quantifier;
   Expr *expr;
 
@@ -512,9 +482,8 @@ class Exists : public Expr {
   bool operator==(const Node &other) const final;
 };
 
-class Forall : public Expr {
+struct Forall : public Expr {
 
- public:
   Quantifier *quantifier;
   Expr *expr;
 

@@ -8,9 +8,8 @@
 
 namespace rumur {
 
-class Number : public Expr {
+struct Number : public Expr {
 
- public:
   int64_t value;
 
   Number() = delete;

@@ -12,11 +12,10 @@
 namespace rumur {
 
 // Forward declare to avoid circular #include
-class VarDecl;
+struct VarDecl;
 
-class TypeExpr : public Node {
+struct TypeExpr : public Node {
 
- public:
   using Node::Node;
   TypeExpr() = delete;
   TypeExpr(const TypeExpr&) = default;
@@ -43,9 +42,8 @@ class TypeExpr : public Node {
     size_t preceding_offset = 0) const = 0;
 };
 
-class Range : public TypeExpr {
+struct Range : public TypeExpr {
 
- public:
   Expr *min;
   Expr *max;
 
@@ -68,9 +66,8 @@ class Range : public TypeExpr {
     size_t preceding_offset = 0) const final;
 };
 
-class Scalarset : public TypeExpr {
+struct Scalarset : public TypeExpr {
 
- public:
   Expr *bound;
 
   Scalarset() = delete;
@@ -92,9 +89,8 @@ class Scalarset : public TypeExpr {
     size_t preceding_offset = 0) const final;
 };
 
-class Enum : public TypeExpr {
+struct Enum : public TypeExpr {
 
- public:
   std::vector<std::pair<std::string, location>> members;
 
   Enum() = delete;
@@ -118,9 +114,8 @@ class Enum : public TypeExpr {
     size_t preceding_offset = 0) const final;
 };
 
-class Record : public TypeExpr {
+struct Record : public TypeExpr {
 
- public:
   std::vector<VarDecl*> fields;
 
   Record() = delete;
@@ -139,9 +134,8 @@ class Record : public TypeExpr {
     size_t preceding_offset = 0) const final;
 };
 
-class Array : public TypeExpr {
+struct Array : public TypeExpr {
 
- public:
   TypeExpr *index_type;
   TypeExpr *element_type;
 
@@ -161,9 +155,8 @@ class Array : public TypeExpr {
     size_t preceding_offset = 0) const final;
 };
 
-class TypeExprID : public TypeExpr {
+struct TypeExprID : public TypeExpr {
 
- public:
   std::string name;
   TypeExpr *referent;
 
