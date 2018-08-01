@@ -11,37 +11,46 @@
 
 namespace rumur {
 
-Assert::Assert(Property &&property_, const std::string &message_,
+PropertyStmt::PropertyStmt(Property &&property_, const std::string &message_,
   const location &loc_):
   Stmt(loc_), property(property_), message(message_) { }
 
-Assert::Assert(const Assert &other):
+PropertyStmt::PropertyStmt(const PropertyStmt &other):
   Stmt(other.loc), property(other.property), message(other.message) { }
 
-Assert &Assert::operator=(Assert other) {
+PropertyStmt &PropertyStmt::operator=(PropertyStmt other) {
   swap(*this, other);
   return *this;
 }
 
-void swap(Assert &x, Assert &y) noexcept {
+void swap(PropertyStmt &x, PropertyStmt &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.property, y.property);
   swap(x.message, y.message);
 }
 
-Assert *Assert::clone() const {
-  return new Assert(*this);
+PropertyStmt *PropertyStmt::clone() const {
+  return new PropertyStmt(*this);
 }
 
-void Assert::generate(std::ostream &out) const {
-  out << "if (__builtin_expect(!";
-  property.generate(out);
-  out << ", 0)) {\nthrow Error(\"" << message << "\");\n}";
+void PropertyStmt::generate(std::ostream &out) const {
+  switch (property.category) {
+
+    case Property::ASSERTION:
+      out << "if (__builtin_expect(!";
+      property.generate(out);
+      out << ", 0)) {\nthrow Error(\"" << message << "\");\n}";
+      break;
+
+    default:
+      assert(!"unimplemented");
+
+  }
 }
 
-bool Assert::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Assert*>(&other);
+bool PropertyStmt::operator==(const Node &other) const {
+  auto o = dynamic_cast<const PropertyStmt*>(&other);
   return o != nullptr && property == o->property && message == o->message;
 }
 

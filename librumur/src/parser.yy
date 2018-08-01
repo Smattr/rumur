@@ -345,7 +345,7 @@ stmts_cont: stmts_cont stmt ';' {
 
 stmt: ASSERT expr string_opt {
   rumur::Property p(rumur::Property::ASSERTION, $2, @2);
-  $$ = new rumur::Assert(std::move(p), $3, @$);
+  $$ = new rumur::PropertyStmt(std::move(p), $3, @$);
 } | designator COLON_EQ expr {
   $$ = new rumur::Assignment($1, $3, @$);
 } | ERROR STRING {

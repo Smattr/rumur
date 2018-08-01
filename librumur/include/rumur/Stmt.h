@@ -30,19 +30,19 @@ static inline std::ostream &operator<<(std::ostream &out, const Stmt &s) {
   return out;
 }
 
-struct Assert : public Stmt {
+struct PropertyStmt : public Stmt {
 
   Property property;
   std::string message;
 
-  Assert() = delete;
-  Assert(Property &&property_, const std::string &message_,
+  PropertyStmt() = delete;
+  PropertyStmt(Property &&property_, const std::string &message_,
     const location &loc_);
-  Assert(const Assert &other);
-  Assert &operator=(Assert other);
-  friend void swap(Assert &x, Assert &y) noexcept;
-  Assert *clone() const final;
-  virtual ~Assert() { }
+  PropertyStmt(const PropertyStmt &other);
+  PropertyStmt &operator=(PropertyStmt other);
+  friend void swap(PropertyStmt &x, PropertyStmt &y) noexcept;
+  PropertyStmt *clone() const final;
+  virtual ~PropertyStmt() { }
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;

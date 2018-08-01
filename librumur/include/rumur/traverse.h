@@ -19,7 +19,6 @@ class Traversal {
   virtual void visit(Add &n);
   virtual void visit(And &n);
   virtual void visit(Array &n);
-  virtual void visit(Assert &n);
   virtual void visit(Assignment &n);
   virtual void visit(ConstDecl &n);
   virtual void visit(Div &n);
@@ -49,6 +48,7 @@ class Traversal {
   virtual void visit(Number &n);
   virtual void visit(Or &n);
   virtual void visit(Property &n);
+  virtual void visit(PropertyStmt &n);
   virtual void visit(Quantifier &n);
   virtual void visit(Range &n);
   virtual void visit(Record &n);
