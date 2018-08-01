@@ -37,14 +37,15 @@ PropertyStmt *PropertyStmt::clone() const {
 void PropertyStmt::generate(std::ostream &out) const {
   switch (property.category) {
 
+    case Property::DISABLED:
+      out << "do { } while (0)";
+      break;
+
     case Property::ASSERTION:
       out << "if (__builtin_expect(!";
       property.generate(out);
       out << ", 0)) {\nerror(s, \"" << message << "\");\n}";
       break;
-
-    default:
-      assert(!"unimplemented");
 
   }
 }

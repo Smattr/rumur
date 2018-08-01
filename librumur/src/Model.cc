@@ -135,7 +135,7 @@ void Model::generate(std::ostream &out) const {
     size_t index = 0;
     for (const Rule *r : flat_rules) {
       if (auto i = dynamic_cast<const PropertyRule*>(r)) {
-        out << "static bool property" << index << "(const struct state *s";
+        out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
         for (const Quantifier *q : i->quantifiers)
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n"
