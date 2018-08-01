@@ -14,7 +14,7 @@ Assert::Assert(Expr *expr_, const std::string &message_, const location &loc_):
   Stmt(loc_), expr(expr_), message(message_) { }
 
 Assert::Assert(const Assert &other):
-  Stmt(other.loc), expr(other.expr), message(other.message) { }
+  Stmt(other.loc), expr(other.expr->clone()), message(other.message) { }
 
 Assert &Assert::operator=(Assert other) {
   swap(*this, other);
