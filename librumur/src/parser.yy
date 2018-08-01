@@ -127,6 +127,7 @@
 %token NEQ
 %token <std::string> NUMBER
 %token OF
+%token PROPERTY
 %token RECORD
 %token RETURN
 %token RULE
@@ -149,6 +150,7 @@
 %left '+' '-'
 %left '*' '/' '%'
 
+%type <rumur::Property::Category>                            category
 %type <rumur::Decl*>                                         constdecl
 %type <std::vector<rumur::Decl*>>                            constdecls
 %type <std::vector<rumur::Decl*>>                            decl
@@ -309,12 +311,20 @@ simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmt
   $$ = new rumur::SimpleRule($2, $3, std::move($5), std::move($6), @$);
 };
 
-property: INVARIANT STRING expr {
-  rumur::Property p(rumur::Property::ASSERTION, $3, @3);
+property: category STRING expr {
+  rumur::Property p($1, $3, @3);
   $$ = new rumur::PropertyRule($2, p, @$);
-} | INVARIANT expr string_opt {
-  rumur::Property p(rumur::Property::ASSERTION, $2, @2);
+} | category expr string_opt {
+  rumur::Property p($1, $2, @2);
   $$ = new rumur::PropertyRule($3, p, @$);
+};
+
+category: ASSERT {
+  $$ = rumur::Property::ASSERTION;
+} | INVARIANT {
+  $$ = rumur::Property::ASSERTION;
+} | PROPERTY {
+  $$ = rumur::Property::DISABLED;
 };
 
 ruleset: RULESET { symtab.open_scope(); } quantifiers DO rules { symtab.close_scope(); } endruleset {
@@ -347,11 +357,11 @@ stmts_cont: stmts_cont stmt ';' {
   $$.push_back($1);
 };
 
-stmt: ASSERT STRING expr {
-  rumur::Property p(rumur::Property::ASSERTION, $3, @3);
+stmt: category STRING expr {
+  rumur::Property p($1, $3, @3);
   $$ = new rumur::PropertyStmt(p, $2, @$);
-} | ASSERT expr string_opt {
-  rumur::Property p(rumur::Property::ASSERTION, $2, @2);
+} | category expr string_opt {
+  rumur::Property p($1, $2, @2);
   $$ = new rumur::PropertyStmt(p, $3, @$);
 } | designator COLON_EQ expr {
   $$ = new rumur::Assignment($1, $3, @$);

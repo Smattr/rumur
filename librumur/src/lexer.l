@@ -66,6 +66,7 @@ forall        { return rumur::parser::token::FORALL;        }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
 of            { return rumur::parser::token::OF;            }
+property      { return rumur::parser::token::PROPERTY;      }
 record        { return rumur::parser::token::RECORD;        }
 return        { return rumur::parser::token::RETURN;        }
 rule          { return rumur::parser::token::RULE;          }
