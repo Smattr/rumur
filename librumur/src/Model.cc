@@ -33,7 +33,7 @@ Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const loc
   {
     std::unordered_set<std::string> names;
     for (const Rule *r : rules) {
-      if (r->name != "<unnamed>") {
+      if (r->name != "") {
         if (!names.insert(r->name).second)
           throw Error("duplicate rule name " + r->name, r->loc);
       }

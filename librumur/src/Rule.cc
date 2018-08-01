@@ -35,7 +35,7 @@ namespace {
 }
 
 Rule::Rule(const std::string &name_, const location &loc_):
-  Node(loc_), name(name_ == "" ? "<unnamed>" : name_) { }
+  Node(loc_), name(name_) { }
 
 Rule::Rule(const Rule &other):
   Node(other), name(other.name) {
