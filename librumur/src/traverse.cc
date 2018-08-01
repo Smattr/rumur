@@ -106,8 +106,7 @@ void Traversal::visit(Implication &n) {
 void Traversal::visit(Invariant &n) {
   for (Quantifier *q : n.quantifiers)
     dispatch(*q);
-  if (n.guard != nullptr)
-    dispatch(*n.guard);
+  dispatch(n.property);
 }
 
 void Traversal::visit(Leq &n) {

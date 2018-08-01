@@ -140,7 +140,7 @@ void Model::generate(std::ostream &out) const {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n"
           << "  return ";
-        i->guard->generate_rvalue(out);
+        i->property.expr->generate_rvalue(out);
         out << ";\n}\n\n";
         index++;
       }

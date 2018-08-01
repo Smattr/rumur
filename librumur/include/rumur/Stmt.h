@@ -36,7 +36,7 @@ struct PropertyStmt : public Stmt {
   std::string message;
 
   PropertyStmt() = delete;
-  PropertyStmt(Property &&property_, const std::string &message_,
+  PropertyStmt(const Property &property_, const std::string &message_,
     const location &loc_);
   PropertyStmt(const PropertyStmt &other);
   PropertyStmt &operator=(PropertyStmt other);

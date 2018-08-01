@@ -5,6 +5,7 @@
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/Property.h>
 #include <rumur/Stmt.h>
 #include <string>
 #include <vector>
@@ -62,15 +63,15 @@ struct StartState : public Rule {
 
 struct Invariant : public Rule {
 
-  Expr *guard;
+  Property property;
 
   Invariant() = delete;
-  Invariant(const std::string &name_, Expr *guard_,
+  Invariant(const std::string &name_, const Property &property_,
     const location &loc_);
   Invariant(const Invariant &other);
   Invariant &operator=(Invariant other);
   friend void swap(Invariant &x, Invariant &y) noexcept;
-  virtual ~Invariant();
+  virtual ~Invariant() { }
   Invariant *clone() const final;
   bool operator==(const Node &other) const final;
 };

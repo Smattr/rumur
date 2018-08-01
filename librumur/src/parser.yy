@@ -310,7 +310,8 @@ simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmt
 };
 
 invariant: INVARIANT string_opt expr {
-  $$ = new rumur::Invariant($2, $3, @$);
+  rumur::Property p(rumur::Property::ASSERTION, $3, @3);
+  $$ = new rumur::Invariant($2, p, @$);
 }
 
 ruleset: RULESET { symtab.open_scope(); } quantifiers DO rules { symtab.close_scope(); } endruleset {

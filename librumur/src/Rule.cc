@@ -217,13 +217,13 @@ bool StartState::operator==(const Node &other) const {
   return true;
 }
 
-Invariant::Invariant(const std::string &name_, Expr *guard_,
+Invariant::Invariant(const std::string &name_, const Property &property_,
   const location &loc_):
-  Rule(name_, loc_), guard(guard_) {
+  Rule(name_, loc_), property(property_) {
 }
 
 Invariant::Invariant(const Invariant &other):
-  Rule(other), guard(other.guard->clone()) {
+  Rule(other), property(other.property) {
 }
 
 Invariant &Invariant::operator=(Invariant other) {
@@ -235,16 +235,12 @@ void swap(Invariant &x, Invariant &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.name, y.name);
-  swap(x.guard, y.guard);
+  swap(x.property, y.property);
   swap(x.quantifiers, y.quantifiers);
 }
 
 Invariant *Invariant::clone() const {
   return new Invariant(*this);
-}
-
-Invariant::~Invariant() {
-  delete guard;
 }
 
 bool Invariant::operator==(const Node &other) const {
@@ -264,13 +260,8 @@ bool Invariant::operator==(const Node &other) const {
     if (**it != **it2)
       return false;
   }
-  if (guard == nullptr) {
-    if (o->guard != nullptr)
-      return false;
-  } else {
-    if (o->guard == nullptr || *guard != *o->guard)
-      return false;
-  }
+  if (property != o->property)
+    return false;
   return true;
 }
 
