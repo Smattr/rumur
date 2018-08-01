@@ -2,6 +2,7 @@
 #include <iostream>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Property.h>
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -10,11 +11,12 @@
 
 namespace rumur {
 
-Assert::Assert(Expr *expr_, const std::string &message_, const location &loc_):
-  Stmt(loc_), expr(expr_), message(message_) { }
+Assert::Assert(Property &&property_, const std::string &message_,
+  const location &loc_):
+  Stmt(loc_), property(property_), message(message_) { }
 
 Assert::Assert(const Assert &other):
-  Stmt(other.loc), expr(other.expr->clone()), message(other.message) { }
+  Stmt(other.loc), property(other.property), message(other.message) { }
 
 Assert &Assert::operator=(Assert other) {
   swap(*this, other);
@@ -24,7 +26,7 @@ Assert &Assert::operator=(Assert other) {
 void swap(Assert &x, Assert &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
-  swap(x.expr, y.expr);
+  swap(x.property, y.property);
   swap(x.message, y.message);
 }
 
@@ -32,18 +34,15 @@ Assert *Assert::clone() const {
   return new Assert(*this);
 }
 
-Assert::~Assert() {
-  delete expr;
-}
-
 void Assert::generate(std::ostream &out) const {
-  out << "if (__builtin_expect(!" << *expr << ", 0)) {\nthrow Error(\""
-    << message << "\");\n}";
+  out << "if (__builtin_expect(!";
+  property.generate(out);
+  out << ", 0)) {\nthrow Error(\"" << message << "\");\n}";
 }
 
 bool Assert::operator==(const Node &other) const {
   auto o = dynamic_cast<const Assert*>(&other);
-  return o != nullptr && *expr == *o->expr && message == o->message;
+  return o != nullptr && property == o->property && message == o->message;
 }
 
 Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):

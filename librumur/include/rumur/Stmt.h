@@ -4,6 +4,7 @@
 #include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/Property.h>
 #include <string>
 #include <vector>
 
@@ -31,16 +32,17 @@ static inline std::ostream &operator<<(std::ostream &out, const Stmt &s) {
 
 struct Assert : public Stmt {
 
-  Expr *expr;
+  Property property;
   std::string message;
 
   Assert() = delete;
-  Assert(Expr *expr_, const std::string &message_, const location &loc_);
+  Assert(Property &&property_, const std::string &message_,
+    const location &loc_);
   Assert(const Assert &other);
   Assert &operator=(Assert other);
   friend void swap(Assert &x, Assert &y) noexcept;
   Assert *clone() const final;
-  virtual ~Assert();
+  virtual ~Assert() { }
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;

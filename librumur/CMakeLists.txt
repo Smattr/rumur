@@ -44,6 +44,7 @@ add_library(librumur
   src/Number.cc
   src/output.cc
   src/parse.cc
+  src/Property.cc
   src/Rule.cc
   src/Stmt.cc
   src/symmetry-reduction.cc

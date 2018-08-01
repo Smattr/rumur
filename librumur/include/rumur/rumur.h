@@ -14,6 +14,7 @@
 #include <rumur/Node.h>
 #include <rumur/output.h>
 #include <rumur/parse.h>
+#include <rumur/Property.h>
 #include <rumur/Rule.h>
 #include <rumur/scanner.h>
 #include <rumur/Stmt.h>

@@ -25,7 +25,7 @@ void Traversal::visit(Array &n) {
 }
 
 void Traversal::visit(Assert &n) {
-  dispatch(*n.expr);
+  dispatch(n.property);
 }
 
 void Traversal::visit(Assignment &n) {
@@ -307,6 +307,11 @@ void Traversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Property*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Quantifier*>(&n)) {
     visit(*i);
     return;
@@ -391,6 +396,10 @@ void Traversal::visit(Number&) { }
 
 void Traversal::visit(Or &n) {
   visit(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Property &n) {
+  dispatch(*n.expr);
 }
 
 void Traversal::visit(Quantifier &n) {

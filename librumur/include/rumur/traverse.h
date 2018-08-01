@@ -48,6 +48,7 @@ class Traversal {
   virtual void visit(Not &n);
   virtual void visit(Number &n);
   virtual void visit(Or &n);
+  virtual void visit(Property &n);
   virtual void visit(Quantifier &n);
   virtual void visit(Range &n);
   virtual void visit(Record &n);
