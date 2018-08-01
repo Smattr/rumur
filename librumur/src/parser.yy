@@ -309,10 +309,13 @@ simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmt
   $$ = new rumur::SimpleRule($2, $3, std::move($5), std::move($6), @$);
 };
 
-property: INVARIANT string_opt expr {
+property: INVARIANT STRING expr {
   rumur::Property p(rumur::Property::ASSERTION, $3, @3);
   $$ = new rumur::PropertyRule($2, p, @$);
-}
+} | INVARIANT expr string_opt {
+  rumur::Property p(rumur::Property::ASSERTION, $2, @2);
+  $$ = new rumur::PropertyRule($3, p, @$);
+};
 
 ruleset: RULESET { symtab.open_scope(); } quantifiers DO rules { symtab.close_scope(); } endruleset {
   $$ = new rumur::Ruleset(std::move($3), std::move($5), @$);
