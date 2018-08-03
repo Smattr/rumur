@@ -34,6 +34,14 @@ the checker.
 Display this information.
 .RE
 .PP
+\fB--max-errors\fR \fICOUNT\fR
+.RS
+Number of errors the checker should report before considering them fatal. By
+default this is \fI1\fR, that is exit as soon as an error is encountered.
+However, you may wish to set a higher value to get multiple error traces from a
+single run.
+.RE
+.PP
 \fB--monopolise\fR
 .RS
 Assume that the machine the generated checker will run on is the current host

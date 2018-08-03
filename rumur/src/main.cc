@@ -23,6 +23,7 @@ static rumur::OutputOptions output_options = {
   .deadlock_detection = true,
   .symmetry_reduction = true,
   .sandbox_enabled = false,
+  .max_errors = 1,
 };
 
 static void help(const char *arg0) {
@@ -64,6 +65,7 @@ static void parse_args(int argc, char **argv) {
       { "deadlock-detection", no_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, '?' },
+      { "max-errors", required_argument, 0, 136 },
       { "monopolise", no_argument, 0, 133 },
       { "monopolize", no_argument, 0, 133 },
       { "no-color", no_argument, 0, 129 },
@@ -227,6 +229,19 @@ static void parse_args(int argc, char **argv) {
           output_options.sandbox_enabled = false;
         } else {
           std::cerr << "invalid argument to --sandbox, \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+
+      case 136: // --max-errors ...
+        try {
+          output_options.max_errors = std::stoul(optarg);
+        } catch (std::exception) {
+          std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        if (output_options.max_errors == 0) {
+          std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;

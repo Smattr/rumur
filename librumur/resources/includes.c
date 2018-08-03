@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <pthread.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stdatomic.h>
 #include <stdbool.h>

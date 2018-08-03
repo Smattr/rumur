@@ -123,10 +123,10 @@ static pthread_t threads[THREADS - 1];
  */
 static enum { WARMUP, RUN } phase = WARMUP;
 
-/* Whether we've encountered an error or not. If a thread sees this set, they
- * should attempt to exit gracefully as soon as possible.
+/* Number of errors we've noted so far. If a thread sees this hit or exceed
+ * MAX_ERRORS, they should attempt to exit gracefully as soon as possible.
  */
-static atomic_bool done;
+static atomic_ulong error_count;
 
 /* Number of rules that have been processed. There are two representations of
  * this: a thread-local count of how many rules we have fired thus far and a
@@ -138,6 +138,15 @@ static atomic_bool done;
  */
 static _Thread_local uintmax_t rules_fired_local;
 static uintmax_t rules_fired[THREADS];
+
+/* Checkpoint to restore to after reporting an error. This is only used if we
+ * are tolerating more than one error before exiting.
+ */
+static _Thread_local jmp_buf checkpoint;
+
+static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
+
+enum { JMP_BUF_NEEDED = MAX_ERRORS > 1 };
 
 /*******************************************************************************
  * Sandbox support.                                                            *
@@ -368,11 +377,12 @@ static unsigned print_counterexample(const struct state *s);
  */
 static _Noreturn int exit_with(int status);
 
-static __attribute__((format(printf, 2, 3))) _Noreturn void error(
-  const struct state *s, const char *fmt, ...) {
+static __attribute__((format(printf, 3, 4))) _Noreturn void error(
+  const struct state *s, bool retain, const char *fmt, ...) {
 
-  bool expected = false;
-  if (atomic_compare_exchange_strong(&done, &expected, true)) {
+  unsigned long prior_errors = error_count++;
+
+  if (prior_errors < MAX_ERRORS) {
 
     print_lock();
 
@@ -383,9 +393,8 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
     }
 
     fprintf(stderr, "\t%s%s", red(), bold());
-    va_list ap, ap2;
+    va_list ap;
     va_start(ap, fmt);
-    va_copy(ap2, ap);
     (void)vfprintf(stderr, fmt, ap);
     fprintf(stderr, "%s\n\n", reset());
     va_end(ap);
@@ -395,17 +404,18 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
       fprintf(stderr, "End of the error trace.\n\n");
     }
 
-    fprintf(stderr, "==========================================================================\n"
-                    "\n"
-                    "Result:\n"
-                    "\n"
-                    "\t%s%s", red(), bold());
-    vfprintf(stderr, fmt, ap2);
-    va_end(ap2);
-    fprintf(stderr, "%s\n\n", reset());
-
     print_unlock();
   }
+
+  if (!retain) {
+    free((void*)s);
+  }
+
+  if (MAYBE_TAUTOLOGY(prior_errors < MAX_ERRORS - 1)) {
+    assert(JMP_BUF_NEEDED && "longjmping without a setup jmp_buf");
+    longjmp(checkpoint, 1);
+  }
+
   exit_with(EXIT_FAILURE);
 }
 
@@ -584,7 +594,7 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
   value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
-    error(s, "read of undefined value");
+    error(s, false, "read of undefined value");
   }
 
   return decode_value(lb, ub, dest);
@@ -634,7 +644,7 @@ static __attribute__((unused)) void handle_write(const struct state *s,
 
   if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
       __builtin_add_overflow(value, 1, &value)) {
-    error(s, "write of out-of-range value");
+    error(s, false, "write of out-of-range value");
   }
 
   handle_write_raw(h, value);
@@ -692,13 +702,13 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
   struct handle root, value_t index) {
 
   if (index < index_min || index > index_max) {
-    error(s, "index out of range");
+    error(s, false, "index out of range");
   }
 
   size_t r1, r2;
   if (__builtin_sub_overflow(index, index_min, &r1) ||
       __builtin_mul_overflow(r1, element_width, &r2)) {
-    error(s, "overflow when indexing array");
+    error(s, false, "overflow when indexing array");
   }
 
   size_t r __attribute__((unused));
@@ -722,10 +732,10 @@ static __attribute__((unused)) value_t add(const struct state *s,
 
   value_t r;
   if (__builtin_add_overflow(a, b, &r)) {
-    error(s, "integer overflow in addition");
+    error(s, false, "integer overflow in addition");
   }
   if (r < lower_bound || r > upper_bound) {
-    error(s, "result %" PRIVAL " of addition out of range", r);
+    error(s, false, "result %" PRIVAL " of addition out of range", r);
   }
   return r;
 }
@@ -735,10 +745,10 @@ static __attribute__((unused)) value_t sub(const struct state *s,
 
   value_t r;
   if (__builtin_sub_overflow(a, b, &r)) {
-    error(s, "integer overflow in subtraction");
+    error(s, false, "integer overflow in subtraction");
   }
   if (r < lower_bound || r > upper_bound) {
-    error(s, "result %" PRIVAL " of subtraction out of range", r);
+    error(s, false, "result %" PRIVAL " of subtraction out of range", r);
   }
   return r;
 }
@@ -748,10 +758,10 @@ static __attribute__((unused)) value_t mul(const struct state *s,
 
   value_t r;
   if (__builtin_mul_overflow(a, b, &r)) {
-    error(s, "integer overflow in multiplication");
+    error(s, false, "integer overflow in multiplication");
   }
   if (r < lower_bound || r > upper_bound) {
-    error(s, "result %" PRIVAL " of multiplication out of range", r);
+    error(s, false, "result %" PRIVAL " of multiplication out of range", r);
   }
   return r;
 }
@@ -760,16 +770,16 @@ static __attribute__((unused)) value_t divide(const struct state *s,
   value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
 
   if (b == 0) {
-    error(s, "division by zero");
+    error(s, false, "division by zero");
   }
 
   if (a == VALUE_MIN && b == -1) {
-    error(s, "integer overflow in division");
+    error(s, false, "integer overflow in division");
   }
 
   value_t r = a / b;
   if (r < lower_bound || r > upper_bound) {
-    error(s, "result %" PRIVAL " of division out of range", r);
+    error(s, false, "result %" PRIVAL " of division out of range", r);
   }
 
   return r;
@@ -779,17 +789,17 @@ static __attribute__((unused)) value_t mod(const struct state *s,
   value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
 
   if (b == 0) {
-    error(s, "modulus by zero");
+    error(s, false, "modulus by zero");
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
   if (a == VALUE_MIN && b == -1) {
-    error(s, "integer overflow in modulo");
+    error(s, false, "integer overflow in modulo");
   }
 
   value_t r = a % b;
   if (r < lower_bound || r > upper_bound) {
-    error(s, "result %" PRIVAL " of modulo out of range", r);
+    error(s, false, "result %" PRIVAL " of modulo out of range", r);
   }
 
   return r;
@@ -799,12 +809,12 @@ static __attribute__((unused)) value_t negate(const struct state *s,
   value_t lower_bound, value_t upper_bound, value_t a) {
 
   if (a == VALUE_MIN) {
-    error(s, "integer overflow in negation");
+    error(s, false, "integer overflow in negation");
   }
 
   value_t r = -a;
   if (r < lower_bound || r > upper_bound) {
-    error(s, "result %" PRIVAL " of negation out of range", r);
+    error(s, false, "result %" PRIVAL " of negation out of range", r);
   }
 
   return r;
@@ -1595,15 +1605,17 @@ static int exit_with(int status) {
 
     /* We're now single-threaded again. */
 
-    if (status == EXIT_SUCCESS) {
-      printf("\n"
-             "==========================================================================\n"
-             "\n"
-             "Status:\n"
-             "\n"
-             "\t%s%sNo error found.%s\n"
-             "\n", green(), bold(), reset());
+    printf("\n"
+           "==========================================================================\n"
+           "\n"
+           "Status:\n"
+           "\n");
+    if (error_count == 0) {
+      printf("\t%s%sNo error found.%s\n", green(), bold(), reset());
+    } else {
+      printf("\t%s%s%lu error(s) found.%s\n", red(), bold(), error_count, reset());
     }
+    printf("\n");
 
     /* Calculate the total number of rules fired. */
     uintmax_t fire_count = 0;

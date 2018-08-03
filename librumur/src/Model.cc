@@ -210,7 +210,7 @@ void Model::generate(std::ostream &out) const {
           for (const Quantifier *q : r->quantifiers)
             out << ", ru_" << q->var->name;
           out << ")) {\n"
-            << "      error(s, \"failed invariant\");\n"
+            << "      error(s, false, \"failed invariant\");\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -254,22 +254,32 @@ void Model::generate(std::ostream &out) const {
           q->generate_header(out);
 
         out
-          << "    s = state_new();\n"
-          << "    startstate" << index << "(s";
+          // Use a dummy do-while to give us 'break' as a local goto.
+          << "    do {\n"
+
+          << "      s = state_new();\n"
+          << "      if (JMP_BUF_NEEDED) {\n"
+          << "        if (setjmp(checkpoint)) {\n"
+          << "          /* error() was called. */\n"
+          << "          break;\n"
+          << "        }\n"
+          << "      }\n"
+          << "      startstate" << index << "(s";
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
         out << ");\n"
-          << "    check_invariants(s);\n"
-          << "    if (SYMMETRY_REDUCTION) {\n"
-          << "      state_canonicalise(s);\n"
-          << "    }\n"
-          << "    size_t size;\n"
-          << "    if (set_insert(s, &size)) {\n"
-          << "      (void)queue_enqueue(s, queue_id);\n"
-          << "      queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
-          << "    } else {\n"
+          << "      check_invariants(s);\n"
+          << "      if (SYMMETRY_REDUCTION) {\n"
+          << "        state_canonicalise(s);\n"
+          << "      }\n"
+          << "      size_t size;\n"
+          << "      if (set_insert(s, &size)) {\n"
+          << "        (void)queue_enqueue(s, queue_id);\n"
+          << "        queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
+          << "        s = NULL;\n"
+          << "      }\n"
           << "      free(s);\n"
-          << "    }\n";
+          << "    } while (0);\n";
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
@@ -295,7 +305,7 @@ void Model::generate(std::ostream &out) const {
       << "\n"
       << "  for (;;) {\n"
       << "\n"
-      << "    if (THREADS > 1 && done) {\n"
+      << "    if (THREADS > 1 && error_count >= MAX_ERRORS) {\n"
       << "      /* Another thread found an error. */\n"
       << "      break;\n"
       << "    }\n"
@@ -316,45 +326,57 @@ void Model::generate(std::ostream &out) const {
         for (const Quantifier *q : r->quantifiers)
           q->generate_header(out);
 
-        out << "      if (guard" << index << "(s";
+        out
+          // Use a dummy do-while to give us 'break' as a local goto.
+          << "      do {\n"
+          << "        struct state *n = state_dup(s);\n"
+          << "        if (JMP_BUF_NEEDED) {\n"
+          << "          if (setjmp(checkpoint)) {\n"
+          << "            /* error() was called. */\n"
+          << "            break;\n"
+          << "          }\n"
+          << "        }\n"
+          << "        if (guard" << index << "(n";
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
         out << ")) {\n"
-          << "        possible_deadlock = false;\n"
-          << "        struct state *n = state_dup(s);\n"
-          << "        rule" << index << "(n";
+          << "          possible_deadlock = false;\n"
+          << "          rule" << index << "(n";
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
         out << ");\n"
-          << "        rules_fired_local++;\n"
-          << "        check_invariants(n);\n"
-          << "        if (SYMMETRY_REDUCTION) {\n"
-          << "          state_canonicalise(n);\n"
-          << "        }\n"
-          << "        size_t size;\n"
-          << "        if (set_insert(n, &size)) {\n"
-          << "\n"
-          << "          size_t queue_size = queue_enqueue(n, thread_id);\n"
-          << "          queue_id = thread_id;\n"
-          << "\n"
-          << "          if (size % 10000 == 0) {\n"
-          << "            print_lock();\n"
-          << "            printf(\"\\t %zu states explored in %llus, with %\" PRIuMAX \" rules \"\n"
-          << "              \"fired and %s%zu%s states in the queue.\\n\", size, gettime(),\n"
-          << "              rules_fired_local, queue_size > last_queue_size ? yellow() : green(),\n"
-          << "              queue_size, reset());\n"
-          << "            print_unlock();\n"
-          << "            last_queue_size = queue_size;\n"
+          << "          rules_fired_local++;\n"
+          << "          check_invariants(n);\n"
+          << "          if (SYMMETRY_REDUCTION) {\n"
+          << "            state_canonicalise(n);\n"
           << "          }\n"
+          << "          size_t size;\n"
+          << "          if (set_insert(n, &size)) {\n"
           << "\n"
-          << "          if (THREADS > 1 && thread_id == 0 && phase == WARMUP && queue_size > 20) {\n"
-          << "            start_secondary_threads();\n"
-          << "            phase = RUN;\n"
+          << "            size_t queue_size = queue_enqueue(n, thread_id);\n"
+          << "            queue_id = thread_id;\n"
+          << "\n"
+          << "            if (size % 10000 == 0) {\n"
+          << "              print_lock();\n"
+          << "              printf(\"\\t %zu states explored in %llus, with %\" PRIuMAX \" rules \"\n"
+          << "                \"fired and %s%zu%s states in the queue.\\n\", size, gettime(),\n"
+          << "                rules_fired_local, queue_size > last_queue_size ? yellow() : green(),\n"
+          << "                queue_size, reset());\n"
+          << "              print_unlock();\n"
+          << "              last_queue_size = queue_size;\n"
+          << "            }\n"
+          << "\n"
+          << "            if (THREADS > 1 && thread_id == 0 && phase == WARMUP && queue_size > 20) {\n"
+          << "              start_secondary_threads();\n"
+          << "              phase = RUN;\n"
+          << "            }\n"
+          << "\n"
+          << "            /* Avoid freeing the state we just added to the set. */\n"
+          << "            n = NULL;\n"
           << "          }\n"
-          << "        } else {\n"
-          << "          free(n);\n"
           << "        }\n"
-          << "      }\n";
+          << "        free(n);\n"
+          << "      } while (0);\n";
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
@@ -371,7 +393,7 @@ void Model::generate(std::ostream &out) const {
       << "     * have a deadlock.\n"
       << "     */\n"
       << "    if (DEADLOCK_DETECTION && possible_deadlock) {\n"
-      << "      error(s, \"deadlock\");\n"
+      << "      error(s, true, \"deadlock\");\n"
       << "    }\n"
       << "\n"
       << "  }\n"

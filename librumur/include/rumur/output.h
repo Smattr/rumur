@@ -44,6 +44,9 @@ struct OutputOptions {
 
   // Use OS mechanisms to sandbox the checker?
   bool sandbox_enabled;
+
+  // Number of errors to report before exiting.
+  unsigned long max_errors;
 };
 
 int output_checker(const std::string &path, const Model &model,

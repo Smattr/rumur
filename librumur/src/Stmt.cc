@@ -44,7 +44,7 @@ void PropertyStmt::generate(std::ostream &out) const {
     case Property::ASSERTION:
       out << "if (__builtin_expect(!";
       property.generate(out);
-      out << ", 0)) {\nerror(s, \"" << message << "\");\n}";
+      out << ", 0)) {\nerror(s, false, \"" << message << "\");\n}";
       break;
 
   }
@@ -124,7 +124,7 @@ ErrorStmt *ErrorStmt::clone() const {
 }
 
 void ErrorStmt::generate(std::ostream &out) const {
-  out << "error(s, \"" << message << "\")";
+  out << "error(s, false, \"" << message << "\")";
 }
 
 bool ErrorStmt::operator==(const Node &other) const {

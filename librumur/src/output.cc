@@ -41,6 +41,7 @@ int output_checker(const std::string &path, const Model &model,
     << "enum { DEADLOCK_DETECTION = " << options.deadlock_detection << " };\n\n"
     << "enum { SYMMETRY_REDUCTION = " << options.symmetry_reduction << " };\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
+    << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
 
     // xxHash source
     << std::string((const char*)resources_xxhash_h, (size_t)resources_xxhash_h_len)
