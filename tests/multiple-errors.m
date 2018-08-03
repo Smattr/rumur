@@ -1,3 +1,4 @@
+-- checker_exit_code: 1
 -- A model with multiple errors to test --max-errors option
 -- TODO: tweak cmd line args to this and regex the output during testing
 
