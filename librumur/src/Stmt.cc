@@ -124,7 +124,7 @@ ErrorStmt *ErrorStmt::clone() const {
 }
 
 void ErrorStmt::generate(std::ostream &out) const {
-  out << "throw Error(\"" << message << "\")";
+  out << "error(s, \"" << message << "\")";
 }
 
 bool ErrorStmt::operator==(const Node &other) const {
