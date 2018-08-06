@@ -229,6 +229,44 @@ void Model::generate(std::ostream &out) const {
     out << "}\n\n";
   }
 
+  // Write assumption checker
+  {
+    out << "static void check_assumptions(const struct state *s __attribute__((unused))) {\n";
+    size_t index = 0;
+    for (const Rule *r : flat_rules) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r)) {
+        if (p->property.category == Property::ASSUMPTION) {
+
+          // Open a scope so we don't have to think about name collisions.
+          out << "  {\n";
+
+          // Set up quantifiers.
+          for (const Quantifier *q : r->quantifiers)
+            q->generate_header(out);
+
+          out << "    if (!property" << index << "(s";
+          for (const Quantifier *q : r->quantifiers)
+            out << ", ru_" << q->var->name;
+          out << ")) {\n"
+            << "      /* Assumption violated. */\n"
+            << "      assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
+            << "      longjmp(checkpoint, 1);\n"
+            << "    }\n";
+
+          // Close the quantifier loops.
+          for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+            (*it)->generate_footer(out);
+
+          // Close this invariant's scope.
+          out << "  }\n";
+
+        }
+        index++;
+      }
+    }
+    out << "}\n\n";
+  }
+
   // Write out the symmetry reduction canonicalisation function
   generate_canonicalise(*this, out);
   out << "\n\n";
@@ -270,6 +308,7 @@ void Model::generate(std::ostream &out) const {
         for (const Quantifier *q : r->quantifiers)
           out << ", ru_" << q->var->name;
         out << ");\n"
+          << "      check_assumptions(s);\n"
           << "      check_invariants(s);\n"
           << "      if (SYMMETRY_REDUCTION) {\n"
           << "        state_canonicalise(s);\n"
@@ -348,6 +387,7 @@ void Model::generate(std::ostream &out) const {
           out << ", ru_" << q->var->name;
         out << ");\n"
           << "          rules_fired_local++;\n"
+          << "          check_assumptions(s);\n"
           << "          check_invariants(n);\n"
           << "          if (SYMMETRY_REDUCTION) {\n"
           << "            state_canonicalise(n);\n"
