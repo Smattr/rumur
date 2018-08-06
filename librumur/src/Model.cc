@@ -5,8 +5,10 @@
 #include <rumur/except.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
+#include <rumur/Property.h>
 #include <rumur/Rule.h>
 #include <rumur/symmetry-reduction.h>
+#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <unordered_set>
@@ -445,6 +447,31 @@ bool Model::operator==(const Node &other) const {
       return false;
   }
   return true;
+}
+
+unsigned long Model::assumption_count() const {
+
+  // Define a traversal for counting the assumptions encountered.
+  class AssumptionCounter : public Traversal {
+
+   public:
+    unsigned long assumptions = 0;
+
+    void visit(Property &n) final {
+      if (n.category == Property::ASSUMPTION)
+        assumptions++;
+      dispatch(*n.expr);
+    }
+
+    virtual ~AssumptionCounter() { }
+  };
+
+  // Use the traversal to count our own assumptions.
+  // FIXME: We could avoid the const cast if there was a read only traversal class
+  AssumptionCounter ac;
+  ac.dispatch(const_cast<Model&>(*this));
+
+  return ac.assumptions;
 }
 
 }

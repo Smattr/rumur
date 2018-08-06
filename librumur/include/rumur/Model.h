@@ -28,6 +28,9 @@ struct Model : public Node {
 
   void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
+
+  // Get the number of (global or local) assumptions in the model.
+  unsigned long assumption_count() const;
 };
 
 static inline std::ostream &operator<<(std::ostream &out, const Model &m) {

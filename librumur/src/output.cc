@@ -50,6 +50,7 @@ int output_checker(const std::string &path, const Model &model,
     // Settings that are used in header.c
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
+    << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
 
     // Static boiler plate code
     << std::string((const char*)resources_header_c, (size_t)resources_header_c_len)
