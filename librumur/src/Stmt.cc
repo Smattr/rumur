@@ -47,6 +47,10 @@ void PropertyStmt::generate(std::ostream &out) const {
       out << ", 0)) {\nerror(s, false, \"" << message << "\");\n}";
       break;
 
+    case Property::ASSUMPTION:
+      assert(!"TODO");
+      break;
+
   }
 }
 

@@ -43,6 +43,7 @@
 
 array         { return rumur::parser::token::ARRAY;         }
 assert        { return rumur::parser::token::ASSERT;        }
+assume        { return rumur::parser::token::ASSUME;        }
 begin         { return rumur::parser::token::BEGIN_TOK;     }
 by            { return rumur::parser::token::BY;            }
 const         { return rumur::parser::token::CONST;         }

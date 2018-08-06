@@ -95,6 +95,7 @@
 %token ARRAY
 %token ARROW
 %token ASSERT
+%token ASSUME
 %token BEGIN_TOK
 %token BY
 %token COLON_EQ
@@ -321,6 +322,8 @@ property: category STRING expr {
 
 category: ASSERT {
   $$ = rumur::Property::ASSERTION;
+} | ASSUME {
+  $$ = rumur::Property::ASSUMPTION;
 } | INVARIANT {
   $$ = rumur::Property::ASSERTION;
 } | PROPERTY {

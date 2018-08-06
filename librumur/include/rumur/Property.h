@@ -12,6 +12,7 @@ struct Property : public Node {
   enum Category {
     DISABLED,
     ASSERTION,
+    ASSUMPTION,
   };
 
   Category category;
