@@ -101,18 +101,16 @@ bool Function::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  for (auto it = parameters.begin(); ; it++) {
-    for (auto it2 = o->parameters.begin(); ; it2++) {
-      if (it == parameters.end()) {
-        if (it2 != o->parameters.end())
-          return false;
-        break;
-      }
-      if (it2 == o->parameters.end())
+  for (auto it = parameters.begin(), it2 = o->parameters.begin(); ; it++, it2++) {
+    if (it == parameters.end()) {
+      if (it2 != o->parameters.end())
         return false;
-      if (*it != *it2)
-        return false;
+      break;
     }
+    if (it2 == o->parameters.end())
+      return false;
+    if (**it != **it2)
+      return false;
   }
   if (return_type == nullptr) {
     if (o->return_type != nullptr)
@@ -123,31 +121,27 @@ bool Function::operator==(const Node &other) const {
     if (*return_type != *o->return_type)
       return false;
   }
-  for (auto it = decls.begin(); ; it++) {
-    for (auto it2 = o->decls.begin(); ; it2++) {
-      if (it == decls.end()) {
-        if (it2 != o->decls.end())
-          return false;
-        break;
-      }
-      if (it2 == o->decls.end())
+  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
+    if (it == decls.end()) {
+      if (it2 != o->decls.end())
         return false;
-      if (*it != *it2)
-        return false;
+      break;
     }
+    if (it2 == o->decls.end())
+      return false;
+    if (**it != **it2)
+      return false;
   }
-  for (auto it = body.begin(); ; it++) {
-    for (auto it2 = o->body.begin(); ; it2++) {
-      if (it == body.end()) {
-        if (it2 != o->body.end())
-          return false;
-        break;
-      }
-      if (it2 == o->body.end())
+  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
+    if (it == body.end()) {
+      if (it2 != o->body.end())
         return false;
-      if (*it != *it2)
-        return false;
+      break;
     }
+    if (it2 == o->body.end())
+      return false;
+    if (**it != **it2)
+      return false;
   }
   return true;
 }
