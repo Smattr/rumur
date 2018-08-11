@@ -430,6 +430,10 @@ void XMLPrinter::visit(const VarDecl &n) {
   *o << "</type></vardecl>";
 }
 
+XMLPrinter::~XMLPrinter() {
+  o->flush();
+}
+
 void XMLPrinter::add_location(const Node &n) {
   *o << "start_line=\"" << n.loc.begin.line <<
      "\" start_column=\"" << n.loc.begin.column <<

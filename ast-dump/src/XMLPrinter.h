@@ -60,6 +60,8 @@ class XMLPrinter : public rumur::ConstTraversal {
   void visit(const rumur::Undefine &n) final;
   void visit(const rumur::VarDecl &n) final;
 
+  virtual ~XMLPrinter();
+
  private:
   void add_location(const rumur::Node &n);
   void visit_bexpr(const std::string &tag, const rumur::BinaryExpr &n);
