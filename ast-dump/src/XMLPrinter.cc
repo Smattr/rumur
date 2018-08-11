@@ -70,6 +70,17 @@ void XMLPrinter::visit(const Assignment &n) {
   *o << "</assignment>";
 }
 
+void XMLPrinter::visit(const Clear &n) {
+  sync_to(n);
+  *o << "<clear ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.rhs);
+  dispatch(*n.rhs);
+  sync_to(n.loc.end);
+  *o << "</clear>";
+}
+
 void XMLPrinter::visit(const ConstDecl &n) {
   sync_to(n);
   *o << "<constdecl name=\"" << n.name << "\" ";

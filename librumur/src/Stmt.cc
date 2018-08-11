@@ -112,6 +112,44 @@ bool Assignment::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+Clear::Clear(Lvalue *rhs_, const location &loc_):
+  Stmt(loc_), rhs(rhs_) { }
+
+Clear::Clear(const Clear &other):
+  Stmt(other.loc), rhs(other.rhs->clone()) { }
+
+Clear &Clear::operator=(Clear other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(Clear &x, Clear &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.rhs, y.rhs);
+}
+
+Clear::~Clear() {
+  delete rhs;
+}
+
+Clear *Clear::clone() const {
+  return new Clear(*this);
+}
+
+void Clear::generate(std::ostream&) const {
+  assert(!"TODO");
+}
+
+bool Clear::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Clear*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*rhs != *o->rhs)
+    return false;
+  return true;
+}
+
 ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_):
   Stmt(loc_), message(message_) { }
 

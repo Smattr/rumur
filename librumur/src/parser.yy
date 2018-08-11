@@ -98,6 +98,7 @@
 %token ASSUME
 %token BEGIN_TOK
 %token BY
+%token CLEAR
 %token COLON_EQ
 %token CONST
 %token DEQ
@@ -370,6 +371,8 @@ stmt: category STRING expr {
   $$ = new rumur::Assignment($1, $3, @$);
 } | ERROR STRING {
   $$ = new rumur::ErrorStmt($2, @$);
+} | CLEAR designator {
+  $$ = new rumur::Clear($2, @$);
 } | FOR quantifier {
     symtab.open_scope();
     symtab.declare($2->var->name, *$2->var);

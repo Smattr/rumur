@@ -19,6 +19,7 @@ class XMLPrinter : public rumur::ConstTraversal {
   void visit(const rumur::And &n) final;
   void visit(const rumur::Array &n) final;
   void visit(const rumur::Assignment &n) final;
+  void visit(const rumur::Clear &n) final;
   void visit(const rumur::ConstDecl &n) final;
   void visit(const rumur::Div &n) final;
   void visit(const rumur::Element &n) final;

@@ -20,6 +20,7 @@ class Traversal {
   virtual void visit(And &n);
   virtual void visit(Array &n);
   virtual void visit(Assignment &n);
+  virtual void visit(Clear &n);
   virtual void visit(ConstDecl &n);
   virtual void visit(Div &n);
   virtual void visit(Element &n);
@@ -87,6 +88,7 @@ class ConstTraversal {
   virtual void visit(const And &n);
   virtual void visit(const Array &n);
   virtual void visit(const Assignment &n);
+  virtual void visit(const Clear &n);
   virtual void visit(const ConstDecl &n);
   virtual void visit(const Div &n);
   virtual void visit(const Element &n);

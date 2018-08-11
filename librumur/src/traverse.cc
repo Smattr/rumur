@@ -34,6 +34,10 @@ void Traversal::visit(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void Traversal::visit(Clear &n) {
+  dispatch(*n.rhs);
+}
+
 void Traversal::visit(ConstDecl &n) {
   dispatch(*n.value);
 }
@@ -157,6 +161,11 @@ void Traversal::dispatch(Node &n) {
   }
 
   if (auto i = dynamic_cast<ConstDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<Clear*>(&n)) {
     visit(*i);
     return;
   }
@@ -508,6 +517,10 @@ void ConstTraversal::visit(const BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void ConstTraversal::visit(const Clear &n) {
+  dispatch(*n.rhs);
+}
+
 void ConstTraversal::visit(const ConstDecl &n) {
   dispatch(*n.value);
 }
@@ -626,6 +639,11 @@ void ConstTraversal::dispatch(const Node &n) {
   }
 
   if (auto i = dynamic_cast<const Assignment*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Clear*>(&n)) {
     visit(*i);
     return;
   }

@@ -65,6 +65,22 @@ struct Assignment : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
+struct Clear : public Stmt {
+
+  Lvalue *rhs;
+
+  Clear() = delete;
+  Clear(Lvalue *rhs_, const location &loc);
+  Clear(const Clear &other);
+  Clear &operator=(Clear other);
+  friend void swap(Clear &x, Clear &y) noexcept;
+  virtual ~Clear();
+  Clear *clone() const final;
+
+  void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
+};
+
 struct ErrorStmt : public Stmt {
 
    std::string message;
