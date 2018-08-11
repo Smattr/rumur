@@ -1,5 +1,6 @@
 #include <rumur/Decl.h>
 #include <rumur/Function.h>
+#include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -45,10 +46,11 @@ bool Parameter::operator==(const Node &other) const {
 }
 
 Function::Function(const std::string &name_,
-  std::vector<Parameter*> &&parameters_, std::vector<Decl*> &&decls_,
-  TypeExpr *return_type_, const location &loc_):
-  Node(loc_), name(name_), parameters(parameters_), decls(decls_),
-  return_type(return_type_) { }
+  std::vector<Parameter*> &&parameters_, TypeExpr *return_type_,
+  std::vector<Decl*> &&decls_, std::vector<Stmt*> &&body_,
+  const location &loc_):
+  Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
+  decls(decls_), body(body_) { }
 
 Function::Function(const Function &other):
   Node(other), name(other.name),
@@ -59,6 +61,9 @@ Function::Function(const Function &other):
 
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
+
+  for (const Stmt *s : other.body)
+    body.push_back(s->clone());
 }
 
 Function &Function::operator=(Function other) {
@@ -71,16 +76,19 @@ void swap(Function &x, Function &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.name, y.name);
   swap(x.parameters, y.parameters);
-  swap(x.decls, y.decls);
   swap(x.return_type, y.return_type);
+  swap(x.decls, y.decls);
+  swap(x.body, y.body);
 }
 
 Function::~Function() {
   for (Parameter *p : parameters)
     delete p;
+  delete return_type;
   for (Decl *d : decls)
     delete d;
-  delete return_type;
+  for (Stmt *s : body)
+    delete s;
 }
 
 Function *Function::clone() const {
@@ -106,6 +114,15 @@ bool Function::operator==(const Node &other) const {
         return false;
     }
   }
+  if (return_type == nullptr) {
+    if (o->return_type != nullptr)
+      return false;
+  } else {
+    if (o->return_type == nullptr)
+      return false;
+    if (*return_type != *o->return_type)
+      return false;
+  }
   for (auto it = decls.begin(); ; it++) {
     for (auto it2 = o->decls.begin(); ; it2++) {
       if (it == decls.end()) {
@@ -119,14 +136,18 @@ bool Function::operator==(const Node &other) const {
         return false;
     }
   }
-  if (return_type == nullptr) {
-    if (o->return_type != nullptr)
-      return false;
-  } else {
-    if (o->return_type == nullptr)
-      return false;
-    if (*return_type != *o->return_type)
-      return false;
+  for (auto it = body.begin(); ; it++) {
+    for (auto it2 = o->body.begin(); ; it2++) {
+      if (it == body.end()) {
+        if (it2 != o->body.end())
+          return false;
+        break;
+      }
+      if (it2 == o->body.end())
+        return false;
+      if (*it != *it2)
+        return false;
+    }
   }
   return true;
 }

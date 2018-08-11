@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/Node.h>
+#include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <vector>
@@ -28,12 +29,14 @@ struct Function : public Node {
 
   std::string name;
   std::vector<Parameter*> parameters;
-  std::vector<Decl*> decls;
   TypeExpr *return_type;
+  std::vector<Decl*> decls;
+  std::vector<Stmt*> body;
 
   Function() = delete;
   Function(const std::string &name_, std::vector<Parameter*> &&parameters_,
-    std::vector<Decl*> &&decls_, TypeExpr *return_type_, const location &loc_);
+    TypeExpr *return_type_, std::vector<Decl*> &&decls_,
+    std::vector<Stmt*> &&body_, const location &loc_);
   Function(const Function &other);
   Function &operator=(Function other);
   friend void swap(Function &x, Function &y) noexcept;
