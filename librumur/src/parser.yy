@@ -520,7 +520,7 @@ id_list_opt: id_list comma_opt {
 
 id_list: id_list ',' ID {
   $$ = $1;
-  $$.emplace_back(std::make_pair($3, @$));
+  $$.emplace_back(std::make_pair($3, @3));
 } | ID {
   $$.emplace_back(std::make_pair($1, @$));
 };
