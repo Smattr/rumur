@@ -408,7 +408,7 @@ void XMLPrinter::visit(const TypeDecl &n) {
 void XMLPrinter::visit(const TypeExprID &n) {
   *o << "<typeexprid name=\"" << n.name << "\" ";
   add_location(n);
-  *o << "/>>";
+  *o << "/>";
   /* We deliberately omit n.referent because this is a result of symbol
    * resolution and not morally a child of this node.
    */
