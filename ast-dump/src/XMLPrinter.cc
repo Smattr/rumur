@@ -119,6 +119,7 @@ void XMLPrinter::visit(const Enum &n) {
     sync_to(m.second.end);
     *o << "</member>";
   }
+  sync_to(n.loc.end);
   *o << "</enum>";
 }
 
