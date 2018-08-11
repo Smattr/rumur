@@ -105,7 +105,7 @@ void XMLPrinter::visit(const Field &n) {
   add_location(n);
   *o << "><lhs>";
   dispatch(*n.record);
-  *o << "</lhs><rhs><string>" << n.field << "</string></rhs></field>";
+  *o << "</lhs><rhs><string value=\"" << n.field << "\"/></rhs></field>";
 }
 
 void XMLPrinter::visit(const For &n) {
