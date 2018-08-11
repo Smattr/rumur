@@ -1,5 +1,6 @@
 %{
 
+#include "parser.yy.hh"
 #include <rumur/except.h>
 #include <rumur/scanner.h>
 
@@ -9,6 +10,11 @@
 #endif
 #define YY_DECL int rumur::scanner::yylex(\
   rumur::parser::semantic_type *const lval, rumur::parser::location_type *loc)
+
+/* Each time yylex() is called, update the begin position with the last end
+ * position. This ensures we get correct starting column numbers.
+ */
+#define YY_USER_ACTION  loc->columns(yyleng);
 
 %}
 
@@ -121,11 +127,14 @@ var           { return rumur::parser::token::VAR;           }
 
     /* Ensure we keep a correct line count for error reporting. */
 "\n" {
-  loc->lines();
+  loc->lines(yyleng);
+  loc->step(); /* maintain correct column count */
 }
 
   /* Ignore white space. */
-[[:space:]] {}
+[[:space:]] {
+  loc->step(); /* maintain correct column count */
+}
 
 . {
   throw rumur::Error(std::string("unexpected character: '") + YYText() + "'", *loc);
@@ -137,7 +146,8 @@ var           { return rumur::parser::token::VAR;           }
 }
 
 <SC_COMMENT>\n {
-  loc->lines();
+  loc->lines(yyleng);
+  loc->step(); /* maintain correct column count */
   BEGIN(INITIAL);
 }
 
@@ -150,9 +160,10 @@ var           { return rumur::parser::token::VAR;           }
 }
 
 <SC_MULTILINE_COMMENT>\n {
-  loc->lines();
+  loc->lines(yyleng);
 }
 
 <SC_MULTILINE_COMMENT>"*"+"/" {
+  loc->step(); /* maintain correct column count */
   BEGIN(INITIAL);
 }
