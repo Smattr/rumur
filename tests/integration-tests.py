@@ -3,6 +3,8 @@
 import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
 
 RUMUR_BIN = os.path.abspath(os.environ.get('RUMUR', 'rumur/rumur'))
+RUMUR_AST_DUMP_BIN = os.path.abspath(os.environ.get('RUMUR_AST_DUMP',
+  'ast-dump/rumur-ast-dump'))
 CC = os.environ.get('CC', subprocess.check_output(['which', 'cc'],
   universal_newlines=True).strip())
 
@@ -107,6 +109,32 @@ def test_template(self, model, optimised, debug):
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['checker_exit_code'])
 
+def test_ast_dumper_template(self, model: str):
+
+  with TemporaryDirectory() as tmp:
+
+    model_xml = os.path.join(tmp, 'model.xml')
+    ad_flags = ['--output', model_xml, model]
+    ret, stdout, stderr = run([RUMUR_AST_DUMP_BIN] + ad_flags)
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
+    # See if we have xmllint
+    ret, _, _ = run(['which', 'xmllint'])
+    if ret != 0:
+      self.skipTest('xmllint not available for validation')
+
+    # Validate the XML
+    ret, stdout, stderr = run(['xmllint', '--noout', model_xml])
+    if ret != 0:
+      with open(model_xml, 'rt') as f:
+        sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
 def main(argv):
 
   if not os.path.isfile(RUMUR_BIN):
@@ -135,6 +163,21 @@ def main(argv):
 
         setattr(Tests, test_name,
           lambda self, model=m: test_template(self, model, optimised, debug))
+
+    # Now we want to add an AST dumper test, but skip this if the input model is
+    # expected to fail.
+    option = { 'rumur_exit_code':0 }
+    option.update(parse_test_options(m))
+    if option['rumur_exit_code'] != 0:
+      continue
+
+    test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_{}'.format(m_name))
+
+    if hasattr(Tests, test_name):
+      raise Exception('{} collides with an existing test name'.format(m))
+
+    setattr(Tests, test_name,
+      lambda self, model=m: test_ast_dumper_template(self, model))
 
   unittest.main()
 
