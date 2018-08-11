@@ -485,4 +485,478 @@ void Traversal::visit(VarDecl &n) {
 
 Traversal::~Traversal() { }
 
+void ConstTraversal::visit(const Add &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const And &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Array &n) {
+  dispatch(*n.index_type);
+  dispatch(*n.element_type);
+}
+
+void ConstTraversal::visit(const Assignment &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstTraversal::visit(const BinaryExpr &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstTraversal::visit(const ConstDecl &n) {
+  dispatch(*n.value);
+}
+
+void ConstTraversal::visit(const Div &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Element &n) {
+  dispatch(*n.array);
+  dispatch(*n.index);
+}
+
+void ConstTraversal::visit(const Enum&) { }
+
+void ConstTraversal::visit(const Eq &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const ErrorStmt&) { }
+
+void ConstTraversal::visit(const Exists &n) {
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
+}
+
+void ConstTraversal::visit(const ExprID &n) {
+  dispatch(*n.value);
+}
+
+void ConstTraversal::visit(const Field &n) {
+  dispatch(*n.record);
+}
+
+void ConstTraversal::visit(const For &n) {
+  dispatch(*n.quantifier);
+  for (const Stmt *s : n.body)
+    dispatch(*s);
+}
+
+void ConstTraversal::visit(const Forall &n) {
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
+}
+
+void ConstTraversal::visit(const Geq &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Gt &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const If &n) {
+  for (const IfClause &c : n.clauses)
+    dispatch(c);
+}
+
+void ConstTraversal::visit(const IfClause &n) {
+  if (n.condition != nullptr)
+    dispatch(*n.condition);
+  for (const Stmt *s : n.body)
+    dispatch(*s);
+}
+
+void ConstTraversal::visit(const Implication &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Leq &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Lt &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Mod &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Model &n) {
+  for (const Decl *d : n.decls)
+    dispatch(*d);
+  for (const Rule *r : n.rules)
+    dispatch(*r);
+}
+
+void ConstTraversal::visit(const Mul &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Negative &n) {
+  visit(static_cast<const UnaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Neq &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::dispatch(const Node &n) {
+
+  if (auto i = dynamic_cast<const Add*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const And*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Array*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Assignment*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const ConstDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Div*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Element*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Enum*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Eq*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const ErrorStmt*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Exists*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const ExprID*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Field*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const For*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Forall*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Geq*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Gt*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const If*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const IfClause*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Implication*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Leq*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Lt*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Model*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Mod*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Mul*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Negative*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Neq*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Not*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Number*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Or*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Property*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const PropertyRule*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const PropertyStmt*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Quantifier*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Range*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Record*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Return*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Ruleset*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Scalarset*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const SimpleRule*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const StartState*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Sub*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Ternary*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const TypeDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const TypeExprID*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Undefine*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const VarDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+#ifndef NDEBUG
+  std::cerr << "missed case in ConstTraversal::visit: " << typeid(n).name() << "\n";
+#endif
+  assert(!"missed case in ConstTraversal::visit");
+}
+
+void ConstTraversal::visit(const Not &n) {
+  visit(static_cast<const UnaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Number&) { }
+
+void ConstTraversal::visit(const Or &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Property &n) {
+  dispatch(*n.expr);
+}
+
+void ConstTraversal::visit(const PropertyRule &n) {
+  for (const Quantifier *q : n.quantifiers)
+    dispatch(*q);
+  dispatch(n.property);
+}
+
+void ConstTraversal::visit(const PropertyStmt &n) {
+  dispatch(n.property);
+}
+
+void ConstTraversal::visit(const Quantifier &n) {
+  dispatch(*n.var);
+  if (n.step != nullptr)
+    dispatch(*n.step);
+}
+
+void ConstTraversal::visit(const Range &n) {
+  dispatch(*n.min);
+  dispatch(*n.max);
+}
+
+void ConstTraversal::visit(const Record &n) {
+  for (const VarDecl *f : n.fields)
+    dispatch(*f);
+}
+
+void ConstTraversal::visit(const Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void ConstTraversal::visit(const Ruleset &n) {
+  for (const Quantifier *q : n.quantifiers)
+    dispatch(*q);
+  for (const Rule *r : n.rules)
+    dispatch(*r);
+}
+
+void ConstTraversal::visit(const Scalarset &n) {
+  dispatch(*n.bound);
+}
+
+void ConstTraversal::visit(const SimpleRule &n) {
+  for (const Quantifier *q : n.quantifiers)
+    dispatch(*q);
+  if (n.guard != nullptr)
+    dispatch(*n.guard);
+  for (const Decl *d : n.decls)
+    dispatch(*d);
+  for (const Stmt *s : n.body)
+    dispatch(*s);
+}
+
+void ConstTraversal::visit(const StartState &n) {
+  for (const Quantifier *q : n.quantifiers)
+    dispatch(*q);
+  for (const Decl *d : n.decls)
+    dispatch(*d);
+  for (const Stmt *s : n.body)
+    dispatch(*s);
+}
+
+void ConstTraversal::visit(const Sub &n) {
+  visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Ternary &n) {
+  dispatch(*n.cond);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstTraversal::visit(const TypeDecl &n) {
+  dispatch(*n.value);
+}
+
+void ConstTraversal::visit(const TypeExprID &n) {
+  dispatch(*n.referent);
+}
+
+void ConstTraversal::visit(const UnaryExpr &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstTraversal::visit(const Undefine &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstTraversal::visit(const VarDecl &n) {
+  dispatch(*n.type);
+}
+
+ConstTraversal::~ConstTraversal() { }
+
 }

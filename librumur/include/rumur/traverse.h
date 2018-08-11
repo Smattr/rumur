@@ -79,4 +79,66 @@ class Traversal {
   void visit(UnaryExpr &n);
 };
 
+// Read-only equivalent of Traversal.
+class ConstTraversal {
+
+ public:
+  virtual void visit(const Add &n);
+  virtual void visit(const And &n);
+  virtual void visit(const Array &n);
+  virtual void visit(const Assignment &n);
+  virtual void visit(const ConstDecl &n);
+  virtual void visit(const Div &n);
+  virtual void visit(const Element &n);
+  virtual void visit(const Enum&);
+  virtual void visit(const Eq &n);
+  virtual void visit(const ErrorStmt&);
+  virtual void visit(const Exists &n);
+  virtual void visit(const ExprID &n);
+  virtual void visit(const Field &n);
+  virtual void visit(const For &n);
+  virtual void visit(const Forall &n);
+  virtual void visit(const Geq &n);
+  virtual void visit(const Gt &n);
+  virtual void visit(const If &n);
+  virtual void visit(const IfClause &n);
+  virtual void visit(const Implication &n);
+  virtual void visit(const Leq &n);
+  virtual void visit(const Lt &n);
+  virtual void visit(const Model &n);
+  virtual void visit(const Mod &n);
+  virtual void visit(const Mul &n);
+  virtual void visit(const Negative &n);
+  virtual void visit(const Neq &n);
+  virtual void visit(const Not &n);
+  virtual void visit(const Number &n);
+  virtual void visit(const Or &n);
+  virtual void visit(const Property &n);
+  virtual void visit(const PropertyRule &n);
+  virtual void visit(const PropertyStmt &n);
+  virtual void visit(const Quantifier &n);
+  virtual void visit(const Range &n);
+  virtual void visit(const Record &n);
+  virtual void visit(const Return &n);
+  virtual void visit(const Ruleset &n);
+  virtual void visit(const Scalarset &n);
+  virtual void visit(const SimpleRule &n);
+  virtual void visit(const StartState &n);
+  virtual void visit(const Sub &n);
+  virtual void visit(const Ternary &n);
+  virtual void visit(const TypeDecl &n);
+  virtual void visit(const TypeExprID &n);
+  virtual void visit(const Undefine &n);
+  virtual void visit(const VarDecl &n);
+
+  void dispatch(const Node &n);
+
+  // Force class to be abstract
+  virtual ~ConstTraversal() = 0;
+
+ private:
+  void visit(const BinaryExpr &n);
+  void visit(const UnaryExpr &n);
+};
+
 }
