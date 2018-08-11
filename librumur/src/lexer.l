@@ -117,7 +117,10 @@ var           { return rumur::parser::token::VAR;           }
 "⇒"  { return rumur::parser::token::ARROW;    }
 "==" { return rumur::parser::token::DEQ;       }
 
-[&!|:=><\-\%\+;{},\[\]\.()/] { return YYText()[0]; }
+[&!|:=><\-\%\+;{},\[\]\.()/] {
+  loc->step(); /* maintain correct column count */
+  return YYText()[0];
+}
 
 \"[^\n\r\f\"]*\" {
   std::string s(YYText());
