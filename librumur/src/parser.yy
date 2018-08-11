@@ -97,6 +97,7 @@
 %token ASSERT
 %token ASSUME
 %token BEGIN_TOK
+%token BOOLEAN
 %token BY
 %token CLEAR
 %token COLON_EQ
@@ -241,7 +242,11 @@ typedecl: ID ':' typeexpr ';' {
   symtab.declare($1, *$3);
 };
 
-typeexpr: ID {
+typeexpr: BOOLEAN {
+  const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>("boolean", @$);
+  assert(t != nullptr && "boolean built-in type unknown");
+  $$ = new rumur::TypeExprID("boolean", t->clone(), @$);
+} | ID {
   const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
   if (t == nullptr) {
     throw rumur::Error("unknown type ID \"" + $1 + "\"", @1);

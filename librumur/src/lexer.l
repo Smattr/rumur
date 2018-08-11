@@ -51,6 +51,7 @@ array         { return rumur::parser::token::ARRAY;         }
 assert        { return rumur::parser::token::ASSERT;        }
 assume        { return rumur::parser::token::ASSUME;        }
 begin         { return rumur::parser::token::BEGIN_TOK;     }
+boolean       { return rumur::parser::token::BOOLEAN;       }
 by            { return rumur::parser::token::BY;            }
 clear         { return rumur::parser::token::CLEAR;         }
 const         { return rumur::parser::token::CONST;         }
