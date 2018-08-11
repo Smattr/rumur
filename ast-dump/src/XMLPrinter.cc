@@ -63,10 +63,10 @@ void XMLPrinter::visit(const Enum &n) {
   *o << ">";
   for (const std::pair<std::string, location> &m : n.members)
     *o << "<member name=\"" << m.first << "\" "
-       << "start_line=\"" << n.loc.begin.line << "\" "
-       << "start_column=\"" << n.loc.begin.column << "\" "
-       << "end_line=\"" << n.loc.end.line << "\" "
-       << "end_column=\"" << n.loc.end.column << "\"/>";
+       << "first_line=\"" << n.loc.begin.line << "\" "
+       << "first_column=\"" << n.loc.begin.column << "\" "
+       << "last_line=\"" << n.loc.end.line << "\" "
+       << "last_column=\"" << n.loc.end.column << "\"/>";
   *o << "</enum>";
 }
 
@@ -435,10 +435,10 @@ XMLPrinter::~XMLPrinter() {
 }
 
 void XMLPrinter::add_location(const Node &n) {
-  *o << "start_line=\"" << n.loc.begin.line <<
-     "\" start_column=\"" << n.loc.begin.column <<
-     "\" end_line=\"" << n.loc.end.line <<
-     "\" end_column=\"" << n.loc.end.column << "\"";
+  *o << "first_line=\"" << n.loc.begin.line <<
+     "\" first_column=\"" << n.loc.begin.column <<
+     "\" last_line=\"" << n.loc.end.line <<
+     "\" last_column=\"" << n.loc.end.column << "\"";
 }
 
 void XMLPrinter::visit_bexpr(const std::string &tag, const BinaryExpr &n) {
