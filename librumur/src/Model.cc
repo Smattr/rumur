@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/except.h>
+#include <rumur/Function.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
@@ -16,8 +17,9 @@
 
 namespace rumur {
 
-Model::Model(std::vector<Decl*> &&decls_, std::vector<Rule*> &&rules_, const location &loc_):
-  Node(loc_), decls(decls_), rules(rules_) {
+Model::Model(std::vector<Decl*> &&decls_, std::vector<Function*> &&functions_,
+  std::vector<Rule*> &&rules_, const location &loc_):
+  Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
 
   // Check all state variable names are distinct.
   {
@@ -47,6 +49,8 @@ Model::Model(const Model &other):
   Node(other) {
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
+  for (const Function *f : other.functions)
+    functions.push_back(f->clone());
   for (const Rule *r : other.rules)
     rules.push_back(r->clone());
 }
@@ -60,6 +64,7 @@ void swap(Model &x, Model &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.decls, y.decls);
+  swap(x.functions, y.functions);
   swap(x.rules, y.rules);
 }
 
@@ -79,6 +84,8 @@ uint64_t Model::size_bits() const {
 Model::~Model() {
   for (Decl *d : decls)
     delete d;
+  for (Function *f : functions)
+    delete f;
   for (Rule *r : rules)
     delete r;
 }
@@ -471,6 +478,17 @@ bool Model::operator==(const Node &other) const {
       break;
     }
     if (it2 == o->decls.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  for (auto it = functions.begin(), it2 = o->functions.begin(); ; it++, it2++) {
+    if (it == functions.end()) {
+      if (it2 != o->functions.end())
+        return false;
+      break;
+    }
+    if (it2 == o->functions.end())
       return false;
     if (**it != **it2)
       return false;

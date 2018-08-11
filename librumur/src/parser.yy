@@ -31,6 +31,7 @@
 
   #include <rumur/Decl.h>
   #include <rumur/Expr.h>
+  #include <rumur/Function.h>
   #include <rumur/Model.h>
   #include <rumur/Node.h>
   #include <rumur/Number.h>
@@ -111,7 +112,9 @@
 %token ENDEXISTS
 %token ENDFOR
 %token ENDFORALL
+%token ENDFUNCTION
 %token ENDIF
+%token ENDPROCEDURE
 %token ENDRECORD
 %token ENDRULE
 %token ENDRULESET
@@ -121,6 +124,7 @@
 %token EXISTS
 %token FOR
 %token FORALL
+%token FUNCTION
 %token GEQ
 %token <std::string> ID
 %token IF
@@ -130,6 +134,7 @@
 %token NEQ
 %token <std::string> NUMBER
 %token OF
+%token PROCEDURE
 %token PROPERTY
 %token RECORD
 %token RETURN
@@ -166,9 +171,15 @@
 %type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
+%type <std::vector<rumur::Parameter*>>                       parameter
+%type <std::vector<rumur::Parameter*>>                       parameters
+%type <std::vector<rumur::Parameter*>>                       parameters_cont
+%type <rumur::Function*>                                     procdecl
+%type <std::vector<rumur::Function*>>                        procdecls
 %type <rumur::PropertyRule*>                                 property
 %type <rumur::Quantifier*>                                   quantifier
 %type <std::vector<rumur::Quantifier*>>                      quantifiers
+%type <rumur::TypeExpr*>                                     return_type
 %type <rumur::Rule*>                                         rule
 %type <rumur::Ruleset*>                                      ruleset
 %type <std::vector<rumur::Rule*>>                            rules
@@ -184,14 +195,15 @@
 %type <rumur::TypeExpr*>                                     typeexpr
 %type <std::vector<rumur::VarDecl*>>                         vardecl
 %type <std::vector<rumur::VarDecl*>>                         vardecls
+%type <bool>                                                 var_opt
 
 %%
 
 model: {
       /* Reset offset, in case we were previously parsing a model. */
       offset = 0;
-    } decls rules {
-  output = new rumur::Model(std::move($2), std::move($3), @$);
+    } decls procdecls rules {
+  output = new rumur::Model(std::move($2), std::move($3), std::move($4), @$);
 };
 
 decls: decls decl {
@@ -284,6 +296,56 @@ vardecl: id_list_opt ':' typeexpr ';' {
 };
 
 endrecord: END | ENDRECORD;
+
+begin_opt: BEGIN_TOK | %empty;
+
+endfunction: END | ENDFUNCTION | ENDPROCEDURE;
+
+function: FUNCTION | PROCEDURE;
+
+parameter: var_opt id_list ':' typeexpr {
+  for (const std::pair<std::string, rumur::location> &i : $2) {
+    auto v = new rumur::VarDecl(i.first, $4->clone(), i.second);
+    symtab.declare(v->name, *v);
+    $$.push_back(new rumur::Parameter(v, $1, @$));
+  }
+};
+
+parameters: parameters_cont parameter {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | parameter {
+  $$ = $1;
+} | %empty {
+};
+
+parameters_cont: parameters_cont parameter ';' {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | parameter ';' {
+  $$ = $1;
+};
+
+procdecl: function ID { symtab.open_scope(); } '(' parameters ')' return_type decls begin_opt stmts { symtab.close_scope(); } endfunction ';' {
+  $$ = new rumur::Function($2, std::move($5), $7, std::move($8), std::move($10), @$);
+};
+
+procdecls: procdecls procdecl {
+  $$.push_back($2);
+} | %empty {
+};
+
+return_type: ':' typeexpr semi_opt {
+  $$ = $2;
+} | semi_opt {
+  $$ = nullptr;
+};
+
+var_opt: VAR {
+  $$ = true;
+} | %empty {
+  $$ = false;
+};
 
 rules: rules_cont rule semi_opt {
   $$ = $1;

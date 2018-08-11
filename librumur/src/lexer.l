@@ -62,7 +62,9 @@ end           { return rumur::parser::token::END;           }
 endexists     { return rumur::parser::token::ENDEXISTS;     }
 endfor        { return rumur::parser::token::ENDFOR;        }
 endforall     { return rumur::parser::token::ENDFORALL;     }
+endfunction   { return rumur::parser::token::ENDFUNCTION;   }
 endif         { return rumur::parser::token::ENDIF;         }
+endprocedure  { return rumur::parser::token::ENDPROCEDURE;  }
 endrecord     { return rumur::parser::token::ENDRECORD;     }
 endrule       { return rumur::parser::token::ENDRULE;       }
 endruleset    { return rumur::parser::token::ENDRULESET;    }
@@ -72,9 +74,11 @@ error         { return rumur::parser::token::ERROR;         }
 exists        { return rumur::parser::token::EXISTS;        }
 for           { return rumur::parser::token::FOR;           }
 forall        { return rumur::parser::token::FORALL;        }
+function      { return rumur::parser::token::FUNCTION;      }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
 of            { return rumur::parser::token::OF;            }
+procedure     { return rumur::parser::token::PROCEDURE;     }
 property      { return rumur::parser::token::PROPERTY;      }
 record        { return rumur::parser::token::RECORD;        }
 return        { return rumur::parser::token::RETURN;        }
