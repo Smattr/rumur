@@ -1,11 +1,34 @@
+#include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <rumur/rumur.h>
 #include <string>
 #include "XMLPrinter.h"
 
 using namespace rumur;
 
-XMLPrinter::XMLPrinter(std::ostream &o_): o(&o_) { }
+XMLPrinter::XMLPrinter(const std::string &in_filename, std::ostream &o_):
+  o(&o_) {
+
+  // Write out XML version header
+  *o << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+
+  if (in_filename != "") {
+    *o << "<unit filename=\"" << in_filename << "\">";
+
+    auto i = new std::ifstream(in_filename);
+    if (!i->is_open()) {
+      /* Ignore errors as this just means we'll get degraded information in the
+       * AST dump.
+       */
+      delete i;
+    } else {
+      in = i;
+    }
+  } else {
+    *o << "<unit>";
+  }
+}
 
 void XMLPrinter::visit(const Add &n) {
   visit_bexpr("add", n);
@@ -16,31 +39,48 @@ void XMLPrinter::visit(const And &n) {
 }
 
 void XMLPrinter::visit(const Array &n) {
+  sync_to(n);
   *o << "<array ";
   add_location(n);
-  *o << "><indextype>";
+  *o << ">";
+  sync_to(*n.index_type);
+  *o << "<indextype>";
   dispatch(*n.index_type);
-  *o << "</indextype><elementtype>";
+  *o << "</indextype>";
+  sync_to(*n.element_type);
+  *o << "<elementtype>";
   dispatch(*n.element_type);
-  *o << "</elementtype></array>";
+  *o << "</elementtype>";
+  sync_to(n.loc.end);
+  *o << "</array>";
 }
 
 void XMLPrinter::visit(const Assignment &n) {
+  sync_to(n);
   *o << "<assignment ";
   add_location(n);
   *o << "><lhs>";
   dispatch(*n.lhs);
-  *o << "</lhs><rhs>";
+  *o << "</lhs>";
+  sync_to(*n.rhs);
+  *o << "<rhs>";
   dispatch(*n.rhs);
-  *o << "</rhs></assignment>";
+  *o << "</rhs>";
+  sync_to(n.loc.end);
+  *o << "</assignment>";
 }
 
 void XMLPrinter::visit(const ConstDecl &n) {
+  sync_to(n);
   *o << "<constdecl name=\"" << n.name << "\" ";
   add_location(n);
-  *o << "><value>";
+  *o << ">";
+  sync_to(*n.value);
+  *o << "<value>";
   dispatch(*n.value);
-  *o << "</value></constdecl>";
+  *o << "</value>";
+  sync_to(n.loc.end);
+  *o << "</constdecl>";
 }
 
 void XMLPrinter::visit(const Div &n) {
@@ -48,16 +88,24 @@ void XMLPrinter::visit(const Div &n) {
 }
 
 void XMLPrinter::visit(const Element &n) {
+  sync_to(n);
   *o << "<element ";
   add_location(n);
-  *o << "><lhs>";
+  *o << ">";
+  sync_to(*n.array);
+  *o << "<lhs>";
   dispatch(*n.array);
-  *o << "</lhs><rhs>";
+  *o << "</lhs>";
+  sync_to(*n.index);
+  *o << "<rhs>";
   dispatch(*n.index);
-  *o << "</rhs></element>";
+  *o << "</rhs>";
+  sync_to(n.loc.end);
+  *o << "</element>";
 }
 
 void XMLPrinter::visit(const Enum &n) {
+  sync_to(n);
   *o << "<enum ";
   add_location(n);
   *o << ">";
@@ -75,61 +123,93 @@ void XMLPrinter::visit(const Eq &n) {
 }
 
 void XMLPrinter::visit(const ErrorStmt &n) {
+  sync_to(n);
   *o << "<errorstmt message=\"" << n.message << "\" ";
   add_location(n);
-  *o << "/>";
+  *o << ">";
+  sync_to(n.loc.end);
+  *o << "</errorstmt>";
 }
 
 void XMLPrinter::visit(const Exists &n) {
+  sync_to(n);
   *o << "<exists ";
   add_location(n);
-  *o << "><quan>";
+  *o << ">";
+  sync_to(*n.quantifier);
+  *o << "<quan>";
   dispatch(*n.quantifier);
-  *o << "</quan><expr>";
+  *o << "</quan>";
+  sync_to(*n.expr);
+  *o << "<expr>";
   dispatch(*n.expr);
   *o << "</expr></exists>";
 }
 
 void XMLPrinter::visit(const ExprID &n) {
+  sync_to(n);
   *o << "<exprid id=\"" << n.id << "\" ";
   add_location(n);
   /* We deliberately omit printing n.value because this is the declaration we
    * discovered that this ID points to during symbol lookup. I.e. n.value is not
    * a "child" of this node in the sense of the source.
    */
-  *o << "/>";
+  *o << ">";
+  sync_to(n.loc.end);
+  *o << "</exprid>";
 }
 
 void XMLPrinter::visit(const Field &n) {
+  sync_to(n);
   *o << "<field ";
   add_location(n);
-  *o << "><lhs>";
+  *o << ">";
+  sync_to(*n.record);
+  *o << "<lhs>";
   dispatch(*n.record);
-  *o << "</lhs><rhs><string value=\"" << n.field << "\"/></rhs></field>";
+  *o << "</lhs><rhs><string value=\"" << n.field << "\">";
+  /* FIXME: We don't have location information for the field itself, so we just
+   * dump the entire remaining text of this node here. Does this produce
+   * inaccurate output?
+   */
+  sync_to(n.loc.end);
+  *o << "</string></rhs></field>";
 }
 
 void XMLPrinter::visit(const For &n) {
+  sync_to(n);
   *o << "<forstmt ";
   add_location(n);
   *o << ">";
+  sync_to(*n.quantifier);
   dispatch(*n.quantifier);
   if (!n.body.empty()) {
     *o << "<body>";
-    for (const Stmt *s : n.body)
+    for (const Stmt *s : n.body) {
+      sync_to(*s);
       dispatch(*s);
+    }
     *o << "</body>";
   }
+  sync_to(n.loc.end);
   *o << "</forstmt>";
 }
 
 void XMLPrinter::visit(const Forall &n) {
+  sync_to(n);
   *o << "<forall ";
   add_location(n);
-  *o << "><quan>";
+  *o << ">";
+  sync_to(*n.quantifier);
+  *o << "<quan>";
   dispatch(*n.quantifier);
-  *o << "</quan><expr>";
+  *o << "</quan>";
+  sync_to(*n.expr);
+  *o << "<expr>";
   dispatch(*n.expr);
-  *o << "</expr></forall>";
+  *o << "</expr>";
+  sync_to(n.loc.end);
+  *o << "</forall>";
 }
 
 void XMLPrinter::visit(const Geq &n) {
@@ -141,29 +221,38 @@ void XMLPrinter::visit(const Gt &n) {
 }
 
 void XMLPrinter::visit(const If &n) {
+  sync_to(n);
   *o << "<if ";
   add_location(n);
   *o << ">";
-  for (const IfClause &c : n.clauses)
+  for (const IfClause &c : n.clauses) {
+    sync_to(c);
     dispatch(c);
+  }
+  sync_to(n.loc.end);
   *o << "</if>";
 }
 
 void XMLPrinter::visit(const IfClause &n) {
+  sync_to(n);
   *o << "<ifclause ";
   add_location(n);
   *o << ">";
   if (n.condition != nullptr) {
+    sync_to(*n.condition);
     *o << "<condition>";
     dispatch(*n.condition);
     *o << "</condition>";
   }
   if (!n.body.empty()) {
     *o << "<body>";
-    for (const Stmt *s : n.body)
+    for (const Stmt *s : n.body) {
+      sync_to(*s);
       dispatch(*s);
+    }
     *o << "</body>";
   }
+  sync_to(n.loc.end);
   *o << "</ifclause>";
 }
 
@@ -187,12 +276,18 @@ void XMLPrinter::visit(const Model &n) {
   *o << "<model ";
   add_location(n);
   *o << "><decls>";
-  for (const Decl *d : n.decls)
+  for (const Decl *d : n.decls) {
+    sync_to(*d);
     dispatch(*d);
+  }
   *o << "</decls><rules>";
-  for (const Rule *r : n.rules)
+  for (const Rule *r : n.rules) {
+    sync_to(*r);
     dispatch(*r);
-  *o << "</rules></model>";
+  }
+  *o << "</rules>";
+  sync_to(n.loc.end);
+  *o << "</model>";
 }
 
 void XMLPrinter::visit(const Mul &n) {
@@ -212,9 +307,12 @@ void XMLPrinter::visit(const Not &n) {
 }
 
 void XMLPrinter::visit(const Number &n) {
+  sync_to(n);
   *o << "<number value=\"" << n.value << "\" ";
   add_location(n);
-  *o << "/>";
+  *o << ">";
+  sync_to(n.loc.end);
+  *o << "</number>";
 }
 
 void XMLPrinter::visit(const Or &n) {
@@ -222,6 +320,7 @@ void XMLPrinter::visit(const Or &n) {
 }
 
 void XMLPrinter::visit(const Property &n) {
+  sync_to(n);
   *o << "<property category=\"";
   switch (n.category) {
     case Property::DISABLED:   *o << "disabled";   break;
@@ -230,154 +329,214 @@ void XMLPrinter::visit(const Property &n) {
   }
   *o << "\" ";
   add_location(n);
-  *o << "><expr>";
+  *o << ">";
+  sync_to(*n.expr);
+  *o << "<expr>";
   dispatch(*n.expr);
-  *o << "</expr></property>";
+  *o << "</expr>";
+  sync_to(n.loc.end);
+  *o << "</property>";
 }
 
 void XMLPrinter::visit(const PropertyRule &n) {
+  sync_to(n);
   *o << "<propertyrule name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers)
+    for (const Quantifier *q : n.quantifiers) {
+      sync_to(*q);
       dispatch(*q);
+    }
     *o << "</quantifiers>";
   }
+  sync_to(n.property);
   dispatch(n.property);
+  sync_to(n.loc.end);
   *o << "</propertyrule>";
 }
 
 void XMLPrinter::visit(const PropertyStmt &n) {
+  sync_to(n);
   *o << "<propertystmt message=\"" << n.message << "\" ";
   add_location(n);
   *o << ">";
+  sync_to(n.property);
   dispatch(n.property);
+  sync_to(n.loc.end);
   *o << "</propertystmt>";
 }
 
 void XMLPrinter::visit(const Quantifier &n) {
+  sync_to(n);
   *o << "<quantifier ";
   add_location(n);
-  *o << "><var>";
+  *o << ">";
+  sync_to(*n.var);
+  *o << "<var>";
   dispatch(*n.var);
   *o << "</var>";
   if (n.step != nullptr) {
+    sync_to(*n.step);
     *o << "<step>";
     dispatch(*n.step);
     *o << "</step>";
   }
+  sync_to(n.loc.end);
   *o << "</quantifier>";
 }
 
 void XMLPrinter::visit(const Range &n) {
+  sync_to(n);
   *o << "<range ";
   add_location(n);
-  *o << "><min>";
+  *o << ">";
+  sync_to(*n.min);
+  *o << "<min>";
   dispatch(*n.min);
-  *o << "</min><max>";
+  *o << "</min>";
+  sync_to(*n.max);
+  *o << "<max>";
   dispatch(*n.max);
-  *o << "</max></range>";
+  *o << "</max>";
+  sync_to(n.loc.end);
+  *o << "</range>";
 }
 
 void XMLPrinter::visit(const Record &n) {
+  sync_to(n);
   *o << "<record ";
   add_location(n);
   *o << ">";
-  for (const VarDecl *f : n.fields)
+  for (const VarDecl *f : n.fields) {
+    sync_to(*f);
     dispatch(*f);
+  }
+  sync_to(n.loc.end);
   *o << "</record>";
 }
 
 void XMLPrinter::visit(const Return &n) {
+  sync_to(n);
   *o << "<return ";
   add_location(n);
   *o << ">";
-  if (n.expr != nullptr)
+  if (n.expr != nullptr) {
+    sync_to(*n.expr);
     dispatch(*n.expr);
+  }
+  sync_to(n.loc.end);
   *o << "</return>";
 }
 
 void XMLPrinter::visit(const Ruleset &n) {
+  sync_to(n);
   *o << "<ruleset name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers)
+    for (const Quantifier *q : n.quantifiers) {
+      sync_to(*q);
       dispatch(*q);
+    }
     *o << "</quantifiers>";
   }
   if (!n.rules.empty()) {
     *o << "<rules>";
-    for (const Rule *r : n.rules)
+    for (const Rule *r : n.rules) {
+      sync_to(*r);
       dispatch(*r);
+    }
     *o << "</rules>";
   }
+  sync_to(n.loc.end);
   *o << "</ruleset>";
 }
 
 void XMLPrinter::visit(const Scalarset &n) {
+  sync_to(n);
   *o << "<scalarset ";
   add_location(n);
-  *o << "><bound>";
+  *o << ">";
+  sync_to(*n.bound);
+  *o << "<bound>";
   dispatch(*n.bound);
-  *o << "</bound></scalarset>";
+  *o << "</bound>";
+  sync_to(n.loc.end);
+  *o << "</scalarset>";
 }
 
 void XMLPrinter::visit(const SimpleRule &n) {
+  sync_to(n);
   *o << "<simplerule name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers)
+    for (const Quantifier *q : n.quantifiers) {
+      sync_to(*q);
       dispatch(*q);
+    }
     *o << "</quantifiers>";
   }
   if (n.guard != nullptr) {
+    sync_to(*n.guard);
     *o << "<guard>";
     dispatch(*n.guard);
     *o << "</guard>";
   }
   if (!n.decls.empty()) {
     *o << "<decls>";
-    for (const Decl *d : n.decls)
+    for (const Decl *d : n.decls) {
+      sync_to(*d);
       dispatch(*d);
+    }
     *o << "</decls>";
   }
   if (!n.body.empty()) {
     *o << "<body>";
-    for (const Stmt *s : n.body)
+    for (const Stmt *s : n.body) {
+      sync_to(*s);
       dispatch(*s);
+    }
     *o << "</body>";
   }
+  sync_to(n.loc.end);
   *o << "</simplerule>";
 }
 
 void XMLPrinter::visit(const StartState &n) {
+  sync_to(n);
   *o << "<startstate name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers)
+    for (const Quantifier *q : n.quantifiers) {
+      sync_to(*q);
       dispatch(*q);
+    }
     *o << "</quantifiers>";
   }
   if (!n.decls.empty()) {
     *o << "<decls>";
-    for (const Decl *d : n.decls)
+    for (const Decl *d : n.decls) {
+      sync_to(*d);
       dispatch(*d);
+    }
     *o << "</decls>";
   }
   if (!n.body.empty()) {
     *o << "<body>";
-    for (const Stmt *s : n.body)
+    for (const Stmt *s : n.body) {
+      sync_to(*s);
       dispatch(*s);
+    }
     *o << "</body>";
   }
+  sync_to(n.loc.end);
   *o << "</startstate>";
 }
 
@@ -386,52 +545,117 @@ void XMLPrinter::visit(const Sub &n) {
 }
 
 void XMLPrinter::visit(const Ternary &n) {
+  sync_to(n);
   *o << "<ternary ";
   add_location(n);
-  *o << "><condition>";
+  *o << ">";
+  sync_to(*n.cond);
+  *o << "<condition>";
   dispatch(*n.cond);
-  *o << "</condition><lhs>";
+  *o << "</condition>";
+  sync_to(*n.lhs);
+  *o << "<lhs>";
   dispatch(*n.lhs);
-  *o << "</lhs><rhs>";
+  *o << "</lhs>";
+  sync_to(*n.rhs);
+  *o << "<rhs>";
   dispatch(*n.rhs);
-  *o << "</rhs></ternary>";
+  *o << "</rhs>";
+  sync_to(n.loc.end);
+  *o << "</ternary>";
 }
 
 void XMLPrinter::visit(const TypeDecl &n) {
+  sync_to(n);
   *o << "<typedecl name=\"" << n.name << "\" ";
   add_location(n);
-  *o << "><value>";
+  *o << ">";
+  sync_to(*n.value);
+  *o << "<value>";
   dispatch(*n.value);
-  *o << "</value></typedecl>";
+  *o << "</value>";
+  sync_to(n.loc.end);
+  *o << "</typedecl>";
 }
 
 void XMLPrinter::visit(const TypeExprID &n) {
+  sync_to(n);
   *o << "<typeexprid name=\"" << n.name << "\" ";
   add_location(n);
-  *o << "/>";
+  *o << ">";
   /* We deliberately omit n.referent because this is a result of symbol
    * resolution and not morally a child of this node.
    */
+  sync_to(n.loc.end);
+  *o << "</typeexprid>";
 }
 
 void XMLPrinter::visit(const Undefine &n) {
+  sync_to(n);
   *o << "<undefine ";
   add_location(n);
   *o << ">";
+  sync_to(*n.rhs);
   dispatch(*n.rhs);
+  sync_to(n.loc.end);
   *o << "</undefine>";
 }
 
 void XMLPrinter::visit(const VarDecl &n) {
+  sync_to(n);
   *o << "<vardecl name=\"" << n.name << "\" ";
   add_location(n);
-  *o << "><type>";
+  *o << ">";
+  sync_to(*n.type);
+  *o << "<type>";
   dispatch(*n.type);
-  *o << "</type></vardecl>";
+  *o << "</type>";
+  sync_to(n.loc.end);
+  *o << "</vardecl>";
 }
 
 XMLPrinter::~XMLPrinter() {
+  *o << "</unit>\n";
   o->flush();
+  delete in;
+}
+
+static std::string xml_escape(char c) {
+  switch (c) {
+    case '"' : return "&quot;";
+    case '\'': return "&apos;";
+    case '<' : return "&lt;";
+    case '>' : return "&gt;";
+    case '&' : return "&amp;";
+    default  : return std::string(1, c);
+  }
+}
+
+void XMLPrinter::sync_to(const Node &n) {
+  sync_to(n.loc.begin);
+}
+
+void XMLPrinter::sync_to(const position &pos) {
+
+  while (in != nullptr && (line < pos.line ||
+         (line == pos.line && column < pos.column))) {
+
+    int c = in->get();
+    if (c == EOF) {
+      delete in;
+      in = nullptr;
+      break;
+    }
+
+    *o << xml_escape(static_cast<char>(c));
+
+    if (c == '\n') {
+      line++;
+      column = 1;
+    } else {
+      column++;
+    }
+  }
 }
 
 void XMLPrinter::add_location(const Node &n) {
@@ -442,19 +666,31 @@ void XMLPrinter::add_location(const Node &n) {
 }
 
 void XMLPrinter::visit_bexpr(const std::string &tag, const BinaryExpr &n) {
+  sync_to(n);
   *o << "<" << tag << " ";
   add_location(n);
-  *o << "><lhs>";
+  *o << ">";
+  sync_to(*n.lhs);
+  *o << "<lhs>";
   dispatch(*n.lhs);
-  *o << "</lhs><rhs>";
+  *o << "</lhs>";
+  sync_to(*n.rhs);
+  *o << "<rhs>";
   dispatch(*n.rhs);
-  *o << "</rhs></" << tag << ">";
+  *o << "</rhs>";
+  sync_to(n.loc.end);
+  *o << "</" << tag << ">";
 }
 
 void XMLPrinter::visit_uexpr(const std::string &tag, const UnaryExpr &n) {
+  sync_to(n);
   *o << "<" << tag << " ";
   add_location(n);
-  *o << "><rhs>";
+  *o << ">";
+  sync_to(*n.rhs);
+  *o << "<rhs>";
   dispatch(*n.rhs);
-  *o << "</rhs></" << tag << ">";
+  *o << "</rhs>";
+  sync_to(n.loc.end);
+  *o << "</" << tag << ">";
 }

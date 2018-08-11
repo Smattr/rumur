@@ -4,9 +4,11 @@
 #include <getopt.h>
 #include <iostream>
 #include <rumur/rumur.h>
+#include <string>
 #include <unistd.h>
 #include "XMLPrinter.h"
 
+static std::string in_filename;
 static std::istream *in;
 static std::ostream *out;
 
@@ -64,6 +66,7 @@ static void parse_args(int argc, char **argv) {
       std::cerr << "failed to open " << argv[optind] << "\n";
       exit(EXIT_FAILURE);
     }
+    in_filename = argv[optind];
     in = i;
   } else {
     in = &std::cin;
@@ -92,12 +95,8 @@ int main(int argc, char **argv) {
 
   assert(m != nullptr);
 
-  // Write out XML version header
-  *out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-
-  XMLPrinter p(*out);
+  XMLPrinter p(in_filename, *out);
   p.dispatch(*m);
-  *out << "\n";
 
   return EXIT_SUCCESS;
 }

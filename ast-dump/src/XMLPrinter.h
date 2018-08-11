@@ -8,9 +8,12 @@ class XMLPrinter : public rumur::ConstTraversal {
 
  private:
   std::ostream *o;
+  std::istream *in = nullptr;
+  unsigned long line = 1;
+  unsigned long column = 1;
 
  public:
-  XMLPrinter(std::ostream &o_);
+  XMLPrinter(const std::string &in_filename, std::ostream &o_);
 
   void visit(const rumur::Add &n) final;
   void visit(const rumur::And &n) final;
@@ -66,4 +69,6 @@ class XMLPrinter : public rumur::ConstTraversal {
   void add_location(const rumur::Node &n);
   void visit_bexpr(const std::string &tag, const rumur::BinaryExpr &n);
   void visit_uexpr(const std::string &tag, const rumur::UnaryExpr &n);
+  void sync_to(const rumur::Node &n);
+  void sync_to(const rumur::position &pos);
 };
