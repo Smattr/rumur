@@ -16,10 +16,10 @@ namespace {
   /* A traversal pass that checks any return statements within a rule do not
    * have a trailing expression.
    */
-  class ReturnChecker : public Traversal {
+  class ReturnChecker : public ConstTraversal {
 
    public:
-    void visit(Return &n) final {
+    void visit(const Return &n) final {
       if (n.expr != nullptr)
         throw Error("return statement in rule or startstate returns a value",
           n.loc);
@@ -27,7 +27,7 @@ namespace {
       // No need to recurse into the return statement's child.
     }
 
-    static void check(Node &n) {
+    static void check(const Node &n) {
       ReturnChecker c;
       c.dispatch(n);
     }

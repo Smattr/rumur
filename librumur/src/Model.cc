@@ -492,12 +492,12 @@ bool Model::operator==(const Node &other) const {
 unsigned long Model::assumption_count() const {
 
   // Define a traversal for counting the assumptions encountered.
-  class AssumptionCounter : public Traversal {
+  class AssumptionCounter : public ConstTraversal {
 
    public:
     unsigned long assumptions = 0;
 
-    void visit(Property &n) final {
+    void visit(const Property &n) final {
       if (n.category == Property::ASSUMPTION)
         assumptions++;
       dispatch(*n.expr);
@@ -509,7 +509,7 @@ unsigned long Model::assumption_count() const {
   // Use the traversal to count our own assumptions.
   // FIXME: We could avoid the const cast if there was a read only traversal class
   AssumptionCounter ac;
-  ac.dispatch(const_cast<Model&>(*this));
+  ac.dispatch(*this);
 
   return ac.assumptions;
 }
