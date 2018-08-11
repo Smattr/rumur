@@ -29,6 +29,22 @@ class TemporaryDirectory(object):
 class Tests(unittest.TestCase):
   pass
 
+def parse_test_options(model: str):
+  option = {}
+
+  # Check for special lines at the start of the current model overriding the
+  # defaults.
+  with open(model, 'rt') as f:
+    for line in f:
+      m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
+      if m is None:
+        break
+      key = m.group('key')
+      value = m.group('value').strip()
+      option[key] = eval(value)
+
+  return option
+
 def test_template(self, model, optimised, debug):
 
   # Default options to use for this test.
@@ -41,16 +57,7 @@ def test_template(self, model, optimised, debug):
     'checker_exit_code':0, # Expected exit status of the checker.
   }
 
-  # Check for special lines at the start of the current model overriding the
-  # defaults.
-  with open(model, 'rt') as f:
-    for line in f:
-      m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
-      if m is None:
-        break
-      key = m.group('key')
-      value = m.group('value').strip()
-      option[key] = eval(value)
+  option.update(parse_test_options(model))
 
   with TemporaryDirectory() as tmp:
 
