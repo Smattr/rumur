@@ -111,10 +111,10 @@ void XMLPrinter::visit(const Enum &n) {
   *o << ">";
   for (const std::pair<std::string, location> &m : n.members)
     *o << "<member name=\"" << m.first << "\" "
-       << "first_line=\"" << n.loc.begin.line << "\" "
-       << "first_column=\"" << n.loc.begin.column << "\" "
-       << "last_line=\"" << n.loc.end.line << "\" "
-       << "last_column=\"" << n.loc.end.column << "\"/>";
+       << "first_line=\"" << m.second.begin.line << "\" "
+       << "first_column=\"" << m.second.begin.column << "\" "
+       << "last_line=\"" << m.second.end.line << "\" "
+       << "last_column=\"" << m.second.end.column << "\"/>";
   *o << "</enum>";
 }
 
