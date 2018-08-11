@@ -92,6 +92,9 @@ int main(int argc, char **argv) {
 
   assert(m != nullptr);
 
+  // Write out XML version header
+  *out << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
+
   XMLPrinter p(*out);
   p.dispatch(*m);
   *out << "\n";
