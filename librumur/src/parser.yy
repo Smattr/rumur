@@ -328,6 +328,7 @@ parameters_cont: parameters_cont parameter ';' {
 
 procdecl: function ID { symtab.open_scope(); } '(' parameters ')' return_type decls begin_opt stmts { symtab.close_scope(); } endfunction ';' {
   $$ = new rumur::Function($2, std::move($5), $7, std::move($8), std::move($10), @$);
+  symtab.declare($$->name, *$$);
 };
 
 procdecls: procdecls procdecl {
