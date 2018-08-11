@@ -109,12 +109,16 @@ void XMLPrinter::visit(const Enum &n) {
   *o << "<enum ";
   add_location(n);
   *o << ">";
-  for (const std::pair<std::string, location> &m : n.members)
+  for (const std::pair<std::string, location> &m : n.members) {
+    sync_to(m.second.begin);
     *o << "<member name=\"" << m.first << "\" "
        << "first_line=\"" << m.second.begin.line << "\" "
        << "first_column=\"" << m.second.begin.column << "\" "
        << "last_line=\"" << m.second.end.line << "\" "
-       << "last_column=\"" << m.second.end.column << "\"/>";
+       << "last_column=\"" << m.second.end.column << "\">";
+    sync_to(m.second.end);
+    *o << "</member>";
+  }
   *o << "</enum>";
 }
 
