@@ -266,7 +266,7 @@ void XMLPrinter::visit(const FunctionCall &n) {
    * than emitting the function itself as a child of this node because morally
    * this is just a reference to a previously defined function.
    */
-  *o << "<function name=\"" << n.function->name << "\" ";
+  *o << "<functioncall name=\"" << n.function->name << "\" ";
   add_location(n);
   *o << ">";
   for (const Expr *a : n.arguments) {
@@ -276,7 +276,7 @@ void XMLPrinter::visit(const FunctionCall &n) {
     *o << "</argument>";
   }
   sync_to(n.loc.end);
-  *o << "</function>";
+  *o << "</functioncall>";
 }
 
 void XMLPrinter::visit(const Geq &n) {
