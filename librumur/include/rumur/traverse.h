@@ -50,6 +50,7 @@ class Traversal {
   virtual void visit(Number &n);
   virtual void visit(Or &n);
   virtual void visit(Parameter &n);
+  virtual void visit(ProcedureCall &n);
   virtual void visit(Property &n);
   virtual void visit(PropertyRule &n);
   virtual void visit(PropertyStmt &n);
@@ -121,6 +122,7 @@ class ConstTraversal {
   virtual void visit(const Number &n);
   virtual void visit(const Or &n);
   virtual void visit(const Parameter &n);
+  virtual void visit(const ProcedureCall &n);
   virtual void visit(const Property &n);
   virtual void visit(const PropertyRule &n);
   virtual void visit(const PropertyStmt &n);

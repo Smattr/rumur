@@ -10,6 +10,9 @@
 
 namespace rumur {
 
+// Forward declare a struct we need to point to, to avoid a circular #include
+struct Function;
+
 struct Stmt : public Node {
 
   using Node::Node;
@@ -141,6 +144,24 @@ struct If : public Stmt {
   friend void swap(If &x, If &y) noexcept;
   virtual ~If() { };
   If *clone() const final;
+
+  void generate(std::ostream &out) const final;
+  bool operator==(const Node &other) const final;
+};
+
+struct ProcedureCall : public Stmt {
+
+  Function *function;
+  std::vector<Expr*> arguments;
+
+  ProcedureCall() = delete;
+  ProcedureCall(Function *function_, std::vector<Expr*> &&arguments_,
+    const location &loc_);
+  ProcedureCall(const ProcedureCall &other);
+  ProcedureCall &operator=(ProcedureCall other);
+  friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;
+  virtual ~ProcedureCall() { };
+  ProcedureCall *clone() const final;
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;

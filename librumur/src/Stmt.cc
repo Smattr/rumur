@@ -2,6 +2,7 @@
 #include <iostream>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Function.h>
 #include <rumur/Property.h>
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
@@ -348,6 +349,57 @@ bool If::operator==(const Node &other) const {
     return false;
   if (clauses != o->clauses)
     return false;
+  return true;
+}
+
+ProcedureCall::ProcedureCall(Function *function_,
+  std::vector<Expr*> &&arguments_, const location &loc_):
+  Stmt(loc_), function(function_), arguments(arguments_) { }
+
+ProcedureCall::ProcedureCall(const ProcedureCall &other):
+  Stmt(other.loc), function(other.function->clone()) {
+
+  for (const Expr *p : other.arguments)
+    arguments.push_back(p->clone());
+}
+
+ProcedureCall &ProcedureCall::operator=(ProcedureCall other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(ProcedureCall &x, ProcedureCall &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.function, y.function);
+  swap(x.arguments, y.arguments);
+}
+
+ProcedureCall *ProcedureCall::clone() const {
+  return new ProcedureCall(*this);
+}
+
+void ProcedureCall::generate(std::ostream&) const {
+  assert(!"TODO");
+}
+
+bool ProcedureCall::operator==(const Node &other) const {
+  auto o = dynamic_cast<const ProcedureCall*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*function != *o->function)
+    return false;
+  for (auto it = arguments.begin(), it2 = o->arguments.begin(); ; it++, it2++) {
+    if (it == arguments.end()) {
+      if (it2 != o->arguments.end())
+        return false;
+      break;
+    }
+    if (it2 == o->arguments.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
   return true;
 }
 

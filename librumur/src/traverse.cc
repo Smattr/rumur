@@ -327,6 +327,11 @@ void Traversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<ProcedureCall*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Property*>(&n)) {
     visit(*i);
     return;
@@ -430,6 +435,12 @@ void Traversal::visit(Or &n) {
 
 void Traversal::visit(Parameter &n) {
   dispatch(*n.decl);
+}
+
+void Traversal::visit(ProcedureCall &n) {
+  dispatch(*n.function);
+  for (Expr *a : n.arguments)
+    dispatch(*a);
 }
 
 void Traversal::visit(Property &n) {
@@ -846,6 +857,11 @@ void ConstTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const ProcedureCall*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Property*>(&n)) {
     visit(*i);
     return;
@@ -949,6 +965,12 @@ void ConstTraversal::visit(const Or &n) {
 
 void ConstTraversal::visit(const Parameter &n) {
   dispatch(*n.decl);
+}
+
+void ConstTraversal::visit(const ProcedureCall &n) {
+  dispatch(*n.function);
+  for (const Expr *a : n.arguments)
+    dispatch(*a);
 }
 
 void ConstTraversal::visit(const Property &n) {

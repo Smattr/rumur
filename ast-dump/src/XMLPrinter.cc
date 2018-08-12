@@ -397,6 +397,25 @@ void XMLPrinter::visit(const Parameter &n) {
   *o << "</parameter>";
 }
 
+void XMLPrinter::visit(const ProcedureCall &n) {
+  sync_to(n);
+  /* As with FunctionCall, we use the function's name rather than emitting it as
+   * a child element because morally it is a reference to a previously defined
+   * function.
+   */
+  *o << "<procedurecall name=\"" << n.function->name << "\" ";
+  add_location(n);
+  *o << ">";
+  for (const Expr *a : n.arguments) {
+    sync_to(*a);
+    *o << "<argument>";
+    dispatch(*a);
+    *o << "</argument>";
+  }
+  sync_to(n.loc.end);
+  *o << "</procedurecall>";
+}
+
 void XMLPrinter::visit(const Property &n) {
   sync_to(n);
   *o << "<property category=\"";
