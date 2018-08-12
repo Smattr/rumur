@@ -168,6 +168,8 @@
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
 %type <rumur::Expr*>                                         expr
+%type <std::vector<rumur::Expr*>>                            exprlist
+%type <std::vector<rumur::Expr*>>                            exprlist_cont
 %type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
@@ -476,6 +478,18 @@ endif: END | ENDIF;
 
 endstartstate: END | ENDSTARTSTATE;
 
+exprlist: exprlist_cont expr comma_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+};
+
+exprlist_cont: exprlist_cont expr ',' {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+};
+
 string_opt: STRING {
   $$ = $1;
 } | %empty {
@@ -542,6 +556,10 @@ expr: expr '?' expr ':' expr {
 } | '(' expr ')' {
   $$ = $2;
   $$->loc = @$;
+} | ID '(' exprlist ')' {
+  auto f = symtab.lookup<rumur::Function>($1, @$);
+  assert(f != nullptr);
+  $$ = new rumur::FunctionCall(f->clone(), std::move($3), @$);
 };
 
 quantifier: ID ':' typeexpr {
