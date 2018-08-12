@@ -743,6 +743,7 @@ void XMLPrinter::visit(const VarDecl &n) {
 }
 
 XMLPrinter::~XMLPrinter() {
+  sync_to();
   *o << "</unit>\n";
   o->flush();
   delete in;
