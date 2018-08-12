@@ -83,6 +83,17 @@ void Traversal::visit(Forall &n) {
   dispatch(*n.expr);
 }
 
+void Traversal::visit(Function &n) {
+  for (Parameter *p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (Decl *d : n.decls)
+    dispatch(*d);
+  for (Stmt *s : n.body)
+    dispatch(*s);
+}
+
 void Traversal::visit(Geq &n) {
   visit(static_cast<BinaryExpr&>(n));
 }
@@ -176,6 +187,11 @@ void Traversal::dispatch(Node &n) {
   }
 
   if (auto i = dynamic_cast<Element*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<Function*>(&n)) {
     visit(*i);
     return;
   }
@@ -295,6 +311,11 @@ void Traversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Parameter*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Property*>(&n)) {
     visit(*i);
     return;
@@ -394,6 +415,10 @@ void Traversal::visit(Number&) { }
 
 void Traversal::visit(Or &n) {
   visit(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Parameter &n) {
+  dispatch(*n.decl);
 }
 
 void Traversal::visit(Property &n) {
@@ -566,6 +591,17 @@ void ConstTraversal::visit(const Forall &n) {
   dispatch(*n.expr);
 }
 
+void ConstTraversal::visit(const Function &n) {
+  for (const Parameter *p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (const Decl *d : n.decls)
+    dispatch(*d);
+  for (const Stmt *s : n.body)
+    dispatch(*s);
+}
+
 void ConstTraversal::visit(const Geq &n) {
   visit(static_cast<const BinaryExpr&>(n));
 }
@@ -703,6 +739,11 @@ void ConstTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Function*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Geq*>(&n)) {
     visit(*i);
     return;
@@ -774,6 +815,11 @@ void ConstTraversal::dispatch(const Node &n) {
   }
 
   if (auto i = dynamic_cast<const Or*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Parameter*>(&n)) {
     visit(*i);
     return;
   }
@@ -877,6 +923,10 @@ void ConstTraversal::visit(const Number&) { }
 
 void ConstTraversal::visit(const Or &n) {
   visit(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTraversal::visit(const Parameter &n) {
+  dispatch(*n.decl);
 }
 
 void ConstTraversal::visit(const Property &n) {
