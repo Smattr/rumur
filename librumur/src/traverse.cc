@@ -139,6 +139,8 @@ void Traversal::visit(Mod &n) {
 void Traversal::visit(Model &n) {
   for (Decl *d : n.decls)
     dispatch(*d);
+  for (Function *f : n.functions)
+    dispatch(*f);
   for (Rule *r : n.rules)
     dispatch(*r);
 }
@@ -669,6 +671,8 @@ void ConstTraversal::visit(const Mod &n) {
 void ConstTraversal::visit(const Model &n) {
   for (const Decl *d : n.decls)
     dispatch(*d);
+  for (const Function *f : n.functions)
+    dispatch(*f);
   for (const Rule *r : n.rules)
     dispatch(*r);
 }
