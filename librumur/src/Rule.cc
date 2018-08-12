@@ -19,6 +19,13 @@ namespace {
   class ReturnChecker : public ConstTraversal {
 
    public:
+    /* Avoid recursing into functions, that may have return statements with an
+     * expression.
+     */
+    void visit(const Function&) final { }
+    void visit(const FunctionCall&) final { }
+    void visit(const ProcedureCall&) final { }
+
     void visit(const Return &n) final {
       if (n.expr != nullptr)
         throw Error("return statement in rule or startstate returns a value",
