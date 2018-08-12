@@ -67,11 +67,7 @@ bool PropertyStmt::operator==(const Node &other) const {
 }
 
 Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):
-  Stmt(loc_), lhs(lhs_), rhs(rhs_) {
-  if (!lhs->type()->is_simple())
-    throw Error("left hand side of assignment does not have a simple "
-      "type", lhs->loc);
-}
+  Stmt(loc_), lhs(lhs_), rhs(rhs_) { }
 
 Assignment::Assignment(const Assignment &other):
   Stmt(other), lhs(other.lhs->clone()), rhs(other.rhs->clone()) {
@@ -99,6 +95,9 @@ Assignment::~Assignment() {
 }
 
 void Assignment::generate(std::ostream &out) const {
+
+  if (!lhs->type()->is_simple())
+    assert(!"TODO");
 
   const std::string lb = lhs->type()->lower_bound();
   const std::string ub = lhs->type()->upper_bound();
