@@ -272,9 +272,9 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   const TypeExpr *t1 = lhs.type()->resolve();
   const TypeExpr *t2 = rhs.type()->resolve();
 
-  if (auto r1 = dynamic_cast<const Range*>(t1)) {
-    if (auto r2 = dynamic_cast<const Range*>(t2))
-      return *r1 == *r2;
+  if (dynamic_cast<const Range*>(t1) != nullptr) {
+    if (dynamic_cast<const Range*>(t2) != nullptr)
+      return true;
   }
 
   return false;
@@ -426,9 +426,9 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
   const TypeExpr *t1 = lhs.type()->resolve();
   const TypeExpr *t2 = rhs.type()->resolve();
 
-  if (auto r1 = dynamic_cast<const Range*>(t1)) {
-    if (auto r2 = dynamic_cast<const Range*>(t2))
-      return *r1 == *r2;
+  if (dynamic_cast<const Range*>(t1) != nullptr) {
+    if (dynamic_cast<const Range*>(t2) != nullptr)
+      return true;
   }
 
   if (auto e1 = dynamic_cast<const Enum*>(t1)) {
