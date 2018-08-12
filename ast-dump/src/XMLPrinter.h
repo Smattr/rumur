@@ -1,7 +1,7 @@
 #pragma once
 
+#include <climits>
 #include <iostream>
-#include <limits>
 #include <rumur/rumur.h>
 #include <string>
 
