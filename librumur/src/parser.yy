@@ -334,6 +334,7 @@ procdecl: function ID { symtab.open_scope(); } '(' parameters ')' return_type de
 };
 
 procdecls: procdecls procdecl {
+  $$ = $1;
   $$.push_back($2);
 } | %empty {
 };
