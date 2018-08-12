@@ -436,10 +436,10 @@ struct Element : public Lvalue {
 struct FunctionCall : public Expr {
 
   Function *function;
-  std::vector<Expr*> parameters;
+  std::vector<Expr*> arguments;
 
   FunctionCall() = delete;
-  FunctionCall(Function *function_, std::vector<Expr*> parameters_,
+  FunctionCall(Function *function_, std::vector<Expr*> arguments_,
     const location &loc_);
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;

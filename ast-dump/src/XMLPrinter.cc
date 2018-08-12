@@ -269,10 +269,10 @@ void XMLPrinter::visit(const FunctionCall &n) {
   *o << "<function name=\"" << n.function->name << "\" ";
   add_location(n);
   *o << ">";
-  for (const Expr *p : n.parameters) {
-    sync_to(*p);
+  for (const Expr *a : n.arguments) {
+    sync_to(*a);
     *o << "<argument>";
-    dispatch(*p);
+    dispatch(*a);
     *o << "</argument>";
   }
   sync_to(n.loc.end);

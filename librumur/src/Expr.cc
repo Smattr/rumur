@@ -1127,22 +1127,22 @@ bool Element::operator==(const Node &other) const {
   return o != nullptr && *array == *o->array && *index == *o->index;
 }
 
-FunctionCall::FunctionCall(Function *function_, std::vector<Expr*> parameters_,
+FunctionCall::FunctionCall(Function *function_, std::vector<Expr*> arguments_,
   const location &loc_):
-  Expr(loc_), function(function_), parameters(parameters_) { }
+  Expr(loc_), function(function_), arguments(arguments_) { }
 
 FunctionCall::FunctionCall(const FunctionCall &other):
   Expr(other), function(other.function->clone()) {
 
-  for (const Expr *p : other.parameters)
-    parameters.push_back(p->clone());
+  for (const Expr *a : other.arguments)
+    arguments.push_back(a->clone());
 }
 
 void swap(FunctionCall &x, FunctionCall &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.function, y.function);
-  swap(x.parameters, y.parameters);
+  swap(x.arguments, y.arguments);
 }
 
 FunctionCall &FunctionCall::operator=(FunctionCall other) {
@@ -1152,7 +1152,7 @@ FunctionCall &FunctionCall::operator=(FunctionCall other) {
 
 FunctionCall::~FunctionCall() {
   delete function;
-  for (Expr *p : parameters)
+  for (Expr *p : arguments)
     delete p;
 }
 
@@ -1188,13 +1188,13 @@ bool FunctionCall::operator==(const Node &other) const {
     return false;
   if (*function != *o->function)
     return false;
-  for (auto it = parameters.begin(), it2 = o->parameters.begin(); ; it++, it2++) {
-    if (it == parameters.end()) {
-      if (it2 != o->parameters.end())
+  for (auto it = arguments.begin(), it2 = o->arguments.begin(); ; it++, it2++) {
+    if (it == arguments.end()) {
+      if (it2 != o->arguments.end())
         return false;
       break;
     }
-    if (it2 == o->parameters.end())
+    if (it2 == o->arguments.end())
       return false;
     if (**it != **it2)
       return false;

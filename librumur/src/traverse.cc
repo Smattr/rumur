@@ -96,8 +96,8 @@ void Traversal::visit(Function &n) {
 
 void Traversal::visit(FunctionCall &n) {
   dispatch(*n.function);
-  for (Expr *p : n.parameters)
-    dispatch(*p);
+  for (Expr *a : n.arguments)
+    dispatch(*a);
 }
 
 void Traversal::visit(Geq &n) {
@@ -615,8 +615,8 @@ void ConstTraversal::visit(const Function &n) {
 
 void ConstTraversal::visit(const FunctionCall &n) {
   dispatch(*n.function);
-  for (const Expr *p : n.parameters)
-    dispatch(*p);
+  for (const Expr *a : n.arguments)
+    dispatch(*a);
 }
 
 void ConstTraversal::visit(const Geq &n) {
