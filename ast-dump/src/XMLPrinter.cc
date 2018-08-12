@@ -202,6 +202,7 @@ void XMLPrinter::visit(const For &n) {
   sync_to(*n.quantifier);
   dispatch(*n.quantifier);
   if (!n.body.empty()) {
+    sync_to(*n.body[0]);
     *o << "<body>";
     for (const Stmt *s : n.body) {
       sync_to(*s);
@@ -314,6 +315,7 @@ void XMLPrinter::visit(const IfClause &n) {
     *o << "</condition>";
   }
   if (!n.body.empty()) {
+    sync_to(*n.body[0]);
     *o << "<body>";
     for (const Stmt *s : n.body) {
       sync_to(*s);
@@ -344,22 +346,34 @@ void XMLPrinter::visit(const Mod &n) {
 void XMLPrinter::visit(const Model &n) {
   *o << "<model ";
   add_location(n);
-  *o << "><decls>";
-  for (const Decl *d : n.decls) {
-    sync_to(*d);
-    dispatch(*d);
+  *o << ">";
+  if (!n.decls.empty()) {
+    sync_to(*n.decls[0]);
+    *o << "<decls>";
+    for (const Decl *d : n.decls) {
+      sync_to(*d);
+      dispatch(*d);
+    }
+    *o << "</decls>";
   }
-  *o << "</decls><functions>";
-  for (const Function *f : n.functions) {
-    sync_to(*f);
-    dispatch(*f);
+  if (!n.functions.empty()) {
+    sync_to(*n.functions[0]);
+    *o << "<functions>";
+    for (const Function *f : n.functions) {
+      sync_to(*f);
+      dispatch(*f);
+    }
+    *o << "</functions>";
   }
-  *o << "</functions><rules>";
-  for (const Rule *r : n.rules) {
-    sync_to(*r);
-    dispatch(*r);
+  if (!n.rules.empty()) {
+    sync_to(*n.rules[0]);
+    *o << "<rules>";
+    for (const Rule *r : n.rules) {
+      sync_to(*r);
+      dispatch(*r);
+    }
+    *o << "</rules>";
   }
-  *o << "</rules>";
   sync_to(n.loc.end);
   *o << "</model>";
 }
@@ -449,6 +463,7 @@ void XMLPrinter::visit(const PropertyRule &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
+    sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
     for (const Quantifier *q : n.quantifiers) {
       sync_to(*q);
@@ -541,6 +556,7 @@ void XMLPrinter::visit(const Ruleset &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
+    sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
     for (const Quantifier *q : n.quantifiers) {
       sync_to(*q);
@@ -549,6 +565,7 @@ void XMLPrinter::visit(const Ruleset &n) {
     *o << "</quantifiers>";
   }
   if (!n.rules.empty()) {
+    sync_to(*n.rules[0]);
     *o << "<rules>";
     for (const Rule *r : n.rules) {
       sync_to(*r);
@@ -579,6 +596,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
+    sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
     for (const Quantifier *q : n.quantifiers) {
       sync_to(*q);
@@ -593,6 +611,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
     *o << "</guard>";
   }
   if (!n.decls.empty()) {
+    sync_to(*n.decls[0]);
     *o << "<decls>";
     for (const Decl *d : n.decls) {
       sync_to(*d);
@@ -601,6 +620,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
     *o << "</decls>";
   }
   if (!n.body.empty()) {
+    sync_to(*n.body[0]);
     *o << "<body>";
     for (const Stmt *s : n.body) {
       sync_to(*s);
@@ -618,6 +638,7 @@ void XMLPrinter::visit(const StartState &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
+    sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
     for (const Quantifier *q : n.quantifiers) {
       sync_to(*q);
@@ -626,6 +647,7 @@ void XMLPrinter::visit(const StartState &n) {
     *o << "</quantifiers>";
   }
   if (!n.decls.empty()) {
+    sync_to(*n.decls[0]);
     *o << "<decls>";
     for (const Decl *d : n.decls) {
       sync_to(*d);
@@ -634,6 +656,7 @@ void XMLPrinter::visit(const StartState &n) {
     *o << "</decls>";
   }
   if (!n.body.empty()) {
+    sync_to(*n.body[0]);
     *o << "<body>";
     for (const Stmt *s : n.body) {
       sync_to(*s);
