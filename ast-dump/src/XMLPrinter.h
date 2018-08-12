@@ -31,6 +31,7 @@ class XMLPrinter : public rumur::ConstTraversal {
   void visit(const rumur::Field &n) final;
   void visit(const rumur::For &n) final;
   void visit(const rumur::Forall &n) final;
+  void visit(const rumur::Function &n) final;
   void visit(const rumur::Geq &n) final;
   void visit(const rumur::Gt &n) final;
   void visit(const rumur::If &n) final;
@@ -46,6 +47,7 @@ class XMLPrinter : public rumur::ConstTraversal {
   void visit(const rumur::Not &n) final;
   void visit(const rumur::Number &n) final;
   void visit(const rumur::Or &n) final;
+  void visit(const rumur::Parameter &n) final;
   void visit(const rumur::Property &n) final;
   void visit(const rumur::PropertyRule &n) final;
   void visit(const rumur::PropertyStmt &n) final;

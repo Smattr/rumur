@@ -228,6 +228,38 @@ void XMLPrinter::visit(const Forall &n) {
   *o << "</forall>";
 }
 
+void XMLPrinter::visit(const Function &n) {
+  sync_to(n);
+  *o << "<function name=\"" << n.name << "\" ";
+  add_location(n);
+  *o << ">";
+  for (const Parameter *p : n.parameters) {
+    sync_to(*p);
+    dispatch(*p);
+  }
+  if (n.return_type != nullptr) {
+    sync_to(*n.return_type);
+    *o << "<returntype>";
+    dispatch(*n.return_type);
+    *o << "</returntype>";
+  }
+  for (const Decl *d : n.decls) {
+    sync_to(*d);
+    dispatch(*d);
+  }
+  if (!n.body.empty()) {
+    sync_to(*n.body[0]);
+    *o << "<body>";
+    for (const Stmt *s : n.body) {
+      sync_to(*s);
+      dispatch(*s);
+    }
+    *o << "</body>";
+  }
+  sync_to(n.loc.end);
+  *o << "</function>";
+}
+
 void XMLPrinter::visit(const Geq &n) {
   visit_bexpr("geq", n);
 }
@@ -333,6 +365,17 @@ void XMLPrinter::visit(const Number &n) {
 
 void XMLPrinter::visit(const Or &n) {
   visit_bexpr("or", n);
+}
+
+void XMLPrinter::visit(const Parameter &n) {
+  sync_to(n);
+  *o << "<parameter by_reference=\"" << n.by_reference << "\" ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.decl);
+  dispatch(*n.decl);
+  sync_to(n.loc.end);
+  *o << "</parameter>";
 }
 
 void XMLPrinter::visit(const Property &n) {
