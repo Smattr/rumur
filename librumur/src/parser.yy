@@ -461,6 +461,10 @@ stmt: category STRING expr {
   $$ = new rumur::Return($2, @$);
 } | UNDEFINE designator {
   $$ = new rumur::Undefine($2, @$);
+} | ID '(' exprlist ')' {
+  auto f = symtab.lookup<rumur::Function>($1, @$);
+  assert(f != nullptr);
+  $$ = new rumur::ProcedureCall(f->clone(), std::move($3), @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {
