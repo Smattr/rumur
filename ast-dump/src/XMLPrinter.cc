@@ -159,7 +159,9 @@ void XMLPrinter::visit(const Exists &n) {
   sync_to(*n.expr);
   *o << "<expr>";
   dispatch(*n.expr);
-  *o << "</expr></exists>";
+  *o << "</expr>";
+  sync_to(n.loc.end);
+  *o << "</exists>";
 }
 
 void XMLPrinter::visit(const ExprID &n) {
