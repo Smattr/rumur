@@ -393,7 +393,8 @@ void XMLPrinter::visit(const Or &n) {
 
 void XMLPrinter::visit(const Parameter &n) {
   sync_to(n);
-  *o << "<parameter by_reference=\"" << n.by_reference << "\" ";
+  *o << "<parameter by_reference=\"" << (n.by_reference ? "true" : "false")
+    << "\" ";
   add_location(n);
   *o << ">";
   sync_to(*n.decl);
