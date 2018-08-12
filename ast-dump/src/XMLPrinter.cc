@@ -260,6 +260,25 @@ void XMLPrinter::visit(const Function &n) {
   *o << "</function>";
 }
 
+void XMLPrinter::visit(const FunctionCall &n) {
+  sync_to(n);
+  /* We deliberately list the called function by name as an attribute, rather
+   * than emitting the function itself as a child of this node because morally
+   * this is just a reference to a previously defined function.
+   */
+  *o << "<function name=\"" << n.function->name << "\" ";
+  add_location(n);
+  *o << ">";
+  for (const Expr *p : n.parameters) {
+    sync_to(*p);
+    *o << "<argument>";
+    dispatch(*p);
+    *o << "</argument>";
+  }
+  sync_to(n.loc.end);
+  *o << "</function>";
+}
+
 void XMLPrinter::visit(const Geq &n) {
   visit_bexpr("geq", n);
 }

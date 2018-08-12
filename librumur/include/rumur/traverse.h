@@ -33,6 +33,7 @@ class Traversal {
   virtual void visit(For &n);
   virtual void visit(Forall &n);
   virtual void visit(Function &n);
+  virtual void visit(FunctionCall &n);
   virtual void visit(Geq &n);
   virtual void visit(Gt &n);
   virtual void visit(If &n);
@@ -103,6 +104,7 @@ class ConstTraversal {
   virtual void visit(const For &n);
   virtual void visit(const Forall &n);
   virtual void visit(const Function &n);
+  virtual void visit(const FunctionCall &n);
   virtual void visit(const Geq &n);
   virtual void visit(const Gt &n);
   virtual void visit(const If &n);

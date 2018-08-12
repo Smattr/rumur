@@ -94,6 +94,12 @@ void Traversal::visit(Function &n) {
     dispatch(*s);
 }
 
+void Traversal::visit(FunctionCall &n) {
+  dispatch(*n.function);
+  for (Expr *p : n.parameters)
+    dispatch(*p);
+}
+
 void Traversal::visit(Geq &n) {
   visit(static_cast<BinaryExpr&>(n));
 }
@@ -192,6 +198,11 @@ void Traversal::dispatch(Node &n) {
   }
 
   if (auto i = dynamic_cast<Function*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<FunctionCall*>(&n)) {
     visit(*i);
     return;
   }
@@ -602,6 +613,12 @@ void ConstTraversal::visit(const Function &n) {
     dispatch(*s);
 }
 
+void ConstTraversal::visit(const FunctionCall &n) {
+  dispatch(*n.function);
+  for (const Expr *p : n.parameters)
+    dispatch(*p);
+}
+
 void ConstTraversal::visit(const Geq &n) {
   visit(static_cast<const BinaryExpr&>(n));
 }
@@ -740,6 +757,11 @@ void ConstTraversal::dispatch(const Node &n) {
   }
 
   if (auto i = dynamic_cast<const Function*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const FunctionCall*>(&n)) {
     visit(*i);
     return;
   }

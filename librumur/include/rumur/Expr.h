@@ -5,11 +5,13 @@
 #include "location.hh"
 #include <rumur/Node.h>
 #include <string>
+#include <vector>
 
 namespace rumur {
 
 // Forward declarations to avoid a circular #include
 struct Decl;
+struct Function;
 struct TypeExpr;
 struct VarDecl;
 
@@ -427,6 +429,27 @@ struct Element : public Lvalue {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out, bool lvalue) const final;
+  int64_t constant_fold() const final;
+  bool operator==(const Node &other) const final;
+};
+
+struct FunctionCall : public Expr {
+
+  Function *function;
+  std::vector<Expr*> parameters;
+
+  FunctionCall() = delete;
+  FunctionCall(Function *function_, std::vector<Expr*> parameters_,
+    const location &loc_);
+  FunctionCall(const FunctionCall &other);
+  friend void swap(FunctionCall &x, FunctionCall &y) noexcept;
+  FunctionCall &operator=(FunctionCall other);
+  virtual ~FunctionCall();
+  FunctionCall *clone() const final;
+
+  bool constant() const final;
+  const TypeExpr *type() const final;
+  void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
 };

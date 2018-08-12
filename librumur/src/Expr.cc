@@ -7,9 +7,11 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Function.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace rumur {
 
@@ -1123,6 +1125,81 @@ int64_t Element::constant_fold() const {
 bool Element::operator==(const Node &other) const {
   auto o = dynamic_cast<const Element*>(&other);
   return o != nullptr && *array == *o->array && *index == *o->index;
+}
+
+FunctionCall::FunctionCall(Function *function_, std::vector<Expr*> parameters_,
+  const location &loc_):
+  Expr(loc_), function(function_), parameters(parameters_) { }
+
+FunctionCall::FunctionCall(const FunctionCall &other):
+  Expr(other), function(other.function->clone()) {
+
+  for (const Expr *p : other.parameters)
+    parameters.push_back(p->clone());
+}
+
+void swap(FunctionCall &x, FunctionCall &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.function, y.function);
+  swap(x.parameters, y.parameters);
+}
+
+FunctionCall &FunctionCall::operator=(FunctionCall other) {
+  swap(*this, other);
+  return *this;
+}
+
+FunctionCall::~FunctionCall() {
+  delete function;
+  for (Expr *p : parameters)
+    delete p;
+}
+
+FunctionCall *FunctionCall::clone() const {
+  return new FunctionCall(*this);
+}
+
+bool FunctionCall::constant() const {
+  /* TODO: For now, we conservatively treat function calls as non-constant. In
+   * future, it would be nice to lift this restriction to support more advanced
+   * parameterised models.
+   */
+  return false;
+}
+
+const TypeExpr *FunctionCall::type() const {
+  return function->return_type;
+}
+
+void FunctionCall::generate_rvalue(std::ostream&) const {
+  // TODO: We need to decide how we're going to handle return values
+  assert("!TODO");
+}
+
+int64_t FunctionCall::constant_fold() const {
+  // See FunctionCall::constant() regarding conservatism here.
+  throw Error("function call used in a constant", loc);
+}
+
+bool FunctionCall::operator==(const Node &other) const {
+  auto o = dynamic_cast<const FunctionCall*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*function != *o->function)
+    return false;
+  for (auto it = parameters.begin(), it2 = o->parameters.begin(); ; it++, it2++) {
+    if (it == parameters.end()) {
+      if (it2 != o->parameters.end())
+        return false;
+      break;
+    }
+    if (it2 == o->parameters.end())
+      return false;
+    if (**it != **it2)
+      return false;
+  }
+  return true;
 }
 
 Quantifier::Quantifier(const std::string &name, TypeExpr *type,

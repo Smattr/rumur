@@ -32,6 +32,7 @@ class XMLPrinter : public rumur::ConstTraversal {
   void visit(const rumur::For &n) final;
   void visit(const rumur::Forall &n) final;
   void visit(const rumur::Function &n) final;
+  void visit(const rumur::FunctionCall &n) final;
   void visit(const rumur::Geq &n) final;
   void visit(const rumur::Gt &n) final;
   void visit(const rumur::If &n) final;
