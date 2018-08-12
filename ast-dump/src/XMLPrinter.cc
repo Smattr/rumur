@@ -347,7 +347,12 @@ void XMLPrinter::visit(const Model &n) {
     sync_to(*d);
     dispatch(*d);
   }
-  *o << "</decls><rules>";
+  *o << "</decls><functions>";
+  for (const Function *f : n.functions) {
+    sync_to(*f);
+    dispatch(*f);
+  }
+  *o << "</functions><rules>";
   for (const Rule *r : n.rules) {
     sync_to(*r);
     dispatch(*r);
