@@ -5,7 +5,7 @@
 #include <rumur/rumur.h>
 #include <string>
 
-class XMLPrinter : public rumur::ConstTraversal {
+class XMLPrinter : public rumur::ConstBaseTraversal {
 
  private:
   std::ostream *o;
