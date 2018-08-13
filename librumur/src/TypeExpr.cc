@@ -38,11 +38,7 @@ size_t TypeExpr::width() const {
 
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
-  if (!min->constant())
-    throw Error("lower bound of range is not a constant", min->loc);
-
-  if (!max->constant())
-    throw Error("upper bound of range is not a constant", max->loc);
+  validate();
 }
 
 Range::Range(const Range &other):
@@ -95,6 +91,14 @@ bool Range::is_simple() const {
   return true;
 }
 
+void Range::validate() const {
+  if (!min->constant())
+    throw Error("lower bound of range is not a constant", min->loc);
+
+  if (!max->constant())
+    throw Error("upper bound of range is not a constant", max->loc);
+}
+
 std::string Range::lower_bound() const {
   return "VALUE_C(" + std::to_string(min->constant_fold()) + ")";
 }
@@ -126,12 +130,7 @@ void Range::generate_print(std::ostream &out, std::string const &prefix,
 
 Scalarset::Scalarset(Expr *bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) {
-
-  if (!bound->constant())
-    throw Error("bound of scalarset is not a constant", bound->loc);
-
-  if (bound->constant_fold() <= 0)
-    throw Error("bound of scalarset is not positive", bound->loc);
+  validate();
 }
 
 Scalarset::Scalarset(const Scalarset &other):
@@ -179,6 +178,14 @@ bool Scalarset::operator==(const Node &other) const {
 
 bool Scalarset::is_simple() const {
   return true;
+}
+
+void Scalarset::validate() const {
+  if (!bound->constant())
+    throw Error("bound of scalarset is not a constant", bound->loc);
+
+  if (bound->constant_fold() <= 0)
+    throw Error("bound of scalarset is not positive", bound->loc);
 }
 
 std::string Scalarset::lower_bound() const {
@@ -359,8 +366,7 @@ void Record::generate_print(std::ostream &out, std::string const &prefix,
 
 Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
-  if (!index_type->is_simple())
-    throw Error("array indices must be simple types", loc);
+  validate();
 }
 
 Array::Array(const Array &other):
@@ -432,6 +438,11 @@ bool Array::operator==(const Node &other) const {
     return *this == *o->referent;
 
   return false;
+}
+
+void Array::validate() const {
+  if (!index_type->is_simple())
+    throw Error("array indices must be simple types", loc);
 }
 
 void Array::generate_print(std::ostream &out, std::string const &prefix,

@@ -40,6 +40,7 @@ struct ConstDecl : public Decl {
 
   void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct TypeDecl : public Decl {

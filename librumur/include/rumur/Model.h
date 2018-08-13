@@ -31,6 +31,7 @@ struct Model : public Node {
 
   void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 
   // Get the number of (global or local) assumptions in the model.
   unsigned long assumption_count() const;

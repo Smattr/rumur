@@ -24,6 +24,11 @@ struct Node {
     return !(*this == other);
   }
 
+  /* Confirm that data structure invariants hold. This function throws
+   * rumur::Errors if invariants are violated.
+   */
+  virtual void validate() const { }
+
 };
 
 }

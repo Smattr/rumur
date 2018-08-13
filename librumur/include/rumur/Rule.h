@@ -43,6 +43,7 @@ struct SimpleRule : public Rule {
   virtual ~SimpleRule();
   SimpleRule *clone() const override;
   bool operator==(const Node &other) const override;
+  void validate() const final;
 };
 
 struct StartState : public Rule {
@@ -59,6 +60,7 @@ struct StartState : public Rule {
   virtual ~StartState() { }
   StartState *clone() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct PropertyRule : public Rule {

@@ -22,9 +22,7 @@ bool Expr::is_boolean() const {
 
 Ternary::Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
-
-  if (!cond->is_boolean())
-    throw Error("ternary condition is not a boolean", cond->loc);
+  validate();
 }
 
 Ternary::Ternary(const Ternary &other):
@@ -77,6 +75,11 @@ int64_t Ternary::constant_fold() const {
   return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
 }
 
+void Ternary::validate() const {
+  if (!cond->is_boolean())
+    throw Error("ternary condition is not a boolean", cond->loc);
+}
+
 BinaryExpr::BinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   Expr(loc_), lhs(lhs_), rhs(rhs_) {
 }
@@ -103,6 +106,10 @@ BinaryExpr::~BinaryExpr() {
 
 BooleanBinaryExpr::BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
+  validate();
+}
+
+void BooleanBinaryExpr::validate() const {
   if (!lhs->is_boolean())
     throw Error("left hand side of expression is not a boolean", lhs->loc);
 
@@ -213,8 +220,7 @@ bool UnaryExpr::constant() const {
 
 Not::Not(Expr *rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
-  if (!rhs->is_boolean())
-    throw Error("argument to ! is not a boolean", rhs->loc);
+  validate();
 }
 
 Not &Not::operator=(Not other) {
@@ -241,6 +247,11 @@ int64_t Not::constant_fold() const {
 bool Not::operator==(const Node &other) const {
   auto o = dynamic_cast<const Not*>(&other);
   return o != nullptr && *rhs == *o->rhs;
+}
+
+void Not::validate() const {
+  if (!rhs->is_boolean())
+    throw Error("argument to ! is not a boolean", rhs->loc);
 }
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
@@ -283,6 +294,10 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
 
 ComparisonBinaryExpr::ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
+  validate();
+}
+
+void ComparisonBinaryExpr::validate() const {
   if (!comparable(*lhs, *rhs))
     throw Error("expressions are not comparable", loc);
 }
@@ -447,6 +462,10 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
 
 EquatableBinaryExpr::EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
+  validate();
+}
+
+void EquatableBinaryExpr::validate() const {
   if (!equatable(*lhs, *rhs))
     throw Error("expressions are not comparable", loc);
 }
@@ -591,6 +610,10 @@ static std::string upper_bound(const Expr &rhs) {
 
 ArithmeticBinaryExpr::ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
+  validate();
+}
+
+void ArithmeticBinaryExpr::validate() const {
   if (!arithmetic(*lhs, *rhs))
     throw Error("expressions are incompatible in arithmetic expression",
       loc);
@@ -664,6 +687,10 @@ bool Sub::operator==(const Node &other) const {
 
 Negative::Negative(Expr *rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
+  validate();
+}
+
+void Negative::validate() const {
   if (rhs->type() != nullptr && dynamic_cast<const Range*>(rhs->type()->resolve()) != nullptr)
     throw Error("expression cannot be negated", rhs->loc);
 }
@@ -1306,8 +1333,7 @@ bool Quantifier::operator==(const Node &other) const {
 
 Exists::Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
-  if (!expr->is_boolean())
-    throw Error("expression in exists is not boolean", expr->loc);
+  validate();
 }
 
 Exists::Exists(const Exists &other):
@@ -1362,10 +1388,14 @@ int64_t Exists::constant_fold() const {
   throw Error("exists expression used in constant", loc);
 }
 
+void Exists::validate() const {
+  if (!expr->is_boolean())
+    throw Error("expression in exists is not boolean", expr->loc);
+}
+
 Forall::Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
-  if (!expr->is_boolean())
-    throw Error("expression in forall is not boolean", expr->loc);
+  validate();
 }
 
 Forall::Forall(const Forall &other):
@@ -1418,6 +1448,11 @@ int64_t Forall::constant_fold() const {
 bool Forall::operator==(const Node &other) const {
   auto o = dynamic_cast<const Forall*>(&other);
   return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
+}
+
+void Forall::validate() const {
+  if (!expr->is_boolean())
+    throw Error("expression in forall is not boolean", expr->loc);
 }
 
 }

@@ -58,6 +58,7 @@ struct Range : public TypeExpr {
   size_t count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
+  void validate() const final;
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
@@ -81,6 +82,7 @@ struct Scalarset : public TypeExpr {
   size_t count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
+  void validate() const final;
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
@@ -150,6 +152,7 @@ struct Array : public TypeExpr {
   size_t width() const final;
   size_t count() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
     size_t preceding_offset = 0) const final;

@@ -18,8 +18,7 @@ Decl::~Decl() {
 ConstDecl::ConstDecl(const std::string &name_, const Expr *value_,
   const location &loc_):
   Decl(name_, loc_), value(value_->clone()) {
-  if (!value->constant())
-    throw Error("const definition is not a constant", value->loc);
+  validate();
 }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
@@ -54,6 +53,11 @@ ConstDecl::~ConstDecl() {
 bool ConstDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const ConstDecl*>(&other);
   return o != nullptr && name == o->name && *value == *o->value;
+}
+
+void ConstDecl::validate() const {
+  if (!value->constant())
+    throw Error("const definition is not a constant", value->loc);
 }
 
 TypeDecl::TypeDecl(const std::string &name_, TypeExpr *value_,

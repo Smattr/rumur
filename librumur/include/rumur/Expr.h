@@ -70,6 +70,7 @@ struct Ternary : public Expr {
   void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct BinaryExpr : public Expr {
@@ -94,6 +95,8 @@ struct BooleanBinaryExpr : public BinaryExpr {
   using BinaryExpr::BinaryExpr;
   BooleanBinaryExpr() = delete;
   BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+
+  void validate() const final;
 };
 
 struct Implication : public BooleanBinaryExpr {
@@ -165,6 +168,7 @@ struct Not : public UnaryExpr {
   void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct ComparisonBinaryExpr : public BinaryExpr {
@@ -172,6 +176,8 @@ struct ComparisonBinaryExpr : public BinaryExpr {
   using BinaryExpr::BinaryExpr;
   ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
   ComparisonBinaryExpr() = delete;
+
+  void validate() const final;
 };
 
 struct Lt : public ComparisonBinaryExpr {
@@ -235,6 +241,8 @@ struct EquatableBinaryExpr : public BinaryExpr {
   using BinaryExpr::BinaryExpr;
   EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
   EquatableBinaryExpr() = delete;
+
+  void validate() const final;
 };
 
 struct Eq : public EquatableBinaryExpr {
@@ -270,6 +278,8 @@ struct ArithmeticBinaryExpr : public BinaryExpr {
   using BinaryExpr::BinaryExpr;
   ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc);
   ArithmeticBinaryExpr() = delete;
+
+  void validate() const final;
 };
 
 struct Add : public ArithmeticBinaryExpr {
@@ -313,6 +323,7 @@ struct Negative : public UnaryExpr {
   void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Mul : public ArithmeticBinaryExpr {
@@ -503,6 +514,7 @@ struct Exists : public Expr {
   void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Forall : public Expr {
@@ -523,6 +535,7 @@ struct Forall : public Expr {
   void generate_rvalue(std::ostream &out) const final;
   int64_t constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 }

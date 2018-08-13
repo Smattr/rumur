@@ -63,8 +63,7 @@ Rule::~Rule() {
 SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
   std::vector<Stmt*> &&body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) {
-
-  ReturnChecker::check(*this);
+  validate();
 }
 
 SimpleRule::SimpleRule(const SimpleRule &other):
@@ -123,11 +122,14 @@ bool SimpleRule::operator==(const Node &other) const {
   return true;
 }
 
+void SimpleRule::validate() const {
+  ReturnChecker::check(*this);
+}
+
 StartState::StartState(const std::string &name_, std::vector<Decl*> &&decls_,
   std::vector<Stmt*> &&body_, const location &loc_):
   Rule(name_, loc_), decls(decls_), body(body_) {
-
-  ReturnChecker::check(*this);
+  validate();
 }
 
 StartState::StartState(const StartState &other):
@@ -169,6 +171,10 @@ bool StartState::operator==(const Node &other) const {
   if (!vector_eq(body, o->body))
     return false;
   return true;
+}
+
+void StartState::validate() const {
+  ReturnChecker::check(*this);
 }
 
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
