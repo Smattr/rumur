@@ -34,6 +34,9 @@ struct Model : public Node {
 
   // Get the number of (global or local) assumptions in the model.
   unsigned long assumption_count() const;
+
+  // Update the bit offset of each variable declaration in the model.
+  void reindex();
 };
 
 static inline std::ostream &operator<<(std::ostream &out, const Model &m) {

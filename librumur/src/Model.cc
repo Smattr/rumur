@@ -506,4 +506,14 @@ unsigned long Model::assumption_count() const {
   return ac.assumptions;
 }
 
+void Model::reindex() {
+  size_t offset = 0;
+  for (Decl *d : decls) {
+    if (auto v = dynamic_cast<VarDecl*>(d)) {
+      v->offset = offset;
+      offset += v->type->width();
+    }
+  }
+}
+
 }
