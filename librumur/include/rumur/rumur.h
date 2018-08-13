@@ -16,6 +16,7 @@
 #include <rumur/output.h>
 #include <rumur/parse.h>
 #include <rumur/Property.h>
+#include <rumur/Reference.h>
 #include <rumur/Rule.h>
 #include <rumur/scanner.h>
 #include <rumur/Stmt.h>
