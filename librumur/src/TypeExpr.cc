@@ -344,6 +344,7 @@ bool Record::operator==(const Node &other) const {
       if (**it != **it2)
         return false;
     }
+    return true;
   }
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
