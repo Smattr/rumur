@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include "vector_utils.h"
 
 namespace rumur {
 
@@ -336,14 +337,8 @@ size_t Record::count() const {
 
 bool Record::operator==(const Node &other) const {
   if (auto o = dynamic_cast<const Record*>(&other)) {
-    for (auto it = fields.begin(), it2 = o->fields.begin(); ; it++, it2++) {
-      if (it == fields.end())
-        return it2 == o->fields.end();
-      if (it2 == o->fields.end())
-        return false;
-      if (**it != **it2)
-        return false;
-    }
+    if (!vector_eq(fields, o->fields))
+      return false;
     return true;
   }
 

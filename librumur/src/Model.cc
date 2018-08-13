@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include "vector_utils.h"
 
 namespace rumur {
 
@@ -471,39 +472,12 @@ bool Model::operator==(const Node &other) const {
   auto o = dynamic_cast<const Model*>(&other);
   if (o == nullptr)
     return false;
-  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
-    if (it == decls.end()) {
-      if (it2 != o->decls.end())
-        return false;
-      break;
-    }
-    if (it2 == o->decls.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = functions.begin(), it2 = o->functions.begin(); ; it++, it2++) {
-    if (it == functions.end()) {
-      if (it2 != o->functions.end())
-        return false;
-      break;
-    }
-    if (it2 == o->functions.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = rules.begin(), it2 = o->rules.begin(); ; it++, it2++) {
-    if (it == rules.end()) {
-      if (it2 != o->rules.end())
-        return false;
-      break;
-    }
-    if (it2 == o->rules.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(decls, o->decls))
+    return false;
+  if (!vector_eq(functions, o->functions))
+    return false;
+  if (!vector_eq(rules, o->rules))
+    return false;
   return true;
 }
 

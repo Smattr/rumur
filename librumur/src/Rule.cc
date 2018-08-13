@@ -9,6 +9,7 @@
 #include <rumur/traverse.h>
 #include <string>
 #include <vector>
+#include "vector_utils.h"
 
 namespace rumur {
 
@@ -106,17 +107,8 @@ bool SimpleRule::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
-    if (it == quantifiers.end()) {
-      if (it2 != o->quantifiers.end())
-        return false;
-      break;
-    }
-    if (it2 == o->quantifiers.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
   if (guard == nullptr) {
     if (o->guard != nullptr)
       return false;
@@ -124,28 +116,10 @@ bool SimpleRule::operator==(const Node &other) const {
     if (o->guard == nullptr || *guard != *o->guard)
       return false;
   }
-  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
-    if (it == decls.end()) {
-      if (it2 != o->decls.end())
-        return false;
-      break;
-    }
-    if (it2 == o->decls.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
-    if (it == body.end()) {
-      if (it2 != o->body.end())
-        return false;
-      break;
-    }
-    if (it2 == o->body.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(decls, o->decls))
+    return false;
+  if (!vector_eq(body, o->body))
+    return false;
   return true;
 }
 
@@ -188,39 +162,12 @@ bool StartState::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
-    if (it == quantifiers.end()) {
-      if (it2 != o->quantifiers.end())
-        return false;
-      break;
-    }
-    if (it2 == o->quantifiers.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
-    if (it == decls.end()) {
-      if (it2 != o->decls.end())
-        return false;
-      break;
-    }
-    if (it2 == o->decls.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
-    if (it == body.end()) {
-      if (it2 != o->body.end())
-        return false;
-      break;
-    }
-    if (it2 == o->body.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(decls, o->decls))
+    return false;
+  if (!vector_eq(body, o->body))
+    return false;
   return true;
 }
 
@@ -256,17 +203,8 @@ bool PropertyRule::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
-    if (it == quantifiers.end()) {
-      if (it2 != o->quantifiers.end())
-        return false;
-      break;
-    }
-    if (it2 == o->quantifiers.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
   if (property != o->property)
     return false;
   return true;
@@ -312,28 +250,10 @@ bool Ruleset::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  for (auto it = quantifiers.begin(), it2 = o->quantifiers.begin(); ; it++, it2++) {
-    if (it == quantifiers.end()) {
-      if (it2 != o->quantifiers.end())
-        return false;
-      break;
-    }
-    if (it2 == o->quantifiers.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = rules.begin(), it2 = o->rules.begin(); ; it++, it2++) {
-    if (it == rules.end()) {
-      if (it2 != o->rules.end())
-        return false;
-      break;
-    }
-    if (it2 == o->rules.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(rules, o->rules))
+    return false;
   return true;
 }
 

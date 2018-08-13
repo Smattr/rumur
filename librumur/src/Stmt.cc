@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "vector_utils.h"
 
 namespace rumur {
 
@@ -222,17 +223,8 @@ bool For::operator==(const Node &other) const {
     return false;
   if (*quantifier != *o->quantifier)
     return false;
-  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
-    if (it == body.end()) {
-      if (it2 != o->body.end())
-        return false;
-      break;
-    }
-    if (it2 == o->body.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(body, o->body))
+    return false;
   return true;
 }
 
@@ -287,17 +279,8 @@ bool IfClause::operator==(const Node &other) const {
   } else if (*condition != *o->condition) {
     return false;
   }
-  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
-    if (it == body.end()) {
-      if (it2 != o->body.end())
-        return false;
-      break;
-    }
-    if (it2 == o->body.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(body, o->body))
+    return false;
   return true;
 }
 
@@ -388,17 +371,8 @@ bool ProcedureCall::operator==(const Node &other) const {
     return false;
   if (*function != *o->function)
     return false;
-  for (auto it = arguments.begin(), it2 = o->arguments.begin(); ; it++, it2++) {
-    if (it == arguments.end()) {
-      if (it2 != o->arguments.end())
-        return false;
-      break;
-    }
-    if (it2 == o->arguments.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(arguments, o->arguments))
+    return false;
   return true;
 }
 

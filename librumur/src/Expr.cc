@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "vector_utils.h"
 
 namespace rumur {
 
@@ -1188,17 +1189,8 @@ bool FunctionCall::operator==(const Node &other) const {
     return false;
   if (*function != *o->function)
     return false;
-  for (auto it = arguments.begin(), it2 = o->arguments.begin(); ; it++, it2++) {
-    if (it == arguments.end()) {
-      if (it2 != o->arguments.end())
-        return false;
-      break;
-    }
-    if (it2 == o->arguments.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(arguments, o->arguments))
+    return false;
   return true;
 }
 

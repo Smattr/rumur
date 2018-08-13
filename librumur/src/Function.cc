@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "vector_utils.h"
 
 namespace rumur {
 
@@ -101,17 +102,8 @@ bool Function::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  for (auto it = parameters.begin(), it2 = o->parameters.begin(); ; it++, it2++) {
-    if (it == parameters.end()) {
-      if (it2 != o->parameters.end())
-        return false;
-      break;
-    }
-    if (it2 == o->parameters.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(parameters, o->parameters))
+    return false;
   if (return_type == nullptr) {
     if (o->return_type != nullptr)
       return false;
@@ -121,28 +113,10 @@ bool Function::operator==(const Node &other) const {
     if (*return_type != *o->return_type)
       return false;
   }
-  for (auto it = decls.begin(), it2 = o->decls.begin(); ; it++, it2++) {
-    if (it == decls.end()) {
-      if (it2 != o->decls.end())
-        return false;
-      break;
-    }
-    if (it2 == o->decls.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
-  for (auto it = body.begin(), it2 = o->body.begin(); ; it++, it2++) {
-    if (it == body.end()) {
-      if (it2 != o->body.end())
-        return false;
-      break;
-    }
-    if (it2 == o->body.end())
-      return false;
-    if (**it != **it2)
-      return false;
-  }
+  if (!vector_eq(decls, o->decls))
+    return false;
+  if (!vector_eq(body, o->body))
+    return false;
   return true;
 }
 
