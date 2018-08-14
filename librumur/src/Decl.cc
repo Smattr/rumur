@@ -23,8 +23,14 @@ ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   validate();
 }
 
+ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+  std::shared_ptr<TypeExpr> type_, const location &loc_):
+  Decl(name_, loc_), value(value_), type(type_) {
+  validate();
+}
+
 ConstDecl::ConstDecl(const ConstDecl &other):
-  Decl(other), value(other.value->clone()) {
+  Decl(other), value(other.value->clone()), type(other.type) {
 }
 
 ConstDecl &ConstDecl::operator=(ConstDecl other) {
@@ -37,6 +43,7 @@ void swap(ConstDecl &x, ConstDecl &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.name, y.name);
   swap(x.value, y.value);
+  swap(x.type, y.type);
 }
 
 ConstDecl *ConstDecl::clone() const {
@@ -50,7 +57,22 @@ void ConstDecl::generate(std::ostream &out) const {
 
 bool ConstDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const ConstDecl*>(&other);
-  return o != nullptr && name == o->name && *value == *o->value;
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (*value != *o->value)
+    return false;
+  if (type == nullptr) {
+    if (o->type != nullptr)
+      return false;
+  } else {
+    if (o->type == nullptr)
+      return false;
+    if (*type != *o->type)
+      return false;
+  }
+  return true;
 }
 
 void ConstDecl::validate() const {

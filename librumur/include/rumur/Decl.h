@@ -31,9 +31,16 @@ struct ConstDecl : public Decl {
 
   std::shared_ptr<Expr> value;
 
+  /* The type of this constant. Typically this will be NULL (untyped), but in
+   * the case of enum members it will have the enum declaration as its type.
+   */
+  std::shared_ptr<TypeExpr> type;
+
   ConstDecl() = delete;
   ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
     const location &loc_);
+  ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+    std::shared_ptr<TypeExpr> type_, const location &loc_);
   ConstDecl(const ConstDecl &other);
   ConstDecl &operator=(ConstDecl other);
   friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
