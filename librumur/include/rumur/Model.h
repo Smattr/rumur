@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
 #include <rumur/Decl.h>
@@ -27,7 +28,7 @@ struct Model : public Node {
   Model *clone() const final;
 
   // Get the size of the state data in bits.
-  uint64_t size_bits() const;
+  mpz_class size_bits() const;
 
   void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;

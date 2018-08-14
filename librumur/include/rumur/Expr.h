@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
 #include <rumur/Node.h>
@@ -38,7 +39,7 @@ struct Expr : public Node {
   // If this expression is of boolean type.
   bool is_boolean() const;
 
-  virtual int64_t constant_fold() const = 0;
+  virtual mpz_class constant_fold() const = 0;
 
   // Write out some C code that implements this expression.
   virtual void generate_rvalue(std::ostream &out) const = 0;
@@ -68,7 +69,7 @@ struct Ternary : public Expr {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -109,7 +110,7 @@ struct Implication : public BooleanBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -123,7 +124,7 @@ struct Or : public BooleanBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -137,7 +138,7 @@ struct And : public BooleanBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -166,7 +167,7 @@ struct Not : public UnaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -190,7 +191,7 @@ struct Lt : public ComparisonBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -204,7 +205,7 @@ struct Leq : public ComparisonBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -218,7 +219,7 @@ struct Gt : public ComparisonBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -232,7 +233,7 @@ struct Geq : public ComparisonBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -255,7 +256,7 @@ struct Eq : public EquatableBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -269,7 +270,7 @@ struct Neq : public EquatableBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -292,7 +293,7 @@ struct Add : public ArithmeticBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -306,7 +307,7 @@ struct Sub : public ArithmeticBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -321,7 +322,7 @@ struct Negative : public UnaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -336,7 +337,7 @@ struct Mul : public ArithmeticBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -350,7 +351,7 @@ struct Div : public ArithmeticBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -364,7 +365,7 @@ struct Mod : public ArithmeticBinaryExpr {
 
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -400,7 +401,7 @@ struct ExprID : public Lvalue {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out, bool lvalue) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -420,7 +421,7 @@ struct Field : public Lvalue {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out, bool lvalue) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -440,7 +441,7 @@ struct Element : public Lvalue {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate(std::ostream &out, bool lvalue) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -461,7 +462,7 @@ struct FunctionCall : public Expr {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -512,7 +513,7 @@ struct Exists : public Expr {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -533,7 +534,7 @@ struct Forall : public Expr {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const final;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };

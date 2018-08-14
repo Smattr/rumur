@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
@@ -10,11 +11,11 @@ namespace rumur {
 
 struct Number : public Expr {
 
-  int64_t value;
+  mpz_class value;
 
   Number() = delete;
   Number(const std::string &value_, const location &loc_);
-  Number(int64_t value_, const location &loc_);
+  Number(const mpz_class &value_, const location &loc_);
   Number(const Number&) = default;
   Number(Number&&) = default;
   Number &operator=(const Number&) = default;
@@ -25,7 +26,7 @@ struct Number : public Expr {
   bool constant() const final;
   const TypeExpr *type() const final;
   void generate_rvalue(std::ostream &out) const;
-  int64_t constant_fold() const final;
+  mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };
 

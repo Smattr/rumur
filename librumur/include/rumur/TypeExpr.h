@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
@@ -28,8 +29,8 @@ struct TypeExpr : public Node {
   virtual bool is_simple() const;
 
   TypeExpr *clone() const override = 0;
-  virtual size_t width() const;
-  virtual size_t count() const = 0;
+  virtual mpz_class width() const;
+  virtual mpz_class count() const = 0;
   virtual const TypeExpr *resolve() const;
 
   /* Numeric bounds of this type as valid C code. These are only valid to use on
@@ -39,7 +40,7 @@ struct TypeExpr : public Node {
   virtual std::string upper_bound() const;
 
   virtual void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const = 0;
+    mpz_class preceding_offset = 0) const = 0;
 };
 
 struct Range : public TypeExpr {
@@ -55,7 +56,7 @@ struct Range : public TypeExpr {
   Range *clone() const final;
   virtual ~Range();
 
-  size_t count() const final;
+  mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -64,7 +65,7 @@ struct Range : public TypeExpr {
   std::string upper_bound() const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const final;
+    mpz_class preceding_offset = 0) const final;
 };
 
 struct Scalarset : public TypeExpr {
@@ -79,7 +80,7 @@ struct Scalarset : public TypeExpr {
   Scalarset *clone() const final;
   virtual ~Scalarset();
 
-  size_t count() const final;
+  mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -88,7 +89,7 @@ struct Scalarset : public TypeExpr {
   std::string upper_bound() const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const final;
+    mpz_class preceding_offset = 0) const final;
 };
 
 struct Enum : public TypeExpr {
@@ -105,7 +106,7 @@ struct Enum : public TypeExpr {
   Enum *clone() const final;
   virtual ~Enum() { }
 
-  size_t count() const final;
+  mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
 
@@ -113,7 +114,7 @@ struct Enum : public TypeExpr {
   std::string upper_bound() const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const final;
+    mpz_class preceding_offset = 0) const final;
 };
 
 struct Record : public TypeExpr {
@@ -128,12 +129,12 @@ struct Record : public TypeExpr {
   Record *clone() const final;
   virtual ~Record();
 
-  size_t width() const final;
-  size_t count() const final;
+  mpz_class width() const final;
+  mpz_class count() const final;
   bool operator==(const Node &other) const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const final;
+    mpz_class preceding_offset = 0) const final;
 };
 
 struct Array : public TypeExpr {
@@ -149,13 +150,13 @@ struct Array : public TypeExpr {
   Array *clone() const final;
   virtual ~Array();
 
-  size_t width() const final;
-  size_t count() const final;
+  mpz_class width() const final;
+  mpz_class count() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const final;
+    mpz_class preceding_offset = 0) const final;
 };
 
 struct TypeExprID : public TypeExpr {
@@ -171,8 +172,8 @@ struct TypeExprID : public TypeExpr {
   TypeExprID *clone() const final;
   virtual ~TypeExprID();
 
-  size_t width() const final;
-  size_t count() const final;
+  mpz_class width() const final;
+  mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   const TypeExpr *resolve() const final;
@@ -181,7 +182,7 @@ struct TypeExprID : public TypeExpr {
   std::string upper_bound() const final;
 
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const final;
+    mpz_class preceding_offset = 0) const final;
 };
 
 }

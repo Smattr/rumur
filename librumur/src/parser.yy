@@ -52,6 +52,7 @@
 
   #include <algorithm>
   #include <cassert>
+  #include <gmpxx.h>
   #include <iostream>
   #include <iterator>
   #include <utility>
@@ -64,7 +65,7 @@
   #define yylex sc.yylex
 
   /* Current offset into model state. Used when declaring variables. */
-  static size_t offset;
+  static mpz_class offset;
 
 }
 

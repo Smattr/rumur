@@ -1,3 +1,4 @@
+#include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
 #include <rumur/Decl.h>
@@ -42,7 +43,7 @@ ConstDecl *ConstDecl::clone() const {
 }
 
 void ConstDecl::generate(std::ostream &out) const {
-  int64_t v = value->constant_fold();
+  mpz_class v = value->constant_fold();
   out << "static __attribute__((unused)) const value_t ru_" << name << " = VALUE_C(" << v << ")";
 }
 
@@ -147,16 +148,16 @@ bool VarDecl::operator==(const Node &other) const {
       && state_variable == o->state_variable && offset == o->offset;
 }
 
-size_t VarDecl::width() const {
+mpz_class VarDecl::width() const {
   return type->width();
 }
 
-size_t VarDecl::count() const {
+mpz_class VarDecl::count() const {
   return type->count();
 }
 
 void VarDecl::generate_print(std::ostream &out, const std::string &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
 
   type->generate_print(out, prefix + name, preceding_offset);
 }

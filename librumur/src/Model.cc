@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdint>
+#include <gmpxx.h>
 #include "location.hh"
 #include <rumur/Decl.h>
 #include <rumur/except.h>
@@ -51,8 +52,8 @@ Model *Model::clone() const {
   return new Model(*this);
 }
 
-uint64_t Model::size_bits() const {
-  size_t s = 0;
+mpz_class Model::size_bits() const {
+  mpz_class s = 0;
   for (const Decl *d : decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d))
       s += v->type->width();
@@ -432,7 +433,7 @@ void Model::generate(std::ostream &out) const {
   // Write a function to print the state.
   out
     << "static void state_print(const struct state *s) {\n";
-  size_t offset = 0;
+  mpz_class offset = 0;
   for (const Decl *d : decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d)) {
       v->generate_print(out, "", offset);
@@ -511,7 +512,7 @@ unsigned long Model::assumption_count() const {
 }
 
 void Model::reindex() {
-  size_t offset = 0;
+  mpz_class offset = 0;
   for (Decl *d : decls) {
     if (auto v = dynamic_cast<VarDecl*>(d)) {
       v->offset = offset;

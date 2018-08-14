@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdint>
+#include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
 #include <rumur/except.h>
@@ -10,21 +11,13 @@
 
 namespace rumur {
 
-static_assert(sizeof(long long) >= sizeof(int64_t),
-  "a 64-bit integer cannot be read with stoll");
-
-Number::Number(const std::string &value_, const location &loc_):
-  Expr(loc_) {
-  try {
-    value = int64_t(stoll(value_, nullptr, 0));
-  } catch (std::invalid_argument &e) {
-    throw Error("invalid number: " + value_, loc);
-  } catch (std::out_of_range &e) {
-    throw Error("out of range number: " + value_, loc);
-  }
+Number::Number(const std::string &value_, const location &loc_) try:
+   Expr(loc_), value(value_) {
+} catch (std::invalid_argument &e) {
+  throw Error("invalid number: " + value_, loc_);
 }
 
-Number::Number(int64_t value_, const location &loc_):
+Number::Number(const mpz_class &value_, const location &loc_):
   Expr(loc_), value(value_) {
 }
 
@@ -44,7 +37,7 @@ void Number::generate_rvalue(std::ostream &out) const {
   out << "VALUE_C(" << value << ")";
 }
 
-int64_t Number::constant_fold() const {
+mpz_class Number::constant_fold() const {
   return value;
 }
 

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <gmpxx.h>
 #include <iostream>
 #include <limits.h>
 #include <rumur/Decl.h>
@@ -29,11 +30,23 @@ std::string TypeExpr::upper_bound() const {
   throw Error("complex types do not have valid upper bounds", loc);
 }
 
-size_t TypeExpr::width() const {
-  auto c = (unsigned long long)count();
+mpz_class TypeExpr::width() const {
+  mpz_class c = count();
+
+  // If there are 0 or 1 values of this type, its width is trivial.
   if (c <= 1)
     return 0;
-  return sizeof(c) * CHAR_BIT - __builtin_clzll(c - 1);
+
+  /* Otherwise, we need the number of bits required to represent the largest
+   * value.
+   */
+  mpz_class largest(c - 1);
+  mpz_class bits(0);
+  while (largest != 0) {
+    bits++;
+    largest >>= 1;
+  }
+  return bits;
 }
 
 Range::Range(Expr *min_, Expr *max_, const location &loc_):
@@ -66,14 +79,10 @@ Range::~Range() {
   delete max;
 }
 
-size_t Range::count() const {
-  int64_t lb = min->constant_fold();
-  int64_t ub = max->constant_fold();
-  size_t range;
-  if (__builtin_sub_overflow(ub, lb, &range) ||
-      __builtin_add_overflow(range, 2, &range))
-    throw Error("overflow in calculating count of range", loc);
-  return range;
+mpz_class Range::count() const {
+  mpz_class lb = min->constant_fold();
+  mpz_class ub = max->constant_fold();
+  return ub - lb + 2;
 }
 
 bool Range::operator==(const Node &other) const {
@@ -100,15 +109,15 @@ void Range::validate() const {
 }
 
 std::string Range::lower_bound() const {
-  return "VALUE_C(" + std::to_string(min->constant_fold()) + ")";
+  return "VALUE_C(" + min->constant_fold().get_str() + ")";
 }
 
 std::string Range::upper_bound() const {
-  return "VALUE_C(" + std::to_string(max->constant_fold()) + ")";
+  return "VALUE_C(" + max->constant_fold().get_str() + ")";
 }
 
 void Range::generate_print(std::ostream &out, std::string const &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
 
   std::string const lb = lower_bound();
   std::string const ub = upper_bound();
@@ -155,15 +164,11 @@ Scalarset::~Scalarset() {
   delete bound;
 }
 
-size_t Scalarset::count() const {
-  int64_t b = bound->constant_fold();
+mpz_class Scalarset::count() const {
+  mpz_class b = bound->constant_fold();
   assert(b > 0 && "non-positive bound for scalarset");
 
-  uint64_t range;
-  if (__builtin_add_overflow(b, 1, &range))
-    throw Error("overflow in calculating count of scalarset", loc);
-
-  return range;
+  return b + 1;
 }
 
 bool Scalarset::operator==(const Node &other) const {
@@ -193,11 +198,12 @@ std::string Scalarset::lower_bound() const {
 }
 
 std::string Scalarset::upper_bound() const {
-  return "VALUE_C(" + std::to_string(bound->constant_fold() - 1) + ")";
+  mpz_class b = bound->constant_fold() - 1;
+  return "VALUE_C(" + b.get_str() + ")";
 }
 
 void Scalarset::generate_print(std::ostream &out, std::string const &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
 
   out
     << "{\n"
@@ -221,11 +227,9 @@ Enum *Enum::clone() const {
   return new Enum(*this);
 }
 
-size_t Enum::count() const {
-  size_t r;
-  if (__builtin_add_overflow(members.size(), 1, &r))
-    throw Error("overflow in calculating count of enum", loc);
-  return r;
+mpz_class Enum::count() const {
+  mpz_class members_size = members.size();
+  return members_size + 1;
 }
 
 bool Enum::operator==(const Node &other) const {
@@ -259,12 +263,14 @@ std::string Enum::lower_bound() const {
 }
 
 std::string Enum::upper_bound() const {
-  return "VALUE_C("
-    + std::to_string(members.size() == 0 ? 0 : members.size() - 1) + ")";
+  mpz_class size = members.size();
+  if (size > 0)
+    size--;
+  return "VALUE_C(" + size.get_str() + ")";
 }
 
 void Enum::generate_print(std::ostream &out, std::string const &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
 
   out
     << "{\n"
@@ -324,21 +330,17 @@ Record::~Record() {
     delete v;
 }
 
-size_t Record::width() const {
-  size_t s = 0;
-  for (const VarDecl *v : fields) {
-    if (__builtin_add_overflow(s, v->type->width(), &s))
-      throw Error("overflow in calculating width of record", loc);
-  }
+mpz_class Record::width() const {
+  mpz_class s = 0;
+  for (const VarDecl *v : fields)
+    s += v->type->width();
   return s;
 }
 
-size_t Record::count() const {
-  size_t s = 1;
-  for (const VarDecl *v : fields) {
-    if (__builtin_mul_overflow(s, v->type->count(), &s))
-      throw Error("overflow in calculating count of record", loc);
-  }
+mpz_class Record::count() const {
+  mpz_class s = 1;
+  for (const VarDecl *v : fields)
+    s *= v->type->count();
   return s;
 }
 
@@ -356,7 +358,7 @@ bool Record::operator==(const Node &other) const {
 }
 
 void Record::generate_print(std::ostream &out, std::string const &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
 
   for (VarDecl const *f : fields) {
     f->generate_print(out, prefix + ".", preceding_offset);
@@ -395,25 +397,21 @@ Array::~Array() {
   delete element_type;
 }
 
-size_t Array::width() const {
+mpz_class Array::width() const {
 
-  size_t i = index_type->count();
-  size_t e = element_type->width();
+  mpz_class i = index_type->count();
+  mpz_class e = element_type->width();
 
   assert(i >= 1 && "index count apparently does not include undefined");
   i--;
 
-  size_t r;
-  if (__builtin_mul_overflow(i, e, &r))
-    throw Error("overflow in calculating width of array", loc);
-
-  return r;
+  return i * e;
 }
 
-size_t Array::count() const {
+mpz_class Array::count() const {
 
-  size_t i = index_type->count();
-  size_t e = element_type->count();
+  mpz_class i = index_type->count();
+  mpz_class e = element_type->count();
 
   assert(i >= 1 && "index count apparently does not include undefined");
   i--;
@@ -421,11 +419,9 @@ size_t Array::count() const {
   if (i == 0)
     return 0;
 
-  size_t s = 1;
-  for (size_t j = 0; j < i; j++) {
-    if (__builtin_mul_overflow(s, e, &s))
-      throw Error("overflow in calculating count of array", loc);
-  }
+  mpz_class s = 1;
+  for (size_t j = 0; j < i; j++)
+    s *= e;
   return s;
 }
 
@@ -446,26 +442,23 @@ void Array::validate() const {
 }
 
 void Array::generate_print(std::ostream &out, std::string const &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
 
   TypeExpr const *t = index_type->resolve();
 
   if (auto r = dynamic_cast<Range const*>(t)) {
 
-    int64_t lb = r->min->constant_fold();
-    int64_t ub = r->max->constant_fold();
+    mpz_class lb = r->min->constant_fold();
+    mpz_class ub = r->max->constant_fold();
 
     // FIXME: Unrolling this loop at generation time is not great if the index
     // type is big. E.g. if someone has an 'array [0..10000] of ...' this is
     // going to generate quite unpleasant code.
-    for (int64_t i = lb; i <= ub; i++) {
+    for (mpz_class i = lb; i <= ub; i++) {
 
-      element_type->generate_print(out, prefix + "[" + std::to_string(i) + "]",
+      element_type->generate_print(out, prefix + "[" + i.get_str() + "]",
         preceding_offset);
       preceding_offset += element_type->width();
-
-      if (ub == INT64_MAX && i == INT64_MAX)
-        break;
     }
 
     return;
@@ -473,10 +466,10 @@ void Array::generate_print(std::ostream &out, std::string const &prefix,
 
   if (auto s = dynamic_cast<Scalarset const*>(t)) {
 
-    int64_t b = s->bound->constant_fold();
+    mpz_class b = s->bound->constant_fold();
 
-    for (int64_t i = 0; i < b; i++) {
-      element_type->generate_print(out, prefix + "[" + std::to_string(i) + "]",
+    for (mpz_class i = 0; i < b; i++) {
+      element_type->generate_print(out, prefix + "[" + i.get_str() + "]",
         preceding_offset);
       preceding_offset += element_type->width();
     }
@@ -525,11 +518,11 @@ TypeExprID::~TypeExprID() {
   delete referent;
 }
 
-size_t TypeExprID::width() const {
+mpz_class TypeExprID::width() const {
   return referent->width();
 }
 
-size_t TypeExprID::count() const {
+mpz_class TypeExprID::count() const {
   return referent->count();
 }
 
@@ -554,7 +547,7 @@ std::string TypeExprID::upper_bound() const {
 }
 
 void TypeExprID::generate_print(std::ostream &out, std::string const &prefix,
-  size_t preceding_offset) const {
+  mpz_class preceding_offset) const {
   referent->generate_print(out, prefix, preceding_offset);
 }
 

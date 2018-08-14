@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdint>
+#include <gmpxx.h>
 #include <iostream>
 #include <limits>
 #include "location.hh"
@@ -71,7 +72,7 @@ void Ternary::generate_rvalue(std::ostream &out) const {
   out << "(" << *cond << " ? " << *lhs << " : " << *rhs << ")";
 }
 
-int64_t Ternary::constant_fold() const {
+mpz_class Ternary::constant_fold() const {
   return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
 }
 
@@ -135,7 +136,7 @@ void Implication::generate_rvalue(std::ostream &out) const {
   out << "(!" << *lhs << " || " << *rhs << ")";
 }
 
-int64_t Implication::constant_fold() const {
+mpz_class Implication::constant_fold() const {
   return !lhs->constant_fold() || rhs->constant_fold();
 }
 
@@ -161,7 +162,7 @@ void Or::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " || " << *rhs << ")";
 }
 
-int64_t Or::constant_fold() const {
+mpz_class Or::constant_fold() const {
   return lhs->constant_fold() || rhs->constant_fold();
 }
 
@@ -187,7 +188,7 @@ void And::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " && " << *rhs << ")";
 }
 
-int64_t And::constant_fold() const {
+mpz_class And::constant_fold() const {
   return lhs->constant_fold() && rhs->constant_fold();
 }
 
@@ -240,7 +241,7 @@ void Not::generate_rvalue(std::ostream &out) const {
   out << "(!" << *rhs << ")";
 }
 
-int64_t Not::constant_fold() const {
+mpz_class Not::constant_fold() const {
   return !rhs->constant_fold();
 }
 
@@ -319,7 +320,7 @@ void Lt::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " < " << *rhs << ")";
 }
 
-int64_t Lt::constant_fold() const {
+mpz_class Lt::constant_fold() const {
   return lhs->constant_fold() < rhs->constant_fold();
 }
 
@@ -345,7 +346,7 @@ void Leq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " <= " << *rhs << ")";
 }
 
-int64_t Leq::constant_fold() const {
+mpz_class Leq::constant_fold() const {
   return lhs->constant_fold() <= rhs->constant_fold();
 }
 
@@ -371,7 +372,7 @@ void Gt::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " > " << *rhs << ")";
 }
 
-int64_t Gt::constant_fold() const {
+mpz_class Gt::constant_fold() const {
   return lhs->constant_fold() > rhs->constant_fold();
 }
 
@@ -397,7 +398,7 @@ void Geq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " >= " << *rhs << ")";
 }
 
-int64_t Geq::constant_fold() const {
+mpz_class Geq::constant_fold() const {
   return lhs->constant_fold() >= rhs->constant_fold();
 }
 
@@ -487,7 +488,7 @@ void Eq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " == " << *rhs << ")";
 }
 
-int64_t Eq::constant_fold() const {
+mpz_class Eq::constant_fold() const {
   return lhs->constant_fold() == rhs->constant_fold();
 }
 
@@ -513,7 +514,7 @@ void Neq::generate_rvalue(std::ostream &out) const {
   out << "(" << *lhs << " != " << *rhs << ")";
 }
 
-int64_t Neq::constant_fold() const {
+mpz_class Neq::constant_fold() const {
   return lhs->constant_fold() != rhs->constant_fold();
 }
 
@@ -637,14 +638,8 @@ void Add::generate_rvalue(std::ostream &out) const {
     << ", " << *lhs << ", " << *rhs << ")";
 }
 
-int64_t Add::constant_fold() const {
-  int64_t r;
-  int64_t a = lhs->constant_fold();
-  int64_t b = rhs->constant_fold();
-  if (__builtin_add_overflow(a, b, &r))
-    throw Error("overflow in " + std::to_string(a) + " + "
-      + std::to_string(b), loc);
-  return r;
+mpz_class Add::constant_fold() const {
+  return lhs->constant_fold() + rhs->constant_fold();
 }
 
 bool Add::operator==(const Node &other) const {
@@ -670,14 +665,8 @@ void Sub::generate_rvalue(std::ostream &out) const {
     << ", " << *lhs << ", " << *rhs << ")";
 }
 
-int64_t Sub::constant_fold() const {
-  int64_t r;
-  int64_t a = lhs->constant_fold();
-  int64_t b = rhs->constant_fold();
-  if (__builtin_sub_overflow(a, b, &r))
-    throw Error("overflow in " + std::to_string(a) + " - "
-      + std::to_string(b), loc);
-  return r;
+mpz_class Sub::constant_fold() const {
+  return lhs->constant_fold() - rhs->constant_fold();
 }
 
 bool Sub::operator==(const Node &other) const {
@@ -713,11 +702,8 @@ void Negative::generate_rvalue(std::ostream &out) const {
     << *rhs << ")";
 }
 
-int64_t Negative::constant_fold() const {
-  int64_t a = rhs->constant_fold();
-  if (a == std::numeric_limits<int64_t>::min())
-    throw Error("overflow in -" + std::to_string(a), loc);
-  return -a;
+mpz_class Negative::constant_fold() const {
+  return -rhs->constant_fold();
 }
 
 bool Negative::operator==(const Node &other) const {
@@ -743,14 +729,8 @@ void Mul::generate_rvalue(std::ostream &out) const {
     << ", " << *lhs << ", " << *rhs << ")";
 }
 
-int64_t Mul::constant_fold() const {
-  int64_t r;
-  int64_t a = lhs->constant_fold();
-  int64_t b = rhs->constant_fold();
-  if (__builtin_mul_overflow(a, b, &r))
-    throw Error("overflow in " + std::to_string(a) + " * "
-      + std::to_string(b), loc);
-  return r;
+mpz_class Mul::constant_fold() const {
+  return lhs->constant_fold() * rhs->constant_fold();
 }
 
 bool Mul::operator==(const Node &other) const {
@@ -776,15 +756,11 @@ void Div::generate_rvalue(std::ostream &out) const {
     upper_bound(*lhs, *rhs) << ", " << *lhs << ", " << *rhs << ")";
 }
 
-int64_t Div::constant_fold() const {
-  int64_t a = lhs->constant_fold();
-  int64_t b = rhs->constant_fold();
+mpz_class Div::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
   if (b == 0)
-    throw Error("division by 0 in " + std::to_string(a) + " / "
-      + std::to_string(b), loc);
-  if (a == std::numeric_limits<int64_t>::min() && b == -1)
-    throw Error("overflow in " + std::to_string(a) + " / "
-      + std::to_string(b), loc);
+    throw Error("division by 0 in " + a.get_str() + " / " + b.get_str(), loc);
   return a / b;
 }
 
@@ -811,15 +787,11 @@ void Mod::generate_rvalue(std::ostream &out) const {
     << ", " << *lhs << ", " << *rhs << ")";
 }
 
-int64_t Mod::constant_fold() const {
-  int64_t a = lhs->constant_fold();
-  int64_t b = rhs->constant_fold();
+mpz_class Mod::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
   if (b == 0)
-    throw Error("mod by 0 in " + std::to_string(a) + " % "
-      + std::to_string(b), loc);
-  if (a == std::numeric_limits<int64_t>::min() && b == -1)
-    throw Error("overflow in " + std::to_string(a) + " % "
-      + std::to_string(b), loc);
+    throw Error("mod by 0 in " + a.get_str() + " % " + b.get_str(), loc);
   return a % b;
 }
 
@@ -962,7 +934,7 @@ ExprID::~ExprID() {
   delete value;
 }
 
-int64_t ExprID::constant_fold() const {
+mpz_class ExprID::constant_fold() const {
   if (auto c = dynamic_cast<const ConstDecl*>(value))
     return c->value->constant_fold();
   throw Error("symbol \"" + id + "\" is not a constant", loc);
@@ -1022,7 +994,7 @@ void Field::generate(std::ostream &out, bool lvalue) const {
   const TypeExpr *resolved = root->resolve();
   assert(resolved != nullptr);
   if (auto r = dynamic_cast<const Record*>(resolved)) {
-    size_t offset = 0;
+    mpz_class offset = 0;
     for (const VarDecl *f : r->fields) {
       if (f->name == field) {
         if (!lvalue && f->type->is_simple()) {
@@ -1048,7 +1020,7 @@ Field::~Field() {
   delete record;
 }
 
-int64_t Field::constant_fold() const {
+mpz_class Field::constant_fold() const {
   throw Error("field expression used in constant", loc);
 }
 
@@ -1108,20 +1080,20 @@ void Element::generate(std::ostream &out, bool lvalue) const {
   assert(t2 != nullptr && "array with invalid type");
 
   auto a = dynamic_cast<const Array&>(*t2);
-  size_t element_width = a.element_type->width();
+  mpz_class element_width = a.element_type->width();
 
   // Second, determine the minimum and maximum values of the array's index type
 
   const TypeExpr *t3 = a.index_type->resolve();
   assert(t3 != nullptr && "array with invalid index type");
 
-  int64_t min, max;
+  mpz_class min, max;
   if (auto r = dynamic_cast<const Range*>(t3)) {
     min = r->min->constant_fold();
     max = r->max->constant_fold();
   } else if (auto e = dynamic_cast<const Enum*>(t3)) {
     min = 0;
-    max = int64_t(e->count()) - 1;
+    max = e->count() - 1;
   } else if (auto s = dynamic_cast<const Scalarset*>(t3)) {
     min = 0;
     max = s->bound->constant_fold() - 1;
@@ -1146,7 +1118,7 @@ void Element::generate(std::ostream &out, bool lvalue) const {
     out << ")";
 }
 
-int64_t Element::constant_fold() const {
+mpz_class Element::constant_fold() const {
   throw Error("array element used in constant", loc);
 }
 
@@ -1205,7 +1177,7 @@ void FunctionCall::generate_rvalue(std::ostream&) const {
   assert("!TODO");
 }
 
-int64_t FunctionCall::constant_fold() const {
+mpz_class FunctionCall::constant_fold() const {
   // See FunctionCall::constant() regarding conservatism here.
   throw Error("function call used in a constant", loc);
 }
@@ -1276,10 +1248,10 @@ void Quantifier::generate_header(std::ostream &out) const {
   std::string const ub = var->type->upper_bound();
   std::string const inc = step == nullptr
     ? "VALUE_C(1)"
-    : "VALUE_C(" + std::to_string(step->constant_fold()) + ")";
+    : "VALUE_C(" + step->constant_fold().get_str() + ")";
 
   std::string const block = "_ru2_" + var->name;
-  size_t width = var->type->width();
+  mpz_class width = var->type->width();
 
   std::string const handle = "ru_" + var->name;
 
@@ -1305,7 +1277,7 @@ void Quantifier::generate_footer(std::ostream &out) const {
   std::string const ub = var->type->upper_bound();
   std::string const inc = step == nullptr
     ? "VALUE_C(1)"
-    : "VALUE_C(" + std::to_string(step->constant_fold()) + ")";
+    : "VALUE_C(" + step->constant_fold().get_str() + ")";
 
   out
     << "  if (VALUE_MAX - " << inc << " < " << ub << " && " << counter
@@ -1384,7 +1356,7 @@ void Exists::generate_rvalue(std::ostream &out) const {
   out << " result; })";
 }
 
-int64_t Exists::constant_fold() const {
+mpz_class Exists::constant_fold() const {
   throw Error("exists expression used in constant", loc);
 }
 
@@ -1441,7 +1413,7 @@ void Forall::generate_rvalue(std::ostream &out) const {
   out << " result; })";
 }
 
-int64_t Forall::constant_fold() const {
+mpz_class Forall::constant_fold() const {
   throw Error("forall expression used in constant", loc);
 }
 

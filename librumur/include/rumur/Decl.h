@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gmpxx.h>
 #include <iostream>
 #include <limits>
 #include "location.hh"
@@ -71,10 +72,10 @@ struct VarDecl : public Decl {
   bool state_variable = false;
 
   /* Offset within the model state. This is only relevant if state_variable ==
-   * true. We initially set it to an invalid value and rely on Model::index
+   * true. We initially set it to an invalid value and rely on Model::reindex
    * setting this correctly later.
    */
-  size_t offset = std::numeric_limits<size_t>::max();
+  mpz_class offset = -1;
 
   VarDecl() = delete;
   VarDecl(const std::string &name_, TypeExpr *type_,
@@ -85,12 +86,12 @@ struct VarDecl : public Decl {
   VarDecl *clone() const final;
   virtual ~VarDecl();
 
-  size_t count() const;
-  size_t width() const;
+  mpz_class count() const;
+  mpz_class width() const;
 
   bool operator==(const Node &other) const final;
   void generate_print(std::ostream &out, std::string const &prefix = "",
-    size_t preceding_offset = 0) const;
+    mpz_class preceding_offset = 0) const;
 };
 
 }

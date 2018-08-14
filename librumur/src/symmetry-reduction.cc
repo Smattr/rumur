@@ -1,4 +1,5 @@
 #include <cassert>
+#include <gmpxx.h>
 #include <iostream>
 #include <rumur/Decl.h>
 #include <rumur/log.h>
@@ -57,7 +58,7 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
   const std::string indent = std::string((depth + 1) * 2, ' ');
 
   if (t->is_simple()) {
-    const std::string width = "SIZE_C(" + std::to_string(t->width()) + ")";
+    const std::string width = "SIZE_C(" + t->width().get_str() + ")";
     out
 
       /* Open a scope so we don't need to think about redeclaring/shadowing 'x'
@@ -86,12 +87,12 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
   if (auto a = dynamic_cast<const Array*>(t)) {
 
     // The number of elements in this array as a C code string
-    const std::string ub = "SIZE_C("
-      + std::to_string(a->index_type->count() - 1) + ")";
+    mpz_class ic = a->index_type->count() - 1;
+    const std::string ub = "SIZE_C(" + ic.get_str() + ")";
 
     // The bit size of each array as a C code string
     const std::string width = "SIZE_C(" +
-      std::to_string(a->element_type->width()) + ")";
+      a->element_type->width().get_str() + ")";
 
     // Generate a loop to iterate over all the elements
     const std::string var = "i" + std::to_string(depth);
@@ -120,8 +121,7 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
       generate_compare(out, off_a, off_b, *f->type, depth);
 
       // Jump over this field to get the offset of the next field
-      const std::string width = "SIZE_C(" + std::to_string(f->type->width()) +
-        ")";
+      const std::string width = "SIZE_C(" + f->type->width().get_str() + ")";
       off_a += " + " + width;
       off_b += " + " + width;
     }
@@ -158,10 +158,10 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
 
   if (auto a = dynamic_cast<const Array*>(t)) {
     const std::string var = "i" + std::to_string(depth);
-    const std::string len = "SIZE_C("
-      + std::to_string(a->index_type->count() - 1) + ")";
+    mpz_class ic = a->index_type->count() - 1;
+    const std::string len = "SIZE_C(" + ic.get_str() + ")";
     const std::string width = "SIZE_C("
-      + std::to_string(a->element_type->width()) + ")";
+      + a->element_type->width().get_str() + ")";
 
     out << indent << "for (size_t " << var << " = 0; " << var << " < " << len
       << "; " << var << "++) {\n";
@@ -182,8 +182,8 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     for (const VarDecl *f : r->fields) {
       generate_apply_swap(out, off_a, off_b, *f->type, depth);
 
-      off_a += " + SIZE_C(" + std::to_string(f->width()) + ")";
-      off_b += " + SIZE_C(" + std::to_string(f->width()) + ")";
+      off_a += " + SIZE_C(" + f->width().get_str() + ")";
+      off_b += " + SIZE_C(" + f->width().get_str() + ")";
     }
     return;
   }
@@ -199,7 +199,7 @@ namespace {
   struct Pivot {
 
     struct Component {
-      size_t offset;
+      mpz_class offset;
       const TypeExpr *type;
       unsigned interdependence;
     };
@@ -217,7 +217,7 @@ namespace {
 
     void collect_components(void) {
       // Look through the model state to find suitable components.
-      size_t offset = 0;
+      mpz_class offset = 0;
       for (const Decl *d : model->decls) {
         if (auto v = dynamic_cast<const VarDecl*>(d)) {
           consider_component(offset, *v->type, 0);
@@ -246,7 +246,7 @@ namespace {
     }
 
     // Add a component to this pivot.
-    void add_component(size_t offset, const TypeExpr &t, unsigned bias) {
+    void add_component(mpz_class offset, const TypeExpr &t, unsigned bias) {
 
       /* Find the representative type against which we'll score this TypeExpr on
        * interdependence. E.g. in the case of a scalarset-indexed array, we score
@@ -288,7 +288,7 @@ namespace {
     }
 
     // Recursively find and add components
-    virtual void consider_component(size_t offset, const TypeExpr &t, unsigned bias) {
+    virtual void consider_component(mpz_class offset, const TypeExpr &t, unsigned bias) {
       /* If this decl is an array that can participate in the pivot, add it and
        * we're done.
        */
@@ -334,7 +334,7 @@ namespace {
 
     void generate_schedule_define(std::ostream &out) const {
       auto s = dynamic_cast<const Scalarset&>(*type->value);
-      int64_t b = s.bound->constant_fold();
+      mpz_class b = s.bound->constant_fold();
 
         /* An array indicating how to sort the given scalarset. For example, if we
          * have a scalarset(4), this array may end up as { 3, 1, 0, 2 }. This
@@ -382,7 +382,7 @@ namespace {
         if (auto v = dynamic_cast<const VarDecl*>(d)) {
           generate_apply(out, offset, *v->type, 0);
 
-          offset += " + SIZE_C(" + std::to_string(v->width()) + ")";
+          offset += " + SIZE_C(" + v->width().get_str() + ")";
         }
       }
 
@@ -415,7 +415,7 @@ namespace {
       if (auto a = dynamic_cast<const Array*>(t)) {
 
         const std::string width = "SIZE_C("
-          + std::to_string(a->element_type->width()) + ")";
+          + a->element_type->width().get_str() + ")";
 
         const std::string var = "i" + std::to_string(depth);
 
@@ -449,8 +449,8 @@ namespace {
 
         }
 
-        const std::string len = "SIZE_C("
-          + std::to_string(a->index_type->count() - 1) + ")";
+        mpz_class ic = a->index_type->count() - 1;
+        const std::string len = "SIZE_C(" + ic.get_str() + ")";
 
         out
           << indent << "for (size_t " << var << " = 0; " << var << " < "
@@ -471,7 +471,7 @@ namespace {
         for (const VarDecl *f : r->fields) {
           generate_apply(out, off, *f->type, depth);
 
-          off += " + SIZE_C(" + std::to_string(f->width()) + ")";
+          off += " + SIZE_C(" + f->width().get_str() + ")";
         }
 
         return;
@@ -491,9 +491,9 @@ namespace {
           "Pivot isn't overriding generate_comparison?");
 
         // Find the coordinates of this pivot component
-        const std::string offset = "SIZE_C(" + std::to_string(c.offset) + ")";
+        const std::string offset = "SIZE_C(" + c.offset.get_str() + ")";
         const std::string width = "SIZE_C(" +
-          std::to_string(a->element_type->width()) + ")";
+          a->element_type->width().get_str() + ")";
         const std::string offset_a = offset + " + a * " + width;
         const std::string offset_b = offset + " + b * " + width;
 
@@ -532,7 +532,7 @@ namespace {
     TopLevelArrayPivot &operator=(const TopLevelArrayPivot&) = default;
 
     // Override consider_component to suppress recursion into arrays
-    void consider_component(size_t offset, const TypeExpr &t, unsigned bias) final {
+    void consider_component(mpz_class offset, const TypeExpr &t, unsigned bias) final {
       /* If this decl is an array that can participate in the pivot, add it and
        * we're done.
        */
