@@ -3,6 +3,19 @@ project(librumur LANGUAGES CXX)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+find_path(GMPXX_INCLUDE NAMES gmpxx.h)
+if(NOT GMPXX_INCLUDE)
+  message(FATAL_ERROR "GMP headers not found")
+endif()
+find_library(GMP_LIBRARIES NAMES gmp)
+if(NOT GMP_LIBRARIES)
+  message(FATAL_ERROR "libgmp not found")
+endif()
+find_library(GMPXX_LIBRARIES NAMES gmpxx)
+if(NOT GMPXX_LIBRARIES)
+  message(FATAL_ERROR "libgmpxx not found")
+endif()
+
 bison_target(parser
   src/parser.yy
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.cc
@@ -61,9 +74,11 @@ target_include_directories(librumur
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
+  ${GMPXX_INCLUDE}
   PRIVATE
   src
   ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(librumur PUBLIC ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 
 # Force the output to librumur.a instead of liblibrumur.a.
 set_target_properties(librumur PROPERTIES PREFIX "")

@@ -15,6 +15,7 @@ First you will need to have the following dependencies installed:
 * Bison_
 * CMake_
 * Flex_
+* Libgmp_
 
 Then:
 
@@ -71,4 +72,5 @@ Everything in this repository is in the public domain, with the exception of:
 .. _Clang: https://clang.llvm.org/
 .. _Flex: https://github.com/westes/flex
 .. _GCC: https://gcc.gnu.org/
+.. _Libgmp: https://gmplib.org/
 .. _`model checker`: https://en.wikipedia.org/wiki/Model_checking
