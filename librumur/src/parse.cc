@@ -1,4 +1,5 @@
 #include <cassert>
+#include "gmpxx.h"
 #include <iostream>
 #include "location.hh"
 #include <memory>
@@ -8,6 +9,7 @@
 #include <rumur/except.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
+#include <rumur/Number.h>
 #include <rumur/parse.h>
 #include <rumur/scanner.h>
 #include <rumur/Symtab.h>
@@ -23,8 +25,12 @@ std::shared_ptr<Model> parse(std::istream *input) {
   Symtab symtab;
   symtab.open_scope();
   symtab.declare("boolean", Boolean);
-  for (const std::pair<std::string, location> &m : Boolean->members)
-    symtab.declare(m.first, std::make_shared<TypeDecl>("boolean", Boolean, location()));
+  mpz_class index = 0;
+  for (const std::pair<std::string, location> &m : Boolean->members) {
+    symtab.declare(m.first, std::make_shared<ConstDecl>("boolean",
+      std::make_shared<Number>(index, location()), Boolean, location()));
+    index++;
+  }
 
   // Setup the parser
   scanner s(input);

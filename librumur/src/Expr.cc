@@ -851,7 +851,9 @@ const TypeExpr *ExprID::type() const {
 
 void ExprID::generate(std::ostream &out, bool lvalue) const {
 
-  // Case 1: this is a reference to a const.
+  /* Case 1: this is a reference to a const. Note, this also covers enum
+   * members.
+   */
   if (auto c = dynamic_cast<const ConstDecl*>(value.get())) {
     assert(!lvalue && "const appearing as an lvalue");
     out << "VALUE_C(" << c->value->constant_fold() << ")";
@@ -906,24 +908,8 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
     }
   }
 
-  // Case 4, this is an enum member.
-  if (dynamic_cast<const TypeDecl*>(value.get())) {
-    const TypeExpr *t = type()->resolve();
-    assert(t != nullptr && "untyped literal somehow an identifier");
-
-    if (auto e = dynamic_cast<const Enum*>(t)) {
-      assert(!lvalue && "enum member appearing as an lvalue");
-      size_t i = 0;
-      for (const std::pair<std::string, location> &m : e->members) {
-        if (id == m.first) {
-          out << "VALUE_C(" << i << ")";
-          return;
-        }
-        i++;
-      }
-      assert(false && "identifier references an enum member that does not exist");
-    }
-  }
+  assert(dynamic_cast<const TypeDecl*>(value.get()) == nullptr &&
+    "ExprID somehow pointing at a TypeDecl");
 
   // FIXME: there's another case here where it's a reference to a quanitified
   // variable. I suspect we should just handle that the same way as a local.

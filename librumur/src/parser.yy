@@ -261,9 +261,12 @@ typeexpr: BOOLEAN {
 } | ENUM '{' id_list_opt '}' {
   auto e = std::make_shared<rumur::Enum>(std::move($3), @$);
   /* Register all the enum members so they can be referenced later. */
-  auto td = std::make_shared<rumur::TypeDecl>("", std::make_shared<rumur::Enum>(*e), @$);
+  mpz_class index = 0;
   for (const std::pair<std::string, rumur::location> &m : e->members) {
-    symtab.declare(m.first, td);
+    auto cd = std::make_shared<rumur::ConstDecl>(m.first,
+      std::make_shared<rumur::Number>(index, m.second), e, m.second);
+    symtab.declare(m.first, cd);
+    index++;
   }
   $$ = e;
 } | RECORD vardecls endrecord {
