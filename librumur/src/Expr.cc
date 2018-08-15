@@ -856,13 +856,19 @@ const TypeExpr *ExprID::type() const {
 
 void ExprID::generate(std::ostream &out, bool lvalue) const {
 
-  // FIXME: what if this is a const? Does type() return nullptr?
-  const TypeExpr *t = type()->resolve();
-  assert(t != nullptr && "untyped literal somehow an identifier");
+  // Case 1: this is a reference to a const.
+  if (auto c = dynamic_cast<const ConstDecl*>(value)) {
+    assert(!lvalue && "const appearing as an lvalue");
+    out << "ru_" << id;
+    return;
+  }
 
   if (auto v = dynamic_cast<const VarDecl*>(value)) {
 
-    // Case 1, this is a state variable.
+    const TypeExpr *t = type()->resolve();
+    assert(t != nullptr && "untyped literal somehow an identifier");
+
+    // Case 2, this is a state variable.
     if (v->state_variable) {
 
       /* If this is a scalar and we're in an rvalue context, we want to actually
@@ -888,7 +894,7 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
 
     }
 
-    // Case 2, this is a local variable
+    // Case 3, this is a local variable
     else {
 
       if (!lvalue && t->is_simple()) {
@@ -905,25 +911,23 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
     }
   }
 
-  // Case 3, this is an enum member.
-  if (auto e = dynamic_cast<const Enum*>(t)) {
-    assert(!lvalue && "enum member appearing as an lvalue");
-    size_t i = 0;
-    for (const std::pair<std::string, location> &m : e->members) {
-      if (id == m.first) {
-        out << "VALUE_C(" << i << ")";
-        return;
-      }
-      i++;
-    }
-    assert(false && "identifier references an enum member that does not exist");
-  }
+  // Case 4, this is an enum member.
+  if (dynamic_cast<const TypeDecl*>(value)) {
+    const TypeExpr *t = type()->resolve();
+    assert(t != nullptr && "untyped literal somehow an identifier");
 
-  // Case 4, this is a reference to a const
-  if (dynamic_cast<const ConstDecl*>(t) != nullptr) {
-    assert(!lvalue && "const appearing as an lvalue");
-    out << "ru_" << id;
-    return;
+    if (auto e = dynamic_cast<const Enum*>(t)) {
+      assert(!lvalue && "enum member appearing as an lvalue");
+      size_t i = 0;
+      for (const std::pair<std::string, location> &m : e->members) {
+        if (id == m.first) {
+          out << "VALUE_C(" << i << ")";
+          return;
+        }
+        i++;
+      }
+      assert(false && "identifier references an enum member that does not exist");
+    }
   }
 
   // FIXME: there's another case here where it's a reference to a quanitified
