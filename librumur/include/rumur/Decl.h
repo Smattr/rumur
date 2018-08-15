@@ -47,7 +47,6 @@ struct ConstDecl : public Decl {
   ConstDecl *clone() const final;
   virtual ~ConstDecl() { }
 
-  void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };

@@ -50,11 +50,6 @@ ConstDecl *ConstDecl::clone() const {
   return new ConstDecl(*this);
 }
 
-void ConstDecl::generate(std::ostream &out) const {
-  mpz_class v = value->constant_fold();
-  out << "static __attribute__((unused)) const value_t ru_" << name << " = VALUE_C(" << v << ")";
-}
-
 bool ConstDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const ConstDecl*>(&other);
   if (o == nullptr)

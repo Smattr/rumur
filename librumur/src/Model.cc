@@ -66,16 +66,6 @@ mpz_class Model::size_bits() const {
 
 void Model::generate(std::ostream &out) const {
 
-  // Write out constants
-  for (const std::shared_ptr<Decl> &d : decls) {
-    if (auto c = dynamic_cast<const ConstDecl*>(d.get())) {
-      c->generate(out);
-      out << ";\n";
-    }
-  }
-
-  out << "\n";
-
   /* Generate a set of flattened (non-hierarchical) rules. The purpose of this
    * is to essentially remove rulesets from the cases we need to deal with
    * below.
