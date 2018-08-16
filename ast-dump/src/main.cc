@@ -95,8 +95,17 @@ int main(int argc, char **argv) {
 
   assert(m != nullptr);
 
-  XMLPrinter p(in_filename, *out);
-  p.dispatch(*m);
+  {
+    XMLPrinter p(in_filename, *out);
+    p.dispatch(*m);
+  }
+
+  // Clean up
+  delete m;
+  if (in != &std::cin)
+    delete in;
+  if (out != &std::cout)
+    delete out;
 
   return EXIT_SUCCESS;
 }
