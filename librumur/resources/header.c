@@ -14,23 +14,6 @@
   #endif
 #endif
 
-/* Wrapper for squashing compiler warnings about tautological comparisons. */
-#ifdef __clang__
-  #define MAYBE_TAUTOLOGY(expr)                                                \
-    _Pragma("clang diagnostic push")                                           \
-    _Pragma("clang diagnostic ignored \"-Wtautological-compare\"")             \
-    (expr)                                                                     \
-    _Pragma("clang diagnostic pop")
-#elif defined(__GNUC__)
-  #define MAYBE_TAUTOLOGY(expr)                                                \
-    _Pragma("GCC diagnostic push")                                             \
-    _Pragma("GCC diagnostic ignored \"-Wtype-limits\"")                        \
-    (expr)                                                                     \
-    _Pragma("GCC diagnostic pop")
-#else
-  #define MAYBE_TAUTOLOGY(expr) (expr)
-#endif
-
 /* Generic support for maximum and minimum values of types. This is useful for,
  * e.g. size_t, where we don't properly have SIZE_MAX and SIZE_MIN.
  */
