@@ -422,7 +422,19 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
     free((void*)s);
   }
 
-  if (MAYBE_TAUTOLOGY(prior_errors < MAX_ERRORS - 1)) {
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  if (prior_errors < MAX_ERRORS - 1) {
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
     assert(JMP_BUF_NEEDED && "longjmping without a setup jmp_buf");
     longjmp(checkpoint, 1);
   }
