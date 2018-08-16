@@ -57,7 +57,7 @@ struct StartState : public Rule {
   StartState(const StartState &other);
   StartState &operator=(StartState other);
   friend void swap(StartState &x, StartState &y) noexcept;
-  virtual ~StartState() { }
+  virtual ~StartState();
   StartState *clone() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;

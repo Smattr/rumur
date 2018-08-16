@@ -177,6 +177,13 @@ void StartState::validate() const {
   ReturnChecker::check(*this);
 }
 
+StartState::~StartState() {
+  for (Decl *d : decls)
+    delete d;
+  for (Stmt *s : body)
+    delete s;
+}
+
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
   const location &loc_):
   Rule(name_, loc_), property(property_) {
