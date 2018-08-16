@@ -16,9 +16,9 @@ Decl::Decl(const std::string &name_, const location &loc_):
 Decl::~Decl() {
 }
 
-ConstDecl::ConstDecl(const std::string &name_, const Expr *value_,
+ConstDecl::ConstDecl(const std::string &name_, Expr *value_,
   const location &loc_):
-  Decl(name_, loc_), value(value_->clone()) {
+  Decl(name_, loc_), value(value_) {
   validate();
 }
 

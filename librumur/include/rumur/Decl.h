@@ -31,8 +31,7 @@ struct ConstDecl : public Decl {
   Expr *value;
 
   ConstDecl() = delete;
-  ConstDecl(const std::string &name_, const Expr *value_,
-    const location &loc_);
+  ConstDecl(const std::string &name_, Expr *value_, const location &loc_);
   ConstDecl(const ConstDecl &other);
   ConstDecl &operator=(ConstDecl other);
   friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
