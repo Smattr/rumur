@@ -1132,8 +1132,8 @@ bool Element::operator==(const Node &other) const {
   return o != nullptr && *array == *o->array && *index == *o->index;
 }
 
-FunctionCall::FunctionCall(Function *function_, std::vector<Expr*> arguments_,
-  const location &loc_):
+FunctionCall::FunctionCall(std::shared_ptr<Function> function_,
+  std::vector<Expr*> arguments_, const location &loc_):
   Expr(loc_), function(function_), arguments(arguments_) { }
 
 FunctionCall::FunctionCall(const FunctionCall &other):
@@ -1156,7 +1156,6 @@ FunctionCall &FunctionCall::operator=(FunctionCall other) {
 }
 
 FunctionCall::~FunctionCall() {
-  delete function;
   for (Expr *p : arguments)
     delete p;
 }

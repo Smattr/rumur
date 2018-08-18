@@ -467,7 +467,7 @@ stmt: category STRING expr {
 } | ID '(' exprlist ')' {
   auto f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = std::make_shared<rumur::ProcedureCall>(f->clone(), std::move($3), @$);
+  $$ = std::make_shared<rumur::ProcedureCall>(std::shared_ptr<rumur::Function>(f->clone()), std::move($3), @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {
@@ -566,7 +566,7 @@ expr: expr '?' expr ':' expr {
 } | ID '(' exprlist ')' {
   auto f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = new rumur::FunctionCall(f->clone(), std::move($3), @$);
+  $$ = new rumur::FunctionCall(std::shared_ptr<rumur::Function>(f->clone()), std::move($3), @$);
 };
 
 quantifier: ID ':' typeexpr {

@@ -448,12 +448,12 @@ struct Element : public Lvalue {
 
 struct FunctionCall : public Expr {
 
-  Function *function;
+  std::shared_ptr<Function> function;
   std::vector<Expr*> arguments;
 
   FunctionCall() = delete;
-  FunctionCall(Function *function_, std::vector<Expr*> arguments_,
-    const location &loc_);
+  FunctionCall(std::shared_ptr<Function> function_,
+    std::vector<Expr*> arguments_, const location &loc_);
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;
   FunctionCall &operator=(FunctionCall other);

@@ -154,12 +154,12 @@ struct If : public Stmt {
 
 struct ProcedureCall : public Stmt {
 
-  Function *function;
+  std::shared_ptr<Function> function;
   std::vector<Expr*> arguments;
 
   ProcedureCall() = delete;
-  ProcedureCall(Function *function_, std::vector<Expr*> &&arguments_,
-    const location &loc_);
+  ProcedureCall(std::shared_ptr<Function> function_,
+    std::vector<Expr*> &&arguments_, const location &loc_);
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);
   friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;

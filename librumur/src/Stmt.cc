@@ -327,7 +327,7 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
-ProcedureCall::ProcedureCall(Function *function_,
+ProcedureCall::ProcedureCall(std::shared_ptr<Function> function_,
   std::vector<Expr*> &&arguments_, const location &loc_):
   Stmt(loc_), function(function_), arguments(arguments_) { }
 
