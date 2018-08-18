@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
@@ -51,8 +52,8 @@ Rule::Rule(const Rule &other):
     quantifiers.push_back(q->clone());
 }
 
-std::vector<Rule*> Rule::flatten() const {
-  return { clone() };
+std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
+  return { std::shared_ptr<Rule>(clone()) };
 }
 
 Rule::~Rule() {
@@ -224,15 +225,15 @@ bool PropertyRule::operator==(const Node &other) const {
 }
 
 Ruleset::Ruleset(std::vector<Quantifier*> &&quantifiers_,
-  std::vector<Rule*> &&rules_, const location &loc_):
+  std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
   quantifiers = quantifiers_;
 }
 
 Ruleset::Ruleset(const Ruleset &other):
   Rule(other) {
-  for (const Rule *r : other.rules)
-    rules.push_back(r->clone());
+  for (const std::shared_ptr<Rule> r : other.rules)
+    rules.emplace_back(r->clone());
 }
 
 Ruleset &Ruleset::operator=(Ruleset other) {
@@ -252,11 +253,6 @@ Ruleset *Ruleset::clone() const {
   return new Ruleset(*this);
 }
 
-Ruleset::~Ruleset() {
-  for (Rule *r : rules)
-    delete r;
-}
-
 bool Ruleset::operator==(const Node &other) const {
   auto o = dynamic_cast<const Ruleset*>(&other);
   if (o == nullptr)
@@ -270,10 +266,10 @@ bool Ruleset::operator==(const Node &other) const {
   return true;
 }
 
-std::vector<Rule*> Ruleset::flatten() const {
-  std::vector<Rule*> rs;
-  for (const Rule *r : rules) {
-    for (Rule *f : r->flatten()) {
+std::vector<std::shared_ptr<Rule>> Ruleset::flatten() const {
+  std::vector<std::shared_ptr<Rule>> rs;
+  for (const std::shared_ptr<Rule> &r : rules) {
+    for (std::shared_ptr<Rule> &f : r->flatten()) {
       for (const Quantifier *q : quantifiers)
         f->quantifiers.insert(f->quantifiers.begin(), q->clone());
       rs.push_back(f);

@@ -369,7 +369,7 @@ void XMLPrinter::visit(const Model &n) {
   if (!n.rules.empty()) {
     sync_to(*n.rules[0]);
     *o << "<rules>";
-    for (const Rule *r : n.rules) {
+    for (const std::shared_ptr<Rule> &r : n.rules) {
       sync_to(*r);
       dispatch(*r);
     }
@@ -568,7 +568,7 @@ void XMLPrinter::visit(const Ruleset &n) {
   if (!n.rules.empty()) {
     sync_to(*n.rules[0]);
     *o << "<rules>";
-    for (const Rule *r : n.rules) {
+    for (const std::shared_ptr<Rule> &r : n.rules) {
       sync_to(*r);
       dispatch(*r);
     }

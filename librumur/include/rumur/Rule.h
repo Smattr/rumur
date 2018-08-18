@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
@@ -23,7 +24,7 @@ struct Rule : public Node {
 
   Rule *clone() const override = 0;
 
-  virtual std::vector<Rule*> flatten() const;
+  virtual std::vector<std::shared_ptr<Rule>> flatten() const;
 
   virtual ~Rule();
 };
@@ -80,19 +81,19 @@ struct PropertyRule : public Rule {
 
 struct Ruleset : public Rule {
 
-  std::vector<Rule*> rules;
+  std::vector<std::shared_ptr<Rule>> rules;
 
   Ruleset() = delete;
-  Ruleset(std::vector<Quantifier*> &&quantifiers_, std::vector<Rule*> &&rules_,
-    const location &loc_);
+  Ruleset(std::vector<Quantifier*> &&quantifiers_,
+    std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
   Ruleset(const Ruleset &other);
   Ruleset &operator=(Ruleset other);
   friend void swap(Ruleset &x, Ruleset &y) noexcept;
-  virtual ~Ruleset();
+  virtual ~Ruleset() { }
   Ruleset *clone() const final;
   bool operator==(const Node &other) const final;
 
-  std::vector<Rule*> flatten() const final;
+  std::vector<std::shared_ptr<Rule>> flatten() const final;
 };
 
 }

@@ -287,10 +287,10 @@ static bool contains(const T &container, U predicate) {
     != container.end();
 }
 
-static bool has_start_state(const rumur::Rule *r) {
-  if (dynamic_cast<const rumur::StartState*>(r))
+static bool has_start_state(const std::shared_ptr<rumur::Rule> &r) {
+  if (dynamic_cast<const rumur::StartState*>(r.get()))
     return true;
-  if (auto s = dynamic_cast<const rumur::Ruleset*>(r))
+  if (auto s = dynamic_cast<const rumur::Ruleset*>(r.get()))
     return contains(s->rules, has_start_state);
   return false;
 }

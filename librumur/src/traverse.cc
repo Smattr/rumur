@@ -410,7 +410,7 @@ void Traversal::visit(Model &n) {
     dispatch(*d);
   for (std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
-  for (Rule *r : n.rules)
+  for (std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
 
@@ -484,7 +484,7 @@ void Traversal::visit(Return &n) {
 void Traversal::visit(Ruleset &n) {
   for (Quantifier *q : n.quantifiers)
     dispatch(*q);
-  for (Rule *r : n.rules)
+  for (std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
 
@@ -942,7 +942,7 @@ void ConstTraversal::visit(const Model &n) {
     dispatch(*d);
   for (const std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
-  for (const Rule *r : n.rules)
+  for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
 
@@ -1016,7 +1016,7 @@ void ConstTraversal::visit(const Return &n) {
 void ConstTraversal::visit(const Ruleset &n) {
   for (const Quantifier *q : n.quantifiers)
     dispatch(*q);
-  for (const Rule *r : n.rules)
+  for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
 

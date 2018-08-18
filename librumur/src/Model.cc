@@ -22,7 +22,7 @@ namespace rumur {
 
 Model::Model(std::vector<Decl*> &&decls_,
   std::vector<std::shared_ptr<Function>> &&functions_,
-  std::vector<Rule*> &&rules_, const location &loc_):
+  std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
   validate();
 }
@@ -33,8 +33,8 @@ Model::Model(const Model &other):
     decls.push_back(d->clone());
   for (const std::shared_ptr<Function> &f : other.functions)
     functions.emplace_back(f->clone());
-  for (const Rule *r : other.rules)
-    rules.push_back(r->clone());
+  for (const std::shared_ptr<Rule> &r : other.rules)
+    rules.emplace_back(r->clone());
 }
 
 Model &Model::operator=(Model other) {
@@ -66,8 +66,6 @@ mpz_class Model::size_bits() const {
 Model::~Model() {
   for (Decl *d : decls)
     delete d;
-  for (Rule *r : rules)
-    delete r;
 }
 
 void Model::generate(std::ostream &out) const {
@@ -86,17 +84,17 @@ void Model::generate(std::ostream &out) const {
    * is to essentially remove rulesets from the cases we need to deal with
    * below.
    */
-  std::vector<Rule*> flat_rules;
-  for (const Rule *r : rules) {
-    std::vector<Rule*> rs = r->flatten();
+  std::vector<std::shared_ptr<Rule>> flat_rules;
+  for (const std::shared_ptr<Rule> &r : rules) {
+    std::vector<std::shared_ptr<Rule>> rs = r->flatten();
     flat_rules.insert(flat_rules.end(), rs.begin(), rs.end());
   }
 
   // Write out the start state rules.
   {
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (auto s = dynamic_cast<const StartState*>(r)) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (auto s = dynamic_cast<const StartState*>(r.get())) {
         out << "static void startstate" << index << "(struct state *s";
         for (const Quantifier *q : s->quantifiers)
           out << ", struct handle ru_" << q->var->name;
@@ -122,8 +120,8 @@ void Model::generate(std::ostream &out) const {
   // Write out the property rules.
   {
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (auto i = dynamic_cast<const PropertyRule*>(r)) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (auto i = dynamic_cast<const PropertyRule*>(r.get())) {
         out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
         for (const Quantifier *q : i->quantifiers)
           out << ", struct handle ru_" << q->var->name;
@@ -139,8 +137,8 @@ void Model::generate(std::ostream &out) const {
   // Write out the regular rules.
   {
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (auto s = dynamic_cast<const SimpleRule*>(r)) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (auto s = dynamic_cast<const SimpleRule*>(r.get())) {
 
         // Write the guard
         out << "static bool guard" << index << "(const struct state *s "
@@ -184,8 +182,8 @@ void Model::generate(std::ostream &out) const {
   {
     out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (auto p = dynamic_cast<const PropertyRule*>(r)) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
         if (p->property.category == Property::ASSERTION) {
 
           // Open a scope so we don't have to think about name collisions.
@@ -220,8 +218,8 @@ void Model::generate(std::ostream &out) const {
   {
     out << "static void check_assumptions(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (auto p = dynamic_cast<const PropertyRule*>(r)) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
         if (p->property.category == Property::ASSUMPTION) {
 
           // Open a scope so we don't have to think about name collisions.
@@ -265,8 +263,8 @@ void Model::generate(std::ostream &out) const {
       << "  size_t queue_id = 0;\n";
 
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (dynamic_cast<const StartState*>(r) != nullptr) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (dynamic_cast<const StartState*>(r.get()) != nullptr) {
 
         // Open a scope so we don't have to think about name collisions.
         out << "  {\n";
@@ -345,8 +343,8 @@ void Model::generate(std::ostream &out) const {
       << "\n"
       << "    bool possible_deadlock = true;\n";
     size_t index = 0;
-    for (const Rule *r : flat_rules) {
-      if (dynamic_cast<const SimpleRule*>(r) != nullptr) {
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (dynamic_cast<const SimpleRule*>(r.get()) != nullptr) {
 
         // Open a scope so we don't have to think about name collisions.
         out << "    {\n";
@@ -442,9 +440,6 @@ void Model::generate(std::ostream &out) const {
   }
   out
     << "}\n\n";
-
-  for (Rule *r : flat_rules)
-    delete r;
 }
 
 bool Model::operator==(const Node &other) const {
@@ -477,7 +472,7 @@ void Model::validate() const {
   // Check all rule names are distinct.
   {
     std::unordered_set<std::string> names;
-    for (const Rule *r : rules) {
+    for (const std::shared_ptr<Rule> &r : rules) {
       if (r->name != "") {
         if (!names.insert(r->name).second)
           throw Error("duplicate rule name " + r->name, r->loc);

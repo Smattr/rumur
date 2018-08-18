@@ -180,16 +180,16 @@
 %type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameters_cont
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
-%type <rumur::PropertyRule*>                                 property
+%type <std::shared_ptr<rumur::PropertyRule>>                 property
 %type <rumur::Quantifier*>                                   quantifier
 %type <std::vector<rumur::Quantifier*>>                      quantifiers
 %type <rumur::TypeExpr*>                                     return_type
-%type <rumur::Rule*>                                         rule
-%type <rumur::Ruleset*>                                      ruleset
-%type <std::vector<rumur::Rule*>>                            rules
-%type <std::vector<rumur::Rule*>>                            rules_cont
-%type <rumur::SimpleRule*>                                   simplerule
-%type <rumur::StartState*>                                   startstate
+%type <std::shared_ptr<rumur::Rule>>                         rule
+%type <std::shared_ptr<rumur::Ruleset>>                      ruleset
+%type <std::vector<std::shared_ptr<rumur::Rule>>>            rules
+%type <std::vector<std::shared_ptr<rumur::Rule>>>            rules_cont
+%type <std::shared_ptr<rumur::SimpleRule>>                   simplerule
+%type <std::shared_ptr<rumur::StartState>>                   startstate
 %type <rumur::Stmt*>                                         stmt
 %type <std::vector<rumur::Stmt*>>                            stmts
 %type <std::vector<rumur::Stmt*>>                            stmts_cont
@@ -379,19 +379,19 @@ rule: startstate {
 };
 
 startstate: STARTSTATE string_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endstartstate {
-  $$ = new rumur::StartState($2, std::move($4), std::move($5), @$);
+  $$ = std::make_shared<rumur::StartState>($2, std::move($4), std::move($5), @$);
 };
 
 simplerule: RULE string_opt guard_opt { symtab.open_scope(); } decls_header stmts { symtab.close_scope(); } endrule {
-  $$ = new rumur::SimpleRule($2, $3, std::move($5), std::move($6), @$);
+  $$ = std::make_shared<rumur::SimpleRule>($2, $3, std::move($5), std::move($6), @$);
 };
 
 property: category STRING expr {
   rumur::Property p($1, $3, @3);
-  $$ = new rumur::PropertyRule($2, p, @$);
+  $$ = std::make_shared<rumur::PropertyRule>($2, p, @$);
 } | category expr string_opt {
   rumur::Property p($1, $2, @2);
-  $$ = new rumur::PropertyRule($3, p, @$);
+  $$ = std::make_shared<rumur::PropertyRule>($3, p, @$);
 };
 
 category: ASSERT {
@@ -405,7 +405,7 @@ category: ASSERT {
 };
 
 ruleset: RULESET { symtab.open_scope(); } quantifiers DO rules { symtab.close_scope(); } endruleset {
-  $$ = new rumur::Ruleset(std::move($3), std::move($5), @$);
+  $$ = std::make_shared<rumur::Ruleset>(std::move($3), std::move($5), @$);
 };
 
 guard_opt: expr ARROW {
