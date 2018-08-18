@@ -29,6 +29,7 @@
    */
 %code requires {
 
+  #include <memory>
   #include <rumur/Decl.h>
   #include <rumur/Expr.h>
   #include <rumur/Function.h>
@@ -87,7 +88,7 @@
   /* Tell Bison we'll receive another parameter that will allow us to pass
    * back the result of parsing.
    */
-%parse-param { rumur::Model *&output }
+%parse-param { std::shared_ptr<rumur::Model> &output }
 
   /* And also a symbol table we'll use for relating identifiers back to the
    * target they refer to.
@@ -206,7 +207,7 @@ model: {
       /* Reset offset, in case we were previously parsing a model. */
       offset = 0;
     } decls procdecls rules {
-  output = new rumur::Model(std::move($2), std::move($3), std::move($4), @$);
+  output = std::make_shared<rumur::Model>(std::move($2), std::move($3), std::move($4), @$);
 };
 
 decls: decls decl {

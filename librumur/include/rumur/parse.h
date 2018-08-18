@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <rumur/Model.h>
 
 namespace rumur {
@@ -13,6 +14,6 @@ namespace rumur {
  * own parsing logic. I recommend you copy the implementation of this function
  * and tweak as desired.
  */
-Model *parse(std::istream *input);
+std::shared_ptr<Model> parse(std::istream *input);
 
 }

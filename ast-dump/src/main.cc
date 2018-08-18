@@ -3,6 +3,7 @@
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
+#include <memory>
 #include <rumur/rumur.h>
 #include <string>
 #include <unistd.h>
@@ -85,7 +86,7 @@ int main(int argc, char **argv) {
   assert(out != nullptr);
 
   // Parse input model
-  rumur::Model *m;
+  std::shared_ptr<rumur::Model> m;
   try {
     m = rumur::parse(in);
   } catch (rumur::Error &e) {
@@ -101,7 +102,6 @@ int main(int argc, char **argv) {
   }
 
   // Clean up
-  delete m;
   if (in != &std::cin)
     delete in;
   if (out != &std::cout)

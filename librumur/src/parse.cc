@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include "parser.yy.hh"
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
@@ -14,7 +15,7 @@
 
 namespace rumur {
 
-Model *parse(std::istream *input) {
+std::shared_ptr<Model> parse(std::istream *input) {
 
   assert(input != nullptr);
 
@@ -27,7 +28,7 @@ Model *parse(std::istream *input) {
 
   // Setup the parser
   scanner s(input);
-  Model *m = nullptr;
+  std::shared_ptr<rumur::Model> m;
   parser p(s, m, symtab);
 
   // Parse the input model

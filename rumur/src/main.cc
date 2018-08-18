@@ -5,6 +5,7 @@
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
+#include <memory>
 #include "resources_manpage.h"
 #include <rumur/rumur.h>
 #include <string>
@@ -308,7 +309,7 @@ int main(int argc, char **argv) {
   parse_args(argc, argv);
 
   // Parse input model
-  rumur::Model *m;
+  std::shared_ptr<rumur::Model> m;
   try {
     m = rumur::parse(in);
   } catch (rumur::Error &e) {
