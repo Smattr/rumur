@@ -163,7 +163,7 @@ struct ProcedureCall : public Stmt {
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);
   friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;
-  virtual ~ProcedureCall() { };
+  virtual ~ProcedureCall();
   ProcedureCall *clone() const final;
 
   void generate(std::ostream &out) const final;

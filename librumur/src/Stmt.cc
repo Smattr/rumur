@@ -369,6 +369,11 @@ bool ProcedureCall::operator==(const Node &other) const {
   return true;
 }
 
+ProcedureCall::~ProcedureCall() {
+  for (Expr *arg : arguments)
+    delete arg;
+}
+
 Return::Return(Expr *expr_, const location &loc_):
   Stmt(loc_), expr(expr_) { }
 
