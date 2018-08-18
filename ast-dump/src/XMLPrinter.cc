@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <rumur/rumur.h>
 #include <string>
 #include "XMLPrinter.h"
@@ -359,7 +360,7 @@ void XMLPrinter::visit(const Model &n) {
   if (!n.functions.empty()) {
     sync_to(*n.functions[0]);
     *o << "<functions>";
-    for (const Function *f : n.functions) {
+    for (const std::shared_ptr<Function> f : n.functions) {
       sync_to(*f);
       dispatch(*f);
     }

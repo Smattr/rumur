@@ -4,6 +4,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Function.h>
 #include <rumur/Node.h>
@@ -15,11 +16,12 @@ namespace rumur {
 struct Model : public Node {
 
   std::vector<Decl*> decls;
-  std::vector<Function*> functions;
+  std::vector<std::shared_ptr<Function>> functions;
   std::vector<Rule*> rules;
 
   Model() = delete;
-  Model(std::vector<Decl*> &&decls_, std::vector<Function*> &&functions_,
+  Model(std::vector<Decl*> &&decls_,
+    std::vector<std::shared_ptr<Function>> &&functions_,
     std::vector<Rule*> &&rules_, const location &loc_);
   Model(const Model &other);
   Model &operator=(Model other);

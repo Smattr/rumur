@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <gmpxx.h>
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Function.h>
@@ -19,7 +20,8 @@
 
 namespace rumur {
 
-Model::Model(std::vector<Decl*> &&decls_, std::vector<Function*> &&functions_,
+Model::Model(std::vector<Decl*> &&decls_,
+  std::vector<std::shared_ptr<Function>> &&functions_,
   std::vector<Rule*> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
   validate();
@@ -29,8 +31,8 @@ Model::Model(const Model &other):
   Node(other) {
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
-  for (const Function *f : other.functions)
-    functions.push_back(f->clone());
+  for (const std::shared_ptr<Function> &f : other.functions)
+    functions.emplace_back(f->clone());
   for (const Rule *r : other.rules)
     rules.push_back(r->clone());
 }
@@ -64,8 +66,6 @@ mpz_class Model::size_bits() const {
 Model::~Model() {
   for (Decl *d : decls)
     delete d;
-  for (Function *f : functions)
-    delete f;
   for (Rule *r : rules)
     delete r;
 }

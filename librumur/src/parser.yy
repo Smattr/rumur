@@ -178,8 +178,8 @@
 %type <std::vector<rumur::Parameter*>>                       parameter
 %type <std::vector<rumur::Parameter*>>                       parameters
 %type <std::vector<rumur::Parameter*>>                       parameters_cont
-%type <rumur::Function*>                                     procdecl
-%type <std::vector<rumur::Function*>>                        procdecls
+%type <std::shared_ptr<rumur::Function>>                     procdecl
+%type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <rumur::PropertyRule*>                                 property
 %type <rumur::Quantifier*>                                   quantifier
 %type <std::vector<rumur::Quantifier*>>                      quantifiers
@@ -331,7 +331,7 @@ parameters_cont: parameters_cont parameter ';' {
 };
 
 procdecl: function ID { symtab.open_scope(); } '(' parameters ')' return_type decls begin_opt stmts { symtab.close_scope(); } endfunction ';' {
-  $$ = new rumur::Function($2, std::move($5), $7, std::move($8), std::move($10), @$);
+  $$ = std::make_shared<rumur::Function>($2, std::move($5), $7, std::move($8), std::move($10), @$);
   symtab.declare($$->name, *$$);
 };
 
