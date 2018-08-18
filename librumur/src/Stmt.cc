@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <memory>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
@@ -181,14 +182,14 @@ bool ErrorStmt::operator==(const Node &other) const {
   return o != nullptr && message == o->message;
 }
 
-For::For(Quantifier *quantifier_, std::vector<Stmt*> &&body_,
+For::For(Quantifier *quantifier_, std::vector<std::shared_ptr<Stmt>> &&body_,
   const location &loc_):
   Stmt(loc_), quantifier(quantifier_), body(body_) { }
 
 For::For(const For &other):
   Stmt(other.loc), quantifier(other.quantifier->clone()) {
-  for (const Stmt *s : other.body)
-    body.push_back(s->clone());
+  for (const std::shared_ptr<Stmt> &s : other.body)
+    body.emplace_back(s->clone());
 }
 
 For &For::operator=(For other) {
@@ -209,7 +210,7 @@ For *For::clone() const {
 
 void For::generate(std::ostream &out) const {
   quantifier->generate_header(out);
-  for (Stmt const *s : body) {
+  for (const std::shared_ptr<Stmt> &s : body) {
     out << "  ";
     s->generate(out);
     out << ";\n";
@@ -230,19 +231,17 @@ bool For::operator==(const Node &other) const {
 
 For::~For() {
   delete quantifier;
-  for (Stmt *s : body)
-    delete s;
 }
 
-IfClause::IfClause(Expr *condition_, std::vector<Stmt*> &&body_,
+IfClause::IfClause(Expr *condition_, std::vector<std::shared_ptr<Stmt>> &&body_,
   const location &loc_):
   Node(loc_), condition(condition_), body(body_) { }
 
 IfClause::IfClause(const IfClause &other):
   Node(other.loc),
   condition(other.condition == nullptr ? nullptr : other.condition->clone()) {
-  for (const Stmt *s : other.body)
-    body.push_back(s->clone());
+  for (const std::shared_ptr<Stmt> &s : other.body)
+    body.emplace_back(s->clone());
 }
 
 IfClause &IfClause::operator=(IfClause other) {
@@ -259,8 +258,6 @@ void swap(IfClause &x, IfClause &y) noexcept {
 
 IfClause::~IfClause() {
   delete condition;
-  for (Stmt *s : body)
-    delete s;
 }
 
 IfClause *IfClause::clone() const {
@@ -316,7 +313,7 @@ void If::generate(std::ostream &out) const {
       out  << ") ";
     }
     out << " {\n";
-    for (const Stmt *s : c.body) {
+    for (const std::shared_ptr<Stmt> &s : c.body) {
       s->generate(out);
       out << ";\n";
     }

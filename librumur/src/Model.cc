@@ -109,7 +109,7 @@ void Model::generate(std::ostream &out) const {
               << v->type->width() << ") };\n";
         }
 
-        for (const Stmt *st : s->body)
+        for (const std::shared_ptr<Stmt> &st : s->body)
           out << "  " << *st << ";\n";
         out << "}\n\n";
         index++;
@@ -169,7 +169,7 @@ void Model::generate(std::ostream &out) const {
               << v->type->width() << ") };\n";
         }
 
-        for (const Stmt *st : s->body)
+        for (const std::shared_ptr<Stmt> &st : s->body)
           out << "  " << *st << ";\n";
         out << "}\n\n";
 

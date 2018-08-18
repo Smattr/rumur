@@ -62,7 +62,7 @@ Rule::~Rule() {
 }
 
 SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
-  std::vector<Stmt*> &&body_, const location &loc_):
+  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) {
   validate();
 }
@@ -71,8 +71,8 @@ SimpleRule::SimpleRule(const SimpleRule &other):
   Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()) {
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
-  for (const Stmt *s : other.body)
-    body.push_back(s->clone());
+  for (const std::shared_ptr<Stmt> &s : other.body)
+    body.emplace_back(s->clone());
 }
 
 SimpleRule &SimpleRule::operator=(SimpleRule other) {
@@ -97,8 +97,6 @@ SimpleRule::~SimpleRule() {
   delete guard;
   for (Decl *d : decls)
     delete d;
-  for (Stmt *s : body)
-    delete s;
 }
 
 bool SimpleRule::operator==(const Node &other) const {
@@ -128,7 +126,7 @@ void SimpleRule::validate() const {
 }
 
 StartState::StartState(const std::string &name_, std::vector<Decl*> &&decls_,
-  std::vector<Stmt*> &&body_, const location &loc_):
+  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Rule(name_, loc_), decls(decls_), body(body_) {
   validate();
 }
@@ -137,8 +135,8 @@ StartState::StartState(const StartState &other):
   Rule(other) {
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
-  for (const Stmt *s : other.body)
-    body.push_back(s->clone());
+  for (const std::shared_ptr<Stmt> &s : other.body)
+    body.emplace_back(s->clone());
 }
 
 StartState &StartState::operator=(StartState other) {
@@ -181,8 +179,6 @@ void StartState::validate() const {
 StartState::~StartState() {
   for (Decl *d : decls)
     delete d;
-  for (Stmt *s : body)
-    delete s;
 }
 
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,

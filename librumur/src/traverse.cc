@@ -343,7 +343,7 @@ void Traversal::visit(Field &n) {
 
 void Traversal::visit(For &n) {
   dispatch(*n.quantifier);
-  for (Stmt *s : n.body)
+  for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -359,7 +359,7 @@ void Traversal::visit(Function &n) {
     dispatch(*n.return_type);
   for (Decl *d : n.decls)
     dispatch(*d);
-  for (Stmt *s : n.body)
+  for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -385,7 +385,7 @@ void Traversal::visit(If &n) {
 void Traversal::visit(IfClause &n) {
   if (n.condition != nullptr)
     dispatch(*n.condition);
-  for (Stmt *s : n.body)
+  for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -499,7 +499,7 @@ void Traversal::visit(SimpleRule &n) {
     dispatch(*n.guard);
   for (Decl *d : n.decls)
     dispatch(*d);
-  for (Stmt *s : n.body)
+  for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -508,7 +508,7 @@ void Traversal::visit(StartState &n) {
     dispatch(*q);
   for (Decl *d : n.decls)
     dispatch(*d);
-  for (Stmt *s : n.body)
+  for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -875,7 +875,7 @@ void ConstTraversal::visit(const Field &n) {
 
 void ConstTraversal::visit(const For &n) {
   dispatch(*n.quantifier);
-  for (const Stmt *s : n.body)
+  for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -891,7 +891,7 @@ void ConstTraversal::visit(const Function &n) {
     dispatch(*n.return_type);
   for (const Decl *d : n.decls)
     dispatch(*d);
-  for (const Stmt *s : n.body)
+  for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -917,7 +917,7 @@ void ConstTraversal::visit(const If &n) {
 void ConstTraversal::visit(const IfClause &n) {
   if (n.condition != nullptr)
     dispatch(*n.condition);
-  for (const Stmt *s : n.body)
+  for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -1031,7 +1031,7 @@ void ConstTraversal::visit(const SimpleRule &n) {
     dispatch(*n.guard);
   for (const Decl *d : n.decls)
     dispatch(*d);
-  for (const Stmt *s : n.body)
+  for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 
@@ -1040,7 +1040,7 @@ void ConstTraversal::visit(const StartState &n) {
     dispatch(*q);
   for (const Decl *d : n.decls)
     dispatch(*d);
-  for (const Stmt *s : n.body)
+  for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
 }
 

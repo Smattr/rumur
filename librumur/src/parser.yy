@@ -190,9 +190,9 @@
 %type <std::vector<std::shared_ptr<rumur::Rule>>>            rules_cont
 %type <std::shared_ptr<rumur::SimpleRule>>                   simplerule
 %type <std::shared_ptr<rumur::StartState>>                   startstate
-%type <rumur::Stmt*>                                         stmt
-%type <std::vector<rumur::Stmt*>>                            stmts
-%type <std::vector<rumur::Stmt*>>                            stmts_cont
+%type <std::shared_ptr<rumur::Stmt>>                         stmt
+%type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts
+%type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts_cont
 %type <std::string>                                          string_opt
 %type <rumur::Decl*>                                         typedecl
 %type <std::vector<rumur::Decl*>>                            typedecls
@@ -436,38 +436,38 @@ stmts_cont: stmts_cont stmt ';' {
 
 stmt: category STRING expr {
   rumur::Property p($1, $3, @3);
-  $$ = new rumur::PropertyStmt(p, $2, @$);
+  $$ = std::make_shared<rumur::PropertyStmt>(p, $2, @$);
 } | category expr string_opt {
   rumur::Property p($1, $2, @2);
-  $$ = new rumur::PropertyStmt(p, $3, @$);
+  $$ = std::make_shared<rumur::PropertyStmt>(p, $3, @$);
 } | designator COLON_EQ expr {
-  $$ = new rumur::Assignment($1, $3, @$);
+  $$ = std::make_shared<rumur::Assignment>($1, $3, @$);
 } | ERROR STRING {
-  $$ = new rumur::ErrorStmt($2, @$);
+  $$ = std::make_shared<rumur::ErrorStmt>($2, @$);
 } | CLEAR designator {
-  $$ = new rumur::Clear($2, @$);
+  $$ = std::make_shared<rumur::Clear>($2, @$);
 } | FOR quantifier {
     symtab.open_scope();
     symtab.declare($2->var->name, *$2->var);
   } DO stmts endfor {
-  $$ = new rumur::For($2, std::move($5), @$);
+  $$ = std::make_shared<rumur::For>($2, std::move($5), @$);
   symtab.close_scope();
 } | IF expr THEN stmts elsifs else_opt endif {
   std::vector<rumur::IfClause> cs = {
     rumur::IfClause($2, std::move($4), rumur::location(@1.begin, @4.end)) };
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
-  $$ = new rumur::If(std::move(cs), @$);
+  $$ = std::make_shared<rumur::If>(std::move(cs), @$);
 } | RETURN {
-  $$ = new rumur::Return(nullptr, @$);
+  $$ = std::make_shared<rumur::Return>(nullptr, @$);
 } | RETURN expr {
-  $$ = new rumur::Return($2, @$);
+  $$ = std::make_shared<rumur::Return>($2, @$);
 } | UNDEFINE designator {
-  $$ = new rumur::Undefine($2, @$);
+  $$ = std::make_shared<rumur::Undefine>($2, @$);
 } | ID '(' exprlist ')' {
   auto f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = new rumur::ProcedureCall(f->clone(), std::move($3), @$);
+  $$ = std::make_shared<rumur::ProcedureCall>(f->clone(), std::move($3), @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {

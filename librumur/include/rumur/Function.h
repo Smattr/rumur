@@ -32,13 +32,13 @@ struct Function : public Node {
   std::vector<std::shared_ptr<Parameter>> parameters;
   TypeExpr *return_type;
   std::vector<Decl*> decls;
-  std::vector<Stmt*> body;
+  std::vector<std::shared_ptr<Stmt>> body;
 
   Function() = delete;
   Function(const std::string &name_,
     std::vector<std::shared_ptr<Parameter>> &&parameters_,
     TypeExpr *return_type_, std::vector<Decl*> &&decls_,
-    std::vector<Stmt*> &&body_, const location &loc_);
+    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   Function(const Function &other);
   Function &operator=(Function other);
   friend void swap(Function &x, Function &y) noexcept;

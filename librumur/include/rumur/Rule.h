@@ -33,11 +33,11 @@ struct SimpleRule : public Rule {
 
   Expr *guard;
   std::vector<Decl*> decls;
-  std::vector<Stmt*> body;
+  std::vector<std::shared_ptr<Stmt>> body;
 
   SimpleRule() = delete;
   SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
-    std::vector<Stmt*> &&body_, const location &loc_);
+    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   SimpleRule(const SimpleRule &other);
   SimpleRule &operator=(SimpleRule other);
   friend void swap(SimpleRule &x, SimpleRule &y) noexcept;
@@ -50,11 +50,11 @@ struct SimpleRule : public Rule {
 struct StartState : public Rule {
 
   std::vector<Decl*> decls;
-  std::vector<Stmt*> body;
+  std::vector<std::shared_ptr<Stmt>> body;
 
   StartState() = delete;
   StartState(const std::string &name_, std::vector<Decl*> &&decls_,
-    std::vector<Stmt*> &&body_, const location &loc_);
+    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   StartState(const StartState &other);
   StartState &operator=(StartState other);
   friend void swap(StartState &x, StartState &y) noexcept;

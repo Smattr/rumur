@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
@@ -103,10 +104,11 @@ struct ErrorStmt : public Stmt {
 struct For : public Stmt {
 
   Quantifier *quantifier;
-  std::vector<Stmt*> body;
+  std::vector<std::shared_ptr<Stmt>> body;
 
   For() = delete;
-  For(Quantifier *quantifier_, std::vector<Stmt*> &&body_, const location &loc_);
+  For(Quantifier *quantifier_, std::vector<std::shared_ptr<Stmt>> &&body_,
+    const location &loc_);
   For(const For &other);
   For &operator=(For other);
   friend void swap(For &x, For &y) noexcept;
@@ -120,10 +122,11 @@ struct For : public Stmt {
 struct IfClause : public Node {
 
   Expr *condition;
-  std::vector<Stmt*> body;
+  std::vector<std::shared_ptr<Stmt>> body;
 
   IfClause() = delete;
-  IfClause(Expr *condition_, std::vector<Stmt*> &&body_, const location &loc_);
+  IfClause(Expr *condition_, std::vector<std::shared_ptr<Stmt>> &&body_,
+    const location &loc_);
   IfClause(const IfClause &other);
   IfClause &operator=(IfClause other);
   friend void swap(IfClause &x, IfClause &y) noexcept;

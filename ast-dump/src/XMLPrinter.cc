@@ -205,7 +205,7 @@ void XMLPrinter::visit(const For &n) {
   if (!n.body.empty()) {
     sync_to(*n.body[0]);
     *o << "<body>";
-    for (const Stmt *s : n.body) {
+    for (const std::shared_ptr<Stmt> &s : n.body) {
       sync_to(*s);
       dispatch(*s);
     }
@@ -254,7 +254,7 @@ void XMLPrinter::visit(const Function &n) {
   if (!n.body.empty()) {
     sync_to(*n.body[0]);
     *o << "<body>";
-    for (const Stmt *s : n.body) {
+    for (const std::shared_ptr<Stmt> &s : n.body) {
       sync_to(*s);
       dispatch(*s);
     }
@@ -318,7 +318,7 @@ void XMLPrinter::visit(const IfClause &n) {
   if (!n.body.empty()) {
     sync_to(*n.body[0]);
     *o << "<body>";
-    for (const Stmt *s : n.body) {
+    for (const std::shared_ptr<Stmt> &s : n.body) {
       sync_to(*s);
       dispatch(*s);
     }
@@ -623,7 +623,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
   if (!n.body.empty()) {
     sync_to(*n.body[0]);
     *o << "<body>";
-    for (const Stmt *s : n.body) {
+    for (const std::shared_ptr<Stmt> &s : n.body) {
       sync_to(*s);
       dispatch(*s);
     }
@@ -659,7 +659,7 @@ void XMLPrinter::visit(const StartState &n) {
   if (!n.body.empty()) {
     sync_to(*n.body[0]);
     *o << "<body>";
-    for (const Stmt *s : n.body) {
+    for (const std::shared_ptr<Stmt> &s : n.body) {
       sync_to(*s);
       dispatch(*s);
     }

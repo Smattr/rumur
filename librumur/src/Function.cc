@@ -49,7 +49,7 @@ bool Parameter::operator==(const Node &other) const {
 
 Function::Function(const std::string &name_,
   std::vector<std::shared_ptr<Parameter>> &&parameters_, TypeExpr *return_type_,
-  std::vector<Decl*> &&decls_, std::vector<Stmt*> &&body_,
+  std::vector<Decl*> &&decls_, std::vector<std::shared_ptr<Stmt>> &&body_,
   const location &loc_):
   Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
   decls(decls_), body(body_) { }
@@ -64,8 +64,8 @@ Function::Function(const Function &other):
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
 
-  for (const Stmt *s : other.body)
-    body.push_back(s->clone());
+  for (const std::shared_ptr<Stmt> &s : other.body)
+    body.emplace_back(s->clone());
 }
 
 Function &Function::operator=(Function other) {
@@ -87,8 +87,6 @@ Function::~Function() {
   delete return_type;
   for (Decl *d : decls)
     delete d;
-  for (Stmt *s : body)
-    delete s;
 }
 
 Function *Function::clone() const {
