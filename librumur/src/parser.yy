@@ -175,9 +175,9 @@
 %type <rumur::Expr*>                                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
-%type <std::vector<rumur::Parameter*>>                       parameter
-%type <std::vector<rumur::Parameter*>>                       parameters
-%type <std::vector<rumur::Parameter*>>                       parameters_cont
+%type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameter
+%type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameters
+%type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameters_cont
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <rumur::PropertyRule*>                                 property
@@ -311,7 +311,7 @@ parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
     auto v = new rumur::VarDecl(i.first, $4->clone(), i.second);
     symtab.declare(v->name, *v);
-    $$.push_back(new rumur::Parameter(v, $1, @$));
+    $$.push_back(std::make_shared<rumur::Parameter>(v, $1, @$));
   }
 };
 

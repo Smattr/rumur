@@ -237,7 +237,7 @@ void XMLPrinter::visit(const Function &n) {
   *o << "<function name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
-  for (const Parameter *p : n.parameters) {
+  for (const std::shared_ptr<Parameter> &p : n.parameters) {
     sync_to(*p);
     dispatch(*p);
   }

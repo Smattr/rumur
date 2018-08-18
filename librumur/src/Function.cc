@@ -1,3 +1,4 @@
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Function.h>
 #include <rumur/Stmt.h>
@@ -47,7 +48,7 @@ bool Parameter::operator==(const Node &other) const {
 }
 
 Function::Function(const std::string &name_,
-  std::vector<Parameter*> &&parameters_, TypeExpr *return_type_,
+  std::vector<std::shared_ptr<Parameter>> &&parameters_, TypeExpr *return_type_,
   std::vector<Decl*> &&decls_, std::vector<Stmt*> &&body_,
   const location &loc_):
   Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
@@ -57,8 +58,8 @@ Function::Function(const Function &other):
   Node(other), name(other.name),
   return_type(other.return_type == nullptr ? nullptr : other.return_type->clone()) {
 
-  for (const Parameter *p : other.parameters)
-    parameters.push_back(p->clone());
+  for (const std::shared_ptr<Parameter> &p : other.parameters)
+    parameters.emplace_back(p->clone());
 
   for (const Decl *d : other.decls)
     decls.push_back(d->clone());
@@ -83,8 +84,6 @@ void swap(Function &x, Function &y) noexcept {
 }
 
 Function::~Function() {
-  for (Parameter *p : parameters)
-    delete p;
   delete return_type;
   for (Decl *d : decls)
     delete d;

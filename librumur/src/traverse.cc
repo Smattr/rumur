@@ -353,7 +353,7 @@ void Traversal::visit(Forall &n) {
 }
 
 void Traversal::visit(Function &n) {
-  for (Parameter *p : n.parameters)
+  for (std::shared_ptr<Parameter> &p : n.parameters)
     dispatch(*p);
   if (n.return_type != nullptr)
     dispatch(*n.return_type);
@@ -885,7 +885,7 @@ void ConstTraversal::visit(const Forall &n) {
 }
 
 void ConstTraversal::visit(const Function &n) {
-  for (const Parameter *p : n.parameters)
+  for (const std::shared_ptr<Parameter> &p : n.parameters)
     dispatch(*p);
   if (n.return_type != nullptr)
     dispatch(*n.return_type);
