@@ -4,6 +4,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Node.h>
 #include <string>
 #include <vector>
@@ -499,11 +500,12 @@ struct Quantifier : public Node {
 
 struct Exists : public Expr {
 
-  Quantifier *quantifier;
+  std::shared_ptr<Quantifier> quantifier;
   Expr *expr;
 
   Exists() = delete;
-  Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_);
+  Exists(std::shared_ptr<Quantifier> quantifier_, Expr *expr_,
+    const location &loc_);
   Exists(const Exists &other);
   Exists &operator=(Exists other);
   friend void swap(Exists &x, Exists &y) noexcept;
@@ -520,11 +522,12 @@ struct Exists : public Expr {
 
 struct Forall : public Expr {
 
-  Quantifier *quantifier;
+  std::shared_ptr<Quantifier> quantifier;
   Expr *expr;
 
   Forall() = delete;
-  Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_);
+  Forall(std::shared_ptr<Quantifier> quantifier_, Expr *expr_,
+    const location &loc_);
   Forall(const Forall &other);
   Forall &operator=(Forall other);
   friend void swap(Forall &x, Forall &y) noexcept;

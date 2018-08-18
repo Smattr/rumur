@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include "location.hh"
+#include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
@@ -1307,7 +1308,8 @@ bool Quantifier::operator==(const Node &other) const {
   return true;
 }
 
-Exists::Exists(Quantifier *quantifier_, Expr *expr_, const location &loc_):
+Exists::Exists(std::shared_ptr<Quantifier> quantifier_, Expr *expr_,
+  const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
   validate();
 }
@@ -1341,7 +1343,6 @@ const TypeExpr *Exists::type() const {
 }
 
 Exists::~Exists() {
-  delete quantifier;
   delete expr;
 }
 
@@ -1369,7 +1370,7 @@ void Exists::validate() const {
     throw Error("expression in exists is not boolean", expr->loc);
 }
 
-Forall::Forall(Quantifier *quantifier_, Expr *expr_, const location &loc_):
+Forall::Forall(std::shared_ptr<Quantifier> quantifier_, Expr *expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
   validate();
 }
@@ -1403,7 +1404,6 @@ const TypeExpr *Forall::type() const {
 }
 
 Forall::~Forall() {
-  delete quantifier;
   delete expr;
 }
 

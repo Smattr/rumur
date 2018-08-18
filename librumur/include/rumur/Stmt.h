@@ -103,16 +103,16 @@ struct ErrorStmt : public Stmt {
 
 struct For : public Stmt {
 
-  Quantifier *quantifier;
+  std::shared_ptr<Quantifier> quantifier;
   std::vector<std::shared_ptr<Stmt>> body;
 
   For() = delete;
-  For(Quantifier *quantifier_, std::vector<std::shared_ptr<Stmt>> &&body_,
-    const location &loc_);
+  For(std::shared_ptr<Quantifier> quantifier_,
+    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   For(const For &other);
   For &operator=(For other);
   friend void swap(For &x, For &y) noexcept;
-  virtual ~For();
+  virtual ~For() { }
   For *clone() const final;
 
   void generate(std::ostream &out) const final;

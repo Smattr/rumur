@@ -16,7 +16,7 @@ namespace rumur {
 struct Rule : public Node {
 
   std::string name;
-  std::vector<Quantifier*> quantifiers;
+  std::vector<std::shared_ptr<Quantifier>> quantifiers;
 
   Rule() = delete;
   Rule(const std::string &name_, const location &loc_);
@@ -26,7 +26,7 @@ struct Rule : public Node {
 
   virtual std::vector<std::shared_ptr<Rule>> flatten() const;
 
-  virtual ~Rule();
+  virtual ~Rule() { }
 };
 
 struct SimpleRule : public Rule {
@@ -84,7 +84,7 @@ struct Ruleset : public Rule {
   std::vector<std::shared_ptr<Rule>> rules;
 
   Ruleset() = delete;
-  Ruleset(std::vector<Quantifier*> &&quantifiers_,
+  Ruleset(std::vector<std::shared_ptr<Quantifier>> &&quantifiers_,
     std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
   Ruleset(const Ruleset &other);
   Ruleset &operator=(Ruleset other);

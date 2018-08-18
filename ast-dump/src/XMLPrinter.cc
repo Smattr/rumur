@@ -466,7 +466,7 @@ void XMLPrinter::visit(const PropertyRule &n) {
   if (!n.quantifiers.empty()) {
     sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers) {
+    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
       sync_to(*q);
       dispatch(*q);
     }
@@ -559,7 +559,7 @@ void XMLPrinter::visit(const Ruleset &n) {
   if (!n.quantifiers.empty()) {
     sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers) {
+    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
       sync_to(*q);
       dispatch(*q);
     }
@@ -599,7 +599,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
   if (!n.quantifiers.empty()) {
     sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers) {
+    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
       sync_to(*q);
       dispatch(*q);
     }
@@ -641,7 +641,7 @@ void XMLPrinter::visit(const StartState &n) {
   if (!n.quantifiers.empty()) {
     sync_to(*n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const Quantifier *q : n.quantifiers) {
+    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
       sync_to(*q);
       dispatch(*q);
     }

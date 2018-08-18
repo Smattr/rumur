@@ -451,7 +451,7 @@ void Traversal::visit(Property &n) {
 }
 
 void Traversal::visit(PropertyRule &n) {
-  for (Quantifier *q : n.quantifiers)
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   dispatch(n.property);
 }
@@ -482,7 +482,7 @@ void Traversal::visit(Return &n) {
 }
 
 void Traversal::visit(Ruleset &n) {
-  for (Quantifier *q : n.quantifiers)
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   for (std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
@@ -493,7 +493,7 @@ void Traversal::visit(Scalarset &n) {
 }
 
 void Traversal::visit(SimpleRule &n) {
-  for (Quantifier *q : n.quantifiers)
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
@@ -504,7 +504,7 @@ void Traversal::visit(SimpleRule &n) {
 }
 
 void Traversal::visit(StartState &n) {
-  for (Quantifier *q : n.quantifiers)
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   for (Decl *d : n.decls)
     dispatch(*d);
@@ -983,7 +983,7 @@ void ConstTraversal::visit(const Property &n) {
 }
 
 void ConstTraversal::visit(const PropertyRule &n) {
-  for (const Quantifier *q : n.quantifiers)
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   dispatch(n.property);
 }
@@ -1014,7 +1014,7 @@ void ConstTraversal::visit(const Return &n) {
 }
 
 void ConstTraversal::visit(const Ruleset &n) {
-  for (const Quantifier *q : n.quantifiers)
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
@@ -1025,7 +1025,7 @@ void ConstTraversal::visit(const Scalarset &n) {
 }
 
 void ConstTraversal::visit(const SimpleRule &n) {
-  for (const Quantifier *q : n.quantifiers)
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
@@ -1036,7 +1036,7 @@ void ConstTraversal::visit(const SimpleRule &n) {
 }
 
 void ConstTraversal::visit(const StartState &n) {
-  for (const Quantifier *q : n.quantifiers)
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
   for (const Decl *d : n.decls)
     dispatch(*d);

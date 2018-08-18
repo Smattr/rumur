@@ -181,8 +181,8 @@
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <std::shared_ptr<rumur::PropertyRule>>                 property
-%type <rumur::Quantifier*>                                   quantifier
-%type <std::vector<rumur::Quantifier*>>                      quantifiers
+%type <std::shared_ptr<rumur::Quantifier>>                   quantifier
+%type <std::vector<std::shared_ptr<rumur::Quantifier>>>      quantifiers
 %type <rumur::TypeExpr*>                                     return_type
 %type <std::shared_ptr<rumur::Rule>>                         rule
 %type <std::shared_ptr<rumur::Ruleset>>                      ruleset
@@ -570,11 +570,11 @@ expr: expr '?' expr ':' expr {
 };
 
 quantifier: ID ':' typeexpr {
-  $$ = new rumur::Quantifier($1, $3, @$);
+  $$ = std::make_shared<rumur::Quantifier>($1, $3, @$);
 } | ID ':' expr TO expr BY expr {
-  $$ = new rumur::Quantifier($1, $3, $5, $7, @$);
+  $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, $7, @$);
 } | ID ':' expr TO expr {
-  $$ = new rumur::Quantifier($1, $3, $5, @$);
+  $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, @$);
 };
 
 quantifiers: quantifiers ';' quantifier {

@@ -182,8 +182,8 @@ bool ErrorStmt::operator==(const Node &other) const {
   return o != nullptr && message == o->message;
 }
 
-For::For(Quantifier *quantifier_, std::vector<std::shared_ptr<Stmt>> &&body_,
-  const location &loc_):
+For::For(std::shared_ptr<Quantifier> quantifier_,
+  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Stmt(loc_), quantifier(quantifier_), body(body_) { }
 
 For::For(const For &other):
@@ -227,10 +227,6 @@ bool For::operator==(const Node &other) const {
   if (!vector_eq(body, o->body))
     return false;
   return true;
-}
-
-For::~For() {
-  delete quantifier;
 }
 
 IfClause::IfClause(Expr *condition_, std::vector<std::shared_ptr<Stmt>> &&body_,

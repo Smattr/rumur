@@ -48,17 +48,12 @@ Rule::Rule(const std::string &name_, const location &loc_):
 
 Rule::Rule(const Rule &other):
   Node(other), name(other.name) {
-  for (const Quantifier *q : other.quantifiers)
-    quantifiers.push_back(q->clone());
+  for (const std::shared_ptr<Quantifier> &q : other.quantifiers)
+    quantifiers.emplace_back(q->clone());
 }
 
 std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
   return { std::shared_ptr<Rule>(clone()) };
-}
-
-Rule::~Rule() {
-  for (Quantifier *q : quantifiers)
-    delete q;
 }
 
 SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
@@ -220,7 +215,7 @@ bool PropertyRule::operator==(const Node &other) const {
   return true;
 }
 
-Ruleset::Ruleset(std::vector<Quantifier*> &&quantifiers_,
+Ruleset::Ruleset(std::vector<std::shared_ptr<Quantifier>> &&quantifiers_,
   std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
   quantifiers = quantifiers_;
@@ -266,8 +261,9 @@ std::vector<std::shared_ptr<Rule>> Ruleset::flatten() const {
   std::vector<std::shared_ptr<Rule>> rs;
   for (const std::shared_ptr<Rule> &r : rules) {
     for (std::shared_ptr<Rule> &f : r->flatten()) {
-      for (const Quantifier *q : quantifiers)
-        f->quantifiers.insert(f->quantifiers.begin(), q->clone());
+      for (const std::shared_ptr<Quantifier> &q : quantifiers)
+        f->quantifiers.insert(f->quantifiers.begin(),
+          std::shared_ptr<Quantifier>(q->clone()));
       rs.push_back(f);
     }
   }
