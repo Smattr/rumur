@@ -812,7 +812,7 @@ ExprID::ExprID(const std::string &id_, const std::shared_ptr<Decl> value_,
 }
 
 ExprID::ExprID(const ExprID &other):
-  Lvalue(other), id(other.id), value(other.value->clone()) {
+  Lvalue(other), id(other.id), value(other.value) {
 }
 
 ExprID &ExprID::operator=(ExprID other) {

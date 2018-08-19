@@ -481,7 +481,7 @@ TypeExprID::TypeExprID(const std::string &name_,
   TypeExpr(loc_), name(name_), referent(referent_) { }
 
 TypeExprID::TypeExprID(const TypeExprID &other):
-  TypeExpr(other.loc), name(other.name), referent(other.referent->clone()) { }
+  TypeExpr(other.loc), name(other.name), referent(other.referent) { }
 
 TypeExprID &TypeExprID::operator=(TypeExprID other) {
   swap(*this, other);
