@@ -473,7 +473,8 @@ struct Quantifier : public Node {
   Expr *step;
 
   Quantifier() = delete;
-  Quantifier(const std::string &name, TypeExpr *type, const location &loc);
+  Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
+    const location &loc);
   Quantifier(const std::string &name, Expr *from, Expr *to,
       const location &loc_);
   Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step_,

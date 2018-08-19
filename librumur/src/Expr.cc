@@ -986,7 +986,7 @@ const TypeExpr *Field::type() const {
   if (auto r = dynamic_cast<const Record*>(resolved)) {
     for (const VarDecl *f : r->fields) {
       if (f->name == field)
-        return f->type;
+        return f->type.get();
     }
     throw Error("no field named \"" + field + "\" in record", loc);
   }
@@ -1072,7 +1072,7 @@ const TypeExpr *Element::type() const {
   const Array *a = dynamic_cast<const Array*>(t);
   assert(a != nullptr &&
     "array reference based on something that is not an array");
-  return a->element_type;
+  return a->element_type.get();
 }
 
 void Element::generate(std::ostream &out, bool lvalue) const {
@@ -1173,7 +1173,7 @@ bool FunctionCall::constant() const {
 }
 
 const TypeExpr *FunctionCall::type() const {
-  return function->return_type;
+  return function->return_type.get();
 }
 
 void FunctionCall::generate_rvalue(std::ostream&) const {
@@ -1197,7 +1197,7 @@ bool FunctionCall::operator==(const Node &other) const {
   return true;
 }
 
-Quantifier::Quantifier(const std::string &name, TypeExpr *type,
+Quantifier::Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
   const location &loc_)
   : Node(loc_), var(new VarDecl(name, type, loc_)), step(nullptr) {
 }
@@ -1215,7 +1215,7 @@ Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step
 Quantifier::Quantifier(const location &loc_, const std::string &name, Expr *from,
   Expr *to, Expr *step_):
   Node(loc_),
-  var(new VarDecl(name, new Range(from, to, loc_), loc_)),
+  var(new VarDecl(name, std::make_shared<Range>(from, to, loc_), loc_)),
   step(step_) {
 }
 

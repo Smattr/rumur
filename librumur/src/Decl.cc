@@ -1,6 +1,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
@@ -61,7 +62,7 @@ void ConstDecl::validate() const {
     throw Error("const definition is not a constant", value->loc);
 }
 
-TypeDecl::TypeDecl(const std::string &name_, TypeExpr *value_,
+TypeDecl::TypeDecl(const std::string &name_, std::shared_ptr<TypeExpr> value_,
   const location &loc_):
   Decl(name_, loc_), value(value_) {
 }
@@ -86,10 +87,6 @@ TypeDecl *TypeDecl::clone() const {
   return new TypeDecl(*this);
 }
 
-TypeDecl::~TypeDecl() {
-  delete value;
-}
-
 #if 0
 void TypeDecl::generate(std::ostream &out) const {
   out << "using ru_u_" << name << " = " << *value;
@@ -101,7 +98,7 @@ bool TypeDecl::operator==(const Node &other) const {
   return o != nullptr && name == o->name && *value == *o->value;
 }
 
-VarDecl::VarDecl(const std::string &name_, TypeExpr *type_,
+VarDecl::VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
   const location &loc_):
   Decl(name_, loc_), type(type_) {
 }
@@ -137,10 +134,6 @@ void VarDecl::generate(std::ostream &out) const {
   }
 }
 #endif
-
-VarDecl::~VarDecl() {
-  delete type;
-}
 
 bool VarDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const VarDecl*>(&other);

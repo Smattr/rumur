@@ -17,7 +17,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
   for (const Decl *d : m.decls) {
     if (auto t = dynamic_cast<const TypeDecl*>(d)) {
-      if (dynamic_cast<const Scalarset*>(t->value) != nullptr)
+      if (dynamic_cast<const Scalarset*>(t->value.get()) != nullptr)
         ss.push_back(t);
     }
   }
@@ -236,7 +236,7 @@ namespace {
         return false;
 
       // ...and indexed on our type.
-      auto t = dynamic_cast<const TypeExprID*>(a->index_type);
+      auto t = dynamic_cast<const TypeExprID*>(a->index_type.get());
       if (t == nullptr)
         return false;
       if (t->name != type->name)
@@ -255,7 +255,7 @@ namespace {
        */
       const TypeExpr *vtype = t.resolve();
       if (auto a = dynamic_cast<const Array*>(vtype))
-        vtype = a->element_type;
+        vtype = a->element_type.get();
 
       /* Assess how much interaction this component has with other scalarsets. If
        * this itself is a scalarset, we know it is our own type and has no
@@ -419,7 +419,7 @@ namespace {
 
         const std::string var = "i" + std::to_string(depth);
 
-        auto i = dynamic_cast<const TypeExprID*>(a->index_type);
+        auto i = dynamic_cast<const TypeExprID*>(a->index_type.get());
         if (i != nullptr && i->name == type->name) {
 
           const std::string src = "source" + std::to_string(depth);
@@ -671,7 +671,7 @@ namespace {
   };
 
   Pivot *Pivot::derive(const Model &m, const TypeDecl &t) {
-    assert(dynamic_cast<const Scalarset*>(t.value) != nullptr &&
+    assert(dynamic_cast<const Scalarset*>(t.value.get()) != nullptr &&
       "non-scalarset typedecl passed to Pivot::derive");
 
     Pivot *p = nullptr;

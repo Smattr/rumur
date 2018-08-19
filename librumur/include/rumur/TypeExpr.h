@@ -3,6 +3,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include "location.hh"
+#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Number.h>
@@ -139,16 +140,17 @@ struct Record : public TypeExpr {
 
 struct Array : public TypeExpr {
 
-  TypeExpr *index_type;
-  TypeExpr *element_type;
+  std::shared_ptr<TypeExpr> index_type;
+  std::shared_ptr<TypeExpr> element_type;
 
   Array() = delete;
-  Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_);
+  Array(std::shared_ptr<TypeExpr> index_type_,
+    std::shared_ptr<TypeExpr> element_type_, const location &loc_);
   Array(const Array &other);
   Array &operator=(Array other);
   friend void swap(Array &x, Array &y) noexcept;
   Array *clone() const final;
-  virtual ~Array();
+  virtual ~Array() { }
 
   mpz_class width() const final;
   mpz_class count() const final;
@@ -162,15 +164,15 @@ struct Array : public TypeExpr {
 struct TypeExprID : public TypeExpr {
 
   std::string name;
-  TypeExpr *referent;
+  std::shared_ptr<TypeExpr> referent;
 
   TypeExprID() = delete;
-  TypeExprID(const std::string &name_, TypeExpr *referent_, const location &loc_);
+  TypeExprID(const std::string &name_, std::shared_ptr<TypeExpr> referent_, const location &loc_);
   TypeExprID(const TypeExprID &other);
   TypeExprID &operator=(TypeExprID other);
   friend void swap(TypeExprID &x, TypeExprID &y) noexcept;
   TypeExprID *clone() const final;
-  virtual ~TypeExprID();
+  virtual ~TypeExprID() { }
 
   mpz_class width() const final;
   mpz_class count() const final;

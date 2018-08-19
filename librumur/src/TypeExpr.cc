@@ -2,6 +2,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include <limits.h>
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
@@ -366,7 +367,8 @@ void Record::generate_print(std::ostream &out, std::string const &prefix,
   }
 }
 
-Array::Array(TypeExpr *index_type_, TypeExpr *element_type_, const location &loc_):
+Array::Array(std::shared_ptr<TypeExpr> index_type_,
+  std::shared_ptr<TypeExpr> element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
   validate();
 }
@@ -390,11 +392,6 @@ void swap(Array &x, Array &y) noexcept {
 
 Array *Array::clone() const {
   return new Array(*this);
-}
-
-Array::~Array() {
-  delete index_type;
-  delete element_type;
 }
 
 mpz_class Array::width() const {
@@ -491,8 +488,8 @@ void Array::generate_print(std::ostream &out, std::string const &prefix,
   assert(!"non-range, non-enum used as array index");
 }
 
-TypeExprID::TypeExprID(const std::string &name_, TypeExpr *referent_,
-  const location &loc_):
+TypeExprID::TypeExprID(const std::string &name_,
+  std::shared_ptr<TypeExpr> referent_, const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
 
 TypeExprID::TypeExprID(const TypeExprID &other):
@@ -512,10 +509,6 @@ void swap(TypeExprID &x, TypeExprID &y) noexcept {
 
 TypeExprID *TypeExprID::clone() const {
   return new TypeExprID(*this);
-}
-
-TypeExprID::~TypeExprID() {
-  delete referent;
 }
 
 mpz_class TypeExprID::width() const {

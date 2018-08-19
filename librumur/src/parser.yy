@@ -183,7 +183,7 @@
 %type <std::shared_ptr<rumur::PropertyRule>>                 property
 %type <std::shared_ptr<rumur::Quantifier>>                   quantifier
 %type <std::vector<std::shared_ptr<rumur::Quantifier>>>      quantifiers
-%type <rumur::TypeExpr*>                                     return_type
+%type <std::shared_ptr<rumur::TypeExpr>>                     return_type
 %type <std::shared_ptr<rumur::Rule>>                         rule
 %type <std::shared_ptr<rumur::Ruleset>>                      ruleset
 %type <std::vector<std::shared_ptr<rumur::Rule>>>            rules
@@ -196,7 +196,7 @@
 %type <std::string>                                          string_opt
 %type <rumur::Decl*>                                         typedecl
 %type <std::vector<rumur::Decl*>>                            typedecls
-%type <rumur::TypeExpr*>                                     typeexpr
+%type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
 %type <std::vector<rumur::VarDecl*>>                         vardecl
 %type <std::vector<rumur::VarDecl*>>                         vardecls
 %type <bool>                                                 var_opt
@@ -261,29 +261,29 @@ typedecl: ID ':' typeexpr ';' {
 typeexpr: BOOLEAN {
   const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>("boolean", @$);
   assert(t != nullptr && "boolean built-in type unknown");
-  $$ = new rumur::TypeExprID("boolean", t->clone(), @$);
+  $$ = std::make_shared<rumur::TypeExprID>("boolean", std::shared_ptr<rumur::TypeExpr>(t->clone()), @$);
 } | ID {
   const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
   if (t == nullptr) {
     throw rumur::Error("unknown type ID \"" + $1 + "\"", @1);
   }
-  $$ = new rumur::TypeExprID($1, t->clone(), @$);
+  $$ = std::make_shared<rumur::TypeExprID>($1, std::shared_ptr<rumur::TypeExpr>(t->clone()), @$);
 } | expr DOTDOT expr {
-  $$ = new rumur::Range($1, $3, @$);
+  $$ = std::make_shared<rumur::Range>($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
-  auto e = new rumur::Enum(std::move($3), @$);
+  auto e = std::make_shared<rumur::Enum>(std::move($3), @$);
   /* Register all the enum members so they can be referenced later. */
-  const rumur::TypeDecl td("", new rumur::Enum(*e), @$);
+  const rumur::TypeDecl td("", std::make_shared<rumur::Enum>(*e), @$);
   for (const std::pair<std::string, rumur::location> &m : e->members) {
     symtab.declare(m.first, td);
   }
   $$ = e;
 } | RECORD vardecls endrecord {
-  $$ = new rumur::Record(std::move($2), @$);
+  $$ = std::make_shared<rumur::Record>(std::move($2), @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {
-  $$ = new rumur::Array($3, $6, @$);
+  $$ = std::make_shared<rumur::Array>($3, $6, @$);
 } | SCALARSET '(' expr ')' {
-  $$ = new rumur::Scalarset($3, @$);
+  $$ = std::make_shared<rumur::Scalarset>($3, @$);
 };
 
 vardecls: vardecls vardecl {
@@ -309,7 +309,7 @@ function: FUNCTION | PROCEDURE;
 
 parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
-    auto v = new rumur::VarDecl(i.first, $4->clone(), i.second);
+    auto v = new rumur::VarDecl(i.first, std::shared_ptr<rumur::TypeExpr>($4->clone()), i.second);
     symtab.declare(v->name, *v);
     $$.push_back(std::make_shared<rumur::Parameter>(v, $1, @$));
   }

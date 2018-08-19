@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include "location.hh"
+#include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/TypeExpr.h>
@@ -45,23 +46,23 @@ struct ConstDecl : public Decl {
 
 struct TypeDecl : public Decl {
 
-  TypeExpr *value;
+  std::shared_ptr<TypeExpr> value;
 
   TypeDecl() = delete;
-  TypeDecl(const std::string &name, TypeExpr *value,
+  TypeDecl(const std::string &name, std::shared_ptr<TypeExpr> value_,
     const location &loc);
   TypeDecl(const TypeDecl &other);
   TypeDecl &operator=(TypeDecl other);
   friend void swap(TypeDecl &x, TypeDecl &y) noexcept;
   TypeDecl *clone() const final;
-  virtual ~TypeDecl();
+  virtual ~TypeDecl() { }
 
   bool operator==(const Node &other) const final;
 };
 
 struct VarDecl : public Decl {
 
-  TypeExpr *type;
+  std::shared_ptr<TypeExpr> type;
 
   /* Whether this variable is part of the model state. If not, it is either a
    * local or a rule parameter. Note that this is simply set to false by default
@@ -77,13 +78,13 @@ struct VarDecl : public Decl {
   mpz_class offset = -1;
 
   VarDecl() = delete;
-  VarDecl(const std::string &name_, TypeExpr *type_,
+  VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
     const location &loc_);
   VarDecl(const VarDecl &other);
   VarDecl &operator=(VarDecl other);
   friend void swap(VarDecl &x, VarDecl &y) noexcept;
   VarDecl *clone() const final;
-  virtual ~VarDecl();
+  virtual ~VarDecl() { }
 
   mpz_class count() const;
   mpz_class width() const;

@@ -48,9 +48,9 @@ bool Parameter::operator==(const Node &other) const {
 }
 
 Function::Function(const std::string &name_,
-  std::vector<std::shared_ptr<Parameter>> &&parameters_, TypeExpr *return_type_,
-  std::vector<Decl*> &&decls_, std::vector<std::shared_ptr<Stmt>> &&body_,
-  const location &loc_):
+  std::vector<std::shared_ptr<Parameter>> &&parameters_,
+  std::shared_ptr<TypeExpr> return_type_, std::vector<Decl*> &&decls_,
+  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
   decls(decls_), body(body_) { }
 
@@ -84,7 +84,6 @@ void swap(Function &x, Function &y) noexcept {
 }
 
 Function::~Function() {
-  delete return_type;
   for (Decl *d : decls)
     delete d;
 }
