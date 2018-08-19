@@ -229,7 +229,7 @@ decl: CONST constdecls {
       d->offset = offset;
       offset += d->type->width();
     }
-    symtab.declare(d->name, *d);
+    symtab.declare(d->name, d);
   }
   std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
@@ -243,7 +243,7 @@ constdecls: constdecls constdecl {
 
 constdecl: ID ':' expr ';' {
   $$ = std::make_shared<rumur::ConstDecl>($1, $3, @$);
-  symtab.declare($1, *$$);
+  symtab.declare($1, $$);
 };
 
 typedecls: typedecls typedecl {
@@ -255,25 +255,25 @@ typedecls: typedecls typedecl {
 
 typedecl: ID ':' typeexpr ';' {
   $$ = std::make_shared<rumur::TypeDecl>($1, $3, @$);
-  symtab.declare($1, *$3);
+  symtab.declare($1, $3);
 };
 
 typeexpr: BOOLEAN {
-  const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>("boolean", @$);
+  std::shared_ptr<rumur::TypeExpr> t = symtab.lookup<rumur::TypeExpr>("boolean", @$);
   assert(t != nullptr && "boolean built-in type unknown");
-  $$ = std::make_shared<rumur::TypeExprID>("boolean", std::shared_ptr<rumur::TypeExpr>(t->clone()), @$);
+  $$ = std::make_shared<rumur::TypeExprID>("boolean", t, @$);
 } | ID {
-  const rumur::TypeExpr *t = symtab.lookup<rumur::TypeExpr>($1, @$);
+  std::shared_ptr<rumur::TypeExpr> t = symtab.lookup<rumur::TypeExpr>($1, @$);
   if (t == nullptr) {
     throw rumur::Error("unknown type ID \"" + $1 + "\"", @1);
   }
-  $$ = std::make_shared<rumur::TypeExprID>($1, std::shared_ptr<rumur::TypeExpr>(t->clone()), @$);
+  $$ = std::make_shared<rumur::TypeExprID>($1, t, @$);
 } | expr DOTDOT expr {
   $$ = std::make_shared<rumur::Range>($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
   auto e = std::make_shared<rumur::Enum>(std::move($3), @$);
   /* Register all the enum members so they can be referenced later. */
-  const rumur::TypeDecl td("", std::make_shared<rumur::Enum>(*e), @$);
+  auto td = std::make_shared<rumur::TypeDecl>("", std::make_shared<rumur::Enum>(*e), @$);
   for (const std::pair<std::string, rumur::location> &m : e->members) {
     symtab.declare(m.first, td);
   }
@@ -310,7 +310,7 @@ function: FUNCTION | PROCEDURE;
 parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
     auto v = std::make_shared<rumur::VarDecl>(i.first, std::shared_ptr<rumur::TypeExpr>($4->clone()), i.second);
-    symtab.declare(v->name, *v);
+    symtab.declare(v->name, v);
     $$.push_back(std::make_shared<rumur::Parameter>(v, $1, @$));
   }
 };
@@ -332,7 +332,7 @@ parameters_cont: parameters_cont parameter ';' {
 
 procdecl: function ID { symtab.open_scope(); } '(' parameters ')' return_type decls begin_opt stmts { symtab.close_scope(); } endfunction ';' {
   $$ = std::make_shared<rumur::Function>($2, std::move($5), $7, std::move($8), std::move($10), @$);
-  symtab.declare($$->name, *$$);
+  symtab.declare($$->name, $$);
 };
 
 procdecls: procdecls procdecl {
@@ -448,7 +448,7 @@ stmt: category STRING expr {
   $$ = std::make_shared<rumur::Clear>($2, @$);
 } | FOR quantifier {
     symtab.open_scope();
-    symtab.declare($2->var->name, *$2->var);
+    symtab.declare($2->var->name, $2->var);
   } DO stmts endfor {
   $$ = std::make_shared<rumur::For>($2, std::move($5), @$);
   symtab.close_scope();
@@ -465,9 +465,9 @@ stmt: category STRING expr {
 } | UNDEFINE designator {
   $$ = std::make_shared<rumur::Undefine>($2, @$);
 } | ID '(' exprlist ')' {
-  auto f = symtab.lookup<rumur::Function>($1, @$);
+  std::shared_ptr<rumur::Function> f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = std::make_shared<rumur::ProcedureCall>(std::shared_ptr<rumur::Function>(f->clone()), std::move($3), @$);
+  $$ = std::make_shared<rumur::ProcedureCall>(f, std::move($3), @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {
@@ -546,13 +546,13 @@ expr: expr '?' expr ':' expr {
   $$ = std::make_shared<rumur::Mod>($1, $3, @$);
 } | FORALL quantifier {
     symtab.open_scope();
-    symtab.declare($2->var->name, *$2->var);
+    symtab.declare($2->var->name, $2->var);
   } DO expr endforall {
     $$ = std::make_shared<rumur::Forall>($2, $5, @$);
     symtab.close_scope();
 } | EXISTS quantifier {
     symtab.open_scope();
-    symtab.declare($2->var->name, *$2->var);
+    symtab.declare($2->var->name, $2->var);
   } DO expr endexists {
     $$ = std::make_shared<rumur::Exists>($2, $5, @$);
     symtab.close_scope();
@@ -564,9 +564,9 @@ expr: expr '?' expr ':' expr {
   $$ = $2;
   $$->loc = @$;
 } | ID '(' exprlist ')' {
-  auto f = symtab.lookup<rumur::Function>($1, @$);
+  std::shared_ptr<rumur::Function> f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = std::make_shared<rumur::FunctionCall>(std::shared_ptr<rumur::Function>(f->clone()), std::move($3), @$);
+  $$ = std::make_shared<rumur::FunctionCall>(f, std::move($3), @$);
 };
 
 quantifier: ID ':' typeexpr {
@@ -579,10 +579,10 @@ quantifier: ID ':' typeexpr {
 
 quantifiers: quantifiers ';' quantifier {
   $$ = $1;
-  symtab.declare($3->var->name, *$3->var);
+  symtab.declare($3->var->name, $3->var);
   $$.push_back($3);
 } | quantifier {
-  symtab.declare($1->var->name, *$1->var);
+  symtab.declare($1->var->name, $1->var);
   $$.push_back($1);
 };
 
@@ -591,9 +591,9 @@ designator: designator '.' ID {
 } | designator '[' expr ']' {
   $$ = std::make_shared<rumur::Element>($1, $3, @$);
 } | ID {
-  auto d = symtab.lookup<rumur::Decl>($1, @$);
+  std::shared_ptr<rumur::Decl> d = symtab.lookup<rumur::Decl>($1, @$);
   assert(d != nullptr);
-  $$ = std::make_shared<rumur::ExprID>($1, std::shared_ptr<Decl>(d->clone()), @$);
+  $$ = std::make_shared<rumur::ExprID>($1, d, @$);
 };
 
 endfor: END | ENDFOR;
