@@ -24,6 +24,7 @@ Model::Model(std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Function>> &&functions_,
   std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
+  reindex();
   validate();
 }
 
@@ -505,6 +506,7 @@ void Model::reindex() {
   mpz_class offset = 0;
   for (std::shared_ptr<Decl> &d : decls) {
     if (auto v = dynamic_cast<VarDecl*>(d.get())) {
+      v->state_variable = true;
       v->offset = offset;
       offset += v->type->width();
     }

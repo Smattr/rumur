@@ -65,9 +65,6 @@
   #endif
   #define yylex sc.yylex
 
-  /* Current offset into model state. Used when declaring variables. */
-  static mpz_class offset;
-
 }
 
   /* Code that we need to include at the top of the implementation
@@ -203,11 +200,8 @@
 
 %%
 
-model: {
-      /* Reset offset, in case we were previously parsing a model. */
-      offset = 0;
-    } decls procdecls rules {
-  output = std::make_shared<rumur::Model>(std::move($2), std::move($3), std::move($4), @$);
+model: decls procdecls rules {
+  output = std::make_shared<rumur::Model>(std::move($1), std::move($2), std::move($3), @$);
 };
 
 decls: decls decl {
@@ -223,12 +217,6 @@ decl: CONST constdecls {
   $$ = $2;
 } | VAR vardecls {
   for (std::shared_ptr<rumur::VarDecl> &d : $2) {
-    // Account for whether this declaration is part of the state
-    if (symtab.is_global_scope()) {
-      d->state_variable = true;
-      d->offset = offset;
-      offset += d->type->width();
-    }
     symtab.declare(d->name, d);
   }
   std::move($2.begin(), $2.end(), std::back_inserter($$));
