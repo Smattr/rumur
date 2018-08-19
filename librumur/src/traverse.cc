@@ -365,7 +365,7 @@ void Traversal::visit(Function &n) {
 
 void Traversal::visit(FunctionCall &n) {
   dispatch(*n.function);
-  for (Expr *a : n.arguments)
+  for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
 
@@ -442,7 +442,7 @@ void Traversal::visit(Parameter &n) {
 
 void Traversal::visit(ProcedureCall &n) {
   dispatch(*n.function);
-  for (Expr *a : n.arguments)
+  for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
 
@@ -897,7 +897,7 @@ void ConstTraversal::visit(const Function &n) {
 
 void ConstTraversal::visit(const FunctionCall &n) {
   dispatch(*n.function);
-  for (const Expr *a : n.arguments)
+  for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
 
@@ -974,7 +974,7 @@ void ConstTraversal::visit(const Parameter &n) {
 
 void ConstTraversal::visit(const ProcedureCall &n) {
   dispatch(*n.function);
-  for (const Expr *a : n.arguments)
+  for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
 

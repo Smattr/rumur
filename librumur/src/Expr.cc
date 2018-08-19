@@ -22,7 +22,8 @@ bool Expr::is_boolean() const {
   return type() != nullptr && *type()->resolve() == *Boolean;
 }
 
-Ternary::Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_):
+Ternary::Ternary(std::shared_ptr<Expr> cond_, std::shared_ptr<Expr> lhs_,
+  std::shared_ptr<Expr> rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
   validate();
 }
@@ -47,12 +48,6 @@ void swap(Ternary &x, Ternary &y) noexcept {
 
 Ternary *Ternary::clone() const {
   return new Ternary(*this);
-}
-
-Ternary::~Ternary() {
-  delete cond;
-  delete lhs;
-  delete rhs;
 }
 
 bool Ternary::constant() const {
@@ -82,7 +77,8 @@ void Ternary::validate() const {
     throw Error("ternary condition is not a boolean", cond->loc);
 }
 
-BinaryExpr::BinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+BinaryExpr::BinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+  const location &loc_):
   Expr(loc_), lhs(lhs_), rhs(rhs_) {
 }
 
@@ -101,12 +97,8 @@ bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
 }
 
-BinaryExpr::~BinaryExpr() {
-  delete lhs;
-  delete rhs;
-}
-
-BooleanBinaryExpr::BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+BooleanBinaryExpr::BooleanBinaryExpr(std::shared_ptr<Expr> lhs_,
+  std::shared_ptr<Expr> rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   validate();
 }
@@ -198,7 +190,7 @@ bool And::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-UnaryExpr::UnaryExpr(Expr *rhs_, const location &loc_):
+UnaryExpr::UnaryExpr(std::shared_ptr<Expr> rhs_, const location &loc_):
   Expr(loc_), rhs(rhs_) {
 }
 
@@ -212,15 +204,11 @@ void swap(UnaryExpr &x, UnaryExpr &y) noexcept {
   swap(x.rhs, y.rhs);
 }
 
-UnaryExpr::~UnaryExpr() {
-  delete rhs;
-}
-
 bool UnaryExpr::constant() const {
   return rhs->constant();
 }
 
-Not::Not(Expr *rhs_, const location &loc_):
+Not::Not(std::shared_ptr<Expr> rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
   validate();
 }
@@ -294,7 +282,8 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
-ComparisonBinaryExpr::ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+ComparisonBinaryExpr::ComparisonBinaryExpr(std::shared_ptr<Expr> lhs_,
+  std::shared_ptr<Expr> rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   validate();
 }
@@ -462,7 +451,8 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
-EquatableBinaryExpr::EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+EquatableBinaryExpr::EquatableBinaryExpr(std::shared_ptr<Expr> lhs_,
+  std::shared_ptr<Expr> rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   validate();
 }
@@ -610,7 +600,8 @@ static std::string upper_bound(const Expr &rhs) {
   return upper_bound(rhs.type());
 }
 
-ArithmeticBinaryExpr::ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_):
+ArithmeticBinaryExpr::ArithmeticBinaryExpr(std::shared_ptr<Expr> lhs_,
+  std::shared_ptr<Expr> rhs_, const location &loc_):
   BinaryExpr(lhs_, rhs_, loc_) {
   validate();
 }
@@ -675,7 +666,7 @@ bool Sub::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-Negative::Negative(Expr *rhs_, const location &loc_):
+Negative::Negative(std::shared_ptr<Expr> rhs_, const location &loc_):
   UnaryExpr(rhs_, loc_) {
   validate();
 }
@@ -947,7 +938,8 @@ bool ExprID::operator==(const Node &other) const {
   return o != nullptr && id == o->id && *value == *o->value;
 }
 
-Field::Field(Lvalue *record_, const std::string &field_, const location &loc_):
+Field::Field(std::shared_ptr<Lvalue> record_, const std::string &field_,
+  const location &loc_):
   Lvalue(loc_), record(record_), field(field_) {
 }
 
@@ -1018,10 +1010,6 @@ void Field::generate(std::ostream &out, bool lvalue) const {
   throw Error("left hand side of field expression is not a record", loc);
 }
 
-Field::~Field() {
-  delete record;
-}
-
 mpz_class Field::constant_fold() const {
   throw Error("field expression used in constant", loc);
 }
@@ -1031,7 +1019,8 @@ bool Field::operator==(const Node &other) const {
   return o != nullptr && *record == *o->record && field == o->field;
 }
 
-Element::Element(Lvalue *array_, Expr *index_, const location &loc_):
+Element::Element(std::shared_ptr<Lvalue> array_, std::shared_ptr<Expr> index_,
+  const location &loc_):
   Lvalue(loc_), array(array_), index(index_) {
 }
 
@@ -1053,11 +1042,6 @@ Element &Element::operator=(Element other) {
 
 Element *Element::clone() const {
   return new Element(*this);
-}
-
-Element::~Element() {
-  delete array;
-  delete index;
 }
 
 bool Element::constant() const {
@@ -1130,14 +1114,14 @@ bool Element::operator==(const Node &other) const {
 }
 
 FunctionCall::FunctionCall(std::shared_ptr<Function> function_,
-  std::vector<Expr*> arguments_, const location &loc_):
+  std::vector<std::shared_ptr<Expr>> arguments_, const location &loc_):
   Expr(loc_), function(function_), arguments(arguments_) { }
 
 FunctionCall::FunctionCall(const FunctionCall &other):
   Expr(other), function(other.function->clone()) {
 
-  for (const Expr *a : other.arguments)
-    arguments.push_back(a->clone());
+  for (const std::shared_ptr<Expr> &a : other.arguments)
+    arguments.emplace_back(a->clone());
 }
 
 void swap(FunctionCall &x, FunctionCall &y) noexcept {
@@ -1150,11 +1134,6 @@ void swap(FunctionCall &x, FunctionCall &y) noexcept {
 FunctionCall &FunctionCall::operator=(FunctionCall other) {
   swap(*this, other);
   return *this;
-}
-
-FunctionCall::~FunctionCall() {
-  for (Expr *p : arguments)
-    delete p;
 }
 
 FunctionCall *FunctionCall::clone() const {
@@ -1199,18 +1178,20 @@ Quantifier::Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
   : Node(loc_), var(std::make_shared<VarDecl>(name, type, loc_)), step(nullptr) {
 }
 
-Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to,
-  const location &loc_)
+Quantifier::Quantifier(const std::string &name, std::shared_ptr<Expr> from,
+  std::shared_ptr<Expr> to, const location &loc_)
   : Quantifier(loc_, name, from, to, nullptr) {
 }
 
-Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step_,
+Quantifier::Quantifier(const std::string &name, std::shared_ptr<Expr> from,
+  std::shared_ptr<Expr> to, std::shared_ptr<Expr> step_,
   const location &loc_)
   : Quantifier(loc_, name, from, to, step_) {
 }
 
-Quantifier::Quantifier(const location &loc_, const std::string &name, Expr *from,
-  Expr *to, Expr *step_):
+Quantifier::Quantifier(const location &loc_, const std::string &name,
+  std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
+  std::shared_ptr<Expr> step_):
   Node(loc_),
   var(std::make_shared<VarDecl>(name, std::make_shared<Range>(from, to, loc_), loc_)),
   step(step_) {
@@ -1235,10 +1216,6 @@ void swap(Quantifier &x, Quantifier &y) noexcept {
 
 Quantifier *Quantifier::clone() const {
   return new Quantifier(*this);
-}
-
-Quantifier::~Quantifier() {
-  delete step;
 }
 
 void Quantifier::generate_header(std::ostream &out) const {
@@ -1303,8 +1280,8 @@ bool Quantifier::operator==(const Node &other) const {
   return true;
 }
 
-Exists::Exists(std::shared_ptr<Quantifier> quantifier_, Expr *expr_,
-  const location &loc_):
+Exists::Exists(std::shared_ptr<Quantifier> quantifier_,
+  std::shared_ptr<Expr> expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
   validate();
 }
@@ -1337,10 +1314,6 @@ const TypeExpr *Exists::type() const {
   return Boolean.get();
 }
 
-Exists::~Exists() {
-  delete expr;
-}
-
 bool Exists::operator==(const Node &other) const {
   auto o = dynamic_cast<const Exists*>(&other);
   return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
@@ -1365,7 +1338,8 @@ void Exists::validate() const {
     throw Error("expression in exists is not boolean", expr->loc);
 }
 
-Forall::Forall(std::shared_ptr<Quantifier> quantifier_, Expr *expr_, const location &loc_):
+Forall::Forall(std::shared_ptr<Quantifier> quantifier_,
+  std::shared_ptr<Expr> expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) {
   validate();
 }
@@ -1396,10 +1370,6 @@ bool Forall::constant() const {
 
 const TypeExpr *Forall::type() const {
   return Boolean.get();
-}
-
-Forall::~Forall() {
-  delete expr;
 }
 
 void Forall::generate_rvalue(std::ostream &out) const {

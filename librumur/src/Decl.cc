@@ -17,7 +17,7 @@ Decl::Decl(const std::string &name_, const location &loc_):
 Decl::~Decl() {
 }
 
-ConstDecl::ConstDecl(const std::string &name_, Expr *value_,
+ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   const location &loc_):
   Decl(name_, loc_), value(value_) {
   validate();
@@ -46,10 +46,6 @@ ConstDecl *ConstDecl::clone() const {
 void ConstDecl::generate(std::ostream &out) const {
   mpz_class v = value->constant_fold();
   out << "static __attribute__((unused)) const value_t ru_" << name << " = VALUE_C(" << v << ")";
-}
-
-ConstDecl::~ConstDecl() {
-  delete value;
 }
 
 bool ConstDecl::operator==(const Node &other) const {

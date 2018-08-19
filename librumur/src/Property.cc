@@ -1,9 +1,11 @@
 #include <iostream>
+#include <memory>
 #include <rumur/Property.h>
 
 namespace rumur {
 
-Property::Property(Category category_, Expr *expr_, const location &loc_):
+Property::Property(Category category_, std::shared_ptr<Expr> expr_,
+  const location &loc_):
   Node(loc_), category(category_), expr(expr_) { }
 
 Property::Property(const Property &other):
@@ -23,10 +25,6 @@ void swap(Property &x, Property &y) noexcept {
 
 Property *Property::clone() const {
   return new Property(*this);
-}
-
-Property::~Property() {
-  delete expr;
 }
 
 void Property::generate(std::ostream &out) const {

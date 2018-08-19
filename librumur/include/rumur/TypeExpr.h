@@ -46,16 +46,17 @@ struct TypeExpr : public Node {
 
 struct Range : public TypeExpr {
 
-  Expr *min;
-  Expr *max;
+  std::shared_ptr<Expr> min;
+  std::shared_ptr<Expr> max;
 
   Range() = delete;
-  Range(Expr *min_, Expr *max_, const location &loc_);
+  Range(std::shared_ptr<Expr> min_, std::shared_ptr<Expr> max_,
+    const location &loc_);
   Range(const Range &other);
   Range &operator=(Range other);
   friend void swap(Range &x, Range &y) noexcept;
   Range *clone() const final;
-  virtual ~Range();
+  virtual ~Range() { }
 
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
@@ -71,15 +72,15 @@ struct Range : public TypeExpr {
 
 struct Scalarset : public TypeExpr {
 
-  Expr *bound;
+  std::shared_ptr<Expr> bound;
 
   Scalarset() = delete;
-  Scalarset(Expr *bound_, const location &loc_);
+  Scalarset(std::shared_ptr<Expr> bound_, const location &loc_);
   Scalarset(const Scalarset &other);
   Scalarset &operator=(Scalarset other);
   friend void swap(Scalarset &x, Scalarset &y) noexcept;
   Scalarset *clone() const final;
-  virtual ~Scalarset();
+  virtual ~Scalarset() { }
 
   mpz_class count() const final;
   bool operator==(const Node &other) const final;

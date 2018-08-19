@@ -54,17 +54,18 @@ static inline std::ostream &operator<<(std::ostream &out, const Expr &e) {
 
 struct Ternary : public Expr {
 
-  Expr *cond;
-  Expr *lhs;
-  Expr *rhs;
+  std::shared_ptr<Expr> cond;
+  std::shared_ptr<Expr> lhs;
+  std::shared_ptr<Expr> rhs;
 
   Ternary() = delete;
-  Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_);
+  Ternary(std::shared_ptr<Expr> cond_, std::shared_ptr<Expr> lhs_,
+    std::shared_ptr<Expr> rhs_, const location &loc_);
   Ternary(const Ternary &other);
   Ternary(Ternary&&) = default;
   Ternary &operator=(Ternary other);
   friend void swap(Ternary &x, Ternary &y) noexcept;
-  virtual ~Ternary();
+  virtual ~Ternary() { }
 
   Ternary *clone() const final;
   bool constant() const final;
@@ -77,16 +78,17 @@ struct Ternary : public Expr {
 
 struct BinaryExpr : public Expr {
 
-  Expr *lhs;
-  Expr *rhs;
+  std::shared_ptr<Expr> lhs;
+  std::shared_ptr<Expr> rhs;
 
   BinaryExpr() = delete;
-  BinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+  BinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+    const location &loc_);
   BinaryExpr(const BinaryExpr &other);
   BinaryExpr &operator=(const BinaryExpr&) = delete;
   BinaryExpr &operator=(BinaryExpr&&) = delete;
   friend void swap(BinaryExpr &x, BinaryExpr &y) noexcept;
-  virtual ~BinaryExpr();
+  virtual ~BinaryExpr() { }
 
   BinaryExpr *clone() const override = 0;
   bool constant() const final;
@@ -96,7 +98,8 @@ struct BooleanBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
   BooleanBinaryExpr() = delete;
-  BooleanBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+  BooleanBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
@@ -145,14 +148,14 @@ struct And : public BooleanBinaryExpr {
 
 struct UnaryExpr : public Expr {
 
-  Expr *rhs;
+  std::shared_ptr<Expr> rhs;
 
   UnaryExpr() = delete;
-  UnaryExpr(Expr *rhs_, const location &loc_);
+  UnaryExpr(std::shared_ptr<Expr> rhs_, const location &loc_);
   UnaryExpr(const UnaryExpr &other);
   friend void swap(UnaryExpr &x, UnaryExpr &y) noexcept;
   UnaryExpr *clone() const override = 0;
-  virtual ~UnaryExpr();
+  virtual ~UnaryExpr() { }
 
   bool constant() const final;
 };
@@ -161,7 +164,7 @@ struct Not : public UnaryExpr {
 
   using UnaryExpr::UnaryExpr;
   Not() = delete;
-  Not(Expr *rhs_, const location &loc_);
+  Not(std::shared_ptr<Expr> rhs_, const location &loc_);
   Not &operator=(Not other);
   virtual ~Not() { }
   Not *clone() const final;
@@ -176,7 +179,8 @@ struct Not : public UnaryExpr {
 struct ComparisonBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
-  ComparisonBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+  ComparisonBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+    const location &loc_);
   ComparisonBinaryExpr() = delete;
 
   void validate() const final;
@@ -241,7 +245,8 @@ struct Geq : public ComparisonBinaryExpr {
 struct EquatableBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
-  EquatableBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc_);
+  EquatableBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+    const location &loc_);
   EquatableBinaryExpr() = delete;
 
   void validate() const final;
@@ -278,7 +283,8 @@ struct Neq : public EquatableBinaryExpr {
 struct ArithmeticBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
-  ArithmeticBinaryExpr(Expr *lhs_, Expr *rhs_, const location &loc);
+  ArithmeticBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+    const location &loc);
   ArithmeticBinaryExpr() = delete;
 
   void validate() const final;
@@ -316,7 +322,7 @@ struct Negative : public UnaryExpr {
 
   using UnaryExpr::UnaryExpr;
   Negative() = delete;
-  Negative(Expr *rhs_, const location &loc_);
+  Negative(std::shared_ptr<Expr> rhs_, const location &loc_);
   Negative &operator=(Negative other);
   virtual ~Negative() { }
   Negative *clone() const final;
@@ -408,15 +414,16 @@ struct ExprID : public Lvalue {
 
 struct Field : public Lvalue {
 
-  Lvalue *record;
+  std::shared_ptr<Lvalue> record;
   std::string field;
 
   Field() = delete;
-  Field(Lvalue *record_, const std::string &field_, const location &loc_);
+  Field(std::shared_ptr<Lvalue> record_, const std::string &field_,
+    const location &loc_);
   Field(const Field &other);
   friend void swap(Field &x, Field &y) noexcept;
   Field &operator=(Field other);
-  virtual ~Field();
+  virtual ~Field() { }
   Field *clone() const final;
 
   bool constant() const final;
@@ -428,15 +435,16 @@ struct Field : public Lvalue {
 
 struct Element : public Lvalue {
 
-  Lvalue *array;
-  Expr *index;
+  std::shared_ptr<Lvalue> array;
+  std::shared_ptr<Expr> index;
 
   Element() = delete;
-  Element(Lvalue *array_, Expr *index_, const location &loc_);
+  Element(std::shared_ptr<Lvalue> array_, std::shared_ptr<Expr> index_,
+    const location &loc_);
   Element(const Element &other);
   friend void swap(Element &x, Element &y) noexcept;
   Element &operator=(Element other);
-  virtual ~Element();
+  virtual ~Element() { }
   Element *clone() const final;
 
   bool constant() const final;
@@ -449,15 +457,15 @@ struct Element : public Lvalue {
 struct FunctionCall : public Expr {
 
   std::shared_ptr<Function> function;
-  std::vector<Expr*> arguments;
+  std::vector<std::shared_ptr<Expr>> arguments;
 
   FunctionCall() = delete;
   FunctionCall(std::shared_ptr<Function> function_,
-    std::vector<Expr*> arguments_, const location &loc_);
+    std::vector<std::shared_ptr<Expr>> arguments_, const location &loc_);
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;
   FunctionCall &operator=(FunctionCall other);
-  virtual ~FunctionCall();
+  virtual ~FunctionCall() { }
   FunctionCall *clone() const final;
 
   bool constant() const final;
@@ -470,19 +478,20 @@ struct FunctionCall : public Expr {
 struct Quantifier : public Node {
 
   std::shared_ptr<VarDecl> var;
-  Expr *step;
+  std::shared_ptr<Expr> step;
 
   Quantifier() = delete;
   Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
     const location &loc);
-  Quantifier(const std::string &name, Expr *from, Expr *to,
-      const location &loc_);
-  Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step_,
+  Quantifier(const std::string &name, std::shared_ptr<Expr> from,
+    std::shared_ptr<Expr> to, const location &loc_);
+  Quantifier(const std::string &name, std::shared_ptr<Expr> from,
+    std::shared_ptr<Expr> to, std::shared_ptr<Expr> step_,
     const location &loc_);
   Quantifier(const Quantifier &other);
   Quantifier &operator=(Quantifier other);
   friend void swap(Quantifier &x, Quantifier &y) noexcept;
-  virtual ~Quantifier();
+  virtual ~Quantifier() { }
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
 
@@ -494,23 +503,24 @@ struct Quantifier : public Node {
    * HACK: This takes the arguments in a different order to avoid internal
    * constructor references being ambiguous.
    */
-  Quantifier(const location &loc_, const std::string &name, Expr *from,
-    Expr *to, Expr *step_);
+  Quantifier(const location &loc_, const std::string &name,
+    std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
+    std::shared_ptr<Expr> step_);
 
 };
 
 struct Exists : public Expr {
 
   std::shared_ptr<Quantifier> quantifier;
-  Expr *expr;
+  std::shared_ptr<Expr> expr;
 
   Exists() = delete;
-  Exists(std::shared_ptr<Quantifier> quantifier_, Expr *expr_,
+  Exists(std::shared_ptr<Quantifier> quantifier_, std::shared_ptr<Expr> expr_,
     const location &loc_);
   Exists(const Exists &other);
   Exists &operator=(Exists other);
   friend void swap(Exists &x, Exists &y) noexcept;
-  virtual ~Exists();
+  virtual ~Exists() { }
   Exists *clone() const final;
 
   bool constant() const final;
@@ -524,15 +534,15 @@ struct Exists : public Expr {
 struct Forall : public Expr {
 
   std::shared_ptr<Quantifier> quantifier;
-  Expr *expr;
+  std::shared_ptr<Expr> expr;
 
   Forall() = delete;
-  Forall(std::shared_ptr<Quantifier> quantifier_, Expr *expr_,
+  Forall(std::shared_ptr<Quantifier> quantifier_, std::shared_ptr<Expr> expr_,
     const location &loc_);
   Forall(const Forall &other);
   Forall &operator=(Forall other);
   friend void swap(Forall &x, Forall &y) noexcept;
-  virtual ~Forall();
+  virtual ~Forall() { }
   Forall *clone() const final;
 
   bool constant() const final;

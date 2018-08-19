@@ -50,7 +50,8 @@ mpz_class TypeExpr::width() const {
   return bits;
 }
 
-Range::Range(Expr *min_, Expr *max_, const location &loc_):
+Range::Range(std::shared_ptr<Expr> min_, std::shared_ptr<Expr> max_,
+  const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
   validate();
 }
@@ -73,11 +74,6 @@ void swap(Range &x, Range &y) noexcept {
 
 Range *Range::clone() const {
   return new Range(*this);
-}
-
-Range::~Range() {
-  delete min;
-  delete max;
 }
 
 mpz_class Range::count() const {
@@ -138,7 +134,7 @@ void Range::generate_print(std::ostream &out, std::string const &prefix,
     << "}\n";
 }
 
-Scalarset::Scalarset(Expr *bound_, const location &loc_):
+Scalarset::Scalarset(std::shared_ptr<Expr> bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) {
   validate();
 }
@@ -159,10 +155,6 @@ void swap(Scalarset &x, Scalarset &y) noexcept {
 
 Scalarset *Scalarset::clone() const {
   return new Scalarset(*this);
-}
-
-Scalarset::~Scalarset() {
-  delete bound;
 }
 
 mpz_class Scalarset::count() const {

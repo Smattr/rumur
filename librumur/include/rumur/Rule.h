@@ -31,18 +31,18 @@ struct Rule : public Node {
 
 struct SimpleRule : public Rule {
 
-  Expr *guard;
+  std::shared_ptr<Expr> guard;
   std::vector<std::shared_ptr<Decl>> decls;
   std::vector<std::shared_ptr<Stmt>> body;
 
   SimpleRule() = delete;
-  SimpleRule(const std::string &name_, Expr *guard_,
+  SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
     std::vector<std::shared_ptr<Decl>> &&decls_,
     std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   SimpleRule(const SimpleRule &other);
   SimpleRule &operator=(SimpleRule other);
   friend void swap(SimpleRule &x, SimpleRule &y) noexcept;
-  virtual ~SimpleRule();
+  virtual ~SimpleRule() { }
   SimpleRule *clone() const override;
   bool operator==(const Node &other) const override;
   void validate() const final;

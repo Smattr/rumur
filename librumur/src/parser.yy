@@ -166,13 +166,13 @@
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
-%type <rumur::Lvalue*>                                       designator
+%type <std::shared_ptr<rumur::Lvalue>>                       designator
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
-%type <rumur::Expr*>                                         expr
-%type <std::vector<rumur::Expr*>>                            exprlist
-%type <std::vector<rumur::Expr*>>                            exprlist_cont
-%type <rumur::Expr*>                                         guard_opt
+%type <std::shared_ptr<rumur::Expr>>                         expr
+%type <std::vector<std::shared_ptr<rumur::Expr>>>            exprlist
+%type <std::vector<std::shared_ptr<rumur::Expr>>>            exprlist_cont
+%type <std::shared_ptr<rumur::Expr>>                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
 %type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameter
@@ -459,7 +459,7 @@ stmt: category STRING expr {
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = std::make_shared<rumur::If>(std::move(cs), @$);
 } | RETURN {
-  $$ = std::make_shared<rumur::Return>(nullptr, @$);
+  $$ = std::make_shared<rumur::Return>(std::shared_ptr<Expr>(), @$);
 } | RETURN expr {
   $$ = std::make_shared<rumur::Return>($2, @$);
 } | UNDEFINE designator {
@@ -477,7 +477,7 @@ elsifs: elsifs ELSIF expr THEN stmts {
 };
 
 else_opt: ELSE stmts {
-  $$.push_back(rumur::IfClause(nullptr, std::move($2), @$));
+  $$.push_back(rumur::IfClause(std::shared_ptr<Expr>(), std::move($2), @$));
 } | %empty {
 };
 
@@ -506,67 +506,67 @@ string_opt: STRING {
 semi_opt: ';' | %empty;
 
 expr: expr '?' expr ':' expr {
-  $$ = new rumur::Ternary($1, $3, $5, @$);
+  $$ = std::make_shared<rumur::Ternary>($1, $3, $5, @$);
 } | expr IMPLIES expr {
-  $$ = new rumur::Implication($1, $3, @$);
+  $$ = std::make_shared<rumur::Implication>($1, $3, @$);
 } | expr '|' expr {
-  $$ = new rumur::Or($1, $3, @$);
+  $$ = std::make_shared<rumur::Or>($1, $3, @$);
 } | expr '&' expr {
-  $$ = new rumur::And($1, $3, @$);
+  $$ = std::make_shared<rumur::And>($1, $3, @$);
 } | '!' expr {
-  $$ = new rumur::Not($2, @$);
+  $$ = std::make_shared<rumur::Not>($2, @$);
 } | expr '<' expr {
-  $$ = new rumur::Lt($1, $3, @$);
+  $$ = std::make_shared<rumur::Lt>($1, $3, @$);
 } | expr LEQ expr {
-  $$ = new rumur::Leq($1, $3, @$);
+  $$ = std::make_shared<rumur::Leq>($1, $3, @$);
 } | expr '>' expr {
-  $$ = new rumur::Gt($1, $3, @$);
+  $$ = std::make_shared<rumur::Gt>($1, $3, @$);
 } | expr GEQ expr {
-  $$ = new rumur::Geq($1, $3, @$);
+  $$ = std::make_shared<rumur::Geq>($1, $3, @$);
 } | expr DEQ expr {
-  $$ = new rumur::Eq($1, $3, @$);
+  $$ = std::make_shared<rumur::Eq>($1, $3, @$);
 } | expr '=' expr {
-  $$ = new rumur::Eq($1, $3, @$);
+  $$ = std::make_shared<rumur::Eq>($1, $3, @$);
 } | expr NEQ expr {
-  $$ = new rumur::Neq($1, $3, @$);
+  $$ = std::make_shared<rumur::Neq>($1, $3, @$);
 } | expr '+' expr {
-  $$ = new rumur::Add($1, $3, @$);
+  $$ = std::make_shared<rumur::Add>($1, $3, @$);
 } | expr '-' expr {
-  $$ = new rumur::Sub($1, $3, @$);
+  $$ = std::make_shared<rumur::Sub>($1, $3, @$);
 } | '+' expr %prec '*' {
   $$ = $2;
   $$->loc = @$;
 } | '-' expr %prec '*' {
-  $$ = new rumur::Negative($2, @$);
+  $$ = std::make_shared<rumur::Negative>($2, @$);
 } | expr '*' expr {
-  $$ = new rumur::Mul($1, $3, @$);
+  $$ = std::make_shared<rumur::Mul>($1, $3, @$);
 } | expr '/' expr {
-  $$ = new rumur::Div($1, $3, @$);
+  $$ = std::make_shared<rumur::Div>($1, $3, @$);
 } | expr '%' expr {
-  $$ = new rumur::Mod($1, $3, @$);
+  $$ = std::make_shared<rumur::Mod>($1, $3, @$);
 } | FORALL quantifier {
     symtab.open_scope();
     symtab.declare($2->var->name, *$2->var);
   } DO expr endforall {
-    $$ = new rumur::Forall($2, $5, @$);
+    $$ = std::make_shared<rumur::Forall>($2, $5, @$);
     symtab.close_scope();
 } | EXISTS quantifier {
     symtab.open_scope();
     symtab.declare($2->var->name, *$2->var);
   } DO expr endexists {
-    $$ = new rumur::Exists($2, $5, @$);
+    $$ = std::make_shared<rumur::Exists>($2, $5, @$);
     symtab.close_scope();
 } | designator {
   $$ = $1;
 } | NUMBER {
-  $$ = new rumur::Number($1, @$);
+  $$ = std::make_shared<rumur::Number>($1, @$);
 } | '(' expr ')' {
   $$ = $2;
   $$->loc = @$;
 } | ID '(' exprlist ')' {
   auto f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = new rumur::FunctionCall(std::shared_ptr<rumur::Function>(f->clone()), std::move($3), @$);
+  $$ = std::make_shared<rumur::FunctionCall>(std::shared_ptr<rumur::Function>(f->clone()), std::move($3), @$);
 };
 
 quantifier: ID ':' typeexpr {
@@ -587,13 +587,13 @@ quantifiers: quantifiers ';' quantifier {
 };
 
 designator: designator '.' ID {
-  $$ = new rumur::Field($1, $3, @$);
+  $$ = std::make_shared<rumur::Field>($1, $3, @$);
 } | designator '[' expr ']' {
-  $$ = new rumur::Element($1, $3, @$);
+  $$ = std::make_shared<rumur::Element>($1, $3, @$);
 } | ID {
   auto d = symtab.lookup<rumur::Decl>($1, @$);
   assert(d != nullptr);
-  $$ = new rumur::ExprID($1, std::shared_ptr<Decl>(d->clone()), @$);
+  $$ = std::make_shared<rumur::ExprID>($1, std::shared_ptr<Decl>(d->clone()), @$);
 };
 
 endfor: END | ENDFOR;

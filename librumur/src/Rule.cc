@@ -56,7 +56,7 @@ std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
   return { std::shared_ptr<Rule>(clone()) };
 }
 
-SimpleRule::SimpleRule(const std::string &name_, Expr *guard_,
+SimpleRule::SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
   std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) {
@@ -87,10 +87,6 @@ void swap(SimpleRule &x, SimpleRule &y) noexcept {
 
 SimpleRule *SimpleRule::clone() const {
   return new SimpleRule(*this);
-}
-
-SimpleRule::~SimpleRule() {
-  delete guard;
 }
 
 bool SimpleRule::operator==(const Node &other) const {

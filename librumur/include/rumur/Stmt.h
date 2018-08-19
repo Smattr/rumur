@@ -54,16 +54,17 @@ struct PropertyStmt : public Stmt {
 
 struct Assignment : public Stmt {
 
-  Lvalue *lhs;
-  Expr *rhs;
+  std::shared_ptr<Lvalue> lhs;
+  std::shared_ptr<Expr> rhs;
 
   Assignment() = delete;
-  Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_);
+  Assignment(std::shared_ptr<Lvalue> lhs_, std::shared_ptr<Expr> rhs_,
+    const location &loc_);
   Assignment(const Assignment &other);
   Assignment &operator=(Assignment other);
   friend void swap(Assignment &x, Assignment &y) noexcept;
   Assignment *clone() const final;
-  virtual ~Assignment();
+  virtual ~Assignment() { }
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
@@ -71,14 +72,14 @@ struct Assignment : public Stmt {
 
 struct Clear : public Stmt {
 
-  Lvalue *rhs;
+  std::shared_ptr<Lvalue> rhs;
 
   Clear() = delete;
-  Clear(Lvalue *rhs_, const location &loc);
+  Clear(std::shared_ptr<Lvalue> rhs_, const location &loc);
   Clear(const Clear &other);
   Clear &operator=(Clear other);
   friend void swap(Clear &x, Clear &y) noexcept;
-  virtual ~Clear();
+  virtual ~Clear() { }
   Clear *clone() const final;
 
   void generate(std::ostream &out) const final;
@@ -121,16 +122,16 @@ struct For : public Stmt {
 
 struct IfClause : public Node {
 
-  Expr *condition;
+  std::shared_ptr<Expr> condition;
   std::vector<std::shared_ptr<Stmt>> body;
 
   IfClause() = delete;
-  IfClause(Expr *condition_, std::vector<std::shared_ptr<Stmt>> &&body_,
-    const location &loc_);
+  IfClause(std::shared_ptr<Expr> condition_,
+    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   IfClause(const IfClause &other);
   IfClause &operator=(IfClause other);
   friend void swap(IfClause &x, IfClause &y) noexcept;
-  virtual ~IfClause();
+  virtual ~IfClause() { }
   IfClause *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -155,15 +156,15 @@ struct If : public Stmt {
 struct ProcedureCall : public Stmt {
 
   std::shared_ptr<Function> function;
-  std::vector<Expr*> arguments;
+  std::vector<std::shared_ptr<Expr>> arguments;
 
   ProcedureCall() = delete;
   ProcedureCall(std::shared_ptr<Function> function_,
-    std::vector<Expr*> &&arguments_, const location &loc_);
+    std::vector<std::shared_ptr<Expr>> &&arguments_, const location &loc_);
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);
   friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;
-  virtual ~ProcedureCall();
+  virtual ~ProcedureCall() { }
   ProcedureCall *clone() const final;
 
   void generate(std::ostream &out) const final;
@@ -172,14 +173,14 @@ struct ProcedureCall : public Stmt {
 
 struct Return : public Stmt {
 
-  Expr *expr;
+  std::shared_ptr<Expr> expr;
 
   Return() = delete;
-  Return(Expr *expr_, const location &loc_);
+  Return(std::shared_ptr<Expr> expr_, const location &loc_);
   Return(const Return &other);
   Return &operator=(Return other);
   friend void swap(Return &x, Return &y) noexcept;
-  virtual ~Return();
+  virtual ~Return() { }
   Return *clone() const final;
 
   void generate(std::ostream &out) const final;
@@ -188,14 +189,14 @@ struct Return : public Stmt {
 
 struct Undefine : public Stmt {
 
-  Lvalue *rhs;
+  std::shared_ptr<Lvalue> rhs;
 
   Undefine() = delete;
-  Undefine(Lvalue *rhs_, const location &loc_);
+  Undefine(std::shared_ptr<Lvalue> rhs_, const location &loc_);
   Undefine(const Undefine &other);
   Undefine &operator=(Undefine other);
   friend void swap(Undefine &x, Undefine &y) noexcept;
-  virtual ~Undefine();
+  virtual ~Undefine() { }
   Undefine *clone() const final;
 
   void generate(std::ostream &out) const final;

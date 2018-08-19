@@ -29,15 +29,16 @@ struct Decl : public Node {
 
 struct ConstDecl : public Decl {
 
-  Expr *value;
+  std::shared_ptr<Expr> value;
 
   ConstDecl() = delete;
-  ConstDecl(const std::string &name_, Expr *value_, const location &loc_);
+  ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+    const location &loc_);
   ConstDecl(const ConstDecl &other);
   ConstDecl &operator=(ConstDecl other);
   friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
   ConstDecl *clone() const final;
-  virtual ~ConstDecl();
+  virtual ~ConstDecl() { }
 
   void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;

@@ -273,7 +273,7 @@ void XMLPrinter::visit(const FunctionCall &n) {
   *o << "<functioncall name=\"" << n.function->name << "\" ";
   add_location(n);
   *o << ">";
-  for (const Expr *a : n.arguments) {
+  for (const std::shared_ptr<Expr> &a : n.arguments) {
     sync_to(*a);
     *o << "<argument>";
     dispatch(*a);
@@ -429,7 +429,7 @@ void XMLPrinter::visit(const ProcedureCall &n) {
   *o << "<procedurecall name=\"" << n.function->name << "\" ";
   add_location(n);
   *o << ">";
-  for (const Expr *a : n.arguments) {
+  for (const std::shared_ptr<Expr> &a : n.arguments) {
     sync_to(*a);
     *o << "<argument>";
     dispatch(*a);

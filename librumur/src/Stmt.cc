@@ -68,7 +68,8 @@ bool PropertyStmt::operator==(const Node &other) const {
   return o != nullptr && property == o->property && message == o->message;
 }
 
-Assignment::Assignment(Lvalue *lhs_, Expr *rhs_, const location &loc_):
+Assignment::Assignment(std::shared_ptr<Lvalue> lhs_, std::shared_ptr<Expr> rhs_,
+  const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) { }
 
 Assignment::Assignment(const Assignment &other):
@@ -91,11 +92,6 @@ Assignment *Assignment::clone() const {
   return new Assignment(*this);
 }
 
-Assignment::~Assignment() {
-  delete lhs;
-  delete rhs;
-}
-
 void Assignment::generate(std::ostream &out) const {
 
   if (!lhs->type()->is_simple())
@@ -114,7 +110,7 @@ bool Assignment::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-Clear::Clear(Lvalue *rhs_, const location &loc_):
+Clear::Clear(std::shared_ptr<Lvalue> rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
 Clear::Clear(const Clear &other):
@@ -129,10 +125,6 @@ void swap(Clear &x, Clear &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.rhs, y.rhs);
-}
-
-Clear::~Clear() {
-  delete rhs;
 }
 
 Clear *Clear::clone() const {
@@ -229,8 +221,8 @@ bool For::operator==(const Node &other) const {
   return true;
 }
 
-IfClause::IfClause(Expr *condition_, std::vector<std::shared_ptr<Stmt>> &&body_,
-  const location &loc_):
+IfClause::IfClause(std::shared_ptr<Expr> condition_,
+  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Node(loc_), condition(condition_), body(body_) { }
 
 IfClause::IfClause(const IfClause &other):
@@ -250,10 +242,6 @@ void swap(IfClause &x, IfClause &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.condition, y.condition);
   swap(x.body, y.body);
-}
-
-IfClause::~IfClause() {
-  delete condition;
 }
 
 IfClause *IfClause::clone() const {
@@ -328,14 +316,14 @@ bool If::operator==(const Node &other) const {
 }
 
 ProcedureCall::ProcedureCall(std::shared_ptr<Function> function_,
-  std::vector<Expr*> &&arguments_, const location &loc_):
+  std::vector<std::shared_ptr<Expr>> &&arguments_, const location &loc_):
   Stmt(loc_), function(function_), arguments(arguments_) { }
 
 ProcedureCall::ProcedureCall(const ProcedureCall &other):
   Stmt(other.loc), function(other.function->clone()) {
 
-  for (const Expr *p : other.arguments)
-    arguments.push_back(p->clone());
+  for (const std::shared_ptr<Expr> &p : other.arguments)
+    arguments.emplace_back(p->clone());
 }
 
 ProcedureCall &ProcedureCall::operator=(ProcedureCall other) {
@@ -369,12 +357,7 @@ bool ProcedureCall::operator==(const Node &other) const {
   return true;
 }
 
-ProcedureCall::~ProcedureCall() {
-  for (Expr *arg : arguments)
-    delete arg;
-}
-
-Return::Return(Expr *expr_, const location &loc_):
+Return::Return(std::shared_ptr<Expr> expr_, const location &loc_):
   Stmt(loc_), expr(expr_) { }
 
 Return::Return(const Return &other):
@@ -389,10 +372,6 @@ void swap(Return &x, Return &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.expr, y.expr);
-}
-
-Return::~Return() {
-  delete expr;
 }
 
 Return *Return::clone() const {
@@ -421,7 +400,7 @@ bool Return::operator==(const Node &other) const {
   return true;
 }
 
-Undefine::Undefine(Lvalue *rhs_, const location &loc_):
+Undefine::Undefine(std::shared_ptr<Lvalue> rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
 Undefine::Undefine(const Undefine &other):
@@ -436,10 +415,6 @@ void swap(Undefine &x, Undefine &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.rhs, y.rhs);
-}
-
-Undefine::~Undefine() {
-  delete rhs;
 }
 
 Undefine *Undefine::clone() const {
