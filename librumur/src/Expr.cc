@@ -19,7 +19,7 @@
 namespace rumur {
 
 bool Expr::is_boolean() const {
-  return type() != nullptr && *type()->resolve() == Boolean;
+  return type() != nullptr && *type()->resolve() == *Boolean;
 }
 
 Ternary::Ternary(Expr *cond_, Expr *lhs_, Expr *rhs_, const location &loc_):
@@ -130,7 +130,7 @@ Implication *Implication::clone() const {
 }
 
 const TypeExpr *Implication::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Implication::generate_rvalue(std::ostream &out) const {
@@ -156,7 +156,7 @@ Or *Or::clone() const {
 }
 
 const TypeExpr *Or::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Or::generate_rvalue(std::ostream &out) const {
@@ -182,7 +182,7 @@ And *And::clone() const {
 }
 
 const TypeExpr *And::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void And::generate_rvalue(std::ostream &out) const {
@@ -235,7 +235,7 @@ Not *Not::clone() const {
 }
 
 const TypeExpr *Not::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Not::generate_rvalue(std::ostream &out) const {
@@ -314,7 +314,7 @@ Lt *Lt::clone() const {
 }
 
 const TypeExpr *Lt::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Lt::generate_rvalue(std::ostream &out) const {
@@ -340,7 +340,7 @@ Leq *Leq::clone() const {
 }
 
 const TypeExpr *Leq::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Leq::generate_rvalue(std::ostream &out) const {
@@ -366,7 +366,7 @@ Gt *Gt::clone() const {
 }
 
 const TypeExpr *Gt::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Gt::generate_rvalue(std::ostream &out) const {
@@ -392,7 +392,7 @@ Geq *Geq::clone() const {
 }
 
 const TypeExpr *Geq::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Geq::generate_rvalue(std::ostream &out) const {
@@ -482,7 +482,7 @@ Eq *Eq::clone() const {
 }
 
 const TypeExpr *Eq::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Eq::generate_rvalue(std::ostream &out) const {
@@ -508,7 +508,7 @@ Neq *Neq::clone() const {
 }
 
 const TypeExpr *Neq::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 void Neq::generate_rvalue(std::ostream &out) const {
@@ -1338,7 +1338,7 @@ bool Exists::constant() const {
 }
 
 const TypeExpr *Exists::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 Exists::~Exists() {
@@ -1399,7 +1399,7 @@ bool Forall::constant() const {
 }
 
 const TypeExpr *Forall::type() const {
-  return &Boolean;
+  return Boolean.get();
 }
 
 Forall::~Forall() {

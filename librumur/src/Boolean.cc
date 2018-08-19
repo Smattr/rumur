@@ -1,4 +1,5 @@
 #include "location.hh"
+#include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Expr.h>
 #include <rumur/TypeExpr.h>
@@ -8,6 +9,8 @@
 
 namespace rumur {
 
-const Enum Boolean({ {"false", location()}, {"true", location()} }, location());
+const std::shared_ptr<Enum> Boolean = std::make_shared<Enum>(
+  std::vector<std::pair<std::string, location>>(
+    { {"false", location()}, {"true", location()} }), location());
 
 }

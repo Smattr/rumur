@@ -22,9 +22,9 @@ std::shared_ptr<Model> parse(std::istream *input) {
   // Setup a symbol table that knows the built ins
   Symtab symtab;
   symtab.open_scope();
-  symtab.declare("boolean", Boolean);
-  for (const std::pair<std::string, location> &m : Boolean.members)
-    symtab.declare(m.first, TypeDecl("boolean", std::make_shared<Enum>(Boolean), location()));
+  symtab.declare("boolean", *Boolean);
+  for (const std::pair<std::string, location> &m : Boolean->members)
+    symtab.declare(m.first, TypeDecl("boolean", Boolean, location()));
 
   // Setup the parser
   scanner s(input);

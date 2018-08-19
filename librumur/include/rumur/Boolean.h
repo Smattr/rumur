@@ -1,9 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <rumur/TypeExpr.h>
 
 namespace rumur {
 
-extern const Enum Boolean;
+extern const std::shared_ptr<Enum> Boolean;
 
 }
