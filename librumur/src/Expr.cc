@@ -815,8 +815,9 @@ void Lvalue::generate_lvalue(std::ostream &out) const {
 Lvalue::~Lvalue() {
 }
 
-ExprID::ExprID(const std::string &id_, const Decl *value_, const location &loc_):
-  Lvalue(loc_), id(id_), value(value_->clone()) {
+ExprID::ExprID(const std::string &id_, const std::shared_ptr<Decl> value_,
+  const location &loc_):
+  Lvalue(loc_), id(id_), value(value_) {
 }
 
 ExprID::ExprID(const ExprID &other):
@@ -840,15 +841,15 @@ ExprID *ExprID::clone() const {
 }
 
 bool ExprID::constant() const {
-  return dynamic_cast<const ConstDecl*>(value) != nullptr;
+  return dynamic_cast<const ConstDecl*>(value.get()) != nullptr;
 }
 
 const TypeExpr *ExprID::type() const {
-  if (dynamic_cast<const ConstDecl*>(value) != nullptr) {
+  if (dynamic_cast<const ConstDecl*>(value.get()) != nullptr) {
     return nullptr;
-  } else if (auto t = dynamic_cast<const TypeDecl*>(value)) {
+  } else if (auto t = dynamic_cast<const TypeDecl*>(value.get())) {
     return t->value->resolve();
-  } else if (auto v = dynamic_cast<const VarDecl*>(value)) {
+  } else if (auto v = dynamic_cast<const VarDecl*>(value.get())) {
     return v->type->resolve();
   }
   assert(!"unreachable");
@@ -858,13 +859,13 @@ const TypeExpr *ExprID::type() const {
 void ExprID::generate(std::ostream &out, bool lvalue) const {
 
   // Case 1: this is a reference to a const.
-  if (auto c = dynamic_cast<const ConstDecl*>(value)) {
+  if (auto c = dynamic_cast<const ConstDecl*>(value.get())) {
     assert(!lvalue && "const appearing as an lvalue");
     out << "ru_" << id;
     return;
   }
 
-  if (auto v = dynamic_cast<const VarDecl*>(value)) {
+  if (auto v = dynamic_cast<const VarDecl*>(value.get())) {
 
     const TypeExpr *t = type()->resolve();
     assert(t != nullptr && "untyped literal somehow an identifier");
@@ -913,7 +914,7 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
   }
 
   // Case 4, this is an enum member.
-  if (dynamic_cast<const TypeDecl*>(value)) {
+  if (dynamic_cast<const TypeDecl*>(value.get())) {
     const TypeExpr *t = type()->resolve();
     assert(t != nullptr && "untyped literal somehow an identifier");
 
@@ -935,12 +936,8 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
   // variable. I suspect we should just handle that the same way as a local.
 }
 
-ExprID::~ExprID() {
-  delete value;
-}
-
 mpz_class ExprID::constant_fold() const {
-  if (auto c = dynamic_cast<const ConstDecl*>(value))
+  if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
     return c->value->constant_fold();
   throw Error("symbol \"" + id + "\" is not a constant", loc);
 }
@@ -984,7 +981,7 @@ const TypeExpr *Field::type() const {
   const TypeExpr *resolved = root->resolve();
   assert(resolved != nullptr);
   if (auto r = dynamic_cast<const Record*>(resolved)) {
-    for (const VarDecl *f : r->fields) {
+    for (const std::shared_ptr<VarDecl> &f : r->fields) {
       if (f->name == field)
         return f->type.get();
     }
@@ -1000,7 +997,7 @@ void Field::generate(std::ostream &out, bool lvalue) const {
   assert(resolved != nullptr);
   if (auto r = dynamic_cast<const Record*>(resolved)) {
     mpz_class offset = 0;
-    for (const VarDecl *f : r->fields) {
+    for (const std::shared_ptr<VarDecl> &f : r->fields) {
       if (f->name == field) {
         if (!lvalue && f->type->is_simple()) {
           const std::string lb = f->type->lower_bound();
@@ -1199,7 +1196,7 @@ bool FunctionCall::operator==(const Node &other) const {
 
 Quantifier::Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
   const location &loc_)
-  : Node(loc_), var(new VarDecl(name, type, loc_)), step(nullptr) {
+  : Node(loc_), var(std::make_shared<VarDecl>(name, type, loc_)), step(nullptr) {
 }
 
 Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to,
@@ -1215,7 +1212,7 @@ Quantifier::Quantifier(const std::string &name, Expr *from, Expr *to, Expr *step
 Quantifier::Quantifier(const location &loc_, const std::string &name, Expr *from,
   Expr *to, Expr *step_):
   Node(loc_),
-  var(new VarDecl(name, std::make_shared<Range>(from, to, loc_), loc_)),
+  var(std::make_shared<VarDecl>(name, std::make_shared<Range>(from, to, loc_), loc_)),
   step(step_) {
 }
 
@@ -1241,7 +1238,6 @@ Quantifier *Quantifier::clone() const {
 }
 
 Quantifier::~Quantifier() {
-  delete var;
   delete step;
 }
 

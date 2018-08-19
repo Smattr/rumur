@@ -161,11 +161,11 @@
 %left '*' '/' '%'
 
 %type <rumur::Property::Category>                            category
-%type <rumur::Decl*>                                         constdecl
-%type <std::vector<rumur::Decl*>>                            constdecls
-%type <std::vector<rumur::Decl*>>                            decl
-%type <std::vector<rumur::Decl*>>                            decls
-%type <std::vector<rumur::Decl*>>                            decls_header
+%type <std::shared_ptr<rumur::Decl>>                         constdecl
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecls
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
 %type <rumur::Lvalue*>                                       designator
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
@@ -194,11 +194,11 @@
 %type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts
 %type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts_cont
 %type <std::string>                                          string_opt
-%type <rumur::Decl*>                                         typedecl
-%type <std::vector<rumur::Decl*>>                            typedecls
+%type <std::shared_ptr<rumur::Decl>>                         typedecl
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecls
 %type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
-%type <std::vector<rumur::VarDecl*>>                         vardecl
-%type <std::vector<rumur::VarDecl*>>                         vardecls
+%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecl
+%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecls
 %type <bool>                                                 var_opt
 
 %%
@@ -222,7 +222,7 @@ decl: CONST constdecls {
 } | TYPE typedecls {
   $$ = $2;
 } | VAR vardecls {
-  for (rumur::VarDecl *d : $2) {
+  for (std::shared_ptr<rumur::VarDecl> &d : $2) {
     // Account for whether this declaration is part of the state
     if (symtab.is_global_scope()) {
       d->state_variable = true;
@@ -242,7 +242,7 @@ constdecls: constdecls constdecl {
 };
 
 constdecl: ID ':' expr ';' {
-  $$ = new rumur::ConstDecl($1, $3, @$);
+  $$ = std::make_shared<rumur::ConstDecl>($1, $3, @$);
   symtab.declare($1, *$$);
 };
 
@@ -254,7 +254,7 @@ typedecls: typedecls typedecl {
 };
 
 typedecl: ID ':' typeexpr ';' {
-  $$ = new rumur::TypeDecl($1, $3, @$);
+  $$ = std::make_shared<rumur::TypeDecl>($1, $3, @$);
   symtab.declare($1, *$3);
 };
 
@@ -295,7 +295,7 @@ vardecls: vardecls vardecl {
 
 vardecl: id_list_opt ':' typeexpr ';' {
   for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(new rumur::VarDecl(m.first, $3, m.second));
+    $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, m.second));
   }
 };
 
@@ -309,7 +309,7 @@ function: FUNCTION | PROCEDURE;
 
 parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
-    auto v = new rumur::VarDecl(i.first, std::shared_ptr<rumur::TypeExpr>($4->clone()), i.second);
+    auto v = std::make_shared<rumur::VarDecl>(i.first, std::shared_ptr<rumur::TypeExpr>($4->clone()), i.second);
     symtab.declare(v->name, *v);
     $$.push_back(std::make_shared<rumur::Parameter>(v, $1, @$));
   }
@@ -593,7 +593,7 @@ designator: designator '.' ID {
 } | ID {
   auto d = symtab.lookup<rumur::Decl>($1, @$);
   assert(d != nullptr);
-  $$ = new rumur::ExprID($1, d, @$);
+  $$ = new rumur::ExprID($1, std::shared_ptr<Decl>(d->clone()), @$);
 };
 
 endfor: END | ENDFOR;

@@ -120,15 +120,15 @@ struct Enum : public TypeExpr {
 
 struct Record : public TypeExpr {
 
-  std::vector<VarDecl*> fields;
+  std::vector<std::shared_ptr<VarDecl>> fields;
 
   Record() = delete;
-  Record(std::vector<VarDecl*> &&fields_, const location &loc_);
+  Record(std::vector<std::shared_ptr<VarDecl>> &&fields_, const location &loc_);
   Record(const Record &other);
   Record &operator=(Record other);
   friend void swap(Record &x, Record &y) noexcept;
   Record *clone() const final;
-  virtual ~Record();
+  virtual ~Record() { }
 
   mpz_class width() const final;
   mpz_class count() const final;

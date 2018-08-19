@@ -32,11 +32,12 @@ struct Rule : public Node {
 struct SimpleRule : public Rule {
 
   Expr *guard;
-  std::vector<Decl*> decls;
+  std::vector<std::shared_ptr<Decl>> decls;
   std::vector<std::shared_ptr<Stmt>> body;
 
   SimpleRule() = delete;
-  SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
+  SimpleRule(const std::string &name_, Expr *guard_,
+    std::vector<std::shared_ptr<Decl>> &&decls_,
     std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   SimpleRule(const SimpleRule &other);
   SimpleRule &operator=(SimpleRule other);
@@ -49,16 +50,17 @@ struct SimpleRule : public Rule {
 
 struct StartState : public Rule {
 
-  std::vector<Decl*> decls;
+  std::vector<std::shared_ptr<Decl>> decls;
   std::vector<std::shared_ptr<Stmt>> body;
 
   StartState() = delete;
-  StartState(const std::string &name_, std::vector<Decl*> &&decls_,
+  StartState(const std::string &name_,
+    std::vector<std::shared_ptr<Decl>> &&decls_,
     std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
   StartState(const StartState &other);
   StartState &operator=(StartState other);
   friend void swap(StartState &x, StartState &y) noexcept;
-  virtual ~StartState();
+  virtual ~StartState() { }
   StartState *clone() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;

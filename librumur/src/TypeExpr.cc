@@ -295,11 +295,12 @@ void Enum::generate_print(std::ostream &out, std::string const &prefix,
     << "}\n";
 }
 
-Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
+Record::Record(std::vector<std::shared_ptr<VarDecl>> &&fields_,
+  const location &loc_):
   TypeExpr(loc_), fields(fields_) {
 
   std::unordered_set<std::string> names;
-  for (const VarDecl *f : fields) {
+  for (const std::shared_ptr<VarDecl> &f : fields) {
     if (!names.insert(f->name).second)
       throw Error("duplicate field name \"" + f->name + "\"", f->loc);
   }
@@ -307,8 +308,8 @@ Record::Record(std::vector<VarDecl*> &&fields_, const location &loc_):
 
 Record::Record(const Record &other):
   TypeExpr(other) {
-  for (const VarDecl *v : other.fields)
-    fields.push_back(v->clone());
+  for (const std::shared_ptr<VarDecl> &v : other.fields)
+    fields.emplace_back(v->clone());
 }
 
 Record &Record::operator=(Record other) {
@@ -326,21 +327,16 @@ Record *Record::clone() const {
   return new Record(*this);
 }
 
-Record::~Record() {
-  for (VarDecl *v : fields)
-    delete v;
-}
-
 mpz_class Record::width() const {
   mpz_class s = 0;
-  for (const VarDecl *v : fields)
+  for (const std::shared_ptr<VarDecl> &v : fields)
     s += v->type->width();
   return s;
 }
 
 mpz_class Record::count() const {
   mpz_class s = 1;
-  for (const VarDecl *v : fields)
+  for (const std::shared_ptr<VarDecl> &v : fields)
     s *= v->type->count();
   return s;
 }
@@ -361,7 +357,7 @@ bool Record::operator==(const Node &other) const {
 void Record::generate_print(std::ostream &out, std::string const &prefix,
   mpz_class preceding_offset) const {
 
-  for (VarDecl const *f : fields) {
+  for (const std::shared_ptr<VarDecl> &f : fields) {
     f->generate_print(out, prefix + ".", preceding_offset);
     preceding_offset += f->width();
   }

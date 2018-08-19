@@ -56,7 +56,8 @@ std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
   return { std::shared_ptr<Rule>(clone()) };
 }
 
-SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*> &&decls_,
+SimpleRule::SimpleRule(const std::string &name_, Expr *guard_,
+  std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) {
   validate();
@@ -64,8 +65,8 @@ SimpleRule::SimpleRule(const std::string &name_, Expr *guard_, std::vector<Decl*
 
 SimpleRule::SimpleRule(const SimpleRule &other):
   Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()) {
-  for (const Decl *d : other.decls)
-    decls.push_back(d->clone());
+  for (const std::shared_ptr<Decl> &d : other.decls)
+    decls.emplace_back(d->clone());
   for (const std::shared_ptr<Stmt> &s : other.body)
     body.emplace_back(s->clone());
 }
@@ -90,8 +91,6 @@ SimpleRule *SimpleRule::clone() const {
 
 SimpleRule::~SimpleRule() {
   delete guard;
-  for (Decl *d : decls)
-    delete d;
 }
 
 bool SimpleRule::operator==(const Node &other) const {
@@ -120,7 +119,8 @@ void SimpleRule::validate() const {
   ReturnChecker::check(*this);
 }
 
-StartState::StartState(const std::string &name_, std::vector<Decl*> &&decls_,
+StartState::StartState(const std::string &name_,
+  std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Rule(name_, loc_), decls(decls_), body(body_) {
   validate();
@@ -128,8 +128,8 @@ StartState::StartState(const std::string &name_, std::vector<Decl*> &&decls_,
 
 StartState::StartState(const StartState &other):
   Rule(other) {
-  for (const Decl *d : other.decls)
-    decls.push_back(d->clone());
+  for (const std::shared_ptr<Decl> &d : other.decls)
+    decls.emplace_back(d->clone());
   for (const std::shared_ptr<Stmt> &s : other.body)
     body.emplace_back(s->clone());
 }
@@ -169,11 +169,6 @@ bool StartState::operator==(const Node &other) const {
 
 void StartState::validate() const {
   ReturnChecker::check(*this);
-}
-
-StartState::~StartState() {
-  for (Decl *d : decls)
-    delete d;
 }
 
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,

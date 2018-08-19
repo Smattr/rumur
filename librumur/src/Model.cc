@@ -20,7 +20,7 @@
 
 namespace rumur {
 
-Model::Model(std::vector<Decl*> &&decls_,
+Model::Model(std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Function>> &&functions_,
   std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
@@ -29,8 +29,8 @@ Model::Model(std::vector<Decl*> &&decls_,
 
 Model::Model(const Model &other):
   Node(other) {
-  for (const Decl *d : other.decls)
-    decls.push_back(d->clone());
+  for (const std::shared_ptr<Decl> &d : other.decls)
+    decls.emplace_back(d->clone());
   for (const std::shared_ptr<Function> &f : other.functions)
     functions.emplace_back(f->clone());
   for (const std::shared_ptr<Rule> &r : other.rules)
@@ -56,23 +56,18 @@ Model *Model::clone() const {
 
 mpz_class Model::size_bits() const {
   mpz_class s = 0;
-  for (const Decl *d : decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d))
+  for (const std::shared_ptr<Decl> &d : decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
       s += v->type->width();
   }
   return s;
 }
 
-Model::~Model() {
-  for (Decl *d : decls)
-    delete d;
-}
-
 void Model::generate(std::ostream &out) const {
 
   // Write out constants
-  for (const Decl *d : decls) {
-    if (auto c = dynamic_cast<const ConstDecl*>(d)) {
+  for (const std::shared_ptr<Decl> &d : decls) {
+    if (auto c = dynamic_cast<const ConstDecl*>(d.get())) {
       c->generate(out);
       out << ";\n";
     }
@@ -100,8 +95,8 @@ void Model::generate(std::ostream &out) const {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n";
 
-        for (const Decl *d : s->decls) {
-          if (auto v = dynamic_cast<const VarDecl*>(d))
+        for (const std::shared_ptr<Decl> &d : s->decls) {
+          if (auto v = dynamic_cast<const VarDecl*>(d.get()))
             out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
               << v->type->width() << ")] = { 0 };\n"
               << "  struct handle ru_" << v->name << " = { .base = _ru_"
@@ -160,8 +155,8 @@ void Model::generate(std::ostream &out) const {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n";
 
-        for (const Decl *d : s->decls) {
-          if (auto v = dynamic_cast<const VarDecl*>(d))
+        for (const std::shared_ptr<Decl> &d : s->decls) {
+          if (auto v = dynamic_cast<const VarDecl*>(d.get()))
             out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
               << v->type->width() << ")] = { 0 };\n"
               << "  struct handle ru_" << v->name << " = { .base = _ru_"
@@ -432,8 +427,8 @@ void Model::generate(std::ostream &out) const {
   out
     << "static void state_print(const struct state *s) {\n";
   mpz_class offset = 0;
-  for (const Decl *d : decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d)) {
+  for (const std::shared_ptr<Decl> &d : decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
       v->generate_print(out, "", offset);
       offset += v->width();
     }
@@ -460,8 +455,8 @@ void Model::validate() const {
   // Check all state variable names are distinct.
   {
     std::unordered_set<std::string> names;
-    for (const Decl *d : decls) {
-      if (auto v = dynamic_cast<const VarDecl*>(d)) {
+    for (const std::shared_ptr<Decl> &d : decls) {
+      if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
         if (!names.insert(v->name).second)
           throw Error("duplicate state variable name \"" + v->name + "\"",
             v->loc);
@@ -508,8 +503,8 @@ unsigned long Model::assumption_count() const {
 
 void Model::reindex() {
   mpz_class offset = 0;
-  for (Decl *d : decls) {
-    if (auto v = dynamic_cast<VarDecl*>(d)) {
+  for (std::shared_ptr<Decl> &d : decls) {
+    if (auto v = dynamic_cast<VarDecl*>(d.get())) {
       v->offset = offset;
       offset += v->type->width();
     }

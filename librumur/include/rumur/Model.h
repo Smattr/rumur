@@ -15,18 +15,18 @@ namespace rumur {
 
 struct Model : public Node {
 
-  std::vector<Decl*> decls;
+  std::vector<std::shared_ptr<Decl>> decls;
   std::vector<std::shared_ptr<Function>> functions;
   std::vector<std::shared_ptr<Rule>> rules;
 
   Model() = delete;
-  Model(std::vector<Decl*> &&decls_,
+  Model(std::vector<std::shared_ptr<Decl>> &&decls_,
     std::vector<std::shared_ptr<Function>> &&functions_,
     std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
   Model(const Model &other);
   Model &operator=(Model other);
   friend void swap(Model &x, Model &y) noexcept;
-  virtual ~Model();
+  virtual ~Model() { }
   Model *clone() const final;
 
   // Get the size of the state data in bits.

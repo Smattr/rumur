@@ -10,7 +10,8 @@
 
 namespace rumur {
 
-Parameter::Parameter(VarDecl *decl_, bool by_reference_, const location &loc_):
+Parameter::Parameter(std::shared_ptr<VarDecl> decl_, bool by_reference_,
+  const location &loc_):
   Node(loc_), decl(decl_), by_reference(by_reference_) { }
 
 Parameter::Parameter(const Parameter &other):
@@ -26,10 +27,6 @@ void swap(Parameter &x, Parameter &y) noexcept {
   swap(x.loc, y.loc);
   swap(x.decl, y.decl);
   swap(x.by_reference, y.by_reference);
-}
-
-Parameter::~Parameter() {
-  delete decl;
 }
 
 Parameter *Parameter::clone() const {
@@ -49,7 +46,8 @@ bool Parameter::operator==(const Node &other) const {
 
 Function::Function(const std::string &name_,
   std::vector<std::shared_ptr<Parameter>> &&parameters_,
-  std::shared_ptr<TypeExpr> return_type_, std::vector<Decl*> &&decls_,
+  std::shared_ptr<TypeExpr> return_type_,
+  std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
   Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
   decls(decls_), body(body_) { }
@@ -61,8 +59,8 @@ Function::Function(const Function &other):
   for (const std::shared_ptr<Parameter> &p : other.parameters)
     parameters.emplace_back(p->clone());
 
-  for (const Decl *d : other.decls)
-    decls.push_back(d->clone());
+  for (const std::shared_ptr<Decl> &d : other.decls)
+    decls.emplace_back(d->clone());
 
   for (const std::shared_ptr<Stmt> &s : other.body)
     body.emplace_back(s->clone());
@@ -81,11 +79,6 @@ void swap(Function &x, Function &y) noexcept {
   swap(x.return_type, y.return_type);
   swap(x.decls, y.decls);
   swap(x.body, y.body);
-}
-
-Function::~Function() {
-  for (Decl *d : decls)
-    delete d;
 }
 
 Function *Function::clone() const {

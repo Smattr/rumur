@@ -389,14 +389,14 @@ struct Lvalue : public Expr {
 struct ExprID : public Lvalue {
 
   std::string id;
-  Decl *value;
+  std::shared_ptr<Decl> value;
 
   ExprID() = delete;
-  ExprID(const std::string &id_, const Decl *value_, const location &loc_);
+  ExprID(const std::string &id_, const std::shared_ptr<Decl> value_, const location &loc_);
   ExprID(const ExprID &other);
   ExprID &operator=(ExprID other);
   friend void swap(ExprID &x, ExprID &y) noexcept;
-  virtual ~ExprID();
+  virtual ~ExprID() { }
   ExprID *clone() const final;
 
   bool constant() const final;
@@ -469,7 +469,7 @@ struct FunctionCall : public Expr {
 
 struct Quantifier : public Node {
 
-  VarDecl *var;
+  std::shared_ptr<VarDecl> var;
   Expr *step;
 
   Quantifier() = delete;

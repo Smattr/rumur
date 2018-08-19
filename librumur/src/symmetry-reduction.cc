@@ -1,6 +1,7 @@
 #include <cassert>
 #include <gmpxx.h>
 #include <iostream>
+#include <memory>
 #include <rumur/Decl.h>
 #include <rumur/log.h>
 #include <rumur/Model.h>
@@ -15,8 +16,8 @@ namespace rumur {
 // Find all the named scalarset declarations in a model.
 static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
-  for (const Decl *d : m.decls) {
-    if (auto t = dynamic_cast<const TypeDecl*>(d)) {
+  for (const std::shared_ptr<Decl> &d : m.decls) {
+    if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
       if (dynamic_cast<const Scalarset*>(t->value.get()) != nullptr)
         ss.push_back(t);
     }
@@ -32,7 +33,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
 
   if (auto r = dynamic_cast<const Record*>(&t)) {
     unsigned s = 0;
-    for (const VarDecl *f : r->fields)
+    for (const std::shared_ptr<VarDecl> &f : r->fields)
       s += interdependence(*f->type);
     return s;
   }
@@ -115,7 +116,7 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
-    for (const VarDecl *f : r->fields) {
+    for (const std::shared_ptr<VarDecl> &f : r->fields) {
 
       // Generate code to compare this field
       generate_compare(out, off_a, off_b, *f->type, depth);
@@ -179,7 +180,7 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
-    for (const VarDecl *f : r->fields) {
+    for (const std::shared_ptr<VarDecl> &f : r->fields) {
       generate_apply_swap(out, off_a, off_b, *f->type, depth);
 
       off_a += " + SIZE_C(" + f->width().get_str() + ")";
@@ -218,8 +219,8 @@ namespace {
     void collect_components(void) {
       // Look through the model state to find suitable components.
       mpz_class offset = 0;
-      for (const Decl *d : model->decls) {
-        if (auto v = dynamic_cast<const VarDecl*>(d)) {
+      for (const std::shared_ptr<Decl> &d : model->decls) {
+        if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
           consider_component(offset, *v->type, 0);
           offset += v->type->width();
         }
@@ -306,7 +307,7 @@ namespace {
 
       // If this is a record, consider each of its fields.
       if (auto r = dynamic_cast<const Record*>(t.resolve())) {
-        for (const VarDecl *f : r->fields) {
+        for (const std::shared_ptr<VarDecl> &f : r->fields) {
           consider_component(offset, *f->type, bias);
           offset += f->type->width();
         }
@@ -378,8 +379,8 @@ namespace {
 
       std::string offset = "SIZE_C(0)";
 
-      for (const Decl *d : model->decls) {
-        if (auto v = dynamic_cast<const VarDecl*>(d)) {
+      for (const std::shared_ptr<Decl> &d : model->decls) {
+        if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
           generate_apply(out, offset, *v->type, 0);
 
           offset += " + SIZE_C(" + v->width().get_str() + ")";
@@ -468,7 +469,7 @@ namespace {
       if (auto r = dynamic_cast<const Record*>(t)) {
         std::string off = offset;
 
-        for (const VarDecl *f : r->fields) {
+        for (const std::shared_ptr<VarDecl> &f : r->fields) {
           generate_apply(out, off, *f->type, depth);
 
           off += " + SIZE_C(" + f->width().get_str() + ")";
@@ -543,7 +544,7 @@ namespace {
 
       // If this is a record, consider each of its fields.
       if (auto r = dynamic_cast<const Record*>(t.resolve())) {
-        for (const VarDecl *f : r->fields) {
+        for (const std::shared_ptr<VarDecl> &f : r->fields) {
           consider_component(offset, *f->type, bias);
           offset += f->type->width();
         }

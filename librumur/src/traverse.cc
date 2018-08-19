@@ -357,7 +357,7 @@ void Traversal::visit(Function &n) {
     dispatch(*p);
   if (n.return_type != nullptr)
     dispatch(*n.return_type);
-  for (Decl *d : n.decls)
+  for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
@@ -406,7 +406,7 @@ void Traversal::visit(Mod &n) {
 }
 
 void Traversal::visit(Model &n) {
-  for (Decl *d : n.decls)
+  for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
@@ -472,7 +472,7 @@ void Traversal::visit(Range &n) {
 }
 
 void Traversal::visit(Record &n) {
-  for (VarDecl *f : n.fields)
+  for (std::shared_ptr<VarDecl> &f : n.fields)
     dispatch(*f);
 }
 
@@ -497,7 +497,7 @@ void Traversal::visit(SimpleRule &n) {
     dispatch(*q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
-  for (Decl *d : n.decls)
+  for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
@@ -506,7 +506,7 @@ void Traversal::visit(SimpleRule &n) {
 void Traversal::visit(StartState &n) {
   for (std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
-  for (Decl *d : n.decls)
+  for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
@@ -889,7 +889,7 @@ void ConstTraversal::visit(const Function &n) {
     dispatch(*p);
   if (n.return_type != nullptr)
     dispatch(*n.return_type);
-  for (const Decl *d : n.decls)
+  for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
@@ -938,7 +938,7 @@ void ConstTraversal::visit(const Mod &n) {
 }
 
 void ConstTraversal::visit(const Model &n) {
-  for (const Decl *d : n.decls)
+  for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (const std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
@@ -1004,7 +1004,7 @@ void ConstTraversal::visit(const Range &n) {
 }
 
 void ConstTraversal::visit(const Record &n) {
-  for (const VarDecl *f : n.fields)
+  for (const std::shared_ptr<VarDecl> &f : n.fields)
     dispatch(*f);
 }
 
@@ -1029,7 +1029,7 @@ void ConstTraversal::visit(const SimpleRule &n) {
     dispatch(*q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
-  for (const Decl *d : n.decls)
+  for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);
@@ -1038,7 +1038,7 @@ void ConstTraversal::visit(const SimpleRule &n) {
 void ConstTraversal::visit(const StartState &n) {
   for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
     dispatch(*q);
-  for (const Decl *d : n.decls)
+  for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (const std::shared_ptr<Stmt> &s : n.body)
     dispatch(*s);

@@ -247,7 +247,7 @@ void XMLPrinter::visit(const Function &n) {
     dispatch(*n.return_type);
     *o << "</returntype>";
   }
-  for (const Decl *d : n.decls) {
+  for (const std::shared_ptr<Decl> &d : n.decls) {
     sync_to(*d);
     dispatch(*d);
   }
@@ -351,7 +351,7 @@ void XMLPrinter::visit(const Model &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const Decl *d : n.decls) {
+    for (const std::shared_ptr<Decl> &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }
@@ -530,7 +530,7 @@ void XMLPrinter::visit(const Record &n) {
   *o << "<record ";
   add_location(n);
   *o << ">";
-  for (const VarDecl *f : n.fields) {
+  for (const std::shared_ptr<VarDecl> &f : n.fields) {
     sync_to(*f);
     dispatch(*f);
   }
@@ -614,7 +614,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const Decl *d : n.decls) {
+    for (const std::shared_ptr<Decl> &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }
@@ -650,7 +650,7 @@ void XMLPrinter::visit(const StartState &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const Decl *d : n.decls) {
+    for (const std::shared_ptr<Decl> &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }
