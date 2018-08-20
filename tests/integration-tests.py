@@ -8,6 +8,17 @@ RUMUR_AST_DUMP_BIN = os.path.abspath(os.environ.get('RUMUR_AST_DUMP',
 CC = os.environ.get('CC', subprocess.check_output(['which', 'cc'],
   universal_newlines=True).strip())
 
+try:
+  VALGRIND = subprocess.check_output(['which', 'valgrind'],
+    universal_newlines=True).strip()
+except subprocess.CalledProcessError:
+  VALGRIND = None
+
+def valgrind_wrap(args: [str]) -> [str]:
+  assert VALGRIND is not None
+  return [VALGRIND, '--leak-check=full', '--show-leak-kinds=all',
+    '--error-exitcode=1'] + args
+
 X86_64 = platform.machine() == 'x86_64'
 
 def run(args):
@@ -47,7 +58,8 @@ def parse_test_options(model: str):
 
   return option
 
-def test_template(self, model, optimised, debug):
+def test_template(self, model: str, optimised: bool, debug: bool,
+    valgrind: bool):
 
   # Default options to use for this test.
   option = {
@@ -67,7 +79,16 @@ def test_template(self, model, optimised, debug):
     rumur_flags = ['--output', model_c, model]
     if debug:
       rumur_flags.append('--debug')
-    ret, stdout, stderr = run([RUMUR_BIN] + rumur_flags + option['rumur_flags'])
+    args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
+    if valgrind:
+      args = valgrind_wrap(args)
+    ret, stdout, stderr = run(args)
+    if valgrind:
+      if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertEqual(ret, 0)
+      return
     if ret != option['rumur_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
@@ -109,17 +130,25 @@ def test_template(self, model, optimised, debug):
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['checker_exit_code'])
 
-def test_ast_dumper_template(self, model: str):
+def test_ast_dumper_template(self, model: str, valgrind: bool):
 
   with TemporaryDirectory() as tmp:
 
     model_xml = os.path.join(tmp, 'model.xml')
     ad_flags = ['--output', model_xml, model]
-    ret, stdout, stderr = run([RUMUR_AST_DUMP_BIN] + ad_flags)
+    args = [RUMUR_AST_DUMP_BIN] + ad_flags
+    if valgrind:
+      args = valgrind_wrap(args)
+    ret, stdout, stderr = run(args)
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
+
+    if valgrind:
+      # Remainder of the test is unnecessary, because we will already test this
+      # in the version of this test when valgrind=False.
+      return
 
     # See if we have xmllint
     ret, _, _ = run(['which', 'xmllint'])
@@ -153,32 +182,45 @@ def main(argv):
 
     for optimised in (False, True):
       for debug in (False, True):
+        for valgrind in (False, True):
 
-        test_name = re.sub(r'[^\w]', '_', 'test_{}{}_{}'.format(
-          'debug_' if debug else '',
-          'optimised' if optimised else 'unoptimised', m_name))
+          if valgrind and VALGRIND is None:
+            # Valgrind unavailable
+            continue
 
-        if hasattr(Tests, test_name):
-          raise Exception('{} collides with an existing test name'.format(m))
+          test_name = re.sub(r'[^\w]', '_', 'test_{}{}{}{}'.format(
+            'debug_' if debug else '',
+            'optimised_' if optimised else 'unoptimised_',
+            'valgrind_' if valgrind else '', m_name))
 
-        setattr(Tests, test_name,
-          lambda self, model=m, o=optimised, d=debug:
-            test_template(self, model, o, d))
+          if hasattr(Tests, test_name):
+            raise Exception('{} collides with an existing test name'.format(m))
 
-    # Now we want to add an AST dumper test, but skip this if the input model is
-    # expected to fail.
-    option = { 'rumur_exit_code':0 }
-    option.update(parse_test_options(m))
-    if option['rumur_exit_code'] != 0:
-      continue
+          setattr(Tests, test_name,
+            lambda self, model=m, o=optimised, d=debug, v=valgrind:
+              test_template(self, model, o, d, v))
 
-    test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_{}'.format(m_name))
+    for valgrind in (False, True):
 
-    if hasattr(Tests, test_name):
-      raise Exception('{} collides with an existing test name'.format(m))
+      if valgrind and VALGRIND is None:
+        # Valgrind unavailable.
+        continue
 
-    setattr(Tests, test_name,
-      lambda self, model=m: test_ast_dumper_template(self, model))
+      # Now we want to add an AST dumper test, but skip this if the input model is
+      # expected to fail.
+      option = { 'rumur_exit_code':0 }
+      option.update(parse_test_options(m))
+      if not valgrind and option['rumur_exit_code'] != 0:
+        continue
+
+      test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_{}{}'.format(
+        'valgrind_' if valgrind else '', m_name))
+
+      if hasattr(Tests, test_name):
+        raise Exception('{} collides with an existing test name'.format(m))
+
+      setattr(Tests, test_name,
+        lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
 
   unittest.main()
 
