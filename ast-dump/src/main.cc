@@ -10,8 +10,8 @@
 #include "XMLPrinter.h"
 
 static std::string in_filename;
-static std::istream *in;
-static std::ostream *out;
+static std::shared_ptr<std::istream> in;
+static std::shared_ptr<std::ostream> out;
 
 static void help(const char *arg0) {
   std::cout
@@ -43,9 +43,7 @@ static void parse_args(int argc, char **argv) {
         __builtin_unreachable();
 
       case 'o': {
-        if (out != nullptr)
-          delete out;
-        auto o = new std::ofstream(optarg);
+        auto o = std::make_shared<std::ofstream>(optarg);
         if (!o->is_open()) {
           std::cerr << "failed to open " << optarg << "\n";
           exit(EXIT_FAILURE);
@@ -62,19 +60,14 @@ static void parse_args(int argc, char **argv) {
   }
 
   if (optind == argc - 1) {
-    auto i = new std::ifstream(argv[optind]);
+    auto i = std::make_shared<std::ifstream>(argv[optind]);
     if (!i->is_open()) {
       std::cerr << "failed to open " << argv[optind] << "\n";
       exit(EXIT_FAILURE);
     }
     in_filename = argv[optind];
     in = i;
-  } else {
-    in = &std::cin;
   }
-
-  if (out == nullptr)
-    out = &std::cout;
 }
 
 int main(int argc, char **argv) {
@@ -82,13 +75,10 @@ int main(int argc, char **argv) {
   // Parse command line options
   parse_args(argc, argv);
 
-  assert(in != nullptr);
-  assert(out != nullptr);
-
   // Parse input model
   std::shared_ptr<rumur::Model> m;
   try {
-    m = rumur::parse(in);
+    m = rumur::parse(in == nullptr ? &std::cin : in.get());
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
@@ -97,15 +87,9 @@ int main(int argc, char **argv) {
   assert(m != nullptr);
 
   {
-    XMLPrinter p(in_filename, *out);
+    XMLPrinter p(in_filename, out == nullptr ? std::cout : *out);
     p.dispatch(*m);
   }
-
-  // Clean up
-  if (in != &std::cin)
-    delete in;
-  if (out != &std::cout)
-    delete out;
 
   return EXIT_SUCCESS;
 }
