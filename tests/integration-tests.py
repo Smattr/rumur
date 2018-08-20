@@ -17,7 +17,7 @@ except subprocess.CalledProcessError:
 def valgrind_wrap(args: [str]) -> [str]:
   assert VALGRIND is not None
   return [VALGRIND, '--leak-check=full', '--show-leak-kinds=all',
-    '--error-exitcode=1'] + args
+    '--error-exitcode=42'] + args
 
 X86_64 = platform.machine() == 'x86_64'
 
@@ -84,10 +84,10 @@ def test_template(self, model: str, optimised: bool, debug: bool,
       args = valgrind_wrap(args)
     ret, stdout, stderr = run(args)
     if valgrind:
-      if ret != 0:
+      if ret == 42:
         sys.stdout.write(stdout)
         sys.stderr.write(stderr)
-      self.assertEqual(ret, 0)
+      self.assertNotEqual(ret, 42)
       return
     if ret != option['rumur_exit_code']:
       sys.stdout.write(stdout)
@@ -140,15 +140,18 @@ def test_ast_dumper_template(self, model: str, valgrind: bool):
     if valgrind:
       args = valgrind_wrap(args)
     ret, stdout, stderr = run(args)
+    if valgrind:
+      if ret == 42:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertNotEqual(ret, 42)
+      # Remainder of the test is unnecessary, because we will already test this
+      # in the version of this test when valgrind=False.
+      return
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
-
-    if valgrind:
-      # Remainder of the test is unnecessary, because we will already test this
-      # in the version of this test when valgrind=False.
-      return
 
     # See if we have xmllint
     ret, _, _ = run(['which', 'xmllint'])
