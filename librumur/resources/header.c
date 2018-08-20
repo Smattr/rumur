@@ -218,11 +218,11 @@ static void sandbox(void) {
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_munmap, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
 
-      /* If a colour setting was not specified, enable ioctl which will be used
-       * by isatty. TODO: lock this down to a specific ioctl number.
+      /* Enable ioctl which will be used by isatty.
+       * TODO: lock this down to a specific ioctl number.
        */
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_ioctl, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, COLOR == AUTO ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
 
       /* If we're running multithreaded, enable syscalls that used by pthreads.
        */
