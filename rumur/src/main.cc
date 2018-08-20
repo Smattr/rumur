@@ -11,8 +11,8 @@
 #include <string>
 #include <unistd.h>
 
-static std::istream *in;
-static std::string *out;
+static std::shared_ptr<std::istream> in;
+static std::shared_ptr<std::string> out;
 static rumur::OutputOptions output_options = {
   .overflow_checks = true,
   .threads = 0,
@@ -112,9 +112,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 'o':
-        if (out != nullptr)
-          delete out;
-        out = new std::string(optarg);
+        out = std::make_shared<std::string>(optarg);
         break;
 
       case 'q': // --quiet
@@ -255,14 +253,12 @@ static void parse_args(int argc, char **argv) {
   }
 
   if (optind == argc - 1) {
-    auto inf = new std::ifstream(argv[optind]);
+    auto inf = std::make_shared<std::ifstream>(argv[optind]);
     if (!inf->is_open()) {
       std::cerr << "failed to open " << argv[optind] << "\n";
       exit(EXIT_FAILURE);
     }
     in = inf;
-  } else {
-    in = &std::cin;
   }
 
   if (out == nullptr) {
@@ -311,7 +307,7 @@ int main(int argc, char **argv) {
   // Parse input model
   std::shared_ptr<rumur::Model> m;
   try {
-    m = rumur::parse(in);
+    m = rumur::parse(in == nullptr ? &std::cin : in.get());
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
