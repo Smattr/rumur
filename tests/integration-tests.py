@@ -162,7 +162,8 @@ def main(argv):
           raise Exception('{} collides with an existing test name'.format(m))
 
         setattr(Tests, test_name,
-          lambda self, model=m: test_template(self, model, optimised, debug))
+          lambda self, model=m, o=optimised, d=debug:
+            test_template(self, model, o, d))
 
     # Now we want to add an AST dumper test, but skip this if the input model is
     # expected to fail.
