@@ -61,10 +61,7 @@ At a glance, some differences between Rumur and CMurphi:
 
 Legal
 -----
-Everything in this repository is in the public domain, with the exception of:
-
-* xxHash code in librumur/resources/xxhash.*. This is BSD licensed as indicated
-  in the file headers.
+Everything in this repository is in the public domain.
 
 .. _Bison: https://www.gnu.org/software/bison/
 .. _CMake: https://cmake.org/

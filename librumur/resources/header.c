@@ -315,6 +315,60 @@ static const char *reset() {
   return "";
 }
 
+/*******************************************************************************
+ * MurmurHash by Austin Appleby                                                *
+ *                                                                             *
+ * More information on this at https://github.com/aappleby/smhasher/           *
+ ******************************************************************************/
+
+static uint64_t MurmurHash64A(const void *key, size_t len) {
+
+  static const uint64_t seed = 0;
+
+  static const uint64_t m = UINT64_C(0xc6a4a7935bd1e995);
+  static const unsigned r = 47;
+
+  uint64_t h = seed ^ (len * m);
+
+  const unsigned char *data = key;
+  const unsigned char *end = data + len / sizeof(uint64_t) * sizeof(uint64_t);
+
+  while (data != end) {
+
+    uint64_t k;
+    memcpy(&k, data, sizeof(k));
+    data += sizeof(k);
+
+    k *= m;
+    k ^= k >> r;
+    k *= m;
+
+    h ^= k;
+    h *= m;
+  }
+
+  const unsigned char *data2 = data;
+
+  switch (len & 7) {
+    case 7: h ^= (uint64_t)data2[6] << 48;
+    case 6: h ^= (uint64_t)data2[5] << 40;
+    case 5: h ^= (uint64_t)data2[4] << 32;
+    case 4: h ^= (uint64_t)data2[3] << 24;
+    case 3: h ^= (uint64_t)data2[2] << 16;
+    case 2: h ^= (uint64_t)data2[1] << 8;
+    case 1: h ^= (uint64_t)data2[0];
+    h *= m;
+  }
+
+  h ^= h >> r;
+  h *= m;
+  h ^= h >> r;
+
+  return h;
+}
+
+/******************************************************************************/
+
 /* A lock that should be held whenever printing to stdout or stderr. This is a
  * way to prevent the output of one thread being interleaved with the output of
  * another.
@@ -467,7 +521,7 @@ static struct state *state_dup(const struct state *s) {
 }
 
 static size_t state_hash(const struct state *s) {
-  return (size_t)XXH64(s->data, sizeof(s->data), 0);
+  return (size_t)MurmurHash64A(s->data, sizeof(s->data));
 }
 
 /* Print a state to stderr. This function is generated. This function assumes

@@ -29,7 +29,3 @@
     #include <sys/syscall.h>
   #endif
 #endif
-
-/* Tell xxHash it is being compiled into a standalone binary. */
-#define XXH_PRIVATE_API 1
-#define XXH_STATIC_LINKING_API 1
