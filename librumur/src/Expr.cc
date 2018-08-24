@@ -836,6 +836,9 @@ bool ExprID::constant() const {
 }
 
 const TypeExpr *ExprID::type() const {
+  if (value == nullptr)
+    throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
+
   if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
     return c->type.get();
 
@@ -850,6 +853,8 @@ const TypeExpr *ExprID::type() const {
 }
 
 void ExprID::generate(std::ostream &out, bool lvalue) const {
+  if (value == nullptr)
+    throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
 
   /* Case 1: this is a reference to a const. Note, this also covers enum
    * members.
@@ -923,7 +928,19 @@ mpz_class ExprID::constant_fold() const {
 
 bool ExprID::operator==(const Node &other) const {
   auto o = dynamic_cast<const ExprID*>(&other);
-  return o != nullptr && id == o->id && *value == *o->value;
+  if (o == nullptr)
+    return false;
+  if (id != o->id)
+    return false;
+  if (value == nullptr) {
+    if (o->value != nullptr)
+      return false;
+  } else if (o->value == nullptr) {
+    return false;
+  } else if (*value != *o->value) {
+    return false;
+  }
+  return true;
 }
 
 Field::Field(std::shared_ptr<Lvalue> record_, const std::string &field_,
