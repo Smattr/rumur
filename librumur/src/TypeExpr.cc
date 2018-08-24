@@ -88,7 +88,7 @@ bool Range::operator==(const Node &other) const {
            max->constant_fold() == o->max->constant_fold();
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *this == *o->referent;
+    return *o == *this;
 
   return false;
 }
@@ -169,7 +169,7 @@ bool Scalarset::operator==(const Node &other) const {
     return bound->constant_fold() == o->bound->constant_fold();
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *this == *o->referent;
+    return *o == *this;
 
   return false;
 }
@@ -242,7 +242,7 @@ bool Enum::operator==(const Node &other) const {
   }
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *this == *o->referent;
+    return *o == *this;
 
   return false;
 }
@@ -341,7 +341,7 @@ bool Record::operator==(const Node &other) const {
   }
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *this == *o->referent;
+    return *o == *this;
 
   return false;
 }
@@ -416,7 +416,7 @@ bool Array::operator==(const Node &other) const {
         && *element_type == *o->element_type;
 
   if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *this == *o->referent;
+    return *o == *this;
 
   return false;
 }
@@ -500,35 +500,59 @@ TypeExprID *TypeExprID::clone() const {
 }
 
 mpz_class TypeExprID::width() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->width();
 }
 
 mpz_class TypeExprID::count() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->count();
 }
 
 bool TypeExprID::operator==(const Node &other) const {
-  return *this->referent == other;
+  if (referent != nullptr)
+    return *referent == other;
+
+  auto o = dynamic_cast<const TypeExprID*>(&other);
+  if (o == nullptr)
+    return false;
+
+  if (o->referent != nullptr)
+    return false;
+
+  return true;
 }
 
 bool TypeExprID::is_simple() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->is_simple();
 }
 
 const TypeExpr *TypeExprID::resolve() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->resolve();
 }
 
 std::string TypeExprID::lower_bound() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->lower_bound();
 }
 
 std::string TypeExprID::upper_bound() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->upper_bound();
 }
 
 void TypeExprID::generate_print(std::ostream &out, std::string const &prefix,
   mpz_class preceding_offset) const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
   referent->generate_print(out, prefix, preceding_offset);
 }
 
