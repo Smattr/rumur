@@ -530,6 +530,11 @@ const TypeExpr *TypeExprID::resolve() const {
   return referent->resolve();
 }
 
+void TypeExprID::validate() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
+}
+
 std::string TypeExprID::lower_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);

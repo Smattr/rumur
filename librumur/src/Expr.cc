@@ -907,6 +907,11 @@ bool ExprID::operator==(const Node &other) const {
   return true;
 }
 
+void ExprID::validate() const {
+  if (value == nullptr)
+    throw Error("unresolved expression \"" + id + "\"", loc);
+}
+
 Field::Field(std::shared_ptr<Lvalue> record_, const std::string &field_,
   const location &loc_):
   Lvalue(loc_), record(record_), field(field_) {

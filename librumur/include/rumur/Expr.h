@@ -400,6 +400,7 @@ struct ExprID : public Lvalue {
   void generate(std::ostream &out, bool lvalue) const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Field : public Lvalue {
