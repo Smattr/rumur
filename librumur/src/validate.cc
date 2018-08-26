@@ -85,7 +85,9 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const ExprID &n) final {
-    dispatch(*n.value);
+    /* Don't descend into *n.value because we will already validate this
+     * elsewhere.
+     */
     n.validate();
   }
 
@@ -326,7 +328,9 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const TypeExprID &n) final {
-    dispatch(*n.referent);
+    /* Don't descend into *n.referent because we will already validate this
+     * elsewhere.
+     */
     n.validate();
   }
 
