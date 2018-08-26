@@ -24,4 +24,5 @@
 #include <rumur/symmetry-reduction.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/validate.h>
 // stack.hh is deliberately not included; just use std::stack

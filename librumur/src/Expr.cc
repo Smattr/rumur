@@ -25,13 +25,11 @@ bool Expr::is_boolean() const {
 Ternary::Ternary(std::shared_ptr<Expr> cond_, std::shared_ptr<Expr> lhs_,
   std::shared_ptr<Expr> rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
-  validate();
 }
 
 Ternary::Ternary(const Ternary &other):
   Expr(other), cond(other.cond->clone()), lhs(other.lhs->clone()),
-  rhs(other.rhs->clone()) {
-}
+  rhs(other.rhs->clone()) { }
 
 Ternary &Ternary::operator=(Ternary other) {
   swap(*this, other);
@@ -95,12 +93,6 @@ void swap(BinaryExpr &x, BinaryExpr &y) noexcept {
 
 bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
-}
-
-BooleanBinaryExpr::BooleanBinaryExpr(std::shared_ptr<Expr> lhs_,
-  std::shared_ptr<Expr> rhs_, const location &loc_):
-  BinaryExpr(lhs_, rhs_, loc_) {
-  validate();
 }
 
 void BooleanBinaryExpr::validate() const {
@@ -208,11 +200,6 @@ bool UnaryExpr::constant() const {
   return rhs->constant();
 }
 
-Not::Not(std::shared_ptr<Expr> rhs_, const location &loc_):
-  UnaryExpr(rhs_, loc_) {
-  validate();
-}
-
 Not &Not::operator=(Not other) {
   swap(*this, other);
   return *this;
@@ -280,12 +267,6 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   }
 
   return false;
-}
-
-ComparisonBinaryExpr::ComparisonBinaryExpr(std::shared_ptr<Expr> lhs_,
-  std::shared_ptr<Expr> rhs_, const location &loc_):
-  BinaryExpr(lhs_, rhs_, loc_) {
-  validate();
 }
 
 void ComparisonBinaryExpr::validate() const {
@@ -451,12 +432,6 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
-EquatableBinaryExpr::EquatableBinaryExpr(std::shared_ptr<Expr> lhs_,
-  std::shared_ptr<Expr> rhs_, const location &loc_):
-  BinaryExpr(lhs_, rhs_, loc_) {
-  validate();
-}
-
 void EquatableBinaryExpr::validate() const {
   if (!equatable(*lhs, *rhs))
     throw Error("expressions are not comparable", loc);
@@ -600,12 +575,6 @@ static std::string upper_bound(const Expr &rhs) {
   return upper_bound(rhs.type());
 }
 
-ArithmeticBinaryExpr::ArithmeticBinaryExpr(std::shared_ptr<Expr> lhs_,
-  std::shared_ptr<Expr> rhs_, const location &loc_):
-  BinaryExpr(lhs_, rhs_, loc_) {
-  validate();
-}
-
 void ArithmeticBinaryExpr::validate() const {
   if (!arithmetic(*lhs, *rhs))
     throw Error("expressions are incompatible in arithmetic expression",
@@ -664,11 +633,6 @@ mpz_class Sub::constant_fold() const {
 bool Sub::operator==(const Node &other) const {
   auto o = dynamic_cast<const Sub*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Negative::Negative(std::shared_ptr<Expr> rhs_, const location &loc_):
-  UnaryExpr(rhs_, loc_) {
-  validate();
 }
 
 void Negative::validate() const {
@@ -1287,9 +1251,7 @@ bool Quantifier::operator==(const Node &other) const {
 
 Exists::Exists(std::shared_ptr<Quantifier> quantifier_,
   std::shared_ptr<Expr> expr_, const location &loc_):
-  Expr(loc_), quantifier(quantifier_), expr(expr_) {
-  validate();
-}
+  Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
 Exists::Exists(const Exists &other):
   Expr(other), quantifier(other.quantifier->clone()), expr(other.expr->clone()) {
@@ -1345,9 +1307,7 @@ void Exists::validate() const {
 
 Forall::Forall(std::shared_ptr<Quantifier> quantifier_,
   std::shared_ptr<Expr> expr_, const location &loc_):
-  Expr(loc_), quantifier(quantifier_), expr(expr_) {
-  validate();
-}
+  Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
 Forall::Forall(const Forall &other):
   Expr(other), quantifier(other.quantifier->clone()), expr(other.expr->clone()) {

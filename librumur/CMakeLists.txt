@@ -59,6 +59,7 @@ add_library(librumur
   src/symmetry-reduction.cc
   src/traverse.cc
   src/TypeExpr.cc
+  src/validate.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   ${FLEX_lexer_OUTPUTS}

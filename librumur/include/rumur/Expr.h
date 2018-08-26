@@ -98,8 +98,6 @@ struct BooleanBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
   BooleanBinaryExpr() = delete;
-  BooleanBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
-    const location &loc_);
 
   void validate() const final;
 };
@@ -164,7 +162,6 @@ struct Not : public UnaryExpr {
 
   using UnaryExpr::UnaryExpr;
   Not() = delete;
-  Not(std::shared_ptr<Expr> rhs_, const location &loc_);
   Not &operator=(Not other);
   virtual ~Not() { }
   Not *clone() const final;
@@ -179,8 +176,6 @@ struct Not : public UnaryExpr {
 struct ComparisonBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
-  ComparisonBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
-    const location &loc_);
   ComparisonBinaryExpr() = delete;
 
   void validate() const final;
@@ -245,8 +240,6 @@ struct Geq : public ComparisonBinaryExpr {
 struct EquatableBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
-  EquatableBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
-    const location &loc_);
   EquatableBinaryExpr() = delete;
 
   void validate() const final;
@@ -283,8 +276,6 @@ struct Neq : public EquatableBinaryExpr {
 struct ArithmeticBinaryExpr : public BinaryExpr {
 
   using BinaryExpr::BinaryExpr;
-  ArithmeticBinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
-    const location &loc);
   ArithmeticBinaryExpr() = delete;
 
   void validate() const final;
@@ -322,7 +313,6 @@ struct Negative : public UnaryExpr {
 
   using UnaryExpr::UnaryExpr;
   Negative() = delete;
-  Negative(std::shared_ptr<Expr> rhs_, const location &loc_);
   Negative &operator=(Negative other);
   virtual ~Negative() { }
   Negative *clone() const final;

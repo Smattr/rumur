@@ -19,19 +19,14 @@ Decl::~Decl() {
 
 ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   const location &loc_):
-  Decl(name_, loc_), value(value_) {
-  validate();
-}
+  Decl(name_, loc_), value(value_) { }
 
 ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   std::shared_ptr<TypeExpr> type_, const location &loc_):
-  Decl(name_, loc_), value(value_), type(type_) {
-  validate();
-}
+  Decl(name_, loc_), value(value_), type(type_) { }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
-  Decl(other), value(other.value->clone()), type(other.type) {
-}
+  Decl(other), value(other.value->clone()), type(other.type) { }
 
 ConstDecl &ConstDecl::operator=(ConstDecl other) {
   swap(*this, other);

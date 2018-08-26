@@ -52,9 +52,7 @@ mpz_class TypeExpr::width() const {
 
 Range::Range(std::shared_ptr<Expr> min_, std::shared_ptr<Expr> max_,
   const location &loc_):
-  TypeExpr(loc_), min(min_), max(max_) {
-  validate();
-}
+  TypeExpr(loc_), min(min_), max(max_) { }
 
 Range::Range(const Range &other):
   TypeExpr(other), min(other.min->clone()), max(other.max->clone()) {
@@ -135,9 +133,7 @@ void Range::generate_print(std::ostream &out, std::string const &prefix,
 }
 
 Scalarset::Scalarset(std::shared_ptr<Expr> bound_, const location &loc_):
-  TypeExpr(loc_), bound(bound_) {
-  validate();
-}
+  TypeExpr(loc_), bound(bound_) { }
 
 Scalarset::Scalarset(const Scalarset &other):
   TypeExpr(other), bound(other.bound->clone()) { }
@@ -357,14 +353,11 @@ void Record::generate_print(std::ostream &out, std::string const &prefix,
 
 Array::Array(std::shared_ptr<TypeExpr> index_type_,
   std::shared_ptr<TypeExpr> element_type_, const location &loc_):
-  TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {
-  validate();
-}
+  TypeExpr(loc_), index_type(index_type_), element_type(element_type_) { }
 
 Array::Array(const Array &other):
   TypeExpr(other), index_type(other.index_type->clone()),
-  element_type(other.element_type->clone()) {
-}
+  element_type(other.element_type->clone()) { }
 
 Array &Array::operator=(Array other) {
   swap(*this, other);

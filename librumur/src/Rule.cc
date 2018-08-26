@@ -59,9 +59,7 @@ std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
 SimpleRule::SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
   std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
-  Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) {
-  validate();
-}
+  Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) { }
 
 SimpleRule::SimpleRule(const SimpleRule &other):
   Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()) {
@@ -118,9 +116,7 @@ void SimpleRule::validate() const {
 StartState::StartState(const std::string &name_,
   std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
-  Rule(name_, loc_), decls(decls_), body(body_) {
-  validate();
-}
+  Rule(name_, loc_), decls(decls_), body(body_) { }
 
 StartState::StartState(const StartState &other):
   Rule(other) {
@@ -169,12 +165,10 @@ void StartState::validate() const {
 
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
   const location &loc_):
-  Rule(name_, loc_), property(property_) {
-}
+  Rule(name_, loc_), property(property_) { }
 
 PropertyRule::PropertyRule(const PropertyRule &other):
-  Rule(other), property(other.property) {
-}
+  Rule(other), property(other.property) { }
 
 PropertyRule &PropertyRule::operator=(PropertyRule other) {
   swap(*this, other);

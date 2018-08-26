@@ -23,10 +23,7 @@ namespace rumur {
 Model::Model(std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Function>> &&functions_,
   std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
-  Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
-  reindex();
-  validate();
-}
+  Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
 
 Model::Model(const Model &other):
   Node(other) {
