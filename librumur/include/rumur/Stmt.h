@@ -155,11 +155,12 @@ struct If : public Stmt {
 
 struct ProcedureCall : public Stmt {
 
+  std::string name;
   std::shared_ptr<Function> function;
   std::vector<std::shared_ptr<Expr>> arguments;
 
   ProcedureCall() = delete;
-  ProcedureCall(std::shared_ptr<Function> function_,
+  ProcedureCall(const std::string &name_, std::shared_ptr<Function> function_,
     std::vector<std::shared_ptr<Expr>> &&arguments_, const location &loc_);
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);
@@ -169,6 +170,7 @@ struct ProcedureCall : public Stmt {
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Return : public Stmt {

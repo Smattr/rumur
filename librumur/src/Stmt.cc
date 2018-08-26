@@ -315,12 +315,13 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
-ProcedureCall::ProcedureCall(std::shared_ptr<Function> function_,
+ProcedureCall::ProcedureCall(const std::string &name_, std::shared_ptr<Function> function_,
   std::vector<std::shared_ptr<Expr>> &&arguments_, const location &loc_):
-  Stmt(loc_), function(function_), arguments(arguments_) { }
+  Stmt(loc_), name(name_), function(function_), arguments(arguments_) { }
 
 ProcedureCall::ProcedureCall(const ProcedureCall &other):
-  Stmt(other.loc), function(other.function->clone()) {
+  Stmt(other.loc), name(other.name),
+  function(other.function == nullptr ? nullptr : other.function->clone()) {
 
   for (const std::shared_ptr<Expr> &p : other.arguments)
     arguments.emplace_back(p->clone());
@@ -334,6 +335,7 @@ ProcedureCall &ProcedureCall::operator=(ProcedureCall other) {
 void swap(ProcedureCall &x, ProcedureCall &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.name, y.name);
   swap(x.function, y.function);
   swap(x.arguments, y.arguments);
 }
@@ -350,11 +352,24 @@ bool ProcedureCall::operator==(const Node &other) const {
   auto o = dynamic_cast<const ProcedureCall*>(&other);
   if (o == nullptr)
     return false;
-  if (*function != *o->function)
+  if (name != o->name)
     return false;
+  if (function == nullptr) {
+    if (o->function != nullptr)
+      return false;
+  } else if (o->function == nullptr) {
+    return false;
+  } else if (*function != *o->function) {
+    return false;
+  }
   if (!vector_eq(arguments, o->arguments))
     return false;
   return true;
+}
+
+void ProcedureCall::validate() const {
+  if (function == nullptr)
+    throw Error("unknown procedure \"" + name + "\"", loc);
 }
 
 Return::Return(std::shared_ptr<Expr> expr_, const location &loc_):

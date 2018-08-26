@@ -458,7 +458,7 @@ stmt: category STRING expr {
 } | ID '(' exprlist ')' {
   std::shared_ptr<rumur::Function> f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = std::make_shared<rumur::ProcedureCall>(f, std::move($3), @$);
+  $$ = std::make_shared<rumur::ProcedureCall>($1, f, std::move($3), @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {

@@ -426,7 +426,7 @@ void XMLPrinter::visit(const ProcedureCall &n) {
    * a child element because morally it is a reference to a previously defined
    * function.
    */
-  *o << "<procedurecall name=\"" << n.function->name << "\" ";
+  *o << "<procedurecall name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
   for (const std::shared_ptr<Expr> &a : n.arguments) {
