@@ -334,7 +334,8 @@ void Traversal::visit(Exists &n) {
 }
 
 void Traversal::visit(ExprID &n) {
-  dispatch(*n.value);
+  if (n.value != nullptr)
+    dispatch(*n.value);
 }
 
 void Traversal::visit(Field &n) {
@@ -527,7 +528,8 @@ void Traversal::visit(TypeDecl &n) {
 }
 
 void Traversal::visit(TypeExprID &n) {
-  dispatch(*n.referent);
+  if (n.referent != nullptr)
+    dispatch(*n.referent);
 }
 
 void Traversal::visit(UnaryExpr &n) {
@@ -866,7 +868,8 @@ void ConstTraversal::visit(const Exists &n) {
 }
 
 void ConstTraversal::visit(const ExprID &n) {
-  dispatch(*n.value);
+  if (n.value != nullptr)
+    dispatch(*n.value);
 }
 
 void ConstTraversal::visit(const Field &n) {
@@ -1059,7 +1062,8 @@ void ConstTraversal::visit(const TypeDecl &n) {
 }
 
 void ConstTraversal::visit(const TypeExprID &n) {
-  dispatch(*n.referent);
+  if (n.referent != nullptr)
+    dispatch(*n.referent);
 }
 
 void ConstTraversal::visit(const UnaryExpr &n) {
