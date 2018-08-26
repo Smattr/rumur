@@ -308,6 +308,7 @@ int main(int argc, char **argv) {
   std::shared_ptr<rumur::Model> m;
   try {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
+    resolve_symbols(*m);
     m->reindex();
     validate_model(*m);
   } catch (rumur::Error &e) {

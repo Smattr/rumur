@@ -54,6 +54,7 @@ add_library(librumur
   src/output.cc
   src/parse.cc
   src/Property.cc
+  src/resolve-symbols.cc
   src/Rule.cc
   src/Stmt.cc
   src/symmetry-reduction.cc
