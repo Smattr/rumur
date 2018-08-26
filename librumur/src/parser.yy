@@ -56,6 +56,7 @@
   #include <gmpxx.h>
   #include <iostream>
   #include <iterator>
+  #include <rumur/except.h>
   #include <utility>
   #include <vector>
 
