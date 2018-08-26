@@ -557,7 +557,7 @@ expr: expr '?' expr ':' expr {
 } | ID '(' exprlist ')' {
   std::shared_ptr<rumur::Function> f = symtab.lookup<rumur::Function>($1, @$);
   assert(f != nullptr);
-  $$ = std::make_shared<rumur::FunctionCall>(f, std::move($3), @$);
+  $$ = std::make_shared<rumur::FunctionCall>($1, f, std::move($3), @$);
 };
 
 quantifier: ID ':' typeexpr {

@@ -122,7 +122,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const FunctionCall &n) final {
-    dispatch(*n.function);
+    if (n.function != nullptr)
+      dispatch(*n.function);
     for (const std::shared_ptr<Expr> &a : n.arguments)
       dispatch(*a);
     n.validate();

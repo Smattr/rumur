@@ -447,11 +447,12 @@ struct Element : public Lvalue {
 
 struct FunctionCall : public Expr {
 
+  std::string name;
   std::shared_ptr<Function> function;
   std::vector<std::shared_ptr<Expr>> arguments;
 
   FunctionCall() = delete;
-  FunctionCall(std::shared_ptr<Function> function_,
+  FunctionCall(const std::string &name_, std::shared_ptr<Function> function_,
     std::vector<std::shared_ptr<Expr>> arguments_, const location &loc_);
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;
@@ -464,6 +465,7 @@ struct FunctionCall : public Expr {
   void generate_rvalue(std::ostream &out) const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Quantifier : public Node {

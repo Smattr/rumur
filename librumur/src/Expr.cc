@@ -1087,12 +1087,14 @@ bool Element::operator==(const Node &other) const {
   return o != nullptr && *array == *o->array && *index == *o->index;
 }
 
-FunctionCall::FunctionCall(std::shared_ptr<Function> function_,
+FunctionCall::FunctionCall(const std::string &name_,
+  std::shared_ptr<Function> function_,
   std::vector<std::shared_ptr<Expr>> arguments_, const location &loc_):
-  Expr(loc_), function(function_), arguments(arguments_) { }
+  Expr(loc_), name(name_), function(function_), arguments(arguments_) { }
 
 FunctionCall::FunctionCall(const FunctionCall &other):
-  Expr(other), function(other.function->clone()) {
+  Expr(other), name(other.name),
+  function(other.function == nullptr ? nullptr : other.function->clone()) {
 
   for (const std::shared_ptr<Expr> &a : other.arguments)
     arguments.emplace_back(a->clone());
@@ -1101,6 +1103,7 @@ FunctionCall::FunctionCall(const FunctionCall &other):
 void swap(FunctionCall &x, FunctionCall &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.name, y.name);
   swap(x.function, y.function);
   swap(x.arguments, y.arguments);
 }
@@ -1123,6 +1126,8 @@ bool FunctionCall::constant() const {
 }
 
 const TypeExpr *FunctionCall::type() const {
+  if (function == nullptr)
+    throw Error("unresolved function call \"" + name + "\"", loc);
   return function->return_type.get();
 }
 
@@ -1140,11 +1145,24 @@ bool FunctionCall::operator==(const Node &other) const {
   auto o = dynamic_cast<const FunctionCall*>(&other);
   if (o == nullptr)
     return false;
-  if (*function != *o->function)
+  if (name != o->name)
     return false;
+  if (function == nullptr) {
+    if (o->function != nullptr)
+      return false;
+  } else if (o->function == nullptr) {
+    return false;
+  } else if (*function != *o->function) {
+    return false;
+  }
   if (!vector_eq(arguments, o->arguments))
     return false;
   return true;
+}
+
+void FunctionCall::validate() const {
+  if (function == nullptr)
+    throw Error("unknown function call \"" + name + "\"", loc);
 }
 
 Quantifier::Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,

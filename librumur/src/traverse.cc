@@ -365,7 +365,8 @@ void Traversal::visit(Function &n) {
 }
 
 void Traversal::visit(FunctionCall &n) {
-  dispatch(*n.function);
+  if (n.function != nullptr)
+    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -900,7 +901,8 @@ void ConstTraversal::visit(const Function &n) {
 }
 
 void ConstTraversal::visit(const FunctionCall &n) {
-  dispatch(*n.function);
+  if (n.function != nullptr)
+    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }

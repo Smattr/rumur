@@ -270,7 +270,7 @@ void XMLPrinter::visit(const FunctionCall &n) {
    * than emitting the function itself as a child of this node because morally
    * this is just a reference to a previously defined function.
    */
-  *o << "<functioncall name=\"" << n.function->name << "\" ";
+  *o << "<functioncall name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
   for (const std::shared_ptr<Expr> &a : n.arguments) {
