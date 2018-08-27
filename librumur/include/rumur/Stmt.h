@@ -68,6 +68,7 @@ struct Assignment : public Stmt {
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Clear : public Stmt {

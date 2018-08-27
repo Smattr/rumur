@@ -110,6 +110,26 @@ bool Assignment::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+void Assignment::validate() const {
+
+  const TypeExpr *lhs_type = lhs->type();
+  assert(lhs_type != nullptr && "left hand side of assignment has numeric "
+    "literal type");
+  lhs_type = lhs_type->resolve();
+
+  const TypeExpr *rhs_type = rhs->type();
+  if (rhs_type != nullptr)
+    rhs_type = rhs_type->resolve();
+
+  if (dynamic_cast<const Range*>(lhs_type) != nullptr && rhs_type == nullptr)
+    return;
+
+  if (rhs_type != nullptr && *lhs_type == *rhs_type)
+    return;
+
+  throw Error("invalid assignment from incompatible type", loc);
+}
+
 Clear::Clear(std::shared_ptr<Lvalue> rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
