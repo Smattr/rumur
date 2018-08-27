@@ -121,7 +121,8 @@ void Assignment::validate() const {
   if (rhs_type != nullptr)
     rhs_type = rhs_type->resolve();
 
-  if (dynamic_cast<const Range*>(lhs_type) != nullptr && rhs_type == nullptr)
+  if (dynamic_cast<const Range*>(lhs_type) != nullptr &&
+      (rhs_type == nullptr || dynamic_cast<const Range*>(rhs_type)))
     return;
 
   if (rhs_type != nullptr && *lhs_type == *rhs_type)
