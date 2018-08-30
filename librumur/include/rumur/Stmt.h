@@ -54,11 +54,11 @@ struct PropertyStmt : public Stmt {
 
 struct Assignment : public Stmt {
 
-  std::shared_ptr<Lvalue> lhs;
+  std::shared_ptr<Expr> lhs;
   std::shared_ptr<Expr> rhs;
 
   Assignment() = delete;
-  Assignment(std::shared_ptr<Lvalue> lhs_, std::shared_ptr<Expr> rhs_,
+  Assignment(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
     const location &loc_);
   Assignment(const Assignment &other);
   Assignment &operator=(Assignment other);
@@ -73,10 +73,10 @@ struct Assignment : public Stmt {
 
 struct Clear : public Stmt {
 
-  std::shared_ptr<Lvalue> rhs;
+  std::shared_ptr<Expr> rhs;
 
   Clear() = delete;
-  Clear(std::shared_ptr<Lvalue> rhs_, const location &loc);
+  Clear(std::shared_ptr<Expr> rhs_, const location &loc);
   Clear(const Clear &other);
   Clear &operator=(Clear other);
   friend void swap(Clear &x, Clear &y) noexcept;
@@ -85,6 +85,7 @@ struct Clear : public Stmt {
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct ErrorStmt : public Stmt {
@@ -192,10 +193,10 @@ struct Return : public Stmt {
 
 struct Undefine : public Stmt {
 
-  std::shared_ptr<Lvalue> rhs;
+  std::shared_ptr<Expr> rhs;
 
   Undefine() = delete;
-  Undefine(std::shared_ptr<Lvalue> rhs_, const location &loc_);
+  Undefine(std::shared_ptr<Expr> rhs_, const location &loc_);
   Undefine(const Undefine &other);
   Undefine &operator=(Undefine other);
   friend void swap(Undefine &x, Undefine &y) noexcept;
@@ -204,6 +205,7 @@ struct Undefine : public Stmt {
 
   void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 }

@@ -22,6 +22,14 @@ bool Expr::is_boolean() const {
   return type() != nullptr && *type()->resolve() == *Boolean;
 }
 
+void Expr::generate_lvalue(std::ostream&) const {
+  throw Error("invalid expression used as lvalue", loc);
+}
+
+bool Expr::is_lvalue() const {
+  return false;
+}
+
 Ternary::Ternary(std::shared_ptr<Expr> cond_, std::shared_ptr<Expr> lhs_,
   std::shared_ptr<Expr> rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
@@ -756,27 +764,13 @@ bool Mod::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-void Lvalue::generate_rvalue(std::ostream &out) const {
-  generate(out, false);
-}
-
-void Lvalue::generate_lvalue(std::ostream &out) const {
-  generate(out, true);
-}
-
-/* Cheap trick: this destructor is pure virtual in the class declaration, making
- * the class abstract.
- */
-Lvalue::~Lvalue() {
-}
-
 ExprID::ExprID(const std::string &id_, const std::shared_ptr<Decl> value_,
   const location &loc_):
-  Lvalue(loc_), id(id_), value(value_) {
+  Expr(loc_), id(id_), value(value_) {
 }
 
 ExprID::ExprID(const ExprID &other):
-  Lvalue(other), id(other.id), value(other.value) {
+  Expr(other), id(other.id), value(other.value) {
 }
 
 ExprID &ExprID::operator=(ExprID other) {
@@ -819,6 +813,9 @@ const TypeExpr *ExprID::type() const {
 void ExprID::generate(std::ostream &out, bool lvalue) const {
   if (value == nullptr)
     throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
+
+  if (lvalue && !is_lvalue())
+    throw Error("invalid use of non-lvalue expression", loc);
 
   /* Case 1: this is a reference to a const. Note, this also covers enum
    * members.
@@ -884,6 +881,14 @@ void ExprID::generate(std::ostream &out, bool lvalue) const {
   // variable. I suspect we should just handle that the same way as a local.
 }
 
+void ExprID::generate_lvalue(std::ostream &out) const {
+  generate(out, true);
+}
+
+void ExprID::generate_rvalue(std::ostream &out) const {
+  generate(out, false);
+}
+
 mpz_class ExprID::constant_fold() const {
   if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
     return c->value->constant_fold();
@@ -912,13 +917,23 @@ void ExprID::validate() const {
     throw Error("unresolved expression \"" + id + "\"", loc);
 }
 
-Field::Field(std::shared_ptr<Lvalue> record_, const std::string &field_,
+bool ExprID::is_lvalue() const {
+  if (value == nullptr)
+    throw Error("unresolved expression \"" + id + "\"", loc);
+
+  if (dynamic_cast<const ConstDecl*>(value.get()))
+    return false;
+
+  return true;
+}
+
+Field::Field(std::shared_ptr<Expr> record_, const std::string &field_,
   const location &loc_):
-  Lvalue(loc_), record(record_), field(field_) {
+  Expr(loc_), record(record_), field(field_) {
 }
 
 Field::Field(const Field &other):
-  Lvalue(other), record(other.record->clone()), field(other.field) {
+  Expr(other), record(other.record->clone()), field(other.field) {
 }
 
 void swap(Field &x, Field &y) noexcept {
@@ -957,6 +972,10 @@ const TypeExpr *Field::type() const {
 }
 
 void Field::generate(std::ostream &out, bool lvalue) const {
+
+  if (lvalue && !is_lvalue())
+    throw Error("invalid use of non-lvalue field reference", loc);
+
   const TypeExpr *root = record->type();
   assert(root != nullptr);
   const TypeExpr *resolved = root->resolve();
@@ -971,7 +990,11 @@ void Field::generate(std::ostream &out, bool lvalue) const {
           out << "handle_read(s, " << lb << ", " << ub << ", ";
         }
         out << "handle_narrow(";
-        record->generate(out, lvalue);
+        if (lvalue) {
+          record->generate_lvalue(out);
+        } else {
+          record->generate_rvalue(out);
+        }
         out << ", " << offset << ", " << f->type->width() << ")";
         if (!lvalue && f->type->is_simple())
           out << ")";
@@ -984,6 +1007,14 @@ void Field::generate(std::ostream &out, bool lvalue) const {
   throw Error("left hand side of field expression is not a record", loc);
 }
 
+void Field::generate_lvalue(std::ostream &out) const {
+  generate(out, true);
+}
+
+void Field::generate_rvalue(std::ostream &out) const {
+  generate(out, false);
+}
+
 mpz_class Field::constant_fold() const {
   throw Error("field expression used in constant", loc);
 }
@@ -993,13 +1024,17 @@ bool Field::operator==(const Node &other) const {
   return o != nullptr && *record == *o->record && field == o->field;
 }
 
-Element::Element(std::shared_ptr<Lvalue> array_, std::shared_ptr<Expr> index_,
+bool Field::is_lvalue() const {
+  return record->is_lvalue();
+}
+
+Element::Element(std::shared_ptr<Expr> array_, std::shared_ptr<Expr> index_,
   const location &loc_):
-  Lvalue(loc_), array(array_), index(index_) {
+  Expr(loc_), array(array_), index(index_) {
 }
 
 Element::Element(const Element &other):
-  Lvalue(other), array(other.array->clone()), index(other.index->clone()) {
+  Expr(other), array(other.array->clone()), index(other.index->clone()) {
 }
 
 void swap(Element &x, Element &y) noexcept {
@@ -1031,6 +1066,9 @@ const TypeExpr *Element::type() const {
 }
 
 void Element::generate(std::ostream &out, bool lvalue) const {
+
+  if (lvalue && !is_lvalue())
+    throw Error("invalid use of non-lvalue array reference", loc);
 
   // First, determine the width of the array's elements
 
@@ -1069,13 +1107,25 @@ void Element::generate(std::ostream &out, bool lvalue) const {
 
   out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
     << "), VALUE_C(" << max << "), ";
-  array->generate(out, lvalue);
+  if (lvalue) {
+    array->generate_lvalue(out);
+  } else {
+    array->generate_rvalue(out);
+  }
   out << ", ";
   index->generate_rvalue(out);
   out << ")";
 
   if (!lvalue && a.element_type->is_simple())
     out << ")";
+}
+
+void Element::generate_lvalue(std::ostream &out) const {
+  generate(out, true);
+}
+
+void Element::generate_rvalue(std::ostream &out) const {
+  generate(out, false);
 }
 
 mpz_class Element::constant_fold() const {
@@ -1085,6 +1135,10 @@ mpz_class Element::constant_fold() const {
 bool Element::operator==(const Node &other) const {
   auto o = dynamic_cast<const Element*>(&other);
   return o != nullptr && *array == *o->array && *index == *o->index;
+}
+
+bool Element::is_lvalue() const {
+  return array->is_lvalue();
 }
 
 FunctionCall::FunctionCall(const std::string &name_,

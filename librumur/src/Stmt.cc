@@ -68,7 +68,7 @@ bool PropertyStmt::operator==(const Node &other) const {
   return o != nullptr && property == o->property && message == o->message;
 }
 
-Assignment::Assignment(std::shared_ptr<Lvalue> lhs_, std::shared_ptr<Expr> rhs_,
+Assignment::Assignment(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
   const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) { }
 
@@ -112,6 +112,9 @@ bool Assignment::operator==(const Node &other) const {
 
 void Assignment::validate() const {
 
+  if (!lhs->is_lvalue())
+    throw Error("non-lvalue expression cannot be assigned to", loc);
+
   const TypeExpr *lhs_type = lhs->type();
   assert(lhs_type != nullptr && "left hand side of assignment has numeric "
     "literal type");
@@ -131,7 +134,7 @@ void Assignment::validate() const {
   throw Error("invalid assignment from incompatible type", loc);
 }
 
-Clear::Clear(std::shared_ptr<Lvalue> rhs_, const location &loc_):
+Clear::Clear(std::shared_ptr<Expr> rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
 Clear::Clear(const Clear &other):
@@ -163,6 +166,11 @@ bool Clear::operator==(const Node &other) const {
   if (*rhs != *o->rhs)
     return false;
   return true;
+}
+
+void Clear::validate() const {
+  if (!rhs->is_lvalue())
+    throw Error("invalid clear of non-lvalue expression", loc);
 }
 
 ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_):
@@ -436,7 +444,7 @@ bool Return::operator==(const Node &other) const {
   return true;
 }
 
-Undefine::Undefine(std::shared_ptr<Lvalue> rhs_, const location &loc_):
+Undefine::Undefine(std::shared_ptr<Expr> rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
 Undefine::Undefine(const Undefine &other):
@@ -470,6 +478,11 @@ bool Undefine::operator==(const Node &other) const {
   if (*rhs != *o->rhs)
     return false;
   return true;
+}
+
+void Undefine::validate() const {
+  if (!rhs->is_lvalue())
+    throw Error("invalid undefine of non-lvalue expression", loc);
 }
 
 }

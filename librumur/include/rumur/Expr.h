@@ -45,6 +45,13 @@ struct Expr : public Node {
   // Write out some C code that implements this expression.
   virtual void generate_rvalue(std::ostream &out) const = 0;
 
+  /* Write out some C code that implements an assignable version of this
+   * expression.
+   */
+  virtual void generate_lvalue(std::ostream &out) const;
+
+  // Is this value valid to use on the LHS of an assignment?
+  virtual bool is_lvalue() const;
 };
 
 static inline std::ostream &operator<<(std::ostream &out, const Expr &e) {
@@ -74,6 +81,10 @@ struct Ternary : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+
+  /* Note we do not override is_lvalue. Unlike in C, ternary expressions are not
+   * considered lvalues.
+   */
 };
 
 struct BinaryExpr : public Expr {
@@ -366,23 +377,7 @@ struct Mod : public ArithmeticBinaryExpr {
   bool operator==(const Node &other) const final;
 };
 
-struct Lvalue : public Expr {
-
-  using Expr::Expr;
-  Lvalue() = delete;
-  Lvalue(const Lvalue&) = default;
-  Lvalue(Lvalue&&) = default;
-  Lvalue &operator=(const Lvalue&) = default;
-  Lvalue &operator=(Lvalue&&) = default;
-  void generate_rvalue(std::ostream &out) const final;
-  void generate_lvalue(std::ostream &out) const;
-  virtual void generate(std::ostream &out, bool lvalue) const = 0;
-  virtual ~Lvalue() = 0;
-  virtual Lvalue *clone() const = 0;
-
-};
-
-struct ExprID : public Lvalue {
+struct ExprID : public Expr {
 
   std::string id;
   std::shared_ptr<Decl> value;
@@ -395,21 +390,25 @@ struct ExprID : public Lvalue {
   virtual ~ExprID() { }
   ExprID *clone() const final;
 
+  void generate(std::ostream &out, bool lvalue) const;
+  void generate_lvalue(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
+
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out, bool lvalue) const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  bool is_lvalue() const final;
 };
 
-struct Field : public Lvalue {
+struct Field : public Expr {
 
-  std::shared_ptr<Lvalue> record;
+  std::shared_ptr<Expr> record;
   std::string field;
 
   Field() = delete;
-  Field(std::shared_ptr<Lvalue> record_, const std::string &field_,
+  Field(std::shared_ptr<Expr> record_, const std::string &field_,
     const location &loc_);
   Field(const Field &other);
   friend void swap(Field &x, Field &y) noexcept;
@@ -417,20 +416,24 @@ struct Field : public Lvalue {
   virtual ~Field() { }
   Field *clone() const final;
 
+  void generate(std::ostream &out, bool lvalue) const;
+  void generate_lvalue(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
+
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out, bool lvalue) const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  bool is_lvalue() const final;
 };
 
-struct Element : public Lvalue {
+struct Element : public Expr {
 
-  std::shared_ptr<Lvalue> array;
+  std::shared_ptr<Expr> array;
   std::shared_ptr<Expr> index;
 
   Element() = delete;
-  Element(std::shared_ptr<Lvalue> array_, std::shared_ptr<Expr> index_,
+  Element(std::shared_ptr<Expr> array_, std::shared_ptr<Expr> index_,
     const location &loc_);
   Element(const Element &other);
   friend void swap(Element &x, Element &y) noexcept;
@@ -438,11 +441,15 @@ struct Element : public Lvalue {
   virtual ~Element() { }
   Element *clone() const final;
 
+  void generate(std::ostream &out, bool lvalue) const;
+  void generate_lvalue(std::ostream &out) const final;
+  void generate_rvalue(std::ostream &out) const final;
+
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate(std::ostream &out, bool lvalue) const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  bool is_lvalue() const final;
 };
 
 struct FunctionCall : public Expr {

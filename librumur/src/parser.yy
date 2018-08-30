@@ -158,7 +158,7 @@
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
-%type <std::shared_ptr<rumur::Lvalue>>                       designator
+%type <std::shared_ptr<rumur::Expr>>                         designator
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
 %type <std::shared_ptr<rumur::Expr>>                         expr
