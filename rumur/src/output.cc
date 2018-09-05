@@ -7,6 +7,7 @@
 #include <rumur/rumur.h>
 #include "resources.h"
 #include <string>
+#include "symmetry-reduction.h"
 #include <utility>
 #include <vector>
 

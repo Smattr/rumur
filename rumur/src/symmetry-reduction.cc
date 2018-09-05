@@ -2,16 +2,12 @@
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>
-#include <rumur/Decl.h>
-#include <rumur/log.h>
-#include <rumur/Model.h>
-#include <rumur/symmetry-reduction.h>
-#include <rumur/traverse.h>
-#include <rumur/TypeExpr.h>
+#include <rumur/rumur.h>
+#include "symmetry-reduction.h"
 #include <utility>
 #include <vector>
 
-namespace rumur {
+using namespace rumur;
 
 // Find all the named scalarset declarations in a model.
 static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
@@ -684,7 +680,7 @@ namespace {
         delete p;
         p = nullptr;
       } else {
-        *log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+        *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
           << "scalarset type " << t.name << " assigned a top-level array "
           << "pivot\n";
       }
@@ -697,7 +693,7 @@ namespace {
         delete p;
         p = nullptr;
       } else {
-        *log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+        *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
           << "scalarset type " << t.name << " assigned a nested array pivot\n";
       }
     }
@@ -709,7 +705,7 @@ namespace {
         delete p;
         p = nullptr;
       } else {
-        *log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+        *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
           << "scalarset type " << t.name << " assigned an individual field "
           << "pivot\n";
       }
@@ -717,7 +713,7 @@ namespace {
 
     // It's possible all the above failed and we end up returning NULL.
     if (p == nullptr)
-      *log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+      *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
         << "scalarset type " << t.name << " could not be assigned a pivot\n";
 
     return p;
@@ -728,7 +724,7 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
 
   // Find the named scalarset types.
   std::vector<const TypeDecl*> ss = find_scalarsets(m);
-  *log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
+  *rumur::log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
     "types\n";
 
   /* Derive a pivot for each one, keeping the list sorted by ascending
@@ -738,11 +734,11 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
   for (const TypeDecl *t : ss) {
     Pivot *p = Pivot::derive(m, *t);
     if (p == nullptr) {
-      *log.warn << "scalarset type " << t->name << " does not seem to be used "
+      *rumur::log.warn << "scalarset type " << t->name << " does not seem to be used "
         << "in the state and will be ignored during symmetry reduction\n";
       continue;
     }
-    *log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+    *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
       << "pivot for scalarset type " << t->name << " has an interference score "
       << "of " << p->interference()
       << (p->interference() == 0 ? " (perfect)" : "") << "\n";
@@ -782,6 +778,4 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
 
   for (Pivot *p : pivots)
     delete p;
-}
-
 }

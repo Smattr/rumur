@@ -37,7 +37,8 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   src/main.cc
   src/options.cc
-  src/output.cc)
+  src/output.cc
+  src/symmetry-reduction.cc)
 
 target_include_directories(rumur
   PRIVATE

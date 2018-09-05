@@ -21,7 +21,6 @@
 #include <rumur/scanner.h>
 #include <rumur/Stmt.h>
 #include <rumur/Symtab.h>
-#include <rumur/symmetry-reduction.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <rumur/validate.h>

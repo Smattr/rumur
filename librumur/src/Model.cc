@@ -10,7 +10,6 @@
 #include <rumur/Node.h>
 #include <rumur/Property.h>
 #include <rumur/Rule.h>
-#include <rumur/symmetry-reduction.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <string>

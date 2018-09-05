@@ -44,7 +44,6 @@ add_library(librumur
   src/resolve-symbols.cc
   src/Rule.cc
   src/Stmt.cc
-  src/symmetry-reduction.cc
   src/traverse.cc
   src/TypeExpr.cc
   src/validate.cc
