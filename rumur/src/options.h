@@ -17,10 +17,17 @@ enum trace_category_t {
   TC_SYMMETRY_REDUCTION = 0x10,
 };
 
+enum log_level_t {
+  SILENT,
+  WARNINGS,
+  INFO,
+  DEBUG,
+};
+
 struct Options {
   bool overflow_checks;
   unsigned long threads;
-  bool debug;
+  log_level_t log_level;
   size_t set_capacity;
 
   /* Limit (percentage occupancy) at which we expand the capacity of the state

@@ -82,8 +82,7 @@ static void parse_args(int argc, char **argv) {
     switch (c) {
 
       case 'd':
-        options.debug = true;
-        rumur::log.set_level(rumur::Log::DEBUG);
+        options.log_level = DEBUG;
         break;
 
       case 'e':
@@ -105,7 +104,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 'q': // --quiet
-        rumur::log.set_level(rumur::Log::SILENT);
+        options.log_level = SILENT;
         break;
 
       case 's':
@@ -127,7 +126,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 'v': // --verbose
-        rumur::log.set_level(rumur::Log::INFO);
+        options.log_level = INFO;
         break;
 
       case '?':

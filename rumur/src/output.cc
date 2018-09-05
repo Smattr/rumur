@@ -385,7 +385,7 @@ int output_checker(const std::string &path, const Model &model) {
   if (!out)
     return -1;
 
-  if (!options.debug)
+  if (options.log_level < DEBUG)
     out << "#define NDEBUG 1\n\n";
 
   out

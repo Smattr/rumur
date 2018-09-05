@@ -2,6 +2,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>
+#include "options.h"
 #include <rumur/rumur.h>
 #include "symmetry-reduction.h"
 #include <utility>
@@ -680,9 +681,10 @@ namespace {
         delete p;
         p = nullptr;
       } else {
-        *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-          << "scalarset type " << t.name << " assigned a top-level array "
-          << "pivot\n";
+        if (options.log_level >= DEBUG)
+          std::cerr <<  __func__ << "():" << __LINE__ << ": symmetry reduction: "
+            << "scalarset type " << t.name << " assigned a top-level array "
+            << "pivot\n";
       }
     }
 
@@ -693,8 +695,9 @@ namespace {
         delete p;
         p = nullptr;
       } else {
-        *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-          << "scalarset type " << t.name << " assigned a nested array pivot\n";
+        if (options.log_level >= DEBUG)
+          std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+            << "scalarset type " << t.name << " assigned a nested array pivot\n";
       }
     }
 
@@ -705,16 +708,19 @@ namespace {
         delete p;
         p = nullptr;
       } else {
-        *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-          << "scalarset type " << t.name << " assigned an individual field "
-          << "pivot\n";
+        if (options.log_level >= DEBUG)
+          std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+            << "scalarset type " << t.name << " assigned an individual field "
+            << "pivot\n";
       }
     }
 
     // It's possible all the above failed and we end up returning NULL.
-    if (p == nullptr)
-      *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-        << "scalarset type " << t.name << " could not be assigned a pivot\n";
+    if (p == nullptr) {
+      if (options.log_level >= DEBUG)
+        std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+          << "scalarset type " << t.name << " could not be assigned a pivot\n";
+    }
 
     return p;
   }
@@ -724,8 +730,9 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
 
   // Find the named scalarset types.
   std::vector<const TypeDecl*> ss = find_scalarsets(m);
-  *rumur::log.info << "symmetry reduction: " << ss.size() << " eligible scalarset "
-    "types\n";
+  if (options.log_level >= INFO)
+    std::cerr << "symmetry reduction: " << ss.size() << " eligible scalarset "
+      "types\n";
 
   /* Derive a pivot for each one, keeping the list sorted by ascending
    * interference.
@@ -734,14 +741,16 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
   for (const TypeDecl *t : ss) {
     Pivot *p = Pivot::derive(m, *t);
     if (p == nullptr) {
-      *rumur::log.warn << "scalarset type " << t->name << " does not seem to be used "
-        << "in the state and will be ignored during symmetry reduction\n";
+      if (options.log_level >= WARNINGS)
+        std::cerr << "scalarset type " << t->name << " does not seem to be used "
+          << "in the state and will be ignored during symmetry reduction\n";
       continue;
     }
-    *rumur::log.debug << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-      << "pivot for scalarset type " << t->name << " has an interference score "
-      << "of " << p->interference()
-      << (p->interference() == 0 ? " (perfect)" : "") << "\n";
+    if (options.log_level >= DEBUG)
+      std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
+        << "pivot for scalarset type " << t->name << " has an interference score "
+        << "of " << p->interference()
+        << (p->interference() == 0 ? " (perfect)" : "") << "\n";
     bool found = false;
     for (auto it = pivots.begin(); it != pivots.end(); it++) {
       if (p->interference() <= (*it)->interference()) {

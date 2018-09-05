@@ -3,7 +3,7 @@
 Options options = {
   .overflow_checks = true,
   .threads = 0,
-  .debug = false,
+  .log_level = WARNINGS,
   .set_capacity = 8 * 1024 * 1024,
   .set_expand_threshold = 65,
   .color = AUTO,
