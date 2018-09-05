@@ -378,7 +378,6 @@ static std::ostream &operator<<(std::ostream &out, const Model &m) {
   return out;
 }
 
-// Whether a rule is a standard state transition rule.
 int output_checker(const std::string &path, const Model &model) {
 
   std::ofstream out(path);
