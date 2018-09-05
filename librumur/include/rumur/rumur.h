@@ -10,7 +10,6 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
-#include <rumur/log.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/parse.h>

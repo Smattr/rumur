@@ -35,7 +35,6 @@ add_library(librumur
   src/except.cc
   src/Expr.cc
   src/Function.cc
-  src/log.cc
   src/Model.cc
   src/Node.cc
   src/Number.cc
