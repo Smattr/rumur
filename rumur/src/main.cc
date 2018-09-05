@@ -6,26 +6,15 @@
 #include <getopt.h>
 #include <iostream>
 #include <memory>
-#include "resources_manpage.h"
+#include "options.h"
+#include "output.h"
+#include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
 #include <unistd.h>
 
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
-static rumur::OutputOptions output_options = {
-  .overflow_checks = true,
-  .threads = 0,
-  .debug = false,
-  .set_capacity = 8 * 1024 * 1024,
-  .set_expand_threshold = 65,
-  .color = rumur::AUTO,
-  .traces = 0,
-  .deadlock_detection = true,
-  .symmetry_reduction = true,
-  .sandbox_enabled = false,
-  .max_errors = 1,
-};
 
 static void help(const char *arg0) {
 
@@ -60,7 +49,7 @@ static void help(const char *arg0) {
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
-    static struct option options[] = {
+    static struct option opts[] = {
       { "color", no_argument, 0, 128 },
       { "colour", no_argument, 0, 128 },
       { "deadlock-detection", no_argument, 0, 131 },
@@ -85,7 +74,7 @@ static void parse_args(int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "de:o:qs:t:v?", options, &option_index);
+    int c = getopt_long(argc, argv, "de:o:qs:t:v?", opts, &option_index);
 
     if (c == -1)
       break;
@@ -93,19 +82,19 @@ static void parse_args(int argc, char **argv) {
     switch (c) {
 
       case 'd':
-        output_options.debug = true;
+        options.debug = true;
         rumur::log.set_level(rumur::Log::DEBUG);
         break;
 
       case 'e':
         try {
-          output_options.set_expand_threshold = std::stoul(optarg);
+          options.set_expand_threshold = std::stoul(optarg);
         } catch (std::exception) {
           std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
-        if (output_options.set_expand_threshold < 1 ||
-            output_options.set_expand_threshold > 100) {
+        if (options.set_expand_threshold < 1 ||
+            options.set_expand_threshold > 100) {
           std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -121,7 +110,7 @@ static void parse_args(int argc, char **argv) {
 
       case 's':
         try {
-          output_options.set_capacity = std::stoul(optarg);
+          options.set_capacity = std::stoul(optarg);
         } catch (std::exception) {
           std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
@@ -130,7 +119,7 @@ static void parse_args(int argc, char **argv) {
 
       case 't':
         try {
-          output_options.threads = std::stoul(optarg);
+          options.threads = std::stoul(optarg);
         } catch (std::exception) {
           std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
@@ -146,26 +135,26 @@ static void parse_args(int argc, char **argv) {
         __builtin_unreachable();
 
       case 128: // --colour
-        output_options.color = rumur::ON;
+        options.color = ON;
         break;
 
       case 129: // --no-colour
-        output_options.color = rumur::OFF;
+        options.color = OFF;
         break;
 
       case 130: // --trace ...
         if (strcmp(optarg, "handle_reads") == 0) {
-          output_options.traces |= rumur::TC_HANDLE_READS;
+          options.traces |= TC_HANDLE_READS;
         } else if (strcmp(optarg, "handle_writes") == 0) {
-          output_options.traces |= rumur::TC_HANDLE_WRITES;
+          options.traces |= TC_HANDLE_WRITES;
         } else if (strcmp(optarg, "queue") == 0) {
-          output_options.traces |= rumur::TC_QUEUE;
+          options.traces |= TC_QUEUE;
         } else if (strcmp(optarg, "set") == 0) {
-          output_options.traces |= rumur::TC_SET;
+          options.traces |= TC_SET;
         } else if (strcmp(optarg, "symmetry_reduction") == 0) {
-          output_options.traces |= rumur::TC_SYMMETRY_REDUCTION;
+          options.traces |= TC_SYMMETRY_REDUCTION;
         } else if (strcmp(optarg, "all") == 0) {
-          output_options.traces = uint64_t(-1);
+          options.traces = uint64_t(-1);
         } else {
           std::cerr
             << "invalid --trace argument \"" << optarg << "\"\n"
@@ -176,11 +165,11 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 131: // --deadlock-detection
-        output_options.deadlock_detection = true;
+        options.deadlock_detection = true;
         break;
 
       case 132: // --no-deadlock-detection
-        output_options.deadlock_detection = false;
+        options.deadlock_detection = false;
         break;
 
       case 133: { // --monopolise
@@ -201,19 +190,19 @@ static void parse_args(int argc, char **argv) {
          * that this will never actually reach 100% occupancy because memory
          * also needs to contain our code and data as well as the OS.
          */
-        output_options.set_capacity = size_t(pagesize) * size_t(physpages);
+        options.set_capacity = size_t(pagesize) * size_t(physpages);
 
         // Never expand the set.
-        output_options.set_expand_threshold = 100;
+        options.set_expand_threshold = 100;
 
         break;
       }
 
       case 134: // --symmetry-reduction ...
         if (strcmp(optarg, "on") == 0) {
-          output_options.symmetry_reduction = true;
+          options.symmetry_reduction = true;
         } else if (strcmp(optarg, "off") == 0) {
-          output_options.symmetry_reduction = false;
+          options.symmetry_reduction = false;
         } else {
           std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
             << "\"\n";
@@ -223,9 +212,9 @@ static void parse_args(int argc, char **argv) {
 
       case 135: // --sandbox ...
         if (strcmp(optarg, "on") == 0) {
-          output_options.sandbox_enabled = true;
+          options.sandbox_enabled = true;
         } else if (strcmp(optarg, "off") == 0) {
-          output_options.sandbox_enabled = false;
+          options.sandbox_enabled = false;
         } else {
           std::cerr << "invalid argument to --sandbox, \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
@@ -234,12 +223,12 @@ static void parse_args(int argc, char **argv) {
 
       case 136: // --max-errors ...
         try {
-          output_options.max_errors = std::stoul(optarg);
+          options.max_errors = std::stoul(optarg);
         } catch (std::exception) {
           std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
-        if (output_options.max_errors == 0) {
+        if (options.max_errors == 0) {
           std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -266,13 +255,13 @@ static void parse_args(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  if (output_options.threads == 0) {
+  if (options.threads == 0) {
     // automatic
     long r = sysconf(_SC_NPROCESSORS_ONLN);
     if (r < 1) {
-      output_options.threads = 1;
+      options.threads = 1;
     } else {
-      output_options.threads = static_cast<unsigned long>(r);
+      options.threads = static_cast<unsigned long>(r);
     }
   }
 }
@@ -320,7 +309,7 @@ int main(int argc, char **argv) {
   validate(*m);
 
   assert(out != nullptr);
-  if (rumur::output_checker(*out, *m, output_options) != 0)
+  if (output_checker(*out, *m) != 0)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;

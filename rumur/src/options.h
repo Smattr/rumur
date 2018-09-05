@@ -1,9 +1,7 @@
 #pragma once
 
-#include <rumur/Model.h>
-#include <string>
-
-namespace rumur {
+#include <cstddef>
+#include <cstdint>
 
 enum tristate {
   OFF,
@@ -19,7 +17,7 @@ enum trace_category_t {
   TC_SYMMETRY_REDUCTION = 0x10,
 };
 
-struct OutputOptions {
+struct Options {
   bool overflow_checks;
   unsigned long threads;
   bool debug;
@@ -49,7 +47,4 @@ struct OutputOptions {
   unsigned long max_errors;
 };
 
-int output_checker(const std::string &path, const Model &model,
-  const OutputOptions &options);
-
-}
+extern Options options;

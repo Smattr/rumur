@@ -1,17 +1,15 @@
 #include <iostream>
 #include <fstream>
-#include <rumur/Model.h>
-#include <rumur/output.h>
+#include "options.h"
+#include "output.h"
+#include <rumur/rumur.h>
 #include "resources.h"
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace rumur {
-
 // Whether a rule is a standard state transition rule.
-int output_checker(const std::string &path, const Model &model,
-  const OutputOptions &options) {
+int output_checker(const std::string &path, const rumur::Model &model) {
 
   std::ofstream out(path);
   if (!out)
@@ -56,7 +54,5 @@ int output_checker(const std::string &path, const Model &model,
     << model;
 
   return 0;
-
-}
 
 }

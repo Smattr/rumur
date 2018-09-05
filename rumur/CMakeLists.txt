@@ -19,9 +19,25 @@ add_custom_command(
   MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.text
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
+# Define other resources.
+add_custom_command(
+  OUTPUT resources_includes.cc
+  COMMAND xxd -include resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
+  MAIN_DEPENDENCY resources/includes.c
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(
+  OUTPUT resources_header.cc
+  COMMAND xxd -include resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  MAIN_DEPENDENCY resources/header.c
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_executable(rumur
-  resources_manpage.cc
-  src/main.cc)
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  src/main.cc
+  src/options.cc
+  src/output.cc)
 
 target_include_directories(rumur
   PRIVATE

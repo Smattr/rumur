@@ -13,7 +13,6 @@
 #include <rumur/log.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
-#include <rumur/output.h>
 #include <rumur/parse.h>
 #include <rumur/Property.h>
 #include <rumur/Reference.h>
