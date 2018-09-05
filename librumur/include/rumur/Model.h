@@ -32,7 +32,6 @@ struct Model : public Node {
   // Get the size of the state data in bits.
   mpz_class size_bits() const;
 
-  void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
   void validate() const final;
 
@@ -42,10 +41,5 @@ struct Model : public Node {
   // Update the bit offset of each variable declaration in the model.
   void reindex();
 };
-
-static inline std::ostream &operator<<(std::ostream &out, const Model &m) {
-  m.generate(out);
-  return out;
-}
 
 }
