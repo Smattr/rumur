@@ -3,11 +3,11 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include "generate.h"
 #include <getopt.h>
 #include <iostream>
 #include <memory>
 #include "options.h"
-#include "output.h"
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
