@@ -25,14 +25,8 @@ struct Stmt : public Node {
   Stmt &operator=(Stmt&&) = default;
   virtual ~Stmt() { }
   virtual Stmt *clone() const = 0;
-  virtual void generate(std::ostream &out) const = 0;
 
 };
-
-static inline std::ostream &operator<<(std::ostream &out, const Stmt &s) {
-  s.generate(out);
-  return out;
-}
 
 struct PropertyStmt : public Stmt {
 
@@ -48,7 +42,6 @@ struct PropertyStmt : public Stmt {
   PropertyStmt *clone() const final;
   virtual ~PropertyStmt() { }
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -66,7 +59,6 @@ struct Assignment : public Stmt {
   Assignment *clone() const final;
   virtual ~Assignment() { }
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -83,7 +75,6 @@ struct Clear : public Stmt {
   virtual ~Clear() { }
   Clear *clone() const final;
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -100,7 +91,6 @@ struct ErrorStmt : public Stmt {
    ErrorStmt *clone() const final;
    virtual ~ErrorStmt() { }
 
-   void generate(std::ostream &out) const final;
    bool operator==(const Node &other) const final;
 };
 
@@ -118,7 +108,6 @@ struct For : public Stmt {
   virtual ~For() { }
   For *clone() const final;
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -151,7 +140,6 @@ struct If : public Stmt {
   virtual ~If() { };
   If *clone() const final;
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -170,7 +158,6 @@ struct ProcedureCall : public Stmt {
   virtual ~ProcedureCall() { }
   ProcedureCall *clone() const final;
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -187,7 +174,6 @@ struct Return : public Stmt {
   virtual ~Return() { }
   Return *clone() const final;
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
 };
 
@@ -203,7 +189,6 @@ struct Undefine : public Stmt {
   virtual ~Undefine() { }
   Undefine *clone() const final;
 
-  void generate(std::ostream &out) const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
 };

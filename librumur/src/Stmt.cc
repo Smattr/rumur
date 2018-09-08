@@ -37,32 +37,6 @@ PropertyStmt *PropertyStmt::clone() const {
   return new PropertyStmt(*this);
 }
 
-void PropertyStmt::generate(std::ostream &out) const {
-  switch (property.category) {
-
-    case Property::DISABLED:
-      out << "do { } while (0)";
-      break;
-
-    case Property::ASSERTION:
-      out << "if (__builtin_expect(!";
-      property.generate(out);
-      out << ", 0)) {\nerror(s, false, \"" << message << "\");\n}";
-      break;
-
-    case Property::ASSUMPTION:
-      out << "if (__builtin_expect(!";
-      property.generate(out);
-      out
-        << ", 0)) {\n"
-        << "  assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
-        << "  longjmp(checkpoint, 1);\n"
-        << "}";
-      break;
-
-  }
-}
-
 bool PropertyStmt::operator==(const Node &other) const {
   auto o = dynamic_cast<const PropertyStmt*>(&other);
   return o != nullptr && property == o->property && message == o->message;
@@ -90,19 +64,6 @@ void swap(Assignment &x, Assignment &y) noexcept {
 
 Assignment *Assignment::clone() const {
   return new Assignment(*this);
-}
-
-void Assignment::generate(std::ostream &out) const {
-
-  if (!lhs->type()->is_simple())
-    assert(!"TODO");
-
-  const std::string lb = lhs->type()->lower_bound();
-  const std::string ub = lhs->type()->upper_bound();
-
-  out << "handle_write(s, " << lb << ", " << ub << ", ";
-  lhs->generate_lvalue(out);
-  out << ", " << *rhs << ")";
 }
 
 bool Assignment::operator==(const Node &other) const {
@@ -155,10 +116,6 @@ Clear *Clear::clone() const {
   return new Clear(*this);
 }
 
-void Clear::generate(std::ostream&) const {
-  assert(!"TODO");
-}
-
 bool Clear::operator==(const Node &other) const {
   auto o = dynamic_cast<const Clear*>(&other);
   if (o == nullptr)
@@ -194,10 +151,6 @@ ErrorStmt *ErrorStmt::clone() const {
   return new ErrorStmt(*this);
 }
 
-void ErrorStmt::generate(std::ostream &out) const {
-  out << "error(s, false, \"" << message << "\")";
-}
-
 bool ErrorStmt::operator==(const Node &other) const {
   auto o = dynamic_cast<const ErrorStmt*>(&other);
   return o != nullptr && message == o->message;
@@ -227,16 +180,6 @@ void swap(For &x, For &y) noexcept {
 
 For *For::clone() const {
   return new For(*this);
-}
-
-void For::generate(std::ostream &out) const {
-  quantifier->generate_header(out);
-  for (const std::shared_ptr<Stmt> &s : body) {
-    out << "  ";
-    s->generate(out);
-    out << ";\n";
-  }
-  quantifier->generate_footer(out);
 }
 
 bool For::operator==(const Node &other) const {
@@ -315,26 +258,6 @@ If *If::clone() const {
   return new If(*this);
 }
 
-void If::generate(std::ostream &out) const {
-  bool first = true;
-  for (const IfClause &c : clauses) {
-    if (!first)
-      out << "else ";
-    if (c.condition != nullptr) {
-      out << "if (";
-      c.condition->generate_rvalue(out);
-      out  << ") ";
-    }
-    out << " {\n";
-    for (const std::shared_ptr<Stmt> &s : c.body) {
-      s->generate(out);
-      out << ";\n";
-    }
-    out << "}\n";
-    first = false;
-  }
-}
-
 bool If::operator==(const Node &other) const {
   auto o = dynamic_cast<const If*>(&other);
   if (o == nullptr)
@@ -371,10 +294,6 @@ void swap(ProcedureCall &x, ProcedureCall &y) noexcept {
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);
-}
-
-void ProcedureCall::generate(std::ostream&) const {
-  assert(!"TODO");
 }
 
 bool ProcedureCall::operator==(const Node &other) const {
@@ -422,13 +341,6 @@ Return *Return::clone() const {
   return new Return(*this);
 }
 
-void Return::generate(std::ostream &out) const {
-  out << "return";
-
-  if (expr != nullptr)
-    assert(!"TODO");
-}
-
 bool Return::operator==(const Node &other) const {
   auto o = dynamic_cast<const Return*>(&other);
   if (o == nullptr)
@@ -463,12 +375,6 @@ void swap(Undefine &x, Undefine &y) noexcept {
 
 Undefine *Undefine::clone() const {
   return new Undefine(*this);
-}
-
-void Undefine::generate(std::ostream &out) const {
-  out << "handle_zero(";
-  rhs->generate_lvalue(out);
-  out << ")";
 }
 
 bool Undefine::operator==(const Node &other) const {
