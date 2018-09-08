@@ -548,6 +548,160 @@ void Traversal::visit(VarDecl &n) {
 
 Traversal::~Traversal() { }
 
+void ExprTraversal::visit(Array &n) {
+  dispatch(*n.index_type);
+  dispatch(*n.element_type);
+}
+
+void ExprTraversal::visit(Assignment &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ExprTraversal::visit(Clear &n) {
+  dispatch(*n.rhs);
+}
+
+void ExprTraversal::visit(ConstDecl &n) {
+  dispatch(*n.value);
+}
+
+void ExprTraversal::visit(Enum&) { }
+
+void ExprTraversal::visit(ErrorStmt&) { }
+
+void ExprTraversal::visit(For &n) {
+  dispatch(*n.quantifier);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ExprTraversal::visit(Function &n) {
+  for (std::shared_ptr<Parameter> &p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ExprTraversal::visit(If &n) {
+  for (IfClause &c : n.clauses)
+    dispatch(c);
+}
+
+void ExprTraversal::visit(IfClause &n) {
+  if (n.condition != nullptr)
+    dispatch(*n.condition);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ExprTraversal::visit(Model &n) {
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Function> &f : n.functions)
+    dispatch(*f);
+  for (std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void ExprTraversal::visit(Parameter &n) {
+  dispatch(*n.decl);
+}
+
+void ExprTraversal::visit(ProcedureCall &n) {
+  if (n.function != nullptr)
+    dispatch(*n.function);
+  for (std::shared_ptr<Expr> &a : n.arguments)
+    dispatch(*a);
+}
+
+void ExprTraversal::visit(Property &n) {
+  dispatch(*n.expr);
+}
+
+void ExprTraversal::visit(PropertyRule &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  dispatch(n.property);
+}
+
+void ExprTraversal::visit(PropertyStmt &n) {
+  dispatch(n.property);
+}
+
+void ExprTraversal::visit(Quantifier &n) {
+  dispatch(*n.var);
+  if (n.step != nullptr)
+    dispatch(*n.step);
+}
+
+void ExprTraversal::visit(Range &n) {
+  dispatch(*n.min);
+  dispatch(*n.max);
+}
+
+void ExprTraversal::visit(Record &n) {
+  for (std::shared_ptr<VarDecl> &f : n.fields)
+    dispatch(*f);
+}
+
+void ExprTraversal::visit(Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void ExprTraversal::visit(Ruleset &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void ExprTraversal::visit(Scalarset &n) {
+  dispatch(*n.bound);
+}
+
+void ExprTraversal::visit(SimpleRule &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  if (n.guard != nullptr)
+    dispatch(*n.guard);
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ExprTraversal::visit(StartState &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ExprTraversal::visit(TypeDecl &n) {
+  dispatch(*n.value);
+}
+
+void ExprTraversal::visit(TypeExprID &n) {
+  if (n.referent != nullptr)
+    dispatch(*n.referent);
+}
+
+void ExprTraversal::visit(Undefine &n) {
+  dispatch(*n.rhs);
+}
+
+void ExprTraversal::visit(VarDecl &n) {
+  dispatch(*n.type);
+}
+
 void ConstBaseTraversal::dispatch(const Node &n) {
 
   if (auto i = dynamic_cast<const Add*>(&n)) {
@@ -1083,5 +1237,159 @@ void ConstTraversal::visit(const VarDecl &n) {
 }
 
 ConstTraversal::~ConstTraversal() { }
+
+void ConstExprTraversal::visit(const Array &n) {
+  dispatch(*n.index_type);
+  dispatch(*n.element_type);
+}
+
+void ConstExprTraversal::visit(const Assignment &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstExprTraversal::visit(const Clear &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstExprTraversal::visit(const ConstDecl &n) {
+  dispatch(*n.value);
+}
+
+void ConstExprTraversal::visit(const Enum&) { }
+
+void ConstExprTraversal::visit(const ErrorStmt&) { }
+
+void ConstExprTraversal::visit(const For &n) {
+  dispatch(*n.quantifier);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstExprTraversal::visit(const Function &n) {
+  for (const std::shared_ptr<Parameter> &p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstExprTraversal::visit(const If &n) {
+  for (const IfClause &c : n.clauses)
+    dispatch(c);
+}
+
+void ConstExprTraversal::visit(const IfClause &n) {
+  if (n.condition != nullptr)
+    dispatch(*n.condition);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstExprTraversal::visit(const Model &n) {
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Function> &f : n.functions)
+    dispatch(*f);
+  for (const std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void ConstExprTraversal::visit(const Parameter &n) {
+  dispatch(*n.decl);
+}
+
+void ConstExprTraversal::visit(const ProcedureCall &n) {
+  if (n.function != nullptr)
+    dispatch(*n.function);
+  for (const std::shared_ptr<Expr> &a : n.arguments)
+    dispatch(*a);
+}
+
+void ConstExprTraversal::visit(const Property &n) {
+  dispatch(*n.expr);
+}
+
+void ConstExprTraversal::visit(const PropertyRule &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  dispatch(n.property);
+}
+
+void ConstExprTraversal::visit(const PropertyStmt &n) {
+  dispatch(n.property);
+}
+
+void ConstExprTraversal::visit(const Quantifier &n) {
+  dispatch(*n.var);
+  if (n.step != nullptr)
+    dispatch(*n.step);
+}
+
+void ConstExprTraversal::visit(const Range &n) {
+  dispatch(*n.min);
+  dispatch(*n.max);
+}
+
+void ConstExprTraversal::visit(const Record &n) {
+  for (const std::shared_ptr<VarDecl> &f : n.fields)
+    dispatch(*f);
+}
+
+void ConstExprTraversal::visit(const Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void ConstExprTraversal::visit(const Ruleset &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (const std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void ConstExprTraversal::visit(const Scalarset &n) {
+  dispatch(*n.bound);
+}
+
+void ConstExprTraversal::visit(const SimpleRule &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  if (n.guard != nullptr)
+    dispatch(*n.guard);
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstExprTraversal::visit(const StartState &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstExprTraversal::visit(const TypeDecl &n) {
+  dispatch(*n.value);
+}
+
+void ConstExprTraversal::visit(const TypeExprID &n) {
+  if (n.referent != nullptr)
+    dispatch(*n.referent);
+}
+
+void ConstExprTraversal::visit(const Undefine &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstExprTraversal::visit(const VarDecl &n) {
+  dispatch(*n.type);
+}
 
 }
