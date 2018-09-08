@@ -145,8 +145,8 @@ class Traversal : public BaseTraversal {
   virtual ~Traversal() = 0;
 
  private:
-  void visit(BinaryExpr &n);
-  void visit(UnaryExpr &n);
+  void visit_bexpr(BinaryExpr &n);
+  void visit_uexpr(UnaryExpr &n);
 };
 
 /* Generic base for traversals that only need to act on expressions. This gives
@@ -401,8 +401,8 @@ class ConstTraversal : public ConstBaseTraversal {
   virtual ~ConstTraversal() = 0;
 
  private:
-  void visit(const BinaryExpr &n);
-  void visit(const UnaryExpr &n);
+  void visit_bexpr(const BinaryExpr &n);
+  void visit_uexpr(const UnaryExpr &n);
 };
 
 // Read-only equivalent of ExprTraversal
