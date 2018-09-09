@@ -452,9 +452,6 @@ struct Quantifier : public Node {
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
 
-  void generate_header(std::ostream &out) const;
-  void generate_footer(std::ostream &out) const;
-
  private:
   /* This constructor is delegated to internally.
    * HACK: This takes the arguments in a different order to avoid internal

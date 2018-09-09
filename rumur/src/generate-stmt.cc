@@ -40,13 +40,13 @@ class Generator : public ConstStmtTraversal {
   }
 
   void visit(const For &s) final {
-    s.quantifier->generate_header(*out);
+    generate_quantifier_header(*out, *s.quantifier);
     for (const std::shared_ptr<Stmt> &st : s.body) {
       *out << "  ";
       generate_stmt(*out, *st);
       *out << ";\n";
     }
-    s.quantifier->generate_footer(*out);
+    generate_quantifier_footer(*out, *s.quantifier);
   }
 
   void visit(const If &s) final {

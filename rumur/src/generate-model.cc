@@ -127,7 +127,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           // Set up quantifiers.
           for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            q->generate_header(out);
+            generate_quantifier_header(out, *q);
 
           out << "    if (!property" << index << "(s";
           for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
@@ -138,7 +138,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           // Close the quantifier loops.
           for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-            (*it)->generate_footer(out);
+            generate_quantifier_footer(out, **it);
 
           // Close this invariant's scope.
           out << "  }\n";
@@ -163,7 +163,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           // Set up quantifiers.
           for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            q->generate_header(out);
+            generate_quantifier_header(out, *q);
 
           out << "    if (!property" << index << "(s";
           for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
@@ -176,7 +176,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           // Close the quantifier loops.
           for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-            (*it)->generate_footer(out);
+            generate_quantifier_footer(out, **it);
 
           // Close this invariant's scope.
           out << "  }\n";
@@ -212,7 +212,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Set up quantifiers.
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          q->generate_header(out);
+          generate_quantifier_header(out, *q);
 
         out
           // Use a dummy do-while to give us 'break' as a local goto.
@@ -245,7 +245,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          (*it)->generate_footer(out);
+          generate_quantifier_footer(out, **it);
 
         // Close this startstate's scope.
         out << "  }\n";
@@ -286,7 +286,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out << "    {\n";
 
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          q->generate_header(out);
+          generate_quantifier_header(out, *q);
 
         out
           // Use a dummy do-while to give us 'break' as a local goto.
@@ -343,7 +343,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          (*it)->generate_footer(out);
+          generate_quantifier_footer(out, **it);
 
         // Close this rule's scope.
         out << "}\n";

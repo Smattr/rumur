@@ -38,6 +38,7 @@ add_executable(rumur
   src/generate-expr.cc
   src/generate-model.cc
   src/generate-property.cc
+  src/generate-quantifier.cc
   src/generate-stmt.cc
   src/main.cc
   src/options.cc

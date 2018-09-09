@@ -162,9 +162,9 @@ class Generator : public ConstExprTraversal {
       invalid(n);
 
     *out << "({ bool result = false; ";
-    n.quantifier->generate_header(*out);
+    generate_quantifier_header(*out, *n.quantifier);
     *this << "if (" << *n.expr << ") { result = true; break; }";
-    n.quantifier->generate_footer(*out);
+    generate_quantifier_footer(*out, *n.quantifier);
     *out << " result; })";
   }
 
@@ -279,9 +279,9 @@ class Generator : public ConstExprTraversal {
       invalid(n);
 
     *out << "({ bool result = true; ";
-    n.quantifier->generate_header(*out);
+    generate_quantifier_header(*out, *n.quantifier);
     *this << "if (!" << *n.expr << ") { result = false; break; }";
-    n.quantifier->generate_footer(*out);
+    generate_quantifier_footer(*out, *n.quantifier);
     *out << " result; })";
   }
 
