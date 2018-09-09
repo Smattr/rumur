@@ -5,5 +5,5 @@
 using namespace rumur;
 
 void generate_property(std::ostream &out, const Property &p) {
-  out << *p.expr;
+  generate_rvalue(out, *p.expr);
 }

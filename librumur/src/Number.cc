@@ -33,10 +33,6 @@ const TypeExpr *Number::type() const {
   return nullptr;
 }
 
-void Number::generate_rvalue(std::ostream &out) const {
-  out << "VALUE_C(" << value << ")";
-}
-
 mpz_class Number::constant_fold() const {
   return value;
 }

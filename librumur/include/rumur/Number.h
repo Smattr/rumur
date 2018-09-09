@@ -25,7 +25,6 @@ struct Number : public Expr {
 
   bool constant() const final;
   const TypeExpr *type() const final;
-  void generate_rvalue(std::ostream &out) const;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
 };

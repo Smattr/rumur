@@ -25,8 +25,10 @@ class Generator : public ConstStmtTraversal {
     const std::string ub = s.lhs->type()->upper_bound();
 
     *out << "handle_write(s, " << lb << ", " << ub << ", ";
-    s.lhs->generate_lvalue(*out);
-    *out << ", " << *s.rhs << ")";
+    generate_lvalue(*out, *s.lhs);
+    *out << ", ";
+    generate_rvalue(*out, *s.rhs);
+    *out << ")";
   }
 
   void visit(const Clear&) final {
@@ -54,7 +56,7 @@ class Generator : public ConstStmtTraversal {
         *out << "else ";
       if (c.condition != nullptr) {
         *out << "if (";
-        c.condition->generate_rvalue(*out);
+        generate_rvalue(*out, *c.condition);
         *out  << ") ";
       }
       *out << " {\n";
@@ -106,7 +108,7 @@ class Generator : public ConstStmtTraversal {
 
   void visit(const Undefine &s) final {
     *out << "handle_zero(";
-    s.rhs->generate_lvalue(*out);
+    generate_lvalue(*out, *s.rhs);
     *out << ")";
   }
 

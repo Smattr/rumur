@@ -22,10 +22,6 @@ bool Expr::is_boolean() const {
   return type() != nullptr && *type()->resolve() == *Boolean;
 }
 
-void Expr::generate_lvalue(std::ostream&) const {
-  throw Error("invalid expression used as lvalue", loc);
-}
-
 bool Expr::is_lvalue() const {
   return false;
 }
@@ -68,10 +64,6 @@ bool Ternary::operator==(const Node &other) const {
 const TypeExpr *Ternary::type() const {
   // TODO: assert lhs and rhs are compatible types.
   return lhs->type();
-}
-
-void Ternary::generate_rvalue(std::ostream &out) const {
-  out << "(" << *cond << " ? " << *lhs << " : " << *rhs << ")";
 }
 
 mpz_class Ternary::constant_fold() const {
@@ -125,10 +117,6 @@ const TypeExpr *Implication::type() const {
   return Boolean.get();
 }
 
-void Implication::generate_rvalue(std::ostream &out) const {
-  out << "(!" << *lhs << " || " << *rhs << ")";
-}
-
 mpz_class Implication::constant_fold() const {
   return !lhs->constant_fold() || rhs->constant_fold();
 }
@@ -151,10 +139,6 @@ const TypeExpr *Or::type() const {
   return Boolean.get();
 }
 
-void Or::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " || " << *rhs << ")";
-}
-
 mpz_class Or::constant_fold() const {
   return lhs->constant_fold() || rhs->constant_fold();
 }
@@ -175,10 +159,6 @@ And *And::clone() const {
 
 const TypeExpr *And::type() const {
   return Boolean.get();
-}
-
-void And::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " && " << *rhs << ")";
 }
 
 mpz_class And::constant_fold() const {
@@ -219,10 +199,6 @@ Not *Not::clone() const {
 
 const TypeExpr *Not::type() const {
   return Boolean.get();
-}
-
-void Not::generate_rvalue(std::ostream &out) const {
-  out << "(!" << *rhs << ")";
 }
 
 mpz_class Not::constant_fold() const {
@@ -295,10 +271,6 @@ const TypeExpr *Lt::type() const {
   return Boolean.get();
 }
 
-void Lt::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " < " << *rhs << ")";
-}
-
 mpz_class Lt::constant_fold() const {
   return lhs->constant_fold() < rhs->constant_fold();
 }
@@ -319,10 +291,6 @@ Leq *Leq::clone() const {
 
 const TypeExpr *Leq::type() const {
   return Boolean.get();
-}
-
-void Leq::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " <= " << *rhs << ")";
 }
 
 mpz_class Leq::constant_fold() const {
@@ -347,10 +315,6 @@ const TypeExpr *Gt::type() const {
   return Boolean.get();
 }
 
-void Gt::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " > " << *rhs << ")";
-}
-
 mpz_class Gt::constant_fold() const {
   return lhs->constant_fold() > rhs->constant_fold();
 }
@@ -371,10 +335,6 @@ Geq *Geq::clone() const {
 
 const TypeExpr *Geq::type() const {
   return Boolean.get();
-}
-
-void Geq::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " >= " << *rhs << ")";
 }
 
 mpz_class Geq::constant_fold() const {
@@ -458,10 +418,6 @@ const TypeExpr *Eq::type() const {
   return Boolean.get();
 }
 
-void Eq::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " == " << *rhs << ")";
-}
-
 mpz_class Eq::constant_fold() const {
   return lhs->constant_fold() == rhs->constant_fold();
 }
@@ -482,10 +438,6 @@ Neq *Neq::clone() const {
 
 const TypeExpr *Neq::type() const {
   return Boolean.get();
-}
-
-void Neq::generate_rvalue(std::ostream &out) const {
-  out << "(" << *lhs << " != " << *rhs << ")";
 }
 
 mpz_class Neq::constant_fold() const {
@@ -535,53 +487,6 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
-static std::string lower_bound(const TypeExpr *t) {
-
-  if (t == nullptr)
-    return "VALUE_MIN";
-
-  return t->lower_bound();
-}
-
-static std::string lower_bound(const TypeExpr *t1, const TypeExpr *t2) {
-
-  if (t1 == nullptr)
-    return lower_bound(t2);
-
-  return lower_bound(t1);
-}
-
-static std::string lower_bound(const Expr &lhs, const Expr &rhs) {
-  return lower_bound(lhs.type(), rhs.type());
-}
-
-static std::string lower_bound(const Expr &rhs) {
-  return lower_bound(rhs.type());
-}
-
-static std::string upper_bound(const TypeExpr *t) {
-
-  if (t == nullptr)
-    return "VALUE_MAX";
-
-  return t->upper_bound();
-}
-
-static std::string upper_bound(const TypeExpr *t1, const TypeExpr *t2) {
-
-  if (t1 == nullptr)
-    return upper_bound(t2);
-
-  return upper_bound(t1);
-}
-
-static std::string upper_bound(const Expr &lhs, const Expr &rhs) {
-  return upper_bound(lhs.type(), rhs.type());
-}
-
-static std::string upper_bound(const Expr &rhs) {
-  return upper_bound(rhs.type());
-}
 
 void ArithmeticBinaryExpr::validate() const {
   if (!arithmetic(*lhs, *rhs))
@@ -600,11 +505,6 @@ Add *Add::clone() const {
 
 const TypeExpr *Add::type() const {
   return nullptr;
-}
-
-void Add::generate_rvalue(std::ostream &out) const {
-  out << "add(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
-    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 mpz_class Add::constant_fold() const {
@@ -627,11 +527,6 @@ Sub *Sub::clone() const {
 
 const TypeExpr *Sub::type() const {
   return nullptr;
-}
-
-void Sub::generate_rvalue(std::ostream &out) const {
-  out << "sub(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
-    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 mpz_class Sub::constant_fold() const {
@@ -661,11 +556,6 @@ const TypeExpr *Negative::type() const {
   return rhs->type();
 }
 
-void Negative::generate_rvalue(std::ostream &out) const {
-  out << "negate(s, " << lower_bound(*rhs) << ", " << upper_bound(*rhs) << ", "
-    << *rhs << ")";
-}
-
 mpz_class Negative::constant_fold() const {
   return -rhs->constant_fold();
 }
@@ -688,11 +578,6 @@ const TypeExpr *Mul::type() const {
   return nullptr;
 }
 
-void Mul::generate_rvalue(std::ostream &out) const {
-  out << "mul(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
-    << ", " << *lhs << ", " << *rhs << ")";
-}
-
 mpz_class Mul::constant_fold() const {
   return lhs->constant_fold() * rhs->constant_fold();
 }
@@ -713,11 +598,6 @@ Div *Div::clone() const {
 
 const TypeExpr *Div::type() const {
   return nullptr;
-}
-
-void Div::generate_rvalue(std::ostream &out) const {
-  out << "divide(s, " << lower_bound(*lhs, *rhs) << ", " <<
-    upper_bound(*lhs, *rhs) << ", " << *lhs << ", " << *rhs << ")";
 }
 
 mpz_class Div::constant_fold() const {
@@ -744,11 +624,6 @@ Mod *Mod::clone() const {
 
 const TypeExpr *Mod::type() const {
   return nullptr;
-}
-
-void Mod::generate_rvalue(std::ostream &out) const {
-  out << "mod(s, " << lower_bound(*lhs, *rhs) << ", " << upper_bound(*lhs, *rhs)
-    << ", " << *lhs << ", " << *rhs << ")";
 }
 
 mpz_class Mod::constant_fold() const {
@@ -808,85 +683,6 @@ const TypeExpr *ExprID::type() const {
 
   assert(!"unreachable");
   __builtin_unreachable();
-}
-
-void ExprID::generate(std::ostream &out, bool lvalue) const {
-  if (value == nullptr)
-    throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
-
-  if (lvalue && !is_lvalue())
-    throw Error("invalid use of non-lvalue expression", loc);
-
-  /* Case 1: this is a reference to a const. Note, this also covers enum
-   * members.
-   */
-  if (auto c = dynamic_cast<const ConstDecl*>(value.get())) {
-    assert(!lvalue && "const appearing as an lvalue");
-    out << "VALUE_C(" << c->value->constant_fold() << ")";
-    return;
-  }
-
-  if (auto v = dynamic_cast<const VarDecl*>(value.get())) {
-
-    const TypeExpr *t = type()->resolve();
-    assert(t != nullptr && "untyped literal somehow an identifier");
-
-    // Case 2, this is a state variable.
-    if (v->state_variable) {
-
-      /* If this is a scalar and we're in an rvalue context, we want to actually
-       * read the value of the variable out into an unboxed value as this is
-       * what our parent will be expecting.
-       */
-      if (!lvalue && t->is_simple()) {
-        const std::string lb = t->lower_bound();
-        const std::string ub = t->upper_bound();
-        out << "handle_read(s, " << lb << ", " << ub << ", ";
-      }
-
-      /* Note that we need to cast away the const-ness of `s->data` here because
-       * we may be within a guard or invariant. In such a situation, the state
-       * remains morally read-only.
-       */
-      out << "((struct handle){ .base = (uint8_t*)s->data, .offset = "
-        << v->offset << "ul, .width = " << t->width() << "ul })";
-
-      if (!lvalue && t->is_simple())
-        out << ")";
-      return;
-
-    }
-
-    // Case 3, this is a local variable
-    else {
-
-      if (!lvalue && t->is_simple()) {
-        const std::string lb = t->lower_bound();
-        const std::string ub = t->upper_bound();
-        out << "handle_read(s, " << lb << ", " << ub << ", ";
-      }
-
-      out << "ru_" << id;
-
-      if (!lvalue && t->is_simple())
-        out << ")";
-      return;
-    }
-  }
-
-  assert(dynamic_cast<const TypeDecl*>(value.get()) == nullptr &&
-    "ExprID somehow pointing at a TypeDecl");
-
-  // FIXME: there's another case here where it's a reference to a quanitified
-  // variable. I suspect we should just handle that the same way as a local.
-}
-
-void ExprID::generate_lvalue(std::ostream &out) const {
-  generate(out, true);
-}
-
-void ExprID::generate_rvalue(std::ostream &out) const {
-  generate(out, false);
 }
 
 mpz_class ExprID::constant_fold() const {
@@ -971,50 +767,6 @@ const TypeExpr *Field::type() const {
   throw Error("left hand side of field expression is not a record", loc);
 }
 
-void Field::generate(std::ostream &out, bool lvalue) const {
-
-  if (lvalue && !is_lvalue())
-    throw Error("invalid use of non-lvalue field reference", loc);
-
-  const TypeExpr *root = record->type();
-  assert(root != nullptr);
-  const TypeExpr *resolved = root->resolve();
-  assert(resolved != nullptr);
-  if (auto r = dynamic_cast<const Record*>(resolved)) {
-    mpz_class offset = 0;
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
-      if (f->name == field) {
-        if (!lvalue && f->type->is_simple()) {
-          const std::string lb = f->type->lower_bound();
-          const std::string ub = f->type->upper_bound();
-          out << "handle_read(s, " << lb << ", " << ub << ", ";
-        }
-        out << "handle_narrow(";
-        if (lvalue) {
-          record->generate_lvalue(out);
-        } else {
-          record->generate_rvalue(out);
-        }
-        out << ", " << offset << ", " << f->type->width() << ")";
-        if (!lvalue && f->type->is_simple())
-          out << ")";
-        return;
-      }
-      offset += f->type->width();
-    }
-    throw Error("no field named \"" + field + "\" in record", loc);
-  }
-  throw Error("left hand side of field expression is not a record", loc);
-}
-
-void Field::generate_lvalue(std::ostream &out) const {
-  generate(out, true);
-}
-
-void Field::generate_rvalue(std::ostream &out) const {
-  generate(out, false);
-}
-
 mpz_class Field::constant_fold() const {
   throw Error("field expression used in constant", loc);
 }
@@ -1063,69 +815,6 @@ const TypeExpr *Element::type() const {
   assert(a != nullptr &&
     "array reference based on something that is not an array");
   return a->element_type.get();
-}
-
-void Element::generate(std::ostream &out, bool lvalue) const {
-
-  if (lvalue && !is_lvalue())
-    throw Error("invalid use of non-lvalue array reference", loc);
-
-  // First, determine the width of the array's elements
-
-  const TypeExpr *t1 = array->type();
-  assert(t1 != nullptr && "array with invalid type");
-  const TypeExpr *t2 = t1->resolve();
-  assert(t2 != nullptr && "array with invalid type");
-
-  auto a = dynamic_cast<const Array&>(*t2);
-  mpz_class element_width = a.element_type->width();
-
-  // Second, determine the minimum and maximum values of the array's index type
-
-  const TypeExpr *t3 = a.index_type->resolve();
-  assert(t3 != nullptr && "array with invalid index type");
-
-  mpz_class min, max;
-  if (auto r = dynamic_cast<const Range*>(t3)) {
-    min = r->min->constant_fold();
-    max = r->max->constant_fold();
-  } else if (auto e = dynamic_cast<const Enum*>(t3)) {
-    min = 0;
-    max = e->count() - 1;
-  } else if (auto s = dynamic_cast<const Scalarset*>(t3)) {
-    min = 0;
-    max = s->bound->constant_fold() - 1;
-  } else {
-    assert(false && "array with invalid index type");
-  }
-
-  if (!lvalue && a.element_type->is_simple()) {
-    const std::string lb = a.element_type->lower_bound();
-    const std::string ub = a.element_type->upper_bound();
-    out << "handle_read(s, " << lb << ", " << ub << ", ";
-  }
-
-  out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
-    << "), VALUE_C(" << max << "), ";
-  if (lvalue) {
-    array->generate_lvalue(out);
-  } else {
-    array->generate_rvalue(out);
-  }
-  out << ", ";
-  index->generate_rvalue(out);
-  out << ")";
-
-  if (!lvalue && a.element_type->is_simple())
-    out << ")";
-}
-
-void Element::generate_lvalue(std::ostream &out) const {
-  generate(out, true);
-}
-
-void Element::generate_rvalue(std::ostream &out) const {
-  generate(out, false);
 }
 
 mpz_class Element::constant_fold() const {
@@ -1183,11 +872,6 @@ const TypeExpr *FunctionCall::type() const {
   if (function == nullptr)
     throw Error("unresolved function call \"" + name + "\"", loc);
   return function->return_type.get();
-}
-
-void FunctionCall::generate_rvalue(std::ostream&) const {
-  // TODO: We need to decide how we're going to handle return values
-  assert("!TODO");
 }
 
 mpz_class FunctionCall::constant_fold() const {
@@ -1363,16 +1047,6 @@ bool Exists::operator==(const Node &other) const {
   return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
 }
 
-void Exists::generate_rvalue(std::ostream &out) const {
-  out << "({ bool result = false; ";
-  quantifier->generate_header(out);
-  out << "if (";
-  expr->generate_rvalue(out);
-  out << ") { result = true; break; }";
-  quantifier->generate_footer(out);
-  out << " result; })";
-}
-
 mpz_class Exists::constant_fold() const {
   throw Error("exists expression used in constant", loc);
 }
@@ -1412,16 +1086,6 @@ bool Forall::constant() const {
 
 const TypeExpr *Forall::type() const {
   return Boolean.get();
-}
-
-void Forall::generate_rvalue(std::ostream &out) const {
-  out << "({ bool result = true; ";
-  quantifier->generate_header(out);
-  out << "if (!";
-  expr->generate_rvalue(out);
-  out << ") { result = false; break; }";
-  quantifier->generate_footer(out);
-  out << " result; })";
 }
 
 mpz_class Forall::constant_fold() const {

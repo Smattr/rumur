@@ -60,7 +60,7 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n"
           << "  return ";
-        i->property.expr->generate_rvalue(out);
+        generate_property(out, i->property);
         out << ";\n}\n\n";
         index++;
       }
@@ -83,7 +83,7 @@ void generate_model(std::ostream &out, const Model &m) {
         if (s->guard == nullptr) {
           out << "true";
         } else {
-          s->guard->generate_rvalue(out);
+          generate_rvalue(out, *s->guard);
         }
         out << ";\n}\n\n";
 
