@@ -28,7 +28,6 @@ struct Property : public Node {
   Property *clone() const final;
   virtual ~Property() { }
 
-  void generate(std::ostream &out) const;
   bool operator==(const Node &other) const final;
 };
 

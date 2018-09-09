@@ -27,10 +27,6 @@ Property *Property::clone() const {
   return new Property(*this);
 }
 
-void Property::generate(std::ostream &out) const {
-  out << *expr;
-}
-
 bool Property::operator==(const Node &other) const {
   auto o = dynamic_cast<const Property*>(&other);
   return o != nullptr && category == o->category && *expr == *o->expr;

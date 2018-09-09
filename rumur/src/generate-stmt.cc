@@ -80,13 +80,13 @@ class Generator : public ConstStmtTraversal {
 
       case Property::ASSERTION:
         *out << "if (__builtin_expect(!";
-        s.property.generate(*out);
+        generate_property(*out, s.property);
         *out << ", 0)) {\nerror(s, false, \"" << s.message << "\");\n}";
         break;
 
       case Property::ASSUMPTION:
         *out << "if (__builtin_expect(!";
-        s.property.generate(*out);
+        generate_property(*out, s.property);
         *out
           << ", 0)) {\n"
           << "  assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
