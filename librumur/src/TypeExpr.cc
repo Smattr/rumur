@@ -111,27 +111,6 @@ std::string Range::upper_bound() const {
   return "VALUE_C(" + max->constant_fold().get_str() + ")";
 }
 
-void Range::generate_print(std::ostream &out, std::string const &prefix,
-  mpz_class preceding_offset) const {
-
-  std::string const lb = lower_bound();
-  std::string const ub = upper_bound();
-
-  out
-    << "{\n"
-    << "  fprintf(stderr, \"" << prefix << ":\");\n"
-    << "  value_t v = handle_read_raw((struct handle){ .base = "
-      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
-      << "), .width = SIZE_C(" << width() << ") });\n"
-    << "  if (v == 0) {\n"
-    << "    fprintf(stderr, \"Undefined\\n\");\n"
-    << "  } else {\n"
-    << "    fprintf(stderr, \"%\" PRIVAL \"\\n\", decode_value(" << lb << ", "
-      << ub << ", v));\n"
-    << "  }\n"
-    << "}\n";
-}
-
 Scalarset::Scalarset(std::shared_ptr<Expr> bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) { }
 
@@ -191,23 +170,6 @@ std::string Scalarset::upper_bound() const {
   return "VALUE_C(" + b.get_str() + ")";
 }
 
-void Scalarset::generate_print(std::ostream &out, std::string const &prefix,
-  mpz_class preceding_offset) const {
-
-  out
-    << "{\n"
-    << "  fprintf(stderr, \"" << prefix << ":\");\n"
-    << "  value_t v = handle_read_raw((struct handle){ .base = "
-      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
-      << "), .width = SIZE_C(" << width() << ") });\n"
-    << "  if (v == 0) {\n"
-    << "    fprintf(stderr, \"Undefined\\n\");\n"
-    << "  } else {\n"
-    << "    fprintf(stderr, \"%\" PRIVAL \"\\n\", v - 1);\n"
-    << "  }\n"
-    << "}\n";
-}
-
 Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
   TypeExpr(loc_), members(members_) {
 }
@@ -256,31 +218,6 @@ std::string Enum::upper_bound() const {
   if (size > 0)
     size--;
   return "VALUE_C(" + size.get_str() + ")";
-}
-
-void Enum::generate_print(std::ostream &out, std::string const &prefix,
-  mpz_class preceding_offset) const {
-
-  out
-    << "{\n"
-    << "  fprintf(stderr, \"" << prefix << ":\");\n"
-    << "  value_t v = handle_read_raw((struct handle){ .base = "
-      << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
-      << "), .width = SIZE_C(" << width() << ") });\n"
-    << "  if (v == 0) {\n"
-    << "    fprintf(stderr, \"Undefined\\n\");\n";
-  size_t i = 0;
-  for (std::pair<std::string, location> const &m : members) {
-    out
-      << "  } else if (v == VALUE_C(" << (i + 1) << ")) {\n"
-      << "    fprintf(stderr, \"%s\\n\", \"" << m.first << "\");\n";
-    i++;
-  }
-  out
-    << "  } else {\n"
-    << "    fprintf(stderr, \"ILLEGAL VALUE\\n\");\n"
-    << "  }\n"
-    << "}\n";
 }
 
 Record::Record(std::vector<std::shared_ptr<VarDecl>> &&fields_,
@@ -340,15 +277,6 @@ bool Record::operator==(const Node &other) const {
     return *o == *this;
 
   return false;
-}
-
-void Record::generate_print(std::ostream &out, std::string const &prefix,
-  mpz_class preceding_offset) const {
-
-  for (const std::shared_ptr<VarDecl> &f : fields) {
-    f->generate_print(out, prefix + ".", preceding_offset);
-    preceding_offset += f->width();
-  }
 }
 
 Array::Array(std::shared_ptr<TypeExpr> index_type_,
@@ -417,56 +345,6 @@ bool Array::operator==(const Node &other) const {
 void Array::validate() const {
   if (!index_type->is_simple())
     throw Error("array indices must be simple types", loc);
-}
-
-void Array::generate_print(std::ostream &out, std::string const &prefix,
-  mpz_class preceding_offset) const {
-
-  TypeExpr const *t = index_type->resolve();
-
-  if (auto r = dynamic_cast<Range const*>(t)) {
-
-    mpz_class lb = r->min->constant_fold();
-    mpz_class ub = r->max->constant_fold();
-
-    // FIXME: Unrolling this loop at generation time is not great if the index
-    // type is big. E.g. if someone has an 'array [0..10000] of ...' this is
-    // going to generate quite unpleasant code.
-    for (mpz_class i = lb; i <= ub; i++) {
-
-      element_type->generate_print(out, prefix + "[" + i.get_str() + "]",
-        preceding_offset);
-      preceding_offset += element_type->width();
-    }
-
-    return;
-  }
-
-  if (auto s = dynamic_cast<Scalarset const*>(t)) {
-
-    mpz_class b = s->bound->constant_fold();
-
-    for (mpz_class i = 0; i < b; i++) {
-      element_type->generate_print(out, prefix + "[" + i.get_str() + "]",
-        preceding_offset);
-      preceding_offset += element_type->width();
-    }
-
-    return;
-  }
-
-  if (auto e = dynamic_cast<Enum const*>(t)) {
-
-    for (std::pair<std::string, location> const &m : e->members) {
-      element_type->generate_print(out, prefix + "[" + m.first + "]",
-        preceding_offset);
-      preceding_offset += element_type->width();
-    }
-
-    return;
-  }
-
-  assert(!"non-range, non-enum used as array index");
 }
 
 TypeExprID::TypeExprID(const std::string &name_,
@@ -545,13 +423,6 @@ std::string TypeExprID::upper_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->upper_bound();
-}
-
-void TypeExprID::generate_print(std::ostream &out, std::string const &prefix,
-  mpz_class preceding_offset) const {
-  if (referent == nullptr)
-    throw Error("unresolved type symbol \"" + name + "\"", loc);
-  referent->generate_print(out, prefix, preceding_offset);
 }
 
 }

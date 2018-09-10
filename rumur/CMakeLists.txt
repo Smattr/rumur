@@ -21,6 +21,7 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   src/generate-expr.cc
   src/generate-model.cc
+  src/generate-print.cc
   src/generate-property.cc
   src/generate-quantifier.cc
   src/generate-stmt.cc

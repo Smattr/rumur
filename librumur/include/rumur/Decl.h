@@ -97,8 +97,6 @@ struct VarDecl : public Decl {
   mpz_class width() const;
 
   bool operator==(const Node &other) const final;
-  void generate_print(std::ostream &out, std::string const &prefix = "",
-    mpz_class preceding_offset = 0) const;
 };
 
 }

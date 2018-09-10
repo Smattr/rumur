@@ -370,7 +370,7 @@ void generate_model(std::ostream &out, const Model &m) {
   mpz_class offset = 0;
   for (const std::shared_ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-      v->generate_print(out, "", offset);
+      generate_print(out, *v, "", offset);
       offset += v->width();
     }
   }

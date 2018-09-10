@@ -141,10 +141,4 @@ mpz_class VarDecl::count() const {
   return type->count();
 }
 
-void VarDecl::generate_print(std::ostream &out, const std::string &prefix,
-  mpz_class preceding_offset) const {
-
-  type->generate_print(out, prefix + name, preceding_offset);
-}
-
 }
