@@ -926,6 +926,246 @@ void StmtTraversal::visit(VarDecl &n) {
   dispatch(*n.type);
 }
 
+void TypeTraversal::visit(Add &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(And &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Assignment &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void TypeTraversal::visit_bexpr(BinaryExpr &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void TypeTraversal::visit(Clear &n) {
+  dispatch(*n.rhs);
+}
+
+void TypeTraversal::visit(ConstDecl &n) {
+  dispatch(*n.value);
+}
+
+void TypeTraversal::visit(Div &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Element &n) {
+  dispatch(*n.array);
+  dispatch(*n.index);
+}
+
+void TypeTraversal::visit(Eq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(ErrorStmt&) { }
+
+void TypeTraversal::visit(Exists &n) {
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
+}
+
+void TypeTraversal::visit(ExprID &n) {
+  if (n.value != nullptr)
+    dispatch(*n.value);
+}
+
+void TypeTraversal::visit(Field &n) {
+  dispatch(*n.record);
+}
+
+void TypeTraversal::visit(For &n) {
+  dispatch(*n.quantifier);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void TypeTraversal::visit(Forall &n) {
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
+}
+
+void TypeTraversal::visit(Function &n) {
+  for (std::shared_ptr<Parameter> &p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void TypeTraversal::visit(FunctionCall &n) {
+  if (n.function != nullptr)
+    dispatch(*n.function);
+  for (std::shared_ptr<Expr> &a : n.arguments)
+    dispatch(*a);
+}
+
+void TypeTraversal::visit(Geq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Gt &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(If &n) {
+  for (IfClause &c : n.clauses)
+    dispatch(c);
+}
+
+void TypeTraversal::visit(IfClause &n) {
+  if (n.condition != nullptr)
+    dispatch(*n.condition);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void TypeTraversal::visit(Implication &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Leq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Lt &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Mod &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Model &n) {
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Function> &f : n.functions)
+    dispatch(*f);
+  for (std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void TypeTraversal::visit(Mul &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Negative &n) {
+  visit_uexpr(static_cast<UnaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Neq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Not &n) {
+  visit_uexpr(static_cast<UnaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Number&) { }
+
+void TypeTraversal::visit(Or &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Parameter &n) {
+  dispatch(*n.decl);
+}
+
+void TypeTraversal::visit(ProcedureCall &n) {
+  if (n.function != nullptr)
+    dispatch(*n.function);
+  for (std::shared_ptr<Expr> &a : n.arguments)
+    dispatch(*a);
+}
+
+void TypeTraversal::visit(Property &n) {
+  dispatch(*n.expr);
+}
+
+void TypeTraversal::visit(PropertyRule &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  dispatch(n.property);
+}
+
+void TypeTraversal::visit(PropertyStmt &n) {
+  dispatch(n.property);
+}
+
+void TypeTraversal::visit(Quantifier &n) {
+  dispatch(*n.var);
+  if (n.step != nullptr)
+    dispatch(*n.step);
+}
+
+void TypeTraversal::visit(Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void TypeTraversal::visit(Ruleset &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void TypeTraversal::visit(SimpleRule &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  if (n.guard != nullptr)
+    dispatch(*n.guard);
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void TypeTraversal::visit(StartState &n) {
+  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void TypeTraversal::visit(Sub &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(Ternary &n) {
+  dispatch(*n.cond);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void TypeTraversal::visit(TypeDecl &n) {
+  dispatch(*n.value);
+}
+
+void TypeTraversal::visit_uexpr(UnaryExpr &n) {
+  dispatch(*n.rhs);
+}
+
+void TypeTraversal::visit(Undefine &n) {
+  dispatch(*n.rhs);
+}
+
+void TypeTraversal::visit(VarDecl &n) {
+  dispatch(*n.type);
+}
+
 void ConstBaseTraversal::dispatch(const Node &n) {
 
   if (auto i = dynamic_cast<const Add*>(&n)) {
@@ -1837,6 +2077,246 @@ void ConstStmtTraversal::visit_uexpr(const UnaryExpr &n) {
 }
 
 void ConstStmtTraversal::visit(const VarDecl &n) {
+  dispatch(*n.type);
+}
+
+void ConstTypeTraversal::visit(const Add &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const And &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Assignment &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit_bexpr(const BinaryExpr &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit(const Clear &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit(const ConstDecl &n) {
+  dispatch(*n.value);
+}
+
+void ConstTypeTraversal::visit(const Div &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Element &n) {
+  dispatch(*n.array);
+  dispatch(*n.index);
+}
+
+void ConstTypeTraversal::visit(const Eq &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const ErrorStmt&) { }
+
+void ConstTypeTraversal::visit(const Exists &n) {
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
+}
+
+void ConstTypeTraversal::visit(const ExprID &n) {
+  if (n.value != nullptr)
+    dispatch(*n.value);
+}
+
+void ConstTypeTraversal::visit(const Field &n) {
+  dispatch(*n.record);
+}
+
+void ConstTypeTraversal::visit(const For &n) {
+  dispatch(*n.quantifier);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstTypeTraversal::visit(const Forall &n) {
+  dispatch(*n.quantifier);
+  dispatch(*n.expr);
+}
+
+void ConstTypeTraversal::visit(const Function &n) {
+  for (const std::shared_ptr<Parameter> &p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstTypeTraversal::visit(const FunctionCall &n) {
+  if (n.function != nullptr)
+    dispatch(*n.function);
+  for (const std::shared_ptr<Expr> &a : n.arguments)
+    dispatch(*a);
+}
+
+void ConstTypeTraversal::visit(const Geq &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Gt &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const If &n) {
+  for (const IfClause &c : n.clauses)
+    dispatch(c);
+}
+
+void ConstTypeTraversal::visit(const IfClause &n) {
+  if (n.condition != nullptr)
+    dispatch(*n.condition);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstTypeTraversal::visit(const Implication &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Leq &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Lt &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Mod &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Model &n) {
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Function> &f : n.functions)
+    dispatch(*f);
+  for (const std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void ConstTypeTraversal::visit(const Mul &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Negative &n) {
+  visit_uexpr(static_cast<const UnaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Neq &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Not &n) {
+  visit_uexpr(static_cast<const UnaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Number&) { }
+
+void ConstTypeTraversal::visit(const Or &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Parameter &n) {
+  dispatch(*n.decl);
+}
+
+void ConstTypeTraversal::visit(const ProcedureCall &n) {
+  if (n.function != nullptr)
+    dispatch(*n.function);
+  for (const std::shared_ptr<Expr> &a : n.arguments)
+    dispatch(*a);
+}
+
+void ConstTypeTraversal::visit(const Property &n) {
+  dispatch(*n.expr);
+}
+
+void ConstTypeTraversal::visit(const PropertyRule &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  dispatch(n.property);
+}
+
+void ConstTypeTraversal::visit(const PropertyStmt &n) {
+  dispatch(n.property);
+}
+
+void ConstTypeTraversal::visit(const Quantifier &n) {
+  dispatch(*n.var);
+  if (n.step != nullptr)
+    dispatch(*n.step);
+}
+
+void ConstTypeTraversal::visit(const Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void ConstTypeTraversal::visit(const Ruleset &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (const std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
+void ConstTypeTraversal::visit(const SimpleRule &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  if (n.guard != nullptr)
+    dispatch(*n.guard);
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstTypeTraversal::visit(const StartState &n) {
+  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
+    dispatch(*q);
+  for (const std::shared_ptr<Decl> &d : n.decls)
+    dispatch(*d);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
+void ConstTypeTraversal::visit(const Sub &n) {
+  visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Ternary &n) {
+  dispatch(*n.cond);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit(const TypeDecl &n) {
+  dispatch(*n.value);
+}
+
+void ConstTypeTraversal::visit_uexpr(const UnaryExpr &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit(const Undefine &n) {
+  dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit(const VarDecl &n) {
   dispatch(*n.type);
 }
 

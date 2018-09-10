@@ -277,6 +277,70 @@ class StmtTraversal : public BaseTraversal {
   void visit_uexpr(UnaryExpr &n);
 };
 
+// Generic base for traversals that only need to act on TypeExprs
+class TypeTraversal : public BaseTraversal {
+
+ public:
+  void visit(Add &n) final;
+  void visit(And &n) final;
+  void visit(Array &n) override = 0;
+  void visit(Assignment &n) final;
+  void visit(Clear &n) final;
+  void visit(ConstDecl &n) final;
+  void visit(Div &n) final;
+  void visit(Element &n) final;
+  void visit(Enum&) override = 0;
+  void visit(Eq &n) final;
+  void visit(ErrorStmt &n) final;
+  void visit(Exists &n) final;
+  void visit(ExprID &n) final;
+  void visit(Field &n) final;
+  void visit(For &n) final;
+  void visit(Forall &n) final;
+  void visit(Function &n) final;
+  void visit(FunctionCall &n) final;
+  void visit(Geq &n) final;
+  void visit(Gt &n) final;
+  void visit(If &n) final;
+  void visit(IfClause &n) final;
+  void visit(Implication &n) final;
+  void visit(Leq &n) final;
+  void visit(Lt &n) final;
+  void visit(Model &n) final;
+  void visit(Mod &n) final;
+  void visit(Mul &n) final;
+  void visit(Negative &n) final;
+  void visit(Neq &n) final;
+  void visit(Not &n) final;
+  void visit(Number &n) final;
+  void visit(Or &n) final;
+  void visit(Parameter &n) final;
+  void visit(ProcedureCall &n) final;
+  void visit(Property &n) final;
+  void visit(PropertyRule &n) final;
+  void visit(PropertyStmt &n) final;
+  void visit(Quantifier &n) final;
+  void visit(Range &n) override = 0;
+  void visit(Record &n) override = 0;
+  void visit(Return &n) final;
+  void visit(Ruleset &n) final;
+  void visit(Scalarset &n) override = 0;
+  void visit(SimpleRule &n) final;
+  void visit(StartState &n) final;
+  void visit(Sub &n) final;
+  void visit(Ternary &n) final;
+  void visit(TypeDecl &n) final;
+  void visit(TypeExprID &n) override = 0;
+  void visit(Undefine &n) final;
+  void visit(VarDecl &n) final;
+
+  virtual ~TypeTraversal() { }
+
+ private:
+  void visit_bexpr(BinaryExpr &n);
+  void visit_uexpr(UnaryExpr &n);
+};
+
 // Read-only equivalent of BaseTraversal.
 class ConstBaseTraversal {
 
@@ -529,4 +593,67 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_uexpr(const UnaryExpr &n);
 };
 
+// Read-only equivalent ot TypeTraversal
+class ConstTypeTraversal : public ConstBaseTraversal {
+
+ public:
+  void visit(const Add &n) final;
+  void visit(const And &n) final;
+  void visit(const Array &n) override = 0;
+  void visit(const Assignment &n) final;
+  void visit(const Clear &n) final;
+  void visit(const ConstDecl &n) final;
+  void visit(const Div &n) final;
+  void visit(const Element &n) final;
+  void visit(const Enum&) override = 0;
+  void visit(const Eq &n) final;
+  void visit(const ErrorStmt &n) final;
+  void visit(const Exists &n) final;
+  void visit(const ExprID &n) final;
+  void visit(const Field &n) final;
+  void visit(const For &n) final;
+  void visit(const Forall &n) final;
+  void visit(const Function &n) final;
+  void visit(const FunctionCall &n) final;
+  void visit(const Geq &n) final;
+  void visit(const Gt &n) final;
+  void visit(const If &n) final;
+  void visit(const IfClause &n) final;
+  void visit(const Implication &n) final;
+  void visit(const Leq &n) final;
+  void visit(const Lt &n) final;
+  void visit(const Model &n) final;
+  void visit(const Mod &n) final;
+  void visit(const Mul &n) final;
+  void visit(const Negative &n) final;
+  void visit(const Neq &n) final;
+  void visit(const Not &n) final;
+  void visit(const Number &n) final;
+  void visit(const Or &n) final;
+  void visit(const Parameter &n) final;
+  void visit(const ProcedureCall &n) final;
+  void visit(const Property &n) final;
+  void visit(const PropertyRule &n) final;
+  void visit(const PropertyStmt &n) final;
+  void visit(const Quantifier &n) final;
+  void visit(const Range &n) override = 0;
+  void visit(const Record &n) override = 0;
+  void visit(const Return &n) final;
+  void visit(const Ruleset &n) final;
+  void visit(const Scalarset &n) override = 0;
+  void visit(const SimpleRule &n) final;
+  void visit(const StartState &n) final;
+  void visit(const Sub &n) final;
+  void visit(const Ternary &n) final;
+  void visit(const TypeDecl &n) final;
+  void visit(const TypeExprID &n) override = 0;
+  void visit(const Undefine &n) final;
+  void visit(const VarDecl &n) final;
+
+  virtual ~ConstTypeTraversal() { }
+
+ private:
+  void visit_bexpr(const BinaryExpr &n);
+  void visit_uexpr(const UnaryExpr &n);
+};
 }
