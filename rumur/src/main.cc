@@ -5,6 +5,7 @@
 #include <fstream>
 #include "generate.h"
 #include <getopt.h>
+#include "help.h"
 #include <iostream>
 #include <memory>
 #include "options.h"
@@ -16,36 +17,6 @@
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
 
-static void help(const char *arg0) {
-
-  // Construct a path to where we expect the manpage to be.
-  std::string const cmd(arg0);
-  auto pos = cmd.rfind('/');
-  std::string manpage;
-  if (pos != std::string::npos)
-    manpage += cmd.substr(0, pos + 1);
-  manpage += "rumur.1";
-
-  // If it is indeed there, try to run `man`.
-  if (access(manpage.c_str(), R_OK) == 0) {
-
-    char const *args[] = { "man",
-#ifndef __APPLE__
-      "--local-file",
-#endif
-      manpage.c_str(), nullptr };
-    execvp(args[0], const_cast<char**>(args));
-
-    // If we failed to exec, fall through to the option below.
-  }
-
-  // Fall back option: just print the pre-formatted manpage data.
-  std::cout << std::string((const char*)resources_manpage_text,
-    (size_t)resources_manpage_text_len);
-
-  exit(EXIT_SUCCESS);
-}
-
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
@@ -54,7 +25,7 @@ static void parse_args(int argc, char **argv) {
       { "colour", no_argument, 0, 128 },
       { "deadlock-detection", no_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
-      { "help", no_argument, 0, '?' },
+      { "help", no_argument, 0, 'h' },
       { "max-errors", required_argument, 0, 136 },
       { "monopolise", no_argument, 0, 133 },
       { "monopolize", no_argument, 0, 133 },
@@ -74,7 +45,7 @@ static void parse_args(int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "de:o:qs:t:v?", opts, &option_index);
+    int c = getopt_long(argc, argv, "de:ho:qs:t:v", opts, &option_index);
 
     if (c == -1)
       break;
@@ -98,6 +69,10 @@ static void parse_args(int argc, char **argv) {
           exit(EXIT_FAILURE);
         }
         break;
+
+      case 'h': // --help
+        help();
+        exit(EXIT_SUCCESS);
 
       case 'o':
         out = std::make_shared<std::string>(optarg);
@@ -130,8 +105,8 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case '?':
-        help(argv[0]);
-        __builtin_unreachable();
+        std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+        exit(EXIT_FAILURE);
 
       case 128: // --colour
         options.color = ON;

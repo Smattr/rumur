@@ -1,25 +1,9 @@
-if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
-  # GNU `man` wants this extra option
-  set (MANFLAGS "--local-file")
-endif ()
-
-# Generate `man` output that we'll embed into the binary.
-add_custom_command(
-  OUTPUT rumur.1
-  COMMAND cp -f "${CMAKE_CURRENT_SOURCE_DIR}/doc/rumur.1" "${CMAKE_CURRENT_BINARY_DIR}/rumur.1"
-  MAIN_DEPENDENCY doc/rumur.1)
-add_custom_command(
-  OUTPUT resources_manpage.text
-  COMMAND man ${MANFLAGS} ./rumur.1 >resources_manpage.text
-  MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/rumur.1
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+# Define resources.
 add_custom_command(
   OUTPUT resources_manpage.cc
-  COMMAND xxd -include resources_manpage.text ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
-  MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.text
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-
-# Define other resources.
+  COMMAND xxd -include doc/rumur.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  MAIN_DEPENDENCY doc/rumur.1
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT resources_includes.cc
   COMMAND xxd -include resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
@@ -40,6 +24,7 @@ add_executable(rumur
   src/generate-property.cc
   src/generate-quantifier.cc
   src/generate-stmt.cc
+  src/help.cc
   src/main.cc
   src/options.cc
   src/output.cc
