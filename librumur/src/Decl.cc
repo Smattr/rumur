@@ -95,12 +95,6 @@ TypeDecl *TypeDecl::clone() const {
   return new TypeDecl(*this);
 }
 
-#if 0
-void TypeDecl::generate(std::ostream &out) const {
-  out << "using ru_u_" << name << " = " << *value;
-}
-#endif
-
 bool TypeDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const TypeDecl*>(&other);
   return o != nullptr && name == o->name && *value == *o->value;
@@ -132,16 +126,6 @@ void swap(VarDecl &x, VarDecl &y) noexcept {
 VarDecl *VarDecl::clone() const {
   return new VarDecl(*this);
 }
-
-#if 0
-void VarDecl::generate(std::ostream &out) const {
-  if (state_variable) {
-    out << "using ru_u_" << name << " = " << *type;
-  } else {
-    out << "auto ru_u_" << name << " = " << *type << "::make()";
-  }
-}
-#endif
 
 bool VarDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const VarDecl*>(&other);
