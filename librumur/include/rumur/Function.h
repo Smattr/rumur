@@ -47,6 +47,7 @@ struct Function : public Node {
   virtual ~Function() { }
   Function *clone() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 }

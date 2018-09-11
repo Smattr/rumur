@@ -1,7 +1,9 @@
 #include <memory>
 #include <rumur/Decl.h>
+#include <rumur/except.h>
 #include <rumur/Function.h>
 #include <rumur/Stmt.h>
+#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -107,6 +109,52 @@ bool Function::operator==(const Node &other) const {
   if (!vector_eq(body, o->body))
     return false;
   return true;
+}
+
+void Function::validate() const {
+
+  /*Define a traversal that checks our contained return statements for
+   * correctness.
+   */
+  class ReturnChecker : public ConstTraversal {
+
+   private:
+    const TypeExpr *return_type;
+
+   public:
+    ReturnChecker(const TypeExpr *rt): return_type(rt) { }
+
+    void visit(const Return &n) final {
+
+      if (return_type == nullptr) {
+        if (n.expr != nullptr)
+          throw Error("statement returns a value from a procedure", n.loc);
+
+      } else {
+
+        if (n.expr == nullptr)
+          throw Error("empty return statement in a function", n.loc);
+
+        if (n.expr->type() == nullptr) {
+          if (dynamic_cast<const Range*>(return_type->resolve()) == nullptr)
+            throw Error("returning a number from a function that does not "
+              "return a range", n.loc);
+
+        } else {
+          if (*n.expr->type() != *return_type)
+            throw Error("returning incompatible typed value from a function",
+              n.loc);
+        }
+      }
+    }
+
+    virtual ~ReturnChecker() { }
+  };
+
+  // Run the checker
+  ReturnChecker rt(return_type.get());
+  for (const std::shared_ptr<Stmt> &s : body)
+    rt.dispatch(*s);
 }
 
 }
