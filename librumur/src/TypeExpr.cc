@@ -66,6 +66,7 @@ Range &Range::operator=(Range other) {
 void swap(Range &x, Range &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.min, y.min);
   swap(x.max, y.max);
 }
@@ -125,6 +126,7 @@ Scalarset &Scalarset::operator=(Scalarset other) {
 void swap(Scalarset &x, Scalarset &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.bound, y.bound);
 }
 
@@ -245,6 +247,7 @@ Record &Record::operator=(Record other) {
 void swap(Record &x, Record &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.fields, y.fields);
 }
 
@@ -295,6 +298,7 @@ Array &Array::operator=(Array other) {
 void swap(Array &x, Array &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.index_type, y.index_type);
   swap(x.element_type, y.element_type);
 }
@@ -362,6 +366,7 @@ TypeExprID &TypeExprID::operator=(TypeExprID other) {
 void swap(TypeExprID &x, TypeExprID &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.referent, y.referent);
 }

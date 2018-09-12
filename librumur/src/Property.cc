@@ -19,6 +19,7 @@ Property &Property::operator=(Property other) {
 void swap(Property &x, Property &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.category, y.category);
   swap(x.expr, y.expr);
 }

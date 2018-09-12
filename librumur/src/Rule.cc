@@ -77,6 +77,7 @@ SimpleRule &SimpleRule::operator=(SimpleRule other) {
 void swap(SimpleRule &x, SimpleRule &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.decls, y.decls);
   swap(x.body, y.body);
@@ -134,6 +135,7 @@ StartState &StartState::operator=(StartState other) {
 void swap(StartState &x, StartState &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.decls, y.decls);
   swap(x.body, y.body);
@@ -178,6 +180,7 @@ PropertyRule &PropertyRule::operator=(PropertyRule other) {
 void swap(PropertyRule &x, PropertyRule &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.property, y.property);
   swap(x.quantifiers, y.quantifiers);
@@ -220,6 +223,7 @@ Ruleset &Ruleset::operator=(Ruleset other) {
 void swap(Ruleset &x, Ruleset &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.quantifiers, y.quantifiers);
   swap(x.rules, y.rules);

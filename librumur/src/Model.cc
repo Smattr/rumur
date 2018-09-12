@@ -6,6 +6,7 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Function.h>
+#include <rumur/indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
@@ -42,6 +43,7 @@ Model &Model::operator=(Model other) {
 void swap(Model &x, Model &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.decls, y.decls);
   swap(x.functions, y.functions);
   swap(x.rules, y.rules);
@@ -133,6 +135,10 @@ void Model::reindex() {
       offset += v->type->width();
     }
   }
+
+  // Re-number our and our children's 'unique_id' members
+  Indexer i;
+  i.dispatch(*this);
 }
 
 }

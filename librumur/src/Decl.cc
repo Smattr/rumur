@@ -36,6 +36,7 @@ ConstDecl &ConstDecl::operator=(ConstDecl other) {
 void swap(ConstDecl &x, ConstDecl &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.value, y.value);
   swap(x.type, y.type);
@@ -87,6 +88,7 @@ TypeDecl &TypeDecl::operator=(TypeDecl other) {
 void swap(TypeDecl &x, TypeDecl &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.value, y.value);
 }
@@ -117,6 +119,7 @@ VarDecl &VarDecl::operator=(VarDecl other) {
 void swap(VarDecl &x, VarDecl &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.type, y.type);
   swap(x.state_variable, y.state_variable);

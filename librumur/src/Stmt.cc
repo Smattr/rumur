@@ -29,6 +29,7 @@ PropertyStmt &PropertyStmt::operator=(PropertyStmt other) {
 void swap(PropertyStmt &x, PropertyStmt &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.property, y.property);
   swap(x.message, y.message);
 }
@@ -58,6 +59,7 @@ Assignment &Assignment::operator=(Assignment other) {
 void swap(Assignment &x, Assignment &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.lhs, y.lhs);
   swap(x.rhs, y.rhs);
 }
@@ -109,6 +111,7 @@ Clear &Clear::operator=(Clear other) {
 void swap(Clear &x, Clear &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.rhs, y.rhs);
 }
 
@@ -144,6 +147,7 @@ ErrorStmt &ErrorStmt::operator=(ErrorStmt other) {
 void swap(ErrorStmt &x, ErrorStmt &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.message, y.message);
 }
 
@@ -174,6 +178,7 @@ For &For::operator=(For other) {
 void swap(For &x, For &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.quantifier, y.quantifier);
   swap(x.body, y.body);
 }
@@ -212,6 +217,7 @@ IfClause &IfClause::operator=(IfClause other) {
 void swap(IfClause &x, IfClause &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.condition, y.condition);
   swap(x.body, y.body);
 }
@@ -251,6 +257,7 @@ If &If::operator=(If other) {
 void swap(If &x, If &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.clauses, y.clauses);
 }
 
@@ -287,6 +294,7 @@ ProcedureCall &ProcedureCall::operator=(ProcedureCall other) {
 void swap(ProcedureCall &x, ProcedureCall &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.function, y.function);
   swap(x.arguments, y.arguments);
@@ -334,6 +342,7 @@ Return &Return::operator=(Return other) {
 void swap(Return &x, Return &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.expr, y.expr);
 }
 
@@ -370,6 +379,7 @@ Undefine &Undefine::operator=(Undefine other) {
 void swap(Undefine &x, Undefine &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.rhs, y.rhs);
 }
 

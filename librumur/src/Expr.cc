@@ -43,6 +43,7 @@ Ternary &Ternary::operator=(Ternary other) {
 void swap(Ternary &x, Ternary &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.cond, y.cond);
   swap(x.lhs, y.lhs);
   swap(x.rhs, y.rhs);
@@ -87,6 +88,7 @@ BinaryExpr::BinaryExpr(const BinaryExpr &other):
 void swap(BinaryExpr &x, BinaryExpr &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.lhs, y.lhs);
   swap(x.rhs, y.rhs);
 }
@@ -181,6 +183,7 @@ UnaryExpr::UnaryExpr(const UnaryExpr &other):
 void swap(UnaryExpr &x, UnaryExpr &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.rhs, y.rhs);
 }
 
@@ -656,6 +659,7 @@ ExprID &ExprID::operator=(ExprID other) {
 void swap(ExprID &x, ExprID &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.id, y.id);
   swap(x.value, y.value);
 }
@@ -735,6 +739,7 @@ Field::Field(const Field &other):
 void swap(Field &x, Field &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.record, y.record);
   swap(x.field, y.field);
 }
@@ -792,6 +797,7 @@ Element::Element(const Element &other):
 void swap(Element &x, Element &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.array, y.array);
   swap(x.index, y.index);
 }
@@ -846,6 +852,7 @@ FunctionCall::FunctionCall(const FunctionCall &other):
 void swap(FunctionCall &x, FunctionCall &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.function, y.function);
   swap(x.arguments, y.arguments);
@@ -940,6 +947,7 @@ Quantifier &Quantifier::operator=(Quantifier other) {
 void swap(Quantifier &x, Quantifier &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.var, y.var);
   swap(x.step, y.step);
 }
@@ -980,6 +988,7 @@ Exists &Exists::operator=(Exists other) {
 void swap(Exists &x, Exists &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.quantifier, y.quantifier);
   swap(x.expr, y.expr);
 }
@@ -1026,6 +1035,7 @@ Forall &Forall::operator=(Forall other) {
 void swap(Forall &x, Forall &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.quantifier, y.quantifier);
   swap(x.expr, y.expr);
 }

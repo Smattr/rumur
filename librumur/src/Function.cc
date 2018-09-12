@@ -27,6 +27,7 @@ Parameter &Parameter::operator=(Parameter other) {
 void swap(Parameter &x, Parameter &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.decl, y.decl);
   swap(x.by_reference, y.by_reference);
 }
@@ -76,6 +77,7 @@ Function &Function::operator=(Function other) {
 void swap(Function &x, Function &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.parameters, y.parameters);
   swap(x.return_type, y.return_type);

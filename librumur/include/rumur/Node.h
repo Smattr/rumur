@@ -1,5 +1,6 @@
 #pragma once
 
+#include <climits>
 #include <iostream>
 #include "location.hh"
 
@@ -8,6 +9,7 @@ namespace rumur {
 struct Node {
 
   location loc;
+  size_t unique_id = SIZE_MAX;
 
   Node() = delete;
   Node(const location &loc_);
