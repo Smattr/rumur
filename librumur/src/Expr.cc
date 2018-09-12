@@ -481,7 +481,7 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 
   if (auto r1 = dynamic_cast<const Range*>(t1)) {
     if (auto r2 = dynamic_cast<const Range*>(t2))
-      return *r1 == *r2;
+      return true;
   }
 
   return false;

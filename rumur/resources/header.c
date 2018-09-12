@@ -787,47 +787,38 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
  * compiler, you'll have to implement these yourself.
  */
 
-static __attribute__((unused)) value_t add(const struct state *s,
-  value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
+static __attribute__((unused)) value_t add(const struct state *s, value_t a,
+    value_t b) {
 
   value_t r;
   if (__builtin_add_overflow(a, b, &r)) {
     error(s, false, "integer overflow in addition");
   }
-  if (r < lower_bound || r > upper_bound) {
-    error(s, false, "result %" PRIVAL " of addition out of range", r);
-  }
   return r;
 }
 
-static __attribute__((unused)) value_t sub(const struct state *s,
-  value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
+static __attribute__((unused)) value_t sub(const struct state *s, value_t a,
+    value_t b) {
 
   value_t r;
   if (__builtin_sub_overflow(a, b, &r)) {
     error(s, false, "integer overflow in subtraction");
   }
-  if (r < lower_bound || r > upper_bound) {
-    error(s, false, "result %" PRIVAL " of subtraction out of range", r);
-  }
   return r;
 }
 
-static __attribute__((unused)) value_t mul(const struct state *s,
-  value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
+static __attribute__((unused)) value_t mul(const struct state *s, value_t a,
+    value_t b) {
 
   value_t r;
   if (__builtin_mul_overflow(a, b, &r)) {
     error(s, false, "integer overflow in multiplication");
   }
-  if (r < lower_bound || r > upper_bound) {
-    error(s, false, "result %" PRIVAL " of multiplication out of range", r);
-  }
   return r;
 }
 
-static __attribute__((unused)) value_t divide(const struct state *s,
-  value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
+static __attribute__((unused)) value_t divide(const struct state *s, value_t a,
+    value_t b) {
 
   if (b == 0) {
     error(s, false, "division by zero");
@@ -837,16 +828,11 @@ static __attribute__((unused)) value_t divide(const struct state *s,
     error(s, false, "integer overflow in division");
   }
 
-  value_t r = a / b;
-  if (r < lower_bound || r > upper_bound) {
-    error(s, false, "result %" PRIVAL " of division out of range", r);
-  }
-
-  return r;
+  return a / b;
 }
 
-static __attribute__((unused)) value_t mod(const struct state *s,
-  value_t lower_bound, value_t upper_bound, value_t a, value_t b) {
+static __attribute__((unused)) value_t mod(const struct state *s, value_t a,
+    value_t b) {
 
   if (b == 0) {
     error(s, false, "modulus by zero");
@@ -857,27 +843,17 @@ static __attribute__((unused)) value_t mod(const struct state *s,
     error(s, false, "integer overflow in modulo");
   }
 
-  value_t r = a % b;
-  if (r < lower_bound || r > upper_bound) {
-    error(s, false, "result %" PRIVAL " of modulo out of range", r);
-  }
-
-  return r;
+  return a % b;
 }
 
 static __attribute__((unused)) value_t negate(const struct state *s,
-  value_t lower_bound, value_t upper_bound, value_t a) {
+    value_t a) {
 
   if (a == VALUE_MIN) {
     error(s, false, "integer overflow in negation");
   }
 
-  value_t r = -a;
-  if (r < lower_bound || r > upper_bound) {
-    error(s, false, "result %" PRIVAL " of negation out of range", r);
-  }
-
-  return r;
+  return -a;
 }
 
 /* A version of quicksort that operates on "schedules," arrays of indices that

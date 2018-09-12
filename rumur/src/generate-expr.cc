@@ -8,54 +8,6 @@
 
 using namespace rumur;
 
-static std::string lower_bound(const TypeExpr *t) {
-
-  if (t == nullptr)
-    return "VALUE_MIN";
-
-  return t->lower_bound();
-}
-
-static std::string lower_bound(const TypeExpr *t1, const TypeExpr *t2) {
-
-  if (t1 == nullptr)
-    return lower_bound(t2);
-
-  return lower_bound(t1);
-}
-
-static std::string lower_bound(const Expr &lhs, const Expr &rhs) {
-  return lower_bound(lhs.type(), rhs.type());
-}
-
-static std::string lower_bound(const Expr &rhs) {
-  return lower_bound(rhs.type());
-}
-
-static std::string upper_bound(const TypeExpr *t) {
-
-  if (t == nullptr)
-    return "VALUE_MAX";
-
-  return t->upper_bound();
-}
-
-static std::string upper_bound(const TypeExpr *t1, const TypeExpr *t2) {
-
-  if (t1 == nullptr)
-    return upper_bound(t2);
-
-  return upper_bound(t1);
-}
-
-static std::string upper_bound(const Expr &lhs, const Expr &rhs) {
-  return upper_bound(lhs.type(), rhs.type());
-}
-
-static std::string upper_bound(const Expr &rhs) {
-  return upper_bound(rhs.type());
-}
-
 namespace {
 
 class Generator : public ConstExprTraversal {
@@ -82,8 +34,7 @@ class Generator : public ConstExprTraversal {
   void visit(const Add &n) final {
     if (lvalue)
       invalid(n);
-    *this << "add(s, " << lower_bound(*n.lhs, *n.rhs) << ", "
-      << upper_bound(*n.lhs, *n.rhs) << ", " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "add(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit(const And &n) final {
@@ -95,8 +46,7 @@ class Generator : public ConstExprTraversal {
   void visit(const Div &n) final {
     if (lvalue)
       invalid(n);
-    *this << "divide(s, " << lower_bound(*n.lhs, *n.rhs) << ", "
-      << upper_bound(*n.lhs, *n.rhs) << ", " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "divide(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit(const Element &n) final {
@@ -323,22 +273,19 @@ class Generator : public ConstExprTraversal {
   void visit(const Mod &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mod(s, " << lower_bound(*n.lhs, *n.rhs) << ", "
-      << upper_bound(*n.lhs, *n.rhs) << ", " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "mod(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit(const Mul &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mul(s, " << lower_bound(*n.lhs, *n.rhs) << ", "
-      << upper_bound(*n.lhs, *n.rhs) << ", " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "mul(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit(const Negative &n) final {
     if (lvalue)
       invalid(n);
-    *this << "negate(s, " << lower_bound(*n.rhs) << ", " << upper_bound(*n.rhs)
-      << ", " << *n.rhs << ")";
+    *this << "negate(s, " << *n.rhs << ")";
   }
 
   void visit(const Neq &n) final {
@@ -366,8 +313,7 @@ class Generator : public ConstExprTraversal {
   void visit(const Sub &n) final {
     if (lvalue)
       invalid(n);
-    *this << "sub(s, " << lower_bound(*n.lhs, *n.rhs) << ", "
-      << upper_bound(*n.lhs, *n.rhs) << ", " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "sub(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit(const Ternary &n) final {
