@@ -333,10 +333,7 @@ void Traversal::visit(Exists &n) {
   dispatch(*n.expr);
 }
 
-void Traversal::visit(ExprID &n) {
-  if (n.value != nullptr)
-    dispatch(*n.value);
-}
+void Traversal::visit(ExprID&) { }
 
 void Traversal::visit(Field &n) {
   dispatch(*n.record);
@@ -365,8 +362,6 @@ void Traversal::visit(Function &n) {
 }
 
 void Traversal::visit(FunctionCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -443,8 +438,6 @@ void Traversal::visit(Parameter &n) {
 }
 
 void Traversal::visit(ProcedureCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -529,10 +522,7 @@ void Traversal::visit(TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void Traversal::visit(TypeExprID &n) {
-  if (n.referent != nullptr)
-    dispatch(*n.referent);
-}
+void Traversal::visit(TypeExprID&) { }
 
 void Traversal::visit_uexpr(UnaryExpr &n) {
   dispatch(*n.rhs);
@@ -613,8 +603,6 @@ void ExprTraversal::visit(Parameter &n) {
 }
 
 void ExprTraversal::visit(ProcedureCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -689,10 +677,7 @@ void ExprTraversal::visit(TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void ExprTraversal::visit(TypeExprID &n) {
-  if (n.referent != nullptr)
-    dispatch(*n.referent);
-}
+void ExprTraversal::visit(TypeExprID&) { }
 
 void ExprTraversal::visit(Undefine &n) {
   dispatch(*n.rhs);
@@ -744,10 +729,7 @@ void StmtTraversal::visit(Exists &n) {
   dispatch(*n.expr);
 }
 
-void StmtTraversal::visit(ExprID &n) {
-  if (n.value != nullptr)
-    dispatch(*n.value);
-}
+void StmtTraversal::visit(ExprID&) { }
 
 void StmtTraversal::visit(Field &n) {
   dispatch(*n.record);
@@ -770,8 +752,6 @@ void StmtTraversal::visit(Function &n) {
 }
 
 void StmtTraversal::visit(FunctionCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -913,10 +893,7 @@ void StmtTraversal::visit(TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void StmtTraversal::visit(TypeExprID &n) {
-  if (n.referent != nullptr)
-    dispatch(*n.referent);
-}
+void StmtTraversal::visit(TypeExprID&) { }
 
 void StmtTraversal::visit_uexpr(UnaryExpr &n) {
   dispatch(*n.rhs);
@@ -972,10 +949,7 @@ void TypeTraversal::visit(Exists &n) {
   dispatch(*n.expr);
 }
 
-void TypeTraversal::visit(ExprID &n) {
-  if (n.value != nullptr)
-    dispatch(*n.value);
-}
+void TypeTraversal::visit(ExprID&) { }
 
 void TypeTraversal::visit(Field &n) {
   dispatch(*n.record);
@@ -1004,8 +978,6 @@ void TypeTraversal::visit(Function &n) {
 }
 
 void TypeTraversal::visit(FunctionCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -1082,8 +1054,6 @@ void TypeTraversal::visit(Parameter &n) {
 }
 
 void TypeTraversal::visit(ProcedureCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -1487,10 +1457,7 @@ void ConstTraversal::visit(const Exists &n) {
   dispatch(*n.expr);
 }
 
-void ConstTraversal::visit(const ExprID &n) {
-  if (n.value != nullptr)
-    dispatch(*n.value);
-}
+void ConstTraversal::visit(const ExprID&) { }
 
 void ConstTraversal::visit(const Field &n) {
   dispatch(*n.record);
@@ -1519,8 +1486,6 @@ void ConstTraversal::visit(const Function &n) {
 }
 
 void ConstTraversal::visit(const FunctionCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -1597,8 +1562,6 @@ void ConstTraversal::visit(const Parameter &n) {
 }
 
 void ConstTraversal::visit(const ProcedureCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -1683,10 +1646,7 @@ void ConstTraversal::visit(const TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void ConstTraversal::visit(const TypeExprID &n) {
-  if (n.referent != nullptr)
-    dispatch(*n.referent);
-}
+void ConstTraversal::visit(const TypeExprID&) { }
 
 void ConstTraversal::visit_uexpr(const UnaryExpr &n) {
   dispatch(*n.rhs);
@@ -1767,8 +1727,6 @@ void ConstExprTraversal::visit(const Parameter &n) {
 }
 
 void ConstExprTraversal::visit(const ProcedureCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -1843,10 +1801,7 @@ void ConstExprTraversal::visit(const TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void ConstExprTraversal::visit(const TypeExprID &n) {
-  if (n.referent != nullptr)
-    dispatch(*n.referent);
-}
+void ConstExprTraversal::visit(const TypeExprID&) { }
 
 void ConstExprTraversal::visit(const Undefine &n) {
   dispatch(*n.rhs);
@@ -1898,10 +1853,7 @@ void ConstStmtTraversal::visit(const Exists &n) {
   dispatch(*n.expr);
 }
 
-void ConstStmtTraversal::visit(const ExprID &n) {
-  if (n.value != nullptr)
-    dispatch(*n.value);
-}
+void ConstStmtTraversal::visit(const ExprID&) { }
 
 void ConstStmtTraversal::visit(const Field &n) {
   dispatch(*n.record);
@@ -1924,8 +1876,6 @@ void ConstStmtTraversal::visit(const Function &n) {
 }
 
 void ConstStmtTraversal::visit(const FunctionCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -2067,10 +2017,7 @@ void ConstStmtTraversal::visit(const TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void ConstStmtTraversal::visit(const TypeExprID &n) {
-  if (n.referent != nullptr)
-    dispatch(*n.referent);
-}
+void ConstStmtTraversal::visit(const TypeExprID&) { }
 
 void ConstStmtTraversal::visit_uexpr(const UnaryExpr &n) {
   dispatch(*n.rhs);
@@ -2126,10 +2073,7 @@ void ConstTypeTraversal::visit(const Exists &n) {
   dispatch(*n.expr);
 }
 
-void ConstTypeTraversal::visit(const ExprID &n) {
-  if (n.value != nullptr)
-    dispatch(*n.value);
-}
+void ConstTypeTraversal::visit(const ExprID&) { }
 
 void ConstTypeTraversal::visit(const Field &n) {
   dispatch(*n.record);
@@ -2158,8 +2102,6 @@ void ConstTypeTraversal::visit(const Function &n) {
 }
 
 void ConstTypeTraversal::visit(const FunctionCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
@@ -2236,8 +2178,6 @@ void ConstTypeTraversal::visit(const Parameter &n) {
 }
 
 void ConstTypeTraversal::visit(const ProcedureCall &n) {
-  if (n.function != nullptr)
-    dispatch(*n.function);
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
 }
