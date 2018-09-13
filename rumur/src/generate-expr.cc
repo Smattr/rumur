@@ -241,38 +241,11 @@ class Generator : public ConstExprTraversal {
 
     const std::shared_ptr<TypeExpr> &return_type = n.function->return_type;
 
-    /* Use a GNU statement expression to get a scope in which we can allocate
-     * space for parameters of complex type passed by value.
+    /* Use a GNU statement expression to let us make our result the handle to
+     * the output parameter in the case where we are calling a function that
+     * returns a value of a complex type.
      */
     *this << "({";
-
-    // Allocate memory for each parameter of complex type passed by value.
-    {
-      size_t i = 0;
-      auto it = n.function->parameters.begin();
-      for (const std::shared_ptr<Expr> &a : n.arguments) {
-
-        assert(it != n.function->parameters.end() &&
-          "function call has more arguments than its target function");
-
-        std::shared_ptr<Parameter> &p = *it;
-
-        assert(p->decl->type != nullptr && "function parameter without a type");
-
-        if (!p->by_reference && !p->decl->type->is_simple()) {
-          mpz_class width = p->decl->type->width();
-          *out
-            << "uint8_t param" << i << "[BITS_TO_BYTES(" << width << "]; "
-            << "handle_copy((struct handle){ .base = param" << i
-              << ", .offset = 0ul, .width = SIZE_C(" << width << ") }, ";
-          generate_rvalue(*out, *a);
-          *out << "); ";
-        }
-
-        i++;
-        it++;
-      }
-    }
 
     *out << "ru_" << n.name << "(s";
 
@@ -283,25 +256,22 @@ class Generator : public ConstExprTraversal {
 
     // Now emit the arguments to the function.
     {
-      size_t i = 0;
       auto it = n.function->parameters.begin();
       for (const std::shared_ptr<Expr> &a : n.arguments) {
 
         *out << ", ";
 
+        assert(it != n.function->parameters.end() &&
+          "function call has more arguments than its target function");
+
         std::shared_ptr<Parameter> &p = *it;
 
         if (p->by_reference) {
           generate_lvalue(*out, *a);
-        } else if (p->decl->type->is_simple()) {
-          generate_rvalue(*out, *a);
         } else {
-          mpz_class width = p->decl->type->width();
-          *out << "(struct handle){ .base = param" << i
-            << ", .offset = 0ul, .width = SIZE_C(" << width << ") }";
+          generate_rvalue(*out, *a);
         }
 
-        i++;
         it++;
       }
     }
