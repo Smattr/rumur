@@ -6,6 +6,8 @@
 
 int output_checker(const std::string &path, const rumur::Model &model);
 
+void generate_function(std::ostream &out, const rumur::Function &f);
+
 void generate_model(std::ostream &out, const rumur::Model &m);
 
 // Generate C code to print the value of the given state variable

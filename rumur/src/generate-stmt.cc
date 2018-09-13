@@ -1,5 +1,6 @@
 #include <cassert>
 #include "generate.h"
+#include <gmpxx.h>
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
@@ -69,8 +70,72 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const ProcedureCall&) final {
-    assert(!"TODO");
+  void visit(const ProcedureCall &s) final {
+    if (s.function == nullptr)
+      throw Error("unresolved procedure reference " + s.name, s.loc);
+
+    /* Open a scope in which to declare any complex types we need to pass by
+     * value.
+     */
+    *out << "do {\n";
+
+    // Allocate memory for each parameter of complex type passed by value.
+    {
+      size_t i = 0;
+      auto it = s.function->parameters.begin();
+      for (const std::shared_ptr<Expr> &a : s.arguments) {
+
+        assert(it != s.function->parameters.end() &&
+          "procedure call has more arguments than its target procedure");
+
+        std::shared_ptr<Parameter> &p = *it;
+
+        assert(p->decl->type != nullptr && "procedure parameter without a type");
+
+        if (!p->by_reference && !p->decl->type->is_simple()) {
+          mpz_class width = p->decl->type->width();
+          *out
+            << "  uint8_t param" << i << "[BITS_TO_BYTES(" << width << "];\n"
+            << "  handle_copy((struct handle){ .base = param" << i
+              << ", .offset = 0ul, .width = SIZE_C(" << width << ") }, ";
+          generate_rvalue(*out, *a);
+          *out << ");\n";
+        }
+
+        i++;
+        it++;
+      }
+    }
+
+    *out << "ru_" << s.name << "(s";
+
+    // Now emit the arguments to the procedure.
+    {
+      size_t i = 0;
+      auto it = s.function->parameters.begin();
+      for (const std::shared_ptr<Expr> &a : s.arguments) {
+
+        *out << ", ";
+
+        std::shared_ptr<Parameter> &p = *it;
+
+        if (p->by_reference) {
+          generate_lvalue(*out, *a);
+        } else if (p->decl->type->is_simple()) {
+          generate_rvalue(*out, *a);
+        } else {
+          mpz_class width = p->decl->type->width();
+          *out << "(struct handle){ .base = param" << i
+            << ", .offset = 0ul, .width = SIZE_C(" << width << ") }";
+        }
+
+        i++;
+        it++;
+      }
+    }
+
+    *out << ");\n"
+      << "} while (0)";
   }
 
   void visit(const PropertyStmt &s) final {
@@ -100,10 +165,18 @@ class Generator : public ConstStmtTraversal {
   }
 
   void visit(const Return &s) final {
-    *out << "return";
 
-    if (s.expr != nullptr)
-      assert(!"TODO");
+    if (s.expr == nullptr) {
+      *out << "return";
+
+    } else {
+      if (s.expr->type() == nullptr || s.expr->type()->is_simple()) {
+        *out << "return ";
+        generate_rvalue(*out, *s.expr);
+      } else {
+        assert(!"TODO");
+      }
+    }
   }
 
   void visit(const Undefine &s) final {

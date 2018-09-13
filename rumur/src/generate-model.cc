@@ -10,6 +10,12 @@ using namespace rumur;
 
 void generate_model(std::ostream &out, const Model &m) {
 
+  // Generate each defined function or procedure.
+  for (const std::shared_ptr<Function> &f : m.functions) {
+    generate_function(out, *f);
+    out << "\n\n";
+  }
+
   /* Generate a set of flattened (non-hierarchical) rules. The purpose of this
    * is to essentially remove rulesets from the cases we need to deal with
    * below.

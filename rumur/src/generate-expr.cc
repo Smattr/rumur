@@ -235,9 +235,87 @@ class Generator : public ConstExprTraversal {
     *out << " result; })";
   }
 
-  void visit(const FunctionCall&) final {
-    // TODO: We need to decide how we're going to handle return values
-    assert("!TODO");
+  void visit(const FunctionCall &n) final {
+    if (n.function == nullptr)
+      throw Error("unresolved function reference " + n.name, n.loc);
+
+    const std::shared_ptr<TypeExpr> &return_type = n.function->return_type;
+
+    /* Use a GNU statement expression to get a scope in which we can allocate
+     * space for parameters of complex type passed by value.
+     */
+    *this << "({";
+
+    // Allocate memory for each parameter of complex type passed by value.
+    {
+      size_t i = 0;
+      auto it = n.function->parameters.begin();
+      for (const std::shared_ptr<Expr> &a : n.arguments) {
+
+        assert(it != n.function->parameters.end() &&
+          "function call has more arguments than its target function");
+
+        std::shared_ptr<Parameter> &p = *it;
+
+        assert(p->decl->type != nullptr && "function parameter without a type");
+
+        if (!p->by_reference && !p->decl->type->is_simple()) {
+          mpz_class width = p->decl->type->width();
+          *out
+            << "uint8_t param" << i << "[BITS_TO_BYTES(" << width << "]; "
+            << "handle_copy((struct handle){ .base = param" << i
+              << ", .offset = 0ul, .width = SIZE_C(" << width << ") }, ";
+          generate_rvalue(*out, *a);
+          *out << "); ";
+        }
+
+        i++;
+        it++;
+      }
+    }
+
+    *out << "ru_" << n.name << "(s";
+
+    // Pass the return type output parameter if required.
+    // TODO: Allocate this at the start of containing rule/etc.
+    if (return_type != nullptr && !return_type->is_simple())
+      *out << ", ret" << n.unique_id;
+
+    // Now emit the arguments to the function.
+    {
+      size_t i = 0;
+      auto it = n.function->parameters.begin();
+      for (const std::shared_ptr<Expr> &a : n.arguments) {
+
+        *out << ", ";
+
+        std::shared_ptr<Parameter> &p = *it;
+
+        if (p->by_reference) {
+          generate_lvalue(*out, *a);
+        } else if (p->decl->type->is_simple()) {
+          generate_rvalue(*out, *a);
+        } else {
+          mpz_class width = p->decl->type->width();
+          *out << "(struct handle){ .base = param" << i
+            << ", .offset = 0ul, .width = SIZE_C(" << width << ") }";
+        }
+
+        i++;
+        it++;
+      }
+    }
+
+    *out << ");";
+
+    /* If this function call returns a complex type, the result of the GNU
+     * statement expression needs to be the handle to the output parameter, not
+     * the (void) return of the C function.
+     */
+    if (return_type != nullptr && !return_type->is_simple())
+      *out << " ret" << n.unique_id << ";";
+
+    *this << "})";
   }
 
   void visit(const Geq &n) final {
