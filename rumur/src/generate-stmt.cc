@@ -87,7 +87,8 @@ class Generator : public ConstStmtTraversal {
      */
     const std::shared_ptr<TypeExpr> &return_type = s.function->return_type;
     if (return_type != nullptr && !return_type->is_simple())
-      *out << ", ret" << s.unique_id;
+      *out << ", (struct handle){ .base = ret" << s.unique_id
+        << ", .offset = 0ul, .width = SIZE_C(" << return_type->width() << ") }";
 
     // Now emit the arguments to the procedure.
     {

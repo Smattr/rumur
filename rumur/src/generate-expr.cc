@@ -244,9 +244,9 @@ class Generator : public ConstExprTraversal {
     *out << "ru_" << n.name << "(s";
 
     // Pass the return type output parameter if required.
-    // TODO: Allocate this at the start of containing rule/etc.
     if (return_type != nullptr && !return_type->is_simple())
-      *out << ", ret" << n.unique_id;
+      *out << ", (struct handle){ .base = ret" << n.unique_id
+        << ", .offset = 0ul, .width = SIZE_C(" << return_type->width() << ") }";
 
     // Now emit the arguments to the function.
     {
