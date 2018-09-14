@@ -740,6 +740,37 @@ static __attribute__((unused)) void handle_zero(struct handle h) {
   }
 }
 
+static __attribute__((unused)) void handle_copy(struct handle a,
+    struct handle b) {
+
+  ASSERT(a.width == b.width && "copying between handles of different sizes");
+
+  uint8_t *dst = a.base + a.offset / 8;
+  size_t dst_off = a.offset % 8;
+  size_t width = a.width;
+  const uint8_t *src = b.base + b.offset / 8;
+  size_t src_off = b.offset % 8;
+
+  /* FIXME: This does a bit-by-bit copy which almost certainly could be
+   * accelerated by detecting byte-boundaries and complementary alignment and
+   * then calling memcpy when possible.
+   */
+
+  for (size_t i = 0; i < a.width; i++) {
+
+    uint8_t *dst = a.base + (a.offset + i) / 8;
+    size_t dst_off = (a.offset + i) % 8;
+
+    const uint8_t *src = b.base + (b.offset + i) / 8;
+    size_t src_off = (b.offset + i) % 8;
+
+    uint8_t or_mask = ((*src >> src_off) & UINT8_C(1)) << dst_off;
+    uint8_t and_mask = ~(UINT8_C(1) << dst_off);
+
+    *dst = (*dst & and_mask) | or_mask;
+  }
+}
+
 static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   size_t offset, size_t width) {
 

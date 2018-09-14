@@ -18,17 +18,23 @@ class Generator : public ConstStmtTraversal {
     
   void visit(const Assignment &s) final {
 
-    if (!s.lhs->type()->is_simple())
-      assert(!"TODO");
+    if (s.lhs->type()->is_simple()) {
+      const std::string lb = s.lhs->type()->lower_bound();
+      const std::string ub = s.lhs->type()->upper_bound();
 
-    const std::string lb = s.lhs->type()->lower_bound();
-    const std::string ub = s.lhs->type()->upper_bound();
+      *out << "handle_write(s, " << lb << ", " << ub << ", ";
+      generate_lvalue(*out, *s.lhs);
+      *out << ", ";
+      generate_rvalue(*out, *s.rhs);
+      *out << ")";
 
-    *out << "handle_write(s, " << lb << ", " << ub << ", ";
-    generate_lvalue(*out, *s.lhs);
-    *out << ", ";
-    generate_rvalue(*out, *s.rhs);
-    *out << ")";
+    } else {
+      *out << "handle_copy(";
+      generate_lvalue(*out, *s.lhs);
+      *out << ", ";
+      generate_rvalue(*out, *s.rhs);
+      *out << ")";
+    }
   }
 
   void visit(const Clear&) final {
@@ -144,7 +150,16 @@ class Generator : public ConstStmtTraversal {
         *out << "return ";
         generate_rvalue(*out, *s.expr);
       } else {
-        assert(!"TODO");
+        /* The caller will have passed us a handle 'ret' to memory they have
+         * allocated. Copy into it now.
+         */
+        *out
+          << "do {\n"
+          << "  handle_copy(ret, ";
+        generate_rvalue(*out, *s.expr);
+        *out << ");\n"
+          << "  return ret;\n"
+          << "} while (0)";
       }
     }
   }
