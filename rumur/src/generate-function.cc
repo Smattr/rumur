@@ -33,6 +33,9 @@ void generate_function(std::ostream &out, const rumur::Function &f) {
 
   out << ") {\n";
 
+  // Allocate memory for any complex-returning functions we call
+  generate_allocations(out, f.body);
+
   // Generate the body of the function
   for (const std::shared_ptr<rumur::Stmt> &s : f.body) {
     out << "  ";

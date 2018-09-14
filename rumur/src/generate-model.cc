@@ -45,6 +45,9 @@ void generate_model(std::ostream &out, const Model &m) {
               << v->type->width() << ") };\n";
         }
 
+        // Allocate memory for any complex-returning functions we call
+        generate_allocations(out, s->body);
+
         for (const std::shared_ptr<Stmt> &st : s->body) {
           out << "  ";
           generate_stmt(out, *st);
@@ -99,6 +102,9 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n";
 
+        // Allocate memory for any complex-returning functions we call
+        generate_allocations(out, s->body);
+
         for (const std::shared_ptr<Decl> &d : s->decls) {
           if (auto v = dynamic_cast<const VarDecl*>(d.get()))
             out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
@@ -107,6 +113,9 @@ void generate_model(std::ostream &out, const Model &m) {
               << v->name << ", .offset = 0, .width = SIZE_C("
               << v->type->width() << ") };\n";
         }
+
+        // Allocate memory for any complex-returning functions we call
+        generate_allocations(out, s->body);
 
         for (const std::shared_ptr<Stmt> &st : s->body) {
           out << "  ";

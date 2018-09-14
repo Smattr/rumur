@@ -1,10 +1,19 @@
 #pragma once
 
 #include <gmpxx.h>
+#include <memory>
 #include <rumur/rumur.h>
 #include <string>
+#include <vector>
 
 int output_checker(const std::string &path, const rumur::Model &model);
+
+// Generate prelude definitions to allocate memory for function returns
+void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);
+
+// Helper for calling the above on a body of functions
+void generate_allocations(std::ostream &out,
+  const std::vector<std::shared_ptr<rumur::Stmt>> &stmts);
 
 void generate_function(std::ostream &out, const rumur::Function &f);
 
