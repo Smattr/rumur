@@ -241,12 +241,6 @@ class Generator : public ConstExprTraversal {
 
     const std::shared_ptr<TypeExpr> &return_type = n.function->return_type;
 
-    /* Use a GNU statement expression to let us make our result the handle to
-     * the output parameter in the case where we are calling a function that
-     * returns a value of a complex type.
-     */
-    *this << "({";
-
     *out << "ru_" << n.name << "(s";
 
     // Pass the return type output parameter if required.
@@ -276,16 +270,7 @@ class Generator : public ConstExprTraversal {
       }
     }
 
-    *out << ");";
-
-    /* If this function call returns a complex type, the result of the GNU
-     * statement expression needs to be the handle to the output parameter, not
-     * the (void) return of the C function.
-     */
-    if (return_type != nullptr && !return_type->is_simple())
-      *out << " ret" << n.unique_id << ";";
-
-    *this << "})";
+    *out << ")";
   }
 
   void visit(const Geq &n) final {

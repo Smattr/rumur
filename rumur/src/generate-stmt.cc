@@ -75,8 +75,13 @@ class Generator : public ConstStmtTraversal {
 
     *out << "ru_" << s.name << "(s";
 
-    // FIXME: If this is actually calling a function that returns a complex type,
-    // that will expect to get an output parameter as the second arg.
+    /* If the target of this call is actually a function (not a procedure) and
+     * returns a complex type, we need to pass it a handle to the memory we've
+     * allocated for its (unused) return.
+     */
+    const std::shared_ptr<TypeExpr> &return_type = s.function->return_type;
+    if (return_type != nullptr && !return_type->is_simple())
+      *out << ", ret" << s.unique_id;
 
     // Now emit the arguments to the procedure.
     {

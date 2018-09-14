@@ -6,13 +6,14 @@
 void generate_function(std::ostream &out, const rumur::Function &f) {
 
   /* Functions returning a simple type return a value, as expected. Functions
-   * returning a complex type do so via their second parameter (see below).
+   * returning a complex type return a handle that is actually the same as their
+   * second parameter (see below).
    */
   out << "static ";
   if (f.return_type != nullptr && f.return_type->is_simple()) {
     out << "value_t";
   } else {
-    out << "void";
+    out << "struct handle";
   }
   out << " ru_" << f.name << "(struct state *s __attribute__((unused))";
 
