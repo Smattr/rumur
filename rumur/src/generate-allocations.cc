@@ -21,6 +21,9 @@ class Generator : public ConstTraversal {
       throw Error("function call to unresolved target " + n.name, n.loc);
 
     define_backing_mem(n.unique_id, n.function->return_type.get());
+
+    for (const std::shared_ptr<Expr> &a : n.arguments)
+      dispatch(*a);
   }
 
   void visit(const ProcedureCall &n) final {
@@ -28,6 +31,9 @@ class Generator : public ConstTraversal {
       throw Error("function call to unresolved target " + n.name, n.loc);
 
     define_backing_mem(n.unique_id, n.function->return_type.get());
+
+    for (const std::shared_ptr<Expr> &a : n.arguments)
+      dispatch(*a);
   }
 
   virtual ~Generator() { }
