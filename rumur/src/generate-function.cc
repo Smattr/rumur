@@ -10,7 +10,9 @@ void generate_function(std::ostream &out, const rumur::Function &f) {
    * second parameter (see below).
    */
   out << "static ";
-  if (f.return_type != nullptr && f.return_type->is_simple()) {
+  if (f.return_type == nullptr) {
+    out << "void";
+  } else if (f.return_type->is_simple()) {
     out << "value_t";
   } else {
     out << "struct handle";
