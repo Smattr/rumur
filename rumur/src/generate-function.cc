@@ -43,6 +43,21 @@ void generate_function(std::ostream &out, const rumur::Function &f,
    */
   for (const std::shared_ptr<rumur::Decl> &d : decls) {
     if (isa<rumur::VarDecl>(d)) {
+
+      /* Exciting kludge: we need to suppress the definition of state variables
+       * that are shadowed by function parameters. Yes, real world models seem
+       * to do this.
+       */
+      bool shadowed = false;
+      for (const std::shared_ptr<rumur::Parameter> &p : f.parameters) {
+        if (p->decl->name == d->name) {
+          shadowed = true;
+          break;
+        }
+      }
+      if (shadowed)
+        continue;
+
       out << "  ";
       generate_decl(out, *d);
       out << ";\n";
