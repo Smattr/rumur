@@ -125,7 +125,7 @@ class Generator : public ConstExprTraversal {
     if (lvalue && !n.is_lvalue())
       invalid(n);
 
-    /* Case 1: this is a reference to a const. Note, this also covers enum
+    /* This is a reference to a const. Note, this also covers enum
      * members.
      */
     if (auto c = dynamic_cast<const ConstDecl*>(n.value.get())) {
@@ -134,52 +134,23 @@ class Generator : public ConstExprTraversal {
       return;
     }
 
+    // This is either a state variable or a local variable.
     if (auto v = dynamic_cast<const VarDecl*>(n.value.get())) {
 
       const TypeExpr *t = n.type()->resolve();
       assert(t != nullptr && "untyped literal somehow an identifier");
 
-      // Case 2, this is a state variable.
-      if (v->state_variable) {
-
-        /* If this is a scalar and we're in an rvalue context, we want to actually
-         * read the value of the variable out into an unboxed value as this is
-         * what our parent will be expecting.
-         */
-        if (!lvalue && t->is_simple()) {
-          const std::string lb = t->lower_bound();
-          const std::string ub = t->upper_bound();
-          *out << "handle_read(s, " << lb << ", " << ub << ", ";
-        }
-
-        /* Note that we need to cast away the const-ness of `s->data` here because
-         * we may be within a guard or invariant. In such a situation, the state
-         * remains morally read-only.
-         */
-        *out << "((struct handle){ .base = (uint8_t*)s->data, .offset = "
-          << v->offset << "ul, .width = " << t->width() << "ul })";
-
-        if (!lvalue && t->is_simple())
-          *out << ")";
-        return;
-
+      if (!lvalue && t->is_simple()) {
+        const std::string lb = t->lower_bound();
+        const std::string ub = t->upper_bound();
+        *out << "handle_read(s, " << lb << ", " << ub << ", ";
       }
 
-      // Case 3, this is a local variable
-      else {
+      *out << "ru_" << n.id;
 
-        if (!lvalue && t->is_simple()) {
-          const std::string lb = t->lower_bound();
-          const std::string ub = t->upper_bound();
-          *out << "handle_read(s, " << lb << ", " << ub << ", ";
-        }
-
-        *out << "ru_" << n.id;
-
-        if (!lvalue && t->is_simple())
-          *out << ")";
-        return;
-      }
+      if (!lvalue && t->is_simple())
+        *out << ")";
+      return;
     }
 
     assert(dynamic_cast<const TypeDecl*>(n.value.get()) == nullptr &&
