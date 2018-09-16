@@ -4,6 +4,7 @@
 #include <memory>
 #include <rumur/rumur.h>
 #include "symmetry-reduction.h"
+#include "utils.h"
 #include <vector>
 
 using namespace rumur;
@@ -12,7 +13,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Generate each defined constant.
   for (const std::shared_ptr<Decl> &d : m.decls) {
-    if (dynamic_cast<const ConstDecl*>(d.get())) {
+    if (isa<ConstDecl>(d)) {
       generate_decl(out, *d);
       out << ";\n";
     }
@@ -48,7 +49,7 @@ void generate_model(std::ostream &out, const Model &m) {
          * this start state.
          */
         for (const std::shared_ptr<Decl> &d : m.decls) {
-          if (dynamic_cast<const VarDecl*>(d.get())) {
+          if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -101,7 +102,7 @@ void generate_model(std::ostream &out, const Model &m) {
          * this property.
          */
         for (const std::shared_ptr<Decl> &d : m.decls) {
-          if (dynamic_cast<const VarDecl*>(d.get())) {
+          if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -134,7 +135,7 @@ void generate_model(std::ostream &out, const Model &m) {
          * this guard.
          */
         for (const std::shared_ptr<Decl> &d : m.decls) {
-          if (dynamic_cast<const VarDecl*>(d.get())) {
+          if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -159,7 +160,7 @@ void generate_model(std::ostream &out, const Model &m) {
          * this rule.
          */
         for (const std::shared_ptr<Decl> &d : m.decls) {
-          if (dynamic_cast<const VarDecl*>(d.get())) {
+          if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -172,7 +173,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out << "  {\n";
 
         for (const std::shared_ptr<Decl> &d : s->decls) {
-          if (dynamic_cast<const VarDecl*>(d.get())) {
+          if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -284,7 +285,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
     size_t index = 0;
     for (const std::shared_ptr<Rule> &r : flat_rules) {
-      if (dynamic_cast<const StartState*>(r.get()) != nullptr) {
+      if (isa<StartState>(r)) {
 
         // Open a scope so we don't have to think about name collisions.
         out << "  {\n";
@@ -364,7 +365,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "    bool possible_deadlock = true;\n";
     size_t index = 0;
     for (const std::shared_ptr<Rule> &r : flat_rules) {
-      if (dynamic_cast<const SimpleRule*>(r.get()) != nullptr) {
+      if (isa<SimpleRule>(r)) {
 
         // Open a scope so we don't have to think about name collisions.
         out << "    {\n";

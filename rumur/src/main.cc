@@ -13,6 +13,7 @@
 #include <rumur/rumur.h>
 #include <string>
 #include <unistd.h>
+#include "utils.h"
 
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
@@ -247,7 +248,7 @@ static bool contains(const T &container, U predicate) {
 }
 
 static bool has_start_state(const std::shared_ptr<rumur::Rule> &r) {
-  if (dynamic_cast<const rumur::StartState*>(r.get()))
+  if (isa<rumur::StartState>(r))
     return true;
   if (auto s = dynamic_cast<const rumur::Ruleset*>(r.get()))
     return contains(s->rules, has_start_state);

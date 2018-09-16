@@ -6,6 +6,7 @@
 #include <rumur/rumur.h>
 #include "symmetry-reduction.h"
 #include <utility>
+#include "utils.h"
 #include <vector>
 
 using namespace rumur;
@@ -15,7 +16,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
   for (const std::shared_ptr<Decl> &d : m.decls) {
     if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
-      if (dynamic_cast<const Scalarset*>(t->value.get()) != nullptr)
+      if (isa<Scalarset>(t->value))
         ss.push_back(t);
     }
   }
@@ -38,7 +39,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   if (auto a = dynamic_cast<const Array*>(&t))
     return interdependence(*a->index_type) + interdependence(*a->element_type);
 
-  if (dynamic_cast<const Scalarset*>(&t) != nullptr)
+  if (isa<Scalarset>(&t))
     return 1;
 
   if (auto i = dynamic_cast<const TypeExprID*>(&t))
@@ -260,7 +261,7 @@ namespace {
        * interaction.
        */
       unsigned i;
-      if (dynamic_cast<const Scalarset*>(vtype) != nullptr) {
+      if (isa<Scalarset>(vtype)) {
         i = 0;
       } else {
         i = interdependence(*vtype);
@@ -297,7 +298,7 @@ namespace {
 
       // If this is an array, consider its element type.
       if (auto a = dynamic_cast<const Array*>(t.resolve())) {
-        if (dynamic_cast<const Scalarset*>(a->index_type->resolve()) != nullptr)
+        if (isa<Scalarset>(a->index_type->resolve()))
           bias++;
         consider_component(offset, *a->element_type, bias);
       }
@@ -589,7 +590,7 @@ namespace {
       if (t->name != type->name)
         return false;
 
-      assert(dynamic_cast<const Scalarset*>(t->resolve()) != nullptr &&
+      assert(isa<Scalarset>(t->resolve()) &&
         "a typedef of a non-scalarset type has the same name as a scalarset "
         "typedef");
 
@@ -669,7 +670,7 @@ namespace {
   };
 
   Pivot *Pivot::derive(const Model &m, const TypeDecl &t) {
-    assert(dynamic_cast<const Scalarset*>(t.value.get()) != nullptr &&
+    assert(isa<Scalarset>(t.value) &&
       "non-scalarset typedecl passed to Pivot::derive");
 
     Pivot *p = nullptr;

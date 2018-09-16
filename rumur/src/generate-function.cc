@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
+#include "utils.h"
 #include <vector>
 
 void generate_function(std::ostream &out, const rumur::Function &f,
@@ -41,7 +42,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
    * this start state.
    */
   for (const std::shared_ptr<rumur::Decl> &d : decls) {
-    if (dynamic_cast<const rumur::VarDecl*>(d.get())) {
+    if (isa<rumur::VarDecl>(d)) {
       out << "  ";
       generate_decl(out, *d);
       out << ";\n";
