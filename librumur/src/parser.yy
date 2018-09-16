@@ -191,6 +191,7 @@
 %type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecl
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecls
+%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecls_cont
 %type <bool>                                                 var_opt
 
 %%
@@ -256,14 +257,23 @@ typeexpr: BOOLEAN {
   $$ = std::make_shared<rumur::Scalarset>($3, @$);
 };
 
-vardecls: vardecls vardecl {
+vardecls: vardecls_cont vardecl semi_opt {
   $$ = $1;
   std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | vardecl semi_opt {
+  $$ = $1;
 } | %empty {
   /* nothing required */
 };
 
-vardecl: id_list_opt ':' typeexpr ';' {
+vardecls_cont: vardecls_cont vardecl ';' {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | vardecl ';' {
+  $$ = $1;
+};
+
+vardecl: id_list_opt ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &m : $1) {
     $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, m.second));
   }
