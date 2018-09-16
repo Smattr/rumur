@@ -20,6 +20,7 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   src/generate-allocations.cc
+  src/generate-decl.cc
   src/generate-expr.cc
   src/generate-function.cc
   src/generate-model.cc

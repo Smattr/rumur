@@ -10,9 +10,17 @@ using namespace rumur;
 
 void generate_model(std::ostream &out, const Model &m) {
 
+  // Generate each defined constant.
+  for (const std::shared_ptr<Decl> &d : m.decls) {
+    if (dynamic_cast<const ConstDecl*>(d.get())) {
+      generate_decl(out, *d);
+      out << ";\n";
+    }
+  }
+
   // Generate each defined function or procedure.
   for (const std::shared_ptr<Function> &f : m.functions) {
-    generate_function(out, *f);
+    generate_function(out, *f, m.decls);
     out << "\n\n";
   }
 
@@ -36,13 +44,28 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n";
 
+        /* Output the state variable handles so we can reference them within
+         * this start state.
+         */
+        for (const std::shared_ptr<Decl> &d : m.decls) {
+          if (dynamic_cast<const VarDecl*>(d.get())) {
+            out << "  ";
+            generate_decl(out, *d);
+            out << ";\n";
+          }
+        }
+
+        /* Open a scope to support local declarations can shadow the state
+         * variables.
+         */
+        out << "  {\n";
+
         for (const std::shared_ptr<Decl> &d : s->decls) {
-          if (auto v = dynamic_cast<const VarDecl*>(d.get()))
-            out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
-              << v->type->width() << ")] = { 0 };\n"
-              << "  struct handle ru_" << v->name << " = { .base = _ru_"
-              << v->name << ", .offset = 0, .width = SIZE_C("
-              << v->type->width() << ") };\n";
+          if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
+            out << "  ";
+            generate_decl(out, *v);
+            out << ";\n";
+          }
         }
 
         // Allocate memory for any complex-returning functions we call
@@ -53,6 +76,10 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_stmt(out, *st);
           out << ";\n";
         }
+
+        // Close the scope we created.
+        out << "  }\n";
+
         out << "}\n\n";
         index++;
       }
@@ -67,8 +94,21 @@ void generate_model(std::ostream &out, const Model &m) {
         out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
         for (const std::shared_ptr<Quantifier> &q : i->quantifiers)
           out << ", struct handle ru_" << q->var->name;
-        out << ") {\n"
-          << "  return ";
+        out << ") {\n";
+
+
+        /* Output the state variable handles so we can reference them within
+         * this property.
+         */
+        for (const std::shared_ptr<Decl> &d : m.decls) {
+          if (dynamic_cast<const VarDecl*>(d.get())) {
+            out << "  ";
+            generate_decl(out, *d);
+            out << ";\n";
+          }
+        }
+
+        out << "  return ";
         generate_property(out, i->property);
         out << ";\n}\n\n";
         index++;
@@ -88,7 +128,20 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
           out << ", struct handle ru_" << q->var->name
             << " __attribute__((unused))";
-        out << ") {\n  return ";
+        out << ") {\n";
+
+        /* Output the state variable handles so we can reference them within
+         * this guard.
+         */
+        for (const std::shared_ptr<Decl> &d : m.decls) {
+          if (dynamic_cast<const VarDecl*>(d.get())) {
+            out << "  ";
+            generate_decl(out, *d);
+            out << ";\n";
+          }
+        }
+
+        out << "  return ";
         if (s->guard == nullptr) {
           out << "true";
         } else {
@@ -102,13 +155,28 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n";
 
+        /* Output the state variable handles so we can reference them within
+         * this rule.
+         */
+        for (const std::shared_ptr<Decl> &d : m.decls) {
+          if (dynamic_cast<const VarDecl*>(d.get())) {
+            out << "  ";
+            generate_decl(out, *d);
+            out << ";\n";
+          }
+        }
+
+        /* Open a scope to support local declarations can shadow the state
+         * variables.
+         */
+        out << "  {\n";
+
         for (const std::shared_ptr<Decl> &d : s->decls) {
-          if (auto v = dynamic_cast<const VarDecl*>(d.get()))
-            out << "  uint8_t _ru_" << v->name << "[BITS_TO_BYTES("
-              << v->type->width() << ")] = { 0 };\n"
-              << "  struct handle ru_" << v->name << " = { .base = _ru_"
-              << v->name << ", .offset = 0, .width = SIZE_C("
-              << v->type->width() << ") };\n";
+          if (dynamic_cast<const VarDecl*>(d.get())) {
+            out << "  ";
+            generate_decl(out, *d);
+            out << ";\n";
+          }
         }
 
         // Allocate memory for any complex-returning functions we call
@@ -119,6 +187,10 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_stmt(out, *st);
           out << ";\n";
         }
+
+        // Close the scope we created.
+        out << "  }\n";
+
         out << "}\n\n";
 
         index++;

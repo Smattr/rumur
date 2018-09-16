@@ -15,7 +15,11 @@ void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);
 void generate_allocations(std::ostream &out,
   const std::vector<std::shared_ptr<rumur::Stmt>> &stmts);
 
-void generate_function(std::ostream &out, const rumur::Function &f);
+// Generate definition of a ConstDecl or VarDecl
+void generate_decl(std::ostream &out, const rumur::Decl &d);
+
+void generate_function(std::ostream &out, const rumur::Function &f,
+  const std::vector<std::shared_ptr<rumur::Decl>> &decls);
 
 void generate_model(std::ostream &out, const rumur::Model &m);
 

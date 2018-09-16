@@ -2,8 +2,10 @@
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
+#include <vector>
 
-void generate_function(std::ostream &out, const rumur::Function &f) {
+void generate_function(std::ostream &out, const rumur::Function &f,
+    const std::vector<std::shared_ptr<rumur::Decl>> &decls) {
 
   /* Functions returning a simple type return a value, as expected. Functions
    * returning a complex type return a handle that is actually the same as their
@@ -35,6 +37,22 @@ void generate_function(std::ostream &out, const rumur::Function &f) {
 
   out << ") {\n";
 
+  /* Output the state variable handles so we can reference them within
+   * this start state.
+   */
+  for (const std::shared_ptr<rumur::Decl> &d : decls) {
+    if (dynamic_cast<const rumur::VarDecl*>(d.get())) {
+      out << "  ";
+      generate_decl(out, *d);
+      out << ";\n";
+    }
+  }
+
+  /* Open a scope to support local declarations can shadow the state
+   * variables.
+   */
+  out << "  {\n";
+
   // Allocate memory for any complex-returning functions we call
   generate_allocations(out, f.body);
 
@@ -51,6 +69,9 @@ void generate_function(std::ostream &out, const rumur::Function &f) {
   if (f.return_type != nullptr)
     out << "  error(s, false, \"The end of function %s reached without "
       << "returning values.\", \"" << f.name << "\");\n";
+
+  // Close the scope we created.
+  out << "  }\n";
 
   out << "}";
 }
