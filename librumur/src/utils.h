@@ -20,4 +20,9 @@ bool vector_eq(const std::vector<T> &a, const std::vector<T> &b) {
     });
 }
 
+template<typename T, typename U>
+bool isa(const U ptr) {
+  return ptr != nullptr && dynamic_cast<const T*>(&*ptr) != nullptr;
+}
+
 }
