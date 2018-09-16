@@ -13,8 +13,8 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
+#include "utils.h"
 #include <vector>
-#include "vector_utils.h"
 
 namespace rumur {
 

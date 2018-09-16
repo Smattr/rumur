@@ -15,8 +15,8 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <unordered_set>
+#include "utils.h"
 #include <vector>
-#include "vector_utils.h"
 
 namespace rumur {
 
