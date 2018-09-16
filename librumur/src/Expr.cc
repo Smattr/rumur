@@ -228,7 +228,7 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
 
     const TypeExpr *t = rhs.type()->resolve();
 
-    if (dynamic_cast<const Range*>(t) != nullptr)
+    if (isa<Range>(t))
       return true;
 
     return false;
@@ -239,7 +239,7 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
 
     const TypeExpr *t = lhs.type()->resolve();
 
-    if (dynamic_cast<const Range*>(t) != nullptr)
+    if (isa<Range>(t))
       return true;
 
     return false;
@@ -248,8 +248,8 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   const TypeExpr *t1 = lhs.type()->resolve();
   const TypeExpr *t2 = rhs.type()->resolve();
 
-  if (dynamic_cast<const Range*>(t1) != nullptr) {
-    if (dynamic_cast<const Range*>(t2) != nullptr)
+  if (isa<Range>(t1)) {
+    if (isa<Range>(t2))
       return true;
   }
 
@@ -359,10 +359,10 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
 
     const TypeExpr *t = rhs.type()->resolve();
 
-    if (dynamic_cast<const Range*>(t) != nullptr)
+    if (isa<Range>(t))
       return true;
 
-    if (dynamic_cast<const Scalarset*>(t) != nullptr)
+    if (isa<Scalarset>(t))
       return true;
 
     return false;
@@ -373,10 +373,10 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
 
     const TypeExpr *t = lhs.type()->resolve();
 
-    if (dynamic_cast<const Range*>(t) != nullptr)
+    if (isa<Range>(t))
       return true;
 
-    if (dynamic_cast<const Scalarset*>(t) != nullptr)
+    if (isa<Scalarset>(t))
       return true;
 
     return false;
@@ -385,8 +385,8 @@ static bool equatable(const Expr &lhs, const Expr &rhs) {
   const TypeExpr *t1 = lhs.type()->resolve();
   const TypeExpr *t2 = rhs.type()->resolve();
 
-  if (dynamic_cast<const Range*>(t1) != nullptr) {
-    if (dynamic_cast<const Range*>(t2) != nullptr)
+  if (isa<Range>(t1)) {
+    if (isa<Range>(t2))
       return true;
   }
 
@@ -462,7 +462,7 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 
     const TypeExpr *t = rhs.type()->resolve();
 
-    if (dynamic_cast<const Range*>(t) != nullptr)
+    if (isa<Range>(t))
       return true;
 
     return false;
@@ -473,7 +473,7 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 
     const TypeExpr *t = lhs.type()->resolve();
 
-    if (dynamic_cast<const Range*>(t) != nullptr)
+    if (isa<Range>(t))
       return true;
 
     return false;
@@ -542,7 +542,7 @@ bool Sub::operator==(const Node &other) const {
 }
 
 void Negative::validate() const {
-  if (rhs->type() != nullptr && dynamic_cast<const Range*>(rhs->type()->resolve()) != nullptr)
+  if (rhs->type() != nullptr && isa<Range>(rhs->type()->resolve()))
     throw Error("expression cannot be negated", rhs->loc);
 }
 
@@ -669,7 +669,7 @@ ExprID *ExprID::clone() const {
 }
 
 bool ExprID::constant() const {
-  return dynamic_cast<const ConstDecl*>(value.get()) != nullptr;
+  return isa<ConstDecl>(value);
 }
 
 const TypeExpr *ExprID::type() const {
@@ -721,7 +721,7 @@ bool ExprID::is_lvalue() const {
   if (value == nullptr)
     throw Error("unresolved expression \"" + id + "\"", loc);
 
-  if (dynamic_cast<const ConstDecl*>(value.get()))
+  if (isa<ConstDecl>(value))
     return false;
 
   return true;
