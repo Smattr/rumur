@@ -34,8 +34,6 @@ void generate_function(std::ostream &out, const rumur::Function &f,
     }
   }
 
-  // TODO: decls
-
   out << ") {\n";
 
   /* Output the state variable handles so we can reference them within
@@ -68,6 +66,15 @@ void generate_function(std::ostream &out, const rumur::Function &f,
    * variables.
    */
   out << "  {\n";
+
+  // Output this function's local decls
+  for (const std::shared_ptr<rumur::Decl> &d : f.decls) {
+    if (isa<rumur::ConstDecl>(d) || isa<rumur::VarDecl>(d)) {
+      out << "  ";
+      generate_decl(out, *d);
+      out << ";\n";
+    }
+  }
 
   // Allocate memory for any complex-returning functions we call
   generate_allocations(out, f.body);
