@@ -17,6 +17,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   XMLPrinter(const std::string &in_filename, std::ostream &o_);
 
   void visit(const rumur::Add &n) final;
+  void visit(const rumur::AliasDecl &n) final;
   void visit(const rumur::And &n) final;
   void visit(const rumur::Array &n) final;
   void visit(const rumur::Assignment &n) final;

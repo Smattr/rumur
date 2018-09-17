@@ -35,6 +35,19 @@ void XMLPrinter::visit(const Add &n) {
   visit_bexpr("add", n);
 }
 
+void XMLPrinter::visit(const AliasDecl &n) {
+  sync_to(n);
+  *o << "<aliasdecl name=\"" << n.name << "\" ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.value);
+  *o << "<value>";
+  dispatch(*n.value);
+  *o << "</value>";
+  sync_to(n.loc.end);
+  *o << "</aliasdecl>";
+}
+
 void XMLPrinter::visit(const And &n) {
   visit_bexpr("and", n);
 }

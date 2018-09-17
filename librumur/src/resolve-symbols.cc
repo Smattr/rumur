@@ -45,6 +45,10 @@ class Resolver : public BaseTraversal {
     visit(static_cast<BinaryExpr&>(n));
   }
 
+  void visit(AliasDecl &n) final {
+    dispatch(*n.value);
+  }
+
   void visit(And &n) final {
     visit(static_cast<BinaryExpr&>(n));
   }

@@ -24,6 +24,11 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit(const AliasDecl &n) final {
+    dispatch(*n.value);
+    n.validate();
+  }
+
   void visit(const And &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);

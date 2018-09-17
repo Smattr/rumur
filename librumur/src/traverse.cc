@@ -19,6 +19,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<AliasDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<And*>(&n)) {
     visit(*i);
     return;
@@ -284,6 +289,10 @@ void Traversal::visit(Add &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
+void Traversal::visit(AliasDecl &n) {
+  dispatch(*n.value);
+}
+
 void Traversal::visit(And &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
@@ -538,6 +547,10 @@ void Traversal::visit(VarDecl &n) {
 
 Traversal::~Traversal() { }
 
+void ExprTraversal::visit(AliasDecl &n) {
+  dispatch(*n.value);
+}
+
 void ExprTraversal::visit(Array &n) {
   dispatch(*n.index_type);
   dispatch(*n.element_type);
@@ -689,6 +702,10 @@ void ExprTraversal::visit(VarDecl &n) {
 
 void StmtTraversal::visit(Add &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void StmtTraversal::visit(AliasDecl &n) {
+  dispatch(*n.value);
 }
 
 void StmtTraversal::visit(And &n) {
@@ -905,6 +922,10 @@ void StmtTraversal::visit(VarDecl &n) {
 
 void TypeTraversal::visit(Add &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void TypeTraversal::visit(AliasDecl &n) {
+  dispatch(*n.value);
 }
 
 void TypeTraversal::visit(And &n) {
@@ -1139,6 +1160,11 @@ void TypeTraversal::visit(VarDecl &n) {
 void ConstBaseTraversal::dispatch(const Node &n) {
 
   if (auto i = dynamic_cast<const Add*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const AliasDecl*>(&n)) {
     visit(*i);
     return;
   }
@@ -1408,6 +1434,10 @@ void ConstTraversal::visit(const Add &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
 
+void ConstTraversal::visit(const AliasDecl &n) {
+  dispatch(*n.value);
+}
+
 void ConstTraversal::visit(const And &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
@@ -1662,6 +1692,10 @@ void ConstTraversal::visit(const VarDecl &n) {
 
 ConstTraversal::~ConstTraversal() { }
 
+void ConstExprTraversal::visit(const AliasDecl &n) {
+  dispatch(*n.value);
+}
+
 void ConstExprTraversal::visit(const Array &n) {
   dispatch(*n.index_type);
   dispatch(*n.element_type);
@@ -1809,6 +1843,10 @@ void ConstExprTraversal::visit(const Undefine &n) {
 
 void ConstExprTraversal::visit(const VarDecl &n) {
   dispatch(*n.type);
+}
+
+void ConstStmtTraversal::visit(const AliasDecl &n) {
+  dispatch(*n.value);
 }
 
 void ConstStmtTraversal::visit(const Add &n) {
@@ -2029,6 +2067,10 @@ void ConstStmtTraversal::visit(const VarDecl &n) {
 
 void ConstTypeTraversal::visit(const Add &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const AliasDecl &n) {
+  dispatch(*n.value);
 }
 
 void ConstTypeTraversal::visit(const And &n) {

@@ -27,6 +27,22 @@ struct Decl : public Node {
   Decl *clone() const override = 0;
 };
 
+struct AliasDecl : public Decl {
+
+  std::shared_ptr<Expr> value;
+
+  AliasDecl() = delete;
+  AliasDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+    const location &loc_);
+  AliasDecl(const AliasDecl &other);
+  AliasDecl &operator=(AliasDecl other);
+  friend void swap(AliasDecl &x, AliasDecl &y) noexcept;
+  AliasDecl *clone() const final;
+  virtual ~AliasDecl() { }
+
+  bool operator==(const Node &other) const final;
+};
+
 struct ConstDecl : public Decl {
 
   std::shared_ptr<Expr> value;

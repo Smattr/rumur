@@ -17,6 +17,41 @@ Decl::Decl(const std::string &name_, const location &loc_):
 Decl::~Decl() {
 }
 
+AliasDecl::AliasDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+    const location &loc_):
+  Decl(name_, loc_), value(value_) { }
+
+AliasDecl::AliasDecl(const AliasDecl &other):
+  Decl(other), value(other.value->clone()) { }
+
+AliasDecl &AliasDecl::operator=(AliasDecl other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(AliasDecl &x, AliasDecl &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
+  swap(x.name, y.name);
+  swap(x.value, y.value);
+}
+
+AliasDecl *AliasDecl::clone() const {
+  return new AliasDecl(*this);
+}
+
+bool AliasDecl::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AliasDecl*>(&other);
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (*value != *o->value)
+    return false;
+  return true;
+}
+
 ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   const location &loc_):
   Decl(name_, loc_), value(value_) { }
