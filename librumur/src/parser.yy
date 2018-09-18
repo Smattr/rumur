@@ -293,7 +293,7 @@ parameters: parameters parameter semi_opt {
 } | %empty {
 };
 
-procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction ';' {
+procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
   $$ = std::make_shared<rumur::Function>($2, std::move($4), $6, std::move($7), std::move($9), @$);
 };
 
