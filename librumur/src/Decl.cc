@@ -19,10 +19,10 @@ Decl::~Decl() {
 
 AliasDecl::AliasDecl(const std::string &name_, std::shared_ptr<Expr> value_,
     const location &loc_):
-  Decl(name_, loc_), value(value_) { }
+  ExprDecl(name_, loc_), value(value_) { }
 
 AliasDecl::AliasDecl(const AliasDecl &other):
-  Decl(other), value(other.value->clone()) { }
+  ExprDecl(other), value(other.value->clone()) { }
 
 AliasDecl &AliasDecl::operator=(AliasDecl other) {
   swap(*this, other);
@@ -52,16 +52,20 @@ bool AliasDecl::operator==(const Node &other) const {
   return true;
 }
 
+bool AliasDecl::is_lvalue() const {
+  return value->is_lvalue();
+}
+
 ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   const location &loc_):
-  Decl(name_, loc_), value(value_) { }
+  ExprDecl(name_, loc_), value(value_) { }
 
 ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   std::shared_ptr<TypeExpr> type_, const location &loc_):
-  Decl(name_, loc_), value(value_), type(type_) { }
+  ExprDecl(name_, loc_), value(value_), type(type_) { }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
-  Decl(other), value(other.value->clone()), type(other.type) { }
+  ExprDecl(other), value(other.value->clone()), type(other.type) { }
 
 ConstDecl &ConstDecl::operator=(ConstDecl other) {
   swap(*this, other);
@@ -99,6 +103,10 @@ bool ConstDecl::operator==(const Node &other) const {
       return false;
   }
   return true;
+}
+
+bool ConstDecl::is_lvalue() const {
+  return false;
 }
 
 void ConstDecl::validate() const {
@@ -139,11 +147,11 @@ bool TypeDecl::operator==(const Node &other) const {
 
 VarDecl::VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
   const location &loc_):
-  Decl(name_, loc_), type(type_) {
+  ExprDecl(name_, loc_), type(type_) {
 }
 
 VarDecl::VarDecl(const VarDecl &other):
-  Decl(other), type(other.type->clone()), state_variable(other.state_variable),
+  ExprDecl(other), type(other.type->clone()), state_variable(other.state_variable),
   offset(other.offset) { }
 
 VarDecl &VarDecl::operator=(VarDecl other) {
@@ -169,6 +177,10 @@ bool VarDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const VarDecl*>(&other);
   return o != nullptr && name == o->name && *type == *o->type
       && state_variable == o->state_variable && offset == o->offset;
+}
+
+bool VarDecl::is_lvalue() const {
+  return true;
 }
 
 mpz_class VarDecl::width() const {

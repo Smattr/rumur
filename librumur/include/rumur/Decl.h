@@ -27,7 +27,18 @@ struct Decl : public Node {
   Decl *clone() const override = 0;
 };
 
-struct AliasDecl : public Decl {
+struct ExprDecl : public Decl {
+
+  using Decl::Decl;
+  ExprDecl() = delete;
+
+  virtual ~ExprDecl() { }
+
+  // Return true if this declaration is usable as an lvalue
+  virtual bool is_lvalue() const = 0;
+};
+
+struct AliasDecl : public ExprDecl {
 
   std::shared_ptr<Expr> value;
 
@@ -41,9 +52,10 @@ struct AliasDecl : public Decl {
   virtual ~AliasDecl() { }
 
   bool operator==(const Node &other) const final;
+  bool is_lvalue() const final;
 };
 
-struct ConstDecl : public Decl {
+struct ConstDecl : public ExprDecl {
 
   std::shared_ptr<Expr> value;
 
@@ -64,6 +76,7 @@ struct ConstDecl : public Decl {
   virtual ~ConstDecl() { }
 
   bool operator==(const Node &other) const final;
+  bool is_lvalue() const final;
   void validate() const final;
 };
 
@@ -83,7 +96,7 @@ struct TypeDecl : public Decl {
   bool operator==(const Node &other) const final;
 };
 
-struct VarDecl : public Decl {
+struct VarDecl : public ExprDecl {
 
   std::shared_ptr<TypeExpr> type;
 
@@ -113,6 +126,7 @@ struct VarDecl : public Decl {
   mpz_class width() const;
 
   bool operator==(const Node &other) const final;
+  bool is_lvalue() const final;
 };
 
 }
