@@ -154,8 +154,6 @@ class Generator : public ConstExprTraversal {
       return;
     }
 
-    assert(!isa<TypeDecl>(n.value) && "ExprID somehow pointing at a TypeDecl");
-
     // FIXME: there's another case here where it's a reference to a quanitified
     // variable. I suspect we should just handle that the same way as a local.
   }

@@ -110,7 +110,7 @@ class Resolver : public BaseTraversal {
     if (n.value == nullptr) {
       // This reference is unresolved
 
-      std::shared_ptr<Decl> d = symtab.lookup<Decl>(n.id, n.loc);
+      std::shared_ptr<ExprDecl> d = symtab.lookup<ExprDecl>(n.id, n.loc);
       if (d == nullptr)
         throw Error("unknown symbol \"" + n.id + "\"", n.loc);
 

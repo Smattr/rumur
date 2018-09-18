@@ -12,7 +12,7 @@
 namespace rumur {
 
 // Forward declarations to avoid a circular #include
-struct Decl;
+struct ExprDecl;
 struct Function;
 struct TypeExpr;
 struct VarDecl;
@@ -350,10 +350,11 @@ struct Mod : public ArithmeticBinaryExpr {
 struct ExprID : public Expr {
 
   std::string id;
-  std::shared_ptr<Decl> value;
+  std::shared_ptr<ExprDecl> value;
 
   ExprID() = delete;
-  ExprID(const std::string &id_, const std::shared_ptr<Decl> value_, const location &loc_);
+  ExprID(const std::string &id_, const std::shared_ptr<ExprDecl> value_,
+    const location &loc_);
   ExprID(const ExprID &other);
   ExprID &operator=(ExprID other);
   friend void swap(ExprID &x, ExprID &y) noexcept;

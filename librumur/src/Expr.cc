@@ -642,7 +642,7 @@ bool Mod::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-ExprID::ExprID(const std::string &id_, const std::shared_ptr<Decl> value_,
+ExprID::ExprID(const std::string &id_, const std::shared_ptr<ExprDecl> value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {
 }
@@ -678,9 +678,6 @@ const TypeExpr *ExprID::type() const {
 
   if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
     return c->type.get();
-
-  if (auto t = dynamic_cast<const TypeDecl*>(value.get()))
-    return t->value->resolve();
 
   if (auto v = dynamic_cast<const VarDecl*>(value.get()))
     return v->type->resolve();
