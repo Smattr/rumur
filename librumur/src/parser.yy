@@ -169,7 +169,6 @@
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameter
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameters
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameters_cont
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <std::shared_ptr<rumur::PropertyRule>>                 property
@@ -289,19 +288,10 @@ parameter: var_opt id_list ':' typeexpr {
   }
 };
 
-parameters: parameters_cont parameter {
+parameters: parameters parameter semi_opt {
   $$ = $1;
   std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | parameter {
-  $$ = $1;
 } | %empty {
-};
-
-parameters_cont: parameters_cont parameter ';' {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | parameter ';' {
-  $$ = $1;
 };
 
 procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction ';' {
