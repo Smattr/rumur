@@ -153,8 +153,9 @@
 %left '*' '/' '%'
 
 %type <rumur::Property::Category>                            category
-%type <std::shared_ptr<rumur::Decl>>                         constdecl
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecls
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecls_cont
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
@@ -215,15 +216,26 @@ decl: CONST constdecls {
   std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
 
-constdecls: constdecls constdecl {
+constdecls: constdecls_cont constdecl semi_opt {
   $$ = $1;
-  $$.push_back($2);
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | constdecl semi_opt {
+  $$ = $1;
 } | %empty {
   /* nothing required */
 };
 
-constdecl: ID ':' expr ';' {
-  $$ = std::make_shared<rumur::ConstDecl>($1, $3, @$);
+constdecls_cont: constdecls_cont constdecl ';' {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | constdecl ';' {
+  $$ = $1;
+};
+
+constdecl: id_list_opt ':' expr {
+  for (const std::pair<std::string, rumur::location> &m : $1) {
+    $$.push_back(std::make_shared<rumur::ConstDecl>(m.first, $3, @$));
+  }
 };
 
 typedecls: typedecls typedecl {
