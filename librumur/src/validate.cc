@@ -115,7 +115,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Function &n) final {
-    for (const std::shared_ptr<Parameter> &p : n.parameters)
+    for (const std::shared_ptr<VarDecl> &p : n.parameters)
       dispatch(*p);
     if (n.return_type != nullptr)
       dispatch(*n.return_type);

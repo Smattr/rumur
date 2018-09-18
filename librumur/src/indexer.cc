@@ -99,7 +99,7 @@ void Indexer::visit(Forall &n) {
 
 void Indexer::visit(Function &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Parameter> &p : n.parameters)
+  for (std::shared_ptr<VarDecl> &p : n.parameters)
     dispatch(*p);
   if (n.return_type != nullptr)
     dispatch(*n.return_type);

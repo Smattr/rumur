@@ -48,7 +48,7 @@ bool Parameter::operator==(const Node &other) const {
 }
 
 Function::Function(const std::string &name_,
-  std::vector<std::shared_ptr<Parameter>> &&parameters_,
+  std::vector<std::shared_ptr<VarDecl>> &&parameters_,
   std::shared_ptr<TypeExpr> return_type_,
   std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
@@ -59,7 +59,7 @@ Function::Function(const Function &other):
   Node(other), name(other.name),
   return_type(other.return_type == nullptr ? nullptr : other.return_type->clone()) {
 
-  for (const std::shared_ptr<Parameter> &p : other.parameters)
+  for (const std::shared_ptr<VarDecl> &p : other.parameters)
     parameters.emplace_back(p->clone());
 
   for (const std::shared_ptr<Decl> &d : other.decls)

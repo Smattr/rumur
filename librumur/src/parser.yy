@@ -167,9 +167,9 @@
 %type <std::shared_ptr<rumur::Expr>>                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
-%type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameter
-%type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameters
-%type <std::vector<std::shared_ptr<rumur::Parameter>>>       parameters_cont
+%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameter
+%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameters
+%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameters_cont
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <std::shared_ptr<rumur::PropertyRule>>                 property
@@ -283,8 +283,9 @@ function: FUNCTION | PROCEDURE;
 
 parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
-    auto v = std::make_shared<rumur::VarDecl>(i.first, std::shared_ptr<rumur::TypeExpr>($4->clone()), i.second);
-    $$.push_back(std::make_shared<rumur::Parameter>(v, $1, @$));
+    auto v = std::make_shared<rumur::VarDecl>(i.first, $4, @$);
+    v->readonly = !$1;
+    $$.push_back(v);
   }
 };
 

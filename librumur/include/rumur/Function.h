@@ -30,14 +30,14 @@ struct Parameter : public Node {
 struct Function : public Node {
 
   std::string name;
-  std::vector<std::shared_ptr<Parameter>> parameters;
+  std::vector<std::shared_ptr<VarDecl>> parameters;
   std::shared_ptr<TypeExpr> return_type;
   std::vector<std::shared_ptr<Decl>> decls;
   std::vector<std::shared_ptr<Stmt>> body;
 
   Function() = delete;
   Function(const std::string &name_,
-    std::vector<std::shared_ptr<Parameter>> &&parameters_,
+    std::vector<std::shared_ptr<VarDecl>> &&parameters_,
     std::shared_ptr<TypeExpr> return_type_,
     std::vector<std::shared_ptr<Decl>> &&decls_,
     std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);

@@ -250,9 +250,14 @@ void XMLPrinter::visit(const Function &n) {
   *o << "<function name=\"" << n.name << "\" ";
   add_location(n);
   *o << ">";
-  for (const std::shared_ptr<Parameter> &p : n.parameters) {
-    sync_to(*p);
-    dispatch(*p);
+  if (!n.parameters.empty()) {
+    sync_to(*n.parameters[0]);
+    *o << "<parameters>";
+    for (const std::shared_ptr<VarDecl> &p : n.parameters) {
+      sync_to(*p);
+      dispatch(*p);
+    }
+    *o << "</parameters>";
   }
   if (n.return_type != nullptr) {
     sync_to(*n.return_type);
@@ -260,9 +265,14 @@ void XMLPrinter::visit(const Function &n) {
     dispatch(*n.return_type);
     *o << "</returntype>";
   }
-  for (const std::shared_ptr<Decl> &d : n.decls) {
-    sync_to(*d);
-    dispatch(*d);
+  if (!n.decls.empty()) {
+    sync_to(*n.decls[0]);
+    *o << "<decls>";
+    for (const std::shared_ptr<Decl> &d : n.decls) {
+      sync_to(*d);
+      dispatch(*d);
+    }
+    *o << "</decls>";
   }
   if (!n.body.empty()) {
     sync_to(*n.body[0]);

@@ -139,8 +139,10 @@ class Resolver : public BaseTraversal {
 
   void visit(Function &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<Parameter> &p : n.parameters)
+    for (std::shared_ptr<VarDecl> &p : n.parameters) {
       dispatch(*p);
+      symtab.declare(p->name, p);
+    }
     if (n.return_type != nullptr)
       dispatch(*n.return_type);
     for (std::shared_ptr<Decl> &d : n.decls) {

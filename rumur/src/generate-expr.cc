@@ -227,9 +227,9 @@ class Generator : public ConstExprTraversal {
         assert(it != n.function->parameters.end() &&
           "function call has more arguments than its target function");
 
-        std::shared_ptr<Parameter> &p = *it;
+        std::shared_ptr<VarDecl> &p = *it;
 
-        if (p->by_reference) {
+        if (!p->readonly) {
           generate_lvalue(*out, *a);
         } else {
           generate_rvalue(*out, *a);

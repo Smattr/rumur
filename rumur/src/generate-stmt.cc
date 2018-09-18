@@ -100,9 +100,9 @@ class Generator : public ConstStmtTraversal {
         assert(it != s.function->parameters.end() &&
           "procedure call has more arguments than its target procedure");
 
-        std::shared_ptr<Parameter> &p = *it;
+        std::shared_ptr<VarDecl> &p = *it;
 
-        if (p->by_reference) {
+        if (!p->readonly) {
           generate_lvalue(*out, *a);
         } else {
           generate_rvalue(*out, *a);
