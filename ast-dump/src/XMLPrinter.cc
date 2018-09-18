@@ -745,7 +745,7 @@ void XMLPrinter::visit(const Undefine &n) {
 
 void XMLPrinter::visit(const VarDecl &n) {
   sync_to(n);
-  *o << "<vardecl name=\"" << n.name << "\" ";
+  *o << "<vardecl name=\"" << n.name << "\" readonly=\"" << n.readonly << "\" ";
   add_location(n);
   *o << ">";
   sync_to(*n.type);

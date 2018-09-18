@@ -152,7 +152,7 @@ VarDecl::VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
 
 VarDecl::VarDecl(const VarDecl &other):
   ExprDecl(other), type(other.type->clone()), state_variable(other.state_variable),
-  offset(other.offset) { }
+  offset(other.offset), readonly(other.readonly) { }
 
 VarDecl &VarDecl::operator=(VarDecl other) {
   swap(*this, other);
@@ -167,6 +167,7 @@ void swap(VarDecl &x, VarDecl &y) noexcept {
   swap(x.type, y.type);
   swap(x.state_variable, y.state_variable);
   swap(x.offset, y.offset);
+  swap(x.readonly, y.readonly);
 }
 
 VarDecl *VarDecl::clone() const {
@@ -175,12 +176,23 @@ VarDecl *VarDecl::clone() const {
 
 bool VarDecl::operator==(const Node &other) const {
   auto o = dynamic_cast<const VarDecl*>(&other);
-  return o != nullptr && name == o->name && *type == *o->type
-      && state_variable == o->state_variable && offset == o->offset;
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (*type != *o->type)
+    return false;
+  if (state_variable != o->state_variable)
+    return false;
+  if (offset != o->offset)
+    return false;
+  if (readonly != o->readonly)
+    return false;
+  return true;
 }
 
 bool VarDecl::is_lvalue() const {
-  return true;
+  return !readonly;
 }
 
 mpz_class VarDecl::width() const {

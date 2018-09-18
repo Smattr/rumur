@@ -113,6 +113,11 @@ struct VarDecl : public ExprDecl {
    */
   mpz_class offset = -1;
 
+  /* Whether this variable is a read-only reference. E.g. a non-var parameter to
+   * a function or procedure.
+   */
+  bool readonly = false;
+
   VarDecl() = delete;
   VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
     const location &loc_);
