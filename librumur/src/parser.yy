@@ -155,7 +155,6 @@
 %type <rumur::Property::Category>                            category
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecls
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecls_cont
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
@@ -216,20 +215,11 @@ decl: CONST constdecls {
   std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
 
-constdecls: constdecls_cont constdecl semi_opt {
+constdecls: constdecls constdecl semi_opt {
   $$ = $1;
   std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | constdecl semi_opt {
-  $$ = $1;
 } | %empty {
   /* nothing required */
-};
-
-constdecls_cont: constdecls_cont constdecl ';' {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | constdecl ';' {
-  $$ = $1;
 };
 
 constdecl: id_list_opt ':' expr {
