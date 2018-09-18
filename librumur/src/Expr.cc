@@ -718,10 +718,7 @@ bool ExprID::is_lvalue() const {
   if (value == nullptr)
     throw Error("unresolved expression \"" + id + "\"", loc);
 
-  if (isa<ConstDecl>(value))
-    return false;
-
-  return true;
+  return value->is_lvalue();
 }
 
 Field::Field(std::shared_ptr<Expr> record_, const std::string &field_,
