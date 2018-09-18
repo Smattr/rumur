@@ -141,7 +141,7 @@ class Generator : public ConstExprTraversal {
       const TypeExpr *t = n.type()->resolve();
       assert(t != nullptr && "untyped literal somehow an identifier");
 
-      if (!lvalue && t->is_simple()) {
+      if (!lvalue && n.is_lvalue() && t->is_simple()) {
         const std::string lb = t->lower_bound();
         const std::string ub = t->upper_bound();
         *out << "handle_read(s, " << lb << ", " << ub << ", ";
@@ -149,7 +149,7 @@ class Generator : public ConstExprTraversal {
 
       *out << "ru_" << n.id;
 
-      if (!lvalue && t->is_simple())
+      if (!lvalue && n.is_lvalue() && t->is_simple())
         *out << ")";
       return;
     }
