@@ -50,7 +50,6 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit(const rumur::Not &n) final;
   void visit(const rumur::Number &n) final;
   void visit(const rumur::Or &n) final;
-  void visit(const rumur::Parameter &n) final;
   void visit(const rumur::ProcedureCall &n) final;
   void visit(const rumur::Property &n) final;
   void visit(const rumur::PropertyRule &n) final;

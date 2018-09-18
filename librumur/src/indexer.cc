@@ -187,11 +187,6 @@ void Indexer::visit(Or &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Parameter &n) {
-  n.unique_id = next++;
-  dispatch(*n.decl);
-}
-
 void Indexer::visit(ProcedureCall &n) {
   n.unique_id = next++;
   for (std::shared_ptr<Expr> &a : n.arguments)

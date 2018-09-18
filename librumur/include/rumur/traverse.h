@@ -52,7 +52,6 @@ class BaseTraversal {
   virtual void visit(Not &n) = 0;
   virtual void visit(Number &n) = 0;
   virtual void visit(Or &n) = 0;
-  virtual void visit(Parameter &n) = 0;
   virtual void visit(ProcedureCall &n) = 0;
   virtual void visit(Property &n) = 0;
   virtual void visit(PropertyRule &n) = 0;
@@ -123,7 +122,6 @@ class Traversal : public BaseTraversal {
   void visit(Not &n) override;
   void visit(Number &n) override;
   void visit(Or &n) override;
-  void visit(Parameter &n) override;
   void visit(ProcedureCall &n) override;
   void visit(Property &n) override;
   void visit(PropertyRule &n) override;
@@ -191,7 +189,6 @@ class ExprTraversal : public BaseTraversal {
   void visit(Not &n) override = 0;
   void visit(Number &n) override = 0;
   void visit(Or &n) override = 0;
-  void visit(Parameter &n) final;
   void visit(ProcedureCall &n) final;
   void visit(Property &n) final;
   void visit(PropertyRule &n) final;
@@ -254,7 +251,6 @@ class StmtTraversal : public BaseTraversal {
   void visit(Not &n) final;
   void visit(Number &n) final;
   void visit(Or &n) final;
-  void visit(Parameter &n) final;
   void visit(ProcedureCall &n) override = 0;
   void visit(Property &n) final;
   void visit(PropertyRule &n) final;
@@ -319,7 +315,6 @@ class TypeTraversal : public BaseTraversal {
   void visit(Not &n) final;
   void visit(Number &n) final;
   void visit(Or &n) final;
-  void visit(Parameter &n) final;
   void visit(ProcedureCall &n) final;
   void visit(Property &n) final;
   void visit(PropertyRule &n) final;
@@ -384,7 +379,6 @@ class ConstBaseTraversal {
   virtual void visit(const Not &n) = 0;
   virtual void visit(const Number &n) = 0;
   virtual void visit(const Or &n) = 0;
-  virtual void visit(const Parameter &n) = 0;
   virtual void visit(const ProcedureCall &n) = 0;
   virtual void visit(const Property &n) = 0;
   virtual void visit(const PropertyRule &n) = 0;
@@ -448,7 +442,6 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit(const Not &n) override;
   void visit(const Number &n) override;
   void visit(const Or &n) override;
-  void visit(const Parameter &n) override;
   void visit(const ProcedureCall &n) override;
   void visit(const Property &n) override;
   void visit(const PropertyRule &n) override;
@@ -514,7 +507,6 @@ class ConstExprTraversal : public ConstBaseTraversal {
   void visit(const Not &n) override = 0;
   void visit(const Number &n) override = 0;
   void visit(const Or &n) override = 0;
-  void visit(const Parameter &n) final;
   void visit(const ProcedureCall &n) final;
   void visit(const Property &n) final;
   void visit(const PropertyRule &n) final;
@@ -575,7 +567,6 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit(const Not &n) final;
   void visit(const Number &n) final;
   void visit(const Or &n) final;
-  void visit(const Parameter &n) final;
   void visit(const ProcedureCall &n) override = 0;
   void visit(const Property &n) final;
   void visit(const PropertyRule &n) final;
@@ -640,7 +631,6 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit(const Not &n) final;
   void visit(const Number &n) final;
   void visit(const Or &n) final;
-  void visit(const Parameter &n) final;
   void visit(const ProcedureCall &n) final;
   void visit(const Property &n) final;
   void visit(const PropertyRule &n) final;

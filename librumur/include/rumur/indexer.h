@@ -50,7 +50,6 @@ class Indexer : public Traversal {
   void visit(Not &n) final;
   void visit(Number &n) final;
   void visit(Or &n) final;
-  void visit(Parameter &n) final;
   void visit(ProcedureCall &n) final;
   void visit(Property &n) final;
   void visit(PropertyRule &n) final;

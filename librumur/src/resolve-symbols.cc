@@ -239,11 +239,6 @@ class Resolver : public BaseTraversal {
     visit(static_cast<BinaryExpr&>(n));
   }
 
-  void visit(Parameter &n) final {
-    dispatch(*n.decl);
-    symtab.declare(n.decl->name, n.decl);
-  }
-
   void visit(ProcedureCall &n) final {
     if (n.function == nullptr) {
       // This reference is unresolved

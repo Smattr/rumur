@@ -224,11 +224,6 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Parameter &n) final {
-    dispatch(*n.decl);
-    n.validate();
-  }
-
   void visit(const ProcedureCall &n) final {
     for (const std::shared_ptr<Expr> &a : n.arguments)
       dispatch(*a);

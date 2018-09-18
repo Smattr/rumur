@@ -184,11 +184,6 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
-  if (auto i = dynamic_cast<Parameter*>(&n)) {
-    visit(*i);
-    return;
-  }
-
   if (auto i = dynamic_cast<ProcedureCall*>(&n)) {
     visit(*i);
     return;
@@ -442,10 +437,6 @@ void Traversal::visit(Or &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Traversal::visit(Parameter &n) {
-  dispatch(*n.decl);
-}
-
 void Traversal::visit(ProcedureCall &n) {
   for (std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
@@ -609,10 +600,6 @@ void ExprTraversal::visit(Model &n) {
     dispatch(*f);
   for (std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
-}
-
-void ExprTraversal::visit(Parameter &n) {
-  dispatch(*n.decl);
 }
 
 void ExprTraversal::visit(ProcedureCall &n) {
@@ -833,10 +820,6 @@ void StmtTraversal::visit(Number&) { }
 
 void StmtTraversal::visit(Or &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
-}
-
-void StmtTraversal::visit(Parameter &n) {
-  dispatch(*n.decl);
 }
 
 void StmtTraversal::visit(Property &n) {
@@ -1068,10 +1051,6 @@ void TypeTraversal::visit(Number&) { }
 
 void TypeTraversal::visit(Or &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
-}
-
-void TypeTraversal::visit(Parameter &n) {
-  dispatch(*n.decl);
 }
 
 void TypeTraversal::visit(ProcedureCall &n) {
@@ -1329,11 +1308,6 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
-  if (auto i = dynamic_cast<const Parameter*>(&n)) {
-    visit(*i);
-    return;
-  }
-
   if (auto i = dynamic_cast<const ProcedureCall*>(&n)) {
     visit(*i);
     return;
@@ -1587,10 +1561,6 @@ void ConstTraversal::visit(const Or &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
 
-void ConstTraversal::visit(const Parameter &n) {
-  dispatch(*n.decl);
-}
-
 void ConstTraversal::visit(const ProcedureCall &n) {
   for (const std::shared_ptr<Expr> &a : n.arguments)
     dispatch(*a);
@@ -1754,10 +1724,6 @@ void ConstExprTraversal::visit(const Model &n) {
     dispatch(*f);
   for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
-}
-
-void ConstExprTraversal::visit(const Parameter &n) {
-  dispatch(*n.decl);
 }
 
 void ConstExprTraversal::visit(const ProcedureCall &n) {
@@ -1978,10 +1944,6 @@ void ConstStmtTraversal::visit(const Number&) { }
 
 void ConstStmtTraversal::visit(const Or &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
-}
-
-void ConstStmtTraversal::visit(const Parameter &n) {
-  dispatch(*n.decl);
 }
 
 void ConstStmtTraversal::visit(const Property &n) {
@@ -2213,10 +2175,6 @@ void ConstTypeTraversal::visit(const Number&) { }
 
 void ConstTypeTraversal::visit(const Or &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
-}
-
-void ConstTypeTraversal::visit(const Parameter &n) {
-  dispatch(*n.decl);
 }
 
 void ConstTypeTraversal::visit(const ProcedureCall &n) {

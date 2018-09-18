@@ -12,41 +12,6 @@
 
 namespace rumur {
 
-Parameter::Parameter(std::shared_ptr<VarDecl> decl_, bool by_reference_,
-  const location &loc_):
-  Node(loc_), decl(decl_), by_reference(by_reference_) { }
-
-Parameter::Parameter(const Parameter &other):
-  Node(other), decl(other.decl->clone()), by_reference(other.by_reference) { }
-
-Parameter &Parameter::operator=(Parameter other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Parameter &x, Parameter &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.decl, y.decl);
-  swap(x.by_reference, y.by_reference);
-}
-
-Parameter *Parameter::clone() const {
-  return new Parameter(*this);
-}
-
-bool Parameter::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Parameter*>(&other);
-  if (o == nullptr)
-    return false;
-  if (*decl != *o->decl)
-    return false;
-  if (by_reference != o->by_reference)
-    return false;
-  return true;
-}
-
 Function::Function(const std::string &name_,
   std::vector<std::shared_ptr<VarDecl>> &&parameters_,
   std::shared_ptr<TypeExpr> return_type_,

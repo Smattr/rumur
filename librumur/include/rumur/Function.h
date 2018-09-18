@@ -11,22 +11,6 @@
 
 namespace rumur {
 
-struct Parameter : public Node {
-
-  std::shared_ptr<VarDecl> decl;
-  bool by_reference;
-
-  Parameter() = delete;
-  Parameter(std::shared_ptr<VarDecl> decl_, bool by_reference_,
-    const location &loc_);
-  Parameter(const Parameter &other);
-  Parameter &operator=(Parameter other);
-  friend void swap(Parameter &x, Parameter &y) noexcept;
-  virtual ~Parameter() { }
-  Parameter *clone() const final;
-  bool operator==(const Node &other) const final;
-};
-
 struct Function : public Node {
 
   std::string name;

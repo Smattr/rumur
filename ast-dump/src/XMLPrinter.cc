@@ -431,18 +431,6 @@ void XMLPrinter::visit(const Or &n) {
   visit_bexpr("or", n);
 }
 
-void XMLPrinter::visit(const Parameter &n) {
-  sync_to(n);
-  *o << "<parameter by_reference=\"" << (n.by_reference ? "true" : "false")
-    << "\" ";
-  add_location(n);
-  *o << ">";
-  sync_to(*n.decl);
-  dispatch(*n.decl);
-  sync_to(n.loc.end);
-  *o << "</parameter>";
-}
-
 void XMLPrinter::visit(const ProcedureCall &n) {
   sync_to(n);
   /* As with FunctionCall, we use the function's name rather than emitting it as
