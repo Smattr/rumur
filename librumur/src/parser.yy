@@ -186,7 +186,7 @@
 %type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts
 %type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts_cont
 %type <std::string>                                          string_opt
-%type <std::shared_ptr<rumur::Decl>>                         typedecl
+%type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecls
 %type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecl
@@ -227,15 +227,17 @@ constdecl: id_list_opt ':' expr {
   }
 };
 
-typedecls: typedecls typedecl {
+typedecls: typedecls typedecl semi_opt {
   $$ = $1;
-  $$.push_back($2);
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
 } | %empty {
   /* nothing required */
 };
 
-typedecl: ID ':' typeexpr ';' {
-  $$ = std::make_shared<rumur::TypeDecl>($1, $3, @$);
+typedecl: id_list_opt ':' typeexpr {
+  for (const std::pair<std::string, rumur::location> &m : $1) {
+    $$.push_back(std::make_shared<rumur::TypeDecl>(m.first, $3, @$));
+  }
 };
 
 typeexpr: BOOLEAN {
