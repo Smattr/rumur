@@ -275,7 +275,7 @@ vardecls_cont: vardecls_cont vardecl ';' {
 
 vardecl: id_list_opt ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, m.second));
+    $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, @$));
   }
 };
 
