@@ -178,7 +178,6 @@
 %type <std::shared_ptr<rumur::Rule>>                         rule
 %type <std::shared_ptr<rumur::Ruleset>>                      ruleset
 %type <std::vector<std::shared_ptr<rumur::Rule>>>            rules
-%type <std::vector<std::shared_ptr<rumur::Rule>>>            rules_cont
 %type <std::shared_ptr<rumur::SimpleRule>>                   simplerule
 %type <std::shared_ptr<rumur::StartState>>                   startstate
 %type <std::shared_ptr<rumur::Stmt>>                         stmt
@@ -316,19 +315,10 @@ var_opt: VAR {
   $$ = false;
 };
 
-rules: rules_cont rule semi_opt {
+rules: rules rule semi_opt {
   $$ = $1;
   $$.push_back($2);
-} | rule semi_opt {
-  $$.push_back($1);
 } | %empty {
-};
-
-rules_cont: rules_cont rule ';' {
-  $$ = $1;
-  $$.push_back($2);
-} | rule ';' {
-  $$.push_back($1);
 };
 
 rule: startstate {
