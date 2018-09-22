@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #ifndef yyFlexLexerOnce
   #include <FlexLexer.h>
 #endif

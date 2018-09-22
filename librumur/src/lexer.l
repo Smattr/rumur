@@ -1,5 +1,6 @@
 %{
 
+#include <cstddef>
 #include "parser.yy.hh"
 #include <rumur/except.h>
 #include <rumur/scanner.h>

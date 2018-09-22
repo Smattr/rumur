@@ -1,3 +1,4 @@
+#include <cstddef>
 #include "generate.h"
 #include <iostream>
 #include <rumur/rumur.h>

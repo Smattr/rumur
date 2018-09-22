@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <rumur/Model.h>
 
 namespace rumur {

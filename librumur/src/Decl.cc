@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <gmpxx.h>
 #include <iostream>
 #include "location.hh"

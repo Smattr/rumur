@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include "location.hh"
 #include <stdexcept>
 #include <string>

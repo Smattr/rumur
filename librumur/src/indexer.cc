@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/indexer.h>

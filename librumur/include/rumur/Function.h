@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstddef>
 #include <gmpxx.h>
 #include <iostream>
 #include <limits.h>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <rumur/Expr.h>
 #include <rumur/Model.h>
 #include <rumur/Number.h>

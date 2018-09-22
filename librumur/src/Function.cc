@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/except.h>

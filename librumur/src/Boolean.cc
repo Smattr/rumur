@@ -1,3 +1,4 @@
+#include <cstddef>
 #include "location.hh"
 #include <memory>
 #include <rumur/Boolean.h>

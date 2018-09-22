@@ -29,6 +29,7 @@
    */
 %code requires {
 
+  #include <cstddef>
   #include <memory>
   #include <rumur/Decl.h>
   #include <rumur/Expr.h>

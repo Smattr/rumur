@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <rumur/Node.h>
 
 namespace rumur {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 extern unsigned char resources_includes_c[];
 extern unsigned int resources_includes_c_len;
 

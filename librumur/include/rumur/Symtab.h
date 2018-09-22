@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
 #include "location.hh"
 #include <memory>
 #include <rumur/except.h>

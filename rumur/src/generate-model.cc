@@ -1,3 +1,4 @@
+#include <cstddef>
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>
