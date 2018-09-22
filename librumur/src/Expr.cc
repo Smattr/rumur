@@ -482,10 +482,8 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
   const TypeExpr *t1 = lhs.type()->resolve();
   const TypeExpr *t2 = rhs.type()->resolve();
 
-  if (auto r1 = dynamic_cast<const Range*>(t1)) {
-    if (auto r2 = dynamic_cast<const Range*>(t2))
-      return true;
-  }
+  if (isa<Range>(t1) && isa<Range>(t2))
+    return true;
 
   return false;
 }

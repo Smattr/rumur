@@ -136,7 +136,7 @@ class Generator : public ConstExprTraversal {
     }
 
     // This is either a state variable or a local variable.
-    if (auto v = dynamic_cast<const VarDecl*>(n.value.get())) {
+    if (isa<VarDecl>(n.value)) {
 
       const TypeExpr *t = n.type()->resolve();
       assert(t != nullptr && "untyped literal somehow an identifier");
