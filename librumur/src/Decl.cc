@@ -151,8 +151,8 @@ VarDecl::VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
 }
 
 VarDecl::VarDecl(const VarDecl &other):
-  ExprDecl(other), type(other.type->clone()), state_variable(other.state_variable),
-  offset(other.offset), readonly(other.readonly) { }
+  ExprDecl(other), type(other.type->clone()), offset(other.offset),
+  readonly(other.readonly) { }
 
 VarDecl &VarDecl::operator=(VarDecl other) {
   swap(*this, other);
@@ -165,7 +165,6 @@ void swap(VarDecl &x, VarDecl &y) noexcept {
   swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.type, y.type);
-  swap(x.state_variable, y.state_variable);
   swap(x.offset, y.offset);
   swap(x.readonly, y.readonly);
 }
@@ -181,8 +180,6 @@ bool VarDecl::operator==(const Node &other) const {
   if (name != o->name)
     return false;
   if (*type != *o->type)
-    return false;
-  if (state_variable != o->state_variable)
     return false;
   if (offset != o->offset)
     return false;

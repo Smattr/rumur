@@ -130,7 +130,6 @@ void Model::reindex() {
   mpz_class offset = 0;
   for (std::shared_ptr<Decl> &d : decls) {
     if (auto v = dynamic_cast<VarDecl*>(d.get())) {
-      v->state_variable = true;
       v->offset = offset;
       offset += v->type->width();
     }

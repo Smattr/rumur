@@ -100,15 +100,8 @@ struct VarDecl : public ExprDecl {
 
   std::shared_ptr<TypeExpr> type;
 
-  /* Whether this variable is part of the model state. If not, it is either a
-   * local or a rule parameter. Note that this is simply set to false by default
-   * during construction and then later toggled to true if necessary as we
-   * ascend the AST.
-   */
-  bool state_variable = false;
-
-  /* Offset within the model state. This is only relevant if state_variable ==
-   * true. We initially set it to an invalid value and rely on Model::reindex
+  /* Offset within the model state. This is only relevant if this is a state
+   * variable. We initially set it to an invalid value and rely on Model::reindex
    * setting this correctly later.
    */
   mpz_class offset = -1;
