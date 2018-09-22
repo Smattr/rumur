@@ -461,4 +461,103 @@ void generate_model(std::ostream &out, const Model &m) {
   }
   out
     << "}\n\n";
+
+  // Write a function to print state transitions.
+  out
+    << "static void print_transition(const struct state *s1, const struct state *s2) {\n"
+    << "  ASSERT(s2 != NULL);\n"
+    << "  if (s1 == NULL) {\n";
+  {
+    size_t index = 0;
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (isa<StartState>(r)) {
+
+        out
+         << "    {\n"
+         << "      struct state *s = NULL;\n";
+
+        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
+          generate_quantifier_header(out, *q);
+
+        out
+          << "      s = state_new();\n"
+          << "      startstate" << index << "(s";
+        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ");\n"
+          << "      if (SYMMETRY_REDUCTION) {\n"
+          << "        state_canonicalise(s);\n"
+          << "      }\n"
+          << "      bool r = state_eq(s2, s);\n"
+          << "      free(s);\n"
+          << "      if (r) {\n"
+          << "        printf(\"Startstate %s fired.\\n\", \""
+            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "        return;\n"
+          << "      }\n";
+
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          generate_quantifier_footer(out, **it);
+
+        out
+          << "    }\n";
+
+        index++;
+      }
+    }
+  }
+
+  out
+    << "  } else {\n";
+  {
+    size_t index = 0;
+    for (const std::shared_ptr<Rule> &r : flat_rules) {
+      if (isa<SimpleRule>(r)) {
+
+        out
+          << "    {\n"
+          << "      struct state *s = NULL;\n";
+
+        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
+          generate_quantifier_header(out, *q);
+
+        out
+          << "      s = state_dup(s1);\n"
+          << "      bool r = false;\n"
+          << "      if (guard" << index << "(s";
+        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ")) {\n"
+          << "        rule" << index << "(s";
+        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
+          out << ", ru_" << q->var->name;
+        out << ");\n"
+          << "        if (SYMMETRY_REDUCTION) {\n"
+          << "          state_canonicalise(s);\n"
+          << "        }\n"
+          << "        r = state_eq(s2, s);\n"
+          << "        free(s);\n"
+          << "     }\n"
+          << "     if (r) {\n"
+          << "       printf(\"Rule %s fired.\\n\", \""
+            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "       return;\n"
+          << "     }\n";
+
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          generate_quantifier_footer(out, **it);
+
+        out << "    }\n";
+
+        index++;
+      }
+    }
+  }
+
+  out
+    << "  }\n"
+    << "  ASSERT(!\"no rule found to link two discovered states\");\n"
+    << "}\n\n";
 }

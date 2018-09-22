@@ -523,6 +523,11 @@ static size_t state_hash(const struct state *s) {
  */
 static void state_print(const struct state *s);
 
+/* Print the first rule that transforms state s1 into state s2. This function is
+ * generated. This function assumes that the caller holds print_mutex.
+ */
+static void print_transition(const struct state *s1, const struct state *s2);
+
 static unsigned print_counterexample(const struct state *s) {
 
   if (s == NULL) {
@@ -533,6 +538,8 @@ static unsigned print_counterexample(const struct state *s) {
    * corresponds to the order in which they were traversed.
    */
   unsigned step = print_counterexample(s->previous) + 1;
+
+  print_transition(s->previous, s);
 
   state_print(s);
   fprintf(stderr, "----------\n\n");
