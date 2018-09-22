@@ -1755,6 +1755,9 @@ static void start_secondary_threads(void) {
 
 int main(void) {
 
+  if (COLOR == AUTO)
+    istty = isatty(STDOUT_FILENO) != 0;
+
   sandbox();
 
   printf("Memory usage:\n"
@@ -1766,9 +1769,6 @@ int main(void) {
          ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
 
   START_TIME = time(NULL);
-
-  if (COLOR == AUTO)
-    istty = isatty(STDOUT_FILENO) != 0;
 
   rendezvous_init();
 
