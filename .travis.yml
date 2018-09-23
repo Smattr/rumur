@@ -1,0 +1,152 @@
+language: cpp
+
+matrix:
+  include:
+  - name: Linux, GCC 5
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-5
+    env:
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, GCC 6
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-6
+    env:
+      - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, GCC 7
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
+    env:
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, GCC 8
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-8
+    env:
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, Clang 3.8
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-precise-3.8
+        packages:
+          - clang-3.8
+          - g++-6
+    env:
+      - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, Clang 3.9
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-3.9
+        packages:
+          - clang-3.9
+          - g++-6
+    env:
+      - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, Clang 4.0
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-4.0
+        packages:
+          - clang-4.0
+          - g++-6
+    env:
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, Clang 5.0
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-5.0
+        packages:
+          - clang-5.0
+          - g++-6
+    env:
+      - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: Linux, Clang 6.0
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-6.0
+        packages:
+          - clang-6.0
+          - g++-6
+    env:
+      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: macOS, XCode 8.3 Clang
+    os: osx
+    osx_image: xcode8.3
+    env:
+      # The version of Bison and Flex that come with XCode 8.3 are too old to
+      # support some of the flags/features we use. To install newer versions and
+      # make them available to CMake we need to link them into the system
+      # directories.
+      - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: macOS, XCode 9.2 Clang
+    os: osx
+    osx_image: xcode9.2
+    env:
+      - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
+      - CTEST_OUTPUT_ON_FAILURE=1
+  - name: macOS, XCode 9.4 Clang
+    os: osx
+    osx_image: xcode9.4
+    env:
+      - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
+      - CTEST_OUTPUT_ON_FAILURE=1
+
+# This file initially contained entries to test GCC on macOS as well, but I
+# could not figure out how to get these working. One show stopper seems to be
+# that the available libgmps on macOS all seem to have been built with Clang in
+# a way that is ABI-incompatible with linking against GCC-compiled code.
+
+before_install:
+  - if [ "$(uname -s)" = "Linux"]; then sudo apt-get -qq update; fi
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=install ..
+  - cmake --build .
+  - cmake --build . -- test
+  - cmake --build . -- install
