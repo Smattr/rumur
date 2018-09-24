@@ -16,6 +16,11 @@ void Indexer::visit(Add &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
+void Indexer::visit(AliasDecl &n) {
+  n.unique_id = next++;
+  dispatch(*n.value);
+}
+
 void Indexer::visit(And &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }

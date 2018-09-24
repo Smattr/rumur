@@ -12,13 +12,14 @@
 
 namespace rumur {
 
-class Indexer : public Traversal {
+class Indexer : public BaseTraversal {
 
  private:
   size_t next = 0;
 
  public:
   void visit(Add &n) final;
+  void visit(AliasDecl &n) final;
   void visit(And &n) final;
   void visit(Array &n) final;
   void visit(Assignment &n) final;
