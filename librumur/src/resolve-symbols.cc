@@ -50,6 +50,17 @@ class Resolver : public BaseTraversal {
     dispatch(*n.value);
   }
 
+  void visit(AliasStmt &n) final {
+    symtab.open_scope();
+    for (std::shared_ptr<AliasDecl> &a : n.aliases) {
+      dispatch(*a);
+      symtab.declare(a->name, a);
+    }
+    for (std::shared_ptr<Stmt> &s : n.body)
+      dispatch(*s);
+    symtab.close_scope();
+  }
+
   void visit(And &n) final {
     visit(static_cast<BinaryExpr&>(n));
   }

@@ -21,6 +21,7 @@ class BaseTraversal {
  public:
   virtual void visit(Add &n) = 0;
   virtual void visit(AliasDecl &n) = 0;
+  virtual void visit(AliasStmt &n) = 0;
   virtual void visit(And &n) = 0;
   virtual void visit(Array &n) = 0;
   virtual void visit(Assignment &n) = 0;
@@ -91,6 +92,7 @@ class Traversal : public BaseTraversal {
  public:
   void visit(Add &n) override;
   void visit(AliasDecl &n) override;
+  void visit(AliasStmt &n) override;
   void visit(And &n) override;
   void visit(Array &n) override;
   void visit(Assignment &n) override;
@@ -158,6 +160,7 @@ class ExprTraversal : public BaseTraversal {
  public:
   void visit(Add &n) override = 0;
   void visit(AliasDecl &n) final;
+  void visit(AliasStmt &n) final;
   void visit(And &n) override = 0;
   void visit(Array &n) final;
   void visit(Assignment &n) final;
@@ -220,6 +223,7 @@ class StmtTraversal : public BaseTraversal {
  public:
   void visit(Add &n) final;
   void visit(AliasDecl &n) final;
+  void visit(AliasStmt &n) override = 0;
   void visit(And &n) final;
   void visit(Array &n) final;
   void visit(Assignment &n) override = 0;
@@ -284,6 +288,7 @@ class TypeTraversal : public BaseTraversal {
  public:
   void visit(Add &n) final;
   void visit(AliasDecl &n) final;
+  void visit(AliasStmt &n) final;
   void visit(And &n) final;
   void visit(Array &n) override = 0;
   void visit(Assignment &n) final;
@@ -348,6 +353,7 @@ class ConstBaseTraversal {
  public:
   virtual void visit(const Add &n) = 0;
   virtual void visit(const AliasDecl &n) = 0;
+  virtual void visit(const AliasStmt &n) = 0;
   virtual void visit(const And &n) = 0;
   virtual void visit(const Array &n) = 0;
   virtual void visit(const Assignment &n) = 0;
@@ -411,6 +417,7 @@ class ConstTraversal : public ConstBaseTraversal {
  public:
   void visit(const Add &n) override;
   void visit(const AliasDecl &n) override;
+  void visit(const AliasStmt &n) override;
   void visit(const And &n) override;
   void visit(const Array &n) override;
   void visit(const Assignment &n) override;
@@ -476,6 +483,7 @@ class ConstExprTraversal : public ConstBaseTraversal {
  public:
   void visit(const Add &n) override = 0;
   void visit(const AliasDecl &n) final;
+  void visit(const AliasStmt &n) final;
   void visit(const And &n) override = 0;
   void visit(const Array &n) final;
   void visit(const Assignment &n) final;
@@ -536,6 +544,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
  public:
   void visit(const Add &n) final;
   void visit(const AliasDecl &n) final;
+  void visit(const AliasStmt &n) override = 0;
   void visit(const And &n) final;
   void visit(const Array &n) final;
   void visit(const Assignment &n) override = 0;
@@ -600,6 +609,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
  public:
   void visit(const Add &n) final;
   void visit(const AliasDecl &n) final;
+  void visit(const AliasStmt &n) final;
   void visit(const And &n) final;
   void visit(const Array &n) override = 0;
   void visit(const Assignment &n) final;

@@ -16,6 +16,24 @@ class Generator : public ConstStmtTraversal {
 
  public:
   Generator(std::ostream &o): out(&o) { }
+
+  void visit(const AliasStmt &s) final {
+    *out << "  {\n";
+
+    for (const std::shared_ptr<AliasDecl> &a : s.aliases) {
+      *out << "    ";
+      generate_decl(*out, *a);
+      *out << ";\n";
+    }
+
+    for (const std::shared_ptr<Stmt> &st : s.body) {
+      *out << "    ";
+      generate_stmt(*out, *st);
+      *out << ";\n";
+    }
+
+    *out << "  }\n";
+  }
     
   void visit(const Assignment &s) final {
 

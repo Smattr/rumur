@@ -25,6 +25,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<AliasStmt*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<And*>(&n)) {
     visit(*i);
     return;
@@ -285,6 +290,13 @@ void Traversal::visit(Add &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
+void Traversal::visit(AliasStmt &n) {
+  for (std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
 void Traversal::visit(AliasDecl &n) {
   dispatch(*n.value);
 }
@@ -541,6 +553,13 @@ Traversal::~Traversal() { }
 
 void ExprTraversal::visit(AliasDecl &n) {
   dispatch(*n.value);
+}
+
+void ExprTraversal::visit(AliasStmt &n) {
+  for (std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
 }
 
 void ExprTraversal::visit(Array &n) {
@@ -912,6 +931,13 @@ void TypeTraversal::visit(AliasDecl &n) {
   dispatch(*n.value);
 }
 
+void TypeTraversal::visit(AliasStmt &n) {
+  for (std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
 void TypeTraversal::visit(And &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
@@ -1145,6 +1171,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
   }
 
   if (auto i = dynamic_cast<const AliasDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const AliasStmt*>(&n)) {
     visit(*i);
     return;
   }
@@ -1413,6 +1444,13 @@ void ConstTraversal::visit(const AliasDecl &n) {
   dispatch(*n.value);
 }
 
+void ConstTraversal::visit(const AliasStmt &n) {
+  for (const std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
+}
+
 void ConstTraversal::visit(const And &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
@@ -1665,6 +1703,13 @@ ConstTraversal::~ConstTraversal() { }
 
 void ConstExprTraversal::visit(const AliasDecl &n) {
   dispatch(*n.value);
+}
+
+void ConstExprTraversal::visit(const AliasStmt &n) {
+  for (const std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
 }
 
 void ConstExprTraversal::visit(const Array &n) {
@@ -2034,6 +2079,13 @@ void ConstTypeTraversal::visit(const Add &n) {
 
 void ConstTypeTraversal::visit(const AliasDecl &n) {
   dispatch(*n.value);
+}
+
+void ConstTypeTraversal::visit(const AliasStmt &n) {
+  for (const std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (const std::shared_ptr<Stmt> &s : n.body)
+    dispatch(*s);
 }
 
 void ConstTypeTraversal::visit(const And &n) {

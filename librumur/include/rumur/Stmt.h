@@ -4,6 +4,7 @@
 #include <iostream>
 #include "location.hh"
 #include <memory>
+#include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
@@ -27,6 +28,23 @@ struct Stmt : public Node {
   virtual ~Stmt() { }
   virtual Stmt *clone() const = 0;
 
+};
+
+struct AliasStmt : public Stmt {
+
+  std::vector<std::shared_ptr<AliasDecl>> aliases;
+  std::vector<std::shared_ptr<Stmt>> body;
+
+  AliasStmt() = delete;
+  AliasStmt(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
+  AliasStmt(const AliasStmt &other);
+  AliasStmt &operator=(AliasStmt other);
+  friend void swap(AliasStmt &x, AliasStmt &y) noexcept;
+  AliasStmt *clone() const final;
+  virtual ~AliasStmt() { }
+
+  bool operator==(const Node &other) const final;
 };
 
 struct PropertyStmt : public Stmt {

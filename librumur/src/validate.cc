@@ -30,6 +30,13 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit(const AliasStmt &n) final {
+    for (const std::shared_ptr<AliasDecl> &a : n.aliases)
+      dispatch(*a);
+    for (const std::shared_ptr<Stmt> &s : n.body)
+      dispatch(*s);
+  }
+
   void visit(const And &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);

@@ -48,6 +48,33 @@ void XMLPrinter::visit(const AliasDecl &n) {
   *o << "</aliasdecl>";
 }
 
+void XMLPrinter::visit(const AliasStmt &n) {
+  sync_to(n);
+  *o << "<aliasstmt ";
+  add_location(n);
+  *o << ">";
+  if (!n.aliases.empty()) {
+    sync_to(*n.aliases[0]);
+    *o << "<aliases>";
+    for (const std::shared_ptr<AliasDecl> &a : n.aliases) {
+      sync_to(*a);
+      dispatch(*a);
+    }
+    *o << "</aliases>";
+  }
+  if (!n.body.empty()) {
+    sync_to(*n.body[0]);
+    *o << "<body>";
+    for (const std::shared_ptr<Stmt> &s : n.body) {
+      sync_to(*s);
+      dispatch(*s);
+    }
+    *o << "</body>";
+  }
+  sync_to(n.loc.end);
+  *o << "</aliasstmt>";
+}
+
 void XMLPrinter::visit(const And &n) {
   visit_bexpr("and", n);
 }

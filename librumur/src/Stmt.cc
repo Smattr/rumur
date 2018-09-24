@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
@@ -14,6 +15,48 @@
 #include <vector>
 
 namespace rumur {
+
+AliasStmt::AliasStmt(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
+  Stmt(loc_), aliases(aliases_), body(body_) { }
+
+AliasStmt::AliasStmt(const AliasStmt &other):
+  Stmt(other.loc) {
+
+  for (const std::shared_ptr<AliasDecl> &a : other.aliases)
+    aliases.emplace_back(a->clone());
+
+  for (const std::shared_ptr<Stmt> &s : other.body)
+    body.emplace_back(s->clone());
+}
+
+AliasStmt &AliasStmt::operator=(AliasStmt other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(AliasStmt &x, AliasStmt &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
+  swap(x.aliases, y.aliases);
+  swap(x.body, y.body);
+}
+
+AliasStmt *AliasStmt::clone() const {
+  return new AliasStmt(*this);
+}
+
+bool AliasStmt::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AliasStmt*>(&other);
+  if (o == nullptr)
+    return false;
+  if (!vector_eq(aliases, o->aliases))
+    return false;
+  if (!vector_eq(body, o->body))
+    return false;
+  return true;
+}
 
 PropertyStmt::PropertyStmt(const Property &property_,
   const std::string &message_, const location &loc_):

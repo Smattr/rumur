@@ -136,11 +136,11 @@ class Generator : public ConstExprTraversal {
       return;
     }
 
-    // This is either a state variable or a local variable.
-    if (isa<VarDecl>(n.value)) {
+    // This is either a state variable, a local variable or an alias.
+    if (isa<AliasDecl>(n.value) || isa<VarDecl>(n.value)) {
 
-      const TypeExpr *t = n.type()->resolve();
-      assert(t != nullptr && "untyped literal somehow an identifier");
+      const TypeExpr *t = n.type();
+      assert((!n.is_lvalue() || t != nullptr) && "lvalue without a type");
 
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
         const std::string lb = t->lower_bound();

@@ -8,6 +8,25 @@ using namespace rumur;
 
 void generate_decl(std::ostream &out, const Decl &d) {
 
+  if (auto a = dynamic_cast<const AliasDecl*>(&d)) {
+
+    const TypeExpr *t = a->value->type();
+    if ((t == nullptr || t->is_simple()) && !a->value->is_lvalue()) {
+      out << "value_t";
+    } else {
+      out << "struct handle";
+    }
+
+    out << " " << a->name << " = ";
+    if (a->value->is_lvalue()) {
+      generate_lvalue(out, *a->value);
+    } else {
+      generate_rvalue(out, *a->value);
+    }
+
+    return;
+  }
+
   if (auto c = dynamic_cast<const ConstDecl*>(&d)) {
     assert((c->type == nullptr || c->type->is_simple())
       && "complex const decl");
