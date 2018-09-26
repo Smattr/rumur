@@ -675,14 +675,7 @@ const TypeExpr *ExprID::type() const {
   if (value == nullptr)
     throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
 
-  if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
-    return c->type.get();
-
-  if (auto v = dynamic_cast<const VarDecl*>(value.get()))
-    return v->type->resolve();
-
-  assert(!"unreachable");
-  __builtin_unreachable();
+  return value->get_type();
 }
 
 mpz_class ExprID::constant_fold() const {

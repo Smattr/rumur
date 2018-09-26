@@ -57,6 +57,10 @@ bool AliasDecl::is_lvalue() const {
   return value->is_lvalue();
 }
 
+const TypeExpr *AliasDecl::get_type() const {
+  return value->type();
+}
+
 ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
   const location &loc_):
   ExprDecl(name_, loc_), value(value_) { }
@@ -108,6 +112,10 @@ bool ConstDecl::operator==(const Node &other) const {
 
 bool ConstDecl::is_lvalue() const {
   return false;
+}
+
+const TypeExpr *ConstDecl::get_type() const {
+  return type.get();
 }
 
 void ConstDecl::validate() const {
@@ -199,6 +207,10 @@ mpz_class VarDecl::width() const {
 
 mpz_class VarDecl::count() const {
   return type->count();
+}
+
+const TypeExpr *VarDecl::get_type() const {
+  return type.get();
 }
 
 }
