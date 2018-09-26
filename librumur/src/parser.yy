@@ -57,6 +57,7 @@
   #include <iostream>
   #include <iterator>
   #include <rumur/except.h>
+  #include <tuple>
   #include <utility>
   #include <vector>
 
@@ -154,8 +155,6 @@
 %left '*' '/' '%'
 
 %type <rumur::Property::Category>                            category
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecl
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            constdecls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
@@ -163,6 +162,8 @@
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
 %type <std::shared_ptr<rumur::Expr>>                         expr
+%type <std::vector<std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location>>> exprdecl
+%type <std::vector<std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location>>> exprdecls
 %type <std::vector<std::shared_ptr<rumur::Expr>>>            exprlist
 %type <std::vector<std::shared_ptr<rumur::Expr>>>            exprlist_cont
 %type <std::shared_ptr<rumur::Expr>>                         guard_opt
@@ -205,24 +206,26 @@ decls: decls decl {
   /* nothing required */
 };
 
-decl: CONST constdecls {
-  $$ = $2;
+decl: CONST exprdecls {
+  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+    $$.push_back(std::make_shared<rumur::ConstDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+  }
 } | TYPE typedecls {
   $$ = $2;
 } | VAR vardecls {
   std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
 
-constdecls: constdecls constdecl semi_opt {
+exprdecls: exprdecls exprdecl semi_opt {
   $$ = $1;
   std::move($2.begin(), $2.end(), std::back_inserter($$));
 } | %empty {
   /* nothing required */
 };
 
-constdecl: id_list_opt ':' expr {
+exprdecl: id_list_opt ':' expr {
   for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_shared<rumur::ConstDecl>(m.first, $3, @$));
+    $$.push_back(std::make_tuple(m.first, $3, @$));
   }
 };
 
