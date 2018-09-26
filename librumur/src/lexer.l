@@ -48,6 +48,7 @@
   return rumur::parser::token::NUMBER;
 }
 
+alias         { return rumur::parser::token::ALIAS;         }
 array         { return rumur::parser::token::ARRAY;         }
 assert        { return rumur::parser::token::ASSERT;        }
 assume        { return rumur::parser::token::ASSUME;        }
@@ -60,6 +61,7 @@ do            { return rumur::parser::token::DO;            }
 else          { return rumur::parser::token::ELSE;          }
 elsif         { return rumur::parser::token::ELSIF;         }
 end           { return rumur::parser::token::END;           }
+endalias      { return rumur::parser::token::ENDALIAS;      }
 endexists     { return rumur::parser::token::ENDEXISTS;     }
 endfor        { return rumur::parser::token::ENDFOR;        }
 endforall     { return rumur::parser::token::ENDFORALL;     }

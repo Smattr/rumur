@@ -89,6 +89,7 @@
    */
 %parse-param { std::shared_ptr<rumur::Model> &output }
 
+%token ALIAS
 %token ARRAY
 %token ARROW
 %token ASSERT
@@ -105,6 +106,7 @@
 %token ELSE
 %token ELSIF
 %token END
+%token ENDALIAS
 %token ENDEXISTS
 %token ENDFOR
 %token ENDFORALL
@@ -399,6 +401,12 @@ stmt: category STRING expr {
   $$ = std::make_shared<rumur::PropertyStmt>(p, $3, @$);
 } | designator COLON_EQ expr {
   $$ = std::make_shared<rumur::Assignment>($1, $3, @$);
+} | ALIAS exprdecls DO stmts endalias {
+  std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
+  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+    decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+  }
+  $$ = std::make_shared<rumur::AliasStmt>(std::move(decls), std::move($4), @$);
 } | ERROR STRING {
   $$ = std::make_shared<rumur::ErrorStmt>($2, @$);
 } | CLEAR designator {
@@ -532,6 +540,8 @@ designator: designator '.' ID {
 } | ID {
   $$ = std::make_shared<rumur::ExprID>($1, nullptr, @$);
 };
+
+endalias: END | ENDALIAS;
 
 endfor: END | ENDFOR;
 
