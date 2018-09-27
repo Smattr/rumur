@@ -20,6 +20,7 @@ class Indexer : public BaseTraversal {
  public:
   void visit(Add &n) final;
   void visit(AliasDecl &n) final;
+  void visit(AliasRule &n) final;
   void visit(AliasStmt &n) final;
   void visit(And &n) final;
   void visit(Array &n) final;

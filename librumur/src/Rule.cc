@@ -51,10 +51,73 @@ Rule::Rule(const Rule &other):
   Node(other), name(other.name) {
   for (const std::shared_ptr<Quantifier> &q : other.quantifiers)
     quantifiers.emplace_back(q->clone());
+  for (const std::shared_ptr<AliasDecl> &a : other.aliases)
+    aliases.emplace_back(a->clone());
 }
 
 std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
   return { std::shared_ptr<Rule>(clone()) };
+}
+
+AliasRule::AliasRule(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+  std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
+  Rule("", loc_), rules(rules_) {
+
+  aliases = aliases_;
+}
+
+AliasRule::AliasRule(const AliasRule &other):
+  Rule(other) {
+
+  for (const std::shared_ptr<Rule> &r : other.rules)
+    rules.emplace_back(r->clone());
+}
+
+AliasRule &AliasRule::operator=(AliasRule other) {
+  swap(*this, other);
+  return *this;
+}
+
+void swap(AliasRule &x, AliasRule &y) noexcept {
+  using std::swap;
+  swap(x.loc, y.loc);
+  swap(x.unique_id, y.unique_id);
+  swap(x.name, y.name);
+  swap(x.quantifiers, y.quantifiers);
+  swap(x.aliases, y.aliases);
+  swap(x.rules, y.rules);
+}
+
+AliasRule *AliasRule::clone() const {
+  return new AliasRule(*this);
+}
+
+bool AliasRule::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AliasRule*>(&other);
+  if (o == nullptr)
+    return false;
+  if (name != o->name)
+    return false;
+  if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(aliases, o->aliases))
+    return false;
+  if (!vector_eq(rules, o->rules))
+    return false;
+  return true;
+}
+
+std::vector<std::shared_ptr<Rule>> AliasRule::flatten() const {
+  std::vector<std::shared_ptr<Rule>> rs;
+  for (const std::shared_ptr<Rule> &r : rules) {
+    for (std::shared_ptr<Rule> &f : r->flatten()) {
+      for (const std::shared_ptr<AliasDecl> &a : aliases)
+        f->aliases.insert(f->aliases.begin(),
+          std::shared_ptr<AliasDecl>(a->clone()));
+      rs.push_back(f);
+    }
+  }
+  return rs;
 }
 
 SimpleRule::SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
@@ -83,6 +146,7 @@ void swap(SimpleRule &x, SimpleRule &y) noexcept {
   swap(x.decls, y.decls);
   swap(x.body, y.body);
   swap(x.quantifiers, y.quantifiers);
+  swap(x.aliases, y.aliases);
 }
 
 SimpleRule *SimpleRule::clone() const {
@@ -96,6 +160,8 @@ bool SimpleRule::operator==(const Node &other) const {
   if (name != o->name)
     return false;
   if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(aliases, o->aliases))
     return false;
   if (guard == nullptr) {
     if (o->guard != nullptr)
@@ -141,6 +207,7 @@ void swap(StartState &x, StartState &y) noexcept {
   swap(x.decls, y.decls);
   swap(x.body, y.body);
   swap(x.quantifiers, y.quantifiers);
+  swap(x.aliases, y.aliases);
 }
 
 StartState *StartState::clone() const {
@@ -154,6 +221,8 @@ bool StartState::operator==(const Node &other) const {
   if (name != o->name)
     return false;
   if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(aliases, o->aliases))
     return false;
   if (!vector_eq(decls, o->decls))
     return false;
@@ -185,6 +254,7 @@ void swap(PropertyRule &x, PropertyRule &y) noexcept {
   swap(x.name, y.name);
   swap(x.property, y.property);
   swap(x.quantifiers, y.quantifiers);
+  swap(x.aliases, y.aliases);
 }
 
 PropertyRule *PropertyRule::clone() const {
@@ -198,6 +268,8 @@ bool PropertyRule::operator==(const Node &other) const {
   if (name != o->name)
     return false;
   if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(aliases, o->aliases))
     return false;
   if (property != o->property)
     return false;
@@ -227,6 +299,7 @@ void swap(Ruleset &x, Ruleset &y) noexcept {
   swap(x.unique_id, y.unique_id);
   swap(x.name, y.name);
   swap(x.quantifiers, y.quantifiers);
+  swap(x.aliases, y.aliases);
   swap(x.rules, y.rules);
 }
 
@@ -241,6 +314,8 @@ bool Ruleset::operator==(const Node &other) const {
   if (name != o->name)
     return false;
   if (!vector_eq(quantifiers, o->quantifiers))
+    return false;
+  if (!vector_eq(aliases, o->aliases))
     return false;
   if (!vector_eq(rules, o->rules))
     return false;

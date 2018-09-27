@@ -21,6 +21,14 @@ void Indexer::visit(AliasDecl &n) {
   dispatch(*n.value);
 }
 
+void Indexer::visit(AliasRule &n) {
+  n.unique_id = next++;
+  for (std::shared_ptr<AliasDecl> &a : n.aliases)
+    dispatch(*a);
+  for (std::shared_ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void Indexer::visit(AliasStmt &n) {
   n.unique_id = next++;
   for (std::shared_ptr<AliasDecl> &a : n.aliases)

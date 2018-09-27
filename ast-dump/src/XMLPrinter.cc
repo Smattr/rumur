@@ -48,6 +48,33 @@ void XMLPrinter::visit(const AliasDecl &n) {
   *o << "</aliasdecl>";
 }
 
+void XMLPrinter::visit(const AliasRule &n) {
+  sync_to(n);
+  *o << "<aliasrule name=\"" << n.name << "\" ";
+  add_location(n);
+  *o << ">";
+  if (!n.aliases.empty()) {
+    sync_to(*n.aliases[0]);
+    *o << "<aliases>";
+    for (const std::shared_ptr<AliasDecl> &a : n.aliases) {
+      sync_to(*a);
+      dispatch(*a);
+    }
+    *o << "</aliases>";
+  }
+  if (!n.rules.empty()) {
+    sync_to(*n.rules[0]);
+    *o << "<rules>";
+    for (const std::shared_ptr<Rule> &r : n.rules) {
+      sync_to(*r);
+      dispatch(*r);
+    }
+    *o << "</rules>";
+  }
+  sync_to(n.loc.end);
+  *o << "</aliasrule>";
+}
+
 void XMLPrinter::visit(const AliasStmt &n) {
   sync_to(n);
   *o << "<aliasstmt ";

@@ -18,6 +18,7 @@ struct Rule : public Node {
 
   std::string name;
   std::vector<std::shared_ptr<Quantifier>> quantifiers;
+  std::vector<std::shared_ptr<AliasDecl>> aliases;
 
   Rule() = delete;
   Rule(const std::string &name_, const location &loc_);
@@ -28,6 +29,22 @@ struct Rule : public Node {
   virtual std::vector<std::shared_ptr<Rule>> flatten() const;
 
   virtual ~Rule() { }
+};
+
+struct AliasRule : public Rule {
+  std::vector<std::shared_ptr<Rule>> rules;
+
+  AliasRule() = delete;
+  AliasRule(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+    std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
+  AliasRule(const AliasRule &other);
+  AliasRule &operator=(AliasRule other);
+  friend void swap(AliasRule &x, AliasRule &y) noexcept;
+  virtual ~AliasRule() { }
+  AliasRule *clone() const final;
+  bool operator==(const Node &other) const final;
+
+  std::vector<std::shared_ptr<Rule>> flatten() const final;
 };
 
 struct SimpleRule : public Rule {
