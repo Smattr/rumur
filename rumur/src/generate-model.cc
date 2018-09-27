@@ -57,6 +57,15 @@ void generate_model(std::ostream &out, const Model &m) {
           }
         }
 
+        /* Output alias definitions, opening a scope in advance to support
+         * aliases that shadow state variables, parameters, or other aliases.
+         */
+        for (const std::shared_ptr<AliasDecl> &a : s->aliases) {
+          out << "   {\n  ";
+          generate_decl(out, *a);
+          out << ";\n";
+        }
+
         /* Open a scope to support local declarations can shadow the state
          * variables.
          */
@@ -64,7 +73,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
         for (const std::shared_ptr<Decl> &d : s->decls) {
           if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-            out << "  ";
+            out << "    ";
             generate_decl(out, *v);
             out << ";\n";
           }
@@ -74,15 +83,16 @@ void generate_model(std::ostream &out, const Model &m) {
         generate_allocations(out, s->body);
 
         for (const std::shared_ptr<Stmt> &st : s->body) {
-          out << "  ";
+          out << "    ";
           generate_stmt(out, *st);
           out << ";\n";
         }
 
-        // Close the scope we created.
-        out << "  }\n";
-
-        out << "}\n\n";
+        // Close the scopes we created.
+        out
+          << "  }\n"
+          << std::string(s->aliases.size(), '}') << "\n"
+          << "}\n\n";
         index++;
       }
     }
@@ -98,7 +108,6 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q->var->name;
         out << ") {\n";
 
-
         /* Output the state variable handles so we can reference them within
          * this property.
          */
@@ -110,9 +119,20 @@ void generate_model(std::ostream &out, const Model &m) {
           }
         }
 
+        /* Output alias definitions, opening a scope in advance to support
+         * aliases that shadow state variables, parameters, or other aliases.
+         */
+        for (const std::shared_ptr<AliasDecl> &a : i->aliases) {
+          out << "   {\n  ";
+          generate_decl(out, *a);
+          out << ";\n";
+        }
+
         out << "  return ";
         generate_property(out, i->property);
-        out << ";\n}\n\n";
+        out << ";\n"
+          << std::string(i->aliases.size(), '}') << "\n"
+          << "}\n\n";
         index++;
       }
     }
@@ -168,6 +188,15 @@ void generate_model(std::ostream &out, const Model &m) {
           }
         }
 
+        /* Output alias definitions, opening a scope in advance to support
+         * aliases that shadow state variables, parameters, or other aliases.
+         */
+        for (const std::shared_ptr<AliasDecl> &a : s->aliases) {
+          out << "   {\n  ";
+          generate_decl(out, *a);
+          out << ";\n";
+        }
+
         /* Open a scope to support local declarations can shadow the state
          * variables.
          */
@@ -190,10 +219,11 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ";\n";
         }
 
-        // Close the scope we created.
-        out << "  }\n";
-
-        out << "}\n\n";
+        // Close the scopes we created.
+        out
+          << "  }\n"
+          << std::string(s->aliases.size(), '}') << "\n"
+          << "}\n\n";
 
         index++;
       }
