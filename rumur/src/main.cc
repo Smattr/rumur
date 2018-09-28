@@ -61,7 +61,7 @@ static void parse_args(int argc, char **argv) {
       case 'e':
         try {
           options.set_expand_threshold = std::stoul(optarg);
-        } catch (std::exception) {
+        } catch (std::exception&) {
           std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -87,7 +87,7 @@ static void parse_args(int argc, char **argv) {
       case 's':
         try {
           options.set_capacity = std::stoul(optarg);
-        } catch (std::exception) {
+        } catch (std::exception&) {
           std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -96,7 +96,7 @@ static void parse_args(int argc, char **argv) {
       case 't':
         try {
           options.threads = std::stoul(optarg);
-        } catch (std::exception) {
+        } catch (std::exception&) {
           std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -200,7 +200,7 @@ static void parse_args(int argc, char **argv) {
       case 136: // --max-errors ...
         try {
           options.max_errors = std::stoul(optarg);
-        } catch (std::exception) {
+        } catch (std::exception&) {
           std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
