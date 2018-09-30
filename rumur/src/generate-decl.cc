@@ -17,7 +17,7 @@ void generate_decl(std::ostream &out, const Decl &d) {
       out << "struct handle";
     }
 
-    out << " ru_" << a->name << " = ";
+    out << " ru_" << a->name << " __attribute__((unused)) = ";
     if (a->value->is_lvalue()) {
       generate_lvalue(out, *a->value);
     } else {
