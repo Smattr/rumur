@@ -90,7 +90,7 @@ static void generate_compare(std::ostream &out, const std::string &offset_a,
     mpz_class ic = a->index_type->count() - 1;
     const std::string ub = "SIZE_C(" + ic.get_str() + ")";
 
-    // The bit size of each array as a C code string
+    // The bit size of each array element as a C code string
     const std::string width = "SIZE_C(" +
       a->element_type->width().get_str() + ")";
 
