@@ -1,11 +1,72 @@
 #include <cassert>
 #include <cstddef>
 #include "generate.h"
+#include <gmpxx.h>
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
 
 using namespace rumur;
+
+static void clear(std::ostream &out, const rumur::TypeExpr &t,
+    const std::string &offset = "SIZE_C(0)", size_t depth = 0) {
+
+  const std::string indent = std::string(2 * (depth + 1), ' ');
+
+  if (t.is_simple()) {
+    out << indent << "handle_write_raw((struct handle){ .base = root.base, "
+      << ".offset = root.offset + " << offset << ", .width = SIZE_C("
+      << t.width() << ") }, 1)";
+
+    return;
+  }
+
+  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+
+    // The number of elements in this array as a C code string
+    mpz_class ic = a->index_type->count() - 1;
+    const std::string ub = "SIZE_C(" + ic.get_str() + ")";
+
+    // The bit size of each array element as a C code string
+    const std::string width = "SIZE_C(" +
+      a->element_type->width().get_str() + ")";
+
+    // Generate a loop to iterate over all the elements
+    const std::string var = "i" + std::to_string(depth);
+    out << indent << "for (size_t " << var << " = 0; " << var << " < " << ub
+      << "; " << var << "++) {\n";
+
+    // Generate code to clear each element
+    const std::string off = offset + " + " + var + " * " + width;
+    clear(out, *a->element_type, off, depth + 1);
+    out << ";\n";
+
+    // Close the loop
+    out << indent << "}\n";
+
+    return;
+  }
+
+  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+
+    std::string off = offset;
+
+    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+
+      // Generate code to clear this field
+      clear(out, *f->type, off, depth);
+      out << ";\n";
+
+      // Jump over this field to get the offset of the next field
+      const std::string width = "SIZE_C(" + f->type->width().get_str() + ")";
+      off += " + " + width;
+    }
+
+    return;
+  }
+
+  assert(!"unreachable");
+}
 
 namespace {
 
@@ -56,8 +117,19 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Clear&) final {
-    assert(!"TODO");
+  void visit(const Clear &s) final {
+    *out
+      << "do {\n"
+      << "  struct handle root = ";
+    generate_lvalue(*out, *s.rhs);
+    *out << ";\n";
+
+    assert(s.rhs->type() != nullptr && "clearing an expression without a type "
+      "(non-lvalue?)");
+
+    clear(*out, *s.rhs->type());
+
+    *out << "} while (0)";
   }
 
   void visit(const ErrorStmt &s) final {
