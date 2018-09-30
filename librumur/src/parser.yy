@@ -531,9 +531,9 @@ expr: expr '?' expr ':' expr {
 
 quantifier: ID ':' typeexpr {
   $$ = std::make_shared<rumur::Quantifier>($1, $3, @$);
-} | ID ':' expr TO expr BY expr {
+} | ID COLON_EQ expr TO expr BY expr {
   $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, $7, @$);
-} | ID ':' expr TO expr {
+} | ID COLON_EQ expr TO expr {
   $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, @$);
 };
 
