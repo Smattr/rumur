@@ -16,7 +16,7 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
   if (t.is_simple()) {
     out << indent << "handle_write_raw((struct handle){ .base = root.base, "
       << ".offset = root.offset + " << offset << ", .width = SIZE_C("
-      << t.width() << ") }, 1)";
+      << t.width() << ") }, 1);\n";
 
     return;
   }
@@ -39,7 +39,6 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
     // Generate code to clear each element
     const std::string off = offset + " + " + var + " * " + width;
     clear(out, *a->element_type, off, depth + 1);
-    out << ";\n";
 
     // Close the loop
     out << indent << "}\n";
@@ -55,7 +54,6 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
 
       // Generate code to clear this field
       clear(out, *f->type, off, depth);
-      out << ";\n";
 
       // Jump over this field to get the offset of the next field
       const std::string width = "SIZE_C(" + f->type->width().get_str() + ")";
