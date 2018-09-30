@@ -156,6 +156,7 @@
 %left '+' '-'
 %left '*' '/' '%'
 
+%type <std::shared_ptr<rumur::AliasRule>>                    aliasrule
 %type <rumur::Property::Category>                            category
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
@@ -335,6 +336,16 @@ rule: startstate {
   $$ = $1;
 } | ruleset {
   $$ = $1;
+} | aliasrule {
+  $$ = $1;
+};
+
+aliasrule: ALIAS exprdecls DO rules endalias {
+  std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
+  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+    decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+  }
+  $$ = std::make_shared<rumur::AliasRule>(std::move(decls), std::move($4), @$);
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
