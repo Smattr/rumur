@@ -286,9 +286,9 @@ void BaseTraversal::dispatch(Node &n) {
   }
 
 #ifndef NDEBUG
-  std::cerr << "missed case in BaseTraversal::visit: " << typeid(n).name() << "\n";
+  std::cerr << "missed case in BaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
-  assert(!"missed case in BaseTraversal::visit");
+  assert(!"missed case in BaseTraversal::dispatch");
 }
 
 void Traversal::visit(Add &n) {
@@ -1469,9 +1469,9 @@ void ConstBaseTraversal::dispatch(const Node &n) {
   }
 
 #ifndef NDEBUG
-  std::cerr << "missed case in ConstBaseTraversal::visit: " << typeid(n).name() << "\n";
+  std::cerr << "missed case in ConstBaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
-  assert(!"missed case in ConstBaseTraversal::visit");
+  assert(!"missed case in ConstBaseTraversal::dispatch");
 }
 
 void ConstTraversal::visit(const Add &n) {
