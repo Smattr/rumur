@@ -13,5 +13,5 @@ Options options = {
   .symmetry_reduction = true,
   .sandbox_enabled = false,
   .max_errors = 1,
-  .counterexample_trace_full = false,
+  .counterexample_trace = DIFF,
 };

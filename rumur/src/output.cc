@@ -44,7 +44,8 @@ int output_checker(const std::string &path, const Model &model) {
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
     << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
-    << "enum { COUNTEREXAMPLE_TRACE_FULL = " << options.counterexample_trace_full << " };\n\n"
+    << "static const enum { CEX_OFF, DIFF, FULL } COUNTEREXAMPLE_TRACE = "
+      << options.counterexample_trace << ";\n\n"
 
     // Static boiler plate code
     << std::string((const char*)resources_header_c, (size_t)resources_header_c_len)

@@ -441,7 +441,7 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
     fprintf(stderr, "%s\n\n", reset());
     va_end(ap);
 
-    if (s != NULL) {
+    if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
       print_counterexample(s);
       fprintf(stderr, "End of the error trace.\n\n");
     }
@@ -541,7 +541,7 @@ static unsigned print_counterexample(const struct state *s) {
 
   print_transition(s->previous, s);
 
-  state_print(COUNTEREXAMPLE_TRACE_FULL ? NULL : s->previous, s);
+  state_print(COUNTEREXAMPLE_TRACE == FULL ? NULL : s->previous, s);
   fprintf(stderr, "----------\n\n");
   return step;
 }

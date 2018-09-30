@@ -213,9 +213,11 @@ static void parse_args(int argc, char **argv) {
 
       case 137: // --counterexample-trace ...
         if (strcmp(optarg, "full") == 0) {
-          options.counterexample_trace_full = true;
+          options.counterexample_trace = FULL;
         } else if (strcmp(optarg, "diff") == 0) {
-          options.counterexample_trace_full = false;
+          options.counterexample_trace = DIFF;
+        } else if (strcmp(optarg, "off") == 0) {
+          options.counterexample_trace = CEX_OFF;
         } else {
           std::cerr << "invalid argument to --counterexample-trace, \""
             << optarg << "\"\n";

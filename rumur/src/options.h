@@ -24,6 +24,12 @@ enum log_level_t {
   DEBUG,
 };
 
+enum counterexample_trace_t {
+  CEX_OFF,
+  DIFF,
+  FULL,
+};
+
 struct Options {
   bool overflow_checks;
   unsigned long threads;
@@ -53,8 +59,8 @@ struct Options {
   // Number of errors to report before exiting.
   unsigned long max_errors;
 
-  // Print full states in counterexample trace (as opposed to diff'd states)?
-  bool counterexample_trace_full;
+  // How to print counterexample traces
+  counterexample_trace_t counterexample_trace;
 };
 
 extern Options options;
