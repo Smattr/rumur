@@ -195,6 +195,33 @@ def test_cmurphi_example_template(self, model: str, outcome: bool):
       sys.stderr.write(stderr)
     self.assertEqual(ret == 0, outcome)
 
+def test_ast_dumper_cmurphi_example_template(self, model: str):
+
+  with TemporaryDirectory() as tmp:
+
+    model_xml = os.path.join(tmp, 'model.xml')
+    ad_flags = ['--output', model_xml, model]
+    args = [RUMUR_AST_DUMP_BIN] + ad_flags
+    ret, stdout, stderr = run(args)
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
+    # See if we have xmllint
+    ret, _, _ = run(['which', 'xmllint'])
+    if ret != 0:
+      self.skipTest('xmllint not available for validation')
+
+    # Validate the XML
+    ret, stdout, stderr = run(['xmllint', '--noout', model_xml])
+    if ret != 0:
+      with open(model_xml, 'rt') as f:
+        sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
 def main(argv):
 
   if not os.path.isfile(RUMUR_BIN):
@@ -277,6 +304,16 @@ def main(argv):
       setattr(Tests, test_name,
         lambda self, model=fullpath, outcome=outcome:
           test_cmurphi_example_template(self, model, outcome))
+
+      test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_cmurphi_example_{}'
+        .format(path))
+
+      if hasattr(Tests, test_name):
+        raise Exception('{} collides with an existing test name'.format(path))
+
+      setattr(Tests, test_name,
+        lambda self, model=fullpath:
+          test_ast_dumper_cmurphi_example_template(self, model))
 
   unittest.main()
 
