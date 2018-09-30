@@ -24,6 +24,7 @@ int output_checker(const std::string &path, const Model &model) {
     << std::string((const char*)resources_includes_c, (size_t)resources_includes_c_len)
     << "\n"
 
+    // Settings that are used in header.c
     << "enum { SET_CAPACITY = " << options.set_capacity << "ul };\n\n"
     << "enum { SET_EXPAND_THRESHOLD = " << options.set_expand_threshold << " };\n\n"
     << "static const enum { OFF, ON, AUTO } COLOR = " << (options.color == OFF ? "OFF" :
@@ -40,11 +41,10 @@ int output_checker(const std::string &path, const Model &model) {
     << "enum { SYMMETRY_REDUCTION = " << options.symmetry_reduction << " };\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
-
-    // Settings that are used in header.c
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
     << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
+    << "enum { COUNTEREXAMPLE_TRACE_FULL = " << options.counterexample_trace_full << " };\n\n"
 
     // Static boiler plate code
     << std::string((const char*)resources_header_c, (size_t)resources_header_c_len)

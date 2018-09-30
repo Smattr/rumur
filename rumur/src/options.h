@@ -52,6 +52,9 @@ struct Options {
 
   // Number of errors to report before exiting.
   unsigned long max_errors;
+
+  // Print full states in counterexample trace (as opposed to diff'd states)?
+  bool counterexample_trace_full;
 };
 
 extern Options options;

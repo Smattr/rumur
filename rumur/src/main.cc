@@ -25,6 +25,7 @@ static void parse_args(int argc, char **argv) {
     static struct option opts[] = {
       { "color", no_argument, 0, 128 },
       { "colour", no_argument, 0, 128 },
+      { "counterexample-trace", required_argument, 0, 137 },
       { "deadlock-detection", no_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, 'h' },
@@ -206,6 +207,18 @@ static void parse_args(int argc, char **argv) {
         }
         if (options.max_errors == 0) {
           std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+
+      case 137: // --counterexample-trace ...
+        if (strcmp(optarg, "full") == 0) {
+          options.counterexample_trace_full = true;
+        } else if (strcmp(optarg, "diff") == 0) {
+          options.counterexample_trace_full = false;
+        } else {
+          std::cerr << "invalid argument to --counterexample-trace, \""
+            << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;

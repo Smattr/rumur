@@ -493,7 +493,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Write a function to print the state.
   out
-    << "static void state_print(const struct state *s) {\n";
+    << "static void state_print(const struct state *previous, const struct state *s) {\n";
   mpz_class offset = 0;
   for (const std::shared_ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {

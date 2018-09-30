@@ -13,6 +13,14 @@ Enable or disable the use of ANSI colour codes in the checker's output. The
 default is to auto-detect based on whether the checker's stdout is a TTY.
 .RE
 .PP
+\fB--counterexample-trace\fR [\fBdiff\fR | \fBfull\fR]
+.RS
+Set how counterexample traces are printed when an error is found during
+checking. \fBdiff\fR, the default, prints each state showing only the
+differences from the previous state. \fBfull\fR shows the entire contents of
+each state.
+.RE
+.PP
 \fB--[no-]deadlock-detection\fR
 .RS
 Enable or disable deadlock detection. Rumur has the ability to generate a
