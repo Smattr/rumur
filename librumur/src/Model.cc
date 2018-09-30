@@ -120,7 +120,6 @@ unsigned long Model::assumption_count() const {
   };
 
   // Use the traversal to count our own assumptions.
-  // FIXME: We could avoid the const cast if there was a read only traversal class
   AssumptionCounter ac;
   ac.dispatch(*this);
 
