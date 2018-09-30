@@ -163,13 +163,24 @@ void generate_model(std::ostream &out, const Model &m) {
           }
         }
 
+        /* Output alias definitions, opening a scope in advance to support
+         * aliases that shadow state variables, parameters, or other aliases.
+         */
+        for (const std::shared_ptr<AliasDecl> &a : s->aliases) {
+          out << "   {\n  ";
+          generate_decl(out, *a);
+          out << ";\n";
+        }
+
         out << "  return ";
         if (s->guard == nullptr) {
           out << "true";
         } else {
           generate_rvalue(out, *s->guard);
         }
-        out << ";\n}\n\n";
+        out << ";\n"
+          << std::string(s->aliases.size(), '}') << "\n"
+          << "}\n\n";
 
         // Write the body
         out << "static void rule" << index << "(struct state *s";
