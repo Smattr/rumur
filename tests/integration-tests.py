@@ -167,6 +167,34 @@ def test_ast_dumper_template(self, model: str, valgrind: bool):
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
 
+def test_cmurphi_example_template(self, model: str, outcome: bool):
+
+  with TemporaryDirectory() as tmp:
+
+    model_c = os.path.join(tmp, 'model.c')
+    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
+    cflags = ['-std=c11', '-O3', '-fwhole-program']
+    if X86_64:
+      cflags.append('-mcx16')
+    model_bin = os.path.join(tmp, 'model.bin')
+    ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c,
+      '-lpthread'])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
+    ret, stdout, stderr = run([model_bin])
+    if (ret == 0) != outcome:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret == 0, outcome)
+
 def main(argv):
 
   if not os.path.isfile(RUMUR_BIN):
@@ -224,6 +252,31 @@ def main(argv):
 
       setattr(Tests, test_name,
         lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
+
+  # If the user has told us where a copy of the CMurphi source is, test some of
+  # the example models distributed with CMurphi.
+  CMURPHI_DIR = os.environ.get('CMURPHI_DIR')
+  if CMURPHI_DIR is not None:
+
+    models = (
+      # (Model path,         expected to pass?)
+      ('ex/toy/down.m',      False),
+      ('ex/toy/lin.m',       False),
+      ('ex/toy/pingpong.m',  True),
+      ('ex/toy/sort5.m',     False),
+    )
+
+    for path, outcome in models:
+      fullpath = os.path.abspath(os.path.join(CMURPHI_DIR, path))
+
+      test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
+
+      if hasattr(Tests, test_name):
+        raise Exception('{} collides with an existing test name'.format(path))
+
+      setattr(Tests, test_name,
+        lambda self, model=fullpath, outcome=outcome:
+          test_cmurphi_example_template(self, model, outcome))
 
   unittest.main()
 
