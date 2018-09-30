@@ -822,6 +822,13 @@ static std::string xml_escape(char c) {
     case '<' : return "&lt;";
     case '>' : return "&gt;";
     case '&' : return "&amp;";
+
+    /* XXX: Form feed is apparently not a valid character to use in XML 1.0,
+     * encoded or otherwise. However, some legacy models use this. To cope with
+     * it, we just translate it to a single space.
+     */
+    case 12  : return " ";
+
     default  : return std::string(1, c);
   }
 }
