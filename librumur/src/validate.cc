@@ -354,7 +354,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const VarDecl &n) final {
-    dispatch(*n.type);
+    if (n.type != nullptr)
+      dispatch(*n.type);
     n.validate();
   }
 

@@ -384,7 +384,8 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(VarDecl &n) final {
-    dispatch(*n.type);
+    if (n.type != nullptr)
+      dispatch(*n.type);
   }
 
   virtual ~Resolver() { }

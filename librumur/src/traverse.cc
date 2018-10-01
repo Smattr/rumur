@@ -558,7 +558,8 @@ void Traversal::visit(Undefine &n) {
 }
 
 void Traversal::visit(VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 Traversal::~Traversal() { }
@@ -723,7 +724,8 @@ void ExprTraversal::visit(Undefine &n) {
 }
 
 void ExprTraversal::visit(VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 void StmtTraversal::visit(Add &n) {
@@ -946,7 +948,8 @@ void StmtTraversal::visit_uexpr(UnaryExpr &n) {
 }
 
 void StmtTraversal::visit(VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 void TypeTraversal::visit(Add &n) {
@@ -1193,7 +1196,8 @@ void TypeTraversal::visit(Undefine &n) {
 }
 
 void TypeTraversal::visit(VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 void ConstBaseTraversal::dispatch(const Node &n) {
@@ -1741,7 +1745,8 @@ void ConstTraversal::visit(const Undefine &n) {
 }
 
 void ConstTraversal::visit(const VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 ConstTraversal::~ConstTraversal() { }
@@ -1906,7 +1911,8 @@ void ConstExprTraversal::visit(const Undefine &n) {
 }
 
 void ConstExprTraversal::visit(const VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 void ConstStmtTraversal::visit(const AliasDecl &n) {
@@ -2129,7 +2135,8 @@ void ConstStmtTraversal::visit_uexpr(const UnaryExpr &n) {
 }
 
 void ConstStmtTraversal::visit(const VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 void ConstTypeTraversal::visit(const Add &n) {
@@ -2376,7 +2383,8 @@ void ConstTypeTraversal::visit(const Undefine &n) {
 }
 
 void ConstTypeTraversal::visit(const VarDecl &n) {
-  dispatch(*n.type);
+  if (n.type != nullptr)
+    dispatch(*n.type);
 }
 
 }
