@@ -290,6 +290,7 @@ def main(argv):
       ('ex/toy/down.m',      False),
       ('ex/toy/lin.m',       False),
       ('ex/toy/pingpong.m',  True),
+      ('ex/toy/sets.m',      False),
       ('ex/toy/sort5.m',     False),
     )
 
