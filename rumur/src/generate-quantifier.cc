@@ -1,7 +1,6 @@
 #include <cassert>
 #include <cstddef>
 #include "generate.h"
-#include <gmpxx.h>
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
@@ -23,11 +22,11 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   /* Calculate the width of the loop counter type. If we don't have a proper
    * type, we just default to a width that covers the full value_t for now.
    */
-  mpz_class width;
+  std::string width;
   if (q.type == nullptr) {
-    width = 65; // FIXME: stop hardcoding this
+    width = "(sizeof(value_t) * 8 + 1)";
   } else {
-    width = q.type->width();
+    width = "SIZE_C(" + q.type->width().get_str() + ")";
   }
 
   /* Write out the step in advance. We generate this here, rather than inline so
@@ -68,7 +67,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
     << counter << " += step) {\n"
     << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "    struct handle " << handle << " = { .base = " << block
-      << ", .offset = 0, .width = SIZE_C(" << width << ") };\n"
+      << ", .offset = 0, .width = " << width << " };\n"
     << "    handle_write(s, lb, ub, " << handle << ", " << counter << ");\n";
 }
 
