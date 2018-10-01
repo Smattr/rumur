@@ -482,7 +482,12 @@ void Traversal::visit(PropertyStmt &n) {
 }
 
 void Traversal::visit(Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -662,7 +667,12 @@ void ExprTraversal::visit(PropertyStmt &n) {
 }
 
 void ExprTraversal::visit(Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -881,7 +891,12 @@ void StmtTraversal::visit(PropertyRule &n) {
 }
 
 void StmtTraversal::visit(Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -1136,7 +1151,12 @@ void TypeTraversal::visit(PropertyStmt &n) {
 }
 
 void TypeTraversal::visit(Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -1669,7 +1689,12 @@ void ConstTraversal::visit(const PropertyStmt &n) {
 }
 
 void ConstTraversal::visit(const Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -1849,7 +1874,12 @@ void ConstExprTraversal::visit(const PropertyStmt &n) {
 }
 
 void ConstExprTraversal::visit(const Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -2068,7 +2098,12 @@ void ConstStmtTraversal::visit(const PropertyRule &n) {
 }
 
 void ConstStmtTraversal::visit(const Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }
@@ -2323,7 +2358,12 @@ void ConstTypeTraversal::visit(const PropertyStmt &n) {
 }
 
 void ConstTypeTraversal::visit(const Quantifier &n) {
-  dispatch(*n.var);
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
 }

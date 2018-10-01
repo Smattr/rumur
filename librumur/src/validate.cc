@@ -264,7 +264,12 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Quantifier &n) final {
-    dispatch(*n.var);
+    if (n.type != nullptr)
+      dispatch(*n.type);
+    if (n.from != nullptr)
+      dispatch(*n.from);
+    if (n.to != nullptr)
+      dispatch(*n.to);
     if (n.step != nullptr)
       dispatch(*n.step);
     n.validate();

@@ -43,7 +43,7 @@ void generate_model(std::ostream &out, const Model &m) {
       if (auto s = dynamic_cast<const StartState*>(r.get())) {
         out << "static void startstate" << index << "(struct state *s";
         for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
-          out << ", struct handle ru_" << q->var->name;
+          out << ", struct handle ru_" << q->name;
         out << ") {\n";
 
         /* Output the state variable handles so we can reference them within
@@ -105,7 +105,7 @@ void generate_model(std::ostream &out, const Model &m) {
       if (auto i = dynamic_cast<const PropertyRule*>(r.get())) {
         out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
         for (const std::shared_ptr<Quantifier> &q : i->quantifiers)
-          out << ", struct handle ru_" << q->var->name;
+          out << ", struct handle ru_" << q->name;
         out << ") {\n";
 
         /* Output the state variable handles so we can reference them within
@@ -148,7 +148,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out << "static bool guard" << index << "(const struct state *s "
           "__attribute__((unused))";
         for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
-          out << ", struct handle ru_" << q->var->name
+          out << ", struct handle ru_" << q->name
             << " __attribute__((unused))";
         out << ") {\n";
 
@@ -185,7 +185,7 @@ void generate_model(std::ostream &out, const Model &m) {
         // Write the body
         out << "static void rule" << index << "(struct state *s";
         for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
-          out << ", struct handle ru_" << q->var->name;
+          out << ", struct handle ru_" << q->name;
         out << ") {\n";
 
         /* Output the state variable handles so we can reference them within
@@ -258,7 +258,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           out << "    if (!property" << index << "(s";
           for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            out << ", ru_" << q->var->name;
+            out << ", ru_" << q->name;
           out << ")) {\n"
             << "      error(s, false, \"failed invariant\");\n"
             << "    }\n";
@@ -294,7 +294,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           out << "    if (!property" << index << "(s";
           for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            out << ", ru_" << q->var->name;
+            out << ", ru_" << q->name;
           out << ")) {\n"
             << "      /* Assumption violated. */\n"
             << "      assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
@@ -354,7 +354,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      }\n"
           << "      startstate" << index << "(s";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->var->name;
+          out << ", ru_" << q->name;
         out << ");\n"
           << "      check_assumptions(s);\n"
           << "      check_invariants(s);\n"
@@ -427,12 +427,12 @@ void generate_model(std::ostream &out, const Model &m) {
           << "        }\n"
           << "        if (guard" << index << "(n";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->var->name;
+          out << ", ru_" << q->name;
         out << ")) {\n"
           << "          possible_deadlock = false;\n"
           << "          rule" << index << "(n";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->var->name;
+          out << ", ru_" << q->name;
         out << ");\n"
           << "          rules_fired_local++;\n"
           << "          check_assumptions(s);\n"
@@ -525,7 +525,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      s = state_new();\n"
           << "      startstate" << index << "(s";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->var->name;
+          out << ", ru_" << q->name;
         out << ");\n"
           << "      if (SYMMETRY_REDUCTION) {\n"
           << "        state_canonicalise(s);\n"
@@ -569,11 +569,11 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      bool r = false;\n"
           << "      if (guard" << index << "(s";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->var->name;
+          out << ", ru_" << q->name;
         out << ")) {\n"
           << "        rule" << index << "(s";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->var->name;
+          out << ", ru_" << q->name;
         out << ");\n"
           << "        if (SYMMETRY_REDUCTION) {\n"
           << "          state_canonicalise(s);\n"

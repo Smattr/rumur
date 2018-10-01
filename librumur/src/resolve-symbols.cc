@@ -291,10 +291,26 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(Quantifier &n) final {
-    dispatch(*n.var);
-    symtab.declare(n.var->name, n.var);
+    if (n.type != nullptr)
+      dispatch(*n.type);
+    if (n.from != nullptr)
+      dispatch(*n.from);
+    if (n.to != nullptr)
+      dispatch(*n.to);
     if (n.step != nullptr)
       dispatch(*n.step);
+
+    /* We need to register the quantifier variable to be resolvable within this
+     * scope. However it may not have a proper type. To cope with this, we
+     * construct a type on the fly here if necessary.
+     */
+    std::shared_ptr<TypeExpr> t;
+    if (n.type == nullptr) {
+      t = std::make_shared<Range>(nullptr, nullptr, location());
+    } else {
+      t = n.type;
+    }
+    symtab.declare(n.name, std::make_shared<VarDecl>(n.name, t, n.loc));
   }
 
   void visit(Range &n) final {

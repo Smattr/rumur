@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstddef>
 #include "generate.h"
 #include <gmpxx.h>
@@ -9,46 +10,77 @@ using namespace rumur;
 
 void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 
-  std::string const counter = "_ru1_" + q.var->name;
-  std::string const lb = q.var->type->lower_bound();
-  std::string const ub = q.var->type->upper_bound();
-  std::string const inc = q.step == nullptr
-    ? "VALUE_C(1)"
-    : "VALUE_C(" + q.step->constant_fold().get_str() + ")";
-
-  std::string const block = "_ru2_" + q.var->name;
-  mpz_class width = q.var->type->width();
-
-  std::string const handle = "ru_" + q.var->name;
-
   /* Set up quantifiers. It might be surprising to notice that there is an extra
    * level of indirection here. A variable 'x' results in loop counter '_ru1_x',
    * storage array '_ru2_x' and handle 'ru_x'. We use three variables rather
    * than two in order to avoid rules that modify the ruleset parameters
    * (uncommon) affecting the loop counter.
    */
+  const std::string counter = "_ru1_" + q.name;
+  const std::string block = "_ru2_" + q.name;
+  const std::string handle = "ru_" + q.name;
+
+  /* Calculate the width of the loop counter type. If we don't have a proper
+   * type, we just default to a width that covers the full value_t for now.
+   */
+  mpz_class width;
+  if (q.type == nullptr) {
+    width = 65; // FIXME: stop hardcoding this
+  } else {
+    width = q.type->width();
+  }
+
+  /* Write out the step in advance. We generate this here, rather than inline so
+   * as to avoid evaluating it twice (once here and then once in the
+   * generate_quantifier_footer) as it may contain side effects.
+   */
   out
-    << "for (value_t " << counter << " = " << lb << "; " << counter << " <= "
-      << ub << "; " << counter << " += " << inc << ") {\n"
-    << "  uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
-    << "  struct handle " << handle << " = { .base = " << block
+    << "{\n"
+    << "  const value_t step = ";
+  if (q.step == nullptr) {
+    out << "VALUE_C(1)";
+  } else {
+    generate_rvalue(out, *q.step);
+  }
+  out << ";\n";
+
+  // Similar for the upper and lower bounds.
+
+  out << "  const value_t lb = ";
+  if (q.type == nullptr) {
+    assert(q.from != nullptr);
+    generate_rvalue(out, *q.from);
+  } else {
+    out << q.type->lower_bound();
+  }
+  out << ";\n";
+
+  out << "  const value_t ub = ";
+  if (q.type == nullptr) {
+    assert(q.to != nullptr);
+    generate_rvalue(out, *q.to);
+  } else {
+    out << q.type->upper_bound();
+  }
+  out << ";\n";
+
+  out << "  for (value_t " << counter << " = lb; " << counter << " <= ub; "
+    << counter << " += step) {\n"
+    << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
+    << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = SIZE_C(" << width << ") };\n"
-    << "  handle_write(s, " << lb << ", " << ub << ", " << handle << ", "
-      << counter << ");\n";
+    << "    handle_write(s, lb, ub, " << handle << ", " << counter << ");\n";
 }
 
 void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
 
-  std::string const counter = "_ru1_" + q.var->name;
-  std::string const ub = q.var->type->upper_bound();
-  std::string const inc = q.step == nullptr
-    ? "VALUE_C(1)"
-    : "VALUE_C(" + q.step->constant_fold().get_str() + ")";
+  const std::string counter = "_ru1_" + q.name;
 
   out
-    << "  if (VALUE_MAX - " << inc << " < " << ub << " && " << counter
-      << " > VALUE_MAX - " << inc << ") {\n"
-    << "    break;\n"
+    << "    if (VALUE_MAX - step < ub && " << counter
+      << " > VALUE_MAX - step) {\n"
+    << "      break;\n"
+    << "    }\n"
     << "  }\n"
     << "}\n";
 }

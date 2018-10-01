@@ -559,10 +559,24 @@ void XMLPrinter::visit(const Quantifier &n) {
   *o << "<quantifier ";
   add_location(n);
   *o << ">";
-  sync_to(*n.var);
-  *o << "<var>";
-  dispatch(*n.var);
-  *o << "</var>";
+  if (n.type != nullptr) {
+    sync_to(*n.type);
+    *o << "<type>";
+    dispatch(*n.type);
+    *o << "</type>";
+  }
+  if (n.from != nullptr) {
+    sync_to(*n.from);
+    *o << "<from>";
+    dispatch(*n.from);
+    *o << "</from>";
+  }
+  if (n.to != nullptr) {
+    sync_to(*n.to);
+    *o << "<to>";
+    dispatch(*n.to);
+    *o << "</to>";
+  }
   if (n.step != nullptr) {
     sync_to(*n.step);
     *o << "<step>";

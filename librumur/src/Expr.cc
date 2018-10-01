@@ -896,34 +896,26 @@ void FunctionCall::validate() const {
     throw Error("unknown function call \"" + name + "\"", loc);
 }
 
-Quantifier::Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
-  const location &loc_)
-  : Node(loc_), var(std::make_shared<VarDecl>(name, type, loc_)), step(nullptr) {
+Quantifier::Quantifier(const std::string &name_,
+    std::shared_ptr<TypeExpr> type_, const location &loc_)
+  : Node(loc_), name(name_), type(type_) { }
+
+Quantifier::Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
+    std::shared_ptr<Expr> to_, const location &loc_)
+  : Quantifier(name_, from_, to_, nullptr, loc_) {
 }
 
-Quantifier::Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-  std::shared_ptr<Expr> to, const location &loc_)
-  : Quantifier(loc_, name, from, to, nullptr) {
-}
+Quantifier::Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
+    std::shared_ptr<Expr> to_, std::shared_ptr<Expr> step_,
+    const location &loc_)
+  : Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
 
-Quantifier::Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-  std::shared_ptr<Expr> to, std::shared_ptr<Expr> step_,
-  const location &loc_)
-  : Quantifier(loc_, name, from, to, step_) {
-}
-
-Quantifier::Quantifier(const location &loc_, const std::string &name,
-  std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
-  std::shared_ptr<Expr> step_):
-  Node(loc_),
-  var(std::make_shared<VarDecl>(name, std::make_shared<Range>(from, to, loc_), loc_)),
-  step(step_) {
-}
-
-Quantifier::Quantifier(const Quantifier &other):
-  Node(other), var(other.var->clone()),
-  step(other.step == nullptr ? nullptr : other.step->clone()) {
-}
+Quantifier::Quantifier(const Quantifier &other)
+  : Node(other), name(other.name),
+    type(other.type == nullptr ? nullptr : other.type->clone()),
+    from(other.from == nullptr ? nullptr : other.from->clone()),
+    to(other.to == nullptr ? nullptr : other.to->clone()),
+    step(other.step == nullptr ? nullptr : other.step->clone()) { }
 
 Quantifier &Quantifier::operator=(Quantifier other) {
   swap(*this, other);
@@ -934,7 +926,10 @@ void swap(Quantifier &x, Quantifier &y) noexcept {
   using std::swap;
   swap(x.loc, y.loc);
   swap(x.unique_id, y.unique_id);
-  swap(x.var, y.var);
+  swap(x.name, y.name);
+  swap(x.type, y.type);
+  swap(x.from, y.from);
+  swap(x.to, y.to);
   swap(x.step, y.step);
 }
 
@@ -946,14 +941,39 @@ bool Quantifier::operator==(const Node &other) const {
   auto o = dynamic_cast<const Quantifier*>(&other);
   if (o == nullptr)
     return false;
-  if (*var != *o->var)
+  if (name != o->name)
     return false;
+  if (type == nullptr) {
+    if (o->type != nullptr)
+      return false;
+  } else if (o->type == nullptr) {
+    return false;
+  } else if (*type != *o->type) {
+    return false;
+  }
+  if (from == nullptr) {
+    if (o->from != nullptr)
+      return false;
+  } else if (o->from == nullptr) {
+    return false;
+  } else if (*from != *o->from) {
+    return false;
+  }
+  if (to == nullptr) {
+    if (o->to != nullptr)
+      return false;
+  } else if (o->to == nullptr) {
+    return false;
+  } else if (*to != *o->to) {
+    return false;
+  }
   if (step == nullptr) {
     if (o->step != nullptr)
       return false;
-  } else {
-    if (o->step == nullptr || *step != *o->step)
-      return false;
+  } else if (o->step == nullptr) {
+    return false;
+  } else if (*step != *o->step) {
+    return false;
   }
   return true;
 }

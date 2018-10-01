@@ -436,16 +436,22 @@ struct FunctionCall : public Expr {
 
 struct Quantifier : public Node {
 
-  std::shared_ptr<VarDecl> var;
+  std::string name;
+
+  // If this is != nullptr, the from/to/step will be nullptr
+  std::shared_ptr<TypeExpr> type;
+
+  std::shared_ptr<Expr> from;
+  std::shared_ptr<Expr> to;
   std::shared_ptr<Expr> step;
 
   Quantifier() = delete;
-  Quantifier(const std::string &name, std::shared_ptr<TypeExpr> type,
+  Quantifier(const std::string &name_, std::shared_ptr<TypeExpr> type_,
     const location &loc);
-  Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-    std::shared_ptr<Expr> to, const location &loc_);
-  Quantifier(const std::string &name, std::shared_ptr<Expr> from,
-    std::shared_ptr<Expr> to, std::shared_ptr<Expr> step_,
+  Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
+    std::shared_ptr<Expr> to_, const location &loc_);
+  Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
+    std::shared_ptr<Expr> to_, std::shared_ptr<Expr> step_,
     const location &loc_);
   Quantifier(const Quantifier &other);
   Quantifier &operator=(Quantifier other);
@@ -453,16 +459,6 @@ struct Quantifier : public Node {
   virtual ~Quantifier() { }
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
-
- private:
-  /* This constructor is delegated to internally.
-   * HACK: This takes the arguments in a different order to avoid internal
-   * constructor references being ambiguous.
-   */
-  Quantifier(const location &loc_, const std::string &name,
-    std::shared_ptr<Expr> from, std::shared_ptr<Expr> to,
-    std::shared_ptr<Expr> step_);
-
 };
 
 struct Exists : public Expr {
