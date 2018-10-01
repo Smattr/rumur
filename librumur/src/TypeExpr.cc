@@ -7,6 +7,7 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Number.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <unordered_set>
@@ -53,7 +54,18 @@ mpz_class TypeExpr::width() const {
 
 Range::Range(std::shared_ptr<Expr> min_, std::shared_ptr<Expr> max_,
   const location &loc_):
-  TypeExpr(loc_), min(min_), max(max_) { }
+  TypeExpr(loc_), min(min_), max(max_) {
+
+  if (min == nullptr) {
+    // FIXME: avoid hard coding INT64 limits here
+    // FIXME: this isn't even the right limit because of - overflowing grr...
+    min = std::make_shared<Number>(mpz_class("-9223372036854775807"), location());
+  }
+
+  if (max == nullptr) {
+    max = std::make_shared<Number>(mpz_class("9223372036854775807"), location());
+  }
+}
 
 Range::Range(const Range &other):
   TypeExpr(other), min(other.min->clone()), max(other.max->clone()) {
