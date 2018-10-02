@@ -293,6 +293,7 @@ def main(argv):
       ('ex/mux/mcslock2.m',    True),
       ('ex/others/arbiter.m',  False),
       ('ex/others/dp4.m',      True),
+      ('ex/others/dpnew.m',    True),
       ('ex/sym/mcslock1.m',    True),
       ('ex/sym/mcslock2.m',    True),
       ('ex/tmp/scalarset.m',   True),
