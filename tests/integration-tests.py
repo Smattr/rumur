@@ -286,12 +286,21 @@ def main(argv):
   if CMURPHI_DIR is not None:
 
     models = (
-      # (Model path,         expected to pass?)
-      ('ex/toy/down.m',      False),
-      ('ex/toy/lin.m',       False),
-      ('ex/toy/pingpong.m',  True),
-      ('ex/toy/sets.m',      False),
-      ('ex/toy/sort5.m',     False),
+      # (Model path,           expected to pass?)
+      ('ex/mux/2_peterson.m',  True),
+      ('ex/mux/dek.m',         True),
+      ('ex/mux/mcslock1.m',    True),
+      ('ex/mux/mcslock2.m',    True),
+      ('ex/others/arbiter.m',  False),
+      ('ex/others/dp4.m',      True),
+      ('ex/sym/mcslock1.m',    True),
+      ('ex/sym/mcslock2.m',    True),
+      ('ex/tmp/scalarset.m',   True),
+      ('ex/toy/down.m',        False),
+      ('ex/toy/lin.m',         False),
+      ('ex/toy/pingpong.m',    True),
+      ('ex/toy/sets.m',        False),
+      ('ex/toy/sort5.m',       False),
     )
 
     for path, outcome in models:
