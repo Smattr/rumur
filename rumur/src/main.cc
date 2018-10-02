@@ -13,6 +13,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <sys/stat.h>
 #include <unistd.h>
 #include "utils.h"
 
@@ -233,6 +234,17 @@ static void parse_args(int argc, char **argv) {
   }
 
   if (optind == argc - 1) {
+    struct stat buf;
+    if (stat(argv[optind], &buf) < 0) {
+      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno) << "\n";
+      exit(EXIT_FAILURE);
+    }
+
+    if (S_ISDIR(buf.st_mode)) {
+      std::cerr << "failed to open " << argv[optind] << ": this is a directory\n";
+      exit(EXIT_FAILURE);
+    }
+
     auto inf = std::make_shared<std::ifstream>(argv[optind]);
     if (!inf->is_open()) {
       std::cerr << "failed to open " << argv[optind] << "\n";
