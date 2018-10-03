@@ -551,6 +551,7 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   out
+    << "    ASSERT(!\"no start rule found to generate discovered state\");\n"
     << "  } else {\n";
   {
     size_t index = 0;
@@ -599,7 +600,7 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   out
+    << "    ASSERT(!\"no rule found to link two discovered states\");\n"
     << "  }\n"
-    << "  ASSERT(!\"no rule found to link two discovered states\");\n"
     << "}\n\n";
 }
