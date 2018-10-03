@@ -600,7 +600,11 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   out
-    << "    ASSERT(!\"no rule found to link two discovered states\");\n"
+    << "#ifndef NDEBUG\n"
+    << "    /* give some helpful output for debugging problems with this function. */\n"
+    << "    fprintf(stderr, \"no rule found to link to state at depth %zu\\n\", state_depth(s2));\n"
+    << "#endif\n"
+    << "    ASSERT(!\"unreachable\");\n"
     << "  }\n"
     << "}\n\n";
 }
