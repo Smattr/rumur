@@ -518,6 +518,15 @@ static size_t state_hash(const struct state *s) {
   return (size_t)MurmurHash64A(s->data, sizeof(s->data));
 }
 
+static __attribute__((unused)) size_t state_depth(const struct state *s) {
+  size_t d = 0;
+  while (s != NULL) {
+    d++;
+    s = s->previous;
+  }
+  return d;
+}
+
 /* Print a state to stderr. This function is generated. This function assumes
  * that the caller already holds print_mutex.
  */
