@@ -607,4 +607,15 @@ void generate_model(std::ostream &out, const Model &m) {
     << "    ASSERT(!\"unreachable\");\n"
     << "  }\n"
     << "}\n\n";
+
+  // Generate a function used during debugging
+  out << "static void state_print_field_offsets(void) {\n";
+  for (const std::shared_ptr<Decl> &d : m.decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
+      out << "  printf(\"\t* field %s is located at state offset " << v->offset
+        << " bits\\n\", \"" << v->name << "\");\n";
+  }
+  out
+    << "  printf(\"\\n\");\n"
+    << "}\n\n";
 }

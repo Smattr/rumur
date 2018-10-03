@@ -527,6 +527,9 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
   return d;
 }
 
+/* This function is generated. */
+static __attribute__((unused)) void state_print_field_offsets(void);
+
 /* Print a state to stderr. This function is generated. This function assumes
  * that the caller already holds print_mutex.
  */
@@ -1777,6 +1780,10 @@ int main(void) {
          "\n",
          (size_t)STATE_SIZE_BITS, (size_t)STATE_SIZE_BYTES,
          ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+
+#ifndef NDEBUG
+  state_print_field_offsets();
+#endif
 
   START_TIME = time(NULL);
 
