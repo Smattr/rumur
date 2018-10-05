@@ -14,7 +14,11 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror"
+      # Fail on a compilation warning, emit debug symbols, support full back
+      # traces, enable UBSan, and abort execution on a UBSan error. Note that
+      # enabling UBSan on GCC seems to require the GOLD linker.
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, GCC 6
     os: linux
     addons:
@@ -27,7 +31,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, GCC 7
     os: linux
     addons:
@@ -40,7 +45,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, GCC 8
     os: linux
     addons:
@@ -53,7 +59,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, Clang 3.8
     os: linux
     addons:
@@ -68,7 +75,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, Clang 3.9
     os: linux
     addons:
@@ -83,6 +91,9 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+      # We don't enable any sanitizers for this build because the Clang and LLVM
+      # packages seem conflicting in Travis' Ubuntu image. More information:
+      # https://github.com/travis-ci/travis-ci/issues/8026.
       - CXXFLAGS="-Werror"
   - name: Linux, Clang 4.0
     os: linux
@@ -98,7 +109,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, Clang 5.0
     os: linux
     addons:
@@ -113,7 +125,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, Clang 6.0
     os: linux
     addons:
@@ -128,7 +141,8 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: macOS, XCode 8.3 Clang
     os: osx
     osx_image: xcode8.3
