@@ -411,7 +411,7 @@ struct state {
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds print_mutex.
  */
-static unsigned print_counterexample(const struct state *s);
+static void print_counterexample(const struct state *s);
 
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
  * the correct way to exit the checker is for every thread to eventually call
@@ -540,22 +540,43 @@ static void state_print(const struct state *previous, const struct state *s);
  */
 static void print_transition(const struct state *s1, const struct state *s2);
 
-static unsigned print_counterexample(const struct state *s) {
+static void print_counterexample(const struct state *s) {
 
-  if (s == NULL) {
-    return 0;
+  assert(s != NULL && "missing state in request for counterexample trace");
+
+  /* Construct an array of the states we need to print by walking backwards to
+   * the initial starting state. We could do this with recursion, but it turns
+   * out that larger traces overflow our stack.
+   */
+  size_t trace_length = 0;
+  for (const struct state *p = s; p != NULL; p = p->previous) {
+    trace_length++;
   }
 
-  /* Recurse so that we print the states in reverse-linked order, which
-   * corresponds to the order in which they were traversed.
-   */
-  unsigned step = print_counterexample(s->previous) + 1;
+  const struct state **cex = xcalloc(trace_length, sizeof(cex[0]));
 
-  print_transition(s->previous, s);
+  {
+    size_t i = trace_length - 1;
+    for (const struct state *p = s; p != NULL; p = p->previous) {
+      assert(i < trace_length && "error in counterexample trace traversal "
+        "logic");
+      cex[i] = p;
+      i--;
+    }
+  }
 
-  state_print(COUNTEREXAMPLE_TRACE == FULL ? NULL : s->previous, s);
-  fprintf(stderr, "----------\n\n");
-  return step;
+  for (size_t i = 0; i < trace_length; i++) {
+
+    const struct state *current = cex[i];
+    const struct state *previous = i == 0 ? NULL : cex[i - 1];
+
+    print_transition(previous, current);
+
+    state_print(COUNTEREXAMPLE_TRACE == FULL ? NULL : previous, current);
+    fprintf(stderr, "----------\n\n");
+  }
+
+  free(cex);
 }
 
 struct handle {
