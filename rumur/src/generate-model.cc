@@ -356,11 +356,11 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
           out << ", ru_" << q->name;
         out << ");\n"
-          << "      check_assumptions(s);\n"
-          << "      check_invariants(s);\n"
           << "      if (SYMMETRY_REDUCTION) {\n"
           << "        state_canonicalise(s);\n"
           << "      }\n"
+          << "      check_assumptions(s);\n"
+          << "      check_invariants(s);\n"
           << "      size_t size;\n"
           << "      if (set_insert(s, &size)) {\n"
           << "        (void)queue_enqueue(s, queue_id);\n"
@@ -435,11 +435,11 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", ru_" << q->name;
         out << ");\n"
           << "          rules_fired_local++;\n"
-          << "          check_assumptions(s);\n"
-          << "          check_invariants(n);\n"
           << "          if (SYMMETRY_REDUCTION) {\n"
           << "            state_canonicalise(n);\n"
           << "          }\n"
+          << "          check_assumptions(s);\n"
+          << "          check_invariants(n);\n"
           << "          size_t size;\n"
           << "          if (set_insert(n, &size)) {\n"
           << "\n"
