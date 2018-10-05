@@ -438,7 +438,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          if (SYMMETRY_REDUCTION) {\n"
           << "            state_canonicalise(n);\n"
           << "          }\n"
-          << "          check_assumptions(s);\n"
+          << "          check_assumptions(n);\n"
           << "          check_invariants(n);\n"
           << "          size_t size;\n"
           << "          if (set_insert(n, &size)) {\n"
