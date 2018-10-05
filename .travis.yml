@@ -14,7 +14,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, GCC 6
     os: linux
@@ -28,7 +27,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, GCC 7
     os: linux
@@ -42,7 +40,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, GCC 8
     os: linux
@@ -56,7 +53,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, Clang 3.8
     os: linux
@@ -72,7 +68,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, Clang 3.9
     os: linux
@@ -88,7 +83,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, Clang 4.0
     os: linux
@@ -104,7 +98,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, Clang 5.0
     os: linux
@@ -120,7 +113,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: Linux, Clang 6.0
     os: linux
@@ -136,7 +128,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-Werror"
   - name: macOS, XCode 8.3 Clang
     os: osx
@@ -147,21 +138,18 @@ matrix:
       # make them available to CMake we need to link them into the system
       # directories.
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-fsanitize=address -Werror"
   - name: macOS, XCode 9.2 Clang
     os: osx
     osx_image: xcode9.2
     env:
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-fsanitize=address -Werror"
   - name: macOS, XCode 9.4 Clang
     os: osx
     osx_image: xcode9.4
     env:
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
-      - CTEST_OUTPUT_ON_FAILURE=1
       - CXXFLAGS="-fsanitize=address -Werror"
 
 # This file initially contained entries to test GCC on macOS as well, but I
@@ -178,5 +166,5 @@ script:
   - cd build
   - cmake -DCMAKE_INSTALL_PREFIX=install ..
   - cmake --build .
-  - cmake --build . -- test
+  - ../tests/integration-tests.py --verbose
   - cmake --build . -- install
