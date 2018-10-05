@@ -148,21 +148,21 @@ matrix:
       # directories.
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
       - CTEST_OUTPUT_ON_FAILURE=1
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-fsanitize=address -Werror"
   - name: macOS, XCode 9.2 Clang
     os: osx
     osx_image: xcode9.2
     env:
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
       - CTEST_OUTPUT_ON_FAILURE=1
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-fsanitize=address -Werror"
   - name: macOS, XCode 9.4 Clang
     os: osx
     osx_image: xcode9.4
     env:
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
       - CTEST_OUTPUT_ON_FAILURE=1
-      - CXXFLAGS="-Werror"
+      - CXXFLAGS="-fsanitize=address -Werror"
 
 # This file initially contained entries to test GCC on macOS as well, but I
 # could not figure out how to get these working. One show stopper seems to be
