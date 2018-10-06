@@ -59,7 +59,7 @@ def parse_test_options(model: str):
   return option
 
 def test_template(self, model: str, optimised: bool, debug: bool,
-    valgrind: bool):
+    valgrind: bool, xml: bool):
 
   # Default options to use for this test.
   option = {
@@ -79,6 +79,8 @@ def test_template(self, model: str, optimised: bool, debug: bool,
     rumur_flags = ['--output', model_c, model]
     if debug:
       rumur_flags.append('--debug')
+    if xml:
+      rumur_flags.extend(['--output-format', 'machine-readable'])
     args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
     if valgrind:
       args = valgrind_wrap(args)
@@ -129,6 +131,24 @@ def test_template(self, model: str, optimised: bool, debug: bool,
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['checker_exit_code'])
+
+    if xml:
+      # See if we have xmllint
+      ret, _, _ = run(['which', 'xmllint'])
+      if ret != 0:
+        self.skipTest('xmllint not available for validation')
+
+      # Validate the XML
+      output_xml = os.path.join(tmp, 'output.xml')
+      with open(output_xml, 'wt') as f:
+        f.write(stdout)
+        f.flush()
+      ret, stdout, stderr = run(['xmllint', '--noout', output_xml])
+      if ret != 0:
+        sys.stderr.write('Failed to XML-validate machine readable output\n')
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertEqual(ret, 0)
 
 def test_ast_dumper_template(self, model: str, valgrind: bool):
 
@@ -241,22 +261,29 @@ def main(argv):
     for optimised in (False, True):
       for debug in (False, True):
         for valgrind in (False, True):
+          for xml in (False, True):
 
-          if valgrind and VALGRIND is None:
-            # Valgrind unavailable
-            continue
+            # Don't test machine-readable output for a debug or Valgrind run, as
+            # this messes up XML.
+            if xml and (debug or valgrind):
+              continue
 
-          test_name = re.sub(r'[^\w]', '_', 'test_{}{}{}{}'.format(
-            'debug_' if debug else '',
-            'optimised_' if optimised else 'unoptimised_',
-            'valgrind_' if valgrind else '', m_name))
+            if valgrind and VALGRIND is None:
+              # Valgrind unavailable
+              continue
 
-          if hasattr(Tests, test_name):
-            raise Exception('{} collides with an existing test name'.format(m))
+            test_name = re.sub(r'[^\w]', '_', 'test_{}{}{}{}{}'.format(
+              'debug_' if debug else '',
+              'optimised_' if optimised else 'unoptimised_',
+              'valgrind_' if valgrind else '',
+              'xml_' if xml else '', m_name))
 
-          setattr(Tests, test_name,
-            lambda self, model=m, o=optimised, d=debug, v=valgrind:
-              test_template(self, model, o, d, v))
+            if hasattr(Tests, test_name):
+              raise Exception('{} collides with an existing test name'.format(m))
+
+            setattr(Tests, test_name,
+              lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml:
+                test_template(self, model, o, d, v, x))
 
     for valgrind in (False, True):
 
