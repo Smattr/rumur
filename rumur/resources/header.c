@@ -455,7 +455,9 @@ static __attribute__((format(printf, 2, 3))) void trace(
 
 /* The state of the current model. */
 struct state {
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
   const struct state *previous;
+#endif
 
   uint8_t data[STATE_SIZE_BYTES];
 };
@@ -463,7 +465,7 @@ struct state {
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds print_mutex.
  */
-static void print_counterexample(const struct state *s);
+static void print_counterexample(const struct state *s __attribute__((unused)));
 
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
  * the correct way to exit the checker is for every thread to eventually call
@@ -561,7 +563,9 @@ static bool state_eq(const struct state *a, const struct state *b) {
 static struct state *state_dup(const struct state *s) {
   struct state *n = xmalloc(sizeof(*n));
   memcpy(n->data, s->data, sizeof(n->data));
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
   n->previous = s;
+#endif
   return n;
 }
 
@@ -569,6 +573,7 @@ static size_t state_hash(const struct state *s) {
   return (size_t)MurmurHash64A(s->data, sizeof(s->data));
 }
 
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
 static __attribute__((unused)) size_t state_depth(const struct state *s) {
   size_t d = 0;
   while (s != NULL) {
@@ -577,6 +582,7 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
   }
   return d;
 }
+#endif
 
 /* This function is generated. */
 static __attribute__((unused)) void state_print_field_offsets(void);
@@ -584,17 +590,20 @@ static __attribute__((unused)) void state_print_field_offsets(void);
 /* Print a state to stderr. This function is generated. This function assumes
  * that the caller already holds print_mutex.
  */
-static void state_print(const struct state *previous, const struct state *s);
+static __attribute__((unused)) void state_print(const struct state *previous,
+  const struct state *s);
 
 /* Print the first rule that transforms state s1 into state s2. This function is
  * generated. This function assumes that the caller holds print_mutex.
  */
-static void print_transition(const struct state *s1, const struct state *s2);
+static __attribute__((unused)) void print_transition(const struct state *s1,
+  const struct state *s2);
 
-static void print_counterexample(const struct state *s) {
+static void print_counterexample(const struct state *s __attribute__((unused))) {
 
   assert(s != NULL && "missing state in request for counterexample trace");
 
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
   /* Construct an array of the states we need to print by walking backwards to
    * the initial starting state. We could do this with recursion, but it turns
    * out that larger traces overflow our stack.
@@ -635,6 +644,7 @@ static void print_counterexample(const struct state *s) {
   }
 
   free(cex);
+#endif
 }
 
 struct handle {
