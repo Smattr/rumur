@@ -429,21 +429,21 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
     print_lock();
 
     if (s != NULL) {
-      fprintf(stderr, "The following is the error trace for the error:\n\n");
+      printf("The following is the error trace for the error:\n\n");
     } else {
-      fprintf(stderr, "Result:\n\n");
+      printf("Result:\n\n");
     }
 
-    fprintf(stderr, "\t%s%s", red(), bold());
+    printf("\t%s%s", red(), bold());
     va_list ap;
     va_start(ap, fmt);
-    (void)vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "%s\n\n", reset());
+    (void)vprintf(fmt, ap);
+    printf("%s\n\n", reset());
     va_end(ap);
 
     if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
       print_counterexample(s);
-      fprintf(stderr, "End of the error trace.\n\n");
+      printf("End of the error trace.\n\n");
     }
 
     print_unlock();
@@ -573,7 +573,7 @@ static void print_counterexample(const struct state *s) {
     print_transition(previous, current);
 
     state_print(COUNTEREXAMPLE_TRACE == FULL ? NULL : previous, current);
-    fprintf(stderr, "----------\n\n");
+    printf("----------\n\n");
   }
 
   free(cex);

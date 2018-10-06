@@ -83,19 +83,19 @@ class Generator : public ConstTypeTraversal {
         << "), .width = SIZE_C(" << n.width() << ") });\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    fprintf(stderr, \"" << prefix << ":\");\n"
+      << "    printf(\"" << prefix << ":\");\n"
       << "    if (v == 0) {\n"
-      << "      fprintf(stderr, \"Undefined\\n\");\n";
+      << "      printf(\"Undefined\\n\");\n";
     size_t i = 0;
     for (const std::pair<std::string, location> &m : n.members) {
       *out
         << "    } else if (v == VALUE_C(" << (i + 1) << ")) {\n"
-        << "      fprintf(stderr, \"%s\\n\", \"" << m.first << "\");\n";
+        << "      printf(\"%s\\n\", \"" << m.first << "\");\n";
       i++;
     }
     *out
       << "    } else {\n"
-      << "      fprintf(stderr, \"ILLEGAL VALUE\\n\");\n"
+      << "      printf(\"ILLEGAL VALUE\\n\");\n"
       << "    }\n"
       << "  }\n"
       << "}\n";
@@ -118,11 +118,11 @@ class Generator : public ConstTypeTraversal {
         << "), .width = SIZE_C(" << n.width() << ") });\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    fprintf(stderr, \"" << prefix << ":\");\n"
+      << "    printf(\"" << prefix << ":\");\n"
       << "    if (v == 0) {\n"
-      << "      fprintf(stderr, \"Undefined\\n\");\n"
+      << "      printf(\"Undefined\\n\");\n"
       << "    } else {\n"
-      << "      fprintf(stderr, \"%\" PRIVAL \"\\n\", decode_value(" << lb << ", "
+      << "      printf(\"%\" PRIVAL \"\\n\", decode_value(" << lb << ", "
         << ub << ", v));\n"
       << "    }\n"
       << "  }\n"
@@ -149,11 +149,11 @@ class Generator : public ConstTypeTraversal {
         << "), .width = SIZE_C(" << n.width() << ") });\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    fprintf(stderr, \"" << prefix << ":\");\n"
+      << "    printf(\"" << prefix << ":\");\n"
       << "    if (v == 0) {\n"
-      << "      fprintf(stderr, \"Undefined\\n\");\n"
+      << "      printf(\"Undefined\\n\");\n"
       << "    } else {\n"
-      << "      fprintf(stderr, \"%\" PRIVAL \"\\n\", v - 1);\n"
+      << "      printf(\"%\" PRIVAL \"\\n\", v - 1);\n"
       << "    }\n"
       << "  }\n"
       << "}\n";
