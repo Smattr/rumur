@@ -47,3 +47,6 @@ target_link_libraries(rumur
 
 install(TARGETS rumur
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(PROGRAMS
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/rumur-run
+  DESTINATION ${CMAKE_INSTALL_BINDIR})

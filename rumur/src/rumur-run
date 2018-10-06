@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+
+'''
+Wrapper script for running the Rumur model checker.
+
+This script is intended to be installed alongside the `rumur` binary from the
+Rumur model checker. It can then be used to quickly generate and run a model, as
+an alternative to having to run the model generation, compilation and execution
+steps manually.
+'''
+
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import tempfile
+
+def which(cmd: str) -> str:
+  '''
+  Equivalent of shell `which`
+  '''
+  try:
+    with open(os.devnull, 'wt') as f:
+      return subprocess.check_output(['which', cmd], stderr=f,
+        universal_newlines=True).strip()
+  except subprocess.CalledProcessError:
+    return None
+
+def categorise(cc: str) -> str:
+  '''
+  Determine the vendor of a given C compiler
+  '''
+
+  # Create a temporary area to compile a test file
+  tmp = tempfile.mkdtemp()
+
+  # Setup the test file
+  src = os.path.join(tmp, 'test.c')
+  with open(src, 'wt') as f:
+    f.write('#include <stdio.h>\n'
+            '#include <stdlib.h>\n'
+            'int main(void) {\n'
+            '#ifdef __clang__\n'
+            '  printf("clang\\n");\n'
+            '#elif defined(__GNUC__)\n'
+            '  printf("gcc\\n");\n'
+            '#else\n'
+            '  printf("unknown\\n");\n'
+            '#endif\n'
+            '  return EXIT_SUCCESS;\n'
+            '}\n')
+
+  categorisation = 'unknown'
+
+  # Compile it
+  aout = os.path.join(tmp, 'a.out')
+  cc_proc = subprocess.Popen([cc, '-o', aout, src], universal_newlines=True,
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout, stderr = cc_proc.communicate()
+
+  # Run it
+  if cc_proc.returncode == 0:
+    try:
+      categorisation = subprocess.check_output([aout],
+        universal_newlines=True).strip()
+    except subprocess.CalledProcessError:
+      pass
+
+  # Clean up
+  shutil.rmtree(tmp)
+
+  return categorisation
+
+def main(args: [str]) -> int:
+
+  # Find the Rumur binary
+  rumur_bin = which('rumur')
+  if rumur_bin is None:
+    rumur_bin = which(os.path.join(os.path.dirname(__file__), 'rumur'))
+  if rumur_bin is None:
+    sys.stderr.write('rumur binary not found\n')
+    return -1
+
+  # Find and categorise the C compiler
+  cc = which(os.environ.get('CC', 'cc'))
+  if cc is None:
+    sys.stderr.write('no C compiler found\n')
+    return -1
+  cc_vendor = categorise(cc)
+
+  # Setup a temporary directory in which to generate the checker
+  tmp = tempfile.mkdtemp()
+
+  ok = True
+
+  # Generate the checker
+  print('Generating the checker...')
+  checker_c = os.path.join(tmp, 'checker.c')
+  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c])
+  rumur_proc.communicate()
+  ok |= rumur_proc.returncode == 0
+
+  # Compile the checker
+  if ok:
+    print('Compiling the checker...')
+    aout = os.path.join(tmp, 'a.out')
+    cc_flags = ['-std=c11', '-O3', '-o', aout, checker_c]
+    if platform.machine() == 'x86_64' and cc_vendor == 'gcc':
+      # GCC needs a personal invitation to use cmpxchg16b
+      cc_flags += ['-mcx16']
+    if cc_vendor == 'gcc':
+      # Allow GCC to perform more advanced interprocedural optimisations
+      cc_flags += ['-fwhole-program']
+    cc_flags += ['-lpthread']
+    cc_proc = subprocess.Popen([cc] + cc_flags)
+    cc_proc.communicate()
+    ok |= cc_proc.returncode == 0
+
+  # Run the checker
+  if ok:
+    print('Running the checker...')
+    checker_proc = subprocess.Popen([aout])
+    checker_proc.communicate()
+    ok |= checker_proc.returncode
+
+  # Clean up
+  shutil.rmtree(tmp)
+
+  return 0 if ok else -1
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))
