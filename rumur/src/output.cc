@@ -44,8 +44,11 @@ int output_checker(const std::string &path, const Model &model) {
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
     << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
-    << "static const enum { CEX_OFF, DIFF, FULL } COUNTEREXAMPLE_TRACE = "
-      << options.counterexample_trace << ";\n\n"
+    << "#define CEX_OFF 0\n"
+    << "#define DIFF 1\n"
+    << "#define FULL 2\n"
+    << "#define COUNTEREXAMPLE_TRACE " << (options.counterexample_trace == CEX_OFF
+      ? "CEX_OFF" : (options.counterexample_trace == DIFF ? "DIFF" : "FULL")) << "\n\n"
     << "enum { MACHINE_READABLE_OUTPUT = " << options.machine_readable_output
       << " };\n\n"
 
