@@ -457,6 +457,9 @@ static __attribute__((format(printf, 2, 3))) void trace(
 struct state {
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   const struct state *previous;
+
+  /* Index of the rule we took to reach this state. */
+  uint64_t rule_taken;
 #endif
 
   uint8_t data[STATE_SIZE_BYTES];
@@ -593,11 +596,10 @@ static __attribute__((unused)) void state_print_field_offsets(void);
 static __attribute__((unused)) void state_print(const struct state *previous,
   const struct state *s);
 
-/* Print the first rule that transforms state s1 into state s2. This function is
- * generated. This function assumes that the caller holds print_mutex.
+/* Print the first rule that resulted in s. This function is generated. This
+ * function assumes that the caller holds print_mutex.
  */
-static __attribute__((unused)) void print_transition(const struct state *s1,
-  const struct state *s2);
+static __attribute__((unused)) void print_transition(const struct state *s);
 
 static void print_counterexample(const struct state *s __attribute__((unused))) {
 
@@ -630,7 +632,7 @@ static void print_counterexample(const struct state *s __attribute__((unused))) 
     const struct state *current = cex[i];
     const struct state *previous = i == 0 ? NULL : cex[i - 1];
 
-    print_transition(previous, current);
+    print_transition(current);
 
     if (MACHINE_READABLE_OUTPUT) {
       printf("<state>\n");

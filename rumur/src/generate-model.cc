@@ -323,7 +323,8 @@ void generate_model(std::ostream &out, const Model &m) {
   {
     out
       << "static void init(void) {\n"
-      << "  size_t queue_id = 0;\n";
+      << "  size_t queue_id = 0;\n"
+      << "  uint64_t rule_taken = 1;\n";
 
     size_t index = 0;
     for (const std::shared_ptr<Rule> &r : flat_rules) {
@@ -346,6 +347,9 @@ void generate_model(std::ostream &out, const Model &m) {
           << "    do {\n"
 
           << "      s = state_new();\n"
+          << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
+          << "      s->rule_taken = rule_taken;\n"
+          << "#endif\n"
           << "      if (JMP_BUF_NEEDED) {\n"
           << "        if (setjmp(checkpoint)) {\n"
           << "          /* error() was called. */\n"
@@ -368,7 +372,8 @@ void generate_model(std::ostream &out, const Model &m) {
           << "        s = NULL;\n"
           << "      }\n"
           << "      free(s);\n"
-          << "    } while (0);\n";
+          << "    } while (0);\n"
+          << "    rule_taken++;\n";
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
@@ -404,7 +409,8 @@ void generate_model(std::ostream &out, const Model &m) {
       << "      break;\n"
       << "    }\n"
       << "\n"
-      << "    bool possible_deadlock = true;\n";
+      << "    bool possible_deadlock = true;\n"
+      << "    uint64_t rule_taken = 1;\n";
     size_t index = 0;
     for (const std::shared_ptr<Rule> &r : flat_rules) {
       if (isa<SimpleRule>(r)) {
@@ -419,6 +425,9 @@ void generate_model(std::ostream &out, const Model &m) {
           // Use a dummy do-while to give us 'break' as a local goto.
           << "      do {\n"
           << "        struct state *n = state_dup(s);\n"
+          << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
+          << "        n->rule_taken = rule_taken;\n"
+          << "#endif\n"
           << "        if (JMP_BUF_NEEDED) {\n"
           << "          if (setjmp(checkpoint)) {\n"
           << "            /* error() was called. */\n"
@@ -472,7 +481,8 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          }\n"
           << "        }\n"
           << "        free(n);\n"
-          << "      } while (0);\n";
+          << "      } while (0);\n"
+          << "      rule_taken++;\n";
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
@@ -512,113 +522,99 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Write a function to print state transitions.
   out
-    << "static void print_transition(const struct state *s1, const struct state *s2) {\n"
-    << "  ASSERT(s2 != NULL);\n"
-    << "  if (s1 == NULL) {\n";
+    << "static void print_transition(const struct state *s __attribute__((unused))) {\n"
+    << "  ASSERT(s != NULL);\n"
+    << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
+    << "\n"
+    << "  if (s->rule_taken == 0) {\n"
+    << "    fprintf(stderr, \"unknown state transition\\n\");\n"
+    << "    ASSERT(s->rule_taken != 0 && \"unknown state transition\");\n"
+    << "    return;\n"
+    << "  }\n"
+    << "\n";
+
   {
+    out
+      << "  if (s->previous == NULL) {\n"
+      << "    uint64_t rule_taken = 1;\n";
+
     size_t index = 0;
     for (const std::shared_ptr<Rule> &r : flat_rules) {
       if (isa<StartState>(r)) {
 
-        out
-         << "    {\n"
-         << "      struct state *s = NULL;\n";
-
+        // Set up quantifiers.
+        out << "    {\n";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
           generate_quantifier_header(out, *q);
 
-        out
-          << "      s = state_new();\n"
-          << "      startstate" << index << "(s";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->name;
-        out << ");\n"
-          << "      if (SYMMETRY_REDUCTION) {\n"
-          << "        state_canonicalise(s);\n"
-          << "      }\n"
-          << "      bool r = state_eq(s2, s);\n"
-          << "      free(s);\n"
-          << "      if (r) {\n"
-          << "        if (MACHINE_READABLE_OUTPUT) {\n"
-          << "          printf(\"<transition>\");\n"
-          << "          char *escaped_name = xml_escape(\""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "          printf(\"%s\", escaped_name);\n"
-          << "          free(escaped_name);\n"
-          << "          printf(\"</transition>\\n\");\n"
-          << "        } else {\n"
-          << "          printf(\"Startstate %s fired.\\n\", \""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "        }\n"
-          << "        return;\n"
-          << "      }\n";
+        out << "      rule_taken++;\n";
 
+        // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
           generate_quantifier_footer(out, **it);
+        out << "    }\n";
 
         out
-          << "    }\n";
+          << "  if (s->rule_taken <= rule_taken) {\n"
+          << "    if (MACHINE_READABLE_OUTPUT) {\n"
+          << "      printf(\"<transition>\");\n"
+          << "      char *escaped_name = xml_escape(\""
+            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "      printf(\"%s\", escaped_name);\n"
+          << "      free(escaped_name);\n"
+          << "      printf(\"</transition>\\n\");\n"
+          << "    } else {\n"
+          << "      printf(\"Startstate %s fired.\\n\", \""
+            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "    }\n"
+          << "    return;\n"
+          << "  }\n";
 
         index++;
       }
     }
   }
 
-  out
-    << "    ASSERT(!\"no start rule found to generate discovered state\");\n"
-    << "  } else {\n";
   {
+    out
+      << "  } else {\n"
+      << "    uint64_t rule_taken = 1;\n";
+
     size_t index = 0;
     for (const std::shared_ptr<Rule> &r : flat_rules) {
       if (isa<SimpleRule>(r)) {
 
-        out
-          << "    {\n"
-          << "      struct state *s = NULL;\n";
-
+        // Set up quantifiers.
+        out << "    {\n";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
           generate_quantifier_header(out, *q);
 
-        out
-          << "      s = state_dup(s1);\n"
-          << "      bool r = false;\n"
-          << "      if (guard" << index << "(s";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->name;
-        out << ")) {\n"
-          << "        rule" << index << "(s";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->name;
-        out << ");\n"
-          << "        if (SYMMETRY_REDUCTION) {\n"
-          << "          state_canonicalise(s);\n"
-          << "        }\n"
-          << "        r = state_eq(s2, s);\n"
-          << "        free(s);\n"
-          << "     }\n"
-          << "     if (r) {\n"
-          << "       if (MACHINE_READABLE_OUTPUT) {\n"
-          << "         printf(\"<transition>\");\n"
-          << "         char *escaped_name = xml_escape(\""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "         printf(\"%s\", escaped_name);\n"
-          << "         free(escaped_name);\n"
-          << "         printf(\"</transition>\\n\");\n"
-          << "       } else {\n"
-          << "         printf(\"Rule %s fired.\\n\", \""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "       }\n"
-          << "       return;\n"
-          << "     }\n";
+        out << "      rule_taken++;\n";
 
+        // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
           generate_quantifier_footer(out, **it);
-
         out << "    }\n";
+
+        out
+          << "  if (s->rule_taken <= rule_taken) {\n"
+          << "    if (MACHINE_READABLE_OUTPUT) {\n"
+          << "      printf(\"<transition>\");\n"
+          << "      char *escaped_name = xml_escape(\""
+            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "      printf(\"%s\", escaped_name);\n"
+          << "      free(escaped_name);\n"
+          << "      printf(\"</transition>\\n\");\n"
+          << "    } else {\n"
+          << "      printf(\"Rule %s fired.\\n\", \""
+            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "    }\n"
+          << "    return;\n"
+          << "  }\n";
 
         index++;
       }
@@ -626,12 +622,12 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   out
-    << "#ifndef NDEBUG\n"
-    << "    /* give some helpful output for debugging problems with this function. */\n"
-    << "    fprintf(stderr, \"no rule found to link to state at depth %zu\\n\", state_depth(s2));\n"
-    << "#endif\n"
-    << "    ASSERT(!\"unreachable\");\n"
     << "  }\n"
+    << "\n"
+    << "  /* give some helpful output for debugging problems with this function. */\n"
+    << "  fprintf(stderr, \"no rule found to link to state at depth %zu\\n\", state_depth(s));\n"
+    << "  ASSERT(!\"unreachable\");\n"
+    << "#endif\n"
     << "}\n\n";
 
   // Generate a function used during debugging
