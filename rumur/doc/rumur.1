@@ -60,6 +60,14 @@ it is the same as passing \fB--set-expand-threshold 100\fR and
 current machine.
 .RE
 .PP
+\fB--output-format\fR [\fBmachine-readable\fR | \fBhuman-readable\fR]
+.RS
+Change the format in which the checker displays its output. By default, it uses
+\fBhuman-readable\fR which results in progress output and then a final summary
+of the result. Using \fBmachine-readable\fR generates output in an XML format
+suitable for consumption by a following tool in an I/O pipeline.
+.RE
+.PP
 \fB--quiet\fR or \fB-q\fR
 .RS
 Don't output any messages while generating the checker.

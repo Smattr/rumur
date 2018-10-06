@@ -37,6 +37,7 @@ static void parse_args(int argc, char **argv) {
       { "no-colour", no_argument, 0, 129 },
       { "no-deadlock-detection", no_argument, 0, 132 },
       { "output", required_argument, 0, 'o' },
+      { "output-format", required_argument, 0, 138 },
       { "quiet", no_argument, 0, 'q' },
       { "sandbox", required_argument, 0, 135 },
       { "set-capacity", required_argument, 0, 's' },
@@ -113,6 +114,11 @@ static void parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
 
       case 128: // --colour
+        if (options.machine_readable_output) {
+          std::cerr << "colour is not supported in combination with "
+            << "--output-format \"machine readable\"\n";
+          exit(EXIT_FAILURE);
+        }
         options.color = ON;
         break;
 
@@ -221,6 +227,20 @@ static void parse_args(int argc, char **argv) {
           options.counterexample_trace = CEX_OFF;
         } else {
           std::cerr << "invalid argument to --counterexample-trace, \""
+            << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+
+      case 138: // --output-format ...
+        if (strcmp(optarg, "machine-readable") == 0) {
+          options.machine_readable_output = true;
+          // Disable colour that would interfere with XML
+          options.color = OFF;
+        } else if (strcmp(optarg, "human-readable") == 0) {
+          options.machine_readable_output = false;
+        } else {
+          std::cerr << "invalid argument to --output-format, \""
             << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }

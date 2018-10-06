@@ -14,4 +14,5 @@ Options options = {
   .sandbox_enabled = false,
   .max_errors = 1,
   .counterexample_trace = DIFF,
+  .machine_readable_output = false,
 };

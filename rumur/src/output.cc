@@ -46,6 +46,8 @@ int output_checker(const std::string &path, const Model &model) {
     << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
     << "static const enum { CEX_OFF, DIFF, FULL } COUNTEREXAMPLE_TRACE = "
       << options.counterexample_trace << ";\n\n"
+    << "enum { MACHINE_READABLE_OUTPUT = " << options.machine_readable_output
+      << " };\n\n"
 
     // Static boiler plate code
     << std::string((const char*)resources_header_c, (size_t)resources_header_c_len)

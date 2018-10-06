@@ -61,6 +61,9 @@ struct Options {
 
   // How to print counterexample traces
   counterexample_trace_t counterexample_trace;
+
+  // Print output as XML?
+  bool machine_readable_output;
 };
 
 extern Options options;

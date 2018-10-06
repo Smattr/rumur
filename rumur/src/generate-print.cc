@@ -83,20 +83,29 @@ class Generator : public ConstTypeTraversal {
         << "), .width = SIZE_C(" << n.width() << ") });\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    printf(\"" << prefix << ":\");\n"
+      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "      printf(\"<state_component name=\\\"" << prefix.c_str() << "\\\" "
+        << "value=\\\"\");\n"
+      << "    } else {\n"
+      << "      printf(\"" << prefix << ":\");\n"
+      << "    }\n"
       << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\\n\");\n";
+      << "      printf(\"Undefined\");\n";
     size_t i = 0;
     for (const std::pair<std::string, location> &m : n.members) {
       *out
         << "    } else if (v == VALUE_C(" << (i + 1) << ")) {\n"
-        << "      printf(\"%s\\n\", \"" << m.first << "\");\n";
+        << "      printf(\"%s\", \"" << m.first << "\");\n";
       i++;
     }
     *out
       << "    } else {\n"
-      << "      printf(\"ILLEGAL VALUE\\n\");\n"
+      << "      printf(\"ILLEGAL VALUE\");\n"
       << "    }\n"
+      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "      printf(\"\\\"/>\");\n"
+      << "    }\n"
+      << "    printf(\"\\n\");\n"
       << "  }\n"
       << "}\n";
   }
@@ -118,13 +127,22 @@ class Generator : public ConstTypeTraversal {
         << "), .width = SIZE_C(" << n.width() << ") });\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    printf(\"" << prefix << ":\");\n"
-      << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\\n\");\n"
+      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "      printf(\"<state_component name=\\\"" << prefix.c_str() << "\\\" "
+        << "value=\\\"\");\n"
       << "    } else {\n"
-      << "      printf(\"%\" PRIVAL \"\\n\", decode_value(" << lb << ", "
+      << "      printf(\"" << prefix << ":\");\n"
+      << "    }\n"
+      << "    if (v == 0) {\n"
+      << "      printf(\"Undefined\");\n"
+      << "    } else {\n"
+      << "      printf(\"%\" PRIVAL \"\", decode_value(" << lb << ", "
         << ub << ", v));\n"
       << "    }\n"
+      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "      printf(\"\\\"/>\");\n"
+      << "    }\n"
+      << "    printf(\"\\n\");\n"
       << "  }\n"
       << "}\n";
   }
@@ -149,12 +167,21 @@ class Generator : public ConstTypeTraversal {
         << "), .width = SIZE_C(" << n.width() << ") });\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    printf(\"" << prefix << ":\");\n"
-      << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\\n\");\n"
+      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "      printf(\"<state_component name=\\\"" << prefix.c_str() << "\\\" "
+        << "value=\\\"\");\n"
       << "    } else {\n"
-      << "      printf(\"%\" PRIVAL \"\\n\", v - 1);\n"
+      << "      printf(\"" << prefix << ":\");\n"
       << "    }\n"
+      << "    if (v == 0) {\n"
+      << "      printf(\"Undefined\");\n"
+      << "    } else {\n"
+      << "      printf(\"%\" PRIVAL \"\", v - 1);\n"
+      << "    }\n"
+      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "      printf(\"\\\"/>\");\n"
+      << "    }\n"
+      << "    printf(\"\\n\");\n"
       << "  }\n"
       << "}\n";
   }

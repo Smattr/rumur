@@ -363,6 +363,28 @@ static uint64_t MurmurHash64A(const void *key, size_t len) {
 
 /******************************************************************************/
 
+/* Signal an out-of-memory condition and terminate abruptly. */
+static _Noreturn void oom(void) {
+  fputs("out of memory", stderr);
+  exit(EXIT_FAILURE);
+}
+
+static void *xmalloc(size_t size) {
+  void *p = malloc(size);
+  if (p == NULL) {
+    oom();
+  }
+  return p;
+}
+
+static void *xcalloc(size_t count, size_t size) {
+  void *p = calloc(count, size);
+  if (p == NULL) {
+    oom();
+  }
+  return p;
+}
+
 /* A lock that should be held whenever printing to stdout or stderr. This is a
  * way to prevent the output of one thread being interleaved with the output of
  * another.
@@ -377,6 +399,36 @@ static void print_lock(void) {
 static void print_unlock(void) {
   int r __attribute__((unused)) = pthread_mutex_unlock(&print_mutex);
   assert(r == 0);
+}
+
+static char *xml_escape(const char *s) {
+  char *p = xmalloc(strlen(s) * strlen("&quot;") + 1);
+
+  for (size_t i = 0; ; s++) {
+    if (*s == '"') {
+      strcpy(&p[i], "&quot;");
+      i += strlen("&quot;");
+    } else if (*s == '\'') {
+      strcpy(&p[i], "&apos;");
+      i += strlen("&apos;");
+    } else if (*s == '<') {
+      strcpy(&p[i], "&lt;");
+      i += strlen("&lt;");
+    } else if (*s == '>') {
+      strcpy(&p[i], "&gt;");
+      i += strlen("&gt;");
+    } else if (*s == '&') {
+      strcpy(&p[i], "&amp;");
+      i += strlen("&amp;");
+    } else if (*s == '\0') {
+      p[i] = '\0';
+      break;
+    } else {
+      p[i] = *s;
+    }
+  }
+
+  return p;
 }
 
 /* Supporting for tracing specific operations. This can be enabled during
@@ -428,23 +480,44 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
 
     print_lock();
 
-    if (s != NULL) {
-      printf("The following is the error trace for the error:\n\n");
-    } else {
-      printf("Result:\n\n");
-    }
-
-    printf("\t%s%s", red(), bold());
     va_list ap;
     va_start(ap, fmt);
-    (void)vprintf(fmt, ap);
-    printf("%s\n\n", reset());
-    va_end(ap);
 
-    if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
-      print_counterexample(s);
-      printf("End of the error trace.\n\n");
+    if (MACHINE_READABLE_OUTPUT) {
+      printf("<error includes_trace=\"%s\">\n",
+        (s == NULL || COUNTEREXAMPLE_TRACE == CEX_OFF) ? "false" : "true");
+
+      char *escaped_fmt = xml_escape(fmt);
+      printf("<message>");
+      vprintf(escaped_fmt, ap);
+      printf("</message>\n");
+
+      free(escaped_fmt);
+
+      if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
+        print_counterexample(s);
+      }
+
+      printf("</error>\n");
+
+    } else {
+      if (s != NULL) {
+        printf("The following is the error trace for the error:\n\n");
+      } else {
+        printf("Result:\n\n");
+      }
+
+      printf("\t%s%s", red(), bold());
+      vprintf(fmt, ap);
+      printf("%s\n\n", reset());
+
+      if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
+        print_counterexample(s);
+        printf("End of the error trace.\n\n");
+      }
     }
+
+    va_end(ap);
 
     print_unlock();
   }
@@ -471,28 +544,6 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   }
 
   exit_with(EXIT_FAILURE);
-}
-
-/* Signal an out-of-memory condition and terminate abruptly. */
-static _Noreturn void oom(void) {
-  fputs("out of memory", stderr);
-  exit(EXIT_FAILURE);
-}
-
-static void *xmalloc(size_t size) {
-  void *p = malloc(size);
-  if (p == NULL) {
-    oom();
-  }
-  return p;
-}
-
-static void *xcalloc(size_t count, size_t size) {
-  void *p = calloc(count, size);
-  if (p == NULL) {
-    oom();
-  }
-  return p;
 }
 
 static struct state *state_new(void) {
@@ -572,8 +623,15 @@ static void print_counterexample(const struct state *s) {
 
     print_transition(previous, current);
 
+    if (MACHINE_READABLE_OUTPUT) {
+      printf("<state>\n");
+    }
     state_print(COUNTEREXAMPLE_TRACE == FULL ? NULL : previous, current);
-    printf("----------\n\n");
+    if (MACHINE_READABLE_OUTPUT) {
+      printf("</state>\n");
+    } else {
+      printf("----------\n\n");
+    }
   }
 
   free(cex);
@@ -1700,17 +1758,19 @@ static int exit_with(int status) {
 
     /* We're now single-threaded again. */
 
-    printf("\n"
-           "==========================================================================\n"
-           "\n"
-           "Status:\n"
-           "\n");
-    if (error_count == 0) {
-      printf("\t%s%sNo error found.%s\n", green(), bold(), reset());
-    } else {
-      printf("\t%s%s%lu error(s) found.%s\n", red(), bold(), error_count, reset());
+    if (!MACHINE_READABLE_OUTPUT) {
+      printf("\n"
+             "==========================================================================\n"
+             "\n"
+             "Status:\n"
+             "\n");
+      if (error_count == 0) {
+        printf("\t%s%sNo error found.%s\n", green(), bold(), reset());
+      } else {
+        printf("\t%s%s%lu error(s) found.%s\n", red(), bold(), error_count, reset());
+      }
+      printf("\n");
     }
-    printf("\n");
 
     /* Calculate the total number of rules fired. */
     uintmax_t fire_count = 0;
@@ -1729,10 +1789,17 @@ static int exit_with(int status) {
     assert(count == local_seen->count && "seen set count is inconsistent at "
       "exit");
 
-    printf("State Space Explored:\n"
-           "\n"
-           "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
-           local_seen->count, fire_count, gettime());
+    if (MACHINE_READABLE_OUTPUT) {
+      printf("<summary states=\"%zu\" rules_fired=\"%" PRIuMAX "\" errors=\"%lu\" "
+        "duration_seconds=\"%llu\"/>\n", local_seen->count, fire_count, error_count,
+        gettime());
+      printf("</rumur_run>\n");
+    } else {
+      printf("State Space Explored:\n"
+             "\n"
+             "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
+             local_seen->count, fire_count, gettime());
+    }
 
     exit(status);
   } else {
@@ -1794,13 +1861,21 @@ int main(void) {
 
   sandbox();
 
-  printf("Memory usage:\n"
-         "\n"
-         "\t* The size of each state is %zu bits (rounded up to %zu bytes).\n"
-         "\t* The size of the hash table is %zu slots.\n"
-         "\n",
-         (size_t)STATE_SIZE_BITS, (size_t)STATE_SIZE_BYTES,
-         ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+  if (MACHINE_READABLE_OUTPUT) {
+    printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+           "<rumur_run>\n"
+           "<information state_size_bits=\"%zu\" state_size_bytes=\"%zu\" "
+      "hash_table_slots=\"%zu\"/>\n", (size_t)STATE_SIZE_BITS,
+      (size_t)STATE_SIZE_BYTES, ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+  } else {
+    printf("Memory usage:\n"
+           "\n"
+           "\t* The size of each state is %zu bits (rounded up to %zu bytes).\n"
+           "\t* The size of the hash table is %zu slots.\n"
+           "\n",
+           (size_t)STATE_SIZE_BITS, (size_t)STATE_SIZE_BYTES,
+           ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+  }
 
 #ifndef NDEBUG
   state_print_field_offsets();
@@ -1817,7 +1892,9 @@ int main(void) {
 
   init();
 
-  printf("Progress Report:\n\n");
+  if (!MACHINE_READABLE_OUTPUT) {
+    printf("Progress Report:\n\n");
+  }
 
   explore();
 }
