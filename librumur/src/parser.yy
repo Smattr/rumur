@@ -157,7 +157,7 @@
 %left '*' '/' '%'
 
 %type <std::shared_ptr<rumur::AliasRule>>                    aliasrule
-%type <rumur::Property::Category>                            category
+%type <int>                                                  category
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
@@ -357,21 +357,21 @@ simplerule: RULE string_opt guard_opt decls_header stmts endrule {
 };
 
 property: category STRING expr {
-  rumur::Property p($1, $3, @3);
+  rumur::Property p(static_cast<rumur::Property::Category>($1), $3, @3);
   $$ = std::make_shared<rumur::PropertyRule>($2, p, @$);
 } | category expr string_opt {
-  rumur::Property p($1, $2, @2);
+  rumur::Property p(static_cast<rumur::Property::Category>($1), $2, @2);
   $$ = std::make_shared<rumur::PropertyRule>($3, p, @$);
 };
 
 category: ASSERT {
-  $$ = rumur::Property::ASSERTION;
+  $$ = int(rumur::Property::ASSERTION);
 } | ASSUME {
-  $$ = rumur::Property::ASSUMPTION;
+  $$ = int(rumur::Property::ASSUMPTION);
 } | INVARIANT {
-  $$ = rumur::Property::ASSERTION;
+  $$ = int(rumur::Property::ASSERTION);
 } | PROPERTY {
-  $$ = rumur::Property::DISABLED;
+  $$ = int(rumur::Property::DISABLED);
 };
 
 ruleset: RULESET quantifiers DO rules endruleset {
@@ -405,10 +405,10 @@ stmts_cont: stmts_cont stmt ';' {
 };
 
 stmt: category STRING expr {
-  rumur::Property p($1, $3, @3);
+  rumur::Property p(static_cast<rumur::Property::Category>($1), $3, @3);
   $$ = std::make_shared<rumur::PropertyStmt>(p, $2, @$);
 } | category expr string_opt {
-  rumur::Property p($1, $2, @2);
+  rumur::Property p(static_cast<rumur::Property::Category>($1), $2, @2);
   $$ = std::make_shared<rumur::PropertyStmt>(p, $3, @$);
 } | designator COLON_EQ expr {
   $$ = std::make_shared<rumur::Assignment>($1, $3, @$);
