@@ -286,6 +286,18 @@ bool IfClause::operator==(const Node &other) const {
   return true;
 }
 
+void IfClause::validate() const {
+
+  if (condition == nullptr) {
+    // This is an 'else' block.
+    return;
+  }
+
+  // Only boolean conditions are supported.
+  if (!condition->is_boolean())
+    throw Error("condition of if clause is not a boolean expression", loc);
+}
+
 If::If(std::vector<IfClause> &&clauses_, const location &loc_):
   Stmt(loc_), clauses(clauses_) { }
 
