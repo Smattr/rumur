@@ -194,7 +194,7 @@
 %type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecl
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecls
-%type <bool>                                                 var_opt
+%type <std::shared_ptr<bool>>                                var_opt
 
 %%
 
@@ -289,7 +289,7 @@ function: FUNCTION | PROCEDURE;
 parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
     auto v = std::make_shared<rumur::VarDecl>(i.first, $4, @$);
-    v->readonly = !$1;
+    v->readonly = !*$1;
     $$.push_back(v);
   }
 };
@@ -317,9 +317,9 @@ return_type: ':' typeexpr semi_opt {
 };
 
 var_opt: VAR {
-  $$ = true;
+  $$ = std::make_shared<bool>(true);
 } | %empty {
-  $$ = false;
+  $$ = std::make_shared<bool>(false);
 };
 
 rules: rules rule semi_opt {
