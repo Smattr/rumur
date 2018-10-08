@@ -52,12 +52,8 @@ struct PropertyStmt : public Stmt {
   Property property;
   std::string message;
 
-  PropertyStmt() = delete;
   PropertyStmt(const Property &property_, const std::string &message_,
     const location &loc_);
-  PropertyStmt(const PropertyStmt &other);
-  PropertyStmt &operator=(PropertyStmt other);
-  friend void swap(PropertyStmt &x, PropertyStmt &y) noexcept;
   PropertyStmt *clone() const final;
   virtual ~PropertyStmt() { }
 

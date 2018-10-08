@@ -62,22 +62,6 @@ PropertyStmt::PropertyStmt(const Property &property_,
   const std::string &message_, const location &loc_):
   Stmt(loc_), property(property_), message(message_) { }
 
-PropertyStmt::PropertyStmt(const PropertyStmt &other):
-  Stmt(other.loc), property(other.property), message(other.message) { }
-
-PropertyStmt &PropertyStmt::operator=(PropertyStmt other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(PropertyStmt &x, PropertyStmt &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.property, y.property);
-  swap(x.message, y.message);
-}
-
 PropertyStmt *PropertyStmt::clone() const {
   return new PropertyStmt(*this);
 }
