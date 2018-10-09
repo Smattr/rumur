@@ -163,21 +163,6 @@ void Clear::validate() const {
 ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_):
   Stmt(loc_), message(message_) { }
 
-ErrorStmt::ErrorStmt(const ErrorStmt &other):
-  Stmt(other.loc), message(other.message) { }
-
-ErrorStmt &ErrorStmt::operator=(ErrorStmt other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(ErrorStmt &x, ErrorStmt &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.message, y.message);
-}
-
 ErrorStmt *ErrorStmt::clone() const {
   return new ErrorStmt(*this);
 }

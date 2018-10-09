@@ -98,11 +98,7 @@ struct ErrorStmt : public Stmt {
 
    std::string message;
 
-   ErrorStmt() = delete;
    ErrorStmt(const std::string &message_, const location &loc_);
-   ErrorStmt(const ErrorStmt &other);
-   ErrorStmt &operator=(ErrorStmt other);
-   friend void swap(ErrorStmt &x, ErrorStmt &y) noexcept;
    ErrorStmt *clone() const final;
    virtual ~ErrorStmt() { }
 
