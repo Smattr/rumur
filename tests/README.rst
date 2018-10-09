@@ -10,7 +10,14 @@ be run with the current working directory as your build output directory:
     make
     /my/source/dir/tests/integration-tests.py
 
-Within this directory are various test cases, each defined in a .m file.
-Currently the test suite expects all steps to succeed (exit code 0). In
-the future, it is planned to extend the available options to allow expressing
-that a step is expected to fail or even output specific text.
+Within this directory are various test cases, each defined in a .m file. It is
+possible to tweak the expected outcome of a test using specially formatted
+comments in the source of a test case. E.g. to indicate that Rumur is expected
+to reject a test case:
+
+.. code-block:: murphi
+
+    -- rumur_exit_code: 1
+
+To see how these comments are interpreted and gain a full understanding of what
+is possible, consult the test script integration-tests.py.
