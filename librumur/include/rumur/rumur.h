@@ -15,7 +15,6 @@
 #include <rumur/Node.h>
 #include <rumur/parse.h>
 #include <rumur/Property.h>
-#include <rumur/Reference.h>
 #include <rumur/resolve-symbols.h>
 #include <rumur/Rule.h>
 #include <rumur/scanner.h>
