@@ -6,6 +6,7 @@
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>
+#include <rumur/Property.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
