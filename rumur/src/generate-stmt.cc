@@ -5,6 +5,7 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
+#include "utils.h"
 
 using namespace rumur;
 
@@ -147,12 +148,27 @@ class Generator : public ConstStmtTraversal {
   void visit(const If &s) final {
     bool first = true;
     for (const IfClause &c : s.clauses) {
+
+      /* HACK: Equality comparisons against by-value function/procedure
+       * parameters of simple type can result in code generation like:
+       *
+       *   if ((ru_x == ...)) {
+       *
+       * On compilers with -Wparentheses-equality (e.g. Apple's Clang 10.0.0)
+       * this generates a spurious warning. To avoid this, we suppress the
+       * duplicate brackets for any comparison using a binary operator.
+       */
+      bool needs_bracketing = !isa<BinaryExpr>(c.condition);
+
       if (!first)
         *out << "else ";
       if (c.condition != nullptr) {
-        *out << "if (";
+        *out << "if ";
+        if (needs_bracketing)
+          *out << "(";
         generate_rvalue(*out, *c.condition);
-        *out  << ") ";
+        if (needs_bracketing)
+          *out  << ") ";
       }
       *out << " {\n";
       for (const std::shared_ptr<Stmt> &st : c.body) {
