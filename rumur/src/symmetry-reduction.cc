@@ -13,7 +13,7 @@
 using namespace rumur;
 
 // Find all the named scalarset declarations in a model.
-static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
+static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
   for (const std::shared_ptr<Decl> &d : m.decls) {
     if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
@@ -24,115 +24,7 @@ static std::vector<const TypeDecl*> find_scalarsets(const Model &m) {
   return ss;
 }
 
-/* Derive a metric for a given type based on its utility as a pivot component
- * (see below). In this scheme lower is better. The score is essentially "how
- * many times is a scalarset used in this type?"
- */
-[[gnu::warn_unused_result]] static unsigned interdependence(const TypeExpr &t) {
-
-  if (auto r = dynamic_cast<const Record*>(&t)) {
-    unsigned s = 0;
-    for (const std::shared_ptr<VarDecl> &f : r->fields)
-      s += interdependence(*f->type);
-    return s;
-  }
-
-  if (auto a = dynamic_cast<const Array*>(&t))
-    return interdependence(*a->index_type) + interdependence(*a->element_type);
-
-  if (isa<Scalarset>(&t))
-    return 1;
-
-  if (auto i = dynamic_cast<const TypeExprID*>(&t))
-    return interdependence(*i->referent);
-
-  return 0;
-}
-
-// Generate part of a memcmp-style comparator
-static void generate_compare(std::ostream &out, const std::string &offset_a,
-  const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
-
-  const TypeExpr *t = type.resolve();
-
-  const std::string indent = std::string((depth + 1) * 2, ' ');
-
-  if (t->is_simple()) {
-    const std::string width = "SIZE_C(" + t->width().get_str() + ")";
-    out
-
-      /* Open a scope so we don't need to think about redeclaring/shadowing 'x'
-       * and 'y'.
-       */
-      << indent << "{\n"
-
-      // Directly compare the two pieces of data
-      << indent << "  value_t x = handle_read_raw(state_handle(s, " << offset_a
-        << ", " << width << "));\n"
-      << indent << "  value_t y = handle_read_raw(state_handle(s, " << offset_b
-        << ", " << width << "));\n"
-      << indent << "  if (x < y) {\n"
-      << indent << "    return -1;\n"
-      << indent << "  } else if (x > y) {\n"
-      << indent << "    return 1;\n"
-      << indent << "  }\n"
-      << indent << "  /* Fall through to comparison of next item. */\n"
-
-      // Close scope
-      << indent << "}\n";
-
-    return;
-  }
-
-  if (auto a = dynamic_cast<const Array*>(t)) {
-
-    // The number of elements in this array as a C code string
-    mpz_class ic = a->index_type->count() - 1;
-    const std::string ub = "SIZE_C(" + ic.get_str() + ")";
-
-    // The bit size of each array element as a C code string
-    const std::string width = "SIZE_C(" +
-      a->element_type->width().get_str() + ")";
-
-    // Generate a loop to iterate over all the elements
-    const std::string var = "i" + std::to_string(depth);
-    out << indent << "for (size_t " << var << " = 0; " << var << " < " << ub
-      << "; " << var << "++) {\n";
-
-    // Generate code to compare each element
-    const std::string off_a = offset_a + " + " + var + " * " + width;
-    const std::string off_b = offset_b + " + " + var + " * " + width;
-    generate_compare(out, off_a, off_b, *a->element_type, depth + 1);
-
-    // Close the loop
-    out << indent << "}\n";
-
-    return;
-  }
-
-  if (auto r = dynamic_cast<const Record*>(t)) {
-
-    std::string off_a = offset_a;
-    std::string off_b = offset_b;
-
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
-
-      // Generate code to compare this field
-      generate_compare(out, off_a, off_b, *f->type, depth);
-
-      // Jump over this field to get the offset of the next field
-      const std::string width = "SIZE_C(" + f->type->width().get_str() + ")";
-      off_a += " + " + width;
-      off_b += " + " + width;
-    }
-
-    return;
-  }
-
-  assert(!"missed case in generate_compare");
-}
-
-// Generate application of a schedule
+// Generate application of a swap of two state components
 static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
   const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
 
@@ -191,602 +83,206 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
   assert(!"missed case in generate_apply_swap");
 }
 
-namespace {
+static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
+    const std::string &offset, const TypeDecl &pivot, size_t depth = 0) {
 
-  /* A "pivot," a collection of state components that we can sort at runtime to
-   * provide a canonical ordering for a given scalarset type.
-   */
-  struct Pivot {
+  const std::string indent((depth + 1) * 2, ' ');
 
-    struct Component {
-      mpz_class offset;
-      const TypeExpr *type;
-      unsigned interdependence;
-    };
+  if (t.is_simple()) {
 
-    const Model *model;
-    const TypeDecl *type;
-    std::vector<Component> components;
-
-    Pivot(const Model &m, const TypeDecl &type_): model(&m), type(&type_) { }
-
-    Pivot(const Pivot&) = default;
-    Pivot(Pivot&&) = default;
-    Pivot &operator=(Pivot&&) = default;
-    Pivot &operator=(const Pivot&) = default;
-
-    void collect_components(void) {
-      // Look through the model state to find suitable components.
-      mpz_class offset = 0;
-      for (const std::shared_ptr<Decl> &d : model->decls) {
-        if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-          consider_component(offset, *v->type, 0);
-          offset += v->type->width();
-        }
-      }
-    }
-
-    virtual bool is_eligible_component(const TypeExpr &expr) const {
-      // First, fully resolve the type in case it is a typedef.
-      const TypeExpr *vtype = expr.resolve();
-
-      // Check if it is an array...
-      auto a = dynamic_cast<const Array*>(vtype);
-      if (a == nullptr)
-        return false;
-
-      // ...and indexed on our type.
-      auto t = dynamic_cast<const TypeExprID*>(a->index_type.get());
-      if (t == nullptr)
-        return false;
-      if (t->name != type->name)
-        return false;
-
-      return true;
-    }
-
-    // Add a component to this pivot.
-    void add_component(mpz_class offset, const TypeExpr &t, unsigned bias) {
-
-      /* Find the representative type against which we'll score this TypeExpr on
-       * interdependence. E.g. in the case of a scalarset-indexed array, we score
-       * the TypeExpr based on the element type alone because we know the
-       * (positive) effect of the index type.
-       */
-      const TypeExpr *vtype = t.resolve();
-      if (auto a = dynamic_cast<const Array*>(vtype))
-        vtype = a->element_type.get();
-
-      /* Assess how much interaction this component has with other scalarsets. If
-       * this itself is a scalarset, we know it is our own type and has no
-       * interaction.
-       */
-      unsigned i;
-      if (isa<Scalarset>(vtype)) {
-        i = 0;
-      } else {
-        i = interdependence(*vtype);
-      }
-      i += bias;
-
-      Component c = { offset, &t, i };
-
-      /* Insert the component in order of increasing interdependence so that we
-       * can output more optimal pivot code eventually.
-       */
-      for (auto it = components.begin(); it != components.end(); it++) {
-        if (c.interdependence <= it->interdependence) {
-          components.insert(it, c);
-          return;
-        }
-      }
-
-      /* The element to insert scored higher than every existing component. Insert
-       * at the end.
-       */
-      components.emplace_back(c);
-    }
-
-    // Recursively find and add components
-    virtual void consider_component(mpz_class offset, const TypeExpr &t, unsigned bias) {
-      /* If this decl is an array that can participate in the pivot, add it and
-       * we're done.
-       */
-      if (is_eligible_component(t)) {
-        add_component(offset, t, bias);
-        return;
-      }
-
-      // If this is an array, consider its element type.
-      if (auto a = dynamic_cast<const Array*>(t.resolve())) {
-        if (isa<Scalarset>(a->index_type->resolve()))
-          bias++;
-        consider_component(offset, *a->element_type, bias);
-      }
-
-      // If this is a record, consider each of its fields.
-      if (auto r = dynamic_cast<const Record*>(t.resolve())) {
-        for (const std::shared_ptr<VarDecl> &f : r->fields) {
-          consider_component(offset, *f->type, bias);
-          offset += f->type->width();
-        }
-      }
-    }
-
-    bool useful(void) const {
-      return !components.empty();
-    }
-
-    bool useless(void) const {
-      return !useful();
-    }
-
-    /* Score this pivot as a whole based on its components. This is a measure of
-     * how much reshuffling based on this pivot will degrade the ability of other
-     * pivots. As with 'interdependence,' lower is better.
-     */
-    unsigned interference(void) const {
-      unsigned s = 0;
-      for (const Component &c : components)
-        s += c.interdependence;
-      return s;
-    }
-
-    void generate_schedule_define(std::ostream &out) const {
-      auto s = dynamic_cast<const Scalarset&>(*type->value);
-      mpz_class b = s.bound->constant_fold();
-
-        /* An array indicating how to sort the given scalarset. For example, if we
-         * have a scalarset(4), this array may end up as { 3, 1, 0, 2 }. This
-         * would indicate any other scalarset state data encountered should map 0
-         * to 3, 1 to itself, 2 to 0, and 3 to 2.
+    if (auto s = dynamic_cast<const TypeExprID*>(&t)) {
+      if (s->name == pivot.name) {
+        /* This state component has the same type as the pivot. If its value is
+         * one of the pair we are swapping, we need to change it to the other.
          */
-      out
-        << "  size_t schedule_ru_" << type->name << "[" << b << "] "
-          << "__attribute__((unused));\n";
-    }
 
-    virtual void generate_schedule_sort(std::ostream &out) const {
-      const std::string schedule = "schedule_ru_" + type->name;
-
-      out
-
-        // Initialise the schedule array to describe the existing order
-        << "  for (size_t i = 0; i < sizeof(" << schedule << ") / sizeof("
-          << schedule << "[0]); i++) {\n"
-        << "    " << schedule << "[i] = i;\n"
-        << "  }\n"
-
-        // Sort the schedule array
-        << "  sort(compare_ru_" << type->name << ", " << schedule << ", s, 0, "
-          << "sizeof(" << schedule << ") / sizeof(" << schedule
-          << "[0]) - 1);\n";
-    }
-
-    void generate_schedule_apply(std::ostream &out) const {
-
-      const std::string schedule = "schedule_ru_" + type->name;
-
-      out
-        << "  trace(TC_SYMMETRY_REDUCTION, \"symmetry reduction schedule for "
-          << "%s:\", \"" << type->name << "\");\n"
-        << "  for (size_t i = 0; i < sizeof(" << schedule << ") / sizeof("
-          << schedule << "[0]); i++) {\n"
-        << "    trace(TC_SYMMETRY_REDUCTION, \" %zu: %zu\", i, " << schedule
-          << "[i]);\n"
-        << "  }\n";
-
-      std::string offset = "SIZE_C(0)";
-
-      for (const std::shared_ptr<Decl> &d : model->decls) {
-        if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-          generate_apply(out, offset, *v->type, 0);
-
-          offset += " + SIZE_C(" + v->width().get_str() + ")";
-        }
-      }
-
-    }
-
-    void generate_apply(std::ostream &out, const std::string &offset,
-      const TypeExpr &type_, size_t depth) const {
-
-      const std::string schedule = "schedule_ru_" + type->name;
-      const std::string indent = std::string((depth + 1) * 2, ' ');
-
-      if (auto t = dynamic_cast<const TypeExprID*>(&type_)) {
-        if (t->name == type->name) {
-          out
-            << indent << "{\n"
-            << indent << "  value_t v = handle_read_raw(state_handle(s, "
-              << offset << ", SIZE_C(" << t->width() << ")));\n"
-            << indent << "  if (v != 0) {\n"
-            << indent << "    handle_write_raw(state_handle(s, "
-              << offset << ", SIZE_C(" << t->width() << ")), " << schedule
-              << "[v - 1] + 1);\n"
-            << indent << "  }\n"
-            << indent << "}\n";
-          return;
-        }
-      }
-
-      const TypeExpr *t = type_.resolve();
-
-      if (auto a = dynamic_cast<const Array*>(t)) {
-
-        const std::string width = "SIZE_C("
-          + a->element_type->width().get_str() + ")";
-
-        const std::string var = "i" + std::to_string(depth);
-
-        auto i = dynamic_cast<const TypeExprID*>(a->index_type.get());
-        if (i != nullptr && i->name == type->name) {
-
-          const std::string src = "source" + std::to_string(depth);
-          const std::string dst = "destination" + std::to_string(depth);
-
-          out
-            << indent << "for (size_t " << var << " = 0; " << var
-              << " < sizeof(" << schedule << ") / sizeof(" << schedule
-              << "[0]); " << var << "++) {\n"
-            << indent << "  size_t " << src << " = " << var << ";\n"
-            << indent << "  size_t " << dst << " = " << schedule << "[" << src
-              << "];\n"
-            << indent << "  while (" << dst << " < " << src << ") {\n"
-            << indent << "    " << dst << " = " << schedule << "[" << dst
-              << "];\n"
-            << indent << "  }\n"
-            << indent << "  if (" << dst << " != " << src << ") {\n";
-
-          const std::string off_a = offset + " + " + src + " * " + width;
-          const std::string off_b = offset + " + " + dst + " * " + width;;
-
-          generate_apply_swap(out, off_a, off_b, *a->element_type, depth + 2);
-
-          out
-            << indent << "  }\n"
-            << indent << "}\n";
-
-        }
-
-        mpz_class ic = a->index_type->count() - 1;
-        const std::string len = "SIZE_C(" + ic.get_str() + ")";
+        const std::string w = "SIZE_C(" + t.width().get_str() + ")";
+        const std::string h = "state_handle(s, " + offset + ", " + w + ")";
 
         out
-          << indent << "for (size_t " << var << " = 0; " << var << " < "
-            << len << "; " << var << "++) {\n";
-
-        const std::string off = offset + " + " + var + " * " + width;
-
-        generate_apply(out, off, *a->element_type, depth + 1);
-
-        out << indent << "}\n";
-
-        return;
-      }
-
-      if (auto r = dynamic_cast<const Record*>(t)) {
-        std::string off = offset;
-
-        for (const std::shared_ptr<VarDecl> &f : r->fields) {
-          generate_apply(out, off, *f->type, depth);
-
-          off += " + SIZE_C(" + f->width().get_str() + ")";
-        }
-
-        return;
+          << indent << "if (x != y) {\n"
+          << indent << "  value_t v = handle_read_raw(" << h << ");\n"
+          << indent << "  if (v != 0) {\n"
+          << indent << "    if (v - 1 == (value_t)x) {\n"
+          << indent << "      handle_write_raw(" << h << ", y + 1);\n"
+          << indent << "    } else if (v - 1 == (value_t)y) {\n"
+          << indent << "      handle_write_raw(" << h << ", x + 1);\n"
+          << indent << "    }\n"
+          << indent << "  }\n"
+          << indent << "}\n";
       }
     }
 
-    virtual void generate_comparison(std::ostream &out) const {
+    // A component of any other simple type is irrelevant.
 
-      out
-        << "static int compare_ru_" << type->name << "(const struct state *s, "
-          << "size_t a, size_t b) {\n";
-
-      for (const Component &c : components) {
-
-        auto a = dynamic_cast<const Array*>(c.type);
-        assert(a != nullptr && "non-array type in Pivot; maybe an inheritor of "
-          "Pivot isn't overriding generate_comparison?");
-
-        // Find the coordinates of this pivot component
-        const std::string offset = "SIZE_C(" + c.offset.get_str() + ")";
-        const std::string width = "SIZE_C(" +
-          a->element_type->width().get_str() + ")";
-        const std::string offset_a = offset + " + a * " + width;
-        const std::string offset_b = offset + " + b * " + width;
-
-        // Generate comparison code for this component
-        generate_compare(out, offset_a, offset_b, *a->element_type);
-      }
-
-      out
-        /* Generated code will eventually fall through to this return statement
-         * if all pivot components for the given scalarset values are equal.
-         */
-        << "  return 0;\n"
-        << "}";
-    }
-
-    virtual void generate_checks(std::ostream &out) const {
-      out
-        << "  for (size_t i = 1; i < SIZE_C(" << (type->value->count() - 1)
-          << "); i++) {\n"
-        << "    assert(compare_ru_" << type->name << "(s, i - 1, i) <= 0 && "
-          << "\"after applying " << type->name << " schedule, state is not "
-          << "sorted\");\n"
-        << "  }\n";
-    }
-
-    virtual ~Pivot(void) { }
-
-    // Construct a pivot for the given scalarset declaration.
-    static Pivot *derive(const Model &m, const TypeDecl &t);
-  };
-
-  struct TopLevelArrayPivot : public Pivot {
-    using Pivot::Pivot;
-
-    TopLevelArrayPivot &operator=(TopLevelArrayPivot&&) = default;
-    TopLevelArrayPivot &operator=(const TopLevelArrayPivot&) = default;
-
-    // Override consider_component to suppress recursion into arrays
-    void consider_component(mpz_class offset, const TypeExpr &t, unsigned bias) final {
-      /* If this decl is an array that can participate in the pivot, add it and
-       * we're done.
-       */
-      if (is_eligible_component(t)) {
-        add_component(offset, t, bias);
-        return;
-      }
-
-      // If this is a record, consider each of its fields.
-      if (auto r = dynamic_cast<const Record*>(t.resolve())) {
-        for (const std::shared_ptr<VarDecl> &f : r->fields) {
-          consider_component(offset, *f->type, bias);
-          offset += f->type->width();
-        }
-      }
-    }
-
-    virtual ~TopLevelArrayPivot(void) { }
-
-    static TopLevelArrayPivot *create(const Model &m, const TypeDecl &t) {
-      auto p = new TopLevelArrayPivot(m, t);
-      p->collect_components();
-      return p;
-    }
-  };
-
-  struct NestedArrayPivot : public Pivot {
-    using Pivot::Pivot;
-
-    NestedArrayPivot &operator=(NestedArrayPivot&&) = default;
-    NestedArrayPivot &operator=(const NestedArrayPivot&) = default;
-
-    virtual ~NestedArrayPivot(void) { }
-
-    static NestedArrayPivot *create(const Model &m, const TypeDecl &t) {
-      auto p = new NestedArrayPivot(m, t);
-      p->collect_components();
-      return p;
-    }
-  };
-
-  struct FieldPivot : public Pivot {
-    using Pivot::Pivot;
-
-    FieldPivot &operator=(FieldPivot&&) = default;
-    FieldPivot &operator=(const FieldPivot&) = default;
-
-    bool is_eligible_component(const TypeExpr &expr) const final {
-
-      // Check if this is a typedef...
-      auto t = dynamic_cast<const TypeExprID*>(&expr);
-      if (t == nullptr)
-        return false;
-
-      // ...and it's our type.
-      if (t->name != type->name)
-        return false;
-
-      assert(isa<Scalarset>(t->resolve()) &&
-        "a typedef of a non-scalarset type has the same name as a scalarset "
-        "typedef");
-
-      return true;
-    }
-
-    void generate_schedule_sort(std::ostream &out) const final {
-      const std::string schedule = "schedule_ru_" + type->name;
-
-      out
-        // Initialise the schedule array full of "invalid" sentinels
-        << "  for (size_t i = 0; i < sizeof(" << schedule << ") / sizeof("
-          << schedule << "[0]); i++) {\n"
-        << "    " << schedule << "[i] = SIZE_MAX;\n"
-        << "  }\n"
-
-        // Open a new scope so we don't need to care about aliasing/shadowing
-        << "  {\n"
-
-        // Counter of how many unique values of our type we've seen
-        << "    size_t i = 0;\n";
-
-      for (const Component &c : components)
-        out
-
-          // Another scope so we can re-use 'v' for each component
-          << "    {\n"
-
-          // Read the (raw) value of this field
-          << "      size_t v = (size_t)handle_read_raw(state_handle(s, SIZE_C("
-            << c.offset << "), SIZE_C(" << c.type->width() << ")));\n"
-
-          << "      assert((v == 0 || v - 1 < sizeof(" << schedule
-            << ") / sizeof(" << schedule << "[0])) && \"out of bounds access "
-            << "in state_canonicalise()\");\n"
-
-          /* If it's not undefined and its corresponding entry in the schedule
-           * array is invalid, claim it.
-           */
-          << "      if (v != 0 && " << schedule << "[v - 1] != SIZE_MAX) {\n"
-          << "        " << schedule << "[v - 1] = i;\n"
-          << "        i++;\n"
-          << "      }\n"
-
-          // Close 'v' scope
-          << "    }\n";
-
-      out
-        /* Use the remaining values of this type linearly to set the remaining
-         * invalid slots.
-         */
-        << "    for (size_t j = 0; j < sizeof(" << schedule << ") / sizeof(" << schedule << "[0]); j++) {\n"
-        << "      if (" << schedule << "[j] == SIZE_MAX) {\n"
-        << "        " << schedule << "[j] = i;\n"
-        << "        i++;\n"
-        << "      }\n"
-        << "    }\n"
-
-        // Close our scope
-        << "  }\n";
-    }
-
-    /* A field pivot needs no comparator, as it relies on ordering based on
-     * offsets into the state data.
-     */
-    void generate_comparison(std::ostream&) const final { }
-
-    void generate_checks(std::ostream&) const final { }
-
-    virtual ~FieldPivot(void) { }
-
-    static FieldPivot *create(const Model &m, const TypeDecl &t) {
-      auto p = new FieldPivot(m, t);
-      p->collect_components();
-      return p;
-    }
-  };
-
-  Pivot *Pivot::derive(const Model &m, const TypeDecl &t) {
-    assert(isa<Scalarset>(t.value) &&
-      "non-scalarset typedecl passed to Pivot::derive");
-
-    Pivot *p = nullptr;
-
-    // Preference 1: a top-level array pivot
-    if (p == nullptr) {
-      p = TopLevelArrayPivot::create(m, t);
-      if (p->useless()) {
-        delete p;
-        p = nullptr;
-      } else {
-        if (options.log_level >= DEBUG)
-          std::cerr <<  __func__ << "():" << __LINE__ << ": symmetry reduction: "
-            << "scalarset type " << t.name << " assigned a top-level array "
-            << "pivot\n";
-      }
-    }
-
-    // Preference 2: a nested array pivot
-    if (p == nullptr) {
-      p = NestedArrayPivot::create(m, t);
-      if (p->useless()) {
-        delete p;
-        p = nullptr;
-      } else {
-        if (options.log_level >= DEBUG)
-          std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-            << "scalarset type " << t.name << " assigned a nested array pivot\n";
-      }
-    }
-
-    // Preference 3: an individual field pivot
-    if (p == nullptr) {
-      p = FieldPivot::create(m, t);
-      if (p->useless()) {
-        delete p;
-        p = nullptr;
-      } else {
-        if (options.log_level >= DEBUG)
-          std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-            << "scalarset type " << t.name << " assigned an individual field "
-            << "pivot\n";
-      }
-    }
-
-    // It's possible all the above failed and we end up returning NULL.
-    if (p == nullptr) {
-      if (options.log_level >= DEBUG)
-        std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-          << "scalarset type " << t.name << " could not be assigned a pivot\n";
-    }
-
-    return p;
+    return;
   }
+
+  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+
+    const std::string w = "SIZE_C(" + a->element_type->width().get_str() + ")";
+
+    // If this array is indexed by our pivot type, swap the relevant elements
+    auto s = dynamic_cast<const TypeExprID*>(a->index_type.get());
+    if (s != nullptr && s->name == pivot.name) {
+
+      const std::string off_x = offset + " + x * " + w;
+      const std::string off_y = offset + " + y * " + w;
+
+      generate_apply_swap(out, off_x, off_y, *a->element_type, depth);
+    }
+
+    // Descend into its element to allow further swapping
+
+    const std::string i = "i" + std::to_string(depth);
+    mpz_class ic = a->index_type->count() - 1;
+    const std::string len = "SIZE_C(" + ic.get_str() + ")";
+
+    out
+      << indent << "for (size_t " << i << " = 0; " << i << " < " << len << "; "
+        << i << "++) {\n";
+
+    const std::string off = offset + " + " + i + " * " + w;
+
+    generate_swap_chunk(out, *a->element_type, off, pivot, depth + 1);
+
+    out << indent << "}\n";
+
+    return;
+  }
+
+  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+
+    std::string off = offset;
+
+    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+      generate_swap_chunk(out, *f->type, off, pivot, depth);
+
+      off += " + SIZE_C(" + f->width().get_str() + ")";
+    }
+    return;
+  }
+
+  assert(!"missed case in generate_swap_chunk");
+}
+
+static void generate_swap(const Model &m, std::ostream &out,
+    const TypeDecl &pivot) {
+
+  out << "static void swap_" << pivot.name << "("
+    << "struct state *s __attribute__((unused)), "
+    << "size_t x __attribute__((unused)), "
+    << "size_t y __attribute__((unused))) {\n";
+
+  for (const std::shared_ptr<Decl> &d : m.decls) {
+    if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
+      std::string offset = "SIZE_C(" + v->offset.get_str() + ")";
+      generate_swap_chunk(out, *v->type, offset, pivot);
+    }
+  }
+
+  out << "}\n\n";
+}
+
+static void generate_loop_header(const TypeDecl &scalarset, size_t index,
+    size_t level, std::ostream &out) {
+
+  const std::string indent(level * 2, ' ');
+
+  auto s = dynamic_cast<const Scalarset*>(scalarset.value->resolve());
+  assert(s != nullptr);
+
+  const std::string  bound = "SIZE_C(" + s->bound->constant_fold().get_str() + ")";
+  const std::string i = "i" + std::to_string(index);
+
+  out
+    << indent << "if (state_cmp(&candidate, s) < 0) {\n"
+    << indent << "  /* Found a more canonical representation. */\n"
+    << indent << "  memcpy(s, &candidate, sizeof(*s));\n"
+    << indent << "}\n\n"
+
+    << indent << "{\n"
+    << indent << "  size_t schedule_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
+
+    << indent << "  for (size_t " << i << " = 0; " << i << " < " << bound << "; ) {\n"
+    << indent << "    if (schedule_" << scalarset.name << "[" << i << "] < " << i << ") {\n"
+    << indent << "      if (" << i << " % 2 == 0) {\n"
+    << indent << "        swap_" << scalarset.name << "(&candidate, 0, " << i << ");\n"
+    << indent << "      } else {\n"
+    << indent << "        swap_" << scalarset.name << "(&candidate, schedule_"
+      << scalarset.name << "[" << i << "], " << i << ");\n"
+    << indent << "      }\n";
+}
+
+static void generate_loop_footer(const TypeDecl &scalarset, size_t index,
+    size_t level, std::ostream &out) {
+
+  const std::string indent(level * 2, ' ');
+
+  auto s = dynamic_cast<const Scalarset*>(scalarset.value->resolve());
+  assert(s != nullptr);
+
+  const std::string i = "i" + std::to_string(index);
+
+  out
+    << indent << "      schedule_" << scalarset.name << "[" << i << "]++;\n"
+    << indent << "      " << i << " = 0;\n"
+    << indent << "    } else {\n"
+    << indent << "      schedule_" << scalarset.name << "[" << i << "] = 0;\n"
+    << indent << "      " << i << "++;\n"
+    << indent << "    }\n"
+    << indent << "  }\n"
+    << indent << "}\n";
+}
+
+static void generate_loop(const std::vector<const TypeDecl*> &scalarsets,
+    size_t index, size_t level, std::ostream &out) {
+
+  if (index < scalarsets.size() - 1)
+    generate_loop(scalarsets, index + 1, level, out);
+
+  generate_loop_header(*scalarsets[index], index, level, out);
+
+  if (index < scalarsets.size() - 1) {
+    generate_loop(scalarsets, index + 1, level + 3, out);
+  } else {
+    const std::string indent((level + 3) * 2, ' ');
+
+    out
+      << indent << "if (state_cmp(&candidate, s) < 0) {\n"
+      << indent << "  /* Found a more canonical representation. */\n"
+      << indent << "  memcpy(s, &candidate, sizeof(*s));\n"
+      << indent << "}\n\n";
+  }
+
+  generate_loop_footer(*scalarsets[index], index, level, out);
 }
 
 void generate_canonicalise(const Model &m, std::ostream &out) {
 
-  // Find the named scalarset types.
-  std::vector<const TypeDecl*> ss = find_scalarsets(m);
-  if (options.log_level >= INFO)
-    std::cerr << "symmetry reduction: " << ss.size() << " eligible scalarset "
-      "types\n";
+  // Find types eligible for use in canonicalisation
+  const std::vector<const TypeDecl*> scalarsets = get_scalarsets(m);
 
-  /* Derive a pivot for each one, keeping the list sorted by ascending
-   * interference.
-   */
-  std::vector<Pivot*> pivots;
-  for (const TypeDecl *t : ss) {
-    Pivot *p = Pivot::derive(m, *t);
-    if (p == nullptr) {
-      if (options.log_level >= WARNINGS)
-        std::cerr << "scalarset type " << t->name << " does not seem to be used "
-          << "in the state and will be ignored during symmetry reduction\n";
-      continue;
-    }
-    if (options.log_level >= DEBUG)
-      std::cerr << __func__ << "():" << __LINE__ << ": symmetry reduction: "
-        << "pivot for scalarset type " << t->name << " has an interference score "
-        << "of " << p->interference()
-        << (p->interference() == 0 ? " (perfect)" : "") << "\n";
-    bool found = false;
-    for (auto it = pivots.begin(); it != pivots.end(); it++) {
-      if (p->interference() <= (*it)->interference()) {
-        pivots.insert(it, p);
-        found = true;
-        break;
-      }
-    }
-    if (!found)
-      pivots.push_back(p);
-  }
+  // Generate functions to swap state elements with respect to each scalarset
+  for (const TypeDecl *t : scalarsets)
+    generate_swap(m, out, *t);
 
-  // Output a comparison function to be used in each pivot
-  for (const Pivot *p : pivots) {
-    p->generate_comparison(out);
-    out << "\n\n";
-  }
-
-  // Write the function header
+  // Write the function prelude
   out
     << "static void state_canonicalise(struct state *s "
-      << "__attribute__((unused))) {\n";
+      << "__attribute__((unused))) {\n"
+    << "\n"
+    << "  assert(s != NULL && \"attempt to canonicalise NULL state\");\n"
+    << "\n"
+    << "  /* A state to store the current permutation we are considering. */\n"
+    << "  static _Thread_local struct state candidate;\n"
+    << "  memcpy(&candidate, s, sizeof(candidate));\n"
+    << "\n";
 
-  // Output code to perform the actual canonicalisation
-  for (const Pivot *p : pivots) {
-    out << "  /* Symmetry reduction for type " << p->type->name << " */\n";
-    p->generate_schedule_define(out);
-    p->generate_schedule_sort(out);
-    p->generate_schedule_apply(out);
-    p->generate_checks(out);
-  }
+  if (!scalarsets.empty())
+    generate_loop(scalarsets, 0, 1, out);
 
-  out << "}";
-
-  for (Pivot *p : pivots)
-    delete p;
+  // Write the function coda
+  out
+    << "}\n\n";
 }
