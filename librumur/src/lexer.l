@@ -125,6 +125,9 @@ var           { return rumur::parser::token::VAR;           }
 "==>" { return rumur::parser::token::ARROW;    }
 "⇒"  { return rumur::parser::token::ARROW;    }
 "==" { return rumur::parser::token::DEQ;       }
+"¬"  { return '!';                             }
+"∧"  { return '&';                             }
+"∨"  { return '|';                             }
 
 [&!|:=><\-\%\+;{},\[\]\.()/\*\?] {
   loc->step(); /* maintain correct column count */
