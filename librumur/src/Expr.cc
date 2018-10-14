@@ -740,7 +740,7 @@ Field *Field::clone() const {
 }
 
 bool Field::constant() const {
-  return record->constant();
+  return false;
 }
 
 const TypeExpr *Field::type() const {
@@ -798,7 +798,7 @@ Element *Element::clone() const {
 }
 
 bool Element::constant() const {
-  return array->constant() && index->constant();
+  return false;
 }
 
 const TypeExpr *Element::type() const {
