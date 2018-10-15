@@ -1044,6 +1044,7 @@ struct queue_node {
 static struct {
   pthread_mutex_t lock;
   struct queue_node *head;
+  struct queue_node *tail;
   size_t count;
 } q[THREADS];
 
@@ -1062,12 +1063,18 @@ size_t queue_enqueue(struct state *s, size_t queue_id) {
 
   struct queue_node *n = xmalloc(sizeof(*n));
   n->s = s;
+  n->next = NULL;
 
   int r __attribute__((unused)) = pthread_mutex_lock(&q[queue_id].lock);
   ASSERT(r == 0);
 
-  n->next = q[queue_id].head;
-  q[queue_id].head = n;
+  if (q[queue_id].tail == NULL) {
+    q[queue_id].head = q[queue_id].tail = n;
+  } else {
+    q[queue_id].tail->next = n;
+    q[queue_id].tail = n;
+  }
+
   q[queue_id].count++;
 
   trace(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
@@ -1095,6 +1102,9 @@ const struct state *queue_dequeue(size_t *queue_id) {
     struct queue_node *n = q[*queue_id].head;
     if (n != NULL) {
       q[*queue_id].head = n->next;
+      if (n == q[*queue_id].tail) {
+        q[*queue_id].tail = NULL;
+      }
       q[*queue_id].count--;
       trace(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
         "%zu", n->s, *queue_id, q[*queue_id].count);
