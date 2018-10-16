@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "utils.h"
+#include "version.h"
 
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
@@ -46,6 +47,7 @@ static void parse_args(int argc, char **argv) {
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, 130 },
       { "verbose", no_argument, 0, 'v' },
+      { "version", no_argument, 0, 139 },
       { 0, 0, 0, 0 },
     };
 
@@ -245,6 +247,10 @@ static void parse_args(int argc, char **argv) {
           exit(EXIT_FAILURE);
         }
         break;
+
+      case 139: // --version
+        std::cout << "Rumur version " << VERSION << "\n";
+        exit(EXIT_SUCCESS);
 
       default:
         std::cerr << "unexpected error\n";
