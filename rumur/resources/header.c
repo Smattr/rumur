@@ -588,6 +588,25 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
 #endif
 
 /* This function is generated. */
+static void state_canonicalise_exhaustive(struct state *s);
+
+static void state_canonicalise(struct state *s) {
+
+  assert(s != NULL && "attempt to canonicalise NULL state");
+
+  switch (SYMMETRY_REDUCTION) {
+
+    case SYMMETRY_REDUCTION_OFF:
+      break;
+
+    case SYMMETRY_REDUCTION_EXHAUSTIVE:
+      state_canonicalise_exhaustive(s);
+      break;
+
+  }
+}
+
+/* This function is generated. */
 static __attribute__((unused)) void state_print_field_offsets(void);
 
 /* Print a state to stderr. This function is generated. This function assumes

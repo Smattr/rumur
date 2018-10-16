@@ -269,18 +269,21 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
 
   // Write the function prelude
   out
-    << "static void state_canonicalise(struct state *s "
-      << "__attribute__((unused))) {\n"
+    << "static void state_canonicalise_exhaustive(struct state *s "
+      "__attribute__((unused))) {\n"
     << "\n"
     << "  assert(s != NULL && \"attempt to canonicalise NULL state\");\n"
-    << "\n"
-    << "  /* A state to store the current permutation we are considering. */\n"
-    << "  static _Thread_local struct state candidate;\n"
-    << "  memcpy(&candidate, s, sizeof(candidate));\n"
     << "\n";
 
-  if (!scalarsets.empty())
+  if (!scalarsets.empty()) {
+    out
+      << "  /* A state to store the current permutation we are considering. */\n"
+      << "  static _Thread_local struct state candidate;\n"
+      << "  memcpy(&candidate, s, sizeof(candidate));\n"
+      << "\n";
+
     generate_loop(scalarsets, 0, 1, out);
+  }
 
   // Write the function coda
   out

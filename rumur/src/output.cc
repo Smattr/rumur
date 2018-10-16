@@ -62,7 +62,12 @@ int output_checker(const std::string &path, const Model &model) {
     << "  DEADLOCK_DETECTION_STUCK,\n"
     << "  DEADLOCK_DETECTION_STUTTERING,\n"
     << "} DEADLOCK_DETECTION = " << options.deadlock_detection << ";\n\n"
-    << "enum { SYMMETRY_REDUCTION = " << options.symmetry_reduction << " };\n\n"
+    << "static const enum {\n"
+    << "  SYMMETRY_REDUCTION_OFF,\n"
+    << "  SYMMETRY_REDUCTION_EXHAUSTIVE,\n"
+    << "} SYMMETRY_REDUCTION = " << (options.symmetry_reduction
+      ? "SYMMETRY_REDUCTION_EXHAUSTIVE"
+      : "SYMMETRY_REDUCTION_OFF") << ";\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
     << "enum { THREADS = " << options.threads << "ul };\n\n"

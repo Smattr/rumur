@@ -360,9 +360,7 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
           out << ", ru_" << q->name;
         out << ");\n"
-          << "      if (SYMMETRY_REDUCTION) {\n"
-          << "        state_canonicalise(s);\n"
-          << "      }\n"
+          << "      state_canonicalise(s);\n"
           << "      check_assumptions(s);\n"
           << "      check_invariants(s);\n"
           << "      size_t size;\n"
@@ -446,9 +444,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_STUTTERING || !state_eq(s, n)) {\n"
           << "            possible_deadlock = false;\n"
           << "          }\n"
-          << "          if (SYMMETRY_REDUCTION) {\n"
-          << "            state_canonicalise(n);\n"
-          << "          }\n"
+          << "          state_canonicalise(n);\n"
           << "          check_assumptions(n);\n"
           << "          check_invariants(n);\n"
           << "          size_t size;\n"
