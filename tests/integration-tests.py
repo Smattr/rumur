@@ -318,7 +318,7 @@ def main(argv):
       ('ex/mux/dek.m',         True),
       ('ex/mux/mcslock1.m',    True),
       ('ex/mux/mcslock2.m',    True),
-      ('ex/mux/n_peterson.m',  False),
+      ('ex/mux/n_peterson.m',  True),
       ('ex/others/arbiter.m',  False),
       ('ex/others/dp4.m',      True),
       ('ex/others/dpnew.m',    False),
