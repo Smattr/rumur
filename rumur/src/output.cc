@@ -29,6 +29,26 @@ static std::ostream &operator<<(std::ostream &out, deadlock_detection_t d) {
   return out;
 }
 
+static std::ostream &operator<<(std::ostream &out, symmetry_reduction_t s) {
+  switch (s) {
+
+    case SYMMETRY_REDUCTION_OFF:
+      out << "SYMMETRY_REDUCTION_OFF";
+      break;
+
+    case SYMMETRY_REDUCTION_HEURISTIC:
+      out << "SYMMETRY_REDUCTION_HEURISTIC";
+      break;
+
+    case SYMMETRY_REDUCTION_EXHAUSTIVE:
+      out << "SYMMETRY_REDUCTION_EXHAUSTIVE";
+      break;
+
+  }
+
+  return out;
+}
+
 int output_checker(const std::string &path, const Model &model) {
 
   std::ofstream out(path);
@@ -64,10 +84,9 @@ int output_checker(const std::string &path, const Model &model) {
     << "} DEADLOCK_DETECTION = " << options.deadlock_detection << ";\n\n"
     << "static const enum {\n"
     << "  SYMMETRY_REDUCTION_OFF,\n"
+    << "  SYMMETRY_REDUCTION_HEURISTIC,\n"
     << "  SYMMETRY_REDUCTION_EXHAUSTIVE,\n"
-    << "} SYMMETRY_REDUCTION = " << (options.symmetry_reduction
-      ? "SYMMETRY_REDUCTION_EXHAUSTIVE"
-      : "SYMMETRY_REDUCTION_OFF") << ";\n\n"
+    << "} SYMMETRY_REDUCTION = " << options.symmetry_reduction << ";\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
     << "enum { THREADS = " << options.threads << "ul };\n\n"

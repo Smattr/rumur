@@ -36,6 +36,12 @@ enum counterexample_trace_t {
   FULL,
 };
 
+enum symmetry_reduction_t {
+  SYMMETRY_REDUCTION_OFF,
+  SYMMETRY_REDUCTION_HEURISTIC,
+  SYMMETRY_REDUCTION_EXHAUSTIVE,
+};
+
 struct Options {
   bool overflow_checks;
   unsigned long threads;
@@ -57,7 +63,7 @@ struct Options {
   deadlock_detection_t deadlock_detection;
 
   // Symmetry reduction enabled?
-  bool symmetry_reduction;
+  symmetry_reduction_t symmetry_reduction;
 
   // Use OS mechanisms to sandbox the checker?
   bool sandbox_enabled;

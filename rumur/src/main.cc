@@ -190,10 +190,12 @@ static void parse_args(int argc, char **argv) {
       }
 
       case 134: // --symmetry-reduction ...
-        if (strcmp(optarg, "on") == 0) {
-          options.symmetry_reduction = true;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.symmetry_reduction = false;
+        if (strcmp(optarg, "off") == 0) {
+          options.symmetry_reduction = SYMMETRY_REDUCTION_OFF;
+        } else if (strcmp(optarg, "heuristic") == 0) {
+          options.symmetry_reduction = SYMMETRY_REDUCTION_HEURISTIC;
+        } else if (strcmp(optarg, "exhaustive") == 0) {
+          options.symmetry_reduction = SYMMETRY_REDUCTION_EXHAUSTIVE;
         } else {
           std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
             << "\"\n";

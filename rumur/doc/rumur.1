@@ -114,15 +114,32 @@ result in the set only expanding when completely full. This may sound ideal, but
 will actually result in a much longer runtime.
 .RE
 .PP
-\fB--symmetry-reduction\fR [\fBon\fR | \fBoff\fR]
+\fB--symmetry-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR ]
 .RS
 Enable or disable symmetry reduction. Symmetry reduction is an optimisation that
 decreases the state space that must be searched by deriving a canonical
 representation of each state. While two states may not be directly equal, if
 their canonical representations are the same only one of them need be expanded.
 To take advantage of this optimisation you must be using named \fBscalarset\fR
-types. For more information, refer to the Murphi user manual. This option is
-enabled by default.
+types. The available options are:
+.PP
+.RS
+* \fBoff\fR Do not use symmetry reduction. All scalarsets will be treated as if
+they were range types.
+.br
+* \fBheuristic\fR Use a symmetry reduction algorithm based on sorting the state
+data. This is not guaranteed to find a single, canonical representation for each
+equivalent state, but it is fast and performs reasonably well empirically. Using
+this option, you may explore more states than you need to, with the advantage
+that you will process each individual state much faster than with
+\fBexhaustive\fR. This is the default.
+.br
+* \fBexhaustive\fR Use a symmetry reduction algorithm based on exhaustive
+permutation of the state data. This is guaranteed to find a single, canonical
+representation for each equivalent state, but is typically very slow. Use this
+if you want to minimise memory usage at the expense of runtime.
+.RE
+.PP
 .RE
 .PP
 \fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR

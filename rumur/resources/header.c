@@ -587,7 +587,8 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
 }
 #endif
 
-/* This function is generated. */
+/* These functions are generated. */
+static void state_canonicalise_heuristic(struct state *s);
 static void state_canonicalise_exhaustive(struct state *s);
 
 static void state_canonicalise(struct state *s) {
@@ -597,6 +598,10 @@ static void state_canonicalise(struct state *s) {
   switch (SYMMETRY_REDUCTION) {
 
     case SYMMETRY_REDUCTION_OFF:
+      break;
+
+    case SYMMETRY_REDUCTION_HEURISTIC:
+      state_canonicalise_heuristic(s);
       break;
 
     case SYMMETRY_REDUCTION_EXHAUSTIVE:
