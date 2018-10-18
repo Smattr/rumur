@@ -1,3 +1,5 @@
+-- rumur_flags: ['--deadlock-detection', 'stuck']
+
 var
   x: boolean;
 

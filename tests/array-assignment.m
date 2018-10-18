@@ -1,3 +1,5 @@
+-- rumur_flags: ['--deadlock-detection', 'stuck']
+
 type
   foo_t: array[0 .. 1] of boolean;
 

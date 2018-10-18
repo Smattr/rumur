@@ -9,6 +9,26 @@
 
 using namespace rumur;
 
+static std::ostream &operator<<(std::ostream &out, deadlock_detection_t d) {
+  switch (d) {
+
+    case DEADLOCK_DETECTION_OFF:
+      out << "DEADLOCK_DETECTION_OFF";
+      break;
+
+    case DEADLOCK_DETECTION_STUCK:
+      out << "DEADLOCK_DETECTION_STUCK";
+      break;
+
+    case DEADLOCK_DETECTION_STUTTERING:
+      out << "DEADLOCK_DETECTION_STUTTERING";
+      break;
+
+  }
+
+  return out;
+}
+
 int output_checker(const std::string &path, const Model &model) {
 
   std::ofstream out(path);
@@ -37,7 +57,11 @@ int output_checker(const std::string &path, const Model &model) {
     << "  TC_SYMMETRY_REDUCTION = " << TC_SYMMETRY_REDUCTION << ",\n"
     << "};\n"
     << "static const uint64_t TRACES_ENABLED = UINT64_C(" << options.traces << ");\n\n"
-    << "enum { DEADLOCK_DETECTION = " << options.deadlock_detection << " };\n\n"
+    << "static const enum {\n"
+    << "  DEADLOCK_DETECTION_OFF,\n"
+    << "  DEADLOCK_DETECTION_STUCK,\n"
+    << "  DEADLOCK_DETECTION_STUTTERING,\n"
+    << "} DEADLOCK_DETECTION = " << options.deadlock_detection << ";\n\n"
     << "enum { SYMMETRY_REDUCTION = " << options.symmetry_reduction << " };\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"

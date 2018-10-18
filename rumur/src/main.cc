@@ -28,7 +28,7 @@ static void parse_args(int argc, char **argv) {
       { "color", no_argument, 0, 128 },
       { "colour", no_argument, 0, 128 },
       { "counterexample-trace", required_argument, 0, 137 },
-      { "deadlock-detection", no_argument, 0, 131 },
+      { "deadlock-detection", required_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, 'h' },
       { "max-errors", required_argument, 0, 136 },
@@ -36,7 +36,6 @@ static void parse_args(int argc, char **argv) {
       { "monopolize", no_argument, 0, 133 },
       { "no-color", no_argument, 0, 129 },
       { "no-colour", no_argument, 0, 129 },
-      { "no-deadlock-detection", no_argument, 0, 132 },
       { "output", required_argument, 0, 'o' },
       { "output-format", required_argument, 0, 138 },
       { "quiet", no_argument, 0, 'q' },
@@ -150,12 +149,18 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 131: // --deadlock-detection
-        options.deadlock_detection = true;
-        break;
-
-      case 132: // --no-deadlock-detection
-        options.deadlock_detection = false;
+      case 131: // --deadlock-detection ...
+        if (strcmp(optarg, "off") == 0) {
+          options.deadlock_detection = DEADLOCK_DETECTION_OFF;
+        } else if (strcmp(optarg, "stuck") == 0) {
+          options.deadlock_detection = DEADLOCK_DETECTION_STUCK;
+        } else if (strcmp(optarg, "stuttering") == 0) {
+          options.deadlock_detection = DEADLOCK_DETECTION_STUTTERING;
+        } else {
+          std::cerr << "invalid argument to --deadlock-detection, \"" << optarg
+            << "\"\n";
+          exit(EXIT_FAILURE);
+        }
         break;
 
       case 133: { // --monopolise

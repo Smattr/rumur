@@ -1,3 +1,4 @@
+-- rumur_flags: ['--deadlock-detection', 'stuck']
 -- This model previously triggered a bug wherein Rumur would segfault during
 -- code generation.
 

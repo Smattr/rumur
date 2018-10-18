@@ -1,3 +1,5 @@
+-- rumur_flags: ['--deadlock-detection', 'stuck']
+
 type
   foo_t: enum { A, B };
 

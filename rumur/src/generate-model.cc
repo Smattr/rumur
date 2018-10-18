@@ -438,12 +438,14 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
           out << ", ru_" << q->name;
         out << ")) {\n"
-          << "          possible_deadlock = false;\n"
           << "          rule" << index << "(n";
         for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
           out << ", ru_" << q->name;
         out << ");\n"
           << "          rules_fired_local++;\n"
+          << "          if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_STUTTERING || !state_eq(s, n)) {\n"
+          << "            possible_deadlock = false;\n"
+          << "          }\n"
           << "          if (SYMMETRY_REDUCTION) {\n"
           << "            state_canonicalise(n);\n"
           << "          }\n"
@@ -498,7 +500,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "    /* If we did not toggle 'possible_deadlock' off by this point, we\n"
       << "     * have a deadlock.\n"
       << "     */\n"
-      << "    if (DEADLOCK_DETECTION && possible_deadlock) {\n"
+      << "    if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_OFF && possible_deadlock) {\n"
       << "      error(s, true, \"deadlock\");\n"
       << "    }\n"
       << "\n"

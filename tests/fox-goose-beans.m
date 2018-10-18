@@ -1,4 +1,4 @@
--- rumur_flags: ['--no-deadlock-detection']
+-- rumur_flags: ['--deadlock-detection', 'off']
 -- checker_exit_code: 1
 
 /* This is a model of the "Fox, goose and bag of beans puzzle"

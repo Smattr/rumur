@@ -1,3 +1,5 @@
+-- rumur_flags: ['--deadlock-detection', 'stuck']
+
 -- test that we can 'undefine' an aggregate
 var
   x: record

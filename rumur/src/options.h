@@ -24,6 +24,12 @@ enum log_level_t {
   DEBUG,
 };
 
+enum deadlock_detection_t {
+  DEADLOCK_DETECTION_OFF,
+  DEADLOCK_DETECTION_STUCK,
+  DEADLOCK_DETECTION_STUTTERING,
+};
+
 enum counterexample_trace_t {
   CEX_OFF,
   DIFF,
@@ -48,7 +54,7 @@ struct Options {
   uint64_t traces;
 
   // Deadlock detection enabled?
-  bool deadlock_detection;
+  deadlock_detection_t deadlock_detection;
 
   // Symmetry reduction enabled?
   bool symmetry_reduction;
