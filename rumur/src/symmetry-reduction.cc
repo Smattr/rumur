@@ -284,10 +284,22 @@ static void generate_canonicalise_exhaustive(
     << "}\n\n";
 }
 
+static bool is_pivot(const TypeDecl &pivot, const TypeExpr *t) {
+
+  if (t == nullptr)
+    return false;
+
+  auto s = dynamic_cast<const TypeExprID*>(t);
+  if (s == nullptr)
+    return false;
+
+  return pivot.name == s->name;
+}
+
 // Generate application of a comparison of two state components
-static void generate_apply_compare(std::ostream &out,
+static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     const std::string &offset_a,  const std::string &offset_b,
-    const TypeExpr &type, size_t depth = 0) {
+    const TypeDecl &pivot, size_t depth = 0, bool used_pivot = false) {
 
   const TypeExpr *t = type.resolve();
 
@@ -295,37 +307,55 @@ static void generate_apply_compare(std::ostream &out,
 
   if (t->is_simple()) {
 
-    out
-      << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
-      << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
-        << ", SIZE_C(" << t->width() << ")));\n"
-      << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
-        << ", SIZE_C(" << t->width() << ")));\n"
-      << indent << "  if (a < b) {\n"
-      << indent << "    return -1;\n"
-      << indent << "  } else if (a > b) {\n"
-      << indent << "    return 1;\n"
-      << indent << "  }\n"
-      << indent << "}\n";
+    /* Emit a comparison of this state component, unless it's scoped by the same
+     * scalarset as ourselves. If we're already doing a comparison based on this
+     * scalarset, we don't want to reuse it because this value itself will
+     * change if/when the parent (array) component is reshuffled.
+     */
+    if (!used_pivot || !is_pivot(pivot, &type)) {
+
+      out
+        << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
+        << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
+          << ", SIZE_C(" << t->width() << ")));\n"
+        << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
+          << ", SIZE_C(" << t->width() << ")));\n"
+        << indent << "  if (a < b) {\n"
+        << indent << "    return -1;\n"
+        << indent << "  } else if (a > b) {\n"
+        << indent << "    return 1;\n"
+        << indent << "  }\n"
+        << indent << "}\n";
+    }
+
     return;
   }
 
   if (auto a = dynamic_cast<const Array*>(t)) {
-    const std::string var = "i" + std::to_string(depth);
-    mpz_class ic = a->index_type->count() - 1;
-    const std::string len = "SIZE_C(" + ic.get_str() + ")";
-    const std::string width = "SIZE_C("
-      + a->element_type->width().get_str() + ")";
 
-    out << indent << "for (size_t " << var << " = 0; " << var << " < " << len
-      << "; " << var << "++) {\n";
+    if (!used_pivot || !is_pivot(pivot, a->index_type.get())) {
 
-    const std::string off_a = offset_a + " + " + var + " * " + width;
-    const std::string off_b = offset_b + " + " + var + " * " + width;
+      used_pivot |= is_pivot(pivot, a->index_type.get());
 
-    generate_apply_compare(out, off_a, off_b, *a->element_type, depth + 1);
+      const std::string var = "i" + std::to_string(depth);
+      mpz_class ic = a->index_type->count() - 1;
+      const std::string len = "SIZE_C(" + ic.get_str() + ")";
+      const std::string width = "SIZE_C("
+        + a->element_type->width().get_str() + ")";
 
-    out << indent << "}\n";
+      out << indent << "for (size_t " << var << " = 0; " << var << " < " << len
+        << "; " << var << "++) {\n";
+
+      const std::string off_a = offset_a + " + " + var + " * " + width;
+      const std::string off_b = offset_b + " + " + var + " * " + width;
+
+      generate_apply_compare(out, *a->element_type, off_a, off_b, pivot,
+        depth + 1, used_pivot);
+
+      out << indent << "}\n";
+
+    }
+
     return;
   }
 
@@ -334,7 +364,8 @@ static void generate_apply_compare(std::ostream &out,
     std::string off_b = offset_b;
 
     for (const std::shared_ptr<VarDecl> &f : r->fields) {
-      generate_apply_compare(out, off_a, off_b, *f->type, depth);
+      generate_apply_compare(out, *f->type, off_a, off_b, pivot, depth,
+        used_pivot);
 
       off_a += " + SIZE_C(" + f->width().get_str() + ")";
       off_b += " + SIZE_C(" + f->width().get_str() + ")";
@@ -347,7 +378,8 @@ static void generate_apply_compare(std::ostream &out,
 
 // Generate part of a memcmp-style comparator
 static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
-    const std::string offset, const TypeDecl &pivot, size_t depth = 0) {
+    const std::string offset, const TypeDecl &pivot, size_t depth = 0,
+    bool used_pivot = false) {
 
   const std::string indent((depth + 1) * 2, ' ');
 
@@ -356,31 +388,29 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
      * it matches either of the operands. Here, we are basically looking to see
      * which (if either) of the scalarset elements appears *first* in the state.
      */
-    if (auto s = dynamic_cast<const TypeExprID*>(&t)) {
-      if (s->name == pivot.name) {
+    if (is_pivot(pivot, &t) && !used_pivot) {
 
-        const std::string width = "SIZE_C(" + t.width().get_str() + ")";
-        out
+      const std::string width = "SIZE_C(" + t.width().get_str() + ")";
+      out
 
-          /* Open a scope so we don't need to think about redeclaring/shadowing
-           * 'v'.
-           */
-          << indent << "{\n"
+        /* Open a scope so we don't need to think about redeclaring/shadowing
+         * 'v'.
+         */
+        << indent << "{\n"
 
-          << indent << "  value_t v = handle_read_raw(state_handle(s, " << offset
-            << ", " << width << "));\n"
+        << indent << "  value_t v = handle_read_raw(state_handle(s, " << offset
+          << ", " << width << "));\n"
 
-          << indent << "  if (v != 0) { /* ignored 'undefined' */\n"
-          << indent << "    if (v - 1 == (value_t)x) {\n"
-          << indent << "      return -1;\n"
-          << indent << "    } else if (v - 1 == (value_t)y) {\n"
-          << indent << "      return 1;\n"
-          << indent << "    }\n"
-          << indent << "  }\n"
+        << indent << "  if (v != 0) { /* ignored 'undefined' */\n"
+        << indent << "    if (v - 1 == (value_t)x) {\n"
+        << indent << "      return -1;\n"
+        << indent << "    } else if (v - 1 == (value_t)y) {\n"
+        << indent << "      return 1;\n"
+        << indent << "    }\n"
+        << indent << "  }\n"
 
-          // Close scope
-          << indent << "}\n";
-      }
+        // Close scope
+        << indent << "}\n";
     }
 
     // Nothing required for any other simply type.
@@ -398,14 +428,15 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
      * elements. Note, we'll only end up descending if the two elements happen
      * to be equal.
      */
-    auto s = dynamic_cast<const TypeExprID*>(a->index_type.get());
-    if (s != nullptr && s->name == pivot.name) {
+    if (is_pivot(pivot, a->index_type.get()) && !used_pivot) {
 
       const std::string off_x = offset + " + x * " + width;
       const std::string off_y = offset + " + y * " + width;
 
-      generate_apply_compare(out, off_x, off_y, *a->element_type, depth);
+      generate_apply_compare(out, *a->element_type, off_x, off_y, pivot, depth,
+        true);
 
+      used_pivot = true;
     }
 
     // Descend into its elements to allow further comparison
@@ -421,7 +452,8 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
 
     // Generate code to compare each element
     const std::string off = offset + " + " + var + " * " + width;
-    generate_compare_chunk(out, *a->element_type, off, pivot, depth + 1);
+    generate_compare_chunk(out, *a->element_type, off, pivot, depth + 1,
+      used_pivot);
 
     // Close the loop
     out << indent << "}\n";
@@ -436,7 +468,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
     for (const std::shared_ptr<VarDecl> &f : r->fields) {
 
       // Generate code to compare this field
-      generate_compare_chunk(out, *f->type, off, pivot, depth);
+      generate_compare_chunk(out, *f->type, off, pivot, depth, used_pivot);
 
       // Jump over this field to get the offset of the next field
       const std::string width = "SIZE_C(" + f->width().get_str() + ")";
