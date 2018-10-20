@@ -36,6 +36,51 @@
   uint32_t: UINT32_MAX,                                                        \
   uint64_t: UINT64_MAX)
 
+/* Generic support for finding an equivalent width type. */
+#ifdef __SIZEOF_INT128__
+  #define UNSIGNED_OF(type) _Generic((type)1,                                  \
+    int8_t:            (uint8_t)0,                                             \
+    int16_t:           (uint16_t)0,                                            \
+    int32_t:           (uint32_t)0,                                            \
+    int64_t:           (uint64_t)0,                                            \
+    __int128:          (unsigned __int128)0,                                   \
+    uint8_t:           (uint8_t)0,                                             \
+    uint16_t:          (uint16_t)0,                                            \
+    uint32_t:          (uint32_t)0,                                            \
+    uint64_t:          (uint64_t)0,                                            \
+    unsigned __int128: (unsigned __int128)0)
+  #define SIGNED_OF(type) _Generic((type)1,                                    \
+    int8_t:            (int8_t)0,                                              \
+    int16_t:           (int16_t)0,                                             \
+    int32_t:           (int32_t)0,                                             \
+    int64_t:           (int64_t)0,                                             \
+    __int128:          (__int128)0,                                            \
+    uint8_t:           (int8_t)0,                                              \
+    uint16_t:          (int16_t)0,                                             \
+    uint32_t:          (int32_t)0,                                             \
+    uint64_t:          (int64_t)0,                                             \
+    unsigned __int128: (__int128)0)
+#else
+  #define UNSIGNED_OF(type) _Generic((type)1,                                  \
+    int8_t:            (uint8_t)0,                                             \
+    int16_t:           (uint16_t)0,                                            \
+    int32_t:           (uint32_t)0,                                            \
+    int64_t:           (uint64_t)0,                                            \
+    uint8_t:           (uint8_t)0,                                             \
+    uint16_t:          (uint16_t)0,                                            \
+    uint32_t:          (uint32_t)0,                                            \
+    uint64_t:          (uint64_t)0)
+  #define SIGNED_OF(type) _Generic((type)1,                                    \
+    int8_t:            (int8_t)0,                                              \
+    int16_t:           (int16_t)0,                                             \
+    int32_t:           (int32_t)0,                                             \
+    int64_t:           (int64_t)0,                                             \
+    uint8_t:           (int8_t)0,                                              \
+    uint16_t:          (int16_t)0,                                             \
+    uint32_t:          (int32_t)0,                                             \
+    uint64_t:          (int64_t)0)
+#endif
+
 /* Abstraction over the type we use for scalar values. Other code should be
  * agnostic to what the underlying type is, so if you are porting this code to a
  * future platform where you need a wider type, modifying these lines should be
