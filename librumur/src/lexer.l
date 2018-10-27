@@ -48,6 +48,10 @@
   return rumur::parser::token::NUMBER;
 }
 
+([[:digit:]]?\.[[:digit:]]+) {
+  throw rumur::Error("real types are not supported", *loc);
+}
+
 alias         { return rumur::parser::token::ALIAS;         }
 array         { return rumur::parser::token::ARRAY;         }
 assert        { return rumur::parser::token::ASSERT;        }
@@ -83,6 +87,7 @@ invariant     { return rumur::parser::token::INVARIANT;     }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
 property      { return rumur::parser::token::PROPERTY;      }
+real          { throw rumur::Error("real types are not supported", *loc); }
 record        { return rumur::parser::token::RECORD;        }
 return        { return rumur::parser::token::RETURN;        }
 rule          { return rumur::parser::token::RULE;          }
@@ -93,6 +98,7 @@ then          { return rumur::parser::token::THEN;          }
 to            { return rumur::parser::token::TO;            }
 type          { return rumur::parser::token::TYPE;          }
 undefine      { return rumur::parser::token::UNDEFINE;      }
+union         { throw rumur::Error("union types are not supported", *loc); }
 var           { return rumur::parser::token::VAR;           }
 
 "∀"           { return rumur::parser::token::FORALL;        }
