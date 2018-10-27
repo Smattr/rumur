@@ -43,8 +43,6 @@
  */
 typedef int64_t value_t;
 #define PRIVAL PRId64
-#define VALUE_MAX INT64_MAX
-#define VALUE_MIN INT64_MIN
 #define VALUE_C INT64_C
 
 /* XXX: intypes.h does not seem to give us this. */
@@ -1095,7 +1093,7 @@ static __attribute__((unused)) value_t divide(const struct state *s, value_t a,
     error(s, false, "division by zero");
   }
 
-  if (a == VALUE_MIN && b == -1) {
+  if (a == MIN(value_t) && b == -1) {
     error(s, false, "integer overflow in division");
   }
 
@@ -1110,7 +1108,7 @@ static __attribute__((unused)) value_t mod(const struct state *s, value_t a,
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (a == VALUE_MIN && b == -1) {
+  if (a == MIN(value_t) && b == -1) {
     error(s, false, "integer overflow in modulo");
   }
 
@@ -1120,7 +1118,7 @@ static __attribute__((unused)) value_t mod(const struct state *s, value_t a,
 static __attribute__((unused)) value_t negate(const struct state *s,
     value_t a) {
 
-  if (a == VALUE_MIN) {
+  if (a == MIN(value_t)) {
     error(s, false, "integer overflow in negation");
   }
 
