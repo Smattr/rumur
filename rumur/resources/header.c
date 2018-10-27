@@ -777,11 +777,19 @@ static void handle_insert(struct handle h, unsigned __int128 v) {
   }
 }
 
+// TODO: The logic in this function is complex and fiddly. It would be desirable
+// to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
+// the correct result.
 static value_t handle_read_raw(struct handle h) {
-  static_assert(sizeof(unsigned __int128) > sizeof(value_t),
-    "handle_read_raw() is implemented by reading data into a 128-bit scalar, "
-    "potentially reading more than the width of a value. Value type is larger "
-    "than 128 bits which prevents this.");
+
+  // FIXME: When we get a user-configurable value type, users will be able to
+  // cause this assertion to fail, so we should validate the necessary
+  // conditions at code generation time.
+  assert(h.width <= sizeof(value_t) * 8 && "read of a handle to a value that "
+    "is larger than our value type");
+
+  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
+    "the maximum width of a simple type in this model");
 
   if (h.width == 0) {
     trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
@@ -789,17 +797,127 @@ static value_t handle_read_raw(struct handle h) {
     return 0;
   }
 
+  /* Generate a handle that is offset- and width-aligned on byte boundaries.
+   * Essentially, we widen the handle to align it. The motivation for this is
+   * that we can only do byte-granularity reads, so we need to "over-read" if we
+   * have an unaligned handle.
+   */
   struct handle aligned = handle_align(h);
-  unsigned __int128 v = handle_extract(aligned);
-  v >>= h.offset % 8;
-  v &= (((unsigned __int128)1) << h.width) - 1;
 
-  value_t dest = (value_t)v;
+  /* The code below attempts to provide four alternatives for reading out the
+   * bits corresponding to a value of simple type referenced by a handle, and to
+   * give the compiler enough hints to steer it towards picking one of these and
+   * removing the other three as dead code:
+   *
+   *   1. Read into a single 64-bit variable. Enabled when the maximum width for
+   *      an unaligned handle spans 0 - 8 bytes.
+   *   2. Read into two 64-bit variables and then combine the result using
+   *      shifts and ORs. Enabled when the maximum width for an unaligned handle
+   *      spans 9 - 16 bytes and the compiler does not provide the `__int128`
+   *      type.
+   *   3. Read into a single 128-bit variable. Enabled when the compiler does
+   *      provide the `__int128` type and the maximum width for an unaligned
+   *      handle spans 9 - 16 bytes.
+   *   4. Read into two 128-bit chunks, and then combine the result using shifts
+   *      and ORs. Enabled when the compiler provides the `__int128` type and
+   *      the maximum width for an unaligned handle spans 17 - 32 bytes.
+   */
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+
+  /* If a byte-unaligned value_t cannot be fully read into a single uint64_t
+   * using byte-aligned reads...
+   */
+  if (MAX_SIMPLE_WIDTH > (sizeof(uint64_t) - 1) * 8) {
+
+    /* Read the low double-word of this (possibly quad-word-sized) value. */
+    unsigned __int128 low = 0;
+    size_t low_size = aligned.width / 8;
+    /* optimisation hint: */
+    ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
+    if (low_size > sizeof(low)) {
+      low_size = sizeof(low);
+    }
+    {
+      const uint8_t *src = aligned.base + aligned.offset / 8;
+      memcpy(&low, src, low_size);
+    }
+
+    low >>= h.offset - aligned.offset;
+
+    size_t high_size = aligned.width / 8 - low_size;
+
+    /* If the value could not be read into a single double-word... */
+    ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
+    if (high_size != 0) {
+      unsigned __int128 high = 0;
+      const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+      memcpy(&high, src, high_size);
+
+      high <<= sizeof(low) * 8 - (h.offset - aligned.offset);
+
+      /* Combine the two halves into a single double-word. */
+      low |= high;
+    }
+
+    if (h.width < sizeof(low) * 8) {
+      unsigned __int128 mask = (((unsigned __int128)1) << h.width) - 1;
+      low &= mask;
+    }
+
+    value_t v = (value_t)low;
+
+    trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
+      v, h.base, h.offset, h.width);
+
+    return v;
+  }
+#endif
+
+  /* Read the low word of this (possibly two-word-sized) value. */
+  uint64_t low = 0;
+  size_t low_size = aligned.width / 8;
+  /* optimisation hint: */
+  ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
+  if (low_size > sizeof(low)) {
+    low_size = sizeof(low);
+  }
+  {
+    const uint8_t *src = aligned.base + aligned.offset / 8;
+    memcpy(&low, src, low_size);
+  }
+
+  low >>= h.offset - aligned.offset;
+
+  size_t high_size = aligned.width / 8 - low_size;
+
+  /* If the value could not be read into a single word... */
+  ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
+  if (high_size != 0) {
+    uint64_t high = 0;
+    const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+    memcpy(&high, src, high_size);
+
+    high <<= sizeof(low) * 8 - (h.offset - aligned.offset);
+
+    /* Combine the high and low words. Note that we know we can store the final
+     * result in a single word because, if we've reached this point,
+     * sizeof(value_t) <= sizeof(uint64_t).
+     */
+    low |= high;
+  }
+
+  if (h.width < sizeof(low) * 8) {
+    uint64_t mask = (UINT64_C(1) << h.width) - 1;
+    low &= mask;
+  }
+
+  value_t v = (value_t)low;
 
   trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-    dest, h.base, h.offset, h.width);
+    v, h.base, h.offset, h.width);
 
-  return dest;
+  return v;
 }
 
 static value_t decode_value(value_t lb, value_t ub, value_t v) {
