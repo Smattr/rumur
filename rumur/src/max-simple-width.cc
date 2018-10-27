@@ -39,10 +39,17 @@ class Traversal : public rumur::ConstTypeTraversal {
       max = w;
   }
 
-  /* We don't need to do anything for type identifiers, because we know we will
-   * have seen the underlying type somewhere else already.
-   */
-  void visit(const rumur::TypeExprID&) { }
+  void visit(const rumur::TypeExprID &n) {
+    if (n.is_simple()) {
+      mpz_class w = n.width();
+      if (w > max)
+        max = w;
+    }
+    /* We don't need to descend into any children, because the referent will
+     * either (a) already have been encountered or (b) be a built-in like
+     * 'boolean' that is a simple type.
+     */
+  }
 };
 
 mpz_class max_simple_width(const rumur::Model &m) {
