@@ -36,6 +36,7 @@ add_executable(rumur
   src/generate-stmt.cc
   src/help.cc
   src/main.cc
+  src/max-simple-width.cc
   src/options.cc
   src/output.cc
   src/symmetry-reduction.cc)

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include "generate.h"
+#include "max-simple-width.h"
 #include "options.h"
 #include "resources.h"
 #include <rumur/rumur.h>
@@ -99,6 +100,7 @@ int output_checker(const std::string &path, const Model &model) {
       ? "CEX_OFF" : (options.counterexample_trace == DIFF ? "DIFF" : "FULL")) << "\n\n"
     << "enum { MACHINE_READABLE_OUTPUT = " << options.machine_readable_output
       << " };\n\n"
+    << "enum { MAX_SIMPLE_WIDTH = " << max_simple_width(model) << " };\n\n"
 
     // Static boiler plate code
     << std::string((const char*)resources_header_c, (size_t)resources_header_c_len)
