@@ -43,7 +43,16 @@
  */
 typedef int64_t value_t;
 #define PRIVAL PRId64
-#define VALUE_C INT64_C
+
+#define VALUE_C(x) _Generic((value_t)1,                                        \
+  int8_t:   INT8_C(x),                                                         \
+  int16_t:  INT16_C(x),                                                        \
+  int32_t:  INT32_C(x),                                                        \
+  int64_t:  INT64_C(x),                                                        \
+  uint8_t:  UINT8_C(x),                                                        \
+  uint16_t: UINT16_C(x),                                                       \
+  uint32_t: UINT32_C(x),                                                       \
+  uint64_t: UINT64_C(x))
 
 /* XXX: intypes.h does not seem to give us this. */
 #ifndef SIZE_C
