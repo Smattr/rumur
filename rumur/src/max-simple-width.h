@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <gmpxx.h>
 #include <rumur/rumur.h>
 
