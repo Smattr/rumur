@@ -202,144 +202,6 @@ model: decls procdecls rules {
   output = std::make_shared<rumur::Model>(std::move($1), std::move($2), std::move($3), @$);
 };
 
-decls: decls decl {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | %empty {
-  /* nothing required */
-};
-
-decl: CONST exprdecls {
-  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
-    $$.push_back(std::make_shared<rumur::ConstDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
-  }
-} | TYPE typedecls {
-  $$ = $2;
-} | VAR vardecls {
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-};
-
-exprdecls: exprdecls exprdecl semi_opt {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | %empty {
-  /* nothing required */
-};
-
-exprdecl: id_list_opt ':' expr {
-  for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_tuple(m.first, $3, @$));
-  }
-};
-
-typedecls: typedecls typedecl semi_opt {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | %empty {
-  /* nothing required */
-};
-
-typedecl: id_list_opt ':' typeexpr {
-  for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_shared<rumur::TypeDecl>(m.first, $3, @$));
-  }
-};
-
-typeexpr: BOOLEAN {
-  /* We need to special case this instead of just using the ID rule because IDs
-   * are treated as case-sensitive while "boolean" is not. To avoid awkwardness
-   * in later symbol resolution, we force it to lower case here.
-   */
-  $$ = std::make_shared<rumur::TypeExprID>("boolean", nullptr, @$);
-} | ID {
-  $$ = std::make_shared<rumur::TypeExprID>($1, nullptr, @$);
-} | expr DOTDOT expr {
-  $$ = std::make_shared<rumur::Range>($1, $3, @$);
-} | ENUM '{' id_list_opt '}' {
-  $$ = std::make_shared<rumur::Enum>(std::move($3), @$);
-} | RECORD vardecls endrecord {
-  $$ = std::make_shared<rumur::Record>(std::move($2), @$);
-} | ARRAY '[' typeexpr ']' OF typeexpr {
-  $$ = std::make_shared<rumur::Array>($3, $6, @$);
-} | SCALARSET '(' expr ')' {
-  $$ = std::make_shared<rumur::Scalarset>($3, @$);
-};
-
-vardecls: vardecls vardecl semi_opt {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | %empty {
-  /* nothing required */
-};
-
-vardecl: id_list_opt ':' typeexpr {
-  for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, @$));
-  }
-};
-
-endrecord: END | ENDRECORD;
-
-begin_opt: BEGIN_TOK | %empty;
-
-endfunction: END | ENDFUNCTION | ENDPROCEDURE;
-
-function: FUNCTION | PROCEDURE;
-
-parameter: var_opt id_list ':' typeexpr {
-  for (const std::pair<std::string, rumur::location> &i : $2) {
-    auto v = std::make_shared<rumur::VarDecl>(i.first, $4, @$);
-    v->readonly = !*$1;
-    $$.push_back(v);
-  }
-};
-
-parameters: parameters parameter semi_opt {
-  $$ = $1;
-  std::move($2.begin(), $2.end(), std::back_inserter($$));
-} | %empty {
-};
-
-procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
-  $$ = std::make_shared<rumur::Function>($2, std::move($4), $6, std::move($7), std::move($9), @$);
-};
-
-procdecls: procdecls procdecl {
-  $$ = $1;
-  $$.push_back($2);
-} | %empty {
-};
-
-return_type: ':' typeexpr semi_opt {
-  $$ = $2;
-} | semi_opt {
-  $$ = nullptr;
-};
-
-var_opt: VAR {
-  $$ = std::make_shared<bool>(true);
-} | %empty {
-  $$ = std::make_shared<bool>(false);
-};
-
-rules: rules rule semi_opt {
-  $$ = $1;
-  $$.push_back($2);
-} | %empty {
-};
-
-rule: startstate {
-  $$ = $1;
-} | simplerule {
-  $$ = $1;
-} | property {
-  $$ = $1;
-} | ruleset {
-  $$ = $1;
-} | aliasrule {
-  $$ = $1;
-};
-
 aliasrule: ALIAS exprdecls DO rules endalias {
   std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
   for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
@@ -348,21 +210,7 @@ aliasrule: ALIAS exprdecls DO rules endalias {
   $$ = std::make_shared<rumur::AliasRule>(std::move(decls), std::move($4), @$);
 };
 
-startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-  $$ = std::make_shared<rumur::StartState>($2, std::move($3), std::move($4), @$);
-};
-
-simplerule: RULE string_opt guard_opt decls_header stmts endrule {
-  $$ = std::make_shared<rumur::SimpleRule>($2, $3, std::move($4), std::move($5), @$);
-};
-
-property: category STRING expr {
-  rumur::Property p(*$1, $3, @3);
-  $$ = std::make_shared<rumur::PropertyRule>($2, p, @$);
-} | category expr string_opt {
-  rumur::Property p(*$1, $2, @2);
-  $$ = std::make_shared<rumur::PropertyRule>($3, p, @$);
-};
+begin_opt: BEGIN_TOK | %empty;
 
 category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
@@ -374,14 +222,23 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::DISABLED);
 };
 
-ruleset: RULESET quantifiers DO rules endruleset {
-  $$ = std::make_shared<rumur::Ruleset>(std::move($2), std::move($4), @$);
+comma_opt: ',' | %empty;
+
+decl: CONST exprdecls {
+  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+    $$.push_back(std::make_shared<rumur::ConstDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+  }
+} | TYPE typedecls {
+  $$ = $2;
+} | VAR vardecls {
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
 };
 
-guard_opt: expr ARROW {
+decls: decls decl {
   $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
 } | %empty {
-  $$ = nullptr;
+  /* nothing required */
 };
 
 decls_header: decls BEGIN_TOK {
@@ -389,55 +246,17 @@ decls_header: decls BEGIN_TOK {
 } | %empty {
 };
 
-stmts: stmts_cont stmt semi_opt {
-  $$ = $1;
-  $$.push_back($2);
-} | stmt semi_opt {
-  $$.push_back($1);
+designator: designator '.' ID {
+  $$ = std::make_shared<rumur::Field>($1, $3, @$);
+} | designator '[' expr ']' {
+  $$ = std::make_shared<rumur::Element>($1, $3, @$);
+} | ID {
+  $$ = std::make_shared<rumur::ExprID>($1, nullptr, @$);
+};
+
+else_opt: ELSE stmts {
+  $$.push_back(rumur::IfClause(std::shared_ptr<Expr>(), std::move($2), @$));
 } | %empty {
-};
-
-stmts_cont: stmts_cont stmt ';' {
-  $$ = $1;
-  $$.push_back($2);
-} | stmt ';' {
-  $$.push_back($1);
-};
-
-stmt: category STRING expr {
-  rumur::Property p(*$1, $3, @3);
-  $$ = std::make_shared<rumur::PropertyStmt>(p, $2, @$);
-} | category expr string_opt {
-  rumur::Property p(*$1, $2, @2);
-  $$ = std::make_shared<rumur::PropertyStmt>(p, $3, @$);
-} | designator COLON_EQ expr {
-  $$ = std::make_shared<rumur::Assignment>($1, $3, @$);
-} | ALIAS exprdecls DO stmts endalias {
-  std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
-  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
-    decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
-  }
-  $$ = std::make_shared<rumur::AliasStmt>(std::move(decls), std::move($4), @$);
-} | ERROR STRING {
-  $$ = std::make_shared<rumur::ErrorStmt>($2, @$);
-} | CLEAR designator {
-  $$ = std::make_shared<rumur::Clear>($2, @$);
-} | FOR quantifier DO stmts endfor {
-  $$ = std::make_shared<rumur::For>($2, std::move($4), @$);
-} | IF expr THEN stmts elsifs else_opt endif {
-  std::vector<rumur::IfClause> cs = {
-    rumur::IfClause($2, std::move($4), rumur::location(@1.begin, @4.end)) };
-  cs.insert(cs.end(), $5.begin(), $5.end());
-  cs.insert(cs.end(), $6.begin(), $6.end());
-  $$ = std::make_shared<rumur::If>(std::move(cs), @$);
-} | RETURN {
-  $$ = std::make_shared<rumur::Return>(std::shared_ptr<Expr>(), @$);
-} | RETURN expr {
-  $$ = std::make_shared<rumur::Return>($2, @$);
-} | UNDEFINE designator {
-  $$ = std::make_shared<rumur::Undefine>($2, @$);
-} | ID '(' exprlist ')' {
-  $$ = std::make_shared<rumur::ProcedureCall>($1, nullptr, std::move($3), @$);
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {
@@ -446,34 +265,16 @@ elsifs: elsifs ELSIF expr THEN stmts {
 } | %empty {
 };
 
-else_opt: ELSE stmts {
-  $$.push_back(rumur::IfClause(std::shared_ptr<Expr>(), std::move($2), @$));
-} | %empty {
-};
-
+endalias: END | ENDALIAS;
+endexists: END | ENDEXISTS;
+endfor: END | ENDFOR;
+endforall: END | ENDFORALL;
+endfunction: END | ENDFUNCTION | ENDPROCEDURE;
 endif: END | ENDIF;
-
+endrecord: END | ENDRECORD;
+endrule: END | ENDRULE;
+endruleset: END | ENDRULESET;
 endstartstate: END | ENDSTARTSTATE;
-
-exprlist: exprlist_cont expr comma_opt {
-  $$ = $1;
-  $$.push_back($2);
-} | %empty {
-};
-
-exprlist_cont: exprlist_cont expr ',' {
-  $$ = $1;
-  $$.push_back($2);
-} | %empty {
-};
-
-string_opt: STRING {
-  $$ = $1;
-} | %empty {
-  /* nothing required */
-};
-
-semi_opt: ';' | %empty;
 
 expr: expr '?' expr ':' expr {
   $$ = std::make_shared<rumur::Ternary>($1, $3, $5, @$);
@@ -529,6 +330,86 @@ expr: expr '?' expr ':' expr {
   $$ = std::make_shared<rumur::FunctionCall>($1, nullptr, std::move($3), @$);
 };
 
+exprdecl: id_list_opt ':' expr {
+  for (const std::pair<std::string, rumur::location> &m : $1) {
+    $$.push_back(std::make_tuple(m.first, $3, @$));
+  }
+};
+
+exprdecls: exprdecls exprdecl semi_opt {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | %empty {
+  /* nothing required */
+};
+
+exprlist: exprlist_cont expr comma_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+};
+
+exprlist_cont: exprlist_cont expr ',' {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+};
+
+function: FUNCTION | PROCEDURE;
+
+guard_opt: expr ARROW {
+  $$ = $1;
+} | %empty {
+  $$ = nullptr;
+};
+
+id_list: id_list ',' ID {
+  $$ = $1;
+  $$.emplace_back(std::make_pair($3, @3));
+} | ID {
+  $$.emplace_back(std::make_pair($1, @$));
+};
+
+  /* Support optional trailing comma to make it easier for tools that generate
+   * an input mdoels.
+   */
+id_list_opt: id_list comma_opt {
+  $$ = $1;
+} | %empty {
+};
+
+parameter: var_opt id_list ':' typeexpr {
+  for (const std::pair<std::string, rumur::location> &i : $2) {
+    auto v = std::make_shared<rumur::VarDecl>(i.first, $4, @$);
+    v->readonly = !*$1;
+    $$.push_back(v);
+  }
+};
+
+parameters: parameters parameter semi_opt {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | %empty {
+};
+
+procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
+  $$ = std::make_shared<rumur::Function>($2, std::move($4), $6, std::move($7), std::move($9), @$);
+};
+
+procdecls: procdecls procdecl {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+};
+
+property: category STRING expr {
+  rumur::Property p(*$1, $3, @3);
+  $$ = std::make_shared<rumur::PropertyRule>($2, p, @$);
+} | category expr string_opt {
+  rumur::Property p(*$1, $2, @2);
+  $$ = std::make_shared<rumur::PropertyRule>($3, p, @$);
+};
+
 quantifier: ID ':' typeexpr {
   $$ = std::make_shared<rumur::Quantifier>($1, $3, @$);
 } | ID COLON_EQ expr TO expr BY expr {
@@ -544,42 +425,152 @@ quantifiers: quantifiers ';' quantifier {
   $$.push_back($1);
 };
 
-designator: designator '.' ID {
-  $$ = std::make_shared<rumur::Field>($1, $3, @$);
-} | designator '[' expr ']' {
-  $$ = std::make_shared<rumur::Element>($1, $3, @$);
-} | ID {
-  $$ = std::make_shared<rumur::ExprID>($1, nullptr, @$);
+return_type: ':' typeexpr semi_opt {
+  $$ = $2;
+} | semi_opt {
+  $$ = nullptr;
 };
 
-endalias: END | ENDALIAS;
-
-endfor: END | ENDFOR;
-
-endforall: END | ENDFORALL;
-
-endexists: END | ENDEXISTS;
-
-endrule: END | ENDRULE;
-
-endruleset: END | ENDRULESET;
-
-  /* Support optional trailing comma to make it easier for tools that generate
-   * an input mdoels.
-   */
-id_list_opt: id_list comma_opt {
+rule: startstate {
   $$ = $1;
+} | simplerule {
+  $$ = $1;
+} | property {
+  $$ = $1;
+} | ruleset {
+  $$ = $1;
+} | aliasrule {
+  $$ = $1;
+};
+
+rules: rules rule semi_opt {
+  $$ = $1;
+  $$.push_back($2);
 } | %empty {
 };
 
-id_list: id_list ',' ID {
-  $$ = $1;
-  $$.emplace_back(std::make_pair($3, @3));
-} | ID {
-  $$.emplace_back(std::make_pair($1, @$));
+ruleset: RULESET quantifiers DO rules endruleset {
+  $$ = std::make_shared<rumur::Ruleset>(std::move($2), std::move($4), @$);
 };
 
-comma_opt: ',' | %empty;
+semi_opt: ';' | %empty;
+
+simplerule: RULE string_opt guard_opt decls_header stmts endrule {
+  $$ = std::make_shared<rumur::SimpleRule>($2, $3, std::move($4), std::move($5), @$);
+};
+
+startstate: STARTSTATE string_opt decls_header stmts endstartstate {
+  $$ = std::make_shared<rumur::StartState>($2, std::move($3), std::move($4), @$);
+};
+
+stmt: category STRING expr {
+  rumur::Property p(*$1, $3, @3);
+  $$ = std::make_shared<rumur::PropertyStmt>(p, $2, @$);
+} | category expr string_opt {
+  rumur::Property p(*$1, $2, @2);
+  $$ = std::make_shared<rumur::PropertyStmt>(p, $3, @$);
+} | designator COLON_EQ expr {
+  $$ = std::make_shared<rumur::Assignment>($1, $3, @$);
+} | ALIAS exprdecls DO stmts endalias {
+  std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
+  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+    decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+  }
+  $$ = std::make_shared<rumur::AliasStmt>(std::move(decls), std::move($4), @$);
+} | ERROR STRING {
+  $$ = std::make_shared<rumur::ErrorStmt>($2, @$);
+} | CLEAR designator {
+  $$ = std::make_shared<rumur::Clear>($2, @$);
+} | FOR quantifier DO stmts endfor {
+  $$ = std::make_shared<rumur::For>($2, std::move($4), @$);
+} | IF expr THEN stmts elsifs else_opt endif {
+  std::vector<rumur::IfClause> cs = {
+    rumur::IfClause($2, std::move($4), rumur::location(@1.begin, @4.end)) };
+  cs.insert(cs.end(), $5.begin(), $5.end());
+  cs.insert(cs.end(), $6.begin(), $6.end());
+  $$ = std::make_shared<rumur::If>(std::move(cs), @$);
+} | RETURN {
+  $$ = std::make_shared<rumur::Return>(std::shared_ptr<Expr>(), @$);
+} | RETURN expr {
+  $$ = std::make_shared<rumur::Return>($2, @$);
+} | UNDEFINE designator {
+  $$ = std::make_shared<rumur::Undefine>($2, @$);
+} | ID '(' exprlist ')' {
+  $$ = std::make_shared<rumur::ProcedureCall>($1, nullptr, std::move($3), @$);
+};
+
+stmts: stmts_cont stmt semi_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | stmt semi_opt {
+  $$.push_back($1);
+} | %empty {
+};
+
+stmts_cont: stmts_cont stmt ';' {
+  $$ = $1;
+  $$.push_back($2);
+} | stmt ';' {
+  $$.push_back($1);
+};
+
+string_opt: STRING {
+  $$ = $1;
+} | %empty {
+  /* nothing required */
+};
+
+typedecl: id_list_opt ':' typeexpr {
+  for (const std::pair<std::string, rumur::location> &m : $1) {
+    $$.push_back(std::make_shared<rumur::TypeDecl>(m.first, $3, @$));
+  }
+};
+
+typedecls: typedecls typedecl semi_opt {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | %empty {
+  /* nothing required */
+};
+
+typeexpr: BOOLEAN {
+  /* We need to special case this instead of just using the ID rule because IDs
+   * are treated as case-sensitive while "boolean" is not. To avoid awkwardness
+   * in later symbol resolution, we force it to lower case here.
+   */
+  $$ = std::make_shared<rumur::TypeExprID>("boolean", nullptr, @$);
+} | ID {
+  $$ = std::make_shared<rumur::TypeExprID>($1, nullptr, @$);
+} | expr DOTDOT expr {
+  $$ = std::make_shared<rumur::Range>($1, $3, @$);
+} | ENUM '{' id_list_opt '}' {
+  $$ = std::make_shared<rumur::Enum>(std::move($3), @$);
+} | RECORD vardecls endrecord {
+  $$ = std::make_shared<rumur::Record>(std::move($2), @$);
+} | ARRAY '[' typeexpr ']' OF typeexpr {
+  $$ = std::make_shared<rumur::Array>($3, $6, @$);
+} | SCALARSET '(' expr ')' {
+  $$ = std::make_shared<rumur::Scalarset>($3, @$);
+};
+
+vardecl: id_list_opt ':' typeexpr {
+  for (const std::pair<std::string, rumur::location> &m : $1) {
+    $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, @$));
+  }
+};
+
+vardecls: vardecls vardecl semi_opt {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | %empty {
+  /* nothing required */
+};
+
+var_opt: VAR {
+  $$ = std::make_shared<bool>(true);
+} | %empty {
+  $$ = std::make_shared<bool>(false);
+};
 
 %%
 
