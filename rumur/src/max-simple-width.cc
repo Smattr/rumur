@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <gmpxx.h>
+#include "max-simple-width.h"
 #include <memory>
 #include <rumur/rumur.h>
 
