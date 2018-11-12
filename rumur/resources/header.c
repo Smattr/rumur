@@ -717,28 +717,6 @@ struct handle state_handle(const struct state *s, size_t offset, size_t width) {
   };
 }
 
-static unsigned __int128 handle_extract(struct handle h) {
-
-  ASSERT(handle_aligned(h) && "extraction of unaligned handle");
-
-  unsigned __int128 v = 0;
-  for (size_t i = 0; i < h.width / 8; i++) {
-    unsigned __int128 byte = ((unsigned __int128)*(h.base + h.offset / 8 + i)) << (i * 8);
-    v |= byte;
-  }
-
-  return v;
-}
-
-static void handle_insert(struct handle h, unsigned __int128 v) {
-
-  ASSERT(handle_aligned(h) && "insertion to unaligned handle");
-
-  for (size_t i = 0; i < h.width / 8; i++) {
-    *(h.base + h.offset / 8 + i) = (uint8_t)(v >> (i * 8));
-  }
-}
-
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
@@ -1064,11 +1042,6 @@ static void handle_write_raw(struct handle h, value_t value) {
 
 static __attribute__((unused)) void handle_write(const struct state *s,
     value_t lb, value_t ub, struct handle h, value_t value) {
-
-  static_assert(sizeof(unsigned __int128) > sizeof(value_t),
-    "handle_write() is implemented by reading data into a 128-bit scalar and "
-    "then operating on it using 128-bit operations. Value type is larger than "
-    "128 bits which prevents this.");
 
   /* If we happen to be writing to the current state, do a sanity check that
    * we're only writing within bounds.
