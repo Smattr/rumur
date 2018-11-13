@@ -100,7 +100,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Exists &n) final {
-    dispatch(*n.quantifier);
+    dispatch(n.quantifier);
     dispatch(*n.expr);
     n.validate();
   }
@@ -118,14 +118,14 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const For &n) final {
-    dispatch(*n.quantifier);
+    dispatch(n.quantifier);
     for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }
 
   void visit(const Forall &n) final {
-    dispatch(*n.quantifier);
+    dispatch(n.quantifier);
     dispatch(*n.expr);
     n.validate();
   }
@@ -252,8 +252,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const PropertyRule &n) final {
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers)
+      dispatch(q);
     dispatch(n.property);
     n.validate();
   }
@@ -294,8 +294,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Ruleset &n) final {
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers)
+      dispatch(q);
     for (const std::shared_ptr<Rule> &r : n.rules)
       dispatch(*r);
     n.validate();
@@ -307,8 +307,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const SimpleRule &n) final {
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers)
+      dispatch(q);
     if (n.guard != nullptr)
       dispatch(*n.guard);
     for (const std::shared_ptr<Decl> &d : n.decls)
@@ -319,8 +319,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const StartState &n) final {
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers)
+      dispatch(q);
     for (const std::shared_ptr<Decl> &d : n.decls)
       dispatch(*d);
     for (auto &s : n.body)

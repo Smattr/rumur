@@ -42,8 +42,8 @@ void generate_model(std::ostream &out, const Model &m) {
     for (const std::shared_ptr<Rule> &r : flat_rules) {
       if (auto s = dynamic_cast<const StartState*>(r.get())) {
         out << "static void startstate" << index << "(struct state *s";
-        for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
-          out << ", struct handle ru_" << q->name;
+        for (const Quantifier &q : s->quantifiers)
+          out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
         /* Output the state variable handles so we can reference them within
@@ -104,8 +104,8 @@ void generate_model(std::ostream &out, const Model &m) {
     for (const std::shared_ptr<Rule> &r : flat_rules) {
       if (auto i = dynamic_cast<const PropertyRule*>(r.get())) {
         out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
-        for (const std::shared_ptr<Quantifier> &q : i->quantifiers)
-          out << ", struct handle ru_" << q->name;
+        for (const Quantifier &q : i->quantifiers)
+          out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
         /* Output the state variable handles so we can reference them within
@@ -147,8 +147,8 @@ void generate_model(std::ostream &out, const Model &m) {
         // Write the guard
         out << "static bool guard" << index << "(const struct state *s "
           "__attribute__((unused))";
-        for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
-          out << ", struct handle ru_" << q->name
+        for (const Quantifier &q : s->quantifiers)
+          out << ", struct handle ru_" << q.name
             << " __attribute__((unused))";
         out << ") {\n";
 
@@ -184,8 +184,8 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Write the body
         out << "static void rule" << index << "(struct state *s";
-        for (const std::shared_ptr<Quantifier> &q : s->quantifiers)
-          out << ", struct handle ru_" << q->name;
+        for (const Quantifier &q : s->quantifiers)
+          out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
         /* Output the state variable handles so we can reference them within
@@ -253,19 +253,19 @@ void generate_model(std::ostream &out, const Model &m) {
           out << "  {\n";
 
           // Set up quantifiers.
-          for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            generate_quantifier_header(out, *q);
+          for (const Quantifier &q : r->quantifiers)
+            generate_quantifier_header(out, q);
 
           out << "    if (!property" << index << "(s";
-          for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            out << ", ru_" << q->name;
+          for (const Quantifier &q : r->quantifiers)
+            out << ", ru_" << q.name;
           out << ")) {\n"
             << "      error(s, false, \"failed invariant\");\n"
             << "    }\n";
 
           // Close the quantifier loops.
           for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-            generate_quantifier_footer(out, **it);
+            generate_quantifier_footer(out, *it);
 
           // Close this invariant's scope.
           out << "  }\n";
@@ -289,12 +289,12 @@ void generate_model(std::ostream &out, const Model &m) {
           out << "  {\n";
 
           // Set up quantifiers.
-          for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            generate_quantifier_header(out, *q);
+          for (const Quantifier &q : r->quantifiers)
+            generate_quantifier_header(out, q);
 
           out << "    if (!property" << index << "(s";
-          for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-            out << ", ru_" << q->name;
+          for (const Quantifier &q : r->quantifiers)
+            out << ", ru_" << q.name;
           out << ")) {\n"
             << "      /* Assumption violated. */\n"
             << "      assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
@@ -303,7 +303,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
           // Close the quantifier loops.
           for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-            generate_quantifier_footer(out, **it);
+            generate_quantifier_footer(out, *it);
 
           // Close this invariant's scope.
           out << "  }\n";
@@ -339,8 +339,8 @@ void generate_model(std::ostream &out, const Model &m) {
         out << "    struct state *s = NULL;\n";
 
         // Set up quantifiers.
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          generate_quantifier_header(out, *q);
+        for (const Quantifier &q : r->quantifiers)
+          generate_quantifier_header(out, q);
 
         out
           // Use a dummy do-while to give us 'break' as a local goto.
@@ -357,8 +357,8 @@ void generate_model(std::ostream &out, const Model &m) {
           << "        }\n"
           << "      }\n"
           << "      startstate" << index << "(s";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->name;
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
         out << ");\n"
           << "      state_canonicalise(s);\n"
           << "      check_assumptions(s);\n"
@@ -375,7 +375,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          generate_quantifier_footer(out, **it);
+          generate_quantifier_footer(out, *it);
 
         // Close this startstate's scope.
         out << "  }\n";
@@ -416,8 +416,8 @@ void generate_model(std::ostream &out, const Model &m) {
         // Open a scope so we don't have to think about name collisions.
         out << "    {\n";
 
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          generate_quantifier_header(out, *q);
+        for (const Quantifier &q : r->quantifiers)
+          generate_quantifier_header(out, q);
 
         out
           // Use a dummy do-while to give us 'break' as a local goto.
@@ -433,12 +433,12 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          }\n"
           << "        }\n"
           << "        if (guard" << index << "(n";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->name;
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
         out << ")) {\n"
           << "          rule" << index << "(n";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          out << ", ru_" << q->name;
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
         out << ");\n"
           << "          rules_fired_local++;\n"
           << "          if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_STUTTERING || !state_eq(s, n)) {\n"
@@ -484,7 +484,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          generate_quantifier_footer(out, **it);
+          generate_quantifier_footer(out, *it);
 
         // Close this rule's scope.
         out << "}\n";
@@ -542,14 +542,14 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Set up quantifiers.
         out << "    {\n";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          generate_quantifier_header(out, *q);
+        for (const Quantifier &q : r->quantifiers)
+          generate_quantifier_header(out, q);
 
         out << "      rule_taken++;\n";
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          generate_quantifier_footer(out, **it);
+          generate_quantifier_footer(out, *it);
         out << "    }\n";
 
         out
@@ -586,14 +586,14 @@ void generate_model(std::ostream &out, const Model &m) {
 
         // Set up quantifiers.
         out << "    {\n";
-        for (const std::shared_ptr<Quantifier> &q : r->quantifiers)
-          generate_quantifier_header(out, *q);
+        for (const Quantifier &q : r->quantifiers)
+          generate_quantifier_header(out, q);
 
         out << "      rule_taken++;\n";
 
         // Close the quantifier loops.
         for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          generate_quantifier_footer(out, **it);
+          generate_quantifier_footer(out, *it);
         out << "    }\n";
 
         out

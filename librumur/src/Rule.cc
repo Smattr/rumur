@@ -50,9 +50,7 @@ Rule::Rule(const std::string &name_, const location &loc_):
   Node(loc_), name(name_) { }
 
 Rule::Rule(const Rule &other):
-  Node(other), name(other.name) {
-  for (const std::shared_ptr<Quantifier> &q : other.quantifiers)
-    quantifiers.emplace_back(q->clone());
+  Node(other), name(other.name), quantifiers(other.quantifiers) {
   for (const std::shared_ptr<AliasDecl> &a : other.aliases)
     aliases.emplace_back(a->clone());
 }
@@ -100,7 +98,7 @@ bool AliasRule::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  if (!vector_eq(quantifiers, o->quantifiers))
+  if (quantifiers != o->quantifiers)
     return false;
   if (!vector_eq(aliases, o->aliases))
     return false;
@@ -160,7 +158,7 @@ bool SimpleRule::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  if (!vector_eq(quantifiers, o->quantifiers))
+  if (quantifiers != o->quantifiers)
     return false;
   if (!vector_eq(aliases, o->aliases))
     return false;
@@ -219,7 +217,7 @@ bool StartState::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  if (!vector_eq(quantifiers, o->quantifiers))
+  if (quantifiers != o->quantifiers)
     return false;
   if (!vector_eq(aliases, o->aliases))
     return false;
@@ -266,7 +264,7 @@ bool PropertyRule::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  if (!vector_eq(quantifiers, o->quantifiers))
+  if (quantifiers != o->quantifiers)
     return false;
   if (!vector_eq(aliases, o->aliases))
     return false;
@@ -275,7 +273,7 @@ bool PropertyRule::operator==(const Node &other) const {
   return true;
 }
 
-Ruleset::Ruleset(std::vector<std::shared_ptr<Quantifier>> &&quantifiers_,
+Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,
   std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
   quantifiers = quantifiers_;
@@ -312,7 +310,7 @@ bool Ruleset::operator==(const Node &other) const {
     return false;
   if (name != o->name)
     return false;
-  if (!vector_eq(quantifiers, o->quantifiers))
+  if (quantifiers != o->quantifiers)
     return false;
   if (!vector_eq(aliases, o->aliases))
     return false;
@@ -325,9 +323,8 @@ std::vector<std::shared_ptr<Rule>> Ruleset::flatten() const {
   std::vector<std::shared_ptr<Rule>> rs;
   for (const std::shared_ptr<Rule> &r : rules) {
     for (std::shared_ptr<Rule> &f : r->flatten()) {
-      for (const std::shared_ptr<Quantifier> &q : quantifiers)
-        f->quantifiers.insert(f->quantifiers.begin(),
-          std::shared_ptr<Quantifier>(q->clone()));
+      for (const Quantifier &q : quantifiers)
+        f->quantifiers.insert(f->quantifiers.begin(), q);
       rs.push_back(f);
     }
   }

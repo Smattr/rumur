@@ -93,7 +93,7 @@ void Indexer::visit(ErrorStmt &n) {
 
 void Indexer::visit(Exists &n) {
   n.unique_id = next++;
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -108,14 +108,14 @@ void Indexer::visit(Field &n) {
 
 void Indexer::visit(For &n) {
   n.unique_id = next++;
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   for (auto &s : n.body)
     dispatch(*s);
 }
 
 void Indexer::visit(Forall &n) {
   n.unique_id = next++;
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -222,8 +222,8 @@ void Indexer::visit(Property &n) {
 
 void Indexer::visit(PropertyRule &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
   dispatch(n.property);
 }
 
@@ -264,8 +264,8 @@ void Indexer::visit(Return &n) {
 
 void Indexer::visit(Ruleset &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
@@ -277,8 +277,8 @@ void Indexer::visit(Scalarset &n) {
 
 void Indexer::visit(SimpleRule &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
   for (std::shared_ptr<Decl> &d : n.decls)
@@ -289,8 +289,8 @@ void Indexer::visit(SimpleRule &n) {
 
 void Indexer::visit(StartState &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)

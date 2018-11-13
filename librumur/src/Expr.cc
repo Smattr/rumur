@@ -978,13 +978,12 @@ bool Quantifier::operator==(const Node &other) const {
   return true;
 }
 
-Exists::Exists(std::shared_ptr<Quantifier> quantifier_,
+Exists::Exists(const Quantifier &quantifier_,
   std::shared_ptr<Expr> expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
 Exists::Exists(const Exists &other):
-  Expr(other), quantifier(other.quantifier->clone()), expr(other.expr->clone()) {
-}
+  Expr(other), quantifier(other.quantifier), expr(other.expr->clone()) { }
 
 Exists &Exists::operator=(Exists other) {
   swap(*this, other);
@@ -1013,7 +1012,7 @@ const TypeExpr *Exists::type() const {
 
 bool Exists::operator==(const Node &other) const {
   auto o = dynamic_cast<const Exists*>(&other);
-  return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
+  return o != nullptr && quantifier == o->quantifier && *expr == *o->expr;
 }
 
 mpz_class Exists::constant_fold() const {
@@ -1025,13 +1024,12 @@ void Exists::validate() const {
     throw Error("expression in exists is not boolean", expr->loc);
 }
 
-Forall::Forall(std::shared_ptr<Quantifier> quantifier_,
+Forall::Forall(const Quantifier &quantifier_,
   std::shared_ptr<Expr> expr_, const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
 Forall::Forall(const Forall &other):
-  Expr(other), quantifier(other.quantifier->clone()), expr(other.expr->clone()) {
-}
+  Expr(other), quantifier(other.quantifier), expr(other.expr->clone()) { }
 
 Forall &Forall::operator=(Forall other) {
   swap(*this, other);
@@ -1064,7 +1062,7 @@ mpz_class Forall::constant_fold() const {
 
 bool Forall::operator==(const Node &other) const {
   auto o = dynamic_cast<const Forall*>(&other);
-  return o != nullptr && *quantifier == *o->quantifier && *expr == *o->expr;
+  return o != nullptr && quantifier == o->quantifier && *expr == *o->expr;
 }
 
 void Forall::validate() const {

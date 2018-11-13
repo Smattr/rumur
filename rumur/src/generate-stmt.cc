@@ -136,13 +136,13 @@ class Generator : public ConstStmtTraversal {
   }
 
   void visit(const For &s) final {
-    generate_quantifier_header(*out, *s.quantifier);
+    generate_quantifier_header(*out, s.quantifier);
     for (auto &st : s.body) {
       *out << "  ";
       generate_stmt(*out, *st);
       *out << ";\n";
     }
-    generate_quantifier_footer(*out, *s.quantifier);
+    generate_quantifier_footer(*out, s.quantifier);
   }
 
   void visit(const If &s) final {

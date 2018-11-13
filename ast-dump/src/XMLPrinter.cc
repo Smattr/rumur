@@ -220,9 +220,9 @@ void XMLPrinter::visit(const Exists &n) {
   *o << "<exists ";
   add_location(n);
   *o << ">";
-  sync_to(*n.quantifier);
+  sync_to(n.quantifier);
   *o << "<quan>";
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   *o << "</quan>";
   sync_to(*n.expr);
   *o << "<expr>";
@@ -267,8 +267,8 @@ void XMLPrinter::visit(const For &n) {
   *o << "<forstmt ";
   add_location(n);
   *o << ">";
-  sync_to(*n.quantifier);
-  dispatch(*n.quantifier);
+  sync_to(n.quantifier);
+  dispatch(n.quantifier);
   if (!n.body.empty()) {
     sync_to(*n.body[0]);
     *o << "<body>";
@@ -287,9 +287,9 @@ void XMLPrinter::visit(const Forall &n) {
   *o << "<forall ";
   add_location(n);
   *o << ">";
-  sync_to(*n.quantifier);
+  sync_to(n.quantifier);
   *o << "<quan>";
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   *o << "</quan>";
   sync_to(*n.expr);
   *o << "<expr>";
@@ -529,11 +529,11 @@ void XMLPrinter::visit(const PropertyRule &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
-    sync_to(*n.quantifiers[0]);
+    sync_to(n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
-      sync_to(*q);
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers) {
+      sync_to(q);
+      dispatch(q);
     }
     *o << "</quantifiers>";
   }
@@ -636,11 +636,11 @@ void XMLPrinter::visit(const Ruleset &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
-    sync_to(*n.quantifiers[0]);
+    sync_to(n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
-      sync_to(*q);
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers) {
+      sync_to(q);
+      dispatch(q);
     }
     *o << "</quantifiers>";
   }
@@ -676,11 +676,11 @@ void XMLPrinter::visit(const SimpleRule &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
-    sync_to(*n.quantifiers[0]);
+    sync_to(n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
-      sync_to(*q);
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers) {
+      sync_to(q);
+      dispatch(q);
     }
     *o << "</quantifiers>";
   }
@@ -718,11 +718,11 @@ void XMLPrinter::visit(const StartState &n) {
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
-    sync_to(*n.quantifiers[0]);
+    sync_to(n.quantifiers[0]);
     *o << "<quantifiers>";
-    for (const std::shared_ptr<Quantifier> &q : n.quantifiers) {
-      sync_to(*q);
-      dispatch(*q);
+    for (const Quantifier &q : n.quantifiers) {
+      sync_to(q);
+      dispatch(q);
     }
     *o << "</quantifiers>";
   }

@@ -179,7 +179,7 @@
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <std::shared_ptr<rumur::PropertyRule>>                 property
 %type <std::shared_ptr<rumur::Quantifier>>                   quantifier
-%type <std::vector<std::shared_ptr<rumur::Quantifier>>>      quantifiers
+%type <std::vector<rumur::Quantifier>>                       quantifiers
 %type <std::shared_ptr<rumur::TypeExpr>>                     return_type
 %type <std::shared_ptr<rumur::Rule>>                         rule
 %type <std::shared_ptr<rumur::Ruleset>>                      ruleset
@@ -317,9 +317,9 @@ expr: expr '?' expr ':' expr {
 } | expr '%' expr {
   $$ = std::make_shared<rumur::Mod>($1, $3, @$);
 } | FORALL quantifier DO expr endforall {
-    $$ = std::make_shared<rumur::Forall>($2, $4, @$);
+    $$ = std::make_shared<rumur::Forall>(*$2, $4, @$);
 } | EXISTS quantifier DO expr endexists {
-    $$ = std::make_shared<rumur::Exists>($2, $4, @$);
+    $$ = std::make_shared<rumur::Exists>(*$2, $4, @$);
 } | designator {
   $$ = $1;
 } | NUMBER {
@@ -421,9 +421,9 @@ quantifier: ID ':' typeexpr {
 
 quantifiers: quantifiers ';' quantifier {
   $$ = $1;
-  $$.push_back($3);
+  $$.push_back(*$3);
 } | quantifier {
-  $$.push_back($1);
+  $$.push_back(*$1);
 };
 
 return_type: ':' typeexpr semi_opt {
@@ -451,7 +451,7 @@ rules: rules rule semi_opt {
 };
 
 ruleset: RULESET quantifiers DO rules endruleset {
-  $$ = std::make_shared<rumur::Ruleset>(std::move($2), std::move($4), @$);
+  $$ = std::make_shared<rumur::Ruleset>($2, std::move($4), @$);
 };
 
 semi_opt: ';' | %empty;
@@ -483,7 +483,7 @@ stmt: category STRING expr {
 } | CLEAR designator {
   $$ = rumur::Ptr<rumur::Clear>::make($2, @$);
 } | FOR quantifier DO stmts endfor {
-  $$ = rumur::Ptr<rumur::For>::make($2, $4, @$);
+  $$ = rumur::Ptr<rumur::For>::make(*$2, $4, @$);
 } | IF expr THEN stmts elsifs else_opt endif {
   std::vector<rumur::IfClause> cs = {
     rumur::IfClause($2, $4, rumur::location(@1.begin, @4.end)) };

@@ -170,12 +170,12 @@ bool ErrorStmt::operator==(const Node &other) const {
   return o != nullptr && message == o->message;
 }
 
-For::For(std::shared_ptr<Quantifier> quantifier_,
+For::For(const Quantifier &quantifier_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), quantifier(quantifier_), body(body_) { }
 
 For::For(const For &other):
-  Stmt(other.loc), quantifier(other.quantifier->clone()), body(other.body) { }
+  Stmt(other.loc), quantifier(other.quantifier), body(other.body) { }
 
 For &For::operator=(For other) {
   swap(*this, other);
@@ -198,7 +198,7 @@ bool For::operator==(const Node &other) const {
   auto o = dynamic_cast<const For*>(&other);
   if (o == nullptr)
     return false;
-  if (*quantifier != *o->quantifier)
+  if (quantifier != o->quantifier)
     return false;
   if (!vector_eq(body, o->body))
     return false;

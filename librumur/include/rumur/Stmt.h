@@ -108,11 +108,11 @@ struct ErrorStmt : public Stmt {
 
 struct For : public Stmt {
 
-  std::shared_ptr<Quantifier> quantifier;
+  Quantifier quantifier;
   std::vector<Ptr<Stmt>> body;
 
   For() = delete;
-  For(std::shared_ptr<Quantifier> quantifier_,
+  For(const Quantifier &quantifier_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   For(const For &other);
   For &operator=(For other);

@@ -124,7 +124,7 @@ class Resolver : public BaseTraversal {
 
   void visit(Exists &n) final {
     symtab.open_scope();
-    dispatch(*n.quantifier);
+    dispatch(n.quantifier);
     dispatch(*n.expr);
     symtab.close_scope();
   }
@@ -147,7 +147,7 @@ class Resolver : public BaseTraversal {
 
   void visit(For &n) final {
     symtab.open_scope();
-    dispatch(*n.quantifier);
+    dispatch(n.quantifier);
     for (auto &s : n.body)
       dispatch(*s);
     symtab.close_scope();
@@ -155,7 +155,7 @@ class Resolver : public BaseTraversal {
 
   void visit(Forall &n) final {
     symtab.open_scope();
-    dispatch(*n.quantifier);
+    dispatch(n.quantifier);
     dispatch(*n.expr);
     symtab.close_scope();
   }
@@ -281,8 +281,8 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(PropertyRule &n) final {
-    for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (Quantifier &q : n.quantifiers)
+      dispatch(q);
     dispatch(n.property);
   }
 
@@ -330,8 +330,8 @@ class Resolver : public BaseTraversal {
 
   void visit(Ruleset &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (Quantifier &q : n.quantifiers)
+      dispatch(q);
     for (std::shared_ptr<Rule> &r : n.rules)
       dispatch(*r);
     symtab.close_scope();
@@ -343,8 +343,8 @@ class Resolver : public BaseTraversal {
 
   void visit(SimpleRule &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (Quantifier &q : n.quantifiers)
+      dispatch(q);
     if (n.guard != nullptr)
       dispatch(*n.guard);
     for (std::shared_ptr<Decl> &d : n.decls) {
@@ -358,8 +358,8 @@ class Resolver : public BaseTraversal {
 
   void visit(StartState &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<Quantifier> &q : n.quantifiers)
-      dispatch(*q);
+    for (Quantifier &q : n.quantifiers)
+      dispatch(q);
     for (std::shared_ptr<Decl> &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);

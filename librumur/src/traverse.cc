@@ -636,7 +636,7 @@ void ConstTraversal::visit(const Eq &n) {
 void ConstTraversal::visit(const ErrorStmt&) { }
 
 void ConstTraversal::visit(const Exists &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -647,13 +647,13 @@ void ConstTraversal::visit(const Field &n) {
 }
 
 void ConstTraversal::visit(const For &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   for (auto &s : n.body)
     dispatch(*s);
 }
 
 void ConstTraversal::visit(const Forall &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -750,8 +750,8 @@ void ConstTraversal::visit(const Property &n) {
 }
 
 void ConstTraversal::visit(const PropertyRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   dispatch(n.property);
 }
 
@@ -786,8 +786,8 @@ void ConstTraversal::visit(const Return &n) {
 }
 
 void ConstTraversal::visit(const Ruleset &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
@@ -797,8 +797,8 @@ void ConstTraversal::visit(const Scalarset &n) {
 }
 
 void ConstTraversal::visit(const SimpleRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
   for (const std::shared_ptr<Decl> &d : n.decls)
@@ -808,8 +808,8 @@ void ConstTraversal::visit(const SimpleRule &n) {
 }
 
 void ConstTraversal::visit(const StartState &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)
@@ -888,7 +888,7 @@ void ConstExprTraversal::visit(const Enum&) { }
 void ConstExprTraversal::visit(const ErrorStmt&) { }
 
 void ConstExprTraversal::visit(const For &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   for (auto &s : n.body)
     dispatch(*s);
 }
@@ -935,8 +935,8 @@ void ConstExprTraversal::visit(const Property &n) {
 }
 
 void ConstExprTraversal::visit(const PropertyRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   dispatch(n.property);
 }
 
@@ -971,8 +971,8 @@ void ConstExprTraversal::visit(const Return &n) {
 }
 
 void ConstExprTraversal::visit(const Ruleset &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
@@ -982,8 +982,8 @@ void ConstExprTraversal::visit(const Scalarset &n) {
 }
 
 void ConstExprTraversal::visit(const SimpleRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
   for (const std::shared_ptr<Decl> &d : n.decls)
@@ -993,8 +993,8 @@ void ConstExprTraversal::visit(const SimpleRule &n) {
 }
 
 void ConstExprTraversal::visit(const StartState &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)
@@ -1065,7 +1065,7 @@ void ConstStmtTraversal::visit(const Eq &n) {
 }
 
 void ConstStmtTraversal::visit(const Exists &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -1076,7 +1076,7 @@ void ConstStmtTraversal::visit(const Field &n) {
 }
 
 void ConstStmtTraversal::visit(const Forall &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -1163,8 +1163,8 @@ void ConstStmtTraversal::visit(const Property &n) {
 }
 
 void ConstStmtTraversal::visit(const PropertyRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   dispatch(n.property);
 }
 
@@ -1190,8 +1190,8 @@ void ConstStmtTraversal::visit(const Record &n) {
 }
 
 void ConstStmtTraversal::visit(const Ruleset &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
@@ -1201,8 +1201,8 @@ void ConstStmtTraversal::visit(const Scalarset &n) {
 }
 
 void ConstStmtTraversal::visit(const SimpleRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
   for (const std::shared_ptr<Decl> &d : n.decls)
@@ -1212,8 +1212,8 @@ void ConstStmtTraversal::visit(const SimpleRule &n) {
 }
 
 void ConstStmtTraversal::visit(const StartState &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)
@@ -1305,7 +1305,7 @@ void ConstTypeTraversal::visit(const Eq &n) {
 void ConstTypeTraversal::visit(const ErrorStmt&) { }
 
 void ConstTypeTraversal::visit(const Exists &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -1316,13 +1316,13 @@ void ConstTypeTraversal::visit(const Field &n) {
 }
 
 void ConstTypeTraversal::visit(const For &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   for (auto &s : n.body)
     dispatch(*s);
 }
 
 void ConstTypeTraversal::visit(const Forall &n) {
-  dispatch(*n.quantifier);
+  dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
@@ -1419,8 +1419,8 @@ void ConstTypeTraversal::visit(const Property &n) {
 }
 
 void ConstTypeTraversal::visit(const PropertyRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   dispatch(n.property);
 }
 
@@ -1445,15 +1445,15 @@ void ConstTypeTraversal::visit(const Return &n) {
 }
 
 void ConstTypeTraversal::visit(const Ruleset &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Rule> &r : n.rules)
     dispatch(*r);
 }
 
 void ConstTypeTraversal::visit(const SimpleRule &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
   for (const std::shared_ptr<Decl> &d : n.decls)
@@ -1463,8 +1463,8 @@ void ConstTypeTraversal::visit(const SimpleRule &n) {
 }
 
 void ConstTypeTraversal::visit(const StartState &n) {
-  for (const std::shared_ptr<Quantifier> &q : n.quantifiers)
-    dispatch(*q);
+  for (const Quantifier &q : n.quantifiers)
+    dispatch(q);
   for (const std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)

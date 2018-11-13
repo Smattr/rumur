@@ -463,11 +463,11 @@ struct Quantifier : public Node {
 
 struct Exists : public Expr {
 
-  std::shared_ptr<Quantifier> quantifier;
+  Quantifier quantifier;
   std::shared_ptr<Expr> expr;
 
   Exists() = delete;
-  Exists(std::shared_ptr<Quantifier> quantifier_, std::shared_ptr<Expr> expr_,
+  Exists(const Quantifier &quantifier_, std::shared_ptr<Expr> expr_,
     const location &loc_);
   Exists(const Exists &other);
   Exists &operator=(Exists other);
@@ -484,11 +484,11 @@ struct Exists : public Expr {
 
 struct Forall : public Expr {
 
-  std::shared_ptr<Quantifier> quantifier;
+  Quantifier quantifier;
   std::shared_ptr<Expr> expr;
 
   Forall() = delete;
-  Forall(std::shared_ptr<Quantifier> quantifier_, std::shared_ptr<Expr> expr_,
+  Forall(const Quantifier &quantifier_, std::shared_ptr<Expr> expr_,
     const location &loc_);
   Forall(const Forall &other);
   Forall &operator=(Forall other);
