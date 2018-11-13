@@ -37,6 +37,7 @@
   #include <rumur/Model.h>
   #include <rumur/Node.h>
   #include <rumur/Number.h>
+  #include <rumur/Ptr.h>
   #include <rumur/Rule.h>
   #include <rumur/Stmt.h>
 
@@ -87,7 +88,7 @@
   /* Tell Bison we'll receive another parameter that will allow us to pass
    * back the result of parsing.
    */
-%parse-param { std::shared_ptr<rumur::Model> &output }
+%parse-param { rumur::Ptr<rumur::Model> &output }
 
 %token ALIAS
 %token ARRAY
@@ -199,7 +200,7 @@
 %%
 
 model: decls procdecls rules {
-  output = std::make_shared<rumur::Model>(std::move($1), std::move($2), std::move($3), @$);
+  output = rumur::Ptr<rumur::Model>::make(std::move($1), std::move($2), std::move($3), @$);
 };
 
 aliasrule: ALIAS exprdecls DO rules endalias {

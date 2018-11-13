@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   parse_args(argc, argv);
 
   // Parse input model
-  std::shared_ptr<rumur::Model> m;
+  rumur::Ptr<rumur::Model> m;
   try {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
     resolve_symbols(*m);
