@@ -8,6 +8,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
+#include <rumur/Ptr.h>
 #include <rumur/Stmt.h>
 #include <string>
 #include <vector>
@@ -51,12 +52,12 @@ struct SimpleRule : public Rule {
 
   std::shared_ptr<Expr> guard;
   std::vector<std::shared_ptr<Decl>> decls;
-  std::vector<std::shared_ptr<Stmt>> body;
+  std::vector<Ptr<Stmt>> body;
 
   SimpleRule() = delete;
   SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
     std::vector<std::shared_ptr<Decl>> &&decls_,
-    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   SimpleRule(const SimpleRule &other);
   SimpleRule &operator=(SimpleRule other);
   friend void swap(SimpleRule &x, SimpleRule &y) noexcept;
@@ -69,12 +70,12 @@ struct SimpleRule : public Rule {
 struct StartState : public Rule {
 
   std::vector<std::shared_ptr<Decl>> decls;
-  std::vector<std::shared_ptr<Stmt>> body;
+  std::vector<Ptr<Stmt>> body;
 
   StartState() = delete;
   StartState(const std::string &name_,
     std::vector<std::shared_ptr<Decl>> &&decls_,
-    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   StartState(const StartState &other);
   StartState &operator=(StartState other);
   friend void swap(StartState &x, StartState &y) noexcept;

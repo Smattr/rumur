@@ -81,7 +81,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
   generate_allocations(out, f.body);
 
   // Generate the body of the function
-  for (const std::shared_ptr<rumur::Stmt> &s : f.body) {
+  for (auto &s : f.body) {
     out << "  ";
     generate_stmt(out, *s);
     out << ";\n";

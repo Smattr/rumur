@@ -7,6 +7,7 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Property.h>
+#include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
@@ -123,15 +124,14 @@ std::vector<std::shared_ptr<Rule>> AliasRule::flatten() const {
 
 SimpleRule::SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
   std::vector<std::shared_ptr<Decl>> &&decls_,
-  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
+  const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) { }
 
 SimpleRule::SimpleRule(const SimpleRule &other):
-  Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()) {
+  Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()),
+  body(other.body) {
   for (const std::shared_ptr<Decl> &d : other.decls)
     decls.emplace_back(d->clone());
-  for (const std::shared_ptr<Stmt> &s : other.body)
-    body.emplace_back(s->clone());
 }
 
 SimpleRule &SimpleRule::operator=(SimpleRule other) {
@@ -184,15 +184,13 @@ void SimpleRule::validate() const {
 
 StartState::StartState(const std::string &name_,
   std::vector<std::shared_ptr<Decl>> &&decls_,
-  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
+  const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), decls(decls_), body(body_) { }
 
 StartState::StartState(const StartState &other):
-  Rule(other) {
+  Rule(other), body(other.body) {
   for (const std::shared_ptr<Decl> &d : other.decls)
     decls.emplace_back(d->clone());
-  for (const std::shared_ptr<Stmt> &s : other.body)
-    body.emplace_back(s->clone());
 }
 
 StartState &StartState::operator=(StartState other) {

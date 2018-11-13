@@ -55,8 +55,8 @@ void generate_allocations(std::ostream &out, const Stmt &stmt) {
 }
 
 void generate_allocations(std::ostream &out,
-    const std::vector<std::shared_ptr<Stmt>> &stmts) {
+    const std::vector<Ptr<Stmt>> &stmts) {
 
-  for (const std::shared_ptr<Stmt> &s : stmts)
+  for (auto &s : stmts)
     generate_allocations(out, *s);
 }

@@ -14,7 +14,7 @@ void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);
 
 // Helper for calling the above on a body of functions
 void generate_allocations(std::ostream &out,
-  const std::vector<std::shared_ptr<rumur::Stmt>> &stmts);
+  const std::vector<rumur::Ptr<rumur::Stmt>> &stmts);
 
 // Generate definition of a ConstDecl or VarDecl
 void generate_decl(std::ostream &out, const rumur::Decl &d);

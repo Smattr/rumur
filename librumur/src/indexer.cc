@@ -33,7 +33,7 @@ void Indexer::visit(AliasStmt &n) {
   n.unique_id = next++;
   for (std::shared_ptr<AliasDecl> &a : n.aliases)
     dispatch(*a);
-  for (std::shared_ptr<Stmt> &s : n.body)
+  for (auto &s : n.body)
     dispatch(*s);
 }
 
@@ -109,7 +109,7 @@ void Indexer::visit(Field &n) {
 void Indexer::visit(For &n) {
   n.unique_id = next++;
   dispatch(*n.quantifier);
-  for (std::shared_ptr<Stmt> &s : n.body)
+  for (auto &s : n.body)
     dispatch(*s);
 }
 
@@ -127,7 +127,7 @@ void Indexer::visit(Function &n) {
     dispatch(*n.return_type);
   for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
-  for (std::shared_ptr<Stmt> &s : n.body)
+  for (auto &s : n.body)
     dispatch(*s);
 }
 
@@ -155,7 +155,7 @@ void Indexer::visit(IfClause &n) {
   n.unique_id = next++;
   if (n.condition != nullptr)
     dispatch(*n.condition);
-  for (std::shared_ptr<Stmt> &s : n.body)
+  for (auto &s : n.body)
     dispatch(*s);
 }
 
@@ -283,7 +283,7 @@ void Indexer::visit(SimpleRule &n) {
     dispatch(*n.guard);
   for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
-  for (std::shared_ptr<Stmt> &s : n.body)
+  for (auto &s : n.body)
     dispatch(*s);
 }
 
@@ -293,7 +293,7 @@ void Indexer::visit(StartState &n) {
     dispatch(*q);
   for (std::shared_ptr<Decl> &d : n.decls)
     dispatch(*d);
-  for (std::shared_ptr<Stmt> &s : n.body)
+  for (auto &s : n.body)
     dispatch(*s);
 }
 

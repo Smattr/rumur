@@ -86,7 +86,7 @@ class Generator : public ConstStmtTraversal {
       *out << ";\n";
     }
 
-    for (const std::shared_ptr<Stmt> &st : s.body) {
+    for (auto &st : s.body) {
       *out << "    ";
       generate_stmt(*out, *st);
       *out << ";\n";
@@ -137,7 +137,7 @@ class Generator : public ConstStmtTraversal {
 
   void visit(const For &s) final {
     generate_quantifier_header(*out, *s.quantifier);
-    for (const std::shared_ptr<Stmt> &st : s.body) {
+    for (auto &st : s.body) {
       *out << "  ";
       generate_stmt(*out, *st);
       *out << ";\n";
@@ -171,7 +171,7 @@ class Generator : public ConstStmtTraversal {
           *out  << ") ";
       }
       *out << " {\n";
-      for (const std::shared_ptr<Stmt> &st : c.body) {
+      for (auto &st : c.body) {
         generate_stmt(*out, *st);
         *out << ";\n";
       }

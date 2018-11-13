@@ -67,7 +67,7 @@ class Resolver : public BaseTraversal {
       dispatch(*a);
       symtab.declare(a->name, a);
     }
-    for (std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     symtab.close_scope();
   }
@@ -148,7 +148,7 @@ class Resolver : public BaseTraversal {
   void visit(For &n) final {
     symtab.open_scope();
     dispatch(*n.quantifier);
-    for (std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     symtab.close_scope();
   }
@@ -172,7 +172,7 @@ class Resolver : public BaseTraversal {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
-    for (std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     symtab.close_scope();
   }
@@ -207,7 +207,7 @@ class Resolver : public BaseTraversal {
   void visit(IfClause &n) final {
     if (n.condition != nullptr)
       dispatch(*n.condition);
-    for (std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
   }
 
@@ -351,7 +351,7 @@ class Resolver : public BaseTraversal {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
-    for (std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     symtab.close_scope();
   }
@@ -364,7 +364,7 @@ class Resolver : public BaseTraversal {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
-    for (std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     symtab.close_scope();
   }

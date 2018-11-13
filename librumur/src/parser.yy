@@ -186,9 +186,9 @@
 %type <std::vector<std::shared_ptr<rumur::Rule>>>            rules
 %type <std::shared_ptr<rumur::SimpleRule>>                   simplerule
 %type <std::shared_ptr<rumur::StartState>>                   startstate
-%type <std::shared_ptr<rumur::Stmt>>                         stmt
-%type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts
-%type <std::vector<std::shared_ptr<rumur::Stmt>>>            stmts_cont
+%type <rumur::Ptr<rumur::Stmt>>                              stmt
+%type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts
+%type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts_cont
 %type <std::string>                                          string_opt
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecls
@@ -256,13 +256,13 @@ designator: designator '.' ID {
 };
 
 else_opt: ELSE stmts {
-  $$.push_back(rumur::IfClause(std::shared_ptr<Expr>(), std::move($2), @$));
+  $$.push_back(rumur::IfClause(std::shared_ptr<Expr>(), $2, @$));
 } | %empty {
 };
 
 elsifs: elsifs ELSIF expr THEN stmts {
   $$ = $1;
-  $$.push_back(rumur::IfClause($3, std::move($5), rumur::location(@2.begin, @5.end)));
+  $$.push_back(rumur::IfClause($3, $5, rumur::location(@2.begin, @5.end)));
 } | %empty {
 };
 
@@ -394,7 +394,7 @@ parameters: parameters parameter semi_opt {
 };
 
 procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
-  $$ = std::make_shared<rumur::Function>($2, std::move($4), $6, std::move($7), std::move($9), @$);
+  $$ = std::make_shared<rumur::Function>($2, std::move($4), $6, std::move($7), $9, @$);
 };
 
 procdecls: procdecls procdecl {
@@ -457,47 +457,47 @@ ruleset: RULESET quantifiers DO rules endruleset {
 semi_opt: ';' | %empty;
 
 simplerule: RULE string_opt guard_opt decls_header stmts endrule {
-  $$ = std::make_shared<rumur::SimpleRule>($2, $3, std::move($4), std::move($5), @$);
+  $$ = std::make_shared<rumur::SimpleRule>($2, $3, std::move($4), $5, @$);
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-  $$ = std::make_shared<rumur::StartState>($2, std::move($3), std::move($4), @$);
+  $$ = std::make_shared<rumur::StartState>($2, std::move($3), $4, @$);
 };
 
 stmt: category STRING expr {
   rumur::Property p(*$1, $3, @3);
-  $$ = std::make_shared<rumur::PropertyStmt>(p, $2, @$);
+  $$ = rumur::Ptr<rumur::PropertyStmt>::make(p, $2, @$);
 } | category expr string_opt {
   rumur::Property p(*$1, $2, @2);
-  $$ = std::make_shared<rumur::PropertyStmt>(p, $3, @$);
+  $$ = rumur::Ptr<rumur::PropertyStmt>::make(p, $3, @$);
 } | designator COLON_EQ expr {
-  $$ = std::make_shared<rumur::Assignment>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Assignment>::make($1, $3, @$);
 } | ALIAS exprdecls DO stmts endalias {
   std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
   for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
     decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
-  $$ = std::make_shared<rumur::AliasStmt>(std::move(decls), std::move($4), @$);
+  $$ = rumur::Ptr<rumur::AliasStmt>::make(std::move(decls), $4, @$);
 } | ERROR STRING {
-  $$ = std::make_shared<rumur::ErrorStmt>($2, @$);
+  $$ = rumur::Ptr<rumur::ErrorStmt>::make($2, @$);
 } | CLEAR designator {
-  $$ = std::make_shared<rumur::Clear>($2, @$);
+  $$ = rumur::Ptr<rumur::Clear>::make($2, @$);
 } | FOR quantifier DO stmts endfor {
-  $$ = std::make_shared<rumur::For>($2, std::move($4), @$);
+  $$ = rumur::Ptr<rumur::For>::make($2, $4, @$);
 } | IF expr THEN stmts elsifs else_opt endif {
   std::vector<rumur::IfClause> cs = {
-    rumur::IfClause($2, std::move($4), rumur::location(@1.begin, @4.end)) };
+    rumur::IfClause($2, $4, rumur::location(@1.begin, @4.end)) };
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
-  $$ = std::make_shared<rumur::If>(std::move(cs), @$);
+  $$ = rumur::Ptr<rumur::If>::make(std::move(cs), @$);
 } | RETURN {
-  $$ = std::make_shared<rumur::Return>(std::shared_ptr<Expr>(), @$);
+  $$ = rumur::Ptr<rumur::Return>::make(std::shared_ptr<Expr>(), @$);
 } | RETURN expr {
-  $$ = std::make_shared<rumur::Return>($2, @$);
+  $$ = rumur::Ptr<rumur::Return>::make($2, @$);
 } | UNDEFINE designator {
-  $$ = std::make_shared<rumur::Undefine>($2, @$);
+  $$ = rumur::Ptr<rumur::Undefine>::make($2, @$);
 } | ID '(' exprlist ')' {
-  $$ = std::make_shared<rumur::ProcedureCall>($1, nullptr, std::move($3), @$);
+  $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, nullptr, std::move($3), @$);
 };
 
 stmts: stmts_cont stmt semi_opt {

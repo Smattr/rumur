@@ -7,6 +7,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
 #include <rumur/Property.h>
+#include <rumur/Ptr.h>
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 #include <string>
@@ -17,17 +18,14 @@
 namespace rumur {
 
 AliasStmt::AliasStmt(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
-  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
+  const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), aliases(aliases_), body(body_) { }
 
 AliasStmt::AliasStmt(const AliasStmt &other):
-  Stmt(other.loc) {
+  Stmt(other.loc), body(other.body) {
 
   for (const std::shared_ptr<AliasDecl> &a : other.aliases)
     aliases.emplace_back(a->clone());
-
-  for (const std::shared_ptr<Stmt> &s : other.body)
-    body.emplace_back(s->clone());
 }
 
 AliasStmt &AliasStmt::operator=(AliasStmt other) {
@@ -173,14 +171,11 @@ bool ErrorStmt::operator==(const Node &other) const {
 }
 
 For::For(std::shared_ptr<Quantifier> quantifier_,
-  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
+  const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), quantifier(quantifier_), body(body_) { }
 
 For::For(const For &other):
-  Stmt(other.loc), quantifier(other.quantifier->clone()) {
-  for (const std::shared_ptr<Stmt> &s : other.body)
-    body.emplace_back(s->clone());
-}
+  Stmt(other.loc), quantifier(other.quantifier->clone()), body(other.body) { }
 
 For &For::operator=(For other) {
   swap(*this, other);
@@ -211,14 +206,13 @@ bool For::operator==(const Node &other) const {
 }
 
 IfClause::IfClause(std::shared_ptr<Expr> condition_,
-  std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_):
+  const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Node(loc_), condition(condition_), body(body_) { }
 
 IfClause::IfClause(const IfClause &other):
   Node(other.loc),
-  condition(other.condition == nullptr ? nullptr : other.condition->clone()) {
-  for (const std::shared_ptr<Stmt> &s : other.body)
-    body.emplace_back(s->clone());
+  condition(other.condition == nullptr ? nullptr : other.condition->clone()),
+  body(other.body) {
 }
 
 IfClause &IfClause::operator=(IfClause other) {

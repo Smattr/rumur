@@ -41,7 +41,7 @@ class Validator : public ConstBaseTraversal {
   void visit(const AliasStmt &n) final {
     for (const std::shared_ptr<AliasDecl> &a : n.aliases)
       dispatch(*a);
-    for (const std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
   }
 
@@ -119,7 +119,7 @@ class Validator : public ConstBaseTraversal {
 
   void visit(const For &n) final {
     dispatch(*n.quantifier);
-    for (const std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }
@@ -137,7 +137,7 @@ class Validator : public ConstBaseTraversal {
       dispatch(*n.return_type);
     for (const std::shared_ptr<Decl> &d : n.decls)
       dispatch(*d);
-    for (const std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }
@@ -169,7 +169,7 @@ class Validator : public ConstBaseTraversal {
   void visit(const IfClause &n) final {
     if (n.condition != nullptr)
       dispatch(*n.condition);
-    for (const std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }
@@ -313,7 +313,7 @@ class Validator : public ConstBaseTraversal {
       dispatch(*n.guard);
     for (const std::shared_ptr<Decl> &d : n.decls)
       dispatch(*d);
-    for (const std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }
@@ -323,7 +323,7 @@ class Validator : public ConstBaseTraversal {
       dispatch(*q);
     for (const std::shared_ptr<Decl> &d : n.decls)
       dispatch(*d);
-    for (const std::shared_ptr<Stmt> &s : n.body)
+    for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }

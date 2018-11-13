@@ -82,7 +82,7 @@ void generate_model(std::ostream &out, const Model &m) {
         // Allocate memory for any complex-returning functions we call
         generate_allocations(out, s->body);
 
-        for (const std::shared_ptr<Stmt> &st : s->body) {
+        for (auto &st : s->body) {
           out << "    ";
           generate_stmt(out, *st);
           out << ";\n";
@@ -224,7 +224,7 @@ void generate_model(std::ostream &out, const Model &m) {
         // Allocate memory for any complex-returning functions we call
         generate_allocations(out, s->body);
 
-        for (const std::shared_ptr<Stmt> &st : s->body) {
+        for (auto &st : s->body) {
           out << "  ";
           generate_stmt(out, *st);
           out << ";\n";

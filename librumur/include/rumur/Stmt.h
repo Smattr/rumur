@@ -8,6 +8,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
+#include <rumur/Ptr.h>
 #include <string>
 #include <vector>
 
@@ -33,11 +34,11 @@ struct Stmt : public Node {
 struct AliasStmt : public Stmt {
 
   std::vector<std::shared_ptr<AliasDecl>> aliases;
-  std::vector<std::shared_ptr<Stmt>> body;
+  std::vector<Ptr<Stmt>> body;
 
   AliasStmt() = delete;
   AliasStmt(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
-    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   AliasStmt(const AliasStmt &other);
   AliasStmt &operator=(AliasStmt other);
   friend void swap(AliasStmt &x, AliasStmt &y) noexcept;
@@ -108,11 +109,11 @@ struct ErrorStmt : public Stmt {
 struct For : public Stmt {
 
   std::shared_ptr<Quantifier> quantifier;
-  std::vector<std::shared_ptr<Stmt>> body;
+  std::vector<Ptr<Stmt>> body;
 
   For() = delete;
   For(std::shared_ptr<Quantifier> quantifier_,
-    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   For(const For &other);
   For &operator=(For other);
   friend void swap(For &x, For &y) noexcept;
@@ -125,11 +126,11 @@ struct For : public Stmt {
 struct IfClause : public Node {
 
   std::shared_ptr<Expr> condition;
-  std::vector<std::shared_ptr<Stmt>> body;
+  std::vector<Ptr<Stmt>> body;
 
   IfClause() = delete;
   IfClause(std::shared_ptr<Expr> condition_,
-    std::vector<std::shared_ptr<Stmt>> &&body_, const location &loc_);
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   IfClause(const IfClause &other);
   IfClause &operator=(IfClause other);
   friend void swap(IfClause &x, IfClause &y) noexcept;
