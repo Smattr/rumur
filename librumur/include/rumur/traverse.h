@@ -154,70 +154,6 @@ class Traversal : public BaseTraversal {
   void visit_uexpr(UnaryExpr &n);
 };
 
-/* Generic base for traversals that only need to act on expressions. This gives
- * you a default implementation for visitation of any non-expression node.
- */
-class ExprTraversal : public BaseTraversal {
-
- public:
-  void visit(Add &n) override = 0;
-  void visit(AliasDecl &n) final;
-  void visit(AliasRule &n) final;
-  void visit(AliasStmt &n) final;
-  void visit(And &n) override = 0;
-  void visit(Array &n) final;
-  void visit(Assignment &n) final;
-  void visit(Clear &n) final;
-  void visit(ConstDecl &n) final;
-  void visit(Div &n) override = 0;
-  void visit(Element &n) override = 0;
-  void visit(Enum&) final;
-  void visit(Eq &n) override = 0;
-  void visit(ErrorStmt&) final;
-  void visit(Exists &n) override = 0;
-  void visit(ExprID &n) override = 0;
-  void visit(Field &n) override = 0;
-  void visit(For &n) final;
-  void visit(Forall &n) override = 0;
-  void visit(Function &n) final;
-  void visit(FunctionCall &n) override = 0;
-  void visit(Geq &n) override = 0;
-  void visit(Gt &n) override = 0;
-  void visit(If &n) final;
-  void visit(IfClause &n) final;
-  void visit(Implication &n) override = 0;
-  void visit(Leq &n) override = 0;
-  void visit(Lt &n) override = 0;
-  void visit(Model &n) final;
-  void visit(Mod &n) override = 0;
-  void visit(Mul &n) override = 0;
-  void visit(Negative &n) override = 0;
-  void visit(Neq &n) override = 0;
-  void visit(Not &n) override = 0;
-  void visit(Number &n) override = 0;
-  void visit(Or &n) override = 0;
-  void visit(ProcedureCall &n) final;
-  void visit(Property &n) final;
-  void visit(PropertyRule &n) final;
-  void visit(PropertyStmt &n) final;
-  void visit(Quantifier &n) final;
-  void visit(Range &n) final;
-  void visit(Record &n) final;
-  void visit(Return &n) final;
-  void visit(Ruleset &n) final;
-  void visit(Scalarset &n) final;
-  void visit(SimpleRule &n) final;
-  void visit(StartState &n) final;
-  void visit(Sub &n) override = 0;
-  void visit(Ternary &n) override = 0;
-  void visit(TypeDecl &n) final;
-  void visit(TypeExprID &n) final;
-  void visit(Undefine &n) final;
-  void visit(VarDecl &n) final;
-
-  virtual ~ExprTraversal() { }
-};
-
 // Read-only equivalent of BaseTraversal.
 class ConstBaseTraversal {
 
@@ -350,7 +286,10 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_uexpr(const UnaryExpr &n);
 };
 
-// Read-only equivalent of ExprTraversal
+/* Generic base for read-only traversals that only need to act on expressions.
+ * This gives you a default implementation for visitation of any non-expression
+ * node.
+ */
 class ConstExprTraversal : public ConstBaseTraversal {
 
  public:
