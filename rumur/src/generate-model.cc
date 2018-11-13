@@ -30,16 +30,16 @@ void generate_model(std::ostream &out, const Model &m) {
    * is to essentially remove rulesets from the cases we need to deal with
    * below.
    */
-  std::vector<std::shared_ptr<Rule>> flat_rules;
-  for (const std::shared_ptr<Rule> &r : m.rules) {
-    std::vector<std::shared_ptr<Rule>> rs = r->flatten();
+  std::vector<Ptr<Rule>> flat_rules;
+  for (const Ptr<Rule> &r : m.rules) {
+    std::vector<Ptr<Rule>> rs = r->flatten();
     flat_rules.insert(flat_rules.end(), rs.begin(), rs.end());
   }
 
   // Write out the start state rules.
   {
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (auto s = dynamic_cast<const StartState*>(r.get())) {
         out << "static void startstate" << index << "(struct state *s";
         for (const Quantifier &q : s->quantifiers)
@@ -101,7 +101,7 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write out the property rules.
   {
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (auto i = dynamic_cast<const PropertyRule*>(r.get())) {
         out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
         for (const Quantifier &q : i->quantifiers)
@@ -141,7 +141,7 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write out the regular rules.
   {
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (auto s = dynamic_cast<const SimpleRule*>(r.get())) {
 
         // Write the guard
@@ -245,7 +245,7 @@ void generate_model(std::ostream &out, const Model &m) {
   {
     out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
         if (p->property.category == Property::ASSERTION) {
 
@@ -281,7 +281,7 @@ void generate_model(std::ostream &out, const Model &m) {
   {
     out << "static void check_assumptions(const struct state *s __attribute__((unused))) {\n";
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
         if (p->property.category == Property::ASSUMPTION) {
 
@@ -327,7 +327,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "  uint64_t rule_taken = 1;\n";
 
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (isa<StartState>(r)) {
 
         // Open a scope so we don't have to think about name collisions.
@@ -410,7 +410,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "    bool possible_deadlock = true;\n"
       << "    uint64_t rule_taken = 1;\n";
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (isa<SimpleRule>(r)) {
 
         // Open a scope so we don't have to think about name collisions.
@@ -537,7 +537,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "    uint64_t rule_taken = 1;\n";
 
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (isa<StartState>(r)) {
 
         // Set up quantifiers.
@@ -581,7 +581,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "    uint64_t rule_taken = 1;\n";
 
     size_t index = 0;
-    for (const std::shared_ptr<Rule> &r : flat_rules) {
+    for (const Ptr<Rule> &r : flat_rules) {
       if (isa<SimpleRule>(r)) {
 
         // Set up quantifiers.

@@ -11,6 +11,7 @@
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
+#include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
@@ -23,17 +24,15 @@ namespace rumur {
 
 Model::Model(std::vector<std::shared_ptr<Decl>> &&decls_,
   std::vector<std::shared_ptr<Function>> &&functions_,
-  std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
+  const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
 
 Model::Model(const Model &other):
-  Node(other) {
+  Node(other), rules(other.rules) {
   for (const std::shared_ptr<Decl> &d : other.decls)
     decls.emplace_back(d->clone());
   for (const std::shared_ptr<Function> &f : other.functions)
     functions.emplace_back(f->clone());
-  for (const std::shared_ptr<Rule> &r : other.rules)
-    rules.emplace_back(r->clone());
 }
 
 Model &Model::operator=(Model other) {
@@ -93,7 +92,7 @@ void Model::validate() const {
   // Check all rule names are distinct.
   {
     std::unordered_set<std::string> names;
-    for (const std::shared_ptr<Rule> &r : rules) {
+    for (const Ptr<Rule> &r : rules) {
       if (r->name != "") {
         if (!names.insert(r->name).second)
           throw Error("duplicate rule name " + r->name, r->loc);

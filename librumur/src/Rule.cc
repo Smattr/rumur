@@ -55,23 +55,19 @@ Rule::Rule(const Rule &other):
     aliases.emplace_back(a->clone());
 }
 
-std::vector<std::shared_ptr<Rule>> Rule::flatten() const {
-  return { std::shared_ptr<Rule>(clone()) };
+std::vector<Ptr<Rule>> Rule::flatten() const {
+  return { Ptr<Rule>(clone()) };
 }
 
 AliasRule::AliasRule(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
-  std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
+  const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
 
   aliases = aliases_;
 }
 
 AliasRule::AliasRule(const AliasRule &other):
-  Rule(other) {
-
-  for (const std::shared_ptr<Rule> &r : other.rules)
-    rules.emplace_back(r->clone());
-}
+  Rule(other), rules(other.rules) { }
 
 AliasRule &AliasRule::operator=(AliasRule other) {
   swap(*this, other);
@@ -107,10 +103,10 @@ bool AliasRule::operator==(const Node &other) const {
   return true;
 }
 
-std::vector<std::shared_ptr<Rule>> AliasRule::flatten() const {
-  std::vector<std::shared_ptr<Rule>> rs;
-  for (const std::shared_ptr<Rule> &r : rules) {
-    for (std::shared_ptr<Rule> &f : r->flatten()) {
+std::vector<Ptr<Rule>> AliasRule::flatten() const {
+  std::vector<Ptr<Rule>> rs;
+  for (const Ptr<Rule> &r : rules) {
+    for (Ptr<Rule> &f : r->flatten()) {
       for (const std::shared_ptr<AliasDecl> &a : aliases)
         f->aliases.insert(f->aliases.begin(),
           std::shared_ptr<AliasDecl>(a->clone()));
@@ -274,16 +270,13 @@ bool PropertyRule::operator==(const Node &other) const {
 }
 
 Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,
-  std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_):
+  const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
   quantifiers = quantifiers_;
 }
 
 Ruleset::Ruleset(const Ruleset &other):
-  Rule(other) {
-  for (const std::shared_ptr<Rule> r : other.rules)
-    rules.emplace_back(r->clone());
-}
+  Rule(other), rules(other.rules) { }
 
 Ruleset &Ruleset::operator=(Ruleset other) {
   swap(*this, other);
@@ -319,10 +312,10 @@ bool Ruleset::operator==(const Node &other) const {
   return true;
 }
 
-std::vector<std::shared_ptr<Rule>> Ruleset::flatten() const {
-  std::vector<std::shared_ptr<Rule>> rs;
-  for (const std::shared_ptr<Rule> &r : rules) {
-    for (std::shared_ptr<Rule> &f : r->flatten()) {
+std::vector<Ptr<Rule>> Ruleset::flatten() const {
+  std::vector<Ptr<Rule>> rs;
+  for (const Ptr<Rule> &r : rules) {
+    for (Ptr<Rule> &f : r->flatten()) {
       for (const Quantifier &q : quantifiers)
         f->quantifiers.insert(f->quantifiers.begin(), q);
       rs.push_back(f);

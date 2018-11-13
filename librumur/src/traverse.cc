@@ -580,7 +580,7 @@ void ConstTraversal::visit(const AliasDecl &n) {
 void ConstTraversal::visit(const AliasRule &n) {
   for (const std::shared_ptr<AliasDecl> &a : n.aliases)
     dispatch(*a);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -714,7 +714,7 @@ void ConstTraversal::visit(const Model &n) {
     dispatch(*d);
   for (const std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -788,7 +788,7 @@ void ConstTraversal::visit(const Return &n) {
 void ConstTraversal::visit(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -854,7 +854,7 @@ void ConstExprTraversal::visit(const AliasDecl &n) {
 void ConstExprTraversal::visit(const AliasRule &n) {
   for (const std::shared_ptr<AliasDecl> &a : n.aliases)
     dispatch(*a);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -921,7 +921,7 @@ void ConstExprTraversal::visit(const Model &n) {
     dispatch(*d);
   for (const std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -973,7 +973,7 @@ void ConstExprTraversal::visit(const Return &n) {
 void ConstExprTraversal::visit(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -1023,7 +1023,7 @@ void ConstStmtTraversal::visit(const AliasDecl &n) {
 void ConstStmtTraversal::visit(const AliasRule &n) {
   for (const std::shared_ptr<AliasDecl> &a : n.aliases)
     dispatch(*a);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -1132,7 +1132,7 @@ void ConstStmtTraversal::visit(const Model &n) {
     dispatch(*d);
   for (const std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -1192,7 +1192,7 @@ void ConstStmtTraversal::visit(const Record &n) {
 void ConstStmtTraversal::visit(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -1256,7 +1256,7 @@ void ConstTypeTraversal::visit(const AliasDecl &n) {
 void ConstTypeTraversal::visit(const AliasRule &n) {
   for (const std::shared_ptr<AliasDecl> &a : n.aliases)
     dispatch(*a);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -1383,7 +1383,7 @@ void ConstTypeTraversal::visit(const Model &n) {
     dispatch(*d);
   for (const std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 
@@ -1447,7 +1447,7 @@ void ConstTypeTraversal::visit(const Return &n) {
 void ConstTypeTraversal::visit(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
-  for (const std::shared_ptr<Rule> &r : n.rules)
+  for (auto &r : n.rules)
     dispatch(*r);
 }
 

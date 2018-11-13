@@ -157,7 +157,7 @@
 %left '+' '-'
 %left '*' '/' '%'
 
-%type <std::shared_ptr<rumur::AliasRule>>                    aliasrule
+%type <rumur::Ptr<rumur::AliasRule>>                         aliasrule
 %type <std::shared_ptr<rumur::Property::Category>>           category
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
 %type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
@@ -177,15 +177,15 @@
 %type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameters
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
-%type <std::shared_ptr<rumur::PropertyRule>>                 property
+%type <rumur::Ptr<rumur::PropertyRule>>                      property
 %type <std::shared_ptr<rumur::Quantifier>>                   quantifier
 %type <std::vector<rumur::Quantifier>>                       quantifiers
 %type <std::shared_ptr<rumur::TypeExpr>>                     return_type
-%type <std::shared_ptr<rumur::Rule>>                         rule
-%type <std::shared_ptr<rumur::Ruleset>>                      ruleset
-%type <std::vector<std::shared_ptr<rumur::Rule>>>            rules
-%type <std::shared_ptr<rumur::SimpleRule>>                   simplerule
-%type <std::shared_ptr<rumur::StartState>>                   startstate
+%type <rumur::Ptr<rumur::Rule>>                              rule
+%type <rumur::Ptr<rumur::Ruleset>>                           ruleset
+%type <std::vector<rumur::Ptr<rumur::Rule>>>                 rules
+%type <rumur::Ptr<rumur::SimpleRule>>                        simplerule
+%type <rumur::Ptr<rumur::StartState>>                        startstate
 %type <rumur::Ptr<rumur::Stmt>>                              stmt
 %type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts
 %type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts_cont
@@ -200,7 +200,7 @@
 %%
 
 model: decls procdecls rules {
-  output = rumur::Ptr<rumur::Model>::make(std::move($1), std::move($2), std::move($3), @$);
+  output = rumur::Ptr<rumur::Model>::make(std::move($1), std::move($2), $3, @$);
 };
 
 aliasrule: ALIAS exprdecls DO rules endalias {
@@ -208,7 +208,7 @@ aliasrule: ALIAS exprdecls DO rules endalias {
   for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
     decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
-  $$ = std::make_shared<rumur::AliasRule>(std::move(decls), std::move($4), @$);
+  $$ = rumur::Ptr<rumur::AliasRule>::make(std::move(decls), $4, @$);
 };
 
 begin_opt: BEGIN_TOK | %empty;
@@ -405,10 +405,10 @@ procdecls: procdecls procdecl {
 
 property: category STRING expr {
   rumur::Property p(*$1, $3, @3);
-  $$ = std::make_shared<rumur::PropertyRule>($2, p, @$);
+  $$ = rumur::Ptr<rumur::PropertyRule>::make($2, p, @$);
 } | category expr string_opt {
   rumur::Property p(*$1, $2, @2);
-  $$ = std::make_shared<rumur::PropertyRule>($3, p, @$);
+  $$ = rumur::Ptr<rumur::PropertyRule>::make($3, p, @$);
 };
 
 quantifier: ID ':' typeexpr {
@@ -451,17 +451,17 @@ rules: rules rule semi_opt {
 };
 
 ruleset: RULESET quantifiers DO rules endruleset {
-  $$ = std::make_shared<rumur::Ruleset>($2, std::move($4), @$);
+  $$ = rumur::Ptr<rumur::Ruleset>::make($2, $4, @$);
 };
 
 semi_opt: ';' | %empty;
 
 simplerule: RULE string_opt guard_opt decls_header stmts endrule {
-  $$ = std::make_shared<rumur::SimpleRule>($2, $3, std::move($4), $5, @$);
+  $$ = rumur::Ptr<rumur::SimpleRule>::make($2, $3, std::move($4), $5, @$);
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-  $$ = std::make_shared<rumur::StartState>($2, std::move($3), $4, @$);
+  $$ = rumur::Ptr<rumur::StartState>::make($2, std::move($3), $4, @$);
 };
 
 stmt: category STRING expr {

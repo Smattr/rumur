@@ -27,17 +27,17 @@ struct Rule : public Node {
 
   Rule *clone() const override = 0;
 
-  virtual std::vector<std::shared_ptr<Rule>> flatten() const;
+  virtual std::vector<Ptr<Rule>> flatten() const;
 
   virtual ~Rule() { }
 };
 
 struct AliasRule : public Rule {
-  std::vector<std::shared_ptr<Rule>> rules;
+  std::vector<Ptr<Rule>> rules;
 
   AliasRule() = delete;
   AliasRule(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
-    std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
+    const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   AliasRule(const AliasRule &other);
   AliasRule &operator=(AliasRule other);
   friend void swap(AliasRule &x, AliasRule &y) noexcept;
@@ -45,7 +45,7 @@ struct AliasRule : public Rule {
   AliasRule *clone() const final;
   bool operator==(const Node &other) const final;
 
-  std::vector<std::shared_ptr<Rule>> flatten() const final;
+  std::vector<Ptr<Rule>> flatten() const final;
 };
 
 struct SimpleRule : public Rule {
@@ -102,11 +102,11 @@ struct PropertyRule : public Rule {
 
 struct Ruleset : public Rule {
 
-  std::vector<std::shared_ptr<Rule>> rules;
+  std::vector<Ptr<Rule>> rules;
 
   Ruleset() = delete;
   Ruleset(const std::vector<Quantifier> &quantifiers_,
-    std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
+    const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   Ruleset(const Ruleset &other);
   Ruleset &operator=(Ruleset other);
   friend void swap(Ruleset &x, Ruleset &y) noexcept;
@@ -114,7 +114,7 @@ struct Ruleset : public Rule {
   Ruleset *clone() const final;
   bool operator==(const Node &other) const final;
 
-  std::vector<std::shared_ptr<Rule>> flatten() const final;
+  std::vector<Ptr<Rule>> flatten() const final;
 };
 
 }

@@ -9,6 +9,7 @@
 #include <rumur/Decl.h>
 #include <rumur/Function.h>
 #include <rumur/Node.h>
+#include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <vector>
 
@@ -18,12 +19,12 @@ struct Model : public Node {
 
   std::vector<std::shared_ptr<Decl>> decls;
   std::vector<std::shared_ptr<Function>> functions;
-  std::vector<std::shared_ptr<Rule>> rules;
+  std::vector<Ptr<Rule>> rules;
 
   Model() = delete;
   Model(std::vector<std::shared_ptr<Decl>> &&decls_,
     std::vector<std::shared_ptr<Function>> &&functions_,
-    std::vector<std::shared_ptr<Rule>> &&rules_, const location &loc_);
+    const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   Model(const Model &other);
   Model &operator=(Model other);
   friend void swap(Model &x, Model &y) noexcept;

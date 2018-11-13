@@ -56,7 +56,7 @@ class Resolver : public BaseTraversal {
       dispatch(*a);
       symtab.declare(a->name, a);
     }
-    for (std::shared_ptr<Rule> &r : n.rules)
+    for (auto &r : n.rules)
       dispatch(*r);
     symtab.close_scope();
   }
@@ -236,7 +236,7 @@ class Resolver : public BaseTraversal {
       dispatch(*f);
       symtab.declare(f->name, f);
     }
-    for (std::shared_ptr<Rule> &r : n.rules)
+    for (auto &r : n.rules)
       dispatch(*r);
   }
 
@@ -332,7 +332,7 @@ class Resolver : public BaseTraversal {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
-    for (std::shared_ptr<Rule> &r : n.rules)
+    for (auto &r : n.rules)
       dispatch(*r);
     symtab.close_scope();
   }

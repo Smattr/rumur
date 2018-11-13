@@ -33,7 +33,7 @@ class Validator : public ConstBaseTraversal {
   void visit(const AliasRule &n) final {
     for (const std::shared_ptr<AliasDecl> &a : n.aliases)
       dispatch(*a);
-    for (const std::shared_ptr<Rule> &r : n.rules)
+    for (auto &r : n.rules)
       dispatch(*r);
     n.validate();
   }
@@ -203,7 +203,7 @@ class Validator : public ConstBaseTraversal {
       dispatch(*d);
     for (const std::shared_ptr<Function> &f : n.functions)
       dispatch(*f);
-    for (const std::shared_ptr<Rule> &r : n.rules)
+    for (auto &r : n.rules)
       dispatch(*r);
     n.validate();
   }
@@ -296,7 +296,7 @@ class Validator : public ConstBaseTraversal {
   void visit(const Ruleset &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
-    for (const std::shared_ptr<Rule> &r : n.rules)
+    for (auto &r : n.rules)
       dispatch(*r);
     n.validate();
   }
