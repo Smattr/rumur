@@ -111,12 +111,8 @@ struct For : public Stmt {
   Quantifier quantifier;
   std::vector<Ptr<Stmt>> body;
 
-  For() = delete;
   For(const Quantifier &quantifier_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
-  For(const For &other);
-  For &operator=(For other);
-  friend void swap(For &x, For &y) noexcept;
   virtual ~For() { }
   For *clone() const final;
 

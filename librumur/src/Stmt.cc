@@ -174,22 +174,6 @@ For::For(const Quantifier &quantifier_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), quantifier(quantifier_), body(body_) { }
 
-For::For(const For &other):
-  Stmt(other.loc), quantifier(other.quantifier), body(other.body) { }
-
-For &For::operator=(For other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(For &x, For &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.quantifier, y.quantifier);
-  swap(x.body, y.body);
-}
-
 For *For::clone() const {
   return new For(*this);
 }
