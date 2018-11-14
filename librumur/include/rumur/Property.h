@@ -27,7 +27,7 @@ struct Property : public Node {
   Property &operator=(Property other);
   friend void swap(Property &x, Property &y) noexcept;
   Property *clone() const final;
-  virtual ~Property() { }
+  virtual ~Property() = default;
 
   bool operator==(const Node &other) const final;
 };

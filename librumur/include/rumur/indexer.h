@@ -73,7 +73,7 @@ class Indexer : public BaseTraversal {
   void visit(Undefine &n) final;
   void visit(VarDecl &n) final;
 
-  virtual ~Indexer() { }
+  virtual ~Indexer() = default;
 
  private:
   void visit_bexpr(BinaryExpr &n);

@@ -21,7 +21,7 @@ struct Number : public Expr {
   Number(Number&&) = default;
   Number &operator=(const Number&) = default;
   Number &operator=(Number&&) = default;
-  virtual ~Number() { }
+  virtual ~Number() = default;
   Number *clone() const final;
 
   bool constant() const final;

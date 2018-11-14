@@ -29,7 +29,7 @@ struct Rule : public Node {
 
   virtual std::vector<Ptr<Rule>> flatten() const;
 
-  virtual ~Rule() { }
+  virtual ~Rule() = default;
 };
 
 struct AliasRule : public Rule {
@@ -41,7 +41,7 @@ struct AliasRule : public Rule {
   AliasRule(const AliasRule &other);
   AliasRule &operator=(AliasRule other);
   friend void swap(AliasRule &x, AliasRule &y) noexcept;
-  virtual ~AliasRule() { }
+  virtual ~AliasRule() = default;
   AliasRule *clone() const final;
   bool operator==(const Node &other) const final;
 
@@ -61,7 +61,7 @@ struct SimpleRule : public Rule {
   SimpleRule(const SimpleRule &other);
   SimpleRule &operator=(SimpleRule other);
   friend void swap(SimpleRule &x, SimpleRule &y) noexcept;
-  virtual ~SimpleRule() { }
+  virtual ~SimpleRule() = default;
   SimpleRule *clone() const override;
   bool operator==(const Node &other) const override;
   void validate() const final;
@@ -79,7 +79,7 @@ struct StartState : public Rule {
   StartState(const StartState &other);
   StartState &operator=(StartState other);
   friend void swap(StartState &x, StartState &y) noexcept;
-  virtual ~StartState() { }
+  virtual ~StartState() = default;
   StartState *clone() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -95,7 +95,7 @@ struct PropertyRule : public Rule {
   PropertyRule(const PropertyRule &other);
   PropertyRule &operator=(PropertyRule other);
   friend void swap(PropertyRule &x, PropertyRule &y) noexcept;
-  virtual ~PropertyRule() { }
+  virtual ~PropertyRule() = default;
   PropertyRule *clone() const final;
   bool operator==(const Node &other) const final;
 };
@@ -110,7 +110,7 @@ struct Ruleset : public Rule {
   Ruleset(const Ruleset &other);
   Ruleset &operator=(Ruleset other);
   friend void swap(Ruleset &x, Ruleset &y) noexcept;
-  virtual ~Ruleset() { }
+  virtual ~Ruleset() = default;
   Ruleset *clone() const final;
   bool operator==(const Node &other) const final;
 

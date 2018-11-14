@@ -28,7 +28,7 @@ struct Model : public Node {
   Model(const Model &other);
   Model &operator=(Model other);
   friend void swap(Model &x, Model &y) noexcept;
-  virtual ~Model() { }
+  virtual ~Model() = default;
   Model *clone() const final;
 
   // Get the size of the state data in bits.

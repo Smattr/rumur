@@ -26,7 +26,7 @@ struct Stmt : public Node {
   Stmt(Stmt&&) = default;
   Stmt &operator=(const Stmt&) = default;
   Stmt &operator=(Stmt&&) = default;
-  virtual ~Stmt() { }
+  virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
 
 };
@@ -43,7 +43,7 @@ struct AliasStmt : public Stmt {
   AliasStmt &operator=(AliasStmt other);
   friend void swap(AliasStmt &x, AliasStmt &y) noexcept;
   AliasStmt *clone() const final;
-  virtual ~AliasStmt() { }
+  virtual ~AliasStmt() = default;
 
   bool operator==(const Node &other) const final;
 };
@@ -56,7 +56,7 @@ struct PropertyStmt : public Stmt {
   PropertyStmt(const Property &property_, const std::string &message_,
     const location &loc_);
   PropertyStmt *clone() const final;
-  virtual ~PropertyStmt() { }
+  virtual ~PropertyStmt() = default;
 
   bool operator==(const Node &other) const final;
 };
@@ -73,7 +73,7 @@ struct Assignment : public Stmt {
   Assignment &operator=(Assignment other);
   friend void swap(Assignment &x, Assignment &y) noexcept;
   Assignment *clone() const final;
-  virtual ~Assignment() { }
+  virtual ~Assignment() = default;
 
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -88,7 +88,7 @@ struct Clear : public Stmt {
   Clear(const Clear &other);
   Clear &operator=(Clear other);
   friend void swap(Clear &x, Clear &y) noexcept;
-  virtual ~Clear() { }
+  virtual ~Clear() = default;
   Clear *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -101,7 +101,7 @@ struct ErrorStmt : public Stmt {
 
    ErrorStmt(const std::string &message_, const location &loc_);
    ErrorStmt *clone() const final;
-   virtual ~ErrorStmt() { }
+   virtual ~ErrorStmt() = default;
 
    bool operator==(const Node &other) const final;
 };
@@ -113,7 +113,7 @@ struct For : public Stmt {
 
   For(const Quantifier &quantifier_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
-  virtual ~For() { }
+  virtual ~For() = default;
   For *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -130,7 +130,7 @@ struct IfClause : public Node {
   IfClause(const IfClause &other);
   IfClause &operator=(IfClause other);
   friend void swap(IfClause &x, IfClause &y) noexcept;
-  virtual ~IfClause() { }
+  virtual ~IfClause() = default;
   IfClause *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -146,7 +146,7 @@ struct If : public Stmt {
   If(const If &other);
   If &operator=(If other);
   friend void swap(If &x, If &y) noexcept;
-  virtual ~If() { };
+  virtual ~If() = default;;
   If *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -164,7 +164,7 @@ struct ProcedureCall : public Stmt {
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);
   friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;
-  virtual ~ProcedureCall() { }
+  virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -180,7 +180,7 @@ struct Return : public Stmt {
   Return(const Return &other);
   Return &operator=(Return other);
   friend void swap(Return &x, Return &y) noexcept;
-  virtual ~Return() { }
+  virtual ~Return() = default;
   Return *clone() const final;
 
   bool operator==(const Node &other) const final;
@@ -195,7 +195,7 @@ struct Undefine : public Stmt {
   Undefine(const Undefine &other);
   Undefine &operator=(Undefine other);
   friend void swap(Undefine &x, Undefine &y) noexcept;
-  virtual ~Undefine() { }
+  virtual ~Undefine() = default;
   Undefine *clone() const final;
 
   bool operator==(const Node &other) const final;

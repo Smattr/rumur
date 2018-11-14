@@ -26,7 +26,7 @@ struct Expr : public Node {
   Expr(Expr&&) = default;
   Expr &operator=(const Expr&) = default;
   Expr &operator=(Expr&&) = default;
-  virtual ~Expr() { }
+  virtual ~Expr() = default;
 
   virtual Expr *clone() const = 0;
 
@@ -60,7 +60,7 @@ struct Ternary : public Expr {
   Ternary(Ternary&&) = default;
   Ternary &operator=(Ternary other);
   friend void swap(Ternary &x, Ternary &y) noexcept;
-  virtual ~Ternary() { }
+  virtual ~Ternary() = default;
 
   Ternary *clone() const final;
   bool constant() const final;
@@ -86,7 +86,7 @@ struct BinaryExpr : public Expr {
   BinaryExpr &operator=(const BinaryExpr&) = delete;
   BinaryExpr &operator=(BinaryExpr&&) = delete;
   friend void swap(BinaryExpr &x, BinaryExpr &y) noexcept;
-  virtual ~BinaryExpr() { }
+  virtual ~BinaryExpr() = default;
 
   BinaryExpr *clone() const override = 0;
   bool constant() const final;
@@ -106,7 +106,7 @@ struct Implication : public BooleanBinaryExpr {
   Implication() = delete;
   Implication &operator=(Implication other);
   Implication *clone() const final;
-  virtual ~Implication() { }
+  virtual ~Implication() = default;
 
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
@@ -118,7 +118,7 @@ struct Or : public BooleanBinaryExpr {
   using BooleanBinaryExpr::BooleanBinaryExpr;
   Or() = delete;
   Or &operator=(Or other);
-  virtual ~Or() { }
+  virtual ~Or() = default;
   Or *clone() const final;
 
   const TypeExpr *type() const final;
@@ -131,7 +131,7 @@ struct And : public BooleanBinaryExpr {
   using BooleanBinaryExpr::BooleanBinaryExpr;
   And() = delete;
   And &operator=(And other);
-  virtual ~And() { }
+  virtual ~And() = default;
   And *clone() const final;
 
   const TypeExpr *type() const final;
@@ -148,7 +148,7 @@ struct UnaryExpr : public Expr {
   UnaryExpr(const UnaryExpr &other);
   friend void swap(UnaryExpr &x, UnaryExpr &y) noexcept;
   UnaryExpr *clone() const override = 0;
-  virtual ~UnaryExpr() { }
+  virtual ~UnaryExpr() = default;
 
   bool constant() const final;
 };
@@ -158,7 +158,7 @@ struct Not : public UnaryExpr {
   using UnaryExpr::UnaryExpr;
   Not() = delete;
   Not &operator=(Not other);
-  virtual ~Not() { }
+  virtual ~Not() = default;
   Not *clone() const final;
 
   const TypeExpr *type() const final;
@@ -180,7 +180,7 @@ struct Lt : public ComparisonBinaryExpr {
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Lt() = delete;
   Lt &operator=(Lt other);
-  virtual ~Lt() { }
+  virtual ~Lt() = default;
   Lt *clone() const final;
 
   const TypeExpr *type() const final;
@@ -193,7 +193,7 @@ struct Leq : public ComparisonBinaryExpr {
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Leq() = delete;
   Leq &operator=(Leq other);
-  virtual ~Leq() { }
+  virtual ~Leq() = default;
   Leq *clone() const final;
 
   const TypeExpr *type() const final;
@@ -206,7 +206,7 @@ struct Gt : public ComparisonBinaryExpr {
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Gt() = delete;
   Gt &operator=(Gt other);
-  virtual ~Gt() { }
+  virtual ~Gt() = default;
   Gt *clone() const final;
 
   const TypeExpr *type() const final;
@@ -219,7 +219,7 @@ struct Geq : public ComparisonBinaryExpr {
   using ComparisonBinaryExpr::ComparisonBinaryExpr;
   Geq() = delete;
   Geq &operator=(Geq other);
-  virtual ~Geq() { }
+  virtual ~Geq() = default;
   Geq *clone() const final;
 
   const TypeExpr *type() const final;
@@ -240,7 +240,7 @@ struct Eq : public EquatableBinaryExpr {
   using EquatableBinaryExpr::EquatableBinaryExpr;
   Eq() = delete;
   Eq &operator=(Eq other);
-  virtual ~Eq() { }
+  virtual ~Eq() = default;
   Eq *clone() const final;
 
   const TypeExpr *type() const final;
@@ -253,7 +253,7 @@ struct Neq : public EquatableBinaryExpr {
   using EquatableBinaryExpr::EquatableBinaryExpr;
   Neq() = delete;
   Neq &operator=(Neq other);
-  virtual ~Neq() { }
+  virtual ~Neq() = default;
   Neq *clone() const final;
 
   const TypeExpr *type() const final;
@@ -274,7 +274,7 @@ struct Add : public ArithmeticBinaryExpr {
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Add() = delete;
   Add &operator=(Add other);
-  virtual ~Add() { }
+  virtual ~Add() = default;
   Add *clone() const final;
 
   const TypeExpr *type() const final;
@@ -287,7 +287,7 @@ struct Sub : public ArithmeticBinaryExpr {
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Sub() = delete;
   Sub &operator=(Sub other);
-  virtual ~Sub() { }
+  virtual ~Sub() = default;
   Sub *clone() const final;
 
   const TypeExpr *type() const final;
@@ -300,7 +300,7 @@ struct Negative : public UnaryExpr {
   using UnaryExpr::UnaryExpr;
   Negative() = delete;
   Negative &operator=(Negative other);
-  virtual ~Negative() { }
+  virtual ~Negative() = default;
   Negative *clone() const final;
 
   const TypeExpr *type() const final;
@@ -314,7 +314,7 @@ struct Mul : public ArithmeticBinaryExpr {
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Mul() = delete;
   Mul &operator=(Mul other);
-  virtual ~Mul() { }
+  virtual ~Mul() = default;
   Mul *clone() const final;
 
   const TypeExpr *type() const final;
@@ -327,7 +327,7 @@ struct Div : public ArithmeticBinaryExpr {
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Div() = delete;
   Div &operator=(Div other);
-  virtual ~Div() { }
+  virtual ~Div() = default;
   Div *clone() const final;
 
   const TypeExpr *type() const final;
@@ -340,7 +340,7 @@ struct Mod : public ArithmeticBinaryExpr {
   using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
   Mod() = delete;
   Mod &operator=(Mod other);
-  virtual ~Mod() { }
+  virtual ~Mod() = default;
   Mod *clone() const final;
 
   const TypeExpr *type() const final;
@@ -359,7 +359,7 @@ struct ExprID : public Expr {
   ExprID(const ExprID &other);
   ExprID &operator=(ExprID other);
   friend void swap(ExprID &x, ExprID &y) noexcept;
-  virtual ~ExprID() { }
+  virtual ~ExprID() = default;
   ExprID *clone() const final;
 
   bool constant() const final;
@@ -381,7 +381,7 @@ struct Field : public Expr {
   Field(const Field &other);
   friend void swap(Field &x, Field &y) noexcept;
   Field &operator=(Field other);
-  virtual ~Field() { }
+  virtual ~Field() = default;
   Field *clone() const final;
 
   bool constant() const final;
@@ -402,7 +402,7 @@ struct Element : public Expr {
   Element(const Element &other);
   friend void swap(Element &x, Element &y) noexcept;
   Element &operator=(Element other);
-  virtual ~Element() { }
+  virtual ~Element() = default;
   Element *clone() const final;
 
   bool constant() const final;
@@ -424,7 +424,7 @@ struct FunctionCall : public Expr {
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;
   FunctionCall &operator=(FunctionCall other);
-  virtual ~FunctionCall() { }
+  virtual ~FunctionCall() = default;
   FunctionCall *clone() const final;
 
   bool constant() const final;
@@ -456,7 +456,7 @@ struct Quantifier : public Node {
   Quantifier(const Quantifier &other);
   Quantifier &operator=(Quantifier other);
   friend void swap(Quantifier &x, Quantifier &y) noexcept;
-  virtual ~Quantifier() { }
+  virtual ~Quantifier() = default;
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
 };
@@ -472,7 +472,7 @@ struct Exists : public Expr {
   Exists(const Exists &other);
   Exists &operator=(Exists other);
   friend void swap(Exists &x, Exists &y) noexcept;
-  virtual ~Exists() { }
+  virtual ~Exists() = default;
   Exists *clone() const final;
 
   bool constant() const final;
@@ -493,7 +493,7 @@ struct Forall : public Expr {
   Forall(const Forall &other);
   Forall &operator=(Forall other);
   friend void swap(Forall &x, Forall &y) noexcept;
-  virtual ~Forall() { }
+  virtual ~Forall() = default;
   Forall *clone() const final;
 
   bool constant() const final;

@@ -81,7 +81,7 @@ class BaseTraversal {
    */
   void dispatch(Node &n);
 
-  virtual ~BaseTraversal() { }
+  virtual ~BaseTraversal() = default;
 };
 
 // Read-only equivalent of BaseTraversal.
@@ -145,7 +145,7 @@ class ConstBaseTraversal {
 
   void dispatch(const Node &n);
 
-  virtual ~ConstBaseTraversal() { }
+  virtual ~ConstBaseTraversal() = default;
 };
 
 
@@ -278,7 +278,7 @@ class ConstExprTraversal : public ConstBaseTraversal {
   void visit(const Undefine &n) final;
   void visit(const VarDecl &n) final;
 
-  virtual ~ConstExprTraversal() { }
+  virtual ~ConstExprTraversal() = default;
 };
 
 /* Generic base for read-only traversals that only need to act on statements.
@@ -343,7 +343,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit(const Undefine &n) override = 0;
   void visit(const VarDecl &n) final;
 
-  virtual ~ConstStmtTraversal() { }
+  virtual ~ConstStmtTraversal() = default;
 
  private:
   void visit_bexpr(const BinaryExpr &n);
@@ -409,7 +409,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit(const Undefine &n) final;
   void visit(const VarDecl &n) final;
 
-  virtual ~ConstTypeTraversal() { }
+  virtual ~ConstTypeTraversal() = default;
 
  private:
   void visit_bexpr(const BinaryExpr &n);

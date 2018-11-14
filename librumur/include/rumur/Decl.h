@@ -33,7 +33,7 @@ struct ExprDecl : public Decl {
   using Decl::Decl;
   ExprDecl() = delete;
 
-  virtual ~ExprDecl() { }
+  virtual ~ExprDecl() = default;
 
   // Return true if this declaration is usable as an lvalue
   virtual bool is_lvalue() const = 0;
@@ -54,7 +54,7 @@ struct AliasDecl : public ExprDecl {
   AliasDecl &operator=(AliasDecl other);
   friend void swap(AliasDecl &x, AliasDecl &y) noexcept;
   AliasDecl *clone() const final;
-  virtual ~AliasDecl() { }
+  virtual ~AliasDecl() = default;
 
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
@@ -79,7 +79,7 @@ struct ConstDecl : public ExprDecl {
   ConstDecl &operator=(ConstDecl other);
   friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
   ConstDecl *clone() const final;
-  virtual ~ConstDecl() { }
+  virtual ~ConstDecl() = default;
 
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
@@ -98,7 +98,7 @@ struct TypeDecl : public Decl {
   TypeDecl &operator=(TypeDecl other);
   friend void swap(TypeDecl &x, TypeDecl &y) noexcept;
   TypeDecl *clone() const final;
-  virtual ~TypeDecl() { }
+  virtual ~TypeDecl() = default;
 
   bool operator==(const Node &other) const final;
 };
@@ -125,7 +125,7 @@ struct VarDecl : public ExprDecl {
   VarDecl &operator=(VarDecl other);
   friend void swap(VarDecl &x, VarDecl &y) noexcept;
   VarDecl *clone() const final;
-  virtual ~VarDecl() { }
+  virtual ~VarDecl() = default;
 
   mpz_class count() const;
   mpz_class width() const;

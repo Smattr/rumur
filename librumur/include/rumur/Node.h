@@ -18,7 +18,7 @@ struct Node {
   Node(Node&&) = default;
   Node &operator=(const Node&) = default;
   Node &operator=(Node&&) = default;
-  virtual ~Node() { }
+  virtual ~Node() = default;
 
   virtual Node *clone() const = 0;
 

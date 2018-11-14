@@ -25,7 +25,7 @@ struct TypeExpr : public Node {
   TypeExpr(TypeExpr&&) = default;
   TypeExpr &operator=(const TypeExpr&) = default;
   TypeExpr &operator=(TypeExpr&&) = default;
-  virtual ~TypeExpr() { }
+  virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
   virtual bool is_simple() const;
@@ -54,7 +54,7 @@ struct Range : public TypeExpr {
   Range &operator=(Range other);
   friend void swap(Range &x, Range &y) noexcept;
   Range *clone() const final;
-  virtual ~Range() { }
+  virtual ~Range() = default;
 
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
@@ -75,7 +75,7 @@ struct Scalarset : public TypeExpr {
   Scalarset &operator=(Scalarset other);
   friend void swap(Scalarset &x, Scalarset &y) noexcept;
   Scalarset *clone() const final;
-  virtual ~Scalarset() { }
+  virtual ~Scalarset() = default;
 
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
@@ -98,7 +98,7 @@ struct Enum : public TypeExpr {
   Enum &operator=(const Enum&) = default;
   Enum &operator=(Enum&&) = default;
   Enum *clone() const final;
-  virtual ~Enum() { }
+  virtual ~Enum() = default;
 
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
@@ -118,7 +118,7 @@ struct Record : public TypeExpr {
   Record &operator=(Record other);
   friend void swap(Record &x, Record &y) noexcept;
   Record *clone() const final;
-  virtual ~Record() { }
+  virtual ~Record() = default;
 
   mpz_class width() const final;
   mpz_class count() const final;
@@ -137,7 +137,7 @@ struct Array : public TypeExpr {
   Array &operator=(Array other);
   friend void swap(Array &x, Array &y) noexcept;
   Array *clone() const final;
-  virtual ~Array() { }
+  virtual ~Array() = default;
 
   mpz_class width() const final;
   mpz_class count() const final;
@@ -156,7 +156,7 @@ struct TypeExprID : public TypeExpr {
   TypeExprID &operator=(TypeExprID other);
   friend void swap(TypeExprID &x, TypeExprID &y) noexcept;
   TypeExprID *clone() const final;
-  virtual ~TypeExprID() { }
+  virtual ~TypeExprID() = default;
 
   mpz_class width() const final;
   mpz_class count() const final;

@@ -30,7 +30,7 @@ struct Function : public Node {
   Function(const Function &other);
   Function &operator=(Function other);
   friend void swap(Function &x, Function &y) noexcept;
-  virtual ~Function() { }
+  virtual ~Function() = default;
   Function *clone() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
