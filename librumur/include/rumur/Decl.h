@@ -39,6 +39,8 @@ struct ExprDecl : public Decl {
   virtual bool is_lvalue() const = 0;
 
   virtual const TypeExpr *get_type() const = 0;
+
+  ExprDecl *clone() const override = 0;
 };
 
 struct AliasDecl : public ExprDecl {
