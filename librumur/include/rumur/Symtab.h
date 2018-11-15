@@ -47,11 +47,6 @@ class Symtab {
     throw Error("unknown symbol: " + name, loc);
   }
 
-  ~Symtab() {
-    while (scope.size() > 0)
-      close_scope();
-  }
-
   // Whether we are in the top-level scope.
   bool is_global_scope() const {
     return scope.size() == 1;
