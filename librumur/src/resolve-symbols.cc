@@ -7,6 +7,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Model.h>
 #include <rumur/Number.h>
+#include <rumur/Ptr.h>
 #include <rumur/resolve-symbols.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
@@ -32,11 +33,11 @@ class Resolver : public BaseTraversal {
     symtab.open_scope();
 
     // Teach the symbol table the built ins
-    auto td = std::make_shared<TypeDecl>("boolean", Boolean, location());
+    auto td = Ptr<TypeDecl>::make("boolean", Boolean, location());
     symtab.declare("boolean", td);
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : Boolean->members) {
-      symtab.declare(m.first, std::make_shared<ConstDecl>("boolean",
+      symtab.declare(m.first, Ptr<ConstDecl>::make("boolean",
         std::make_shared<Number>(index, location()), Boolean, location()));
       index++;
     }
@@ -52,7 +53,7 @@ class Resolver : public BaseTraversal {
 
   void visit(AliasRule &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<AliasDecl> &a : n.aliases) {
+    for (auto &a : n.aliases) {
       dispatch(*a);
       symtab.declare(a->name, a);
     }
@@ -63,7 +64,7 @@ class Resolver : public BaseTraversal {
 
   void visit(AliasStmt &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<AliasDecl> &a : n.aliases) {
+    for (auto &a : n.aliases) {
       dispatch(*a);
       symtab.declare(a->name, a);
     }
@@ -109,7 +110,7 @@ class Resolver : public BaseTraversal {
     //* Register all the enum members so they can be referenced later.
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : n.members) {
-      auto cd = std::make_shared<ConstDecl>(m.first,
+      auto cd = Ptr<ConstDecl>::make(m.first,
         std::make_shared<Number>(index, m.second), e, m.second);
       symtab.declare(m.first, cd);
       index++;
@@ -137,7 +138,7 @@ class Resolver : public BaseTraversal {
       if (d == nullptr)
         throw Error("unknown symbol \"" + n.id + "\"", n.loc);
 
-      n.value = d;
+      n.value = Ptr<ExprDecl>(d->clone());
     }
   }
 
@@ -162,13 +163,13 @@ class Resolver : public BaseTraversal {
 
   void visit(Function &n) final {
     symtab.open_scope();
-    for (std::shared_ptr<VarDecl> &p : n.parameters) {
+    for (auto &p : n.parameters) {
       dispatch(*p);
       symtab.declare(p->name, p);
     }
     if (n.return_type != nullptr)
       dispatch(*n.return_type);
-    for (std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
@@ -228,7 +229,7 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(Model &n) final {
-    for (std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
@@ -310,7 +311,7 @@ class Resolver : public BaseTraversal {
     } else {
       t = n.type;
     }
-    symtab.declare(n.name, std::make_shared<VarDecl>(n.name, t, n.loc));
+    symtab.declare(n.name, Ptr<VarDecl>::make(n.name, t, n.loc));
   }
 
   void visit(Range &n) final {
@@ -319,7 +320,7 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(Record &n) final {
-    for (std::shared_ptr<VarDecl> &f : n.fields)
+    for (auto &f : n.fields)
       dispatch(*f);
   }
 
@@ -347,7 +348,7 @@ class Resolver : public BaseTraversal {
       dispatch(q);
     if (n.guard != nullptr)
       dispatch(*n.guard);
-    for (std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
@@ -360,7 +361,7 @@ class Resolver : public BaseTraversal {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
-    for (std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
@@ -391,7 +392,7 @@ class Resolver : public BaseTraversal {
       if (t == nullptr)
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
-      n.referent = t->value;
+      n.referent = std::shared_ptr<TypeExpr>(t->value->clone());
     }
   }
 

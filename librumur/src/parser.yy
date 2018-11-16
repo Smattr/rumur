@@ -159,9 +159,9 @@
 
 %type <rumur::Ptr<rumur::AliasRule>>                         aliasrule
 %type <std::shared_ptr<rumur::Property::Category>>           category
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            decl
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            decls
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            decls_header
+%type <std::vector<rumur::Ptr<rumur::Decl>>>                 decl
+%type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls
+%type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls_header
 %type <std::shared_ptr<rumur::Expr>>                         designator
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
@@ -173,8 +173,8 @@
 %type <std::shared_ptr<rumur::Expr>>                         guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameter
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         parameters
+%type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameter
+%type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameters
 %type <std::shared_ptr<rumur::Function>>                     procdecl
 %type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
 %type <rumur::Ptr<rumur::PropertyRule>>                      property
@@ -190,25 +190,25 @@
 %type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts
 %type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts_cont
 %type <std::string>                                          string_opt
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecl
-%type <std::vector<std::shared_ptr<rumur::Decl>>>            typedecls
+%type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecl
+%type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecls
 %type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecl
-%type <std::vector<std::shared_ptr<rumur::VarDecl>>>         vardecls
+%type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecl
+%type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecls
 %type <std::shared_ptr<bool>>                                var_opt
 
 %%
 
 model: decls procdecls rules {
-  output = rumur::Ptr<rumur::Model>::make(std::move($1), std::move($2), $3, @$);
+  output = rumur::Ptr<rumur::Model>::make($1, std::move($2), $3, @$);
 };
 
 aliasrule: ALIAS exprdecls DO rules endalias {
-  std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
+  std::vector<rumur::Ptr<rumur::AliasDecl>> decls;
   for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
-    decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+    decls.push_back(rumur::Ptr<rumur::AliasDecl>::make(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
-  $$ = rumur::Ptr<rumur::AliasRule>::make(std::move(decls), $4, @$);
+  $$ = rumur::Ptr<rumur::AliasRule>::make(decls, $4, @$);
 };
 
 begin_opt: BEGIN_TOK | %empty;
@@ -227,7 +227,7 @@ comma_opt: ',' | %empty;
 
 decl: CONST exprdecls {
   for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
-    $$.push_back(std::make_shared<rumur::ConstDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+    $$.push_back(rumur::Ptr<rumur::ConstDecl>::make(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
 } | TYPE typedecls {
   $$ = $2;
@@ -381,7 +381,7 @@ id_list_opt: id_list comma_opt {
 
 parameter: var_opt id_list ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &i : $2) {
-    auto v = std::make_shared<rumur::VarDecl>(i.first, $4, @$);
+    auto v = rumur::Ptr<rumur::VarDecl>::make(i.first, $4, @$);
     v->readonly = !*$1;
     $$.push_back(v);
   }
@@ -394,7 +394,7 @@ parameters: parameters parameter semi_opt {
 };
 
 procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
-  $$ = std::make_shared<rumur::Function>($2, std::move($4), $6, std::move($7), $9, @$);
+  $$ = std::make_shared<rumur::Function>($2, $4, $6, $7, $9, @$);
 };
 
 procdecls: procdecls procdecl {
@@ -457,11 +457,11 @@ ruleset: RULESET quantifiers DO rules endruleset {
 semi_opt: ';' | %empty;
 
 simplerule: RULE string_opt guard_opt decls_header stmts endrule {
-  $$ = rumur::Ptr<rumur::SimpleRule>::make($2, $3, std::move($4), $5, @$);
+  $$ = rumur::Ptr<rumur::SimpleRule>::make($2, $3, $4, $5, @$);
 };
 
 startstate: STARTSTATE string_opt decls_header stmts endstartstate {
-  $$ = rumur::Ptr<rumur::StartState>::make($2, std::move($3), $4, @$);
+  $$ = rumur::Ptr<rumur::StartState>::make($2, $3, $4, @$);
 };
 
 stmt: category STRING expr {
@@ -473,11 +473,11 @@ stmt: category STRING expr {
 } | designator COLON_EQ expr {
   $$ = rumur::Ptr<rumur::Assignment>::make($1, $3, @$);
 } | ALIAS exprdecls DO stmts endalias {
-  std::vector<std::shared_ptr<rumur::AliasDecl>> decls;
+  std::vector<rumur::Ptr<rumur::AliasDecl>> decls;
   for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
-    decls.push_back(std::make_shared<rumur::AliasDecl>(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
+    decls.push_back(rumur::Ptr<rumur::AliasDecl>::make(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
-  $$ = rumur::Ptr<rumur::AliasStmt>::make(std::move(decls), $4, @$);
+  $$ = rumur::Ptr<rumur::AliasStmt>::make(decls, $4, @$);
 } | ERROR STRING {
   $$ = rumur::Ptr<rumur::ErrorStmt>::make($2, @$);
 } | CLEAR designator {
@@ -523,7 +523,7 @@ string_opt: STRING {
 
 typedecl: id_list_opt ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_shared<rumur::TypeDecl>(m.first, $3, @$));
+    $$.push_back(rumur::Ptr<rumur::TypeDecl>::make(m.first, $3, @$));
   }
 };
 
@@ -547,7 +547,7 @@ typeexpr: BOOLEAN {
 } | ENUM '{' id_list_opt '}' {
   $$ = std::make_shared<rumur::Enum>(std::move($3), @$);
 } | RECORD vardecls endrecord {
-  $$ = std::make_shared<rumur::Record>(std::move($2), @$);
+  $$ = std::make_shared<rumur::Record>($2, @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {
   $$ = std::make_shared<rumur::Array>($3, $6, @$);
 } | SCALARSET '(' expr ')' {
@@ -556,7 +556,7 @@ typeexpr: BOOLEAN {
 
 vardecl: id_list_opt ':' typeexpr {
   for (const std::pair<std::string, rumur::location> &m : $1) {
-    $$.push_back(std::make_shared<rumur::VarDecl>(m.first, $3, @$));
+    $$.push_back(rumur::Ptr<rumur::VarDecl>::make(m.first, $3, @$));
   }
 };
 

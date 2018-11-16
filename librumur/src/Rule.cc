@@ -50,16 +50,14 @@ Rule::Rule(const std::string &name_, const location &loc_):
   Node(loc_), name(name_) { }
 
 Rule::Rule(const Rule &other):
-  Node(other), name(other.name), quantifiers(other.quantifiers) {
-  for (const std::shared_ptr<AliasDecl> &a : other.aliases)
-    aliases.emplace_back(a->clone());
-}
+  Node(other), name(other.name), quantifiers(other.quantifiers),
+  aliases(other.aliases) { }
 
 std::vector<Ptr<Rule>> Rule::flatten() const {
   return { Ptr<Rule>(clone()) };
 }
 
-AliasRule::AliasRule(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+AliasRule::AliasRule(const std::vector<Ptr<AliasDecl>> &aliases_,
   const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
 
@@ -107,9 +105,8 @@ std::vector<Ptr<Rule>> AliasRule::flatten() const {
   std::vector<Ptr<Rule>> rs;
   for (const Ptr<Rule> &r : rules) {
     for (Ptr<Rule> &f : r->flatten()) {
-      for (const std::shared_ptr<AliasDecl> &a : aliases)
-        f->aliases.insert(f->aliases.begin(),
-          std::shared_ptr<AliasDecl>(a->clone()));
+      for (const Ptr<AliasDecl> &a : aliases)
+        f->aliases.insert(f->aliases.begin(), a);
       rs.push_back(f);
     }
   }
@@ -117,16 +114,13 @@ std::vector<Ptr<Rule>> AliasRule::flatten() const {
 }
 
 SimpleRule::SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
-  std::vector<std::shared_ptr<Decl>> &&decls_,
+  const std::vector<Ptr<Decl>> &decls_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) { }
 
 SimpleRule::SimpleRule(const SimpleRule &other):
   Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()),
-  body(other.body) {
-  for (const std::shared_ptr<Decl> &d : other.decls)
-    decls.emplace_back(d->clone());
-}
+  decls(other.decls), body(other.body) { }
 
 SimpleRule &SimpleRule::operator=(SimpleRule other) {
   swap(*this, other);
@@ -177,15 +171,12 @@ void SimpleRule::validate() const {
 }
 
 StartState::StartState(const std::string &name_,
-  std::vector<std::shared_ptr<Decl>> &&decls_,
+  const std::vector<Ptr<Decl>> &decls_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), decls(decls_), body(body_) { }
 
 StartState::StartState(const StartState &other):
-  Rule(other), body(other.body) {
-  for (const std::shared_ptr<Decl> &d : other.decls)
-    decls.emplace_back(d->clone());
-}
+  Rule(other), decls(other.decls), body(other.body) { }
 
 StartState &StartState::operator=(StartState other) {
   swap(*this, other);

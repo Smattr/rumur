@@ -17,16 +17,12 @@
 
 namespace rumur {
 
-AliasStmt::AliasStmt(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+AliasStmt::AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), aliases(aliases_), body(body_) { }
 
 AliasStmt::AliasStmt(const AliasStmt &other):
-  Stmt(other.loc), body(other.body) {
-
-  for (const std::shared_ptr<AliasDecl> &a : other.aliases)
-    aliases.emplace_back(a->clone());
-}
+  Stmt(other.loc), aliases(other.aliases), body(other.body) { }
 
 AliasStmt &AliasStmt::operator=(AliasStmt other) {
   swap(*this, other);

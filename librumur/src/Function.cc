@@ -15,24 +15,17 @@
 namespace rumur {
 
 Function::Function(const std::string &name_,
-  std::vector<std::shared_ptr<VarDecl>> &&parameters_,
+  const std::vector<Ptr<VarDecl>> &parameters_,
   std::shared_ptr<TypeExpr> return_type_,
-  std::vector<std::shared_ptr<Decl>> &&decls_,
+  const std::vector<Ptr<Decl>> &decls_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
   decls(decls_), body(body_) { }
 
 Function::Function(const Function &other):
-  Node(other), name(other.name),
+  Node(other), name(other.name), parameters(other.parameters),
   return_type(other.return_type == nullptr ? nullptr : other.return_type->clone()),
-  body(other.body) {
-
-  for (const std::shared_ptr<VarDecl> &p : other.parameters)
-    parameters.emplace_back(p->clone());
-
-  for (const std::shared_ptr<Decl> &d : other.decls)
-    decls.emplace_back(d->clone());
-}
+  decls(other.decls), body(other.body) { }
 
 Function &Function::operator=(Function other) {
   swap(*this, other);

@@ -31,7 +31,7 @@ class Traversal : public rumur::ConstTypeTraversal {
   }
 
   void visit(const rumur::Record &n) {
-    for (const std::shared_ptr<rumur::VarDecl> &f : n.fields)
+    for (auto &f : n.fields)
       dispatch(*f);
   }
 

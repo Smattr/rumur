@@ -11,6 +11,7 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
+#include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -641,7 +642,7 @@ bool Mod::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-ExprID::ExprID(const std::string &id_, const std::shared_ptr<ExprDecl> value_,
+ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {
 }
@@ -749,7 +750,7 @@ const TypeExpr *Field::type() const {
   const TypeExpr *resolved = root->resolve();
   assert(resolved != nullptr);
   if (auto r = dynamic_cast<const Record*>(resolved)) {
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+    for (const Ptr<VarDecl> &f : r->fields) {
       if (f->name == field)
         return f->type.get();
     }

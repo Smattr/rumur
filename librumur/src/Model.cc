@@ -22,15 +22,13 @@
 
 namespace rumur {
 
-Model::Model(std::vector<std::shared_ptr<Decl>> &&decls_,
+Model::Model(const std::vector<Ptr<Decl>> &decls_,
   std::vector<std::shared_ptr<Function>> &&functions_,
   const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
 
 Model::Model(const Model &other):
-  Node(other), rules(other.rules) {
-  for (const std::shared_ptr<Decl> &d : other.decls)
-    decls.emplace_back(d->clone());
+  Node(other), decls(other.decls), rules(other.rules) {
   for (const std::shared_ptr<Function> &f : other.functions)
     functions.emplace_back(f->clone());
 }
@@ -55,7 +53,7 @@ Model *Model::clone() const {
 
 mpz_class Model::size_bits() const {
   mpz_class s = 0;
-  for (const std::shared_ptr<Decl> &d : decls) {
+  for (const Ptr<Decl> &d : decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get()))
       s += v->type->width();
   }
@@ -80,7 +78,7 @@ void Model::validate() const {
   // Check all state variable names are distinct.
   {
     std::unordered_set<std::string> names;
-    for (const std::shared_ptr<Decl> &d : decls) {
+    for (const Ptr<Decl> &d : decls) {
       if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
         if (!names.insert(v->name).second)
           throw Error("duplicate state variable name \"" + v->name + "\"",
@@ -127,7 +125,7 @@ unsigned long Model::assumption_count() const {
 
 void Model::reindex() {
   mpz_class offset = 0;
-  for (std::shared_ptr<Decl> &d : decls) {
+  for (Ptr<Decl> &d : decls) {
     if (auto v = dynamic_cast<VarDecl*>(d.get())) {
       v->offset = offset;
       offset += v->type->width();

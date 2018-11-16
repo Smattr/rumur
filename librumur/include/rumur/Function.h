@@ -16,16 +16,16 @@ namespace rumur {
 struct Function : public Node {
 
   std::string name;
-  std::vector<std::shared_ptr<VarDecl>> parameters;
+  std::vector<Ptr<VarDecl>> parameters;
   std::shared_ptr<TypeExpr> return_type;
-  std::vector<std::shared_ptr<Decl>> decls;
+  std::vector<Ptr<Decl>> decls;
   std::vector<Ptr<Stmt>> body;
 
   Function() = delete;
   Function(const std::string &name_,
-    std::vector<std::shared_ptr<VarDecl>> &&parameters_,
+    const std::vector<Ptr<VarDecl>> &parameters_,
     std::shared_ptr<TypeExpr> return_type_,
-    std::vector<std::shared_ptr<Decl>> &&decls_,
+    const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   Function(const Function &other);
   Function &operator=(Function other);

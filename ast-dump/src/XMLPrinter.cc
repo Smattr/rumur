@@ -56,7 +56,7 @@ void XMLPrinter::visit(const AliasRule &n) {
   if (!n.aliases.empty()) {
     sync_to(*n.aliases[0]);
     *o << "<aliases>";
-    for (const std::shared_ptr<AliasDecl> &a : n.aliases) {
+    for (auto &a : n.aliases) {
       sync_to(*a);
       dispatch(*a);
     }
@@ -83,7 +83,7 @@ void XMLPrinter::visit(const AliasStmt &n) {
   if (!n.aliases.empty()) {
     sync_to(*n.aliases[0]);
     *o << "<aliases>";
-    for (const std::shared_ptr<AliasDecl> &a : n.aliases) {
+    for (auto &a : n.aliases) {
       sync_to(*a);
       dispatch(*a);
     }
@@ -307,7 +307,7 @@ void XMLPrinter::visit(const Function &n) {
   if (!n.parameters.empty()) {
     sync_to(*n.parameters[0]);
     *o << "<parameters>";
-    for (const std::shared_ptr<VarDecl> &p : n.parameters) {
+    for (auto &p : n.parameters) {
       sync_to(*p);
       dispatch(*p);
     }
@@ -322,7 +322,7 @@ void XMLPrinter::visit(const Function &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }
@@ -428,7 +428,7 @@ void XMLPrinter::visit(const Model &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }
@@ -609,7 +609,7 @@ void XMLPrinter::visit(const Record &n) {
   *o << "<record ";
   add_location(n);
   *o << ">";
-  for (const std::shared_ptr<VarDecl> &f : n.fields) {
+  for (auto &f : n.fields) {
     sync_to(*f);
     dispatch(*f);
   }
@@ -693,7 +693,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }
@@ -729,7 +729,7 @@ void XMLPrinter::visit(const StartState &n) {
   if (!n.decls.empty()) {
     sync_to(*n.decls[0]);
     *o << "<decls>";
-    for (const std::shared_ptr<Decl> &d : n.decls) {
+    for (auto &d : n.decls) {
       sync_to(*d);
       dispatch(*d);
     }

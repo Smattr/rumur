@@ -31,7 +31,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const AliasRule &n) final {
-    for (const std::shared_ptr<AliasDecl> &a : n.aliases)
+    for (auto &a : n.aliases)
       dispatch(*a);
     for (auto &r : n.rules)
       dispatch(*r);
@@ -39,7 +39,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const AliasStmt &n) final {
-    for (const std::shared_ptr<AliasDecl> &a : n.aliases)
+    for (auto &a : n.aliases)
       dispatch(*a);
     for (auto &s : n.body)
       dispatch(*s);
@@ -131,11 +131,11 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Function &n) final {
-    for (const std::shared_ptr<VarDecl> &p : n.parameters)
+    for (auto &p : n.parameters)
       dispatch(*p);
     if (n.return_type != nullptr)
       dispatch(*n.return_type);
-    for (const std::shared_ptr<Decl> &d : n.decls)
+    for (auto &d : n.decls)
       dispatch(*d);
     for (auto &s : n.body)
       dispatch(*s);
@@ -199,7 +199,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Model &n) final {
-    for (const std::shared_ptr<Decl> &d : n.decls)
+    for (auto &d : n.decls)
       dispatch(*d);
     for (const std::shared_ptr<Function> &f : n.functions)
       dispatch(*f);
@@ -282,7 +282,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const Record &n) final {
-    for (const std::shared_ptr<VarDecl> &f : n.fields)
+    for (auto &f : n.fields)
       dispatch(*f);
     n.validate();
   }
@@ -311,7 +311,7 @@ class Validator : public ConstBaseTraversal {
       dispatch(q);
     if (n.guard != nullptr)
       dispatch(*n.guard);
-    for (const std::shared_ptr<Decl> &d : n.decls)
+    for (auto &d : n.decls)
       dispatch(*d);
     for (auto &s : n.body)
       dispatch(*s);
@@ -321,7 +321,7 @@ class Validator : public ConstBaseTraversal {
   void visit(const StartState &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
-    for (const std::shared_ptr<Decl> &d : n.decls)
+    for (auto &d : n.decls)
       dispatch(*d);
     for (auto &s : n.body)
       dispatch(*s);

@@ -8,6 +8,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Number.h>
+#include <rumur/Ptr.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -110,10 +111,10 @@ struct Enum : public TypeExpr {
 
 struct Record : public TypeExpr {
 
-  std::vector<std::shared_ptr<VarDecl>> fields;
+  std::vector<Ptr<VarDecl>> fields;
 
   Record() = delete;
-  Record(std::vector<std::shared_ptr<VarDecl>> &&fields_, const location &loc_);
+  Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_);
   Record(const Record &other);
   Record &operator=(Record other);
   friend void swap(Record &x, Record &y) noexcept;

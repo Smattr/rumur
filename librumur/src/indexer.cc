@@ -23,7 +23,7 @@ void Indexer::visit(AliasDecl &n) {
 
 void Indexer::visit(AliasRule &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<AliasDecl> &a : n.aliases)
+  for (auto &a : n.aliases)
     dispatch(*a);
   for (auto &r : n.rules)
     dispatch(*r);
@@ -31,7 +31,7 @@ void Indexer::visit(AliasRule &n) {
 
 void Indexer::visit(AliasStmt &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<AliasDecl> &a : n.aliases)
+  for (auto &a : n.aliases)
     dispatch(*a);
   for (auto &s : n.body)
     dispatch(*s);
@@ -121,11 +121,11 @@ void Indexer::visit(Forall &n) {
 
 void Indexer::visit(Function &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<VarDecl> &p : n.parameters)
+  for (auto &p : n.parameters)
     dispatch(*p);
   if (n.return_type != nullptr)
     dispatch(*n.return_type);
-  for (std::shared_ptr<Decl> &d : n.decls)
+  for (auto &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)
     dispatch(*s);
@@ -177,7 +177,7 @@ void Indexer::visit(Mod &n) {
 
 void Indexer::visit(Model &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Decl> &d : n.decls)
+  for (auto &d : n.decls)
     dispatch(*d);
   for (std::shared_ptr<Function> &f : n.functions)
     dispatch(*f);
@@ -252,7 +252,7 @@ void Indexer::visit(Range &n) {
 
 void Indexer::visit(Record &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<VarDecl> &f : n.fields)
+  for (auto &f : n.fields)
     dispatch(*f);
 }
 
@@ -281,7 +281,7 @@ void Indexer::visit(SimpleRule &n) {
     dispatch(q);
   if (n.guard != nullptr)
     dispatch(*n.guard);
-  for (std::shared_ptr<Decl> &d : n.decls)
+  for (auto &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)
     dispatch(*s);
@@ -291,7 +291,7 @@ void Indexer::visit(StartState &n) {
   n.unique_id = next++;
   for (Quantifier &q : n.quantifiers)
     dispatch(q);
-  for (std::shared_ptr<Decl> &d : n.decls)
+  for (auto &d : n.decls)
     dispatch(*d);
   for (auto &s : n.body)
     dispatch(*s);

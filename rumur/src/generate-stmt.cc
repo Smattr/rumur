@@ -51,7 +51,7 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
 
     std::string off = offset;
 
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+    for (const Ptr<VarDecl> &f : r->fields) {
 
       // Generate code to clear this field
       clear(out, *f->type, off, depth);
@@ -80,7 +80,7 @@ class Generator : public ConstStmtTraversal {
   void visit(const AliasStmt &s) final {
     *out << "  {\n";
 
-    for (const std::shared_ptr<AliasDecl> &a : s.aliases) {
+    for (auto &a : s.aliases) {
       *out << "    ";
       generate_decl(*out, *a);
       *out << ";\n";
@@ -205,7 +205,7 @@ class Generator : public ConstStmtTraversal {
         assert(it != s.function->parameters.end() &&
           "procedure call has more arguments than its target procedure");
 
-        std::shared_ptr<VarDecl> &p = *it;
+        const Ptr<VarDecl> &p = *it;
 
         if (!p->readonly) {
           generate_lvalue(*out, *a);

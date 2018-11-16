@@ -169,7 +169,7 @@ class Generator : public ConstExprTraversal {
     assert(resolved != nullptr);
     if (auto r = dynamic_cast<const Record*>(resolved)) {
       mpz_class offset = 0;
-      for (const std::shared_ptr<VarDecl> &f : r->fields) {
+      for (const Ptr<VarDecl> &f : r->fields) {
         if (f->name == n.field) {
           if (!lvalue && f->type->is_simple()) {
             const std::string lb = f->type->lower_bound();
@@ -228,7 +228,7 @@ class Generator : public ConstExprTraversal {
         assert(it != n.function->parameters.end() &&
           "function call has more arguments than its target function");
 
-        std::shared_ptr<VarDecl> &p = *it;
+        const Ptr<VarDecl> &p = *it;
 
         if (!p->readonly) {
           generate_lvalue(*out, *a);

@@ -148,7 +148,7 @@ class Generator : public ConstTypeTraversal {
   }
 
   void visit(const Record &n) final {
-    for (const std::shared_ptr<VarDecl> &f : n.fields) {
+    for (auto &f : n.fields) {
       generate_print(*out, *f, prefix + ".", preceding_offset);
       preceding_offset += f->width();
     }

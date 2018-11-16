@@ -7,7 +7,7 @@
 #include <vector>
 
 void generate_function(std::ostream &out, const rumur::Function &f,
-    const std::vector<std::shared_ptr<rumur::Decl>> &decls) {
+    const std::vector<rumur::Ptr<rumur::Decl>> &decls) {
 
   /* Functions returning a simple type return a value, as expected. Functions
    * returning a complex type return a handle that is actually the same as their
@@ -27,7 +27,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
   if (f.return_type != nullptr && !f.return_type->is_simple())
     out << ", struct handle ret";
 
-  for (const std::shared_ptr<rumur::VarDecl> &p : f.parameters) {
+  for (const rumur::Ptr<rumur::VarDecl> &p : f.parameters) {
     if (p->readonly && p->type->is_simple()) {
       out << ", value_t ru_" << p->name;
     } else {
@@ -40,7 +40,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
   /* Output the state variable handles so we can reference them within
    * this start state.
    */
-  for (const std::shared_ptr<rumur::Decl> &d : decls) {
+  for (const rumur::Ptr<rumur::Decl> &d : decls) {
     if (isa<rumur::VarDecl>(d)) {
 
       /* Exciting kludge: we need to suppress the definition of state variables
@@ -48,7 +48,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
        * to do this.
        */
       bool shadowed = false;
-      for (const std::shared_ptr<rumur::VarDecl> &p : f.parameters) {
+      for (const rumur::Ptr<rumur::VarDecl> &p : f.parameters) {
         if (p->name == d->name) {
           shadowed = true;
           break;
@@ -69,7 +69,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
   out << "  {\n";
 
   // Output this function's local decls
-  for (const std::shared_ptr<rumur::Decl> &d : f.decls) {
+  for (const rumur::Ptr<rumur::Decl> &d : f.decls) {
     if (isa<rumur::ConstDecl>(d) || isa<rumur::VarDecl>(d)) {
       out << "  ";
       generate_decl(out, *d);

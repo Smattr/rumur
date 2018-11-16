@@ -13,7 +13,7 @@ using namespace rumur;
 void generate_model(std::ostream &out, const Model &m) {
 
   // Generate each defined constant.
-  for (const std::shared_ptr<Decl> &d : m.decls) {
+  for (const Ptr<Decl> &d : m.decls) {
     if (isa<ConstDecl>(d)) {
       generate_decl(out, *d);
       out << ";\n";
@@ -49,7 +49,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this start state.
          */
-        for (const std::shared_ptr<Decl> &d : m.decls) {
+        for (const Ptr<Decl> &d : m.decls) {
           if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
@@ -60,7 +60,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output alias definitions, opening a scope in advance to support
          * aliases that shadow state variables, parameters, or other aliases.
          */
-        for (const std::shared_ptr<AliasDecl> &a : s->aliases) {
+        for (const Ptr<AliasDecl> &a : s->aliases) {
           out << "   {\n  ";
           generate_decl(out, *a);
           out << ";\n";
@@ -71,7 +71,7 @@ void generate_model(std::ostream &out, const Model &m) {
          */
         out << "  {\n";
 
-        for (const std::shared_ptr<Decl> &d : s->decls) {
+        for (const Ptr<Decl> &d : s->decls) {
           if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
             out << "    ";
             generate_decl(out, *v);
@@ -111,7 +111,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this property.
          */
-        for (const std::shared_ptr<Decl> &d : m.decls) {
+        for (const Ptr<Decl> &d : m.decls) {
           if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
@@ -122,7 +122,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output alias definitions, opening a scope in advance to support
          * aliases that shadow state variables, parameters, or other aliases.
          */
-        for (const std::shared_ptr<AliasDecl> &a : i->aliases) {
+        for (const Ptr<AliasDecl> &a : i->aliases) {
           out << "   {\n  ";
           generate_decl(out, *a);
           out << ";\n";
@@ -155,7 +155,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this guard.
          */
-        for (const std::shared_ptr<Decl> &d : m.decls) {
+        for (const Ptr<Decl> &d : m.decls) {
           if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
@@ -166,7 +166,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output alias definitions, opening a scope in advance to support
          * aliases that shadow state variables, parameters, or other aliases.
          */
-        for (const std::shared_ptr<AliasDecl> &a : s->aliases) {
+        for (const Ptr<AliasDecl> &a : s->aliases) {
           out << "   {\n  ";
           generate_decl(out, *a);
           out << ";\n";
@@ -191,7 +191,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this rule.
          */
-        for (const std::shared_ptr<Decl> &d : m.decls) {
+        for (const Ptr<Decl> &d : m.decls) {
           if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
@@ -202,7 +202,7 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output alias definitions, opening a scope in advance to support
          * aliases that shadow state variables, parameters, or other aliases.
          */
-        for (const std::shared_ptr<AliasDecl> &a : s->aliases) {
+        for (const Ptr<AliasDecl> &a : s->aliases) {
           out << "   {\n  ";
           generate_decl(out, *a);
           out << ";\n";
@@ -213,7 +213,7 @@ void generate_model(std::ostream &out, const Model &m) {
          */
         out << "  {\n";
 
-        for (const std::shared_ptr<Decl> &d : s->decls) {
+        for (const Ptr<Decl> &d : s->decls) {
           if (isa<VarDecl>(d)) {
             out << "  ";
             generate_decl(out, *d);
@@ -509,7 +509,7 @@ void generate_model(std::ostream &out, const Model &m) {
   out
     << "static void state_print(const struct state *previous, const struct state *s) {\n";
   mpz_class offset = 0;
-  for (const std::shared_ptr<Decl> &d : m.decls) {
+  for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
       generate_print(out, *v, "", offset);
       offset += v->width();
@@ -630,7 +630,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Generate a function used during debugging
   out << "static void state_print_field_offsets(void) {\n";
-  for (const std::shared_ptr<Decl> &d : m.decls) {
+  for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get()))
       out << "  printf(\"\t* field %s is located at state offset " << v->offset
         << " bits\\n\", \"" << v->name << "\");\n";

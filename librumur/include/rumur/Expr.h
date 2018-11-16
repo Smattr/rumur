@@ -7,6 +7,7 @@
 #include "location.hh"
 #include <memory>
 #include <rumur/Node.h>
+#include <rumur/Ptr.h>
 #include <string>
 #include <vector>
 
@@ -351,10 +352,10 @@ struct Mod : public ArithmeticBinaryExpr {
 struct ExprID : public Expr {
 
   std::string id;
-  std::shared_ptr<ExprDecl> value;
+  Ptr<ExprDecl> value;
 
   ExprID() = delete;
-  ExprID(const std::string &id_, const std::shared_ptr<ExprDecl> value_,
+  ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
     const location &loc_);
   ExprID(const ExprID &other);
   ExprID &operator=(ExprID other);

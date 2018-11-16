@@ -19,7 +19,7 @@ struct Rule : public Node {
 
   std::string name;
   std::vector<Quantifier> quantifiers;
-  std::vector<std::shared_ptr<AliasDecl>> aliases;
+  std::vector<Ptr<AliasDecl>> aliases;
 
   Rule() = delete;
   Rule(const std::string &name_, const location &loc_);
@@ -36,7 +36,7 @@ struct AliasRule : public Rule {
   std::vector<Ptr<Rule>> rules;
 
   AliasRule() = delete;
-  AliasRule(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+  AliasRule(const std::vector<Ptr<AliasDecl>> &aliases_,
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   AliasRule(const AliasRule &other);
   AliasRule &operator=(AliasRule other);
@@ -51,12 +51,12 @@ struct AliasRule : public Rule {
 struct SimpleRule : public Rule {
 
   std::shared_ptr<Expr> guard;
-  std::vector<std::shared_ptr<Decl>> decls;
+  std::vector<Ptr<Decl>> decls;
   std::vector<Ptr<Stmt>> body;
 
   SimpleRule() = delete;
   SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
-    std::vector<std::shared_ptr<Decl>> &&decls_,
+    const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   SimpleRule(const SimpleRule &other);
   SimpleRule &operator=(SimpleRule other);
@@ -69,12 +69,12 @@ struct SimpleRule : public Rule {
 
 struct StartState : public Rule {
 
-  std::vector<std::shared_ptr<Decl>> decls;
+  std::vector<Ptr<Decl>> decls;
   std::vector<Ptr<Stmt>> body;
 
   StartState() = delete;
   StartState(const std::string &name_,
-    std::vector<std::shared_ptr<Decl>> &&decls_,
+    const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   StartState(const StartState &other);
   StartState &operator=(StartState other);

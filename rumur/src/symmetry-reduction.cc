@@ -15,7 +15,7 @@ using namespace rumur;
 // Find all the named scalarset declarations in a model.
 static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
-  for (const std::shared_ptr<Decl> &d : m.decls) {
+  for (const Ptr<Decl> &d : m.decls) {
     if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
       if (isa<Scalarset>(t->value))
         ss.push_back(t);
@@ -71,7 +71,7 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+    for (const Ptr<VarDecl> &f : r->fields) {
       generate_apply_swap(out, off_a, off_b, *f->type, depth);
 
       off_a += " + SIZE_C(" + f->width().get_str() + ")";
@@ -155,7 +155,7 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
 
     std::string off = offset;
 
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+    for (const Ptr<VarDecl> &f : r->fields) {
       generate_swap_chunk(out, *f->type, off, pivot, depth);
 
       off += " + SIZE_C(" + f->width().get_str() + ")";
@@ -174,7 +174,7 @@ static void generate_swap(const Model &m, std::ostream &out,
     << "size_t x __attribute__((unused)), "
     << "size_t y __attribute__((unused))) {\n";
 
-  for (const std::shared_ptr<Decl> &d : m.decls) {
+  for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
       std::string offset = "SIZE_C(" + v->offset.get_str() + ")";
       generate_swap_chunk(out, *v->type, offset, pivot);
@@ -363,7 +363,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+    for (const Ptr<VarDecl> &f : r->fields) {
       generate_apply_compare(out, *f->type, off_a, off_b, pivot, depth,
         used_pivot);
 
@@ -465,7 +465,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
 
     std::string off = offset;
 
-    for (const std::shared_ptr<VarDecl> &f : r->fields) {
+    for (const Ptr<VarDecl> &f : r->fields) {
 
       // Generate code to compare this field
       generate_compare_chunk(out, *f->type, off, pivot, depth, used_pivot);
@@ -496,7 +496,7 @@ static void generate_compare(std::ostream &out, const TypeDecl &pivot,
     << "  }\n"
     << "\n";
 
-  for (const std::shared_ptr<Decl> &d : m.decls) {
+  for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
       const std::string offset = "SIZE_C(" + v->offset.get_str() + ")";
       generate_compare_chunk(out, *v->type, offset, pivot);

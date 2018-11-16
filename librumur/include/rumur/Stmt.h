@@ -33,11 +33,11 @@ struct Stmt : public Node {
 
 struct AliasStmt : public Stmt {
 
-  std::vector<std::shared_ptr<AliasDecl>> aliases;
+  std::vector<Ptr<AliasDecl>> aliases;
   std::vector<Ptr<Stmt>> body;
 
   AliasStmt() = delete;
-  AliasStmt(std::vector<std::shared_ptr<AliasDecl>> &&aliases_,
+  AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   AliasStmt(const AliasStmt &other);
   AliasStmt &operator=(AliasStmt other);

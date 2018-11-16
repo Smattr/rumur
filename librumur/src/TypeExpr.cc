@@ -8,6 +8,7 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Number.h>
+#include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <unordered_set>
@@ -235,22 +236,19 @@ std::string Enum::upper_bound() const {
   return "VALUE_C(" + size.get_str() + ")";
 }
 
-Record::Record(std::vector<std::shared_ptr<VarDecl>> &&fields_,
+Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
   const location &loc_):
   TypeExpr(loc_), fields(fields_) {
 
   std::unordered_set<std::string> names;
-  for (const std::shared_ptr<VarDecl> &f : fields) {
+  for (const Ptr<VarDecl> &f : fields) {
     if (!names.insert(f->name).second)
       throw Error("duplicate field name \"" + f->name + "\"", f->loc);
   }
 }
 
 Record::Record(const Record &other):
-  TypeExpr(other) {
-  for (const std::shared_ptr<VarDecl> &v : other.fields)
-    fields.emplace_back(v->clone());
-}
+  TypeExpr(other), fields(other.fields) { }
 
 Record &Record::operator=(Record other) {
   swap(*this, other);
@@ -270,14 +268,14 @@ Record *Record::clone() const {
 
 mpz_class Record::width() const {
   mpz_class s = 0;
-  for (const std::shared_ptr<VarDecl> &v : fields)
+  for (const Ptr<VarDecl> &v : fields)
     s += v->type->width();
   return s;
 }
 
 mpz_class Record::count() const {
   mpz_class s = 1;
-  for (const std::shared_ptr<VarDecl> &v : fields)
+  for (const Ptr<VarDecl> &v : fields)
     s *= v->type->count();
   return s;
 }
