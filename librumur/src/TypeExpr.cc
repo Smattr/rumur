@@ -68,23 +68,6 @@ Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
   }
 }
 
-Range::Range(const Range &other):
-  TypeExpr(other), min(other.min), max(other.max) {
-}
-
-Range &Range::operator=(Range other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Range &x, Range &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.min, y.min);
-  swap(x.max, y.max);
-}
-
 Range *Range::clone() const {
   return new Range(*this);
 }
@@ -128,21 +111,6 @@ std::string Range::upper_bound() const {
 
 Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) { }
-
-Scalarset::Scalarset(const Scalarset &other):
-  TypeExpr(other), bound(other.bound) { }
-
-Scalarset &Scalarset::operator=(Scalarset other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Scalarset &x, Scalarset &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.bound, y.bound);
-}
 
 Scalarset *Scalarset::clone() const {
   return new Scalarset(*this);
@@ -247,21 +215,6 @@ Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
   }
 }
 
-Record::Record(const Record &other):
-  TypeExpr(other), fields(other.fields) { }
-
-Record &Record::operator=(Record other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Record &x, Record &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.fields, y.fields);
-}
-
 Record *Record::clone() const {
   return new Record(*this);
 }
@@ -296,23 +249,6 @@ bool Record::operator==(const Node &other) const {
 Array::Array(const Ptr<TypeExpr> &index_type_,
   const Ptr<TypeExpr> &element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) { }
-
-Array::Array(const Array &other):
-  TypeExpr(other), index_type(other.index_type),
-  element_type(other.element_type) { }
-
-Array &Array::operator=(Array other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Array &x, Array &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.index_type, y.index_type);
-  swap(x.element_type, y.element_type);
-}
 
 Array *Array::clone() const {
   return new Array(*this);
@@ -365,22 +301,6 @@ void Array::validate() const {
 TypeExprID::TypeExprID(const std::string &name_,
   const Ptr<TypeExpr> &referent_, const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
-
-TypeExprID::TypeExprID(const TypeExprID &other):
-  TypeExpr(other.loc), name(other.name), referent(other.referent) { }
-
-TypeExprID &TypeExprID::operator=(TypeExprID other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(TypeExprID &x, TypeExprID &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.referent, y.referent);
-}
 
 TypeExprID *TypeExprID::clone() const {
   return new TypeExprID(*this);

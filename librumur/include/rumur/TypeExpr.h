@@ -21,11 +21,6 @@ struct VarDecl;
 struct TypeExpr : public Node {
 
   using Node::Node;
-  TypeExpr() = delete;
-  TypeExpr(const TypeExpr&) = default;
-  TypeExpr(TypeExpr&&) = default;
-  TypeExpr &operator=(const TypeExpr&) = default;
-  TypeExpr &operator=(TypeExpr&&) = default;
   virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
@@ -48,11 +43,7 @@ struct Range : public TypeExpr {
   Ptr<Expr> min;
   Ptr<Expr> max;
 
-  Range() = delete;
   Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_);
-  Range(const Range &other);
-  Range &operator=(Range other);
-  friend void swap(Range &x, Range &y) noexcept;
   Range *clone() const final;
   virtual ~Range() = default;
 
@@ -69,11 +60,7 @@ struct Scalarset : public TypeExpr {
 
   Ptr<Expr> bound;
 
-  Scalarset() = delete;
   Scalarset(const Ptr<Expr> &bound_, const location &loc_);
-  Scalarset(const Scalarset &other);
-  Scalarset &operator=(Scalarset other);
-  friend void swap(Scalarset &x, Scalarset &y) noexcept;
   Scalarset *clone() const final;
   virtual ~Scalarset() = default;
 
@@ -90,13 +77,8 @@ struct Enum : public TypeExpr {
 
   std::vector<std::pair<std::string, location>> members;
 
-  Enum() = delete;
   Enum(const std::vector<std::pair<std::string, location>> &members_,
     const location &loc_);
-  Enum(const Enum&) = default;
-  Enum(Enum&&) = default;
-  Enum &operator=(const Enum&) = default;
-  Enum &operator=(Enum&&) = default;
   Enum *clone() const final;
   virtual ~Enum() = default;
 
@@ -112,11 +94,7 @@ struct Record : public TypeExpr {
 
   std::vector<Ptr<VarDecl>> fields;
 
-  Record() = delete;
   Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_);
-  Record(const Record &other);
-  Record &operator=(Record other);
-  friend void swap(Record &x, Record &y) noexcept;
   Record *clone() const final;
   virtual ~Record() = default;
 
@@ -130,12 +108,8 @@ struct Array : public TypeExpr {
   Ptr<TypeExpr> index_type;
   Ptr<TypeExpr> element_type;
 
-  Array() = delete;
   Array(const Ptr<TypeExpr> &index_type_, const Ptr<TypeExpr> &element_type_,
     const location &loc_);
-  Array(const Array &other);
-  Array &operator=(Array other);
-  friend void swap(Array &x, Array &y) noexcept;
   Array *clone() const final;
   virtual ~Array() = default;
 
@@ -150,12 +124,8 @@ struct TypeExprID : public TypeExpr {
   std::string name;
   Ptr<TypeExpr> referent;
 
-  TypeExprID() = delete;
   TypeExprID(const std::string &name_, const Ptr<TypeExpr> &referent_,
     const location &loc_);
-  TypeExprID(const TypeExprID &other);
-  TypeExprID &operator=(TypeExprID other);
-  friend void swap(TypeExprID &x, TypeExprID &y) noexcept;
   TypeExprID *clone() const final;
   virtual ~TypeExprID() = default;
 
