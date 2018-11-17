@@ -142,7 +142,7 @@ struct If : public Stmt {
   std::vector<IfClause> clauses;
 
   If() = delete;
-  If(std::vector<IfClause> &&clauses_, const location &loc_);
+  If(const std::vector<IfClause> &clauses_, const location &loc_);
   If(const If &other);
   If &operator=(If other);
   friend void swap(If &x, If &y) noexcept;

@@ -238,7 +238,7 @@ void IfClause::validate() const {
     throw Error("condition of if clause is not a boolean expression", loc);
 }
 
-If::If(std::vector<IfClause> &&clauses_, const location &loc_):
+If::If(const std::vector<IfClause> &clauses_, const location &loc_):
   Stmt(loc_), clauses(clauses_) { }
 
 If::If(const If &other):

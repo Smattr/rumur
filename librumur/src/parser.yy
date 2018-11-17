@@ -489,7 +489,7 @@ stmt: category STRING expr {
     rumur::IfClause($2, $4, rumur::location(@1.begin, @4.end)) };
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
-  $$ = rumur::Ptr<rumur::If>::make(std::move(cs), @$);
+  $$ = rumur::Ptr<rumur::If>::make(cs, @$);
 } | RETURN {
   $$ = rumur::Ptr<rumur::Return>::make(nullptr, @$);
 } | RETURN expr {
