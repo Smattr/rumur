@@ -22,26 +22,6 @@ Function::Function(const std::string &name_,
   Node(loc_), name(name_), parameters(parameters_), return_type(return_type_),
   decls(decls_), body(body_) { }
 
-Function::Function(const Function &other):
-  Node(other), name(other.name), parameters(other.parameters),
-  return_type(other.return_type), decls(other.decls), body(other.body) { }
-
-Function &Function::operator=(Function other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Function &x, Function &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.parameters, y.parameters);
-  swap(x.return_type, y.return_type);
-  swap(x.decls, y.decls);
-  swap(x.body, y.body);
-}
-
 Function *Function::clone() const {
   return new Function(*this);
 }
