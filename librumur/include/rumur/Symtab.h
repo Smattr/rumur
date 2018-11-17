@@ -33,10 +33,6 @@ class Symtab {
     scope.back()[name] = value;
   }
 
-  void declare(const std::string &name, const std::shared_ptr<Node> &value) {
-    declare(name, Ptr<Node>(value->clone()));
-  }
-
   template<typename U>
   std::shared_ptr<U> lookup(const std::string &name, const location &loc) {
     for (auto it = scope.rbegin(); it != scope.rend(); it++) {
