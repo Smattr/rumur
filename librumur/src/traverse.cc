@@ -669,7 +669,7 @@ void ConstTraversal::visit(const Function &n) {
 }
 
 void ConstTraversal::visit(const FunctionCall &n) {
-  for (const std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 
@@ -741,7 +741,7 @@ void ConstTraversal::visit(const Or &n) {
 }
 
 void ConstTraversal::visit(const ProcedureCall &n) {
-  for (const std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 
@@ -926,7 +926,7 @@ void ConstExprTraversal::visit(const Model &n) {
 }
 
 void ConstExprTraversal::visit(const ProcedureCall &n) {
-  for (const std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 
@@ -1092,7 +1092,7 @@ void ConstStmtTraversal::visit(const Function &n) {
 }
 
 void ConstStmtTraversal::visit(const FunctionCall &n) {
-  for (const std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 
@@ -1338,7 +1338,7 @@ void ConstTypeTraversal::visit(const Function &n) {
 }
 
 void ConstTypeTraversal::visit(const FunctionCall &n) {
-  for (const std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 
@@ -1410,7 +1410,7 @@ void ConstTypeTraversal::visit(const Or &n) {
 }
 
 void ConstTypeTraversal::visit(const ProcedureCall &n) {
-  for (const std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 

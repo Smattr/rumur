@@ -45,12 +45,11 @@ struct TypeExpr : public Node {
 
 struct Range : public TypeExpr {
 
-  std::shared_ptr<Expr> min;
-  std::shared_ptr<Expr> max;
+  Ptr<Expr> min;
+  Ptr<Expr> max;
 
   Range() = delete;
-  Range(std::shared_ptr<Expr> min_, std::shared_ptr<Expr> max_,
-    const location &loc_);
+  Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_);
   Range(const Range &other);
   Range &operator=(Range other);
   friend void swap(Range &x, Range &y) noexcept;
@@ -68,10 +67,10 @@ struct Range : public TypeExpr {
 
 struct Scalarset : public TypeExpr {
 
-  std::shared_ptr<Expr> bound;
+  Ptr<Expr> bound;
 
   Scalarset() = delete;
-  Scalarset(std::shared_ptr<Expr> bound_, const location &loc_);
+  Scalarset(const Ptr<Expr> &bound_, const location &loc_);
   Scalarset(const Scalarset &other);
   Scalarset &operator=(Scalarset other);
   friend void swap(Scalarset &x, Scalarset &y) noexcept;

@@ -198,7 +198,7 @@ class Generator : public ConstStmtTraversal {
     // Now emit the arguments to the procedure.
     {
       auto it = s.function->parameters.begin();
-      for (const std::shared_ptr<Expr> &a : s.arguments) {
+      for (const Ptr<Expr> &a : s.arguments) {
 
         *out << ", ";
 

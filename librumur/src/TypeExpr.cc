@@ -53,23 +53,23 @@ mpz_class TypeExpr::width() const {
   return bits;
 }
 
-Range::Range(std::shared_ptr<Expr> min_, std::shared_ptr<Expr> max_,
+Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
   const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
 
   if (min == nullptr) {
     // FIXME: avoid hard coding INT64 limits here
     // FIXME: this isn't even the right limit because of - overflowing grr...
-    min = std::make_shared<Number>(mpz_class("-9223372036854775807"), location());
+    min = Ptr<Number>::make(mpz_class("-9223372036854775807"), location());
   }
 
   if (max == nullptr) {
-    max = std::make_shared<Number>(mpz_class("9223372036854775807"), location());
+    max = Ptr<Number>::make(mpz_class("9223372036854775807"), location());
   }
 }
 
 Range::Range(const Range &other):
-  TypeExpr(other), min(other.min->clone()), max(other.max->clone()) {
+  TypeExpr(other), min(other.min), max(other.max) {
 }
 
 Range &Range::operator=(Range other) {
@@ -126,11 +126,11 @@ std::string Range::upper_bound() const {
   return "VALUE_C(" + max->constant_fold().get_str() + ")";
 }
 
-Scalarset::Scalarset(std::shared_ptr<Expr> bound_, const location &loc_):
+Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) { }
 
 Scalarset::Scalarset(const Scalarset &other):
-  TypeExpr(other), bound(other.bound->clone()) { }
+  TypeExpr(other), bound(other.bound) { }
 
 Scalarset &Scalarset::operator=(Scalarset other) {
   swap(*this, other);

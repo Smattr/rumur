@@ -23,7 +23,7 @@ class Generator : public ConstTraversal {
 
     define_backing_mem(n.unique_id, n.function->return_type.get());
 
-    for (const std::shared_ptr<Expr> &a : n.arguments)
+    for (auto &a : n.arguments)
       dispatch(*a);
   }
 
@@ -33,7 +33,7 @@ class Generator : public ConstTraversal {
 
     define_backing_mem(n.unique_id, n.function->return_type.get());
 
-    for (const std::shared_ptr<Expr> &a : n.arguments)
+    for (auto &a : n.arguments)
       dispatch(*a);
   }
 

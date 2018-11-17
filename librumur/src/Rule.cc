@@ -113,14 +113,13 @@ std::vector<Ptr<Rule>> AliasRule::flatten() const {
   return rs;
 }
 
-SimpleRule::SimpleRule(const std::string &name_, std::shared_ptr<Expr> guard_,
+SimpleRule::SimpleRule(const std::string &name_, const Ptr<Expr> &guard_,
   const std::vector<Ptr<Decl>> &decls_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) { }
 
 SimpleRule::SimpleRule(const SimpleRule &other):
-  Rule(other), guard(other.guard == nullptr ? nullptr : other.guard->clone()),
-  decls(other.decls), body(other.body) { }
+  Rule(other), guard(other.guard), decls(other.decls), body(other.body) { }
 
 SimpleRule &SimpleRule::operator=(SimpleRule other) {
   swap(*this, other);

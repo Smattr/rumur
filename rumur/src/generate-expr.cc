@@ -221,7 +221,7 @@ class Generator : public ConstExprTraversal {
     // Now emit the arguments to the function.
     {
       auto it = n.function->parameters.begin();
-      for (const std::shared_ptr<Expr> &a : n.arguments) {
+      for (const Ptr<Expr> &a : n.arguments) {
 
         *out << ", ";
 

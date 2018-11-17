@@ -133,7 +133,7 @@ void Indexer::visit(Function &n) {
 
 void Indexer::visit(FunctionCall &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 
@@ -211,7 +211,7 @@ void Indexer::visit(Or &n) {
 
 void Indexer::visit(ProcedureCall &n) {
   n.unique_id = next++;
-  for (std::shared_ptr<Expr> &a : n.arguments)
+  for (auto &a : n.arguments)
     dispatch(*a);
 }
 

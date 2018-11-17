@@ -6,6 +6,7 @@
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/Ptr.h>
 
 namespace rumur {
 
@@ -18,10 +19,10 @@ struct Property : public Node {
   };
 
   Category category;
-  std::shared_ptr<Expr> expr;
+  Ptr<Expr> expr;
 
   Property() = delete;
-  Property(Category category_, std::shared_ptr<Expr> expr_,
+  Property(Category category_, const Ptr<Expr> &expr_,
     const location &loc_);
   Property(const Property &other);
   Property &operator=(Property other);

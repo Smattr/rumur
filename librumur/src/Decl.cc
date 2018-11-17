@@ -7,6 +7,7 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/Ptr.h>
 #include <string>
 
 namespace rumur {
@@ -18,12 +19,12 @@ Decl::Decl(const std::string &name_, const location &loc_):
 Decl::~Decl() {
 }
 
-AliasDecl::AliasDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+AliasDecl::AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_):
   ExprDecl(name_, loc_), value(value_) { }
 
 AliasDecl::AliasDecl(const AliasDecl &other):
-  ExprDecl(other), value(other.value->clone()) { }
+  ExprDecl(other), value(other.value) { }
 
 AliasDecl &AliasDecl::operator=(AliasDecl other) {
   swap(*this, other);
@@ -61,16 +62,16 @@ const TypeExpr *AliasDecl::get_type() const {
   return value->type();
 }
 
-ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
   const location &loc_):
   ExprDecl(name_, loc_), value(value_) { }
 
-ConstDecl::ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
   std::shared_ptr<TypeExpr> type_, const location &loc_):
   ExprDecl(name_, loc_), value(value_), type(type_) { }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
-  ExprDecl(other), value(other.value->clone()), type(other.type) { }
+  ExprDecl(other), value(other.value), type(other.type) { }
 
 ConstDecl &ConstDecl::operator=(ConstDecl other) {
   swap(*this, other);

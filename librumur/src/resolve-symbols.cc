@@ -38,7 +38,7 @@ class Resolver : public BaseTraversal {
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : Boolean->members) {
       symtab.declare(m.first, Ptr<ConstDecl>::make("boolean",
-        std::make_shared<Number>(index, location()), Boolean, location()));
+        Ptr<Number>::make(index, location()), Boolean, location()));
       index++;
     }
   }
@@ -111,7 +111,7 @@ class Resolver : public BaseTraversal {
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : n.members) {
       auto cd = Ptr<ConstDecl>::make(m.first,
-        std::make_shared<Number>(index, m.second), e, m.second);
+        Ptr<Number>::make(index, m.second), e, m.second);
       symtab.declare(m.first, cd);
       index++;
     }
@@ -188,7 +188,7 @@ class Resolver : public BaseTraversal {
 
       n.function = f;
     }
-    for (std::shared_ptr<Expr> &a : n.arguments)
+    for (auto &a : n.arguments)
       dispatch(*a);
   }
 
@@ -273,7 +273,7 @@ class Resolver : public BaseTraversal {
 
       n.function = f;
     }
-    for (std::shared_ptr<Expr> &a : n.arguments)
+    for (auto &a : n.arguments)
       dispatch(*a);
   }
 

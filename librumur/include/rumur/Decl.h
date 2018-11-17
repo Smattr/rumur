@@ -8,6 +8,7 @@
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
+#include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 
@@ -45,10 +46,10 @@ struct ExprDecl : public Decl {
 
 struct AliasDecl : public ExprDecl {
 
-  std::shared_ptr<Expr> value;
+  Ptr<Expr> value;
 
   AliasDecl() = delete;
-  AliasDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+  AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_);
   AliasDecl(const AliasDecl &other);
   AliasDecl &operator=(AliasDecl other);
@@ -63,7 +64,7 @@ struct AliasDecl : public ExprDecl {
 
 struct ConstDecl : public ExprDecl {
 
-  std::shared_ptr<Expr> value;
+  Ptr<Expr> value;
 
   /* The type of this constant. Typically this will be NULL (untyped), but in
    * the case of enum members it will have the enum declaration as its type.
@@ -71,9 +72,9 @@ struct ConstDecl : public ExprDecl {
   std::shared_ptr<TypeExpr> type;
 
   ConstDecl() = delete;
-  ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+  ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_);
-  ConstDecl(const std::string &name_, std::shared_ptr<Expr> value_,
+  ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
     std::shared_ptr<TypeExpr> type_, const location &loc_);
   ConstDecl(const ConstDecl &other);
   ConstDecl &operator=(ConstDecl other);

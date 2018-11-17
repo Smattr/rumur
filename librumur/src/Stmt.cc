@@ -65,12 +65,12 @@ bool PropertyStmt::operator==(const Node &other) const {
   return o != nullptr && property == o->property && message == o->message;
 }
 
-Assignment::Assignment(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+Assignment::Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) { }
 
 Assignment::Assignment(const Assignment &other):
-  Stmt(other), lhs(other.lhs->clone()), rhs(other.rhs->clone()) {
+  Stmt(other), lhs(other.lhs), rhs(other.rhs) {
 }
 
 Assignment &Assignment::operator=(Assignment other) {
@@ -118,11 +118,11 @@ void Assignment::validate() const {
   throw Error("invalid assignment from incompatible type", loc);
 }
 
-Clear::Clear(std::shared_ptr<Expr> rhs_, const location &loc_):
+Clear::Clear(const Ptr<Expr> &rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
 Clear::Clear(const Clear &other):
-  Stmt(other.loc), rhs(other.rhs->clone()) { }
+  Stmt(other.loc), rhs(other.rhs) { }
 
 Clear &Clear::operator=(Clear other) {
   swap(*this, other);
@@ -185,15 +185,12 @@ bool For::operator==(const Node &other) const {
   return true;
 }
 
-IfClause::IfClause(std::shared_ptr<Expr> condition_,
+IfClause::IfClause(const Ptr<Expr> &condition_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Node(loc_), condition(condition_), body(body_) { }
 
 IfClause::IfClause(const IfClause &other):
-  Node(other.loc),
-  condition(other.condition == nullptr ? nullptr : other.condition->clone()),
-  body(other.body) {
-}
+  Node(other.loc), condition(other.condition), body(other.body) { }
 
 IfClause &IfClause::operator=(IfClause other) {
   swap(*this, other);
@@ -273,16 +270,13 @@ bool If::operator==(const Node &other) const {
 }
 
 ProcedureCall::ProcedureCall(const std::string &name_, std::shared_ptr<Function> function_,
-  std::vector<std::shared_ptr<Expr>> &&arguments_, const location &loc_):
+  const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
   Stmt(loc_), name(name_), function(function_), arguments(arguments_) { }
 
 ProcedureCall::ProcedureCall(const ProcedureCall &other):
   Stmt(other.loc), name(other.name),
-  function(other.function == nullptr ? nullptr : other.function->clone()) {
-
-  for (const std::shared_ptr<Expr> &p : other.arguments)
-    arguments.emplace_back(p->clone());
-}
+  function(other.function == nullptr ? nullptr : other.function->clone()),
+  arguments(other.arguments) { }
 
 ProcedureCall &ProcedureCall::operator=(ProcedureCall other) {
   swap(*this, other);
@@ -326,11 +320,11 @@ void ProcedureCall::validate() const {
     throw Error("unknown procedure \"" + name + "\"", loc);
 }
 
-Return::Return(std::shared_ptr<Expr> expr_, const location &loc_):
+Return::Return(const Ptr<Expr> &expr_, const location &loc_):
   Stmt(loc_), expr(expr_) { }
 
 Return::Return(const Return &other):
-  Stmt(other.loc), expr(other.expr == nullptr ? nullptr : other.expr->clone()) { }
+  Stmt(other.loc), expr(other.expr) { }
 
 Return &Return::operator=(Return other) {
   swap(*this, other);
@@ -363,11 +357,11 @@ bool Return::operator==(const Node &other) const {
   return true;
 }
 
-Undefine::Undefine(std::shared_ptr<Expr> rhs_, const location &loc_):
+Undefine::Undefine(const Ptr<Expr> &rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 
 Undefine::Undefine(const Undefine &other):
-  Stmt(other.loc), rhs(other.rhs->clone()) { }
+  Stmt(other.loc), rhs(other.rhs) { }
 
 Undefine &Undefine::operator=(Undefine other) {
   swap(*this, other);

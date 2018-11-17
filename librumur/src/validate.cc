@@ -143,7 +143,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const FunctionCall &n) final {
-    for (const std::shared_ptr<Expr> &a : n.arguments)
+    for (auto &a : n.arguments)
       dispatch(*a);
     n.validate();
   }
@@ -241,7 +241,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const ProcedureCall &n) final {
-    for (const std::shared_ptr<Expr> &a : n.arguments)
+    for (auto &a : n.arguments)
       dispatch(*a);
     n.validate();
   }

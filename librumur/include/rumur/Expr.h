@@ -50,13 +50,13 @@ struct Expr : public Node {
 
 struct Ternary : public Expr {
 
-  std::shared_ptr<Expr> cond;
-  std::shared_ptr<Expr> lhs;
-  std::shared_ptr<Expr> rhs;
+  Ptr<Expr> cond;
+  Ptr<Expr> lhs;
+  Ptr<Expr> rhs;
 
   Ternary() = delete;
-  Ternary(std::shared_ptr<Expr> cond_, std::shared_ptr<Expr> lhs_,
-    std::shared_ptr<Expr> rhs_, const location &loc_);
+  Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
+    const Ptr<Expr> &rhs_, const location &loc_);
   Ternary(const Ternary &other);
   Ternary(Ternary&&) = default;
   Ternary &operator=(Ternary other);
@@ -77,11 +77,11 @@ struct Ternary : public Expr {
 
 struct BinaryExpr : public Expr {
 
-  std::shared_ptr<Expr> lhs;
-  std::shared_ptr<Expr> rhs;
+  Ptr<Expr> lhs;
+  Ptr<Expr> rhs;
 
   BinaryExpr() = delete;
-  BinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+  BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
     const location &loc_);
   BinaryExpr(const BinaryExpr &other);
   BinaryExpr &operator=(const BinaryExpr&) = delete;
@@ -142,10 +142,10 @@ struct And : public BooleanBinaryExpr {
 
 struct UnaryExpr : public Expr {
 
-  std::shared_ptr<Expr> rhs;
+  Ptr<Expr> rhs;
 
   UnaryExpr() = delete;
-  UnaryExpr(std::shared_ptr<Expr> rhs_, const location &loc_);
+  UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_);
   UnaryExpr(const UnaryExpr &other);
   friend void swap(UnaryExpr &x, UnaryExpr &y) noexcept;
   UnaryExpr *clone() const override = 0;
@@ -373,11 +373,11 @@ struct ExprID : public Expr {
 
 struct Field : public Expr {
 
-  std::shared_ptr<Expr> record;
+  Ptr<Expr> record;
   std::string field;
 
   Field() = delete;
-  Field(std::shared_ptr<Expr> record_, const std::string &field_,
+  Field(const Ptr<Expr> &record_, const std::string &field_,
     const location &loc_);
   Field(const Field &other);
   friend void swap(Field &x, Field &y) noexcept;
@@ -394,11 +394,11 @@ struct Field : public Expr {
 
 struct Element : public Expr {
 
-  std::shared_ptr<Expr> array;
-  std::shared_ptr<Expr> index;
+  Ptr<Expr> array;
+  Ptr<Expr> index;
 
   Element() = delete;
-  Element(std::shared_ptr<Expr> array_, std::shared_ptr<Expr> index_,
+  Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
     const location &loc_);
   Element(const Element &other);
   friend void swap(Element &x, Element &y) noexcept;
@@ -417,11 +417,11 @@ struct FunctionCall : public Expr {
 
   std::string name;
   std::shared_ptr<Function> function;
-  std::vector<std::shared_ptr<Expr>> arguments;
+  std::vector<Ptr<Expr>> arguments;
 
   FunctionCall() = delete;
   FunctionCall(const std::string &name_, std::shared_ptr<Function> function_,
-    std::vector<std::shared_ptr<Expr>> arguments_, const location &loc_);
+    const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;
   FunctionCall &operator=(FunctionCall other);
@@ -442,17 +442,17 @@ struct Quantifier : public Node {
   // If this is != nullptr, the from/to/step will be nullptr
   std::shared_ptr<TypeExpr> type;
 
-  std::shared_ptr<Expr> from;
-  std::shared_ptr<Expr> to;
-  std::shared_ptr<Expr> step;
+  Ptr<Expr> from;
+  Ptr<Expr> to;
+  Ptr<Expr> step;
 
   Quantifier() = delete;
   Quantifier(const std::string &name_, std::shared_ptr<TypeExpr> type_,
     const location &loc);
-  Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
-    std::shared_ptr<Expr> to_, const location &loc_);
-  Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
-    std::shared_ptr<Expr> to_, std::shared_ptr<Expr> step_,
+  Quantifier(const std::string &name_, const Ptr<Expr> &from_,
+    const Ptr<Expr> &to_, const location &loc_);
+  Quantifier(const std::string &name_, const Ptr<Expr> &from_,
+    const Ptr<Expr> &to_, const Ptr<Expr> &step_,
     const location &loc_);
   Quantifier(const Quantifier &other);
   Quantifier &operator=(Quantifier other);
@@ -465,10 +465,10 @@ struct Quantifier : public Node {
 struct Exists : public Expr {
 
   Quantifier quantifier;
-  std::shared_ptr<Expr> expr;
+  Ptr<Expr> expr;
 
   Exists() = delete;
-  Exists(const Quantifier &quantifier_, std::shared_ptr<Expr> expr_,
+  Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
     const location &loc_);
   Exists(const Exists &other);
   Exists &operator=(Exists other);
@@ -486,10 +486,10 @@ struct Exists : public Expr {
 struct Forall : public Expr {
 
   Quantifier quantifier;
-  std::shared_ptr<Expr> expr;
+  Ptr<Expr> expr;
 
   Forall() = delete;
-  Forall(const Quantifier &quantifier_, std::shared_ptr<Expr> expr_,
+  Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
     const location &loc_);
   Forall(const Forall &other);
   Forall &operator=(Forall other);

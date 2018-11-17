@@ -162,15 +162,15 @@
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls_header
-%type <std::shared_ptr<rumur::Expr>>                         designator
+%type <rumur::Ptr<rumur::Expr>>                              designator
 %type <std::vector<rumur::IfClause>>                         else_opt
 %type <std::vector<rumur::IfClause>>                         elsifs
-%type <std::shared_ptr<rumur::Expr>>                         expr
-%type <std::vector<std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location>>> exprdecl
-%type <std::vector<std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location>>> exprdecls
-%type <std::vector<std::shared_ptr<rumur::Expr>>>            exprlist
-%type <std::vector<std::shared_ptr<rumur::Expr>>>            exprlist_cont
-%type <std::shared_ptr<rumur::Expr>>                         guard_opt
+%type <rumur::Ptr<rumur::Expr>>                              expr
+%type <std::vector<std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location>>> exprdecl
+%type <std::vector<std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location>>> exprdecls
+%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist
+%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist_cont
+%type <rumur::Ptr<rumur::Expr>>                              guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameter
@@ -205,7 +205,7 @@ model: decls procdecls rules {
 
 aliasrule: ALIAS exprdecls DO rules endalias {
   std::vector<rumur::Ptr<rumur::AliasDecl>> decls;
-  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+  for (const std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location> &d : $2) {
     decls.push_back(rumur::Ptr<rumur::AliasDecl>::make(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
   $$ = rumur::Ptr<rumur::AliasRule>::make(decls, $4, @$);
@@ -226,7 +226,7 @@ category: ASSERT {
 comma_opt: ',' | %empty;
 
 decl: CONST exprdecls {
-  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+  for (const std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location> &d : $2) {
     $$.push_back(rumur::Ptr<rumur::ConstDecl>::make(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
 } | TYPE typedecls {
@@ -248,15 +248,15 @@ decls_header: decls BEGIN_TOK {
 };
 
 designator: designator '.' ID {
-  $$ = std::make_shared<rumur::Field>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Field>::make($1, $3, @$);
 } | designator '[' expr ']' {
-  $$ = std::make_shared<rumur::Element>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Element>::make($1, $3, @$);
 } | ID {
-  $$ = std::make_shared<rumur::ExprID>($1, nullptr, @$);
+  $$ = rumur::Ptr<rumur::ExprID>::make($1, nullptr, @$);
 };
 
 else_opt: ELSE stmts {
-  $$.push_back(rumur::IfClause(std::shared_ptr<Expr>(), $2, @$));
+  $$.push_back(rumur::IfClause(nullptr, $2, @$));
 } | %empty {
 };
 
@@ -278,57 +278,57 @@ endruleset: END | ENDRULESET;
 endstartstate: END | ENDSTARTSTATE;
 
 expr: expr '?' expr ':' expr {
-  $$ = std::make_shared<rumur::Ternary>($1, $3, $5, @$);
+  $$ = rumur::Ptr<rumur::Ternary>::make($1, $3, $5, @$);
 } | expr IMPLIES expr {
-  $$ = std::make_shared<rumur::Implication>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Implication>::make($1, $3, @$);
 } | expr '|' expr {
-  $$ = std::make_shared<rumur::Or>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
 } | expr '&' expr {
-  $$ = std::make_shared<rumur::And>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
 } | '!' expr {
-  $$ = std::make_shared<rumur::Not>($2, @$);
+  $$ = rumur::Ptr<rumur::Not>::make($2, @$);
 } | expr '<' expr {
-  $$ = std::make_shared<rumur::Lt>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Lt>::make($1, $3, @$);
 } | expr LEQ expr {
-  $$ = std::make_shared<rumur::Leq>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Leq>::make($1, $3, @$);
 } | expr '>' expr {
-  $$ = std::make_shared<rumur::Gt>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Gt>::make($1, $3, @$);
 } | expr GEQ expr {
-  $$ = std::make_shared<rumur::Geq>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Geq>::make($1, $3, @$);
 } | expr DEQ expr {
-  $$ = std::make_shared<rumur::Eq>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Eq>::make($1, $3, @$);
 } | expr '=' expr {
-  $$ = std::make_shared<rumur::Eq>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Eq>::make($1, $3, @$);
 } | expr NEQ expr {
-  $$ = std::make_shared<rumur::Neq>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Neq>::make($1, $3, @$);
 } | expr '+' expr {
-  $$ = std::make_shared<rumur::Add>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Add>::make($1, $3, @$);
 } | expr '-' expr {
-  $$ = std::make_shared<rumur::Sub>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Sub>::make($1, $3, @$);
 } | '+' expr %prec '*' {
   $$ = $2;
   $$->loc = @$;
 } | '-' expr %prec '*' {
-  $$ = std::make_shared<rumur::Negative>($2, @$);
+  $$ = rumur::Ptr<rumur::Negative>::make($2, @$);
 } | expr '*' expr {
-  $$ = std::make_shared<rumur::Mul>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Mul>::make($1, $3, @$);
 } | expr '/' expr {
-  $$ = std::make_shared<rumur::Div>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Div>::make($1, $3, @$);
 } | expr '%' expr {
-  $$ = std::make_shared<rumur::Mod>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Mod>::make($1, $3, @$);
 } | FORALL quantifier DO expr endforall {
-    $$ = std::make_shared<rumur::Forall>(*$2, $4, @$);
+    $$ = rumur::Ptr<rumur::Forall>::make(*$2, $4, @$);
 } | EXISTS quantifier DO expr endexists {
-    $$ = std::make_shared<rumur::Exists>(*$2, $4, @$);
+    $$ = rumur::Ptr<rumur::Exists>::make(*$2, $4, @$);
 } | designator {
   $$ = $1;
 } | NUMBER {
-  $$ = std::make_shared<rumur::Number>($1, @$);
+  $$ = rumur::Ptr<rumur::Number>::make($1, @$);
 } | '(' expr ')' {
   $$ = $2;
   $$->loc = @$;
 } | ID '(' exprlist ')' {
-  $$ = std::make_shared<rumur::FunctionCall>($1, nullptr, std::move($3), @$);
+  $$ = rumur::Ptr<rumur::FunctionCall>::make($1, nullptr, $3, @$);
 };
 
 exprdecl: id_list_opt ':' expr {
@@ -474,7 +474,7 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::Assignment>::make($1, $3, @$);
 } | ALIAS exprdecls DO stmts endalias {
   std::vector<rumur::Ptr<rumur::AliasDecl>> decls;
-  for (const std::tuple<std::string, std::shared_ptr<rumur::Expr>, rumur::location> &d : $2) {
+  for (const std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location> &d : $2) {
     decls.push_back(rumur::Ptr<rumur::AliasDecl>::make(std::get<0>(d), std::get<1>(d), std::get<2>(d)));
   }
   $$ = rumur::Ptr<rumur::AliasStmt>::make(decls, $4, @$);
@@ -491,13 +491,13 @@ stmt: category STRING expr {
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = rumur::Ptr<rumur::If>::make(std::move(cs), @$);
 } | RETURN {
-  $$ = rumur::Ptr<rumur::Return>::make(std::shared_ptr<Expr>(), @$);
+  $$ = rumur::Ptr<rumur::Return>::make(nullptr, @$);
 } | RETURN expr {
   $$ = rumur::Ptr<rumur::Return>::make($2, @$);
 } | UNDEFINE designator {
   $$ = rumur::Ptr<rumur::Undefine>::make($2, @$);
 } | ID '(' exprlist ')' {
-  $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, nullptr, std::move($3), @$);
+  $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, nullptr, $3, @$);
 };
 
 stmts: stmts_cont stmt semi_opt {

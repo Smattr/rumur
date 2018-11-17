@@ -28,14 +28,12 @@ bool Expr::is_lvalue() const {
   return false;
 }
 
-Ternary::Ternary(std::shared_ptr<Expr> cond_, std::shared_ptr<Expr> lhs_,
-  std::shared_ptr<Expr> rhs_, const location &loc_):
-  Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {
-}
+Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_):
+  Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) { }
 
 Ternary::Ternary(const Ternary &other):
-  Expr(other), cond(other.cond->clone()), lhs(other.lhs->clone()),
-  rhs(other.rhs->clone()) { }
+  Expr(other), cond(other.cond), lhs(other.lhs), rhs(other.rhs) { }
 
 Ternary &Ternary::operator=(Ternary other) {
   swap(*this, other);
@@ -78,14 +76,12 @@ void Ternary::validate() const {
     throw Error("ternary condition is not a boolean", cond->loc);
 }
 
-BinaryExpr::BinaryExpr(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+BinaryExpr::BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
-  Expr(loc_), lhs(lhs_), rhs(rhs_) {
-}
+  Expr(loc_), lhs(lhs_), rhs(rhs_) { }
 
 BinaryExpr::BinaryExpr(const BinaryExpr &other):
-  Expr(other), lhs(other.lhs->clone()), rhs(other.rhs->clone()) {
-}
+  Expr(other), lhs(other.lhs), rhs(other.rhs) { }
 
 void swap(BinaryExpr &x, BinaryExpr &y) noexcept {
   using std::swap;
@@ -174,12 +170,12 @@ bool And::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-UnaryExpr::UnaryExpr(std::shared_ptr<Expr> rhs_, const location &loc_):
+UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), rhs(rhs_) {
 }
 
 UnaryExpr::UnaryExpr(const UnaryExpr &other):
-  Expr(other), rhs(other.rhs->clone()) {
+  Expr(other), rhs(other.rhs) {
 }
 
 void swap(UnaryExpr &x, UnaryExpr &y) noexcept {
@@ -714,13 +710,13 @@ bool ExprID::is_lvalue() const {
   return value->is_lvalue();
 }
 
-Field::Field(std::shared_ptr<Expr> record_, const std::string &field_,
+Field::Field(const Ptr<Expr> &record_, const std::string &field_,
   const location &loc_):
   Expr(loc_), record(record_), field(field_) {
 }
 
 Field::Field(const Field &other):
-  Expr(other), record(other.record->clone()), field(other.field) {
+  Expr(other), record(other.record), field(other.field) {
 }
 
 void swap(Field &x, Field &y) noexcept {
@@ -772,13 +768,13 @@ bool Field::is_lvalue() const {
   return record->is_lvalue();
 }
 
-Element::Element(std::shared_ptr<Expr> array_, std::shared_ptr<Expr> index_,
+Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
   const location &loc_):
   Expr(loc_), array(array_), index(index_) {
 }
 
 Element::Element(const Element &other):
-  Expr(other), array(other.array->clone()), index(other.index->clone()) {
+  Expr(other), array(other.array), index(other.index) {
 }
 
 void swap(Element &x, Element &y) noexcept {
@@ -825,16 +821,13 @@ bool Element::is_lvalue() const {
 
 FunctionCall::FunctionCall(const std::string &name_,
   std::shared_ptr<Function> function_,
-  std::vector<std::shared_ptr<Expr>> arguments_, const location &loc_):
+  const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
   Expr(loc_), name(name_), function(function_), arguments(arguments_) { }
 
 FunctionCall::FunctionCall(const FunctionCall &other):
   Expr(other), name(other.name),
-  function(other.function == nullptr ? nullptr : other.function->clone()) {
-
-  for (const std::shared_ptr<Expr> &a : other.arguments)
-    arguments.emplace_back(a->clone());
-}
+  function(other.function == nullptr ? nullptr : other.function->clone()),
+  arguments(other.arguments) { }
 
 void swap(FunctionCall &x, FunctionCall &y) noexcept {
   using std::swap;
@@ -901,22 +894,18 @@ Quantifier::Quantifier(const std::string &name_,
     std::shared_ptr<TypeExpr> type_, const location &loc_)
   : Node(loc_), name(name_), type(type_) { }
 
-Quantifier::Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
-    std::shared_ptr<Expr> to_, const location &loc_)
-  : Quantifier(name_, from_, to_, nullptr, loc_) {
-}
+Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
+  const Ptr<Expr> &to_, const location &loc_):
+  Quantifier(name_, from_, to_, nullptr, loc_) { }
 
-Quantifier::Quantifier(const std::string &name_, std::shared_ptr<Expr> from_,
-    std::shared_ptr<Expr> to_, std::shared_ptr<Expr> step_,
-    const location &loc_)
-  : Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
+Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
+  const Ptr<Expr> &to_, const Ptr<Expr> &step_, const location &loc_):
+  Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
 
-Quantifier::Quantifier(const Quantifier &other)
-  : Node(other), name(other.name),
-    type(other.type == nullptr ? nullptr : other.type->clone()),
-    from(other.from == nullptr ? nullptr : other.from->clone()),
-    to(other.to == nullptr ? nullptr : other.to->clone()),
-    step(other.step == nullptr ? nullptr : other.step->clone()) { }
+Quantifier::Quantifier(const Quantifier &other):
+  Node(other), name(other.name),
+  type(other.type == nullptr ? nullptr : other.type->clone()), from(other.from),
+  to(other.to), step(other.step) { }
 
 Quantifier &Quantifier::operator=(Quantifier other) {
   swap(*this, other);
@@ -979,12 +968,12 @@ bool Quantifier::operator==(const Node &other) const {
   return true;
 }
 
-Exists::Exists(const Quantifier &quantifier_,
-  std::shared_ptr<Expr> expr_, const location &loc_):
+Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
+  const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
 Exists::Exists(const Exists &other):
-  Expr(other), quantifier(other.quantifier), expr(other.expr->clone()) { }
+  Expr(other), quantifier(other.quantifier), expr(other.expr) { }
 
 Exists &Exists::operator=(Exists other) {
   swap(*this, other);
@@ -1025,12 +1014,12 @@ void Exists::validate() const {
     throw Error("expression in exists is not boolean", expr->loc);
 }
 
-Forall::Forall(const Quantifier &quantifier_,
-  std::shared_ptr<Expr> expr_, const location &loc_):
+Forall::Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
+  const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
 Forall::Forall(const Forall &other):
-  Expr(other), quantifier(other.quantifier), expr(other.expr->clone()) { }
+  Expr(other), quantifier(other.quantifier), expr(other.expr) { }
 
 Forall &Forall::operator=(Forall other) {
   swap(*this, other);

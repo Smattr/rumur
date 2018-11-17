@@ -63,11 +63,11 @@ struct PropertyStmt : public Stmt {
 
 struct Assignment : public Stmt {
 
-  std::shared_ptr<Expr> lhs;
-  std::shared_ptr<Expr> rhs;
+  Ptr<Expr> lhs;
+  Ptr<Expr> rhs;
 
   Assignment() = delete;
-  Assignment(std::shared_ptr<Expr> lhs_, std::shared_ptr<Expr> rhs_,
+  Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
     const location &loc_);
   Assignment(const Assignment &other);
   Assignment &operator=(Assignment other);
@@ -81,10 +81,10 @@ struct Assignment : public Stmt {
 
 struct Clear : public Stmt {
 
-  std::shared_ptr<Expr> rhs;
+  Ptr<Expr> rhs;
 
   Clear() = delete;
-  Clear(std::shared_ptr<Expr> rhs_, const location &loc);
+  Clear(const Ptr<Expr> &rhs_, const location &loc);
   Clear(const Clear &other);
   Clear &operator=(Clear other);
   friend void swap(Clear &x, Clear &y) noexcept;
@@ -121,11 +121,11 @@ struct For : public Stmt {
 
 struct IfClause : public Node {
 
-  std::shared_ptr<Expr> condition;
+  Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;
 
   IfClause() = delete;
-  IfClause(std::shared_ptr<Expr> condition_,
+  IfClause(const Ptr<Expr> &condition_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   IfClause(const IfClause &other);
   IfClause &operator=(IfClause other);
@@ -156,11 +156,11 @@ struct ProcedureCall : public Stmt {
 
   std::string name;
   std::shared_ptr<Function> function;
-  std::vector<std::shared_ptr<Expr>> arguments;
+  std::vector<Ptr<Expr>> arguments;
 
   ProcedureCall() = delete;
   ProcedureCall(const std::string &name_, std::shared_ptr<Function> function_,
-    std::vector<std::shared_ptr<Expr>> &&arguments_, const location &loc_);
+    const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);
   friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;
@@ -173,10 +173,10 @@ struct ProcedureCall : public Stmt {
 
 struct Return : public Stmt {
 
-  std::shared_ptr<Expr> expr;
+  Ptr<Expr> expr;
 
   Return() = delete;
-  Return(std::shared_ptr<Expr> expr_, const location &loc_);
+  Return(const Ptr<Expr> &expr_, const location &loc_);
   Return(const Return &other);
   Return &operator=(Return other);
   friend void swap(Return &x, Return &y) noexcept;
@@ -188,10 +188,10 @@ struct Return : public Stmt {
 
 struct Undefine : public Stmt {
 
-  std::shared_ptr<Expr> rhs;
+  Ptr<Expr> rhs;
 
   Undefine() = delete;
-  Undefine(std::shared_ptr<Expr> rhs_, const location &loc_);
+  Undefine(const Ptr<Expr> &rhs_, const location &loc_);
   Undefine(const Undefine &other);
   Undefine &operator=(Undefine other);
   friend void swap(Undefine &x, Undefine &y) noexcept;
