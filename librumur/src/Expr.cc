@@ -32,23 +32,6 @@ Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) { }
 
-Ternary::Ternary(const Ternary &other):
-  Expr(other), cond(other.cond), lhs(other.lhs), rhs(other.rhs) { }
-
-Ternary &Ternary::operator=(Ternary other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Ternary &x, Ternary &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.cond, y.cond);
-  swap(x.lhs, y.lhs);
-  swap(x.rhs, y.rhs);
-}
-
 Ternary *Ternary::clone() const {
   return new Ternary(*this);
 }
@@ -80,17 +63,6 @@ BinaryExpr::BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Expr(loc_), lhs(lhs_), rhs(rhs_) { }
 
-BinaryExpr::BinaryExpr(const BinaryExpr &other):
-  Expr(other), lhs(other.lhs), rhs(other.rhs) { }
-
-void swap(BinaryExpr &x, BinaryExpr &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.lhs, y.lhs);
-  swap(x.rhs, y.rhs);
-}
-
 bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
 }
@@ -102,11 +74,6 @@ void BooleanBinaryExpr::validate() const {
   if (!rhs->is_boolean())
     throw Error("right hand side of expression is not a boolean",
       rhs->loc);
-}
-
-Implication &Implication::operator=(Implication other) {
-  swap(*this, other);
-  return *this;
 }
 
 Implication *Implication::clone() const {
@@ -126,11 +93,6 @@ bool Implication::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-Or &Or::operator=(Or other) {
-  swap(*this, other);
-  return *this;
-}
-
 Or *Or::clone() const {
   return new Or(*this);
 }
@@ -146,11 +108,6 @@ mpz_class Or::constant_fold() const {
 bool Or::operator==(const Node &other) const {
   auto o = dynamic_cast<const Or*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-And &And::operator=(And other) {
-  swap(*this, other);
-  return *this;
 }
 
 And *And::clone() const {
@@ -174,24 +131,8 @@ UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), rhs(rhs_) {
 }
 
-UnaryExpr::UnaryExpr(const UnaryExpr &other):
-  Expr(other), rhs(other.rhs) {
-}
-
-void swap(UnaryExpr &x, UnaryExpr &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.rhs, y.rhs);
-}
-
 bool UnaryExpr::constant() const {
   return rhs->constant();
-}
-
-Not &Not::operator=(Not other) {
-  swap(*this, other);
-  return *this;
 }
 
 Not *Not::clone() const {
@@ -259,11 +200,6 @@ void ComparisonBinaryExpr::validate() const {
     throw Error("expressions are not comparable", loc);
 }
 
-Lt &Lt::operator=(Lt other) {
-  swap(*this, other);
-  return *this;
-}
-
 Lt *Lt::clone() const {
   return new Lt(*this);
 }
@@ -279,11 +215,6 @@ mpz_class Lt::constant_fold() const {
 bool Lt::operator==(const Node &other) const {
   auto o = dynamic_cast<const Lt*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Leq &Leq::operator=(Leq other) {
-  swap(*this, other);
-  return *this;
 }
 
 Leq *Leq::clone() const {
@@ -303,11 +234,6 @@ bool Leq::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-Gt &Gt::operator=(Gt other) {
-  swap(*this, other);
-  return *this;
-}
-
 Gt *Gt::clone() const {
   return new Gt(*this);
 }
@@ -323,11 +249,6 @@ mpz_class Gt::constant_fold() const {
 bool Gt::operator==(const Node &other) const {
   auto o = dynamic_cast<const Gt*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Geq &Geq::operator=(Geq other) {
-  swap(*this, other);
-  return *this;
 }
 
 Geq *Geq::clone() const {
@@ -406,11 +327,6 @@ void EquatableBinaryExpr::validate() const {
     throw Error("expressions are not comparable", loc);
 }
 
-Eq &Eq::operator=(Eq other) {
-  swap(*this, other);
-  return *this;
-}
-
 Eq *Eq::clone() const {
   return new Eq(*this);
 }
@@ -426,11 +342,6 @@ mpz_class Eq::constant_fold() const {
 bool Eq::operator==(const Node &other) const {
   auto o = dynamic_cast<const Eq*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Neq &Neq::operator=(Neq other) {
-  swap(*this, other);
-  return *this;
 }
 
 Neq *Neq::clone() const {
@@ -493,11 +404,6 @@ void ArithmeticBinaryExpr::validate() const {
       loc);
 }
 
-Add &Add::operator=(Add other) {
-  swap(*this, other);
-  return *this;
-}
-
 Add *Add::clone() const {
   return new Add(*this);
 }
@@ -513,11 +419,6 @@ mpz_class Add::constant_fold() const {
 bool Add::operator==(const Node &other) const {
   auto o = dynamic_cast<const Add*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Sub &Sub::operator=(Sub other) {
-  swap(*this, other);
-  return *this;
 }
 
 Sub *Sub::clone() const {
@@ -542,11 +443,6 @@ void Negative::validate() const {
     throw Error("expression cannot be negated", rhs->loc);
 }
 
-Negative &Negative::operator=(Negative other) {
-  swap(*this, other);
-  return *this;
-}
-
 Negative *Negative::clone() const {
   return new Negative(*this);
 }
@@ -564,11 +460,6 @@ bool Negative::operator==(const Node &other) const {
   return o != nullptr && *rhs == *o->rhs;
 }
 
-Mul &Mul::operator=(Mul other) {
-  swap(*this, other);
-  return *this;
-}
-
 Mul *Mul::clone() const {
   return new Mul(*this);
 }
@@ -584,11 +475,6 @@ mpz_class Mul::constant_fold() const {
 bool Mul::operator==(const Node &other) const {
   auto o = dynamic_cast<const Mul*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Div &Div::operator=(Div other) {
-  swap(*this, other);
-  return *this;
 }
 
 Div *Div::clone() const {
@@ -610,11 +496,6 @@ mpz_class Div::constant_fold() const {
 bool Div::operator==(const Node &other) const {
   auto o = dynamic_cast<const Div*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
-Mod &Mod::operator=(Mod other) {
-  swap(*this, other);
-  return *this;
 }
 
 Mod *Mod::clone() const {
@@ -641,23 +522,6 @@ bool Mod::operator==(const Node &other) const {
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {
-}
-
-ExprID::ExprID(const ExprID &other):
-  Expr(other), id(other.id), value(other.value) {
-}
-
-ExprID &ExprID::operator=(ExprID other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(ExprID &x, ExprID &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.id, y.id);
-  swap(x.value, y.value);
 }
 
 ExprID *ExprID::clone() const {
@@ -715,23 +579,6 @@ Field::Field(const Ptr<Expr> &record_, const std::string &field_,
   Expr(loc_), record(record_), field(field_) {
 }
 
-Field::Field(const Field &other):
-  Expr(other), record(other.record), field(other.field) {
-}
-
-void swap(Field &x, Field &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.record, y.record);
-  swap(x.field, y.field);
-}
-
-Field &Field::operator=(Field other) {
-  swap(*this, other);
-  return *this;
-}
-
 Field *Field::clone() const {
   return new Field(*this);
 }
@@ -773,23 +620,6 @@ Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
   Expr(loc_), array(array_), index(index_) {
 }
 
-Element::Element(const Element &other):
-  Expr(other), array(other.array), index(other.index) {
-}
-
-void swap(Element &x, Element &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.array, y.array);
-  swap(x.index, y.index);
-}
-
-Element &Element::operator=(Element other) {
-  swap(*this, other);
-  return *this;
-}
-
 Element *Element::clone() const {
   return new Element(*this);
 }
@@ -823,24 +653,6 @@ FunctionCall::FunctionCall(const std::string &name_,
   const Ptr<Function> &function_,
   const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
   Expr(loc_), name(name_), function(function_), arguments(arguments_) { }
-
-FunctionCall::FunctionCall(const FunctionCall &other):
-  Expr(other), name(other.name), function(other.function),
-  arguments(other.arguments) { }
-
-void swap(FunctionCall &x, FunctionCall &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.function, y.function);
-  swap(x.arguments, y.arguments);
-}
-
-FunctionCall &FunctionCall::operator=(FunctionCall other) {
-  swap(*this, other);
-  return *this;
-}
 
 FunctionCall *FunctionCall::clone() const {
   return new FunctionCall(*this);
@@ -950,22 +762,6 @@ Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
 
-Exists::Exists(const Exists &other):
-  Expr(other), quantifier(other.quantifier), expr(other.expr) { }
-
-Exists &Exists::operator=(Exists other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Exists &x, Exists &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.quantifier, y.quantifier);
-  swap(x.expr, y.expr);
-}
-
 Exists *Exists::clone() const {
   return new Exists(*this);
 }
@@ -995,22 +791,6 @@ void Exists::validate() const {
 Forall::Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
-
-Forall::Forall(const Forall &other):
-  Expr(other), quantifier(other.quantifier), expr(other.expr) { }
-
-Forall &Forall::operator=(Forall other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Forall &x, Forall &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.quantifier, y.quantifier);
-  swap(x.expr, y.expr);
-}
 
 Forall *Forall::clone() const {
   return new Forall(*this);
