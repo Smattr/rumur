@@ -2,10 +2,11 @@
 
 #include <cstddef>
 #include <memory>
+#include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 
 namespace rumur {
 
-extern const std::shared_ptr<Enum> Boolean;
+extern const Ptr<Enum> Boolean;
 
 }

@@ -3,6 +3,7 @@
 #include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Expr.h>
+#include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -10,7 +11,7 @@
 
 namespace rumur {
 
-const std::shared_ptr<Enum> Boolean = std::make_shared<Enum>(
+const Ptr<Enum> Boolean = Ptr<Enum>::make(
   std::vector<std::pair<std::string, location>>(
     { {"false", location()}, {"true", location()} }), location());
 

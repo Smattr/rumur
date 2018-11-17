@@ -17,14 +17,14 @@ struct Function : public Node {
 
   std::string name;
   std::vector<Ptr<VarDecl>> parameters;
-  std::shared_ptr<TypeExpr> return_type;
+  Ptr<TypeExpr> return_type;
   std::vector<Ptr<Decl>> decls;
   std::vector<Ptr<Stmt>> body;
 
   Function() = delete;
   Function(const std::string &name_,
     const std::vector<Ptr<VarDecl>> &parameters_,
-    std::shared_ptr<TypeExpr> return_type_,
+    const Ptr<TypeExpr> &return_type_,
     const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   Function(const Function &other);

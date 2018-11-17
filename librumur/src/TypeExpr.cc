@@ -293,13 +293,13 @@ bool Record::operator==(const Node &other) const {
   return false;
 }
 
-Array::Array(std::shared_ptr<TypeExpr> index_type_,
-  std::shared_ptr<TypeExpr> element_type_, const location &loc_):
+Array::Array(const Ptr<TypeExpr> &index_type_,
+  const Ptr<TypeExpr> &element_type_, const location &loc_):
   TypeExpr(loc_), index_type(index_type_), element_type(element_type_) { }
 
 Array::Array(const Array &other):
-  TypeExpr(other), index_type(other.index_type->clone()),
-  element_type(other.element_type->clone()) { }
+  TypeExpr(other), index_type(other.index_type),
+  element_type(other.element_type) { }
 
 Array &Array::operator=(Array other) {
   swap(*this, other);
@@ -363,7 +363,7 @@ void Array::validate() const {
 }
 
 TypeExprID::TypeExprID(const std::string &name_,
-  std::shared_ptr<TypeExpr> referent_, const location &loc_):
+  const Ptr<TypeExpr> &referent_, const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
 
 TypeExprID::TypeExprID(const TypeExprID &other):

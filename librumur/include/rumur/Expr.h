@@ -440,14 +440,14 @@ struct Quantifier : public Node {
   std::string name;
 
   // If this is != nullptr, the from/to/step will be nullptr
-  std::shared_ptr<TypeExpr> type;
+  Ptr<TypeExpr> type;
 
   Ptr<Expr> from;
   Ptr<Expr> to;
   Ptr<Expr> step;
 
   Quantifier() = delete;
-  Quantifier(const std::string &name_, std::shared_ptr<TypeExpr> type_,
+  Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc);
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
     const Ptr<Expr> &to_, const location &loc_);

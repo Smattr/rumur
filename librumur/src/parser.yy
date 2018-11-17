@@ -180,7 +180,7 @@
 %type <rumur::Ptr<rumur::PropertyRule>>                      property
 %type <std::shared_ptr<rumur::Quantifier>>                   quantifier
 %type <std::vector<rumur::Quantifier>>                       quantifiers
-%type <std::shared_ptr<rumur::TypeExpr>>                     return_type
+%type <rumur::Ptr<rumur::TypeExpr>>                          return_type
 %type <rumur::Ptr<rumur::Rule>>                              rule
 %type <rumur::Ptr<rumur::Ruleset>>                           ruleset
 %type <std::vector<rumur::Ptr<rumur::Rule>>>                 rules
@@ -192,7 +192,7 @@
 %type <std::string>                                          string_opt
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecls
-%type <std::shared_ptr<rumur::TypeExpr>>                     typeexpr
+%type <rumur::Ptr<rumur::TypeExpr>>                          typeexpr
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecl
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecls
 %type <std::shared_ptr<bool>>                                var_opt
@@ -539,19 +539,19 @@ typeexpr: BOOLEAN {
    * are treated as case-sensitive while "boolean" is not. To avoid awkwardness
    * in later symbol resolution, we force it to lower case here.
    */
-  $$ = std::make_shared<rumur::TypeExprID>("boolean", nullptr, @$);
+  $$ = rumur::Ptr<rumur::TypeExprID>::make("boolean", nullptr, @$);
 } | ID {
-  $$ = std::make_shared<rumur::TypeExprID>($1, nullptr, @$);
+  $$ = rumur::Ptr<rumur::TypeExprID>::make($1, nullptr, @$);
 } | expr DOTDOT expr {
-  $$ = std::make_shared<rumur::Range>($1, $3, @$);
+  $$ = rumur::Ptr<rumur::Range>::make($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
-  $$ = std::make_shared<rumur::Enum>(std::move($3), @$);
+  $$ = rumur::Ptr<rumur::Enum>::make(std::move($3), @$);
 } | RECORD vardecls endrecord {
-  $$ = std::make_shared<rumur::Record>($2, @$);
+  $$ = rumur::Ptr<rumur::Record>::make($2, @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {
-  $$ = std::make_shared<rumur::Array>($3, $6, @$);
+  $$ = rumur::Ptr<rumur::Array>::make($3, $6, @$);
 } | SCALARSET '(' expr ')' {
-  $$ = std::make_shared<rumur::Scalarset>($3, @$);
+  $$ = rumur::Ptr<rumur::Scalarset>::make($3, @$);
 };
 
 vardecl: id_list_opt ':' typeexpr {

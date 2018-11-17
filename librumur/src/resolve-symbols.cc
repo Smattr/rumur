@@ -105,7 +105,7 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(Enum &n) final {
-    auto e = std::make_shared<Enum>(n);
+    auto e = Ptr<Enum>::make(n);
 
     //* Register all the enum members so they can be referenced later.
     mpz_class index = 0;
@@ -305,9 +305,9 @@ class Resolver : public BaseTraversal {
      * scope. However it may not have a proper type. To cope with this, we
      * construct a type on the fly here if necessary.
      */
-    std::shared_ptr<TypeExpr> t;
+    Ptr<TypeExpr> t;
     if (n.type == nullptr) {
-      t = std::make_shared<Range>(nullptr, nullptr, location());
+      t = Ptr<Range>::make(nullptr, nullptr, location());
     } else {
       t = n.type;
     }
@@ -392,7 +392,7 @@ class Resolver : public BaseTraversal {
       if (t == nullptr)
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
-      n.referent = std::shared_ptr<TypeExpr>(t->value->clone());
+      n.referent = t->value;
     }
   }
 

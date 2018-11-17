@@ -889,9 +889,9 @@ void FunctionCall::validate() const {
     throw Error("unknown function call \"" + name + "\"", loc);
 }
 
-Quantifier::Quantifier(const std::string &name_,
-    std::shared_ptr<TypeExpr> type_, const location &loc_)
-  : Node(loc_), name(name_), type(type_) { }
+Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
+  const location &loc_):
+  Node(loc_), name(name_), type(type_) { }
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   const Ptr<Expr> &to_, const location &loc_):
@@ -902,8 +902,7 @@ Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
 
 Quantifier::Quantifier(const Quantifier &other):
-  Node(other), name(other.name),
-  type(other.type == nullptr ? nullptr : other.type->clone()), from(other.from),
+  Node(other), name(other.name), type(other.type), from(other.from),
   to(other.to), step(other.step) { }
 
 Quantifier &Quantifier::operator=(Quantifier other) {

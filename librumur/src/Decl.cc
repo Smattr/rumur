@@ -67,7 +67,7 @@ ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
   ExprDecl(name_, loc_), value(value_) { }
 
 ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
-  std::shared_ptr<TypeExpr> type_, const location &loc_):
+  const Ptr<TypeExpr> &type_, const location &loc_):
   ExprDecl(name_, loc_), value(value_), type(type_) { }
 
 ConstDecl::ConstDecl(const ConstDecl &other):
@@ -124,13 +124,13 @@ void ConstDecl::validate() const {
     throw Error("const definition is not a constant", value->loc);
 }
 
-TypeDecl::TypeDecl(const std::string &name_, std::shared_ptr<TypeExpr> value_,
+TypeDecl::TypeDecl(const std::string &name_, const Ptr<TypeExpr> &value_,
   const location &loc_):
   Decl(name_, loc_), value(value_) {
 }
 
 TypeDecl::TypeDecl(const TypeDecl &other):
-  Decl(other), value(other.value->clone()) {
+  Decl(other), value(other.value) {
 }
 
 TypeDecl &TypeDecl::operator=(TypeDecl other) {
@@ -155,13 +155,13 @@ bool TypeDecl::operator==(const Node &other) const {
   return o != nullptr && name == o->name && *value == *o->value;
 }
 
-VarDecl::VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
+VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
   const location &loc_):
   ExprDecl(name_, loc_), type(type_) {
 }
 
 VarDecl::VarDecl(const VarDecl &other):
-  ExprDecl(other), type(other.type->clone()), offset(other.offset),
+  ExprDecl(other), type(other.type), offset(other.offset),
   readonly(other.readonly) { }
 
 VarDecl &VarDecl::operator=(VarDecl other) {

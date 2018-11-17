@@ -190,7 +190,7 @@ class Generator : public ConstStmtTraversal {
      * returns a complex type, we need to pass it a handle to the memory we've
      * allocated for its (unused) return.
      */
-    const std::shared_ptr<TypeExpr> &return_type = s.function->return_type;
+    const Ptr<TypeExpr> &return_type = s.function->return_type;
     if (return_type != nullptr && !return_type->is_simple())
       *out << ", (struct handle){ .base = ret" << s.unique_id
         << ", .offset = 0ul, .width = SIZE_C(" << return_type->width() << ") }";

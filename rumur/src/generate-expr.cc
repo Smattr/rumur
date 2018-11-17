@@ -209,7 +209,7 @@ class Generator : public ConstExprTraversal {
     if (n.function == nullptr)
       throw Error("unresolved function reference " + n.name, n.loc);
 
-    const std::shared_ptr<TypeExpr> &return_type = n.function->return_type;
+    const Ptr<TypeExpr> &return_type = n.function->return_type;
 
     *out << "ru_" << n.name << "(s";
 

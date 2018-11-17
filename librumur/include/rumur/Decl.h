@@ -69,13 +69,13 @@ struct ConstDecl : public ExprDecl {
   /* The type of this constant. Typically this will be NULL (untyped), but in
    * the case of enum members it will have the enum declaration as its type.
    */
-  std::shared_ptr<TypeExpr> type;
+  Ptr<TypeExpr> type;
 
   ConstDecl() = delete;
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_);
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
-    std::shared_ptr<TypeExpr> type_, const location &loc_);
+    const Ptr<TypeExpr> &type_, const location &loc_);
   ConstDecl(const ConstDecl &other);
   ConstDecl &operator=(ConstDecl other);
   friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
@@ -90,10 +90,10 @@ struct ConstDecl : public ExprDecl {
 
 struct TypeDecl : public Decl {
 
-  std::shared_ptr<TypeExpr> value;
+  Ptr<TypeExpr> value;
 
   TypeDecl() = delete;
-  TypeDecl(const std::string &name, std::shared_ptr<TypeExpr> value_,
+  TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
     const location &loc);
   TypeDecl(const TypeDecl &other);
   TypeDecl &operator=(TypeDecl other);
@@ -106,7 +106,7 @@ struct TypeDecl : public Decl {
 
 struct VarDecl : public ExprDecl {
 
-  std::shared_ptr<TypeExpr> type;
+  Ptr<TypeExpr> type;
 
   /* Offset within the model state. This is only relevant if this is a state
    * variable. We initially set it to an invalid value and rely on Model::reindex
@@ -120,7 +120,7 @@ struct VarDecl : public ExprDecl {
   bool readonly = false;
 
   VarDecl() = delete;
-  VarDecl(const std::string &name_, std::shared_ptr<TypeExpr> type_,
+  VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc_);
   VarDecl(const VarDecl &other);
   VarDecl &operator=(VarDecl other);

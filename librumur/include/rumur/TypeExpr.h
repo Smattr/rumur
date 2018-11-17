@@ -127,12 +127,12 @@ struct Record : public TypeExpr {
 
 struct Array : public TypeExpr {
 
-  std::shared_ptr<TypeExpr> index_type;
-  std::shared_ptr<TypeExpr> element_type;
+  Ptr<TypeExpr> index_type;
+  Ptr<TypeExpr> element_type;
 
   Array() = delete;
-  Array(std::shared_ptr<TypeExpr> index_type_,
-    std::shared_ptr<TypeExpr> element_type_, const location &loc_);
+  Array(const Ptr<TypeExpr> &index_type_, const Ptr<TypeExpr> &element_type_,
+    const location &loc_);
   Array(const Array &other);
   Array &operator=(Array other);
   friend void swap(Array &x, Array &y) noexcept;
@@ -148,10 +148,11 @@ struct Array : public TypeExpr {
 struct TypeExprID : public TypeExpr {
 
   std::string name;
-  std::shared_ptr<TypeExpr> referent;
+  Ptr<TypeExpr> referent;
 
   TypeExprID() = delete;
-  TypeExprID(const std::string &name_, std::shared_ptr<TypeExpr> referent_, const location &loc_);
+  TypeExprID(const std::string &name_, const Ptr<TypeExpr> &referent_,
+    const location &loc_);
   TypeExprID(const TypeExprID &other);
   TypeExprID &operator=(TypeExprID other);
   friend void swap(TypeExprID &x, TypeExprID &y) noexcept;
