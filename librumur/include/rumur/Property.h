@@ -21,12 +21,8 @@ struct Property : public Node {
   Category category;
   Ptr<Expr> expr;
 
-  Property() = delete;
   Property(Category category_, const Ptr<Expr> &expr_,
     const location &loc_);
-  Property(const Property &other);
-  Property &operator=(Property other);
-  friend void swap(Property &x, Property &y) noexcept;
   Property *clone() const final;
   virtual ~Property() = default;
 
