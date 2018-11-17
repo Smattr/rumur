@@ -545,7 +545,7 @@ typeexpr: BOOLEAN {
 } | expr DOTDOT expr {
   $$ = rumur::Ptr<rumur::Range>::make($1, $3, @$);
 } | ENUM '{' id_list_opt '}' {
-  $$ = rumur::Ptr<rumur::Enum>::make(std::move($3), @$);
+  $$ = rumur::Ptr<rumur::Enum>::make($3, @$);
 } | RECORD vardecls endrecord {
   $$ = rumur::Ptr<rumur::Record>::make($2, @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {

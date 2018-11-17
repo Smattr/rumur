@@ -186,9 +186,9 @@ std::string Scalarset::upper_bound() const {
   return "VALUE_C(" + b.get_str() + ")";
 }
 
-Enum::Enum(const std::vector<std::pair<std::string, location>> &&members_, const location &loc_):
-  TypeExpr(loc_), members(members_) {
-}
+Enum::Enum(const std::vector<std::pair<std::string, location>> &members_,
+  const location &loc_):
+  TypeExpr(loc_), members(members_) { }
 
 Enum *Enum::clone() const {
   return new Enum(*this);

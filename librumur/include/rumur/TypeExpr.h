@@ -91,7 +91,7 @@ struct Enum : public TypeExpr {
   std::vector<std::pair<std::string, location>> members;
 
   Enum() = delete;
-  Enum(const std::vector<std::pair<std::string, location>> &&members_,
+  Enum(const std::vector<std::pair<std::string, location>> &members_,
     const location &loc_);
   Enum(const Enum&) = default;
   Enum(Enum&&) = default;
