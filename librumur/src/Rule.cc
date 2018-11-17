@@ -49,10 +49,6 @@ namespace {
 Rule::Rule(const std::string &name_, const location &loc_):
   Node(loc_), name(name_) { }
 
-Rule::Rule(const Rule &other):
-  Node(other), name(other.name), quantifiers(other.quantifiers),
-  aliases(other.aliases) { }
-
 std::vector<Ptr<Rule>> Rule::flatten() const {
   return { Ptr<Rule>(clone()) };
 }
@@ -62,24 +58,6 @@ AliasRule::AliasRule(const std::vector<Ptr<AliasDecl>> &aliases_,
   Rule("", loc_), rules(rules_) {
 
   aliases = aliases_;
-}
-
-AliasRule::AliasRule(const AliasRule &other):
-  Rule(other), rules(other.rules) { }
-
-AliasRule &AliasRule::operator=(AliasRule other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(AliasRule &x, AliasRule &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.quantifiers, y.quantifiers);
-  swap(x.aliases, y.aliases);
-  swap(x.rules, y.rules);
 }
 
 AliasRule *AliasRule::clone() const {
@@ -118,25 +96,6 @@ SimpleRule::SimpleRule(const std::string &name_, const Ptr<Expr> &guard_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), guard(guard_), decls(decls_), body(body_) { }
 
-SimpleRule::SimpleRule(const SimpleRule &other):
-  Rule(other), guard(other.guard), decls(other.decls), body(other.body) { }
-
-SimpleRule &SimpleRule::operator=(SimpleRule other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(SimpleRule &x, SimpleRule &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.decls, y.decls);
-  swap(x.body, y.body);
-  swap(x.quantifiers, y.quantifiers);
-  swap(x.aliases, y.aliases);
-}
-
 SimpleRule *SimpleRule::clone() const {
   return new SimpleRule(*this);
 }
@@ -174,25 +133,6 @@ StartState::StartState(const std::string &name_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Rule(name_, loc_), decls(decls_), body(body_) { }
 
-StartState::StartState(const StartState &other):
-  Rule(other), decls(other.decls), body(other.body) { }
-
-StartState &StartState::operator=(StartState other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(StartState &x, StartState &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.decls, y.decls);
-  swap(x.body, y.body);
-  swap(x.quantifiers, y.quantifiers);
-  swap(x.aliases, y.aliases);
-}
-
 StartState *StartState::clone() const {
   return new StartState(*this);
 }
@@ -222,24 +162,6 @@ PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
   const location &loc_):
   Rule(name_, loc_), property(property_) { }
 
-PropertyRule::PropertyRule(const PropertyRule &other):
-  Rule(other), property(other.property) { }
-
-PropertyRule &PropertyRule::operator=(PropertyRule other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(PropertyRule &x, PropertyRule &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.property, y.property);
-  swap(x.quantifiers, y.quantifiers);
-  swap(x.aliases, y.aliases);
-}
-
 PropertyRule *PropertyRule::clone() const {
   return new PropertyRule(*this);
 }
@@ -263,24 +185,6 @@ Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,
   const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
   quantifiers = quantifiers_;
-}
-
-Ruleset::Ruleset(const Ruleset &other):
-  Rule(other), rules(other.rules) { }
-
-Ruleset &Ruleset::operator=(Ruleset other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Ruleset &x, Ruleset &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.quantifiers, y.quantifiers);
-  swap(x.aliases, y.aliases);
-  swap(x.rules, y.rules);
 }
 
 Ruleset *Ruleset::clone() const {
