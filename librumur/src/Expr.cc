@@ -901,26 +901,6 @@ Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   const Ptr<Expr> &to_, const Ptr<Expr> &step_, const location &loc_):
   Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
 
-Quantifier::Quantifier(const Quantifier &other):
-  Node(other), name(other.name), type(other.type), from(other.from),
-  to(other.to), step(other.step) { }
-
-Quantifier &Quantifier::operator=(Quantifier other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Quantifier &x, Quantifier &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.type, y.type);
-  swap(x.from, y.from);
-  swap(x.to, y.to);
-  swap(x.step, y.step);
-}
-
 Quantifier *Quantifier::clone() const {
   return new Quantifier(*this);
 }

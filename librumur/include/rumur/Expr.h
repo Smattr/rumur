@@ -446,7 +446,6 @@ struct Quantifier : public Node {
   Ptr<Expr> to;
   Ptr<Expr> step;
 
-  Quantifier() = delete;
   Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc);
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
@@ -454,9 +453,6 @@ struct Quantifier : public Node {
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
     const Ptr<Expr> &to_, const Ptr<Expr> &step_,
     const location &loc_);
-  Quantifier(const Quantifier &other);
-  Quantifier &operator=(Quantifier other);
-  friend void swap(Quantifier &x, Quantifier &y) noexcept;
   virtual ~Quantifier() = default;
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
