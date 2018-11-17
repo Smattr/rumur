@@ -34,12 +34,12 @@ class Symtab {
   }
 
   template<typename U>
-  std::shared_ptr<U> lookup(const std::string &name, const location &loc) {
+  Ptr<U> lookup(const std::string &name, const location &loc) {
     for (auto it = scope.rbegin(); it != scope.rend(); it++) {
       auto it2 = it->find(name);
       if (it2 != it->end()) {
         if (auto ret = dynamic_cast<U*>(it2->second.get())) {
-          return std::shared_ptr<U>(ret->clone());
+          return Ptr<U>(ret->clone());
         } else {
           break;
         }

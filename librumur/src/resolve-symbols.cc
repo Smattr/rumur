@@ -134,11 +134,11 @@ class Resolver : public BaseTraversal {
     if (n.value == nullptr) {
       // This reference is unresolved
 
-      std::shared_ptr<ExprDecl> d = symtab.lookup<ExprDecl>(n.id, n.loc);
+      Ptr<ExprDecl> d = symtab.lookup<ExprDecl>(n.id, n.loc);
       if (d == nullptr)
         throw Error("unknown symbol \"" + n.id + "\"", n.loc);
 
-      n.value = Ptr<ExprDecl>(d->clone());
+      n.value = d;
     }
   }
 
@@ -182,11 +182,11 @@ class Resolver : public BaseTraversal {
     if (n.function == nullptr) {
       // This reference is unresolved
 
-      std::shared_ptr<Function> f = symtab.lookup<Function>(n.name, n.loc);
+      Ptr<Function> f = symtab.lookup<Function>(n.name, n.loc);
       if (f == nullptr)
         throw Error("unknown function call \"" + n.name + "\"", n.loc);
 
-      n.function = Ptr<Function>(f->clone());
+      n.function = f;
     }
     for (auto &a : n.arguments)
       dispatch(*a);
@@ -267,11 +267,11 @@ class Resolver : public BaseTraversal {
     if (n.function == nullptr) {
       // This reference is unresolved
 
-      std::shared_ptr<Function> f = symtab.lookup<Function>(n.name, n.loc);
+      Ptr<Function> f = symtab.lookup<Function>(n.name, n.loc);
       if (f == nullptr)
         throw Error("unknown procedure call \"" + n.name + "\"", n.loc);
 
-      n.function = Ptr<Function>(f->clone());
+      n.function = f;
     }
     for (auto &a : n.arguments)
       dispatch(*a);
@@ -388,7 +388,7 @@ class Resolver : public BaseTraversal {
     if (n.referent == nullptr) {
       // This reference is unresolved
 
-      std::shared_ptr<TypeDecl> t = symtab.lookup<TypeDecl>(n.name, n.loc);
+      Ptr<TypeDecl> t = symtab.lookup<TypeDecl>(n.name, n.loc);
       if (t == nullptr)
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
