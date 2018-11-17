@@ -18,12 +18,7 @@ struct Decl : public Node {
 
   std::string name;
 
-  Decl() = delete;
   Decl(const std::string &name_, const location &loc_);
-  Decl(const Decl&) = default;
-  Decl(Decl&&) = default;
-  Decl &operator=(const Decl&) = default;
-  Decl &operator=(Decl&&) = default;
   virtual ~Decl() = 0;
 
   Decl *clone() const override = 0;
@@ -32,7 +27,6 @@ struct Decl : public Node {
 struct ExprDecl : public Decl {
 
   using Decl::Decl;
-  ExprDecl() = delete;
 
   virtual ~ExprDecl() = default;
 
@@ -48,12 +42,8 @@ struct AliasDecl : public ExprDecl {
 
   Ptr<Expr> value;
 
-  AliasDecl() = delete;
   AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_);
-  AliasDecl(const AliasDecl &other);
-  AliasDecl &operator=(AliasDecl other);
-  friend void swap(AliasDecl &x, AliasDecl &y) noexcept;
   AliasDecl *clone() const final;
   virtual ~AliasDecl() = default;
 
@@ -71,14 +61,10 @@ struct ConstDecl : public ExprDecl {
    */
   Ptr<TypeExpr> type;
 
-  ConstDecl() = delete;
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_);
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
     const Ptr<TypeExpr> &type_, const location &loc_);
-  ConstDecl(const ConstDecl &other);
-  ConstDecl &operator=(ConstDecl other);
-  friend void swap(ConstDecl &x, ConstDecl &y) noexcept;
   ConstDecl *clone() const final;
   virtual ~ConstDecl() = default;
 
@@ -92,12 +78,8 @@ struct TypeDecl : public Decl {
 
   Ptr<TypeExpr> value;
 
-  TypeDecl() = delete;
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
     const location &loc);
-  TypeDecl(const TypeDecl &other);
-  TypeDecl &operator=(TypeDecl other);
-  friend void swap(TypeDecl &x, TypeDecl &y) noexcept;
   TypeDecl *clone() const final;
   virtual ~TypeDecl() = default;
 
@@ -119,12 +101,8 @@ struct VarDecl : public ExprDecl {
    */
   bool readonly = false;
 
-  VarDecl() = delete;
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc_);
-  VarDecl(const VarDecl &other);
-  VarDecl &operator=(VarDecl other);
-  friend void swap(VarDecl &x, VarDecl &y) noexcept;
   VarDecl *clone() const final;
   virtual ~VarDecl() = default;
 
