@@ -14,10 +14,6 @@ struct Node {
 
   Node() = delete;
   Node(const location &loc_);
-  Node(const Node&) = default;
-  Node(Node&&) = default;
-  Node &operator=(const Node&) = default;
-  Node &operator=(Node&&) = default;
   virtual ~Node() = default;
 
   virtual Node *clone() const = 0;
