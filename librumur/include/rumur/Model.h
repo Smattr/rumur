@@ -21,13 +21,9 @@ struct Model : public Node {
   std::vector<Ptr<Function>> functions;
   std::vector<Ptr<Rule>> rules;
 
-  Model() = delete;
   Model(const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Function>> &functions_,
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
-  Model(const Model &other);
-  Model &operator=(Model other);
-  friend void swap(Model &x, Model &y) noexcept;
   virtual ~Model() = default;
   Model *clone() const final;
 

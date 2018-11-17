@@ -27,24 +27,6 @@ Model::Model(const std::vector<Ptr<Decl>> &decls_,
   const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
 
-Model::Model(const Model &other):
-  Node(other), decls(other.decls), functions(other.functions),
-  rules(other.rules) { }
-
-Model &Model::operator=(Model other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Model &x, Model &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.decls, y.decls);
-  swap(x.functions, y.functions);
-  swap(x.rules, y.rules);
-}
-
 Model *Model::clone() const {
   return new Model(*this);
 }
