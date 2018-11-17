@@ -21,22 +21,6 @@ AliasStmt::AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), aliases(aliases_), body(body_) { }
 
-AliasStmt::AliasStmt(const AliasStmt &other):
-  Stmt(other.loc), aliases(other.aliases), body(other.body) { }
-
-AliasStmt &AliasStmt::operator=(AliasStmt other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(AliasStmt &x, AliasStmt &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.aliases, y.aliases);
-  swap(x.body, y.body);
-}
-
 AliasStmt *AliasStmt::clone() const {
   return new AliasStmt(*this);
 }
@@ -68,23 +52,6 @@ bool PropertyStmt::operator==(const Node &other) const {
 Assignment::Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) { }
-
-Assignment::Assignment(const Assignment &other):
-  Stmt(other), lhs(other.lhs), rhs(other.rhs) {
-}
-
-Assignment &Assignment::operator=(Assignment other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Assignment &x, Assignment &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.lhs, y.lhs);
-  swap(x.rhs, y.rhs);
-}
 
 Assignment *Assignment::clone() const {
   return new Assignment(*this);
@@ -120,21 +87,6 @@ void Assignment::validate() const {
 
 Clear::Clear(const Ptr<Expr> &rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
-
-Clear::Clear(const Clear &other):
-  Stmt(other.loc), rhs(other.rhs) { }
-
-Clear &Clear::operator=(Clear other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Clear &x, Clear &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.rhs, y.rhs);
-}
 
 Clear *Clear::clone() const {
   return new Clear(*this);
@@ -189,22 +141,6 @@ IfClause::IfClause(const Ptr<Expr> &condition_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Node(loc_), condition(condition_), body(body_) { }
 
-IfClause::IfClause(const IfClause &other):
-  Node(other.loc), condition(other.condition), body(other.body) { }
-
-IfClause &IfClause::operator=(IfClause other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(IfClause &x, IfClause &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.condition, y.condition);
-  swap(x.body, y.body);
-}
-
 IfClause *IfClause::clone() const {
   return new IfClause(*this);
 }
@@ -241,21 +177,6 @@ void IfClause::validate() const {
 If::If(const std::vector<IfClause> &clauses_, const location &loc_):
   Stmt(loc_), clauses(clauses_) { }
 
-If::If(const If &other):
-  Stmt(other.loc), clauses(other.clauses) { }
-
-If &If::operator=(If other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(If &x, If &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.clauses, y.clauses);
-}
-
 If *If::clone() const {
   return new If(*this);
 }
@@ -272,24 +193,6 @@ bool If::operator==(const Node &other) const {
 ProcedureCall::ProcedureCall(const std::string &name_, const Ptr<Function> &function_,
   const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
   Stmt(loc_), name(name_), function(function_), arguments(arguments_) { }
-
-ProcedureCall::ProcedureCall(const ProcedureCall &other):
-  Stmt(other.loc), name(other.name), function(other.function),
-  arguments(other.arguments) { }
-
-ProcedureCall &ProcedureCall::operator=(ProcedureCall other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(ProcedureCall &x, ProcedureCall &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.name, y.name);
-  swap(x.function, y.function);
-  swap(x.arguments, y.arguments);
-}
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);
@@ -322,21 +225,6 @@ void ProcedureCall::validate() const {
 Return::Return(const Ptr<Expr> &expr_, const location &loc_):
   Stmt(loc_), expr(expr_) { }
 
-Return::Return(const Return &other):
-  Stmt(other.loc), expr(other.expr) { }
-
-Return &Return::operator=(Return other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Return &x, Return &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.expr, y.expr);
-}
-
 Return *Return::clone() const {
   return new Return(*this);
 }
@@ -358,21 +246,6 @@ bool Return::operator==(const Node &other) const {
 
 Undefine::Undefine(const Ptr<Expr> &rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
-
-Undefine::Undefine(const Undefine &other):
-  Stmt(other.loc), rhs(other.rhs) { }
-
-Undefine &Undefine::operator=(Undefine other) {
-  swap(*this, other);
-  return *this;
-}
-
-void swap(Undefine &x, Undefine &y) noexcept {
-  using std::swap;
-  swap(x.loc, y.loc);
-  swap(x.unique_id, y.unique_id);
-  swap(x.rhs, y.rhs);
-}
 
 Undefine *Undefine::clone() const {
   return new Undefine(*this);

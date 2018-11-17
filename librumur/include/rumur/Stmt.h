@@ -21,11 +21,6 @@ struct Stmt : public Node {
 
   using Node::Node;
 
-  Stmt() = delete;
-  Stmt(const Stmt&) = default;
-  Stmt(Stmt&&) = default;
-  Stmt &operator=(const Stmt&) = default;
-  Stmt &operator=(Stmt&&) = default;
   virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
 
@@ -36,12 +31,8 @@ struct AliasStmt : public Stmt {
   std::vector<Ptr<AliasDecl>> aliases;
   std::vector<Ptr<Stmt>> body;
 
-  AliasStmt() = delete;
   AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
-  AliasStmt(const AliasStmt &other);
-  AliasStmt &operator=(AliasStmt other);
-  friend void swap(AliasStmt &x, AliasStmt &y) noexcept;
   AliasStmt *clone() const final;
   virtual ~AliasStmt() = default;
 
@@ -66,12 +57,8 @@ struct Assignment : public Stmt {
   Ptr<Expr> lhs;
   Ptr<Expr> rhs;
 
-  Assignment() = delete;
   Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
     const location &loc_);
-  Assignment(const Assignment &other);
-  Assignment &operator=(Assignment other);
-  friend void swap(Assignment &x, Assignment &y) noexcept;
   Assignment *clone() const final;
   virtual ~Assignment() = default;
 
@@ -83,11 +70,7 @@ struct Clear : public Stmt {
 
   Ptr<Expr> rhs;
 
-  Clear() = delete;
   Clear(const Ptr<Expr> &rhs_, const location &loc);
-  Clear(const Clear &other);
-  Clear &operator=(Clear other);
-  friend void swap(Clear &x, Clear &y) noexcept;
   virtual ~Clear() = default;
   Clear *clone() const final;
 
@@ -124,12 +107,8 @@ struct IfClause : public Node {
   Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;
 
-  IfClause() = delete;
   IfClause(const Ptr<Expr> &condition_,
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
-  IfClause(const IfClause &other);
-  IfClause &operator=(IfClause other);
-  friend void swap(IfClause &x, IfClause &y) noexcept;
   virtual ~IfClause() = default;
   IfClause *clone() const final;
 
@@ -141,11 +120,7 @@ struct If : public Stmt {
 
   std::vector<IfClause> clauses;
 
-  If() = delete;
   If(const std::vector<IfClause> &clauses_, const location &loc_);
-  If(const If &other);
-  If &operator=(If other);
-  friend void swap(If &x, If &y) noexcept;
   virtual ~If() = default;;
   If *clone() const final;
 
@@ -158,12 +133,8 @@ struct ProcedureCall : public Stmt {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
-  ProcedureCall() = delete;
   ProcedureCall(const std::string &name_, const Ptr<Function> &function_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
-  ProcedureCall(const ProcedureCall &other);
-  ProcedureCall &operator=(ProcedureCall other);
-  friend void swap(ProcedureCall &x, ProcedureCall &y) noexcept;
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
 
@@ -175,11 +146,7 @@ struct Return : public Stmt {
 
   Ptr<Expr> expr;
 
-  Return() = delete;
   Return(const Ptr<Expr> &expr_, const location &loc_);
-  Return(const Return &other);
-  Return &operator=(Return other);
-  friend void swap(Return &x, Return &y) noexcept;
   virtual ~Return() = default;
   Return *clone() const final;
 
@@ -190,11 +157,7 @@ struct Undefine : public Stmt {
 
   Ptr<Expr> rhs;
 
-  Undefine() = delete;
   Undefine(const Ptr<Expr> &rhs_, const location &loc_);
-  Undefine(const Undefine &other);
-  Undefine &operator=(Undefine other);
-  friend void swap(Undefine &x, Undefine &y) noexcept;
   virtual ~Undefine() = default;
   Undefine *clone() const final;
 
