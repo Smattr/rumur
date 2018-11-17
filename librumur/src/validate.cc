@@ -201,7 +201,7 @@ class Validator : public ConstBaseTraversal {
   void visit(const Model &n) final {
     for (auto &d : n.decls)
       dispatch(*d);
-    for (const std::shared_ptr<Function> &f : n.functions)
+    for (auto &f : n.functions)
       dispatch(*f);
     for (auto &r : n.rules)
       dispatch(*r);

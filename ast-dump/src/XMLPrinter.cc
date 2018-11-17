@@ -437,7 +437,7 @@ void XMLPrinter::visit(const Model &n) {
   if (!n.functions.empty()) {
     sync_to(*n.functions[0]);
     *o << "<functions>";
-    for (const std::shared_ptr<Function> f : n.functions) {
+    for (auto f : n.functions) {
       sync_to(*f);
       dispatch(*f);
     }

@@ -416,11 +416,11 @@ struct Element : public Expr {
 struct FunctionCall : public Expr {
 
   std::string name;
-  std::shared_ptr<Function> function;
+  Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
   FunctionCall() = delete;
-  FunctionCall(const std::string &name_, std::shared_ptr<Function> function_,
+  FunctionCall(const std::string &name_, const Ptr<Function> &function_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   FunctionCall(const FunctionCall &other);
   friend void swap(FunctionCall &x, FunctionCall &y) noexcept;

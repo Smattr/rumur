@@ -175,8 +175,8 @@
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameter
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameters
-%type <std::shared_ptr<rumur::Function>>                     procdecl
-%type <std::vector<std::shared_ptr<rumur::Function>>>        procdecls
+%type <rumur::Ptr<rumur::Function>>                          procdecl
+%type <std::vector<rumur::Ptr<rumur::Function>>>             procdecls
 %type <rumur::Ptr<rumur::PropertyRule>>                      property
 %type <std::shared_ptr<rumur::Quantifier>>                   quantifier
 %type <std::vector<rumur::Quantifier>>                       quantifiers
@@ -200,7 +200,7 @@
 %%
 
 model: decls procdecls rules {
-  output = rumur::Ptr<rumur::Model>::make($1, std::move($2), $3, @$);
+  output = rumur::Ptr<rumur::Model>::make($1, $2, $3, @$);
 };
 
 aliasrule: ALIAS exprdecls DO rules endalias {
@@ -394,7 +394,7 @@ parameters: parameters parameter semi_opt {
 };
 
 procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
-  $$ = std::make_shared<rumur::Function>($2, $4, $6, $7, $9, @$);
+  $$ = rumur::Ptr<rumur::Function>::make($2, $4, $6, $7, $9, @$);
 };
 
 procdecls: procdecls procdecl {

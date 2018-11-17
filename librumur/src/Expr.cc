@@ -820,13 +820,12 @@ bool Element::is_lvalue() const {
 }
 
 FunctionCall::FunctionCall(const std::string &name_,
-  std::shared_ptr<Function> function_,
+  const Ptr<Function> &function_,
   const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
   Expr(loc_), name(name_), function(function_), arguments(arguments_) { }
 
 FunctionCall::FunctionCall(const FunctionCall &other):
-  Expr(other), name(other.name),
-  function(other.function == nullptr ? nullptr : other.function->clone()),
+  Expr(other), name(other.name), function(other.function),
   arguments(other.arguments) { }
 
 void swap(FunctionCall &x, FunctionCall &y) noexcept {

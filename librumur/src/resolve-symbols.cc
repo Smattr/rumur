@@ -186,7 +186,7 @@ class Resolver : public BaseTraversal {
       if (f == nullptr)
         throw Error("unknown function call \"" + n.name + "\"", n.loc);
 
-      n.function = f;
+      n.function = Ptr<Function>(f->clone());
     }
     for (auto &a : n.arguments)
       dispatch(*a);
@@ -233,7 +233,7 @@ class Resolver : public BaseTraversal {
       dispatch(*d);
       symtab.declare(d->name, d);
     }
-    for (std::shared_ptr<Function> &f : n.functions) {
+    for (auto &f : n.functions) {
       dispatch(*f);
       symtab.declare(f->name, f);
     }
@@ -271,7 +271,7 @@ class Resolver : public BaseTraversal {
       if (f == nullptr)
         throw Error("unknown procedure call \"" + n.name + "\"", n.loc);
 
-      n.function = f;
+      n.function = Ptr<Function>(f->clone());
     }
     for (auto &a : n.arguments)
       dispatch(*a);

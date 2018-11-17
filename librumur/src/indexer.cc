@@ -179,7 +179,7 @@ void Indexer::visit(Model &n) {
   n.unique_id = next++;
   for (auto &d : n.decls)
     dispatch(*d);
-  for (std::shared_ptr<Function> &f : n.functions)
+  for (auto &f : n.functions)
     dispatch(*f);
   for (auto &r : n.rules)
     dispatch(*r);

@@ -18,12 +18,12 @@ namespace rumur {
 struct Model : public Node {
 
   std::vector<Ptr<Decl>> decls;
-  std::vector<std::shared_ptr<Function>> functions;
+  std::vector<Ptr<Function>> functions;
   std::vector<Ptr<Rule>> rules;
 
   Model() = delete;
   Model(const std::vector<Ptr<Decl>> &decls_,
-    std::vector<std::shared_ptr<Function>> &&functions_,
+    const std::vector<Ptr<Function>> &functions_,
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   Model(const Model &other);
   Model &operator=(Model other);

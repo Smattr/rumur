@@ -21,7 +21,7 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   // Generate each defined function or procedure.
-  for (const std::shared_ptr<Function> &f : m.functions) {
+  for (const Ptr<Function> &f : m.functions) {
     generate_function(out, *f, m.decls);
     out << "\n\n";
   }

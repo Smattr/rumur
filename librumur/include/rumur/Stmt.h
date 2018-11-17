@@ -155,11 +155,11 @@ struct If : public Stmt {
 struct ProcedureCall : public Stmt {
 
   std::string name;
-  std::shared_ptr<Function> function;
+  Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
   ProcedureCall() = delete;
-  ProcedureCall(const std::string &name_, std::shared_ptr<Function> function_,
+  ProcedureCall(const std::string &name_, const Ptr<Function> &function_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   ProcedureCall(const ProcedureCall &other);
   ProcedureCall &operator=(ProcedureCall other);

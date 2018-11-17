@@ -712,7 +712,7 @@ void ConstTraversal::visit(const Mod &n) {
 void ConstTraversal::visit(const Model &n) {
   for (auto &d : n.decls)
     dispatch(*d);
-  for (const std::shared_ptr<Function> &f : n.functions)
+  for (auto &f : n.functions)
     dispatch(*f);
   for (auto &r : n.rules)
     dispatch(*r);
@@ -919,7 +919,7 @@ void ConstExprTraversal::visit(const IfClause &n) {
 void ConstExprTraversal::visit(const Model &n) {
   for (auto &d : n.decls)
     dispatch(*d);
-  for (const std::shared_ptr<Function> &f : n.functions)
+  for (auto &f : n.functions)
     dispatch(*f);
   for (auto &r : n.rules)
     dispatch(*r);
@@ -1130,7 +1130,7 @@ void ConstStmtTraversal::visit(const Mod &n) {
 void ConstStmtTraversal::visit(const Model &n) {
   for (auto &d : n.decls)
     dispatch(*d);
-  for (const std::shared_ptr<Function> &f : n.functions)
+  for (auto &f : n.functions)
     dispatch(*f);
   for (auto &r : n.rules)
     dispatch(*r);
@@ -1381,7 +1381,7 @@ void ConstTypeTraversal::visit(const Mod &n) {
 void ConstTypeTraversal::visit(const Model &n) {
   for (auto &d : n.decls)
     dispatch(*d);
-  for (const std::shared_ptr<Function> &f : n.functions)
+  for (auto &f : n.functions)
     dispatch(*f);
   for (auto &r : n.rules)
     dispatch(*r);

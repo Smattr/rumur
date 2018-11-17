@@ -23,15 +23,13 @@
 namespace rumur {
 
 Model::Model(const std::vector<Ptr<Decl>> &decls_,
-  std::vector<std::shared_ptr<Function>> &&functions_,
+  const std::vector<Ptr<Function>> &functions_,
   const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
 
 Model::Model(const Model &other):
-  Node(other), decls(other.decls), rules(other.rules) {
-  for (const std::shared_ptr<Function> &f : other.functions)
-    functions.emplace_back(f->clone());
-}
+  Node(other), decls(other.decls), functions(other.functions),
+  rules(other.rules) { }
 
 Model &Model::operator=(Model other) {
   swap(*this, other);
