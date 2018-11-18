@@ -8,6 +8,33 @@
 
 using namespace rumur;
 
+static std::string xml_escape(char c) {
+  switch (c) {
+    case '"' : return "&quot;";
+    case '\'': return "&apos;";
+    case '<' : return "&lt;";
+    case '>' : return "&gt;";
+    case '&' : return "&amp;";
+
+    /* XXX: Form feed is apparently not a valid character to use in XML 1.0,
+     * encoded or otherwise. However, some legacy models use this. To cope with
+     * it, we just translate it to a single space.
+     */
+    case 12  : return " ";
+
+    default  : return std::string(1, c);
+  }
+}
+
+static std::string xml_escape(const std::string &s) {
+  std::string escaped;
+
+  for (char c : s)
+    escaped += xml_escape(c);
+
+  return escaped;
+}
+
 XMLPrinter::XMLPrinter(const std::string &in_filename, std::ostream &o_):
   o(&o_) {
 
@@ -50,7 +77,7 @@ void XMLPrinter::visit(const AliasDecl &n) {
 
 void XMLPrinter::visit(const AliasRule &n) {
   sync_to(n);
-  *o << "<aliasrule name=\"" << n.name << "\" ";
+  *o << "<aliasrule name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (!n.aliases.empty()) {
@@ -208,7 +235,7 @@ void XMLPrinter::visit(const Eq &n) {
 
 void XMLPrinter::visit(const ErrorStmt &n) {
   sync_to(n);
-  *o << "<errorstmt message=\"" << n.message << "\" ";
+  *o << "<errorstmt message=\"" << xml_escape(n.message) << "\" ";
   add_location(n);
   *o << ">";
   sync_to(n.loc.end);
@@ -525,7 +552,7 @@ void XMLPrinter::visit(const Property &n) {
 
 void XMLPrinter::visit(const PropertyRule &n) {
   sync_to(n);
-  *o << "<propertyrule name=\"" << n.name << "\" ";
+  *o << "<propertyrule name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
@@ -545,7 +572,7 @@ void XMLPrinter::visit(const PropertyRule &n) {
 
 void XMLPrinter::visit(const PropertyStmt &n) {
   sync_to(n);
-  *o << "<propertystmt message=\"" << n.message << "\" ";
+  *o << "<propertystmt message=\"" << xml_escape(n.message) << "\" ";
   add_location(n);
   *o << ">";
   sync_to(n.property);
@@ -632,7 +659,7 @@ void XMLPrinter::visit(const Return &n) {
 
 void XMLPrinter::visit(const Ruleset &n) {
   sync_to(n);
-  *o << "<ruleset name=\"" << n.name << "\" ";
+  *o << "<ruleset name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
@@ -672,7 +699,7 @@ void XMLPrinter::visit(const Scalarset &n) {
 
 void XMLPrinter::visit(const SimpleRule &n) {
   sync_to(n);
-  *o << "<simplerule name=\"" << n.name << "\" ";
+  *o << "<simplerule name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
@@ -714,7 +741,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
 
 void XMLPrinter::visit(const StartState &n) {
   sync_to(n);
-  *o << "<startstate name=\"" << n.name << "\" ";
+  *o << "<startstate name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (!n.quantifiers.empty()) {
@@ -827,24 +854,6 @@ XMLPrinter::~XMLPrinter() {
   *o << "</unit>\n";
   o->flush();
   delete in;
-}
-
-static std::string xml_escape(char c) {
-  switch (c) {
-    case '"' : return "&quot;";
-    case '\'': return "&apos;";
-    case '<' : return "&lt;";
-    case '>' : return "&gt;";
-    case '&' : return "&amp;";
-
-    /* XXX: Form feed is apparently not a valid character to use in XML 1.0,
-     * encoded or otherwise. However, some legacy models use this. To cope with
-     * it, we just translate it to a single space.
-     */
-    case 12  : return " ";
-
-    default  : return std::string(1, c);
-  }
 }
 
 void XMLPrinter::sync_to(const Node &n) {
