@@ -250,16 +250,38 @@ class Generator : public ConstStmtTraversal {
 
     if (s.expr == nullptr) {
       *out << "printf(\"%s\", \"" << s.value << "\")";
-
-    } else {
-      assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
-        && "complex type in put statement");
-
-      // FIXME: is this correct for (a) undefined and (b) enums?
-      *out << "printf(\"%\" PRIVAL, ";
-      generate_rvalue(*out, *s.expr);
-      *out << ")";
+      return;
     }
+
+    assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
+      && "complex type in put statement");
+
+    if (s.expr->type() != nullptr) {
+      if (auto e = dynamic_cast<const Enum*>(s.expr->type()->resolve())) {
+        *out
+          << "{\n"
+          << "  value_t v = ";
+        generate_rvalue(*out, *s.expr);
+        *out << ";\n";
+        size_t i = 0;
+        for (const std::pair<std::string, location> &m : e->members) {
+          *out << "  ";
+          if (i != 0)
+            *out << "else ";
+          *out << "if (v == " << i << ") {\n"
+            << "    printf(\"%s\", \"" << m.first << "\");\n"
+            << "  }\n";
+          i++;
+        }
+        *out << "}";
+        return;
+      }
+    }
+
+    // FIXME: is this correct for undefined?
+    *out << "printf(\"%\" PRIVAL, ";
+    generate_rvalue(*out, *s.expr);
+    *out << ")";
   }
 
   void visit(const Return &s) final {
