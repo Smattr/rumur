@@ -135,6 +135,7 @@
 %token OF
 %token PROCEDURE
 %token PROPERTY
+%token PUT
 %token RECORD
 %token RETURN
 %token RULE
@@ -490,6 +491,10 @@ stmt: category STRING expr {
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = rumur::Ptr<rumur::If>::make(cs, @$);
+} | PUT STRING {
+  $$ = rumur::Ptr<rumur::Put>::make($2, @$);
+} | PUT expr {
+  $$ = rumur::Ptr<rumur::Put>::make($2, @$);
 } | RETURN {
   $$ = rumur::Ptr<rumur::Return>::make(nullptr, @$);
 } | RETURN expr {

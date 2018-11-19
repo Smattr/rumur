@@ -581,6 +581,22 @@ void XMLPrinter::visit(const PropertyStmt &n) {
   *o << "</propertystmt>";
 }
 
+void XMLPrinter::visit(const Put &n) {
+  sync_to(n);
+  *o << "<put ";
+  if (n.expr == nullptr) {
+    *o << "value=\"" << xml_escape(n.value) << "\" ";
+  }
+  add_location(n);
+  *o << ">";
+  if (n.expr != nullptr) {
+    sync_to(*n.expr);
+    dispatch(*n.expr);
+  }
+  sync_to(n.loc.end);
+  *o << "</put>";
+}
+
 void XMLPrinter::visit(const Quantifier &n) {
   sync_to(n);
   *o << "<quantifier ";

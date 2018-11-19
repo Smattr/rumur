@@ -59,6 +59,7 @@ class BaseTraversal {
   virtual void visit(Property &n) = 0;
   virtual void visit(PropertyRule &n) = 0;
   virtual void visit(PropertyStmt &n) = 0;
+  virtual void visit(Put &n) = 0;
   virtual void visit(Quantifier &n) = 0;
   virtual void visit(Range &n) = 0;
   virtual void visit(Record &n) = 0;
@@ -128,6 +129,7 @@ class ConstBaseTraversal {
   virtual void visit(const Property &n) = 0;
   virtual void visit(const PropertyRule &n) = 0;
   virtual void visit(const PropertyStmt &n) = 0;
+  virtual void visit(const Put &n) = 0;
   virtual void visit(const Quantifier &n) = 0;
   virtual void visit(const Range &n) = 0;
   virtual void visit(const Record &n) = 0;
@@ -193,6 +195,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit(const Property &n) override;
   void visit(const PropertyRule &n) override;
   void visit(const PropertyStmt &n) override;
+  void visit(const Put &n) override;
   void visit(const Quantifier &n) override;
   void visit(const Range &n) override;
   void visit(const Record &n) override;
@@ -263,6 +266,7 @@ class ConstExprTraversal : public ConstBaseTraversal {
   void visit(const Property &n) final;
   void visit(const PropertyRule &n) final;
   void visit(const PropertyStmt &n) final;
+  void visit(const Put &n) final;
   void visit(const Quantifier &n) final;
   void visit(const Range &n) final;
   void visit(const Record &n) final;
@@ -328,6 +332,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit(const Property &n) final;
   void visit(const PropertyRule &n) final;
   void visit(const PropertyStmt &n) override = 0;
+  void visit(const Put &n) override = 0;
   void visit(const Quantifier &n) final;
   void visit(const Range &n) final;
   void visit(const Record &n) final;
@@ -394,6 +399,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit(const Property &n) final;
   void visit(const PropertyRule &n) final;
   void visit(const PropertyStmt &n) final;
+  void visit(const Put &n) final;
   void visit(const Quantifier &n) final;
   void visit(const Range &n) override = 0;
   void visit(const Record &n) override = 0;

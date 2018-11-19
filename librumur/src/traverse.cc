@@ -215,6 +215,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Put*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Quantifier*>(&n)) {
     visit(*i);
     return;
@@ -493,6 +498,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Put*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Quantifier*>(&n)) {
     visit(*i);
     return;
@@ -759,6 +769,11 @@ void ConstTraversal::visit(const PropertyStmt &n) {
   dispatch(n.property);
 }
 
+void ConstTraversal::visit(const Put &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
 void ConstTraversal::visit(const Quantifier &n) {
   if (n.type != nullptr)
     dispatch(*n.type);
@@ -942,6 +957,11 @@ void ConstExprTraversal::visit(const PropertyRule &n) {
 
 void ConstExprTraversal::visit(const PropertyStmt &n) {
   dispatch(n.property);
+}
+
+void ConstExprTraversal::visit(const Put &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
 }
 
 void ConstExprTraversal::visit(const Quantifier &n) {
@@ -1426,6 +1446,11 @@ void ConstTypeTraversal::visit(const PropertyRule &n) {
 
 void ConstTypeTraversal::visit(const PropertyStmt &n) {
   dispatch(n.property);
+}
+
+void ConstTypeTraversal::visit(const Put &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
 }
 
 void ConstTypeTraversal::visit(const Quantifier &n) {

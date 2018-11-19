@@ -222,6 +222,38 @@ void ProcedureCall::validate() const {
     throw Error("unknown procedure \"" + name + "\"", loc);
 }
 
+Put::Put(const std::string &value_, const location &loc_):
+  Stmt(loc_), value(value_) { }
+
+Put::Put(const Ptr<Expr> &expr_, const location &loc_):
+  Stmt(loc_), expr(expr_) { }
+
+Put *Put::clone() const {
+  return new Put(*this);
+}
+
+bool Put::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Put*>(&other);
+  if (o == nullptr)
+    return false;
+  if (value != o->value)
+    return false;
+  if (expr == nullptr) {
+    if (o->expr != nullptr)
+      return false;
+  } else if (o->expr == nullptr) {
+    return false;
+  } else if (*expr != *o->expr) {
+    return false;
+  }
+  return true;
+}
+
+void Put::validate() const {
+  if (expr != nullptr && expr->type() != nullptr && !expr->type()->is_simple())
+    throw Error("printing a complex type is not supported", loc);
+}
+
 Return::Return(const Ptr<Expr> &expr_, const location &loc_):
   Stmt(loc_), expr(expr_) { }
 

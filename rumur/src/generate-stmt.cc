@@ -246,6 +246,11 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
+  void visit(const Put&) final {
+    assert(!"TODO");
+    *out << "TODO";
+  }
+
   void visit(const Return &s) final {
 
     if (s.expr == nullptr) {

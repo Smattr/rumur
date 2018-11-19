@@ -87,6 +87,7 @@ invariant     { return rumur::parser::token::INVARIANT;     }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
 property      { return rumur::parser::token::PROPERTY;      }
+put           { return rumur::parser::token::PUT;           }
 real          { throw rumur::Error("real types are not supported", *loc); }
 record        { return rumur::parser::token::RECORD;        }
 return        { return rumur::parser::token::RETURN;        }

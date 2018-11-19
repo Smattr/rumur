@@ -58,6 +58,7 @@ class Indexer : public BaseTraversal {
   void visit(Property &n) final;
   void visit(PropertyRule &n) final;
   void visit(PropertyStmt &n) final;
+  void visit(Put &n) final;
   void visit(Quantifier &n) final;
   void visit(Range &n) final;
   void visit(Record &n) final;

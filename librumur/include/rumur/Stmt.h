@@ -142,6 +142,20 @@ struct ProcedureCall : public Stmt {
   void validate() const final;
 };
 
+struct Put : public Stmt {
+
+  std::string value;
+  Ptr<Expr> expr;
+
+  Put(const std::string &value_, const location &loc_);
+  Put(const Ptr<Expr> &expr_, const location &loc_);
+  virtual ~Put() = default;
+  Put *clone() const final;
+
+  bool operator==(const Node &other) const final;
+  void validate() const final;
+};
+
 struct Return : public Stmt {
 
   Ptr<Expr> expr;

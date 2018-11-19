@@ -291,6 +291,11 @@ class Resolver : public BaseTraversal {
     dispatch(n.property);
   }
 
+  void visit(Put &n) final {
+    if (n.expr != nullptr)
+      dispatch(*n.expr);
+  }
+
   void visit(Quantifier &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);

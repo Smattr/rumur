@@ -232,6 +232,12 @@ void Indexer::visit(PropertyStmt &n) {
   dispatch(n.property);
 }
 
+void Indexer::visit(Put &n) {
+  n.unique_id = next++;
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
 void Indexer::visit(Quantifier &n) {
   n.unique_id = next++;
   if (n.type != nullptr)
