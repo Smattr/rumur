@@ -246,9 +246,20 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Put&) final {
-    assert(!"TODO");
-    *out << "TODO";
+  void visit(const Put &s) final {
+
+    if (s.expr == nullptr) {
+      *out << "printf(\"%s\", \"" << s.value << "\")";
+
+    } else {
+      assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
+        && "complex type in put statement");
+
+      // FIXME: is this correct for (a) undefined and (b) enums?
+      *out << "printf(\"%\" PRIVAL, ";
+      generate_rvalue(*out, *s.expr);
+      *out << ")";
+    }
   }
 
   void visit(const Return &s) final {
