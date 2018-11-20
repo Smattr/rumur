@@ -87,7 +87,7 @@ void Function::validate() const {
       }
     }
 
-    virtual ~ReturnChecker() { }
+    virtual ~ReturnChecker() = default;
   };
 
   // Run the checker

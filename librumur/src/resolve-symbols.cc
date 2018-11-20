@@ -410,7 +410,7 @@ class Resolver : public BaseTraversal {
       dispatch(*n.type);
   }
 
-  virtual ~Resolver() { }
+  virtual ~Resolver() = default;
 
  private:
   void visit(BinaryExpr &n) {

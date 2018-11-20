@@ -314,7 +314,7 @@ class Generator : public ConstStmtTraversal {
     *out << ")";
   }
 
-  virtual ~Generator() { }
+  virtual ~Generator() = default;
 };
 
 }

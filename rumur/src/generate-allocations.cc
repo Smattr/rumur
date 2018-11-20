@@ -37,7 +37,7 @@ class Generator : public ConstTraversal {
       dispatch(*a);
   }
 
-  virtual ~Generator() { }
+  virtual ~Generator() = default;
 
  private:
   void define_backing_mem(size_t id, const TypeExpr *t) {

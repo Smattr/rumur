@@ -370,7 +370,7 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  virtual ~Validator() { }
+  virtual ~Validator() = default;
 };
 
 }

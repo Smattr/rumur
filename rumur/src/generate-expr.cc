@@ -325,7 +325,7 @@ class Generator : public ConstExprTraversal {
     *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
   }
 
-  virtual ~Generator() { }
+  virtual ~Generator() = default;
 
  private:
   void invalid(const Expr &n) const {

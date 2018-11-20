@@ -93,7 +93,7 @@ unsigned long Model::assumption_count() const {
       dispatch(*n.expr);
     }
 
-    virtual ~AssumptionCounter() { }
+    virtual ~AssumptionCounter() = default;
   };
 
   // Use the traversal to count our own assumptions.

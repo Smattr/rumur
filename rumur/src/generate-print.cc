@@ -192,7 +192,7 @@ class Generator : public ConstTypeTraversal {
     dispatch(*n.referent);
   }
 
-  virtual ~Generator() { }
+  virtual ~Generator() = default;
 };
 
 }
