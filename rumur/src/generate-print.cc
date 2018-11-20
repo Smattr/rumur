@@ -100,7 +100,7 @@ class Generator : public ConstTypeTraversal {
     }
     *out
       << "    } else {\n"
-      << "      printf(\"ILLEGAL VALUE\");\n"
+      << "      assert(!\"illegal value for " << prefix << "\");\n"
       << "    }\n"
       << "    if (MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
