@@ -508,6 +508,16 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write a function to print the state.
   out
     << "static void state_print(const struct state *previous, const struct state *s) {\n";
+  /* Output the state variable handles so we can reference them within this
+   * function.
+   */
+  for (const Ptr<Decl> &d : m.decls) {
+    if (isa<VarDecl>(d)) {
+      out << "  ";
+      generate_decl(out, *d);
+      out << ";\n";
+    }
+  }
   mpz_class offset = 0;
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
