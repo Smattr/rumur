@@ -24,8 +24,8 @@ void generate_function(std::ostream &out, const rumur::Function &f,
 
 void generate_model(std::ostream &out, const rumur::Model &m);
 
-// Generate C code to print the value of the given state variable
-void generate_print(std::ostream &out, const rumur::VarDecl &d,
+// Generate C code to print the value of the given type at the given handle.
+void generate_print(std::ostream &out, const rumur::TypeExpr &e,
   const std::string &prefix, const std::string &handle);
 
 void generate_property(std::ostream &out, const rumur::Property &p);

@@ -157,7 +157,7 @@ class Generator : public ConstTypeTraversal {
     for (auto &f : n.fields) {
       mpz_class w = f->width();
       const std::string h = derive_handle(preceding_offset, w);
-      generate_print(*out, *f, prefix + ".", h);
+      generate_print(*out, *f->type, prefix + "." + f->name, h);
       preceding_offset += w;
     }
   }
@@ -215,9 +215,9 @@ class Generator : public ConstTypeTraversal {
 
 }
 
-void generate_print(std::ostream &out, const rumur::VarDecl &d,
+void generate_print(std::ostream &out, const rumur::TypeExpr &e,
   const std::string &prefix, const std::string &handle) {
 
-  Generator g(out, prefix + d.name, handle);
-  g.dispatch(*d.type);
+  Generator g(out, prefix, handle);
+  g.dispatch(e);
 }
