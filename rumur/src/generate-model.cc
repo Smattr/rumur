@@ -518,12 +518,9 @@ void generate_model(std::ostream &out, const Model &m) {
       out << ";\n";
     }
   }
-  mpz_class offset = 0;
   for (const Ptr<Decl> &d : m.decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-      generate_print(out, *v, "", offset);
-      offset += v->width();
-    }
+    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
+      generate_print(out, *v, "", "ru_" + v->name);
   }
   out
     << "}\n\n";

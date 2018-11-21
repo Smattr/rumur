@@ -26,7 +26,7 @@ void generate_model(std::ostream &out, const rumur::Model &m);
 
 // Generate C code to print the value of the given state variable
 void generate_print(std::ostream &out, const rumur::VarDecl &d,
-  const std::string &prefix, mpz_class preceding_offset);
+  const std::string &prefix, const std::string &handle);
 
 void generate_property(std::ostream &out, const rumur::Property &p);
 

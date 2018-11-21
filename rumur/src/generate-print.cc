@@ -16,11 +16,11 @@ class Generator : public ConstTypeTraversal {
  private:
   std::ostream *out;
   const std::string prefix;
-  mpz_class preceding_offset;
+  const std::string handle;
 
  public:
-  Generator(std::ostream &o, const std::string &p, mpz_class po):
-    out(&o), prefix(p), preceding_offset(po) { }
+  Generator(std::ostream &o, const std::string &p, const std::string &h):
+    out(&o), prefix(p), handle(h) { }
 
   void visit(const Array &n) final {
 
@@ -34,10 +34,13 @@ class Generator : public ConstTypeTraversal {
       // FIXME: Unrolling this loop at generation time is not great if the index
       // type is big. E.g. if someone has an 'array [0..10000] of ...' this is
       // going to generate quite unpleasant code.
+      mpz_class preceding_offset = 0;
+      mpz_class w = n.element_type->width();
       for (mpz_class i = lb; i <= ub; i++) {
-        Generator g(*out, prefix + "[" + i.get_str() + "]", preceding_offset);
+        const std::string h = derive_handle(preceding_offset, w);
+        Generator g(*out, prefix + "[" + i.get_str() + "]", h);
         g.dispatch(*n.element_type);
-        preceding_offset += n.element_type->width();
+        preceding_offset += w;
       }
 
       return;
@@ -47,10 +50,13 @@ class Generator : public ConstTypeTraversal {
 
       mpz_class b = s->bound->constant_fold();
 
+      mpz_class preceding_offset = 0;
+      mpz_class w = n.element_type->width();
       for (mpz_class i = 0; i < b; i++) {
-        Generator g(*out, prefix + "[" + i.get_str() + "]", preceding_offset);
+        const std::string h = derive_handle(preceding_offset, w);
+        Generator g(*out, prefix + "[" + i.get_str() + "]", h);
         g.dispatch(*n.element_type);
-        preceding_offset += n.element_type->width();
+        preceding_offset += w;
       }
 
       return;
@@ -58,10 +64,13 @@ class Generator : public ConstTypeTraversal {
 
     if (auto e = dynamic_cast<const Enum*>(t)) {
 
+      mpz_class preceding_offset = 0;
+      mpz_class w = n.element_type->width();
       for (const std::pair<std::string, location> &m : e->members) {
-        Generator g(*out, prefix + "[" + m.first + "]", preceding_offset);
+        const std::string h = derive_handle(preceding_offset, w);
+        Generator g(*out, prefix + "[" + m.first + "]", h);
         g.dispatch(*n.element_type);
-        preceding_offset += n.element_type->width();
+        preceding_offset += w;
       }
 
       return;
@@ -71,16 +80,14 @@ class Generator : public ConstTypeTraversal {
   }
 
   void visit(const Enum &n) final {
+    const std::string previous_handle = to_previous();
+
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
-        << "), .width = SIZE_C(" << n.width() << ") });\n"
+      << "  value_t v = handle_read_raw(" << handle << ");\n"
       << "  value_t v_previous = VALUE_C(0);\n"
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)previous->data, .offset = SIZE_C(" << preceding_offset
-        << "), .width = SIZE_C(" << n.width() << ") });\n"
+      << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (MACHINE_READABLE_OUTPUT) {\n"
@@ -115,16 +122,14 @@ class Generator : public ConstTypeTraversal {
     const std::string lb = n.lower_bound();
     const std::string ub = n.upper_bound();
 
+    const std::string previous_handle = to_previous();
+
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
-        << "), .width = SIZE_C(" << n.width() << ") });\n"
+      << "  value_t v = handle_read_raw(" << handle << ");\n"
       << "  value_t v_previous = VALUE_C(0);\n"
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)previous->data, .offset = SIZE_C(" << preceding_offset
-        << "), .width = SIZE_C(" << n.width() << ") });\n"
+      << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (MACHINE_READABLE_OUTPUT) {\n"
@@ -148,23 +153,24 @@ class Generator : public ConstTypeTraversal {
   }
 
   void visit(const Record &n) final {
+    mpz_class preceding_offset = 0;
     for (auto &f : n.fields) {
-      generate_print(*out, *f, prefix + ".", preceding_offset);
-      preceding_offset += f->width();
+      mpz_class w = f->width();
+      const std::string h = derive_handle(preceding_offset, w);
+      generate_print(*out, *f, prefix + ".", h);
+      preceding_offset += w;
     }
   }
 
-  void visit(const Scalarset &n) final {
+  void visit(const Scalarset&) final {
+    const std::string previous_handle = to_previous();
+
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)s->data, .offset = SIZE_C(" << preceding_offset
-        << "), .width = SIZE_C(" << n.width() << ") });\n"
+      << "  value_t v = handle_read_raw(" << handle << ");\n"
       << "  value_t v_previous = VALUE_C(0);\n"
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw((struct handle){ .base = "
-        << "(uint8_t*)previous->data, .offset = SIZE_C(" << preceding_offset
-        << "), .width = SIZE_C(" << n.width() << ") });\n"
+      << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (MACHINE_READABLE_OUTPUT) {\n"
@@ -193,13 +199,25 @@ class Generator : public ConstTypeTraversal {
   }
 
   virtual ~Generator() = default;
+
+ private:
+  std::string derive_handle(mpz_class offset, mpz_class width) const {
+    return "((struct handle){ .base = " + handle + ".base, .offset = " + handle
+      + ".offset + SIZE_C(" + offset.get_str() + "), .width = SIZE_C("
+      + width.get_str() + ") })";
+  }
+
+  std::string to_previous() const {
+    return "((struct handle){ .base = (uint8_t*)previous->data, .offset = "
+      + handle + ".offset, .width = " + handle + ".width })";
+  }
 };
 
 }
 
 void generate_print(std::ostream &out, const rumur::VarDecl &d,
-  const std::string &prefix, mpz_class preceding_offset) {
+  const std::string &prefix, const std::string &handle) {
 
-  Generator g(out, prefix + d.name, preceding_offset);
+  Generator g(out, prefix + d.name, handle);
   g.dispatch(*d.type);
 }
