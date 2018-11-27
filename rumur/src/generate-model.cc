@@ -520,7 +520,7 @@ void generate_model(std::ostream &out, const Model &m) {
   }
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get()))
-      generate_print(out, *v->type, v->name, "ru_" + v->name);
+      generate_print(out, *v->type, v->name, "ru_" + v->name, true);
   }
   out
     << "}\n\n";
