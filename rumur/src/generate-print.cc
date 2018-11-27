@@ -18,11 +18,12 @@ class Generator : public ConstTypeTraversal {
   const std::string prefix;
   const std::string handle;
   const bool support_diff;
+  const bool support_xml;
 
  public:
   Generator(std::ostream &o, const std::string &p, const std::string &h,
-    bool s):
-    out(&o), prefix(p), handle(h), support_diff(s) { }
+    bool s, bool x):
+    out(&o), prefix(p), handle(h), support_diff(s), support_xml(x) { }
 
   void visit(const Array &n) final {
 
@@ -40,7 +41,8 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       for (mpz_class i = lb; i <= ub; i++) {
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*out, prefix + "[" + i.get_str() + "]", h, support_diff);
+        Generator g(*out, prefix + "[" + i.get_str() + "]", h, support_diff,
+          support_xml);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -56,7 +58,8 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       for (mpz_class i = 0; i < b; i++) {
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*out, prefix + "[" + i.get_str() + "]", h, support_diff);
+        Generator g(*out, prefix + "[" + i.get_str() + "]", h, support_diff,
+          support_xml);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -70,7 +73,8 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       for (const std::pair<std::string, location> &m : e->members) {
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*out, prefix + "[" + m.first + "]", h, support_diff);
+        Generator g(*out, prefix + "[" + m.first + "]", h, support_diff,
+          support_xml);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -95,7 +99,7 @@ class Generator : public ConstTypeTraversal {
       << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"<state_component name=\\\"" << prefix << "\\\" "
         << "value=\\\"\");\n"
       << "    } else {\n"
@@ -114,7 +118,7 @@ class Generator : public ConstTypeTraversal {
       << "    } else {\n"
       << "      assert(!\"illegal value for " << prefix << "\");\n"
       << "    }\n"
-      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
       << "    }\n"
       << "    printf(\"\\n\");\n"
@@ -140,7 +144,7 @@ class Generator : public ConstTypeTraversal {
       << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"<state_component name=\\\"" << prefix << "\\\" "
         << "value=\\\"\");\n"
       << "    } else {\n"
@@ -152,7 +156,7 @@ class Generator : public ConstTypeTraversal {
       << "      printf(\"%\" PRIVAL \"\", decode_value(" << lb << ", "
         << ub << ", v));\n"
       << "    }\n"
-      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
       << "    }\n"
       << "    printf(\"\\n\");\n"
@@ -165,7 +169,8 @@ class Generator : public ConstTypeTraversal {
     for (auto &f : n.fields) {
       mpz_class w = f->width();
       const std::string h = derive_handle(preceding_offset, w);
-      generate_print(*out, *f->type, prefix + "." + f->name, h, support_diff);
+      generate_print(*out, *f->type, prefix + "." + f->name, h, support_diff,
+        support_xml);
       preceding_offset += w;
     }
   }
@@ -184,7 +189,7 @@ class Generator : public ConstTypeTraversal {
       << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
-      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"<state_component name=\\\"" << prefix << "\\\" "
         << "value=\\\"\");\n"
       << "    } else {\n"
@@ -195,7 +200,7 @@ class Generator : public ConstTypeTraversal {
       << "    } else {\n"
       << "      printf(\"%\" PRIVAL \"\", v - 1);\n"
       << "    }\n"
-      << "    if (MACHINE_READABLE_OUTPUT) {\n"
+      << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
       << "    }\n"
       << "    printf(\"\\n\");\n"
@@ -227,8 +232,9 @@ class Generator : public ConstTypeTraversal {
 }
 
 void generate_print(std::ostream &out, const rumur::TypeExpr &e,
-  const std::string &prefix, const std::string &handle, bool support_diff) {
+  const std::string &prefix, const std::string &handle, bool support_diff,
+  bool support_xml) {
 
-  Generator g(out, prefix, handle, support_diff);
+  Generator g(out, prefix, handle, support_diff, support_xml);
   g.dispatch(e);
 }
