@@ -25,6 +25,10 @@ class Generator : public ConstTypeTraversal {
     bool s, bool x):
     out(&o), prefix(p), handle(h), support_diff(s), support_xml(x) { }
 
+  Generator(const Generator &caller, const std::string &p, const std::string &h):
+    out(caller.out), prefix(p), handle(h), support_diff(caller.support_diff),
+    support_xml(caller.support_xml) { }
+
   void visit(const Array &n) final {
 
     const TypeExpr *t = n.index_type->resolve();
@@ -41,8 +45,7 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       for (mpz_class i = lb; i <= ub; i++) {
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*out, prefix + "[" + i.get_str() + "]", h, support_diff,
-          support_xml);
+        Generator g(*this, prefix + "[" + i.get_str() + "]", h);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -58,8 +61,7 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       for (mpz_class i = 0; i < b; i++) {
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*out, prefix + "[" + i.get_str() + "]", h, support_diff,
-          support_xml);
+        Generator g(*this, prefix + "[" + i.get_str() + "]", h);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -73,8 +75,7 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       for (const std::pair<std::string, location> &m : e->members) {
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*out, prefix + "[" + m.first + "]", h, support_diff,
-          support_xml);
+        Generator g(*this, prefix + "[" + m.first + "]", h);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
