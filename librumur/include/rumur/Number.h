@@ -28,6 +28,7 @@ struct Number : public Expr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 }

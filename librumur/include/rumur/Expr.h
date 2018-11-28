@@ -41,6 +41,9 @@ struct Expr : public Node {
 
   // Is this value valid to use on the LHS of an assignment?
   virtual bool is_lvalue() const;
+
+  // Get a string representation of this expression
+  virtual std::string to_string() const = 0;
 };
 
 struct Ternary : public Expr {
@@ -59,6 +62,7 @@ struct Ternary : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 
   /* Note we do not override is_lvalue. Unlike in C, ternary expressions are not
    * considered lvalues.
@@ -95,6 +99,7 @@ struct Implication : public BooleanBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Or : public BooleanBinaryExpr {
@@ -106,6 +111,7 @@ struct Or : public BooleanBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct And : public BooleanBinaryExpr {
@@ -117,6 +123,7 @@ struct And : public BooleanBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct UnaryExpr : public Expr {
@@ -140,6 +147,7 @@ struct Not : public UnaryExpr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 };
 
 struct ComparisonBinaryExpr : public BinaryExpr {
@@ -158,6 +166,7 @@ struct Lt : public ComparisonBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Leq : public ComparisonBinaryExpr {
@@ -169,6 +178,7 @@ struct Leq : public ComparisonBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Gt : public ComparisonBinaryExpr {
@@ -180,6 +190,7 @@ struct Gt : public ComparisonBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Geq : public ComparisonBinaryExpr {
@@ -191,6 +202,7 @@ struct Geq : public ComparisonBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct EquatableBinaryExpr : public BinaryExpr {
@@ -209,6 +221,7 @@ struct Eq : public EquatableBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Neq : public EquatableBinaryExpr {
@@ -220,6 +233,7 @@ struct Neq : public EquatableBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct ArithmeticBinaryExpr : public BinaryExpr {
@@ -238,6 +252,7 @@ struct Add : public ArithmeticBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Sub : public ArithmeticBinaryExpr {
@@ -249,6 +264,7 @@ struct Sub : public ArithmeticBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Negative : public UnaryExpr {
@@ -261,6 +277,7 @@ struct Negative : public UnaryExpr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 };
 
 struct Mul : public ArithmeticBinaryExpr {
@@ -272,6 +289,7 @@ struct Mul : public ArithmeticBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Div : public ArithmeticBinaryExpr {
@@ -283,6 +301,7 @@ struct Div : public ArithmeticBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Mod : public ArithmeticBinaryExpr {
@@ -294,6 +313,7 @@ struct Mod : public ArithmeticBinaryExpr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct ExprID : public Expr {
@@ -312,6 +332,7 @@ struct ExprID : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   bool is_lvalue() const final;
+  std::string to_string() const final;
 };
 
 struct Field : public Expr {
@@ -329,6 +350,7 @@ struct Field : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
+  std::string to_string() const final;
 };
 
 struct Element : public Expr {
@@ -346,6 +368,7 @@ struct Element : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
+  std::string to_string() const final;
 };
 
 struct FunctionCall : public Expr {
@@ -364,6 +387,7 @@ struct FunctionCall : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 };
 
 struct Quantifier : public Node {
@@ -387,6 +411,7 @@ struct Quantifier : public Node {
   virtual ~Quantifier() = default;
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const;
 };
 
 struct Exists : public Expr {
@@ -404,6 +429,7 @@ struct Exists : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 };
 
 struct Forall : public Expr {
@@ -421,6 +447,7 @@ struct Forall : public Expr {
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 };
 
 }

@@ -43,4 +43,8 @@ bool Number::operator==(const Node &other) const {
   return o != nullptr && value == o->value;
 }
 
+std::string Number::to_string() const {
+  return value.get_str();
+}
+
 }

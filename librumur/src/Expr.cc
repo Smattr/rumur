@@ -59,6 +59,11 @@ void Ternary::validate() const {
     throw Error("ternary condition is not a boolean", cond->loc);
 }
 
+std::string Ternary::to_string() const {
+  return "(" + cond->to_string() + " ? " + lhs->to_string() + " : "
+    + rhs->to_string() + ")";
+}
+
 BinaryExpr::BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Expr(loc_), lhs(lhs_), rhs(rhs_) { }
@@ -93,6 +98,10 @@ bool Implication::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Implication::to_string() const {
+  return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
+}
+
 Or *Or::clone() const {
   return new Or(*this);
 }
@@ -110,6 +119,10 @@ bool Or::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Or::to_string() const {
+  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
+}
+
 And *And::clone() const {
   return new And(*this);
 }
@@ -125,6 +138,10 @@ mpz_class And::constant_fold() const {
 bool And::operator==(const Node &other) const {
   auto o = dynamic_cast<const And*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string And::to_string() const {
+  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
 UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
@@ -155,6 +172,10 @@ bool Not::operator==(const Node &other) const {
 void Not::validate() const {
   if (!rhs->is_boolean())
     throw Error("argument to ! is not a boolean", rhs->loc);
+}
+
+std::string Not::to_string() const {
+  return "(!" + rhs->to_string() + ")";
 }
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
@@ -217,6 +238,10 @@ bool Lt::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Lt::to_string() const {
+  return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
+}
+
 Leq *Leq::clone() const {
   return new Leq(*this);
 }
@@ -232,6 +257,10 @@ mpz_class Leq::constant_fold() const {
 bool Leq::operator==(const Node &other) const {
   auto o = dynamic_cast<const Leq*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Leq::to_string() const {
+  return "(" + lhs->to_string() + " <= " + rhs->to_string() + ")";
 }
 
 Gt *Gt::clone() const {
@@ -251,6 +280,10 @@ bool Gt::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Gt::to_string() const {
+  return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
+}
+
 Geq *Geq::clone() const {
   return new Geq(*this);
 }
@@ -266,6 +299,10 @@ mpz_class Geq::constant_fold() const {
 bool Geq::operator==(const Node &other) const {
   auto o = dynamic_cast<const Geq*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Geq::to_string() const {
+  return "(" + lhs->to_string() + " >= " + rhs->to_string() + ")";
 }
 
 static bool equatable(const Expr &lhs, const Expr &rhs) {
@@ -344,6 +381,10 @@ bool Eq::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Eq::to_string() const {
+  return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
+}
+
 Neq *Neq::clone() const {
   return new Neq(*this);
 }
@@ -359,6 +400,10 @@ mpz_class Neq::constant_fold() const {
 bool Neq::operator==(const Node &other) const {
   auto o = dynamic_cast<const Neq*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Neq::to_string() const {
+  return "(" + lhs->to_string() + " != " + rhs->to_string() + ")";
 }
 
 static bool arithmetic(const Expr &lhs, const Expr &rhs) {
@@ -421,6 +466,10 @@ bool Add::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Add::to_string() const {
+  return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
+}
+
 Sub *Sub::clone() const {
   return new Sub(*this);
 }
@@ -436,6 +485,10 @@ mpz_class Sub::constant_fold() const {
 bool Sub::operator==(const Node &other) const {
   auto o = dynamic_cast<const Sub*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Sub::to_string() const {
+  return "(" + lhs->to_string() + " - " + rhs->to_string() + ")";
 }
 
 void Negative::validate() const {
@@ -460,6 +513,10 @@ bool Negative::operator==(const Node &other) const {
   return o != nullptr && *rhs == *o->rhs;
 }
 
+std::string Negative::to_string() const {
+  return "(-" + rhs->to_string() + ")";
+}
+
 Mul *Mul::clone() const {
   return new Mul(*this);
 }
@@ -475,6 +532,10 @@ mpz_class Mul::constant_fold() const {
 bool Mul::operator==(const Node &other) const {
   auto o = dynamic_cast<const Mul*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Mul::to_string() const {
+  return "(" + lhs->to_string() + " * " + rhs->to_string() + ")";
 }
 
 Div *Div::clone() const {
@@ -498,6 +559,10 @@ bool Div::operator==(const Node &other) const {
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
+std::string Div::to_string() const {
+  return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
+}
+
 Mod *Mod::clone() const {
   return new Mod(*this);
 }
@@ -517,6 +582,10 @@ mpz_class Mod::constant_fold() const {
 bool Mod::operator==(const Node &other) const {
   auto o = dynamic_cast<const Mod*>(&other);
   return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Mod::to_string() const {
+  return "(" + lhs->to_string() + " % " + rhs->to_string() + ")";
 }
 
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
@@ -574,6 +643,10 @@ bool ExprID::is_lvalue() const {
   return value->is_lvalue();
 }
 
+std::string ExprID::to_string() const {
+  return id;
+}
+
 Field::Field(const Ptr<Expr> &record_, const std::string &field_,
   const location &loc_):
   Expr(loc_), record(record_), field(field_) {
@@ -615,6 +688,10 @@ bool Field::is_lvalue() const {
   return record->is_lvalue();
 }
 
+std::string Field::to_string() const {
+  return record->to_string() + "." + field;
+}
+
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
   const location &loc_):
   Expr(loc_), array(array_), index(index_) {
@@ -647,6 +724,10 @@ bool Element::operator==(const Node &other) const {
 
 bool Element::is_lvalue() const {
   return array->is_lvalue();
+}
+
+std::string Element::to_string() const {
+  return array->to_string() + "[" + index->to_string() + "]";
 }
 
 FunctionCall::FunctionCall(const std::string &name_,
@@ -699,6 +780,18 @@ bool FunctionCall::operator==(const Node &other) const {
 void FunctionCall::validate() const {
   if (function == nullptr)
     throw Error("unknown function call \"" + name + "\"", loc);
+}
+
+std::string FunctionCall::to_string() const {
+  std::string s = name + "(";
+  bool first = true;
+  for (const Ptr<Expr> &arg : arguments) {
+    if (!first)
+      s += ", ";
+    s += arg->to_string();
+  }
+  s += ")";
+  return s;
 }
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
@@ -758,6 +851,18 @@ bool Quantifier::operator==(const Node &other) const {
   return true;
 }
 
+std::string Quantifier::to_string() const {
+  if (type == nullptr) {
+    std::string s = name + " from " + from->to_string() + " to "
+      + to->to_string();
+    if (step != nullptr)
+      s += " by " + step->to_string();
+    return s;
+  }
+
+  return "TODO";
+}
+
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
@@ -788,6 +893,11 @@ void Exists::validate() const {
     throw Error("expression in exists is not boolean", expr->loc);
 }
 
+std::string Exists::to_string() const {
+  return "exists " + quantifier.to_string() + " do " + expr->to_string()
+    + " endexists";
+}
+
 Forall::Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
@@ -816,6 +926,11 @@ bool Forall::operator==(const Node &other) const {
 void Forall::validate() const {
   if (!expr->is_boolean())
     throw Error("expression in forall is not boolean", expr->loc);
+}
+
+std::string Forall::to_string() const {
+  return "forall " + quantifier.to_string() + " do " + expr->to_string()
+    + " endforall";
 }
 
 }
