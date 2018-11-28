@@ -377,7 +377,7 @@ struct FunctionCall : public Expr {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
-  FunctionCall(const std::string &name_, const Ptr<Function> &function_,
+  FunctionCall(const std::string &name_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~FunctionCall() = default;
   FunctionCall *clone() const final;

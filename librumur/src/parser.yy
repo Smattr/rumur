@@ -329,7 +329,7 @@ expr: expr '?' expr ':' expr {
   $$ = $2;
   $$->loc = @$;
 } | ID '(' exprlist ')' {
-  $$ = rumur::Ptr<rumur::FunctionCall>::make($1, nullptr, $3, @$);
+  $$ = rumur::Ptr<rumur::FunctionCall>::make($1, $3, @$);
 };
 
 exprdecl: id_list_opt ':' expr {

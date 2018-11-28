@@ -731,9 +731,8 @@ std::string Element::to_string() const {
 }
 
 FunctionCall::FunctionCall(const std::string &name_,
-  const Ptr<Function> &function_,
   const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
-  Expr(loc_), name(name_), function(function_), arguments(arguments_) { }
+  Expr(loc_), name(name_), arguments(arguments_) { }
 
 FunctionCall *FunctionCall::clone() const {
   return new FunctionCall(*this);
