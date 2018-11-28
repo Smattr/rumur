@@ -133,7 +133,7 @@ struct ProcedureCall : public Stmt {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
-  ProcedureCall(const std::string &name_, const Ptr<Function> &function_,
+  ProcedureCall(const std::string &name_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;

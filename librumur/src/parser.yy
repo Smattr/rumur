@@ -502,7 +502,7 @@ stmt: category STRING expr {
 } | UNDEFINE designator {
   $$ = rumur::Ptr<rumur::Undefine>::make($2, @$);
 } | ID '(' exprlist ')' {
-  $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, nullptr, $3, @$);
+  $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, $3, @$);
 };
 
 stmts: stmts_cont stmt semi_opt {

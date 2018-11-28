@@ -190,9 +190,9 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
-ProcedureCall::ProcedureCall(const std::string &name_, const Ptr<Function> &function_,
+ProcedureCall::ProcedureCall(const std::string &name_,
   const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
-  Stmt(loc_), name(name_), function(function_), arguments(arguments_) { }
+  Stmt(loc_), name(name_), arguments(arguments_) { }
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);
