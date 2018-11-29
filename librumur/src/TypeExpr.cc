@@ -109,6 +109,10 @@ std::string Range::upper_bound() const {
   return "VALUE_C(" + max->constant_fold().get_str() + ")";
 }
 
+std::string Range::to_string() const {
+  return min->to_string() + ".." + max->to_string();
+}
+
 Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) { }
 
@@ -152,6 +156,10 @@ std::string Scalarset::lower_bound() const {
 std::string Scalarset::upper_bound() const {
   mpz_class b = bound->constant_fold() - 1;
   return "VALUE_C(" + b.get_str() + ")";
+}
+
+std::string Scalarset::to_string() const {
+  return "scalarset(" + bound->to_string() + ")";
 }
 
 Enum::Enum(const std::vector<std::pair<std::string, location>> &members_,
@@ -204,6 +212,18 @@ std::string Enum::upper_bound() const {
   return "VALUE_C(" + size.get_str() + ")";
 }
 
+std::string Enum::to_string() const {
+  std::string s = "enum { ";
+  bool first = true;
+  for (const std::pair<std::string, location> &m : members) {
+    if (!first)
+      s + ", ";
+    s += m.first;
+    first = false;
+  }
+  return s + " }";
+}
+
 Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
   const location &loc_):
   TypeExpr(loc_), fields(fields_) {
@@ -244,6 +264,13 @@ bool Record::operator==(const Node &other) const {
     return *o == *this;
 
   return false;
+}
+
+std::string Record::to_string() const {
+  std::string s = "record ";
+  for (const Ptr<VarDecl> &v : fields)
+    s += v->name + " : " + v->type->to_string() + "; ";
+  return s + "endrecord";
 }
 
 Array::Array(const Ptr<TypeExpr> &index_type_,
@@ -296,6 +323,11 @@ bool Array::operator==(const Node &other) const {
 void Array::validate() const {
   if (!index_type->is_simple())
     throw Error("array indices must be simple types", loc);
+}
+
+std::string Array::to_string() const {
+  return "array [" + index_type->to_string() + "] of "
+    + element_type->to_string();
 }
 
 TypeExprID::TypeExprID(const std::string &name_,
@@ -359,6 +391,10 @@ std::string TypeExprID::upper_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->upper_bound();
+}
+
+std::string TypeExprID::to_string() const {
+  return name;
 }
 
 }

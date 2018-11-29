@@ -36,6 +36,9 @@ struct TypeExpr : public Node {
    */
   virtual std::string lower_bound() const;
   virtual std::string upper_bound() const;
+
+  // Get a string representation of this type
+  virtual std::string to_string() const = 0;
 };
 
 struct Range : public TypeExpr {
@@ -54,6 +57,7 @@ struct Range : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+  std::string to_string() const final;
 };
 
 struct Scalarset : public TypeExpr {
@@ -71,6 +75,7 @@ struct Scalarset : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+  std::string to_string() const final;
 };
 
 struct Enum : public TypeExpr {
@@ -88,6 +93,7 @@ struct Enum : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+  std::string to_string() const final;
 };
 
 struct Record : public TypeExpr {
@@ -101,6 +107,7 @@ struct Record : public TypeExpr {
   mpz_class width() const final;
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
+  std::string to_string() const final;
 };
 
 struct Array : public TypeExpr {
@@ -117,6 +124,7 @@ struct Array : public TypeExpr {
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+  std::string to_string() const final;
 };
 
 struct TypeExprID : public TypeExpr {
@@ -138,6 +146,7 @@ struct TypeExprID : public TypeExpr {
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
+  std::string to_string() const final;
 };
 
 }

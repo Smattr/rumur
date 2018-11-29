@@ -859,7 +859,7 @@ std::string Quantifier::to_string() const {
     return s;
   }
 
-  return "TODO";
+  return name + " : " + type->to_string();
 }
 
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
