@@ -250,8 +250,9 @@ bool Put::operator==(const Node &other) const {
 }
 
 void Put::validate() const {
-  if (expr != nullptr && expr->type() != nullptr && !expr->type()->is_simple())
-    throw Error("printing a complex type is not supported", loc);
+  if (expr != nullptr && expr->type() != nullptr && !expr->is_lvalue()
+      && !expr->type()->is_simple())
+    throw Error("printing a complex non-lvalue is not supported", loc);
 }
 
 Return::Return(const Ptr<Expr> &expr_, const location &loc_):

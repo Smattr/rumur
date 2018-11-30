@@ -254,9 +254,6 @@ class Generator : public ConstStmtTraversal {
       return;
     }
 
-    assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
-      && "complex type in put statement");
-
     if (s.expr->is_lvalue()) {
       assert(s.expr->type() != nullptr && "lvalue expression has numeric "
         "literal type");
@@ -270,6 +267,9 @@ class Generator : public ConstStmtTraversal {
 
       return;
     }
+
+    assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
+      && "complex non-lvalue in put statement");
 
     if (s.expr->type() != nullptr) {
       if (auto e = dynamic_cast<const Enum*>(s.expr->type()->resolve())) {
