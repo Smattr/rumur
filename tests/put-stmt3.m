@@ -4,6 +4,7 @@ var
   x: boolean;
 
 startstate begin
+  put x;
   x := false;
 end;
 
