@@ -8,8 +8,6 @@ startstate begin
 end;
 
 rule begin
-  put "x is ";
   put x;
-  put "\n";
   x := !x;
 end;

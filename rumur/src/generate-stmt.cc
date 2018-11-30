@@ -4,6 +4,7 @@
 #include <gmpxx.h>
 #include <iostream>
 #include <rumur/rumur.h>
+#include <sstream>
 #include <string>
 #include "utils.h"
 
@@ -256,6 +257,20 @@ class Generator : public ConstStmtTraversal {
     assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
       && "complex type in put statement");
 
+    if (s.expr->is_lvalue()) {
+      assert(s.expr->type() != nullptr && "lvalue expression has numeric "
+        "literal type");
+
+      // Construct a string containing a handle to this expression
+      std::ostringstream buffer;
+      generate_lvalue(buffer, *s.expr);
+
+      generate_print(*out, *s.expr->type(), s.expr->to_string(), buffer.str(),
+        false, false);
+
+      return;
+    }
+
     if (s.expr->type() != nullptr) {
       if (auto e = dynamic_cast<const Enum*>(s.expr->type()->resolve())) {
         *out
@@ -284,7 +299,6 @@ class Generator : public ConstStmtTraversal {
       }
     }
 
-    // FIXME: is this correct for undefined?
     *out << "printf(\"%\" PRIVAL, ";
     generate_rvalue(*out, *s.expr);
     *out << ")";
