@@ -71,6 +71,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit(const rumur::TypeExprID &n) final;
   void visit(const rumur::Undefine &n) final;
   void visit(const rumur::VarDecl &n) final;
+  void visit(const rumur::While &n) final;
 
   virtual ~XMLPrinter();
 

@@ -73,6 +73,7 @@ class Indexer : public BaseTraversal {
   void visit(TypeExprID &n) final;
   void visit(Undefine &n) final;
   void visit(VarDecl &n) final;
+  void visit(While &n) final;
 
   virtual ~Indexer() = default;
 

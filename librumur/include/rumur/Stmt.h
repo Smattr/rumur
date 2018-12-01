@@ -179,4 +179,18 @@ struct Undefine : public Stmt {
   void validate() const final;
 };
 
+struct While : public Stmt {
+
+  Ptr<Expr> condition;
+  std::vector<Ptr<Stmt>> body;
+
+  While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
+    const location &loc_);
+  virtual ~While() = default;
+  While *clone() const final;
+
+  bool operator==(const Node &other) const final;
+  void validate() const final;
+};
+
 }

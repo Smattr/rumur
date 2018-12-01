@@ -334,6 +334,18 @@ class Generator : public ConstStmtTraversal {
     *out << ")";
   }
 
+  void visit(const While &s) final {
+    *out << "while (";
+    generate_rvalue(*out, *s.condition);
+    *out << ") {\n";
+    for (auto &st : s.body) {
+      *out << "  ";
+      generate_stmt(*out, *st);
+      *out << ";\n";
+    }
+    *out << "}";
+  }
+
   virtual ~Generator() = default;
 };
 

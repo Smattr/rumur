@@ -76,6 +76,7 @@ endrecord     { return rumur::parser::token::ENDRECORD;     }
 endrule       { return rumur::parser::token::ENDRULE;       }
 endruleset    { return rumur::parser::token::ENDRULESET;    }
 endstartstate { return rumur::parser::token::ENDSTARTSTATE; }
+endwhile      { return rumur::parser::token::ENDWHILE;      }
 enum          { return rumur::parser::token::ENUM;          }
 error         { return rumur::parser::token::ERROR;         }
 exists        { return rumur::parser::token::EXISTS;        }
@@ -101,6 +102,7 @@ type          { return rumur::parser::token::TYPE;          }
 undefine      { return rumur::parser::token::UNDEFINE;      }
 union         { throw rumur::Error("union types are not supported", *loc); }
 var           { return rumur::parser::token::VAR;           }
+while         { return rumur::parser::token::WHILE;         }
 
 "∀"           { return rumur::parser::token::FORALL;        }
 "∃"           { return rumur::parser::token::EXISTS;        }

@@ -298,4 +298,29 @@ void Undefine::validate() const {
     throw Error("invalid undefine of non-lvalue expression", loc);
 }
 
+While::While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
+    const location &loc_):
+  Stmt(loc_), condition(condition_), body(body_) { }
+
+While *While::clone() const {
+  return new While(*this);
+}
+
+bool While::operator==(const Node &other) const {
+  auto o = dynamic_cast<const While*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*condition != *o->condition)
+    return false;
+  if (!vector_eq(body, o->body))
+    return false;
+  return true;
+}
+
+void While::validate() const {
+  if (!condition->is_boolean())
+    throw Error("condition in while loop is not a boolean expression",
+      condition->loc);
+}
+
 }

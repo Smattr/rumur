@@ -338,4 +338,11 @@ void Indexer::visit(VarDecl &n) {
   dispatch(*n.type);
 }
 
+void Indexer::visit(While &n) {
+  n.unique_id = next++;
+  dispatch(*n.condition);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
 }

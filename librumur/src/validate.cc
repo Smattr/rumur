@@ -370,6 +370,13 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit(const While &n) final {
+    dispatch(*n.condition);
+    for (auto &s : n.body)
+      dispatch(*s);
+    n.validate();
+  }
+
   virtual ~Validator() = default;
 };
 

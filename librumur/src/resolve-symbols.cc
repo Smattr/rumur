@@ -410,6 +410,12 @@ class Resolver : public BaseTraversal {
       dispatch(*n.type);
   }
 
+  void visit(While &n) final {
+    dispatch(*n.condition);
+    for (auto &s : n.body)
+      dispatch(*s);
+  }
+
   virtual ~Resolver() = default;
 
  private:

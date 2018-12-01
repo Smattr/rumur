@@ -865,6 +865,28 @@ void XMLPrinter::visit(const VarDecl &n) {
   *o << "</vardecl>";
 }
 
+void XMLPrinter::visit(const While &n) {
+  sync_to(n);
+  *o << "<while ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.condition);
+  *o << "<condition>";
+  dispatch(*n.condition);
+  *o << "</condition>";
+  if (!n.body.empty()) {
+    sync_to(*n.body[0]);
+    *o << "<body>";
+    for (auto &s : n.body) {
+      sync_to(*s);
+      dispatch(*s);
+    }
+    *o << "</body>";
+  }
+  sync_to(n.loc.end);
+  *o << "</while>";
+}
+
 XMLPrinter::~XMLPrinter() {
   sync_to();
   *o << "</unit>\n";

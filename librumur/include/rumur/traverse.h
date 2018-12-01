@@ -74,6 +74,7 @@ class BaseTraversal {
   virtual void visit(TypeExprID &n) = 0;
   virtual void visit(Undefine &n) = 0;
   virtual void visit(VarDecl &n) = 0;
+  virtual void visit(While &n) = 0;
 
   /* Visitation dispatch. This simply determines the type of the Node argument
    * and calls the appropriate specialised 'visit' method. This is not virtual
@@ -144,6 +145,7 @@ class ConstBaseTraversal {
   virtual void visit(const TypeExprID &n) = 0;
   virtual void visit(const Undefine &n) = 0;
   virtual void visit(const VarDecl &n) = 0;
+  virtual void visit(const While &n) = 0;
 
   void dispatch(const Node &n);
 
@@ -210,6 +212,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit(const TypeExprID &n) override;
   void visit(const Undefine &n) override;
   void visit(const VarDecl &n) override;
+  void visit(const While &n) override;
 
   // Force class to be abstract
   virtual ~ConstTraversal() = 0;
@@ -281,6 +284,7 @@ class ConstExprTraversal : public ConstBaseTraversal {
   void visit(const TypeExprID &n) final;
   void visit(const Undefine &n) final;
   void visit(const VarDecl &n) final;
+  void visit(const While &n) final;
 
   virtual ~ConstExprTraversal() = default;
 };
@@ -347,6 +351,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit(const TypeExprID &n) final;
   void visit(const Undefine &n) override = 0;
   void visit(const VarDecl &n) final;
+  void visit(const While &n) override = 0;
 
   virtual ~ConstStmtTraversal() = default;
 
@@ -414,6 +419,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit(const TypeExprID &n) override = 0;
   void visit(const Undefine &n) final;
   void visit(const VarDecl &n) final;
+  void visit(const While &n) final;
 
   virtual ~ConstTypeTraversal() = default;
 

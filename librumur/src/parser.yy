@@ -118,6 +118,7 @@
 %token ENDRULE
 %token ENDRULESET
 %token ENDSTARTSTATE
+%token ENDWHILE
 %token ENUM
 %token ERROR
 %token EXISTS
@@ -148,6 +149,7 @@
 %token TYPE
 %token UNDEFINE
 %token VAR
+%token WHILE
 
 %nonassoc '?' ':'
 %nonassoc IMPLIES
@@ -277,6 +279,7 @@ endrecord: END | ENDRECORD;
 endrule: END | ENDRULE;
 endruleset: END | ENDRULESET;
 endstartstate: END | ENDSTARTSTATE;
+endwhile: END | ENDWHILE;
 
 expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Ternary>::make($1, $3, $5, @$);
@@ -503,6 +506,8 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::Undefine>::make($2, @$);
 } | ID '(' exprlist ')' {
   $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, $3, @$);
+} | WHILE expr DO stmts endwhile {
+  $$ = rumur::Ptr<rumur::While>::make($2, $4, @$);
 };
 
 stmts: stmts_cont stmt semi_opt {

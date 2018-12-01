@@ -290,6 +290,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<While*>(&n)) {
+    visit(*i);
+    return;
+  }
+
 #ifndef NDEBUG
   std::cerr << "missed case in BaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
@@ -569,6 +574,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
   }
 
   if (auto i = dynamic_cast<const VarDecl*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const While*>(&n)) {
     visit(*i);
     return;
   }
@@ -860,6 +870,12 @@ void ConstTraversal::visit(const VarDecl &n) {
     dispatch(*n.type);
 }
 
+void ConstTraversal::visit(const While &n) {
+  dispatch(*n.condition);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
 ConstTraversal::~ConstTraversal() { }
 
 void ConstExprTraversal::visit(const AliasDecl &n) {
@@ -1034,6 +1050,12 @@ void ConstExprTraversal::visit(const Undefine &n) {
 void ConstExprTraversal::visit(const VarDecl &n) {
   if (n.type != nullptr)
     dispatch(*n.type);
+}
+
+void ConstExprTraversal::visit(const While &n) {
+  dispatch(*n.condition);
+  for (auto &s : n.body)
+    dispatch(*s);
 }
 
 void ConstStmtTraversal::visit(const AliasDecl &n) {
@@ -1521,6 +1543,12 @@ void ConstTypeTraversal::visit(const Undefine &n) {
 void ConstTypeTraversal::visit(const VarDecl &n) {
   if (n.type != nullptr)
     dispatch(*n.type);
+}
+
+void ConstTypeTraversal::visit(const While &n) {
+  dispatch(*n.condition);
+  for (auto &s : n.body)
+    dispatch(*s);
 }
 
 }
