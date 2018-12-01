@@ -48,16 +48,10 @@ Compilation produces several artefacts including the `rumur` binary itself:
 
 Comparison with CMurphi
 -----------------------
-At a glance, some differences between Rumur and CMurphi:
+If you are migrating from CMurphi, you can read a comparison between the two
+model checkers at `doc/vs-cmurphi.rst`_.
 
-* CMurphi considers the operator ``==`` an error, while Rumur treats it as an
-  alias of ``=`` to ease life for C/C++ programmers.
-* Rumur does not support floating point numbers (``real`` data type in CMurphi)
-  and there are no current plans to add such support.
-* Rumur supports various single character operator alternatives, e.g. ``≤``.
-* Rumur is designed to run on any POSIX operating system, while CMurphi only
-  supports Linux.
-* Rumur is capable of using multiple CPU cores.
+.. _doc/vs-cmurphi.rst: doc/vs-cmurphi.rst
 
 Legal
 -----
