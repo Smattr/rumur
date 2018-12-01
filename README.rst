@@ -1,8 +1,5 @@
 Rumur
 =====
-*This project is currently under development. You should not expect anything to
-work. More description coming soon...*
-
 Rumur is an explicit state `model checker`_ based on a previous tool, CMurphi_.
 It takes the same input format, the Murphi modelling language, with some
 extensions and produces C code implementing a verifier.
