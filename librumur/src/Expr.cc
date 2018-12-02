@@ -305,62 +305,8 @@ std::string Geq::to_string() const {
   return "(" + lhs->to_string() + " >= " + rhs->to_string() + ")";
 }
 
-static bool equatable(const Expr &lhs, const Expr &rhs) {
-
-  if (lhs.type() == nullptr) {
-    // LHS is a numeric literal
-
-    if (rhs.type() == nullptr)
-      return true;
-
-    const TypeExpr *t = rhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    if (isa<Scalarset>(t))
-      return true;
-
-    return false;
-  }
-  
-  if (rhs.type() == nullptr) {
-    // RHS is a numeric literal
-
-    const TypeExpr *t = lhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    if (isa<Scalarset>(t))
-      return true;
-
-    return false;
-  }
-
-  const TypeExpr *t1 = lhs.type()->resolve();
-  const TypeExpr *t2 = rhs.type()->resolve();
-
-  if (isa<Range>(t1)) {
-    if (isa<Range>(t2))
-      return true;
-  }
-
-  if (auto e1 = dynamic_cast<const Enum*>(t1)) {
-    if (auto e2 = dynamic_cast<const Enum*>(t2))
-      return *e1 == *e2;
-  }
-
-  if (auto s1 = dynamic_cast<const Scalarset*>(t1)) {
-    if (auto s2 = dynamic_cast<const Scalarset*>(t2))
-      return *s1 == *s2;
-  }
-
-  return false;
-}
-
 void EquatableBinaryExpr::validate() const {
-  if (!equatable(*lhs, *rhs))
+  if (!types_equatable(lhs->type(), rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
 
