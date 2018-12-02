@@ -397,4 +397,58 @@ std::string TypeExprID::to_string() const {
   return name;
 }
 
+bool types_equatable(const TypeExpr *t1, const TypeExpr *t2) {
+
+  if (t1 == nullptr) {
+    // t1 is a numeric literal type
+
+    if (t2 == nullptr)
+      return true;
+
+    const TypeExpr *t = t2->resolve();
+
+    if (isa<Range>(t))
+      return true;
+
+    if (isa<Scalarset>(t))
+      return true;
+
+    return false;
+  }
+
+  if (t2 == nullptr) {
+    // t2 is a numeric literal type
+
+    const TypeExpr *t = t1->resolve();
+
+    if (isa<Range>(t))
+      return true;
+
+    if (isa<Scalarset>(t))
+      return true;
+
+    return false;
+  }
+
+  t1 = t1->resolve();
+  t2 = t2->resolve();
+
+  if (isa<Range>(t1)) {
+    if (isa<Range>(t2))
+      return true;
+  }
+
+  if (auto e1 = dynamic_cast<const Enum*>(t1)) {
+    if (auto e2 = dynamic_cast<const Enum*>(t2))
+      return *e1 == *e2;
+  }
+
+  if (auto s1 = dynamic_cast<const Scalarset*>(t1)) {
+    if (auto s2 = dynamic_cast<const Scalarset*>(t2))
+      return *s1 == *s2;
+  }
+
+  return false;
+}
+
 }

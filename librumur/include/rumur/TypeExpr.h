@@ -149,4 +149,6 @@ struct TypeExprID : public TypeExpr {
   std::string to_string() const final;
 };
 
+bool types_equatable(const TypeExpr *t1, const TypeExpr *t2);
+
 }
