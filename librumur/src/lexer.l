@@ -59,6 +59,7 @@ assume        { return rumur::parser::token::ASSUME;        }
 begin         { return rumur::parser::token::BEGIN_TOK;     }
 boolean       { return rumur::parser::token::BOOLEAN;       }
 by            { return rumur::parser::token::BY;            }
+case          { return rumur::parser::token::CASE;          }
 clear         { return rumur::parser::token::CLEAR;         }
 const         { return rumur::parser::token::CONST;         }
 do            { return rumur::parser::token::DO;            }
@@ -76,6 +77,7 @@ endrecord     { return rumur::parser::token::ENDRECORD;     }
 endrule       { return rumur::parser::token::ENDRULE;       }
 endruleset    { return rumur::parser::token::ENDRULESET;    }
 endstartstate { return rumur::parser::token::ENDSTARTSTATE; }
+endswitch     { return rumur::parser::token::ENDSWITCH;     }
 endwhile      { return rumur::parser::token::ENDWHILE;      }
 enum          { return rumur::parser::token::ENUM;          }
 error         { return rumur::parser::token::ERROR;         }
@@ -96,6 +98,7 @@ rule          { return rumur::parser::token::RULE;          }
 ruleset       { return rumur::parser::token::RULESET;       }
 scalarset     { return rumur::parser::token::SCALARSET;     }
 startstate    { return rumur::parser::token::STARTSTATE;    }
+switch        { return rumur::parser::token::SWITCH;        }
 then          { return rumur::parser::token::THEN;          }
 to            { return rumur::parser::token::TO;            }
 type          { return rumur::parser::token::TYPE;          }

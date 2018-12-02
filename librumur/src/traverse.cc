@@ -265,6 +265,16 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Switch*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<SwitchCase*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Ternary*>(&n)) {
     visit(*i);
     return;
@@ -549,6 +559,16 @@ void ConstBaseTraversal::dispatch(const Node &n) {
   }
 
   if (auto i = dynamic_cast<const Sub*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Switch*>(&n)) {
+    visit(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const SwitchCase*>(&n)) {
     visit(*i);
     return;
   }
@@ -845,6 +865,19 @@ void ConstTraversal::visit(const Sub &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
 
+void ConstTraversal::visit(const Switch &n) {
+  dispatch(*n.expr);
+  for (const SwitchCase &c : n.cases)
+    dispatch(c);
+}
+
+void ConstTraversal::visit(const SwitchCase &n) {
+  for (auto &m : n.matches)
+    dispatch(*m);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
 void ConstTraversal::visit(const Ternary &n) {
   dispatch(*n.cond);
   dispatch(*n.lhs);
@@ -1033,6 +1066,19 @@ void ConstExprTraversal::visit(const StartState &n) {
     dispatch(q);
   for (auto &d : n.decls)
     dispatch(*d);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void ConstExprTraversal::visit(const Switch &n) {
+  dispatch(*n.expr);
+  for (const SwitchCase &c : n.cases)
+    dispatch(c);
+}
+
+void ConstExprTraversal::visit(const SwitchCase &n) {
+  for (auto &m : n.matches)
+    dispatch(*m);
   for (auto &s : n.body)
     dispatch(*s);
 }
@@ -1258,6 +1304,13 @@ void ConstStmtTraversal::visit(const StartState &n) {
     dispatch(q);
   for (auto &d : n.decls)
     dispatch(*d);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void ConstStmtTraversal::visit(const SwitchCase &n) {
+  for (auto &m : n.matches)
+    dispatch(*m);
   for (auto &s : n.body)
     dispatch(*s);
 }
@@ -1520,6 +1573,19 @@ void ConstTypeTraversal::visit(const StartState &n) {
 
 void ConstTypeTraversal::visit(const Sub &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstTypeTraversal::visit(const Switch &n) {
+  dispatch(*n.expr);
+  for (const SwitchCase &c : n.cases)
+    dispatch(c);
+}
+
+void ConstTypeTraversal::visit(const SwitchCase &n) {
+  for (auto &m : n.matches)
+    dispatch(*m);
+  for (auto &s : n.body)
+    dispatch(*s);
 }
 
 void ConstTypeTraversal::visit(const Ternary &n) {

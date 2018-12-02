@@ -69,6 +69,8 @@ class BaseTraversal {
   virtual void visit(SimpleRule &n) = 0;
   virtual void visit(StartState &n) = 0;
   virtual void visit(Sub &n) = 0;
+  virtual void visit(Switch &n) = 0;
+  virtual void visit(SwitchCase &n) = 0;
   virtual void visit(Ternary &n) = 0;
   virtual void visit(TypeDecl &n) = 0;
   virtual void visit(TypeExprID &n) = 0;
@@ -140,6 +142,8 @@ class ConstBaseTraversal {
   virtual void visit(const SimpleRule &n) = 0;
   virtual void visit(const StartState &n) = 0;
   virtual void visit(const Sub &n) = 0;
+  virtual void visit(const Switch &n) = 0;
+  virtual void visit(const SwitchCase &n) = 0;
   virtual void visit(const Ternary &n) = 0;
   virtual void visit(const TypeDecl &n) = 0;
   virtual void visit(const TypeExprID &n) = 0;
@@ -207,6 +211,8 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit(const SimpleRule &n) override;
   void visit(const StartState &n) override;
   void visit(const Sub &n) override;
+  void visit(const Switch &n) override;
+  void visit(const SwitchCase &n) override;
   void visit(const Ternary &n) override;
   void visit(const TypeDecl &n) override;
   void visit(const TypeExprID &n) override;
@@ -279,6 +285,8 @@ class ConstExprTraversal : public ConstBaseTraversal {
   void visit(const SimpleRule &n) final;
   void visit(const StartState &n) final;
   void visit(const Sub &n) override = 0;
+  void visit(const Switch &n) final;
+  void visit(const SwitchCase &n) final;
   void visit(const Ternary &n) override = 0;
   void visit(const TypeDecl &n) final;
   void visit(const TypeExprID &n) final;
@@ -346,6 +354,8 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit(const SimpleRule &n) final;
   void visit(const StartState &n) final;
   void visit(const Sub &n) final;
+  void visit(const Switch &n) override = 0;
+  void visit(const SwitchCase &n) final;
   void visit(const Ternary &n) final;
   void visit(const TypeDecl &n) final;
   void visit(const TypeExprID &n) final;
@@ -414,6 +424,8 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit(const SimpleRule &n) final;
   void visit(const StartState &n) final;
   void visit(const Sub &n) final;
+  void visit(const Switch &n) final;
+  void visit(const SwitchCase &n) final;
   void visit(const Ternary &n) final;
   void visit(const TypeDecl &n) final;
   void visit(const TypeExprID &n) override = 0;

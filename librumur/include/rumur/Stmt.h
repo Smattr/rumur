@@ -167,6 +167,33 @@ struct Return : public Stmt {
   bool operator==(const Node &other) const final;
 };
 
+struct SwitchCase : public Node {
+
+  std::vector<Ptr<Expr>> matches;
+  std::vector<Ptr<Stmt>> body;
+
+  SwitchCase(const std::vector<Ptr<Expr>> &matches_,
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+  virtual ~SwitchCase() = default;
+  SwitchCase *clone() const final;
+
+  bool operator==(const Node &other) const final;
+};
+
+struct Switch : public Stmt {
+
+  Ptr<Expr> expr;
+  std::vector<SwitchCase> cases;
+
+  Switch(const Ptr<Expr> &expr_, const std::vector<SwitchCase> &cases_,
+    const location &loc_);
+  virtual ~Switch() = default;
+  Switch *clone() const final;
+
+  bool operator==(const Node &other) const final;
+  void validate() const final;
+};
+
 struct Undefine : public Stmt {
 
   Ptr<Expr> rhs;

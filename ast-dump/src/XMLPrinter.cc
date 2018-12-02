@@ -795,6 +795,53 @@ void XMLPrinter::visit(const Sub &n) {
   visit_bexpr("sub", n);
 }
 
+void XMLPrinter::visit(const Switch &n) {
+  sync_to(n);
+  *o << "<switch ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.expr);
+  *o << "<expr>";
+  dispatch(*n.expr);
+  *o << "</expr>";
+  if (!n.cases.empty()) {
+    sync_to(n.cases[0]);
+    *o << "<cases>";
+    for (const SwitchCase &c : n.cases) {
+      sync_to(c);
+      dispatch(c);
+    }
+    *o << "</cases>";
+  }
+  sync_to(n.loc.end);
+  *o << "</switch>";
+}
+
+void XMLPrinter::visit(const SwitchCase &n) {
+  sync_to(n);
+  *o << "<case>";
+  if (!n.matches.empty()) {
+    sync_to(*n.matches[0]);
+    *o << "<matches>";
+    for (auto &m : n.matches) {
+      sync_to(*m);
+      dispatch(*m);
+    }
+    *o << "</matches>";
+  }
+  if (!n.body.empty()) {
+    sync_to(*n.body[0]);
+    *o << "<body>";
+    for (auto &s : n.body) {
+      sync_to(*s);
+      dispatch(*s);
+    }
+    *o << "</body>";
+  }
+  sync_to(n.loc.end);
+  *o << "</case>";
+}
+
 void XMLPrinter::visit(const Ternary &n) {
   sync_to(n);
   *o << "<ternary ";

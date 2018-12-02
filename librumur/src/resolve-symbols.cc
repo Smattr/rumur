@@ -379,6 +379,19 @@ class Resolver : public BaseTraversal {
     visit(static_cast<BinaryExpr&>(n));
   }
 
+  void visit(Switch &n) final {
+    dispatch(*n.expr);
+    for (SwitchCase &c : n.cases)
+      dispatch(c);
+  }
+
+  void visit(SwitchCase &n) final {
+    for (auto &m : n.matches)
+      dispatch(*m);
+    for (auto &s : n.body)
+      dispatch(*s);
+  }
+
   void visit(Ternary &n) final {
     dispatch(*n.cond);
     dispatch(*n.lhs);

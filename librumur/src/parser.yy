@@ -98,6 +98,7 @@
 %token BEGIN_TOK
 %token BOOLEAN
 %token BY
+%token CASE
 %token CLEAR
 %token COLON_EQ
 %token CONST
@@ -118,6 +119,7 @@
 %token ENDRULE
 %token ENDRULESET
 %token ENDSTARTSTATE
+%token ENDSWITCH
 %token ENDWHILE
 %token ENUM
 %token ERROR
@@ -144,6 +146,7 @@
 %token SCALARSET
 %token STARTSTATE
 %token <std::string> STRING
+%token SWITCH
 %token THEN
 %token TO
 %token TYPE
@@ -193,6 +196,8 @@
 %type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts
 %type <std::vector<rumur::Ptr<rumur::Stmt>>>                 stmts_cont
 %type <std::string>                                          string_opt
+%type <std::vector<rumur::SwitchCase>>                       switchcases
+%type <std::vector<rumur::SwitchCase>>                       switchcases_cont
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecls
 %type <rumur::Ptr<rumur::TypeExpr>>                          typeexpr
@@ -279,6 +284,7 @@ endrecord: END | ENDRECORD;
 endrule: END | ENDRULE;
 endruleset: END | ENDRULESET;
 endstartstate: END | ENDSTARTSTATE;
+endswitch: END | ENDSWITCH;
 endwhile: END | ENDWHILE;
 
 expr: expr '?' expr ':' expr {
@@ -508,6 +514,8 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, $3, @$);
 } | WHILE expr DO stmts endwhile {
   $$ = rumur::Ptr<rumur::While>::make($2, $4, @$);
+} | SWITCH expr switchcases endswitch {
+  $$ = rumur::Ptr<rumur::Switch>::make($2, $3, @$);
 };
 
 stmts: stmts_cont stmt semi_opt {
@@ -527,6 +535,20 @@ stmts_cont: stmts_cont stmt ';' {
 
 string_opt: STRING {
   $$ = $1;
+} | %empty {
+  /* nothing required */
+};
+
+switchcases: switchcases_cont ELSE stmts {
+  $$ = $1;
+  $$.push_back(rumur::SwitchCase(std::vector<Ptr<rumur::Expr>>(), $3, @$));
+} | switchcases_cont {
+  $$ = $1;
+};
+
+switchcases_cont: switchcases_cont CASE exprlist ':' stmts {
+  $$ = $1;
+  $$.push_back(rumur::SwitchCase($3, $5, @$));
 } | %empty {
   /* nothing required */
 };

@@ -328,6 +328,47 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
+  void visit(const Switch &s) final {
+    *out
+      << "do {\n"
+      // Mark the following unused in case there are no cases
+      << "  value_t v __attribute__((unused)) = ";
+    generate_rvalue(*out, *s.expr);
+    *out << ";\n";
+
+    bool first_case = true;
+    for (const SwitchCase &c : s.cases) {
+
+      *out << "  ";
+      if (!first_case)
+        *out << "else ";
+      if (!c.matches.empty()) {
+        *out << "if (";
+        bool first_match = true;
+        for (auto &m : c.matches) {
+          if (!first_match)
+            *out << " || ";
+          *out << "v == ";
+          generate_rvalue(*out, *m);
+          first_match = false;
+        }
+        *out << ") ";
+      }
+      *out << "{\n";
+
+      for (auto &st : c.body) {
+        *out << "    ";
+        dispatch(*st);
+        *out << ";\n";
+      }
+
+      *out << "  }\n";
+      first_case = false;
+    }
+
+    *out << "} while (0)";
+  }
+
   void visit(const Undefine &s) final {
     *out << "handle_zero(";
     generate_lvalue(*out, *s.rhs);

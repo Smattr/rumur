@@ -277,6 +277,59 @@ bool Return::operator==(const Node &other) const {
   return true;
 }
 
+SwitchCase::SwitchCase(const std::vector<Ptr<Expr>> &matches_,
+    const std::vector<Ptr<Stmt>> &body_, const location &loc_):
+  Node(loc_), matches(matches_), body(body_) { }
+
+SwitchCase *SwitchCase::clone() const {
+  return new SwitchCase(*this);
+}
+
+bool SwitchCase::operator==(const Node &other) const {
+  auto o = dynamic_cast<const SwitchCase*>(&other);
+  if (o == nullptr)
+    return false;
+  if (!vector_eq(matches, o->matches))
+    return false;
+  if (!vector_eq(body, o->body))
+    return false;
+  return true;
+}
+
+Switch::Switch(const Ptr<Expr> &expr_, const std::vector<SwitchCase> &cases_,
+    const location &loc_):
+  Stmt(loc_), expr(expr_), cases(cases_) { }
+
+Switch *Switch::clone() const {
+  return new Switch(*this);
+}
+
+bool Switch::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Switch*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*expr != *o->expr)
+    return false;
+  if (cases != o->cases)
+    return false;
+  return true;
+}
+
+void Switch::validate() const {
+
+  const TypeExpr *t = expr->type();
+  if (t != nullptr && !t->is_simple())
+    throw Error("switch expression has complex type", expr->loc);
+
+  for (const SwitchCase &c : cases) {
+    for (const Ptr<Expr> &e : c.matches) {
+      if (!types_equatable(t, e->type()))
+        throw Error("expression in case cannot be compared to switch "
+          "expression", e->loc);
+    }
+  }
+}
+
 Undefine::Undefine(const Ptr<Expr> &rhs_, const location &loc_):
   Stmt(loc_), rhs(rhs_) { }
 

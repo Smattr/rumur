@@ -340,6 +340,21 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit(const Switch &n) final {
+    dispatch(*n.expr);
+    for (const SwitchCase &c : n.cases)
+      dispatch(c);
+    n.validate();
+  }
+
+  void visit(const SwitchCase &n) final {
+    for (auto &m : n.matches)
+      dispatch(*m);
+    for (auto &s : n.body)
+      dispatch(*s);
+    n.validate();
+  }
+
   void visit(const Ternary &n) final {
     dispatch(*n.cond);
     dispatch(*n.lhs);

@@ -307,6 +307,21 @@ void Indexer::visit(Sub &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
+void Indexer::visit(Switch &n) {
+  n.unique_id = next++;
+  dispatch(*n.expr);
+  for (SwitchCase &c : n.cases)
+    dispatch(c);
+}
+
+void Indexer::visit(SwitchCase &n) {
+  n.unique_id = next++;
+  for (auto &m : n.matches)
+    dispatch(*m);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
 void Indexer::visit(Ternary &n) {
   n.unique_id = next++;
   dispatch(*n.cond);

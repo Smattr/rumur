@@ -68,6 +68,8 @@ class Indexer : public BaseTraversal {
   void visit(SimpleRule &n) final;
   void visit(StartState &n) final;
   void visit(Sub &n) final;
+  void visit(Switch &n) final;
+  void visit(SwitchCase &n) final;
   void visit(Ternary &n) final;
   void visit(TypeDecl &n) final;
   void visit(TypeExprID &n) final;
