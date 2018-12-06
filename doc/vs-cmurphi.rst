@@ -36,6 +36,16 @@ support.
 Rumur does not currently support the ``union`` type. This is planned to be added
 in a future version.
 
+Deadlock
+--------
+The verifier can detect "deadlocks" in your state graph, where there are no
+transitions that make progress. CMurphi considers a deadlock to have occurred
+in any state that only has enabled transitions that lead back to itself. Rumur
+has two deadlock modes that can be selected with the ``--deadlock-detection``
+command line option: "stuttering" and "stuck". Stuttering, the default,  matches
+CMurphi's definition. Stuck uses a weaker definition that considers a deadlock
+to have occurred only when a state has *no* enabled transitions.
+
 While Statement Termination
 ---------------------------
 CMurphi considers an infinite loop to be a runtime error that the verifier
