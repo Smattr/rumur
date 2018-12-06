@@ -25,8 +25,8 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option opts[] = {
-      { "color", no_argument, 0, 128 },
-      { "colour", no_argument, 0, 128 },
+      { "color", required_argument, 0, 128 },
+      { "colour", required_argument, 0, 128 },
       { "counterexample-trace", required_argument, 0, 137 },
       { "deadlock-detection", required_argument, 0, 131 },
       { "debug", no_argument, 0, 'd' },
@@ -34,8 +34,6 @@ static void parse_args(int argc, char **argv) {
       { "max-errors", required_argument, 0, 136 },
       { "monopolise", no_argument, 0, 133 },
       { "monopolize", no_argument, 0, 133 },
-      { "no-color", no_argument, 0, 129 },
-      { "no-colour", no_argument, 0, 129 },
       { "output", required_argument, 0, 'o' },
       { "output-format", required_argument, 0, 138 },
       { "quiet", no_argument, 0, 'q' },
@@ -115,16 +113,23 @@ static void parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
 
       case 128: // --colour
-        if (options.machine_readable_output) {
-          std::cerr << "colour is not supported in combination with "
-            << "--output-format \"machine readable\"\n";
+        if (strcmp(optarg, "auto") == 0) {
+          options.color = AUTO;
+        } else if (strcmp(optarg, "on") == 0) {
+          if (options.machine_readable_output) {
+            std::cerr << "colour is not supported in combination with "
+              << "--output-format \"machine readable\"\n";
+            exit(EXIT_FAILURE);
+          }
+          options.color = ON;
+        } else if (strcmp(optarg, "off") == 0) {
+          options.color = OFF;
+        } else {
+          std::cerr
+            << "invalid --colour argument \"" << optarg << "\"\n"
+            << "valid arguments are \"auto\", \"off\", and \"on\"\n";
           exit(EXIT_FAILURE);
         }
-        options.color = ON;
-        break;
-
-      case 129: // --no-colour
-        options.color = OFF;
         break;
 
       case 130: // --trace ...
