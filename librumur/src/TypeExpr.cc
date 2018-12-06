@@ -99,6 +99,9 @@ void Range::validate() const {
 
   if (!max->constant())
     throw Error("upper bound of range is not a constant", max->loc);
+
+  if (max->constant_fold() < min->constant_fold())
+    throw Error("upper bound of range is less than lower bound", loc);
 }
 
 std::string Range::lower_bound() const {
