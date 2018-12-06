@@ -63,19 +63,6 @@ def main(argv: [str]):
     src = os.path.join(test_root, i)
     dst = os.path.join(testcase_dir, i)
 
-    skip = False
-    with open(src, 'rt') as f:
-      for line in f:
-        m = re.match(r'\s*--\s*rumur_exit_code\s*:\s*(?P<value>.*)$', line)
-        if m is not None:
-          v = eval(m.group('value').strip())
-          if v != 0:
-            # This test is expected to fail
-            skip = True
-            break
-    if skip:
-      continue
-
     shutil.copyfile(src, dst)
 
   if AFL_FUZZ is None:
