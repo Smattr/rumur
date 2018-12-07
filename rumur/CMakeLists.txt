@@ -16,9 +16,15 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT version.cc
-  COMMAND src/make-version.sh >${CMAKE_CURRENT_BINARY_DIR}/version.cc
-  MAIN_DEPENDENCY src/make-version.sh
+  COMMAND python src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/version.cc
+  MAIN_DEPENDENCY src/make-version.py
+  DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Dummy output to make sure we always re-evaluate the version step above.
+add_custom_command(
+  OUTPUT always_run
+  COMMAND /usr/bin/env true)
 
 add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
