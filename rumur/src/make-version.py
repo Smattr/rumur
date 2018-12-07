@@ -24,7 +24,7 @@ def main(args):
   
   rev = rev.decode('utf-8', 'replace').strip()
 
-  new = 'const char *VERSION = "{}";\n'.format(rev)
+  new = 'const char *VERSION = "Git commit {}";\n'.format(rev)
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.
