@@ -27,14 +27,14 @@ each state. \fBoff\fR disables counterexample trace printing altogether.
 Enable or disable deadlock detection. Rumur has the ability to generate a
 verifier that notices when there is no valid transition out of a state and raise
 an error in this scenario. The possible modes for this check are:
-.PP
 .RS
-* \fBoff\fR No deadlock checks are performed.
-.br
-* \fBstuck\fR A deadlock is reached when arriving at a state from which there
+.IP \[bu] 2
+\fBoff\fR No deadlock checks are performed.
+.IP \[bu]
+\fBstuck\fR A deadlock is reached when arriving at a state from which there
 are no enabled transitions, and an error is signaled in this case.
-.br
-* \fBstuttering\fR A deadlock is reached in the same circumstances as for the
+.IP \[bu]
+\fBstuttering\fR A deadlock is reached in the same circumstances as for the
 \fBstuck\fR option or additionally if there are enabled transitions but these
 all result in an identical state. For CMurphi users, this is the scenario that
 CMurphi considers to be a deadlock.
@@ -124,24 +124,23 @@ representation of each state. While two states may not be directly equal, if
 their canonical representations are the same only one of them need be expanded.
 To take advantage of this optimisation you must be using named \fBscalarset\fR
 types. The available options are:
-.PP
 .RS
-* \fBoff\fR Do not use symmetry reduction. All scalarsets will be treated as if
+.IP \[bu] 2
+\fBoff\fR Do not use symmetry reduction. All scalarsets will be treated as if
 they were range types.
-.br
-* \fBheuristic\fR Use a symmetry reduction algorithm based on sorting the state
+.IP \[bu]
+\fBheuristic\fR Use a symmetry reduction algorithm based on sorting the state
 data. This is not guaranteed to find a single, canonical representation for each
 equivalent state, but it is fast and performs reasonably well empirically. Using
 this option, you may explore more states than you need to, with the advantage
 that you will process each individual state much faster than with
 \fBexhaustive\fR. This is the default.
-.br
-* \fBexhaustive\fR Use a symmetry reduction algorithm based on exhaustive
+.IP \[bu]
+\fBexhaustive\fR Use a symmetry reduction algorithm based on exhaustive
 permutation of the state data. This is guaranteed to find a single, canonical
 representation for each equivalent state, but is typically very slow. Use this
 if you want to minimise memory usage at the expense of runtime.
 .RE
-.PP
 .RE
 .PP
 \fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR
@@ -156,19 +155,19 @@ available hardware threads on the platform on which you generate the model.
 Enable tracing of specific events while checking. This option is for debugging
 Rumur itself, and lets you generate a verifier that writes events to stderr.
 Available event categories are:
-.PP
 .RS
-* \fIhandle_reads\fR Reads from variable handles
-.br
-* \fIhandle_writes\fR Writes to variable handles
-.br
-* \fIqueue\fR Events relating to the pending state queue
-.br
-* \fIset\fR Events relating to the seen state set
-.br
-* \fIsymmetry_reduction\fR Events related to the symmetry reduction optimisation
-.br
-* \fIall\fR Enable all of the above
+.IP \[bu] 2
+\fIhandle_reads\fR Reads from variable handles
+.IP \[bu]
+\fIhandle_writes\fR Writes to variable handles
+.IP \[bu]
+\fIqueue\fR Events relating to the pending state queue
+.IP \[bu]
+\fIset\fR Events relating to the seen state set
+.IP \[bu]
+\fIsymmetry_reduction\fR Events related to the symmetry reduction optimisation
+.IP \[bu]
+\fIall\fR Enable all of the above
 .RE
 .PP
 More than one of these can be enabled at once by passing the \fB--trace\fR
