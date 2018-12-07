@@ -9,8 +9,8 @@ performance and a slightly different feature set.
 .SH OPTIONS
 \fB--colour\fR [\fBauto\fR | \fBoff\fR | \fBon\fR]
 .RS
-Enable or disable the use of ANSI colour codes in the checker's output. The
-default is \fBauto\fR, to auto-detect based on whether the checker's stdout is
+Enable or disable the use of ANSI colour codes in the verifier's output. The
+default is \fBauto\fR, to auto-detect based on whether the verifier's stdout is
 a TTY.
 .RE
 .PP
@@ -25,7 +25,7 @@ each state. \fBoff\fR disables counterexample trace printing altogether.
 \fB--deadlock-detection\fR [\fBoff\fR | \fBstuck\fR | \fBstuttering\fR]
 .RS
 Enable or disable deadlock detection. Rumur has the ability to generate a
-checker that notices when there is no valid transition out of a state and raise
+verifier that notices when there is no valid transition out of a state and raise
 an error in this scenario. The possible modes for this check are:
 .PP
 .RS
@@ -47,9 +47,9 @@ Hence you may want to change deadlock detection.
 .PP
 \fB--debug\fR or \fB-d\fR
 .RS
-Enable debugging options in the generated checker. This includes enabling
+Enable debugging options in the generated verifier. This includes enabling
 runtime assertions. This will also output debugging messages while generating
-the checker.
+the verifier.
 .RE
 .PP
 \fB--help\fR
@@ -59,7 +59,7 @@ Display this information.
 .PP
 \fB--max-errors\fR \fICOUNT\fR
 .RS
-Number of errors the checker should report before considering them fatal. By
+Number of errors the verifier should report before considering them fatal. By
 default this is \fI1\fR, that is exit as soon as an error is encountered.
 However, you may wish to set a higher value to get multiple error traces from a
 single run.
@@ -67,8 +67,8 @@ single run.
 .PP
 \fB--monopolise\fR
 .RS
-Assume that the machine the generated checker will run on is the current host
-and that it will be the only process running. This flag causes the checker to
+Assume that the machine the generated verifier will run on is the current host
+and that it will be the only process running. This flag causes the verifier to
 upfront allocate a seen set that will eventually occupy all of memory. That is,
 it is the same as passing \fB--set-expand-threshold 100\fR and
 \fB--set-capacity\fR with the total amount of physical memory available on the
@@ -77,7 +77,7 @@ current machine.
 .PP
 \fB--output-format\fR [\fBmachine-readable\fR | \fBhuman-readable\fR]
 .RS
-Change the format in which the checker displays its output. By default, it uses
+Change the format in which the verifier displays its output. By default, it uses
 \fBhuman-readable\fR which results in progress output and then a final summary
 of the result. Using \fBmachine-readable\fR generates output in an XML format
 suitable for consumption by a following tool in an I/O pipeline.
@@ -85,16 +85,16 @@ suitable for consumption by a following tool in an I/O pipeline.
 .PP
 \fB--quiet\fR or \fB-q\fR
 .RS
-Don't output any messages while generating the checker.
+Don't output any messages while generating the verifier.
 .RE
 .PP
 \fB--sandbox\fR [\fBon\fR | \fBoff\fR]
 .RS
-Control whether the generated checker uses your operating system's sandboxing
-facilities to limit its own operations. The checker does not intentionally
+Control whether the generated verifier uses your operating system's sandboxing
+facilities to limit its own operations. The verifier does not intentionally
 perform any malicious or dangerous operations, but at the end of the day it is a
 generated program that you are going to execute. To safeguard against a bug in
-the code generator, it is recommended to constrain the operations the checker is
+the code generator, it is recommended to constrain the operations the verifier is
 allowed to perform if you are using a model you did not write yourself. By
 default this is \fBoff\fR.
 .RE
@@ -146,7 +146,7 @@ if you want to minimise memory usage at the expense of runtime.
 .PP
 \fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR
 .RS
-Specify the number of threads the checker should use. If you do not specify this
+Specify the number of threads the verifier should use. If you do not specify this
 parameter or pass \fI0\fR, the number of threads will be chosen based on the
 available hardware threads on the platform on which you generate the model.
 .RE
@@ -154,7 +154,7 @@ available hardware threads on the platform on which you generate the model.
 \fB--trace\fR \fICATEGORY\fR
 .RS
 Enable tracing of specific events while checking. This option is for debugging
-Rumur itself, and lets you generate a checker that writes events to stderr.
+Rumur itself, and lets you generate a verifier that writes events to stderr.
 Available event categories are:
 .PP
 .RS
@@ -173,12 +173,12 @@ Available event categories are:
 .PP
 More than one of these can be enabled at once by passing the \fB--trace\fR
 argument multiple times. Note that enabling tracing will significantly slow the
-checker and is only intended for debugging purposes.
+verifier and is only intended for debugging purposes.
 .RE
 .PP
 \fB--verbose\fR or \fB-v\fR
 .RS
-Output informational messages while generating the checker.
+Output informational messages while generating the verifier.
 .RE
 .PP
 \fB--version\fR
