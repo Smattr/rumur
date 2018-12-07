@@ -13,6 +13,7 @@ First you will need to have the following dependencies installed:
 * CMake_
 * Flex_
 * Libgmp_
+* Python_
 
 Then:
 
@@ -62,3 +63,4 @@ Everything in this repository is in the public domain.
 .. _GCC: https://gcc.gnu.org/
 .. _Libgmp: https://gmplib.org/
 .. _`model checker`: https://en.wikipedia.org/wiki/Model_checking
+.. _Python: https://www.python.org/
