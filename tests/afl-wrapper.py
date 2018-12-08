@@ -38,8 +38,10 @@ def main(argv: [str]):
     return -1
 
   sys.stdout.write(' Configuring...\n')
+  env = os.environ.copy()
+  env['CXX'] = CXX
   p = subprocess.Popen([CMAKE, '-G', 'Unix Makefiles', RUMUR_ROOT], cwd=tmp,
-    env={**os.environ, **{'CXX':CXX}})
+    env=env)
   p.communicate()
   if p.returncode != 0:
     return p.returncode
