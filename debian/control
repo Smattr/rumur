@@ -1,0 +1,20 @@
+Source: rumur
+Section: unknown
+Priority: optional
+Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), cmake
+Standards-Version: 3.9.4
+Homepage: https://github.com/Smattr/rumur
+#Vcs-Git: git://git.debian.org/collab-maint/rumur.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/rumur.git;a=summary
+
+Package: rumur
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A model checker for the Murphi language
+ Rumur is a model checker for use in the formal verification of finite state
+ machines specified in the Murphi modelling language.
+
+Package: rumur-doc
+Architecture: all
+Description: documentation for rumur
