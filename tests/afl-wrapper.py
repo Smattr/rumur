@@ -33,6 +33,10 @@ def main(argv: [str]):
     sys.stderr.write('cmake not found\n')
     return -1
 
+  if CXX is None:
+    sys.stderr.write('AFL c++ wrapper not found\n')
+    return -1
+
   sys.stdout.write(' Configuring...\n')
   p = subprocess.Popen([CMAKE, '-G', 'Unix Makefiles', RUMUR_ROOT], cwd=tmp,
     env={**os.environ, **{'CXX':CXX}})
