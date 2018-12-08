@@ -6,6 +6,17 @@ Generate contents of a version.cc.
 
 import os, re, subprocess, sys
 
+def get_file_version():
+  '''
+  Find version information from a VERSION file if it exists.
+  '''
+  path = os.path.join(os.path.dirname(__file__), '..', '..', 'VERSION')
+  if os.path.exists(path):
+    with open(path, 'rt') as f:
+      return f.read().strip()
+
+  return None
+
 def get_tag():
   '''
   Find the version tag of the current Git commit, e.g. v2020.05.03, if it
@@ -69,7 +80,13 @@ def main(args):
 
   version = None
 
-  # First, look for a version tag on the current commit.
+  # First, look for a ../../VERSION file.
+  if version is None:
+    v = get_file_version()
+    if v is not None:
+      version = v
+
+  # Second, look for a version tag on the current commit.
   if version is None:
     tag = get_tag()
     if tag is not None:
