@@ -51,7 +51,7 @@ def main(argv: [str]):
     return -1
 
   sys.stdout.write(' Building...\n')
-  p = subprocess.Popen([MAKE], cwd=tmp)
+  p = subprocess.Popen([MAKE, 'rumur'], cwd=tmp)
   p.communicate()
   if p.returncode != 0:
     return p.returncode
