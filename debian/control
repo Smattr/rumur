@@ -1,5 +1,5 @@
 Source: rumur
-Section: unknown
+Section: devel
 Priority: optional
 Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
 Build-Depends: debhelper (>= 8.0.0), cmake
