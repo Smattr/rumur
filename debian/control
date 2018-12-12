@@ -5,8 +5,8 @@ Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
 Build-Depends: debhelper (>= 9.0.0), cmake
 Standards-Version: 3.9.4
 Homepage: https://github.com/Smattr/rumur
-#Vcs-Git: git://git.debian.org/collab-maint/rumur.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/rumur.git;a=summary
+Vcs-Git: https://github.com/Smattr/rumur.git
+Vcs-Browser: https://github.com/Smattr/rumur.git
 
 Package: rumur
 Architecture: any
