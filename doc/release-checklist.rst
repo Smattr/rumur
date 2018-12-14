@@ -1,5 +1,5 @@
-Release Steps
-=============
+Release Checklist
+=================
 The process of cutting a new Rumur release should follow these steps:
 
 1. Update ``LAST_RELEASE`` in ../rumur/src/make-version.py. For version numbers,
