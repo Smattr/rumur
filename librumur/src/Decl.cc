@@ -83,7 +83,16 @@ bool ConstDecl::is_lvalue() const {
 }
 
 const TypeExpr *ConstDecl::get_type() const {
-  return type.get();
+
+  // If this constant has an explicit type (e.g. it's an enum member), use that.
+  if (type != nullptr)
+    return type.get();
+
+  /* If this doesn't have an explicit type, fall back on the type of the value
+   * it points at. This is irrelevant for numerical constants, but important for
+   * boolean constants.
+   */
+  return value->type();
 }
 
 void ConstDecl::validate() const {
