@@ -691,6 +691,35 @@ bool Element::operator==(const Node &other) const {
   return o != nullptr && *array == *o->array && *index == *o->index;
 }
 
+void Element::validate() const {
+
+  const TypeExpr *t = array->type();
+  if (t != nullptr)
+    t = t->resolve();
+
+  if (!isa<Array>(t))
+    throw Error("array index on an expression that is not an array", loc);
+
+  auto a = dynamic_cast<const Array*>(t);
+  assert(a != nullptr && "logic error in Element::validate");
+
+  const TypeExpr *e = index->type();
+  if (e != nullptr)
+    e = e->resolve();
+
+  const TypeExpr *index_type = a->index_type->resolve();
+
+  if (isa<Range>(index_type)) {
+    if (e != nullptr && !isa<Range>(e))
+      throw Error("array indexed using an expression of incorrect type", loc);
+
+  } else {
+    if (e == nullptr || *index_type != *e)
+      throw Error("array indexed using an expression of incorrect type", loc);
+
+  }
+}
+
 bool Element::is_lvalue() const {
   return array->is_lvalue();
 }

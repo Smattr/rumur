@@ -368,6 +368,7 @@ struct Element : public Expr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
   bool is_lvalue() const final;
   std::string to_string() const final;
 };
