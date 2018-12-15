@@ -134,7 +134,7 @@ static uintmax_t rules_fired[THREADS];
  */
 static _Thread_local jmp_buf checkpoint;
 
-static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
+_Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
 
 /* Whether we need to save and restore checkpoints. This is determined by
  * whether we ever need to perform the action "discard the current state and
@@ -1406,7 +1406,7 @@ struct refcounted_ptr {
   #error "unexpected pointer size; what scalar type to use for refcounted_ptr_t?"
 #endif
 
-static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
+_Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 
