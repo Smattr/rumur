@@ -51,7 +51,7 @@ const TypeExpr *Ternary::type() const {
 }
 
 mpz_class Ternary::constant_fold() const {
-  return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
+  return (cond->constant_fold() != 0) ? lhs->constant_fold() : rhs->constant_fold();
 }
 
 void Ternary::validate() const {
@@ -90,7 +90,7 @@ const TypeExpr *Implication::type() const {
 }
 
 mpz_class Implication::constant_fold() const {
-  return !lhs->constant_fold() || rhs->constant_fold();
+  return lhs->constant_fold() == 0 || rhs->constant_fold() != 0;
 }
 
 bool Implication::operator==(const Node &other) const {
@@ -111,7 +111,7 @@ const TypeExpr *Or::type() const {
 }
 
 mpz_class Or::constant_fold() const {
-  return lhs->constant_fold() || rhs->constant_fold();
+  return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
 
 bool Or::operator==(const Node &other) const {
@@ -132,7 +132,7 @@ const TypeExpr *And::type() const {
 }
 
 mpz_class And::constant_fold() const {
-  return lhs->constant_fold() && rhs->constant_fold();
+  return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
 
 bool And::operator==(const Node &other) const {
@@ -161,7 +161,7 @@ const TypeExpr *Not::type() const {
 }
 
 mpz_class Not::constant_fold() const {
-  return !rhs->constant_fold();
+  return rhs->constant_fold() == 0;
 }
 
 bool Not::operator==(const Node &other) const {
