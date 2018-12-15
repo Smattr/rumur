@@ -185,7 +185,7 @@ class Generator : public ConstStmtTraversal {
     if (s.function == nullptr)
       throw Error("unresolved procedure reference " + s.name, s.loc);
 
-    *out << "ru_" << s.name << "(s";
+    *out << "ru_" << s.name << "(state_drop_const(s)";
 
     /* If the target of this call is actually a function (not a procedure) and
      * returns a complex type, we need to pass it a handle to the memory we've

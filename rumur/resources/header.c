@@ -594,6 +594,11 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
 }
 #endif
 
+/* A type-safe const cast. */
+static struct state *state_drop_const(const struct state *s) {
+  return (struct state*)s;
+}
+
 /* These functions are generated. */
 static void state_canonicalise_heuristic(struct state *s);
 static void state_canonicalise_exhaustive(struct state *s);

@@ -211,7 +211,7 @@ class Generator : public ConstExprTraversal {
 
     const Ptr<TypeExpr> &return_type = n.function->return_type;
 
-    *out << "ru_" << n.name << "(s";
+    *out << "ru_" << n.name << "(state_drop_const(s)";
 
     // Pass the return type output parameter if required.
     if (return_type != nullptr && !return_type->is_simple())
