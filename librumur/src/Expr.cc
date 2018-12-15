@@ -607,18 +607,21 @@ bool Field::constant() const {
 }
 
 const TypeExpr *Field::type() const {
+
   const TypeExpr *root = record->type();
-  assert(root != nullptr);
+  assert(root != nullptr && "invalid left hand side of field expression");
   const TypeExpr *resolved = root->resolve();
-  assert(resolved != nullptr);
-  if (auto r = dynamic_cast<const Record*>(resolved)) {
-    for (const Ptr<VarDecl> &f : r->fields) {
-      if (f->name == field)
-        return f->type.get();
-    }
-    throw Error("no field named \"" + field + "\" in record", loc);
+  assert(resolved != nullptr && "invalid left hand side of field expression");
+
+  auto r = dynamic_cast<const Record*>(resolved);
+  assert(r != nullptr && "invalid left hand side of field expression");
+
+  for (const Ptr<VarDecl> &f : r->fields) {
+    if (f->name == field)
+      return f->type.get();
   }
-  throw Error("left hand side of field expression is not a record", loc);
+
+  throw Error("no field named \"" + field + "\" in record", loc);
 }
 
 mpz_class Field::constant_fold() const {
@@ -628,6 +631,26 @@ mpz_class Field::constant_fold() const {
 bool Field::operator==(const Node &other) const {
   auto o = dynamic_cast<const Field*>(&other);
   return o != nullptr && *record == *o->record && field == o->field;
+}
+
+void Field::validate() const {
+
+  const TypeExpr *root = record->type();
+  if (root != nullptr)
+    root = root->resolve();
+
+  if (!isa<Record>(root))
+    throw Error("left hand side of field expression is not a record", loc);
+
+  auto r = dynamic_cast<const Record*>(root);
+  assert(r != nullptr && "logic error in Field::validate");
+
+  for (const Ptr<VarDecl> &f : r->fields) {
+    if (f->name == field)
+      return;
+  }
+
+  throw Error("no field named \"" + field + "\" in record", loc);
 }
 
 bool Field::is_lvalue() const {
