@@ -41,6 +41,7 @@ add_executable(rumur
   src/generate-quantifier.cc
   src/generate-stmt.cc
   src/help.cc
+  src/log.cc
   src/main.cc
   src/max-simple-width.cc
   src/options.cc

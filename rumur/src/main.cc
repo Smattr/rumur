@@ -8,6 +8,7 @@
 #include <getopt.h>
 #include "help.h"
 #include <iostream>
+#include "log.h"
 #include <memory>
 #include "options.h"
 #include "resources.h"
@@ -58,6 +59,7 @@ static void parse_args(int argc, char **argv) {
 
       case 'd':
         options.log_level = DEBUG;
+        set_log_level(options.log_level);
         break;
 
       case 'e':
@@ -84,6 +86,7 @@ static void parse_args(int argc, char **argv) {
 
       case 'q': // --quiet
         options.log_level = SILENT;
+        set_log_level(options.log_level);
         break;
 
       case 's':
@@ -106,6 +109,7 @@ static void parse_args(int argc, char **argv) {
 
       case 'v': // --verbose
         options.log_level = INFO;
+        set_log_level(options.log_level);
         break;
 
       case '?':
