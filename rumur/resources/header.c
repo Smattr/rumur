@@ -595,7 +595,7 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
 #endif
 
 /* A type-safe const cast. */
-static struct state *state_drop_const(const struct state *s) {
+static __attribute__((unused)) struct state *state_drop_const(const struct state *s) {
   return (struct state*)s;
 }
 
