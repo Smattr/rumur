@@ -241,8 +241,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const ProcedureCall &n) final {
-    for (auto &a : n.arguments)
-      dispatch(*a);
+    dispatch(n.call);
     n.validate();
   }
 

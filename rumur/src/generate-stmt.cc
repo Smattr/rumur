@@ -182,43 +182,7 @@ class Generator : public ConstStmtTraversal {
   }
 
   void visit(const ProcedureCall &s) final {
-    if (s.function == nullptr)
-      throw Error("unresolved procedure reference " + s.name, s.loc);
-
-    *out << "ru_" << s.name << "(state_drop_const(s)";
-
-    /* If the target of this call is actually a function (not a procedure) and
-     * returns a complex type, we need to pass it a handle to the memory we've
-     * allocated for its (unused) return.
-     */
-    const Ptr<TypeExpr> &return_type = s.function->return_type;
-    if (return_type != nullptr && !return_type->is_simple())
-      *out << ", (struct handle){ .base = ret" << s.unique_id
-        << ", .offset = 0ul, .width = SIZE_C(" << return_type->width() << ") }";
-
-    // Now emit the arguments to the procedure.
-    {
-      auto it = s.function->parameters.begin();
-      for (const Ptr<Expr> &a : s.arguments) {
-
-        *out << ", ";
-
-        assert(it != s.function->parameters.end() &&
-          "procedure call has more arguments than its target procedure");
-
-        const Ptr<VarDecl> &p = *it;
-
-        if (!p->readonly) {
-          generate_lvalue(*out, *a);
-        } else {
-          generate_rvalue(*out, *a);
-        }
-
-        it++;
-      }
-    }
-
-    *out << ")";
+    generate_rvalue(*out, s.call);
   }
 
   void visit(const PropertyStmt &s) final {

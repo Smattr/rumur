@@ -264,17 +264,7 @@ class Resolver : public BaseTraversal {
   }
 
   void visit(ProcedureCall &n) final {
-    if (n.function == nullptr) {
-      // This reference is unresolved
-
-      Ptr<Function> f = symtab.lookup<Function>(n.name, n.loc);
-      if (f == nullptr)
-        throw Error("unknown procedure call \"" + n.name + "\"", n.loc);
-
-      n.function = f;
-    }
-    for (auto &a : n.arguments)
-      dispatch(*a);
+    dispatch(n.call);
   }
 
   void visit(Property &n) final {

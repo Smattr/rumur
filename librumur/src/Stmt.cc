@@ -190,9 +190,9 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
-ProcedureCall::ProcedureCall(const std::string &name_,
-  const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
-  Stmt(loc_), name(name_), arguments(arguments_) { }
+ProcedureCall::ProcedureCall(const std::string &name,
+  const std::vector<Ptr<Expr>> &arguments, const location &loc_):
+  Stmt(loc_), call(name, arguments, loc_) { }
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);
@@ -202,24 +202,9 @@ bool ProcedureCall::operator==(const Node &other) const {
   auto o = dynamic_cast<const ProcedureCall*>(&other);
   if (o == nullptr)
     return false;
-  if (name != o->name)
-    return false;
-  if (function == nullptr) {
-    if (o->function != nullptr)
-      return false;
-  } else if (o->function == nullptr) {
-    return false;
-  } else if (*function != *o->function) {
-    return false;
-  }
-  if (!vector_eq(arguments, o->arguments))
+  if (call != o->call)
     return false;
   return true;
-}
-
-void ProcedureCall::validate() const {
-  if (function == nullptr)
-    throw Error("unknown procedure \"" + name + "\"", loc);
 }
 
 Put::Put(const std::string &value_, const location &loc_):

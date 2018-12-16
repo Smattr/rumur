@@ -781,8 +781,7 @@ void ConstTraversal::visit(const Or &n) {
 }
 
 void ConstTraversal::visit(const ProcedureCall &n) {
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void ConstTraversal::visit(const Property &n) {
@@ -990,8 +989,7 @@ void ConstExprTraversal::visit(const Model &n) {
 }
 
 void ConstExprTraversal::visit(const ProcedureCall &n) {
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void ConstExprTraversal::visit(const Property &n) {
@@ -1505,8 +1503,7 @@ void ConstTypeTraversal::visit(const Or &n) {
 }
 
 void ConstTypeTraversal::visit(const ProcedureCall &n) {
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void ConstTypeTraversal::visit(const Property &n) {
