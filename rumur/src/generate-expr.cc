@@ -206,6 +206,9 @@ class Generator : public ConstExprTraversal {
   }
 
   void visit(const FunctionCall &n) final {
+    if (lvalue)
+      invalid(n);
+
     if (n.function == nullptr)
       throw Error("unresolved function reference " + n.name, n.loc);
 
