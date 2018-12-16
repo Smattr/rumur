@@ -777,6 +777,36 @@ bool FunctionCall::operator==(const Node &other) const {
 void FunctionCall::validate() const {
   if (function == nullptr)
     throw Error("unknown function call \"" + name + "\"", loc);
+
+  if (arguments.size() != function->parameters.size())
+    throw Error("incorrect number of parameters passed to function", loc);
+
+  auto it = arguments.begin();
+  for (const Ptr<VarDecl> &v : function->parameters) {
+
+    assert(it != arguments.end() && "mismatch in size of parameter list and "
+      "function arguments list");
+
+    const TypeExpr *arg_type = (*it)->type();
+    if (arg_type != nullptr)
+      arg_type = arg_type->resolve();
+
+    const TypeExpr *param_type = v->get_type();
+    assert(param_type != nullptr && "function parameter has no type");
+    param_type = param_type->resolve();
+
+    if (arg_type == nullptr) {
+      if (!isa<Range>(param_type))
+        throw Error("function call contains parameter of incorrect type",
+          (*it)->loc);
+
+    } else if (*arg_type != *param_type) {
+      throw Error("function call contains parameter of incorrect type",
+        (*it)->loc);
+    }
+
+    it++;
+  }
 }
 
 std::string FunctionCall::to_string() const {
