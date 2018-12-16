@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <iostream>
 #include "log.h"
 #include "options.h"
