@@ -960,4 +960,48 @@ std::string Forall::to_string() const {
     + " endforall";
 }
 
+IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_):
+  Expr(loc_), expr(expr_) { }
+
+IsUndefined *IsUndefined::clone() const {
+  return new IsUndefined(*this);
+}
+
+bool IsUndefined::constant() const {
+  return false;
+}
+
+const TypeExpr *IsUndefined::type() const {
+  return Boolean.get();
+}
+
+mpz_class IsUndefined::constant_fold() const {
+  throw Error("isundefined used in constant", loc);
+}
+
+bool IsUndefined::operator==(const Node &other) const {
+  auto o = dynamic_cast<const IsUndefined*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*expr != *o->expr)
+    return false;
+  return true;
+}
+
+void IsUndefined::validate() const {
+
+  if (!expr->is_lvalue())
+    throw Error("non-lvalue expression cannot be used in isundefined",
+      expr->loc);
+
+  const TypeExpr *t = expr->type();
+  if (t != nullptr && !t->is_simple())
+    throw Error("complex type used in isundefined", expr->loc);
+
+}
+
+std::string IsUndefined::to_string() const {
+  return "isundefined(" + expr->to_string() + ")";
+}
+
 }

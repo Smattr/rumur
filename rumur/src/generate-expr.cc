@@ -315,6 +315,12 @@ class Generator : public ConstExprTraversal {
     *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
   }
 
+  void visit(const IsUndefined &n) final {
+    *this << "handle_isundefined(";
+    generate_lvalue(*out, *n.expr);
+    *this << ")";
+  }
+
   void visit(const Leq &n) final {
     if (lvalue)
       invalid(n);

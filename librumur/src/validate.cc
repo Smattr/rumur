@@ -180,6 +180,11 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit(const IsUndefined &n) final {
+    dispatch(*n.expr);
+    n.validate();
+  }
+
   void visit(const Leq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);

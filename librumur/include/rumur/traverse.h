@@ -45,6 +45,7 @@ class BaseTraversal {
   virtual void visit(If &n) = 0;
   virtual void visit(IfClause &n) = 0;
   virtual void visit(Implication &n) = 0;
+  virtual void visit(IsUndefined &n) = 0;
   virtual void visit(Leq &n) = 0;
   virtual void visit(Lt &n) = 0;
   virtual void visit(Model &n) = 0;
@@ -118,6 +119,7 @@ class ConstBaseTraversal {
   virtual void visit(const If &n) = 0;
   virtual void visit(const IfClause &n) = 0;
   virtual void visit(const Implication &n) = 0;
+  virtual void visit(const IsUndefined &n) = 0;
   virtual void visit(const Leq &n) = 0;
   virtual void visit(const Lt &n) = 0;
   virtual void visit(const Model &n) = 0;
@@ -187,6 +189,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit(const If &n) override;
   void visit(const IfClause &n) override;
   void visit(const Implication &n) override;
+  void visit(const IsUndefined &n) override;
   void visit(const Leq &n) override;
   void visit(const Lt &n) override;
   void visit(const Model &n) override;
@@ -261,6 +264,7 @@ class ConstExprTraversal : public ConstBaseTraversal {
   void visit(const If &n) final;
   void visit(const IfClause &n) final;
   void visit(const Implication &n) override = 0;
+  void visit(const IsUndefined &n) override = 0;
   void visit(const Leq &n) override = 0;
   void visit(const Lt &n) override = 0;
   void visit(const Model &n) final;
@@ -330,6 +334,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit(const If &n) override = 0;
   void visit(const IfClause &n) final;
   void visit(const Implication &n) final;
+  void visit(const IsUndefined &n) final;
   void visit(const Leq &n) final;
   void visit(const Lt &n) final;
   void visit(const Model &n) final;
@@ -400,6 +405,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit(const If &n) final;
   void visit(const IfClause &n) final;
   void visit(const Implication &n) final;
+  void visit(const IsUndefined &n) final;
   void visit(const Leq &n) final;
   void visit(const Lt &n) final;
   void visit(const Model &n) final;

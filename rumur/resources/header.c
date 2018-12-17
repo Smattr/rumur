@@ -1160,6 +1160,12 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
   };
 }
 
+static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
+  value_t v = handle_read_raw(h);
+
+  return v == 0;
+}
+
 /* Overflow-safe helpers for doing bounded arithmetic. The compiler built-ins
  * used are implemented in modern GCC and Clang. If you're using another
  * compiler, you'll have to implement these yourself.

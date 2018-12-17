@@ -216,6 +216,10 @@ class Resolver : public BaseTraversal {
     visit(static_cast<BinaryExpr&>(n));
   }
 
+  void visit(IsUndefined &n) final {
+    dispatch(*n.expr);
+  }
+
   void visit(Leq &n) final {
     visit(static_cast<BinaryExpr&>(n));
   }

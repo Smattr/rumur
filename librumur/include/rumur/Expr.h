@@ -452,4 +452,20 @@ struct Forall : public Expr {
   std::string to_string() const final;
 };
 
+struct IsUndefined : public Expr {
+
+  Ptr<Expr> expr;
+
+  IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
+  virtual ~IsUndefined() = default;
+  IsUndefined *clone() const final;
+
+  bool constant() const final;
+  const TypeExpr *type() const final;
+  mpz_class constant_fold() const final;
+  bool operator==(const Node &other) const final;
+  void validate() const final;
+  std::string to_string() const final;
+};
+
 }

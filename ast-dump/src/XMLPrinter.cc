@@ -436,6 +436,17 @@ void XMLPrinter::visit(const Implication &n) {
   visit_bexpr("implication", n);
 }
 
+void XMLPrinter::visit(const IsUndefined &n) {
+  sync_to(n);
+  *o << "<isundefined ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.expr);
+  dispatch(*n.expr);
+  sync_to(n.loc.end);
+  *o << "</isundefined>";
+}
+
 void XMLPrinter::visit(const Leq &n) {
   visit_bexpr("leq", n);
 }
