@@ -214,6 +214,48 @@ class Generator : public ConstExprTraversal {
 
     const Ptr<TypeExpr> &return_type = n.function->return_type;
 
+    // Open a statement-expression so we can declare temporaries.
+    *out << "({ ";
+
+    /* Here we need to do a little dance to cope with non-lvalues. It is
+     * possible that the function we are calling takes a var parameter for
+     * which we are passing in a non-lvalue, e.g. a numeric literal. To deal
+     * with this, we construct a temporary ahead of time within the enclosing
+     * GNU statement-expression, generate the argument as an rvalue and write it
+     * to this temporary, then later pass this temporary as the parameter
+     * instead of the original argument.
+     */
+    {
+      size_t index = 0;
+      auto it = n.function->parameters.begin();
+      for (const Ptr<Expr> &a : n.arguments) {
+
+        if (!(*it)->readonly && !a->is_lvalue()) {
+          assert((*it)->get_type()->is_simple() && "complex var parameter "
+            "receiving non-lvalue argument");
+
+          const std::string block = "v" + std::to_string(n.unique_id) + "_"
+            + std::to_string(index) + "_";
+          const std::string handle = "v" + std::to_string(n.unique_id) + "_"
+            + std::to_string(index);
+
+          const std::string lb = (*it)->get_type()->lower_bound();
+          const std::string ub = (*it)->get_type()->upper_bound();
+
+          *out << "uint8_t " << block << "[BITS_TO_BYTES(" << (*it)->width()
+            << ")] = { 0 }; struct handle " << handle << " = { .base = "
+            << block << ", .offset = 0, .width = SIZE_C(" << (*it)->width()
+            << ") }; handle_write(state_drop_const(s), " << lb << ", " << ub
+            << ", " << handle << ", ";
+          generate_rvalue(*out, *a);
+          *out << "); ";
+        }
+
+        index++;
+        it++;
+      }
+    }
+
     *out << "ru_" << n.name << "(state_drop_const(s)";
 
     // Pass the return type output parameter if required.
@@ -223,6 +265,7 @@ class Generator : public ConstExprTraversal {
 
     // Now emit the arguments to the function.
     {
+      size_t index = 0;
       auto it = n.function->parameters.begin();
       for (const Ptr<Expr> &a : n.arguments) {
 
@@ -234,16 +277,24 @@ class Generator : public ConstExprTraversal {
         const Ptr<VarDecl> &p = *it;
 
         if (!p->readonly) {
-          generate_lvalue(*out, *a);
+          if (!a->is_lvalue()) {
+            *out << "v" << n.unique_id << "_" << index;
+          } else {
+            generate_lvalue(*out, *a);
+          }
         } else {
           generate_rvalue(*out, *a);
         }
 
+        index++;
         it++;
       }
     }
 
-    *out << ")";
+    *out << ");";
+
+    // Close the statement-expression.
+    *out << " })";
   }
 
   void visit(const Geq &n) final {
