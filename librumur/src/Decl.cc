@@ -147,7 +147,7 @@ bool VarDecl::operator==(const Node &other) const {
 }
 
 bool VarDecl::is_lvalue() const {
-  return !readonly;
+  return true;
 }
 
 bool VarDecl::is_readonly() const {

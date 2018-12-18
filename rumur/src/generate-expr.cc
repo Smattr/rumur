@@ -217,42 +217,136 @@ class Generator : public ConstExprTraversal {
     // Open a statement-expression so we can declare temporaries.
     *out << "({ ";
 
-    /* Here we need to do a little dance to cope with non-lvalues. It is
-     * possible that the function we are calling takes a var parameter for
-     * which we are passing in a non-lvalue, e.g. a numeric literal. To deal
-     * with this, we construct a temporary ahead of time within the enclosing
-     * GNU statement-expression, generate the argument as an rvalue and write it
-     * to this temporary, then later pass this temporary as the parameter
-     * instead of the original argument.
+    /* Firstly, one of our assumptions in the following is that any complex
+     * argument we have is capable of being an lvalue. This is because there is
+     * currently no syntax to express a complex rvalue.
      */
+    for (const Ptr<Expr> &a __attribute__((unused)) : n.arguments)
+      assert((a->type() == nullptr || a->type()->is_simple() || a->is_lvalue())
+        && "non-lvalue complex argument");
+
+    /* Now for each parameter we need to consider four distinct methods, based
+     * on the parameter's circumstance as described in the following table:
+     *
+     *   ┌──────┬────────────────┬─────────┬────────────╥────────┐
+     *   │ var? │ simple/complex │ lvalue? │ read-only? ║ method │
+     *   ├──────┼────────────────┼─────────┼────────────╫────────┤
+     *   │  no  │     simple     │    no   │     -      ║    1   │
+     *   │  no  │     simple     │   yes   │     no     ║    2   │
+     *   │  no  │     simple     │   yes   │    yes     ║    2   │
+     *   │  no  │    complex     │    -    │     no     ║    3   │
+     *   │  no  │    complex     │    -    │    yes     ║    3   │
+     *   │ yes  │     simple     │    no   │     -      ║    1   │
+     *   │ yes  │     simple     │   yes   │     no     ║    4   │
+     *   │ yes  │     simple     │   yes   │    yes     ║    2   │
+     *   │ yes  │    complex     │    -    │     no     ║    4   │
+     *   │ yes  │    complex     │    -    │    yes     ║    3   │
+     *   └──────┴────────────────┴─────────┴────────────╨────────┘
+     *
+     *   1. We can create a temporary handle and backing storage, then extract
+     *      the value of the argument as an rvalue and write it to this
+     *      temporary. The temporary can then be passed into the function,
+     *      ensuring we don't modify the original argument.
+     *
+     *   2. We can do the same as (1), but extract the value of the argument
+     *      with handle_read_raw. We need to do this because the argument might
+     *      be undefined, in which case we want to extract its value without
+     *      error. Another wrinkle we need to handle here is that the argument
+     *      might be of a different range type than the function parameter type
+     *      (differing lower and upper bounds).
+     *
+     *   3. We can create a temporary handle and backing store and then use
+     *      handle_copy to transfer the value of the original argument. This is
+     *      correct as we know the argument and the parameter it will be passed
+     *      as have identical width.
+     *
+     *   4. We just pass the original handle, the lvalue of the argument.
+     */
+
+    auto get_method =
+      [](const Ptr<VarDecl> &parameter, const Ptr<Expr> &argument) {
+
+        bool var = !parameter->is_readonly();
+        bool simple = parameter->type->is_simple();
+        bool is_lvalue = argument->is_lvalue();
+        bool readonly = argument->is_readonly();
+
+        if (!var &&  simple && !is_lvalue             ) return 1;
+        if (!var &&  simple &&  is_lvalue && !readonly) return 2;
+        if (!var &&  simple &&  is_lvalue &&  readonly) return 2;
+        if (!var && !simple &&               !readonly) return 3;
+        if (!var && !simple &&                readonly) return 3;
+        if ( var &&  simple && !is_lvalue             ) return 1;
+        if ( var &&  simple &&  is_lvalue && !readonly) return 4;
+        if ( var &&  simple &&  is_lvalue &&  readonly) return 2;
+        if ( var && !simple &&               !readonly) return 4;
+        if ( var && !simple &&                readonly) return 3;
+
+        assert(!"unreachable");
+        __builtin_unreachable();
+      };
+
+    // Create the temporaries for each argument.
     {
       size_t index = 0;
       auto it = n.function->parameters.begin();
       for (const Ptr<Expr> &a : n.arguments) {
+        const Ptr<VarDecl> &p = *it;
 
-        if (!(*it)->readonly && !a->is_lvalue()) {
-          assert((*it)->get_type()->is_simple() && "complex var parameter "
-            "receiving non-lvalue argument");
+        const std::string storage = "v" + std::to_string(n.unique_id) + "_"
+          + std::to_string(index) + "_";
+        const std::string handle = "v" + std::to_string(n.unique_id) + "_"
+          + std::to_string(index);
 
-          const std::string block = "v" + std::to_string(n.unique_id) + "_"
-            + std::to_string(index) + "_";
-          const std::string handle = "v" + std::to_string(n.unique_id) + "_"
-            + std::to_string(index);
+        auto method = get_method(p, a);
+        assert(method >= 1 && method <= 4);
 
-          const std::string lb = (*it)->get_type()->lower_bound();
-          const std::string ub = (*it)->get_type()->upper_bound();
+        if (method == 1 || method == 2 || method == 3)
+          *out
+            << "uint8_t " << storage << "[BITS_TO_BYTES(" << p->width()
+              << ")] = { 0 }; "
+            << "struct handle " << handle << " = { .base = " << storage
+              << ", .offset = 0, .width = SIZE_C(" << p->width() << ") }; ";
 
-          *out << "uint8_t " << block << "[BITS_TO_BYTES(" << (*it)->width()
-            << ")] = { 0 }; struct handle " << handle << " = { .base = "
-            << block << ", .offset = 0, .width = SIZE_C(" << (*it)->width()
-            << ") }; handle_write(state_drop_const(s), " << lb << ", " << ub
-            << ", " << handle << ", ";
+        if (method == 1) {
+          const std::string lb = p->get_type()->lower_bound();
+          const std::string ub = p->get_type()->upper_bound();
+
+          *out
+            << "handle_write(state_drop_const(s), " << lb << ", " << ub << ", "
+              << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
+
+        } else if (method == 2) {
+          const std::string lb = p->get_type()->lower_bound();
+          const std::string ub = p->get_type()->upper_bound();
+
+          const std::string lba = a->type()->lower_bound();
+
+          *out
+            << "{ "
+            << "value_t v = handle_read_raw(";
+          generate_lvalue(*out, *a);
+          *out << "); "
+            // TODO: can this arithmetic ever overflow?
+            << "handle_write_raw(" << handle << ", v == 0 ? v : (v + " << lba
+              << " - " << lb << ")); "
+            << "} ";
+
+        } else if (method == 3) {
+          assert(a->type()->width() == p->width() && "complex function "
+            "parameter receiving an argument of a differing width");
+
+          *out
+            << "handle_copy(" << handle << ", ";
+          generate_lvalue(*out, *a);
+          *out << "); ";
+
         }
 
-        index++;
         it++;
+        index++;
       }
     }
 
@@ -276,14 +370,13 @@ class Generator : public ConstExprTraversal {
 
         const Ptr<VarDecl> &p = *it;
 
-        if (!p->readonly) {
-          if (!a->is_lvalue()) {
-            *out << "v" << n.unique_id << "_" << index;
-          } else {
-            generate_lvalue(*out, *a);
-          }
+        const std::string handle = "v" + std::to_string(n.unique_id) + "_"
+          + std::to_string(index);
+
+        if (get_method(p, a) == 4) {
+          generate_lvalue(*out, *a);
         } else {
-          generate_rvalue(*out, *a);
+          *out << handle;
         }
 
         index++;
