@@ -143,34 +143,37 @@ matrix:
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
+
   - name: macOS, XCode 8.3 Clang
     os: osx
     osx_image: xcode8.3
     env:
-      # The version of Bison and Flex that come with XCode 8.3 are too old to
-      # support some of the flags/features we use. To install newer versions and
-      # make them available to CMake we need to link them into the system
-      # directories.
-      - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
-      - CXXFLAGS="-fsanitize=address -Werror"
-  - name: macOS, XCode 9.2 Clang
-    os: osx
-    osx_image: xcode9.2
-    env:
-      - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
-      - CXXFLAGS="-fsanitize=address -Werror"
-
-  - name: macOS, XCode 9.4 Clang
-    os: osx
-    osx_image: xcode9.4
-    env:
-
       # To quote Homebrew, "bison is keg-only, which means it was not symlinked
       # into /usr/local, because some formulae require a newer version of
       # bison." I do not know when this became the case as it was not
       # originally, but we'll force this.
       - PATH=/usr/local/opt/bison/bin:${PATH}
 
+      # The version of Bison and Flex that come with XCode 8.3 are too old to
+      # support some of the flags/features we use. To install newer versions and
+      # make them available to CMake we need to link them into the system
+      # directories.
+      - MATRIX_EVAL="brew install bison && brew upgrade python && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 9.2 Clang
+    os: osx
+    osx_image: xcode9.2
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew install bison && brew upgrade python && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 9.4 Clang
+    os: osx
+    osx_image: xcode9.4
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
       - MATRIX_EVAL="brew install bison && brew upgrade python && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
