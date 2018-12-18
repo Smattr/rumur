@@ -72,6 +72,9 @@ void Assignment::validate() const {
     "literal type");
   lhs_type = lhs_type->resolve();
 
+  if (lhs->is_readonly())
+    throw Error("read-only expression cannot be assigned to", loc);
+
   const TypeExpr *rhs_type = rhs->type();
   if (rhs_type != nullptr)
     rhs_type = rhs_type->resolve();
@@ -104,6 +107,9 @@ bool Clear::operator==(const Node &other) const {
 void Clear::validate() const {
   if (!rhs->is_lvalue())
     throw Error("invalid clear of non-lvalue expression", loc);
+
+  if (rhs->is_readonly())
+    throw Error("invalid clear of read-only expression", loc);
 }
 
 ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_):
@@ -334,6 +340,9 @@ bool Undefine::operator==(const Node &other) const {
 void Undefine::validate() const {
   if (!rhs->is_lvalue())
     throw Error("invalid undefine of non-lvalue expression", loc);
+
+  if (rhs->is_readonly())
+    throw Error("invalid undefine of read-only expression", loc);
 }
 
 While::While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
