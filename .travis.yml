@@ -159,11 +159,19 @@ matrix:
     env:
       - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
+
   - name: macOS, XCode 9.4 Clang
     os: osx
     osx_image: xcode9.4
     env:
-      - MATRIX_EVAL="brew install bison flex && brew upgrade python && brew link bison --force && brew link flex --force && CC=clang && CXX=clang++"
+
+      # To quote Homebrew, "bison is keg-only, which means it was not symlinked
+      # into /usr/local, because some formulae require a newer version of
+      # bison." I do not know when this became the case as it was not
+      # originally, but we'll force this.
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+
+      - MATRIX_EVAL="brew install bison && brew upgrade python && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
 # This file initially contained entries to test GCC on macOS as well, but I
