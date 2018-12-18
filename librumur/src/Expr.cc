@@ -28,6 +28,10 @@ bool Expr::is_lvalue() const {
   return false;
 }
 
+bool Expr::is_readonly() const {
+  return !is_lvalue();
+}
+
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) { }
@@ -589,6 +593,10 @@ bool ExprID::is_lvalue() const {
   return value->is_lvalue();
 }
 
+bool ExprID::is_readonly() const {
+  return value->is_readonly();
+}
+
 std::string ExprID::to_string() const {
   return id;
 }
@@ -657,6 +665,10 @@ bool Field::is_lvalue() const {
   return record->is_lvalue();
 }
 
+bool Field::is_readonly() const {
+  return record->is_readonly();
+}
+
 std::string Field::to_string() const {
   return record->to_string() + "." + field;
 }
@@ -722,6 +734,10 @@ void Element::validate() const {
 
 bool Element::is_lvalue() const {
   return array->is_lvalue();
+}
+
+bool Element::is_readonly() const {
+  return array->is_readonly();
 }
 
 std::string Element::to_string() const {

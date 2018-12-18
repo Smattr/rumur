@@ -42,6 +42,10 @@ bool AliasDecl::is_lvalue() const {
   return value->is_lvalue();
 }
 
+bool AliasDecl::is_readonly() const {
+  return value->is_readonly();
+}
+
 const TypeExpr *AliasDecl::get_type() const {
   return value->type();
 }
@@ -80,6 +84,10 @@ bool ConstDecl::operator==(const Node &other) const {
 
 bool ConstDecl::is_lvalue() const {
   return false;
+}
+
+bool ConstDecl::is_readonly() const {
+  return true;
 }
 
 const TypeExpr *ConstDecl::get_type() const {
@@ -140,6 +148,10 @@ bool VarDecl::operator==(const Node &other) const {
 
 bool VarDecl::is_lvalue() const {
   return !readonly;
+}
+
+bool VarDecl::is_readonly() const {
+  return readonly;
 }
 
 mpz_class VarDecl::width() const {
