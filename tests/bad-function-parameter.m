@@ -1,3 +1,4 @@
+-- rumur_exit_code: 1
 /* This model is designed to provoke a bug observed on commit
  * ad4078683bd8737add75a294fec65d8bd2f6b84b, wherein passing a boolean literal
  * in as a var parameter to a function caused an uncaught exception. Rumur

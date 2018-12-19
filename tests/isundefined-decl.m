@@ -16,10 +16,6 @@ startstate begin
   x := true;
 end;
 
-rule bar(true) ==> begin
-  x := !x;
-end;
-
 rule bar(x) ==> begin
   x := !x;
 end;

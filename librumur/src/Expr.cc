@@ -803,6 +803,10 @@ void FunctionCall::validate() const {
     assert(it != arguments.end() && "mismatch in size of parameter list and "
       "function arguments list");
 
+    if ((*it)->is_readonly() && !v->is_readonly())
+      throw Error("function call passes a read-only value as a var parameter",
+        (*it)->loc);
+
     const TypeExpr *arg_type = (*it)->type();
     if (arg_type != nullptr)
       arg_type = arg_type->resolve();
