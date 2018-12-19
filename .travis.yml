@@ -154,9 +154,9 @@ matrix:
       # originally, but we'll force this.
       - PATH=/usr/local/opt/bison/bin:${PATH}
 
-      # The version of Bison and Flex that come with XCode 8.3 are too old to
-      # support some of the flags/features we use. To install newer versions and
-      # make them available to CMake we need to link them into the system
+      # The version of Bison that comes with XCode 8.3 is too old to support
+      # some of the flags/features we use. To install newer versions and make
+      # them available to CMake we need to link them into the system
       # directories.
       - MATRIX_EVAL="brew install bison && brew upgrade python && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
