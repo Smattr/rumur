@@ -225,6 +225,18 @@ class Generator : public ConstExprTraversal {
       assert((a->type() == nullptr || a->type()->is_simple() || a->is_lvalue())
         && "non-lvalue complex argument");
 
+    /* Secondly, a read-only value is never passed to a var parameter. This
+     * should have been validated by FunctionCall::validate().
+     */
+    {
+      auto it = n.function->parameters.begin();
+      for (const Ptr<Expr> &a __attribute__((unused)) : n.arguments) {
+        assert(((*it)->is_readonly() || !a->is_readonly()) &&
+          "read-only value passed to var parameter");
+        it++;
+      }
+    }
+
     /* Now for each parameter we need to consider four distinct methods, based
      * on the parameter's circumstance as described in the following table:
      *
@@ -236,11 +248,9 @@ class Generator : public ConstExprTraversal {
      *   │  no  │     simple     │   yes   │    yes     ║    2   │
      *   │  no  │    complex     │    -    │     no     ║    3   │
      *   │  no  │    complex     │    -    │    yes     ║    3   │
-     *   │ yes  │     simple     │    no   │     -      ║    1   │
+     *   │ yes  │     simple     │    no   │     no     ║    1   │
      *   │ yes  │     simple     │   yes   │     no     ║    4   │
-     *   │ yes  │     simple     │   yes   │    yes     ║    2   │
      *   │ yes  │    complex     │    -    │     no     ║    4   │
-     *   │ yes  │    complex     │    -    │    yes     ║    3   │
      *   └──────┴────────────────┴─────────┴────────────╨────────┘
      *
      *   1. We can create a temporary handle and backing storage, then extract
@@ -278,9 +288,7 @@ class Generator : public ConstExprTraversal {
         if (!var && !simple &&                readonly) return 3;
         if ( var &&  simple && !is_lvalue             ) return 1;
         if ( var &&  simple &&  is_lvalue && !readonly) return 4;
-        if ( var &&  simple &&  is_lvalue &&  readonly) return 2;
         if ( var && !simple &&               !readonly) return 4;
-        if ( var && !simple &&                readonly) return 3;
 
         assert(!"unreachable");
         __builtin_unreachable();
