@@ -337,7 +337,12 @@ class Generator : public ConstExprTraversal {
             << "value_t v = handle_read_raw(";
           generate_lvalue(*out, *a);
           *out << "); "
-            // TODO: can this arithmetic ever overflow?
+            << "if (v != 0 && (v + " << lba << " - 1 < " << lb << " || v + "
+              << lba << " - 1 > " << ub << ")) { "
+            << "error(s, false, \"call to function %s passed an out-of-range "
+              << "value %\" PRIVAL \" to parameter " << (index + 1) << "\", \""
+              << n.name << "\", v + " << lba << " - 1); "
+            << "} "
             << "handle_write_raw(" << handle << ", v == 0 ? v : (v + " << lba
               << " - " << lb << ")); "
             << "} ";
