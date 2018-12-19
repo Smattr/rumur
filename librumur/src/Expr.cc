@@ -820,6 +820,15 @@ void FunctionCall::validate() const {
         throw Error("function call contains parameter of incorrect type",
           (*it)->loc);
 
+    } else if (isa<Range>(arg_type)) {
+      if (!isa<Range>(param_type))
+        throw Error("function call contains parameter of incorrect type",
+          (*it)->loc);
+
+      if (*arg_type != *param_type && !v->is_readonly())
+        throw Error("range types of function call argument and var parameter "
+          "differ", (*it)->loc);
+
     } else if (*arg_type != *param_type) {
       throw Error("function call contains parameter of incorrect type",
         (*it)->loc);
