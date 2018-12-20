@@ -1,8 +1,10 @@
 Rumur
 =====
-Rumur is an explicit state `model checker`_ based on a previous tool, CMurphi_.
-It takes the same input format, the Murphi modelling language, with some
-extensions and produces C code implementing a verifier.
+Rumur is a `model checker`_, a formal verification tool for proving safety and
+security properties of systems represented as state machines. It is based on a
+previous tool, CMurphi_, and intended to be close to a drop-in replacement.
+Rumur takes the same input format as CMurphi, the Murphi modelling language,
+with some extensions and generates a C program that implements a verifier.
 
 Quickstart
 ----------
