@@ -36,6 +36,15 @@ support.
 Rumur does not currently support the ``union`` type. This is planned to be added
 in a future version.
 
+Command-line Options
+--------------------
+CMurphi has a set of command-line options, and its generated verifier has
+another set of command-line options. Rumur has some similar command-line
+options, but its generated verifier has none at all. The intent with this design
+is to expose as much information to the C compiler as possible. In some cases
+this can make a significant difference by allowing your C compiler to more
+aggressively optimise during compilation.
+
 Deadlock
 --------
 The verifier can detect "deadlocks" in your state graph, where there are no
@@ -55,3 +64,10 @@ non-terminating and will raise an error.
 
 Rumur trusts the user not to write an infinite loop. If you write an infinite
 loop, your verifier will run forever. You have been warned.
+
+Colour Output
+-------------
+Rumur's generated verifier attempts to imitate CMurphi's verifier's output to
+smooth the transition for users, but by default Rumur colourises its output
+using ANSI terminal sequences. This behaviour is controllable via command-line
+options.
