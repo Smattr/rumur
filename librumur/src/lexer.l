@@ -111,6 +111,18 @@ while         { return rumur::parser::token::WHILE;         }
 "∀"           { return rumur::parser::token::FORALL;        }
 "∃"           { return rumur::parser::token::EXISTS;        }
 
+  /* Recognise true and false explicitly rather than as generic IDs (below). The
+   * purpose of this is so that we match them case-insensitively.
+   */
+false {
+  lval->build<std::string>("false");
+  return rumur::parser::token::ID;
+}
+true {
+  lval->build<std::string>("true");
+  return rumur::parser::token::ID;
+}
+
 [[:alpha:]][_[:alnum:]]* {
   lval->build<std::string>(YYText());
   return rumur::parser::token::ID;
