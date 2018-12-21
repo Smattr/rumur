@@ -27,6 +27,12 @@ are nicer for presentation of a model in a mathematical context. These more
 concise operators are generally recommended for use in models that are expected
 to be read more often than they are edited.
 
+The keywords ``assert`` and ``invariant`` are distinct in CMurphi, whereas they
+are considered synonyms by Rumur. If one of these appears within a rule or
+function it is considered an assertion and if it appears at the top level it is
+considered an invariant. Rumur also accepts the optional string message of an
+assertion or invariant on either side of the asserted expression.
+
 Type System
 -----------
 CMurphi supports real arithmetic using the ``real`` data type. Rumur does not
@@ -35,6 +41,12 @@ support.
 
 Rumur does not currently support the ``union`` type. This is planned to be added
 in a future version.
+
+Assumptions
+-----------
+In addition to assertions and invariants that are supported by CMurphi, Rumur
+supports assumptions with the keyword ``assume``. Any state that fails an
+assumption is considered irrelevant and discarded.
 
 Command-line Options
 --------------------
