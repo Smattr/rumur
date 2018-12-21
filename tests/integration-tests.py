@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
 
@@ -14,7 +14,7 @@ try:
 except subprocess.CalledProcessError:
   VALGRIND = None
 
-def valgrind_wrap(args: [str]) -> [str]:
+def valgrind_wrap(args):
   assert VALGRIND is not None
   return [VALGRIND, '--leak-check=full', '--show-leak-kinds=all',
     '--error-exitcode=42'] + args
@@ -42,7 +42,7 @@ class TemporaryDirectory(object):
 class Tests(unittest.TestCase):
   pass
 
-def parse_test_options(model: str):
+def parse_test_options(model):
   option = {}
 
   # Check for special lines at the start of the current model overriding the
@@ -58,8 +58,7 @@ def parse_test_options(model: str):
 
   return option
 
-def test_template(self, model: str, optimised: bool, debug: bool,
-    valgrind: bool, xml: bool):
+def test_template(self, model, optimised, debug, valgrind, xml):
 
   # Default options to use for this test.
   option = {
@@ -150,7 +149,7 @@ def test_template(self, model: str, optimised: bool, debug: bool,
         sys.stderr.write(stderr)
       self.assertEqual(ret, 0)
 
-def test_ast_dumper_template(self, model: str, valgrind: bool):
+def test_ast_dumper_template(self, model, valgrind):
 
   with TemporaryDirectory() as tmp:
 
@@ -187,7 +186,7 @@ def test_ast_dumper_template(self, model: str, valgrind: bool):
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
 
-def test_cmurphi_example_template(self, model: str, outcome: bool):
+def test_cmurphi_example_template(self, model, outcome):
 
   with TemporaryDirectory() as tmp:
 
@@ -215,7 +214,7 @@ def test_cmurphi_example_template(self, model: str, outcome: bool):
       sys.stderr.write(stderr)
     self.assertEqual(ret == 0, outcome)
 
-def test_ast_dumper_cmurphi_example_template(self, model: str):
+def test_ast_dumper_cmurphi_example_template(self, model):
 
   with TemporaryDirectory() as tmp:
 
