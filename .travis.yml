@@ -177,37 +177,37 @@ matrix:
       - MATRIX_EVAL="brew install bison && brew upgrade python && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
-   - name: macOS, XCode 8.3 Clang, Macports
-     os: osx
-     osx_image: xcode8.3
-     env:
-       # We need to set this because Macports seems incapable of running
-       # without it.
-       - COLUMNS=80
+  - name: macOS, XCode 8.3 Clang, Macports
+    os: osx
+    osx_image: xcode8.3
+    env:
+      # We need to set this because Macports seems incapable of running
+      # without it.
+      - COLUMNS=80
 
-       - PATH=/opt/local/bin:${PATH}
-       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python36 && sudo port select --set python3 python36 && CC=clang && CXX=clang++"
-       - CXXFLAGS="-fsanitize=address -Werror"
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python36 && sudo port select --set python3 python36 && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
 
-   - name: macOS, XCode 9.2 Clang, Macports
-     os: osx
-     osx_image: xcode9.2
-     env:
-       - COLUMNS=80
-       - PATH=/opt/local/bin:${PATH}
-       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python36 && sudo port select --set python3 python36 && CC=clang && CXX=clang++"
-       - CXXFLAGS="-fsanitize=address -Werror"
+  - name: macOS, XCode 9.2 Clang, Macports
+    os: osx
+    osx_image: xcode9.2
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python36 && sudo port select --set python3 python36 && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
 
-   - name: macOS, XCode 9.4 Clang, Macports
-     os: osx
-     osx_image: xcode9.4
-     env:
-       - COLUMNS=80
-       - PATH=/opt/local/bin:${PATH}
+  - name: macOS, XCode 9.4 Clang, Macports
+    os: osx
+    osx_image: xcode9.4
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
 
-       # XCode 9.4 already includes Python3, so no need to install it.
-       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
-       - CXXFLAGS="-fsanitize=address -Werror"
+      # XCode 9.4 already includes Python3, so no need to install it.
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
 
 # This file initially contained entries to test GCC on macOS as well, but I
 # could not figure out how to get these working. One show stopper seems to be
