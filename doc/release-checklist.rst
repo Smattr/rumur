@@ -5,7 +5,13 @@ The process of cutting a new Rumur release should follow these steps:
 1. Update ``LAST_RELEASE`` in ../rumur/src/make-version.py. For version numbers,
    we use "vYYYY.MM.DD" with the date of the release.
 2. Update ../CHANGELOG.rst with information about the changes in the new
-   release.
+   release. Changes should be separated into "user-facing" and "internal,"
+   providing commit hash(es) as a reference where possible. The ordering in
+   which changes are listed should firstly prioritise bug fixes (which should be
+   explicitly marked as such) and then by the impact on users/developers a
+   change will have. Code changes that are only of relevance to people hacking
+   on Rumur can be omitted, and this audience can read about them in the Git
+   log.
 3. Commit this to master.
 4. Push this to `upstream on Github`_.
 5. Wait for the `Travis CI regression tests`_ to pass. Travis is not very
