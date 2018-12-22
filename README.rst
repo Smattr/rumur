@@ -59,7 +59,7 @@ model checkers at `doc/vs-cmurphi.rst`_.
 Legal
 -----
 Everything in this repository is in the public domain, under the terms of
-`the Unlicense`_. For the full text, see `LICENSE`_.
+`the Unlicense`_. For the full text, see LICENSE_.
 
 .. _Bison: https://www.gnu.org/software/bison/
 .. _CMake: https://cmake.org/
@@ -68,6 +68,7 @@ Everything in this repository is in the public domain, under the terms of
 .. _Flex: https://github.com/westes/flex
 .. _GCC: https://gcc.gnu.org/
 .. _Libgmp: https://gmplib.org/
+.. _LICENSE: ./LICENSE
 .. _`model checker`: https://en.wikipedia.org/wiki/Model_checking
 .. _Python: https://www.python.org/
 .. _`the Unlicense`: http://unlicense.org/
