@@ -1,0 +1,22 @@
+#compdef rumur
+
+# Zsh completion script for Rumur
+
+_arguments \
+  '--colour[enable or disable ANSI colour codes]: :(auto off on)' \
+  '--counterexample-trace[how to print counterexample traces]: :(diff full off)' \
+  '--deadlock-detection[deadlock semantics to use]: :(off stuck stuttering)' \
+  {--debug,-d}'[enabled debugging mode]' \
+  '--help[display help information]' \
+  '--max-errors[number of errors to report before exiting]:count' \
+  '--monopolise[use all machine resources]' \
+  '--output-format[how verifier should print output]: :(machine-readable human-readable)' \
+  {--quiet,-q}'[suppress output while generating verifier]' \
+  '--sandbox[verifier privilege restriction]: :(on off)' \
+  {--set-capacity,-s}'[initial memory (in bytes) to allocate for the seen set]:SIZE' \
+  {--set-expand-threshold,-e}'[limit at which to expand the seen set]:occupancy percentage' \
+  '--symmetry-reduction[symmetry reduction optimisation]: :(off heuristic exhaustive)' \
+  {--threads,-t}'[number of threads to use in the verifier]:count' \
+  '--trace[tracing messages to print in the verifier]: :(handle_reads handle_writes queue set symmetry_reduction all)' \
+  {--verbose,-v}'[output more detail while generating verifier]' \
+  '--version[output version information]'
