@@ -21,10 +21,13 @@ Then:
 
 .. code-block:: sh
 
-    # Build Rumur
+    # Download Rumur
+    git clone https://github.com/Smattr/rumur
+
+    # Configure and compile
     mkdir build
     cd build
-    cmake ..
+    cmake ../rumur
     make
     make install
 
