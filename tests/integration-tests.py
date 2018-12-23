@@ -178,7 +178,10 @@ def test_ast_dumper_template(self, model, valgrind):
       self.skipTest('xmllint not available for validation')
 
     # Validate the XML
-    ret, stdout, stderr = run(['xmllint', '--noout', model_xml])
+    rng = os.path.abspath(os.path.join(os.path.dirname(__file__),
+      '..', 'misc', 'ast-dump.rng'))
+    ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout',
+      model_xml])
     if ret != 0:
       with open(model_xml, 'rt') as f:
         sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
