@@ -2,7 +2,7 @@ Source: rumur
 Section: devel
 Priority: optional
 Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
-Build-Depends: debhelper (>= 9.0.0), cmake
+Build-Depends: debhelper (>= 9.0.0), cmake (>= 3.1)
 Standards-Version: 3.9.4
 Homepage: https://github.com/Smattr/rumur
 Vcs-Git: https://github.com/Smattr/rumur.git
