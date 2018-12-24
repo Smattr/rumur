@@ -72,6 +72,9 @@ void Assignment::validate() const {
     "literal type");
   lhs_type = lhs_type->resolve();
 
+  if (lhs->is_readonly())
+    throw Error("read-only expression cannot be assigned to", loc);
+
   const TypeExpr *rhs_type = rhs->type();
   if (rhs_type != nullptr)
     rhs_type = rhs_type->resolve();
@@ -104,6 +107,9 @@ bool Clear::operator==(const Node &other) const {
 void Clear::validate() const {
   if (!rhs->is_lvalue())
     throw Error("invalid clear of non-lvalue expression", loc);
+
+  if (rhs->is_readonly())
+    throw Error("invalid clear of read-only expression", loc);
 }
 
 ErrorStmt::ErrorStmt(const std::string &message_, const location &loc_):
@@ -190,9 +196,9 @@ bool If::operator==(const Node &other) const {
   return true;
 }
 
-ProcedureCall::ProcedureCall(const std::string &name_,
-  const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
-  Stmt(loc_), name(name_), arguments(arguments_) { }
+ProcedureCall::ProcedureCall(const std::string &name,
+  const std::vector<Ptr<Expr>> &arguments, const location &loc_):
+  Stmt(loc_), call(name, arguments, loc_) { }
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);
@@ -202,24 +208,9 @@ bool ProcedureCall::operator==(const Node &other) const {
   auto o = dynamic_cast<const ProcedureCall*>(&other);
   if (o == nullptr)
     return false;
-  if (name != o->name)
-    return false;
-  if (function == nullptr) {
-    if (o->function != nullptr)
-      return false;
-  } else if (o->function == nullptr) {
-    return false;
-  } else if (*function != *o->function) {
-    return false;
-  }
-  if (!vector_eq(arguments, o->arguments))
+  if (call != o->call)
     return false;
   return true;
-}
-
-void ProcedureCall::validate() const {
-  if (function == nullptr)
-    throw Error("unknown procedure \"" + name + "\"", loc);
 }
 
 Put::Put(const std::string &value_, const location &loc_):
@@ -349,6 +340,9 @@ bool Undefine::operator==(const Node &other) const {
 void Undefine::validate() const {
   if (!rhs->is_lvalue())
     throw Error("invalid undefine of non-lvalue expression", loc);
+
+  if (rhs->is_readonly())
+    throw Error("invalid undefine of read-only expression", loc);
 }
 
 While::While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,

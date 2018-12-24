@@ -42,6 +42,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit(const rumur::If &n) final;
   void visit(const rumur::IfClause &n) final;
   void visit(const rumur::Implication &n) final;
+  void visit(const rumur::IsUndefined &n) final;
   void visit(const rumur::Leq &n) final;
   void visit(const rumur::Lt &n) final;
   void visit(const rumur::Mod &n) final;

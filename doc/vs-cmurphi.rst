@@ -27,6 +27,12 @@ are nicer for presentation of a model in a mathematical context. These more
 concise operators are generally recommended for use in models that are expected
 to be read more often than they are edited.
 
+The keywords ``assert`` and ``invariant`` are distinct in CMurphi, whereas they
+are considered synonyms by Rumur. If one of these appears within a rule or
+function it is considered an assertion and if it appears at the top level it is
+considered an invariant. Rumur also accepts the optional string message of an
+assertion or invariant on either side of the asserted expression.
+
 Type System
 -----------
 CMurphi supports real arithmetic using the ``real`` data type. Rumur does not
@@ -35,6 +41,21 @@ support.
 
 Rumur does not currently support the ``union`` type. This is planned to be added
 in a future version.
+
+Assumptions
+-----------
+In addition to assertions and invariants that are supported by CMurphi, Rumur
+supports assumptions with the keyword ``assume``. Any state that fails an
+assumption is considered irrelevant and discarded.
+
+Command-line Options
+--------------------
+CMurphi has a set of command-line options, and its generated verifier has
+another set of command-line options. Rumur has some similar command-line
+options, but its generated verifier has none at all. The intent with this design
+is to expose as much information to the C compiler as possible. In some cases
+this can make a significant difference by allowing your C compiler to more
+aggressively optimise during compilation.
 
 Deadlock
 --------
@@ -55,3 +76,10 @@ non-terminating and will raise an error.
 
 Rumur trusts the user not to write an infinite loop. If you write an infinite
 loop, your verifier will run forever. You have been warned.
+
+Colour Output
+-------------
+Rumur's generated verifier attempts to imitate CMurphi's verifier's output to
+smooth the transition for users, but by default Rumur colourises its output
+using ANSI terminal sequences. This behaviour is controllable via command-line
+options.

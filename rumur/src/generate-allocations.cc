@@ -27,16 +27,6 @@ class Generator : public ConstTraversal {
       dispatch(*a);
   }
 
-  void visit(const ProcedureCall &n) final {
-    if (n.function == nullptr)
-      throw Error("function call to unresolved target " + n.name, n.loc);
-
-    define_backing_mem(n.unique_id, n.function->return_type.get());
-
-    for (auto &a : n.arguments)
-      dispatch(*a);
-  }
-
   virtual ~Generator() = default;
 
  private:

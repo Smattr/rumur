@@ -163,6 +163,11 @@ void Indexer::visit(Implication &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
+void Indexer::visit(IsUndefined &n) {
+  n.unique_id = next++;
+  dispatch(*n.expr);
+}
+
 void Indexer::visit(Leq &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
@@ -211,8 +216,7 @@ void Indexer::visit(Or &n) {
 
 void Indexer::visit(ProcedureCall &n) {
   n.unique_id = next++;
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void Indexer::visit(Property &n) {

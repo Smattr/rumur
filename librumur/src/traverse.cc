@@ -145,6 +145,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<IsUndefined*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Leq*>(&n)) {
     visit(*i);
     return;
@@ -443,6 +448,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const IsUndefined*>(&n)) {
+    visit(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Leq*>(&n)) {
     visit(*i);
     return;
@@ -737,6 +747,10 @@ void ConstTraversal::visit(const Implication &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
 
+void ConstTraversal::visit(const IsUndefined &n) {
+  dispatch(*n.expr);
+}
+
 void ConstTraversal::visit(const Leq &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
@@ -781,8 +795,7 @@ void ConstTraversal::visit(const Or &n) {
 }
 
 void ConstTraversal::visit(const ProcedureCall &n) {
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void ConstTraversal::visit(const Property &n) {
@@ -990,8 +1003,7 @@ void ConstExprTraversal::visit(const Model &n) {
 }
 
 void ConstExprTraversal::visit(const ProcedureCall &n) {
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void ConstExprTraversal::visit(const Property &n) {
@@ -1201,6 +1213,10 @@ void ConstStmtTraversal::visit(const IfClause &n) {
 
 void ConstStmtTraversal::visit(const Implication &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
+}
+
+void ConstStmtTraversal::visit(const IsUndefined &n) {
+  dispatch(*n.expr);
 }
 
 void ConstStmtTraversal::visit(const Leq &n) {
@@ -1461,6 +1477,10 @@ void ConstTypeTraversal::visit(const Implication &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
 
+void ConstTypeTraversal::visit(const IsUndefined &n) {
+  dispatch(*n.expr);
+}
+
 void ConstTypeTraversal::visit(const Leq &n) {
   visit_bexpr(static_cast<const BinaryExpr&>(n));
 }
@@ -1505,8 +1525,7 @@ void ConstTypeTraversal::visit(const Or &n) {
 }
 
 void ConstTypeTraversal::visit(const ProcedureCall &n) {
-  for (auto &a : n.arguments)
-    dispatch(*a);
+  dispatch(n.call);
 }
 
 void ConstTypeTraversal::visit(const Property &n) {

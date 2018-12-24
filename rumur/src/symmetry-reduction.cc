@@ -219,8 +219,7 @@ static void generate_loop_footer(const TypeDecl &scalarset, size_t index,
 
   const std::string indent(level * 2, ' ');
 
-  auto s = dynamic_cast<const Scalarset*>(scalarset.value->resolve());
-  assert(s != nullptr);
+  assert(dynamic_cast<const Scalarset*>(scalarset.value->resolve()) != nullptr);
 
   const std::string i = "i" + std::to_string(index);
 
@@ -511,8 +510,7 @@ static void generate_compare(std::ostream &out, const TypeDecl &pivot,
 
 static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
 
-  auto s = dynamic_cast<const Scalarset*>(pivot.value->resolve());
-  assert(s != nullptr);
+  assert(dynamic_cast<const Scalarset*>(pivot.value->resolve()) != nullptr);
 
   out
     << "static void sort_" << pivot.name << "(struct state *s, "

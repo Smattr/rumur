@@ -6,16 +6,28 @@ Generate contents of a version.cc.
 
 import os, re, subprocess, sys
 
-def get_file_version():
-  '''
-  Find version information from a VERSION file if it exists.
-  '''
-  path = os.path.join(os.path.dirname(__file__), '..', '..', 'VERSION')
-  if os.path.exists(path):
-    with open(path, 'rt') as f:
-      return f.read().strip()
+# The version of the last tagged release of Rumur. This will be used as the
+# version number if no Git information is available.
+LAST_RELEASE = 'v2018.12.20'
 
-  return None
+def has_git():
+  '''
+  Return True if we are in a Git repository and have Git.
+  '''
+
+  # Return False if we don't have Git.
+  try:
+    with open(os.devnull, 'wt') as f:
+      subprocess.check_call(['which', 'git'], stdout=f, stderr=f)
+  except:
+    return False
+
+  # Return False if we have no Git repository information.
+  if not os.path.exists(os.path.join(os.path.dirname(__file__),
+      '..', '..', '.git')):
+    return False
+
+  return True
 
 def get_tag():
   '''
@@ -80,23 +92,21 @@ def main(args):
 
   version = None
 
-  # First, look for a ../../VERSION file.
-  if version is None:
-    v = get_file_version()
-    if v is not None:
-      version = v
-
-  # Second, look for a version tag on the current commit.
-  if version is None:
+  # First, look for a version tag on the current commit.
+  if version is None and has_git():
     tag = get_tag()
     if tag is not None:
       version = '{}{}'.format(tag, ' (dirty)' if is_dirty() else '')
 
-  # If we didn't find a version tag. Use the commit hash as the version.
-  if version is None:
+  # Second, look for the commit hash as the version.
+  if version is None and has_git():
     rev = get_sha()
     assert rev is not None
     version = 'Git commit {}{}'.format(rev, ' (dirty)' if is_dirty() else '')
+
+  # Finally, fall back to our known release version.
+  if version is None:
+    version = LAST_RELEASE
 
   new = 'const char *VERSION = "{}";\n'.format(version)
 

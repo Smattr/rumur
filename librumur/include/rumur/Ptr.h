@@ -12,7 +12,7 @@ template<typename TARGET>
 class Ptr {
 
  private:
-  std::unique_ptr<TARGET> t = nullptr;
+  std::unique_ptr<TARGET> t = std::unique_ptr<TARGET>(nullptr);
 
  public:
   Ptr() = default;

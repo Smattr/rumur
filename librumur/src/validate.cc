@@ -180,6 +180,11 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit(const IsUndefined &n) final {
+    dispatch(*n.expr);
+    n.validate();
+  }
+
   void visit(const Leq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -241,8 +246,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit(const ProcedureCall &n) final {
-    for (auto &a : n.arguments)
-      dispatch(*a);
+    dispatch(n.call);
     n.validate();
   }
 

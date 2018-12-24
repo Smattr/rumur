@@ -14,9 +14,6 @@
 
 namespace rumur {
 
-// Forward declare a struct we need to point to, to avoid a circular #include
-struct Function;
-
 struct Stmt : public Node {
 
   using Node::Node;
@@ -129,17 +126,14 @@ struct If : public Stmt {
 
 struct ProcedureCall : public Stmt {
 
-  std::string name;
-  Ptr<Function> function;
-  std::vector<Ptr<Expr>> arguments;
+  FunctionCall call;
 
-  ProcedureCall(const std::string &name_,
-    const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
+  ProcedureCall(const std::string &name,
+    const std::vector<Ptr<Expr>> &arguments, const location &loc_);
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
 
   bool operator==(const Node &other) const final;
-  void validate() const final;
 };
 
 struct Put : public Stmt {

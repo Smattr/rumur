@@ -134,7 +134,7 @@ static uintmax_t rules_fired[THREADS];
  */
 static _Thread_local jmp_buf checkpoint;
 
-static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
+_Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
 
 /* Whether we need to save and restore checkpoints. This is determined by
  * whether we ever need to perform the action "discard the current state and
@@ -593,6 +593,11 @@ static __attribute__((unused)) size_t state_depth(const struct state *s) {
   return d;
 }
 #endif
+
+/* A type-safe const cast. */
+static __attribute__((unused)) struct state *state_drop_const(const struct state *s) {
+  return (struct state*)s;
+}
 
 /* These functions are generated. */
 static void state_canonicalise_heuristic(struct state *s);
@@ -1155,6 +1160,12 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
   };
 }
 
+static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
+  value_t v = handle_read_raw(h);
+
+  return v == 0;
+}
+
 /* Overflow-safe helpers for doing bounded arithmetic. The compiler built-ins
  * used are implemented in modern GCC and Clang. If you're using another
  * compiler, you'll have to implement these yourself.
@@ -1406,7 +1417,7 @@ struct refcounted_ptr {
   #error "unexpected pointer size; what scalar type to use for refcounted_ptr_t?"
 #endif
 
-static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
+_Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 

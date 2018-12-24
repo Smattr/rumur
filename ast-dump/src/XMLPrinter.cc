@@ -436,6 +436,17 @@ void XMLPrinter::visit(const Implication &n) {
   visit_bexpr("implication", n);
 }
 
+void XMLPrinter::visit(const IsUndefined &n) {
+  sync_to(n);
+  *o << "<isundefined ";
+  add_location(n);
+  *o << ">";
+  sync_to(*n.expr);
+  dispatch(*n.expr);
+  sync_to(n.loc.end);
+  *o << "</isundefined>";
+}
+
 void XMLPrinter::visit(const Leq &n) {
   visit_bexpr("leq", n);
 }
@@ -514,19 +525,11 @@ void XMLPrinter::visit(const Or &n) {
 
 void XMLPrinter::visit(const ProcedureCall &n) {
   sync_to(n);
-  /* As with FunctionCall, we use the function's name rather than emitting it as
-   * a child element because morally it is a reference to a previously defined
-   * function.
-   */
-  *o << "<procedurecall name=\"" << n.name << "\" ";
+  *o << "<procedurecall ";
   add_location(n);
   *o << ">";
-  for (auto &a : n.arguments) {
-    sync_to(*a);
-    *o << "<argument>";
-    dispatch(*a);
-    *o << "</argument>";
-  }
+  sync_to(n.call);
+  dispatch(n.call);
   sync_to(n.loc.end);
   *o << "</procedurecall>";
 }

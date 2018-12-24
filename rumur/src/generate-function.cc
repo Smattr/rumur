@@ -27,13 +27,8 @@ void generate_function(std::ostream &out, const rumur::Function &f,
   if (f.return_type != nullptr && !f.return_type->is_simple())
     out << ", struct handle ret";
 
-  for (const rumur::Ptr<rumur::VarDecl> &p : f.parameters) {
-    if (p->readonly && p->type->is_simple()) {
-      out << ", value_t ru_" << p->name;
-    } else {
-      out << ", struct handle ru_" << p->name;
-    }
-  }
+  for (const rumur::Ptr<rumur::VarDecl> &p : f.parameters)
+    out << ", struct handle ru_" << p->name;
 
   out << ") {\n";
 

@@ -132,6 +132,7 @@
 %token IF
 %token IMPLIES
 %token INVARIANT
+%token ISUNDEFINED
 %token LEQ
 %token NEQ
 %token <std::string> NUMBER
@@ -339,6 +340,8 @@ expr: expr '?' expr ':' expr {
   $$->loc = @$;
 } | ID '(' exprlist ')' {
   $$ = rumur::Ptr<rumur::FunctionCall>::make($1, $3, @$);
+} | ISUNDEFINED '(' designator ')' {
+  $$ = rumur::Ptr<rumur::IsUndefined>::make($3, @$);
 };
 
 exprdecl: id_list_opt ':' expr {

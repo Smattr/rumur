@@ -44,6 +44,7 @@ class Indexer : public BaseTraversal {
   void visit(If &n) final;
   void visit(IfClause &n) final;
   void visit(Implication &n) final;
+  void visit(IsUndefined &n) final;
   void visit(Leq &n) final;
   void visit(Lt &n) final;
   void visit(Model &n) final;

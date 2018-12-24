@@ -1,8 +1,10 @@
 Rumur
 =====
-Rumur is an explicit state `model checker`_ based on a previous tool, CMurphi_.
-It takes the same input format, the Murphi modelling language, with some
-extensions and produces C code implementing a verifier.
+Rumur is a `model checker`_, a formal verification tool for proving safety and
+security properties of systems represented as state machines. It is based on a
+previous tool, CMurphi_, and intended to be close to a drop-in replacement.
+Rumur takes the same input format as CMurphi, the Murphi modelling language,
+with some extensions and generates a C program that implements a verifier.
 
 Quickstart
 ----------
@@ -19,10 +21,13 @@ Then:
 
 .. code-block:: sh
 
-    # Build Rumur
+    # Download Rumur
+    git clone https://github.com/Smattr/rumur
+
+    # Configure and compile
     mkdir build
     cd build
-    cmake ..
+    cmake ../rumur
     make
     make install
 
@@ -53,7 +58,8 @@ model checkers at `doc/vs-cmurphi.rst`_.
 
 Legal
 -----
-Everything in this repository is in the public domain.
+Everything in this repository is in the public domain, under the terms of
+`the Unlicense`_. For the full text, see LICENSE_.
 
 .. _Bison: https://www.gnu.org/software/bison/
 .. _CMake: https://cmake.org/
@@ -62,5 +68,7 @@ Everything in this repository is in the public domain.
 .. _Flex: https://github.com/westes/flex
 .. _GCC: https://gcc.gnu.org/
 .. _Libgmp: https://gmplib.org/
+.. _LICENSE: ./LICENSE
 .. _`model checker`: https://en.wikipedia.org/wiki/Model_checking
 .. _Python: https://www.python.org/
+.. _`the Unlicense`: http://unlicense.org/

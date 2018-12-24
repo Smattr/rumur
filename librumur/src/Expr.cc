@@ -28,6 +28,10 @@ bool Expr::is_lvalue() const {
   return false;
 }
 
+bool Expr::is_readonly() const {
+  return !is_lvalue();
+}
+
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) { }
@@ -51,7 +55,7 @@ const TypeExpr *Ternary::type() const {
 }
 
 mpz_class Ternary::constant_fold() const {
-  return cond->constant_fold() ? lhs->constant_fold() : rhs->constant_fold();
+  return (cond->constant_fold() != 0) ? lhs->constant_fold() : rhs->constant_fold();
 }
 
 void Ternary::validate() const {
@@ -90,7 +94,7 @@ const TypeExpr *Implication::type() const {
 }
 
 mpz_class Implication::constant_fold() const {
-  return !lhs->constant_fold() || rhs->constant_fold();
+  return lhs->constant_fold() == 0 || rhs->constant_fold() != 0;
 }
 
 bool Implication::operator==(const Node &other) const {
@@ -111,7 +115,7 @@ const TypeExpr *Or::type() const {
 }
 
 mpz_class Or::constant_fold() const {
-  return lhs->constant_fold() || rhs->constant_fold();
+  return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
 
 bool Or::operator==(const Node &other) const {
@@ -132,7 +136,7 @@ const TypeExpr *And::type() const {
 }
 
 mpz_class And::constant_fold() const {
-  return lhs->constant_fold() && rhs->constant_fold();
+  return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
 
 bool And::operator==(const Node &other) const {
@@ -161,7 +165,7 @@ const TypeExpr *Not::type() const {
 }
 
 mpz_class Not::constant_fold() const {
-  return !rhs->constant_fold();
+  return rhs->constant_fold() == 0;
 }
 
 bool Not::operator==(const Node &other) const {
@@ -589,6 +593,10 @@ bool ExprID::is_lvalue() const {
   return value->is_lvalue();
 }
 
+bool ExprID::is_readonly() const {
+  return value->is_readonly();
+}
+
 std::string ExprID::to_string() const {
   return id;
 }
@@ -607,18 +615,21 @@ bool Field::constant() const {
 }
 
 const TypeExpr *Field::type() const {
+
   const TypeExpr *root = record->type();
-  assert(root != nullptr);
+  assert(root != nullptr && "invalid left hand side of field expression");
   const TypeExpr *resolved = root->resolve();
-  assert(resolved != nullptr);
-  if (auto r = dynamic_cast<const Record*>(resolved)) {
-    for (const Ptr<VarDecl> &f : r->fields) {
-      if (f->name == field)
-        return f->type.get();
-    }
-    throw Error("no field named \"" + field + "\" in record", loc);
+  assert(resolved != nullptr && "invalid left hand side of field expression");
+
+  auto r = dynamic_cast<const Record*>(resolved);
+  assert(r != nullptr && "invalid left hand side of field expression");
+
+  for (const Ptr<VarDecl> &f : r->fields) {
+    if (f->name == field)
+      return f->type.get();
   }
-  throw Error("left hand side of field expression is not a record", loc);
+
+  throw Error("no field named \"" + field + "\" in record", loc);
 }
 
 mpz_class Field::constant_fold() const {
@@ -630,8 +641,32 @@ bool Field::operator==(const Node &other) const {
   return o != nullptr && *record == *o->record && field == o->field;
 }
 
+void Field::validate() const {
+
+  const TypeExpr *root = record->type();
+  if (root != nullptr)
+    root = root->resolve();
+
+  if (!isa<Record>(root))
+    throw Error("left hand side of field expression is not a record", loc);
+
+  auto r = dynamic_cast<const Record*>(root);
+  assert(r != nullptr && "logic error in Field::validate");
+
+  for (const Ptr<VarDecl> &f : r->fields) {
+    if (f->name == field)
+      return;
+  }
+
+  throw Error("no field named \"" + field + "\" in record", loc);
+}
+
 bool Field::is_lvalue() const {
   return record->is_lvalue();
+}
+
+bool Field::is_readonly() const {
+  return record->is_readonly();
 }
 
 std::string Field::to_string() const {
@@ -668,8 +703,41 @@ bool Element::operator==(const Node &other) const {
   return o != nullptr && *array == *o->array && *index == *o->index;
 }
 
+void Element::validate() const {
+
+  const TypeExpr *t = array->type();
+  if (t != nullptr)
+    t = t->resolve();
+
+  if (!isa<Array>(t))
+    throw Error("array index on an expression that is not an array", loc);
+
+  auto a = dynamic_cast<const Array*>(t);
+  assert(a != nullptr && "logic error in Element::validate");
+
+  const TypeExpr *e = index->type();
+  if (e != nullptr)
+    e = e->resolve();
+
+  const TypeExpr *index_type = a->index_type->resolve();
+
+  if (isa<Range>(index_type)) {
+    if (e != nullptr && !isa<Range>(e))
+      throw Error("array indexed using an expression of incorrect type", loc);
+
+  } else {
+    if (e == nullptr || *index_type != *e)
+      throw Error("array indexed using an expression of incorrect type", loc);
+
+  }
+}
+
 bool Element::is_lvalue() const {
   return array->is_lvalue();
+}
+
+bool Element::is_readonly() const {
+  return array->is_readonly();
 }
 
 std::string Element::to_string() const {
@@ -725,6 +793,49 @@ bool FunctionCall::operator==(const Node &other) const {
 void FunctionCall::validate() const {
   if (function == nullptr)
     throw Error("unknown function call \"" + name + "\"", loc);
+
+  if (arguments.size() != function->parameters.size())
+    throw Error("incorrect number of parameters passed to function", loc);
+
+  auto it = arguments.begin();
+  for (const Ptr<VarDecl> &v : function->parameters) {
+
+    assert(it != arguments.end() && "mismatch in size of parameter list and "
+      "function arguments list");
+
+    if ((*it)->is_readonly() && !v->is_readonly())
+      throw Error("function call passes a read-only value as a var parameter",
+        (*it)->loc);
+
+    const TypeExpr *arg_type = (*it)->type();
+    if (arg_type != nullptr)
+      arg_type = arg_type->resolve();
+
+    const TypeExpr *param_type = v->get_type();
+    assert(param_type != nullptr && "function parameter has no type");
+    param_type = param_type->resolve();
+
+    if (arg_type == nullptr) {
+      if (!isa<Range>(param_type))
+        throw Error("function call contains parameter of incorrect type",
+          (*it)->loc);
+
+    } else if (isa<Range>(arg_type)) {
+      if (!isa<Range>(param_type))
+        throw Error("function call contains parameter of incorrect type",
+          (*it)->loc);
+
+      if (*arg_type != *param_type && !v->is_readonly())
+        throw Error("range types of function call argument and var parameter "
+          "differ", (*it)->loc);
+
+    } else if (*arg_type != *param_type) {
+      throw Error("function call contains parameter of incorrect type",
+        (*it)->loc);
+    }
+
+    it++;
+  }
 }
 
 std::string FunctionCall::to_string() const {
@@ -876,6 +987,50 @@ void Forall::validate() const {
 std::string Forall::to_string() const {
   return "forall " + quantifier.to_string() + " do " + expr->to_string()
     + " endforall";
+}
+
+IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_):
+  Expr(loc_), expr(expr_) { }
+
+IsUndefined *IsUndefined::clone() const {
+  return new IsUndefined(*this);
+}
+
+bool IsUndefined::constant() const {
+  return false;
+}
+
+const TypeExpr *IsUndefined::type() const {
+  return Boolean.get();
+}
+
+mpz_class IsUndefined::constant_fold() const {
+  throw Error("isundefined used in constant", loc);
+}
+
+bool IsUndefined::operator==(const Node &other) const {
+  auto o = dynamic_cast<const IsUndefined*>(&other);
+  if (o == nullptr)
+    return false;
+  if (*expr != *o->expr)
+    return false;
+  return true;
+}
+
+void IsUndefined::validate() const {
+
+  if (!expr->is_lvalue())
+    throw Error("non-lvalue expression cannot be used in isundefined",
+      expr->loc);
+
+  const TypeExpr *t = expr->type();
+  if (t != nullptr && !t->is_simple())
+    throw Error("complex type used in isundefined", expr->loc);
+
+}
+
+std::string IsUndefined::to_string() const {
+  return "isundefined(" + expr->to_string() + ")";
 }
 
 }

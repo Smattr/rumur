@@ -42,6 +42,12 @@ struct Expr : public Node {
   // Is this value valid to use on the LHS of an assignment?
   virtual bool is_lvalue() const;
 
+  /* Is this value a constant (cannot be modified)? It only makes sense to ask
+   * this of expressions for which is_lvalue() returns true. For non-lvalues,
+   * this is always true.
+   */
+  virtual bool is_readonly() const;
+
   // Get a string representation of this expression
   virtual std::string to_string() const = 0;
 };
@@ -332,6 +338,7 @@ struct ExprID : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   bool is_lvalue() const final;
+  bool is_readonly() const final;
   std::string to_string() const final;
 };
 
@@ -349,7 +356,9 @@ struct Field : public Expr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
   bool is_lvalue() const final;
+  bool is_readonly() const final;
   std::string to_string() const final;
 };
 
@@ -367,7 +376,9 @@ struct Element : public Expr {
   const TypeExpr *type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
   bool is_lvalue() const final;
+  bool is_readonly() const final;
   std::string to_string() const final;
 };
 
@@ -441,6 +452,22 @@ struct Forall : public Expr {
     const location &loc_);
   virtual ~Forall() = default;
   Forall *clone() const final;
+
+  bool constant() const final;
+  const TypeExpr *type() const final;
+  mpz_class constant_fold() const final;
+  bool operator==(const Node &other) const final;
+  void validate() const final;
+  std::string to_string() const final;
+};
+
+struct IsUndefined : public Expr {
+
+  Ptr<Expr> expr;
+
+  IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
+  virtual ~IsUndefined() = default;
+  IsUndefined *clone() const final;
 
   bool constant() const final;
   const TypeExpr *type() const final;

@@ -33,6 +33,12 @@ struct ExprDecl : public Decl {
   // Return true if this declaration is usable as an lvalue
   virtual bool is_lvalue() const = 0;
 
+  /* Return true if this declaration is to a resource cannot be modified. Note
+   * that this is only relevant for declarations for which is_lvalue() returns
+   * true. For non-lvalue declarations, this is always true.
+   */
+  virtual bool is_readonly() const = 0;
+
   virtual const TypeExpr *get_type() const = 0;
 
   ExprDecl *clone() const override = 0;
@@ -49,6 +55,7 @@ struct AliasDecl : public ExprDecl {
 
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
+  bool is_readonly() const final;
   const TypeExpr *get_type() const final;
 };
 
@@ -70,6 +77,7 @@ struct ConstDecl : public ExprDecl {
 
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
+  bool is_readonly() const final;
   void validate() const final;
   const TypeExpr *get_type() const final;
 };
@@ -111,6 +119,7 @@ struct VarDecl : public ExprDecl {
 
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
+  bool is_readonly() const final;
   const TypeExpr *get_type() const final;
 };
 

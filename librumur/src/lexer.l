@@ -87,6 +87,7 @@ forall        { return rumur::parser::token::FORALL;        }
 function      { return rumur::parser::token::FUNCTION;      }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
+isundefined   { return rumur::parser::token::ISUNDEFINED;   }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
 property      { return rumur::parser::token::PROPERTY;      }
@@ -109,6 +110,18 @@ while         { return rumur::parser::token::WHILE;         }
 
 "∀"           { return rumur::parser::token::FORALL;        }
 "∃"           { return rumur::parser::token::EXISTS;        }
+
+  /* Recognise true and false explicitly rather than as generic IDs (below). The
+   * purpose of this is so that we match them case-insensitively.
+   */
+false {
+  lval->build<std::string>("false");
+  return rumur::parser::token::ID;
+}
+true {
+  lval->build<std::string>("true");
+  return rumur::parser::token::ID;
+}
 
 [[:alpha:]][_[:alnum:]]* {
   lval->build<std::string>(YYText());
