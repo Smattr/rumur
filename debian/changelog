@@ -1,3 +1,35 @@
+rumur (2018.12.20-1) unstable; urgency=medium
+
+  * Bug fix: boolean constants are now usable in boolean expressions, rather
+    than being considered ranges.
+
+  * Bug fix: indexing a non-array expression is now reported as an
+    error, rather than causing an assertion failure.
+
+  * Bug fix: calling a function with incorrect arguments is now reported as an
+    error, rather than causing an assertion failure or uncaught exception.
+
+  * Bug fix: trying to access the field of a non-record expression is now
+    reported as an error, rather than causing an assertion failure or uncaught
+    exception.
+
+  * Bug fix: The boolean literals "true" and "false" are now accepted in all
+    possible casings.
+
+  * The "isundefined" operator is now implemented.
+
+  * Range-typed expressions can now be passed in to functions as non-var
+    parameters of a differing range type, where previously this scenario would
+    only accept rvalues or identical range types.
+
+  * If the generated verifier is multithreaded, it now prints a thread
+    identifier in each progress line.
+
+  * Some spurious compiler warnings when building the generated verifier have
+    been suppressed.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Thu, 20 Dec 2018 10:59:55 -0800
+
 rumur (2018.12.08-1) unstable; urgency=medium
 
   * Initial release
