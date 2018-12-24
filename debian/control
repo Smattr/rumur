@@ -2,8 +2,8 @@ Source: rumur
 Section: devel
 Priority: optional
 Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
-Build-Depends: debhelper (>= 9.0.0), bison (>= 3.0), cmake (>= 3.1), flex (>= 2.5.35), libgmp-dev, python (>= 2.7)
-Standards-Version: 3.9.4
+Build-Depends: debhelper (>= 10), bison (>= 3.0), cmake (>= 3.1), flex (>= 2.5.35), libgmp-dev, python (>= 2.7)
+Standards-Version: 3.9.8
 Homepage: https://github.com/Smattr/rumur
 Vcs-Git: https://github.com/Smattr/rumur.git
 Vcs-Browser: https://github.com/Smattr/rumur.git
@@ -11,10 +11,17 @@ Vcs-Browser: https://github.com/Smattr/rumur.git
 Package: rumur
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: A model checker for the Murphi language
+Description: model checker for the Murphi language
  Rumur is a model checker for use in the formal verification of finite state
- machines specified in the Murphi modelling language.
-
-Package: rumur-doc
-Architecture: all
-Description: documentation for rumur
+ machines specified in the Murphi modelling language. It is based on a previous
+ tool, CMurphi, and attempts to provide an approximate drop-in replacement for
+ CMurphi.
+ .
+ Rumur works by reading an input file describing a collection of state variables
+ and transition rules, from which it generates a C program to verify safety and
+ security properties of this state machine. The generated verifier works by
+ exhaustively exploring the state space, checking for violation of invariants or
+ deadlocks.
+ .
+ In comparison to CMurphi, Rumur generates a verifier that runs significantly
+ faster and uses less memory on large input problems.
