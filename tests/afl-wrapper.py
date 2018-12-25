@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 '''
 Wrapper for compiling Rumur with instrumentation for American Fuzzy Lop (AFL)
@@ -7,7 +7,7 @@ and then fuzzing using the existing test suite.
 
 import os, platform, re, shutil, subprocess, sys, tempfile
 
-def which(cmd: str):
+def which(cmd):
   try:
     with open(os.devnull, 'wt') as null:
       return subprocess.check_output(['which', cmd], stderr=null).strip()
@@ -24,7 +24,7 @@ MAKE     = which(os.environ.get('MAKE', 'make'))
 RUMUR_ROOT = os.path.abspath(os.environ.get('RUMUR_ROOT',
   os.path.join(os.path.dirname(__file__), '..')))
 
-def main(argv: [str]):
+def main(argv):
 
   tmp = tempfile.mkdtemp()
   sys.stdout.write('Working in {}...\n'.format(tmp))

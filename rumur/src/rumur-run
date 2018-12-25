@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 '''
 Wrapper script for running the Rumur model checker.
@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 
-def which(cmd: str) -> str:
+def which(cmd):
   '''
   Equivalent of shell `which`
   '''
@@ -27,7 +27,7 @@ def which(cmd: str) -> str:
   except subprocess.CalledProcessError:
     return None
 
-def categorise(cc: str) -> str:
+def categorise(cc):
   '''
   Determine the vendor of a given C compiler
   '''
@@ -72,7 +72,7 @@ def categorise(cc: str) -> str:
 
   return categorisation
 
-def main(args: [str]) -> int:
+def main(args):
 
   # Find the Rumur binary
   rumur_bin = which('rumur')
