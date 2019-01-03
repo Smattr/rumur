@@ -12,3 +12,6 @@ target_link_libraries(rumur-ast-dump
 
 install(TARGETS rumur-ast-dump
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/doc/rumur-ast-dump.1
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
