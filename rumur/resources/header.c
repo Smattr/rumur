@@ -1377,6 +1377,142 @@ struct queue_node {
 /******************************************************************************/
 
 /*******************************************************************************
+ * Hazard pointers                                                             *
+ *                                                                             *
+ * The idea of "hazard pointers" comes from Maged Michael, "Hazard Pointers:   *
+ * Safe Memory Reclamation for Lock-Free Objects" in TPDS 15(8) 2004. The      *
+ * basic concept is to maintain a collection of safe-to-dereference pointers.  *
+ * Before freeing a pointer, you look in this collection to see if it is in    *
+ * use and you must always add a pointer to this collection before             *
+ * dereferencing it. The finer details of how we keep this consistent and why  *
+ * the size of this collection can be statically known ahead of time are a     *
+ * little complicated, but the paper explains this in further detail.          *
+ ******************************************************************************/
+
+/* Queue pointers currently safe to dereference. */
+static const struct queue_node *_Atomic hazarded[THREADS];
+
+/* Protect a pointer that we wish to dereference. */
+static __attribute__((unused)) void hazard(const struct queue_node *p) {
+
+  /* You can't protect the null pointer because it is invalid to dereference it.
+   */
+  assert(p != NULL && "attempt to hazard an invalid pointer");
+
+  /* Each thread is only allowed a single hazarded pointer at a time. */
+  assert(hazarded[thread_id] == NULL && "hazarding multiple pointers at once");
+
+  hazarded[thread_id] = p;
+}
+
+/* Drop protection on a pointer whose target we are done accessing. */
+static __attribute__((unused)) void unhazard(
+    const struct queue_node *p __attribute__((unused))) {
+
+  assert(p != NULL && "attempt to unhazard an invalid pointer");
+
+  assert(hazarded[thread_id] != NULL
+    && "unhazarding a pointer when none are hazarded");
+
+  assert(hazarded[thread_id] == p
+    && "unhazarding a pointer that differs from the one hazarded");
+
+  hazarded[thread_id] = NULL;
+}
+
+/* Free a pointer or, if not possible, defer this to later. */
+static __attribute__((unused)) void reclaim(struct queue_node *p) {
+
+  assert(p != NULL && "reclaiming a null pointer");
+
+  /* The reclaimer is not allowed to be freeing something while also holding a
+   * hazarded pointer.
+   */
+  assert(hazarded[thread_id] == NULL
+    && "reclaiming a pointer while holding a hazarded pointer");
+
+  /* Pointers that we failed to free initially because they were in use
+   * (hazarded) at the time they were passed to reclaim().
+   *
+   * Why are we sure we will only ever have a maximum of `THREADS - 1` pointers
+   * outstanding? Anything passed to reclaim() is expected to be
+   * now-unreachable, so the only outstanding references to such are threads
+   * racing with us. Because each thread can only have one hazarded pointer at a
+   * time, the maximum number of in use pointers right now is `THREADS - 1`
+   * (because the current thread does not have one).
+   *
+   * There is an edge case where another thread (1) held a hazarded pointer we
+   * previously tried to reclaim and thus ended up on our deferred list, then
+   * (2) in-between that time and now dropped this reference and acquired a
+   * hazarded pointer to `p`. This still will not exceed our count of
+   * `THREADS - 1` as the order in which we scan the deferred list and then add
+   * `p` to it below ensures that we will discover the originally hazarded
+   * pointer (now no longer conflicted) and clear its slot, leaving this
+   * available for `p`.
+   */
+  static _Thread_local struct queue_node *deferred[THREADS - 1];
+
+  /* First try to free any previously deferred pointers. */
+  for (size_t i = 0; i < sizeof(deferred) / sizeof(deferred[0]); i++) {
+    if (deferred[i] != NULL) {
+      bool conflict = false;
+      for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
+        if (j == thread_id) {
+          /* No need to check for conflicts with ourself. */
+          assert(hazarded[j] == NULL);
+          continue;
+        }
+        if (deferred[i] == hazarded[j]) {
+          /* This pointer is in use by thread j. */
+          conflict = true;
+          break;
+        }
+      }
+      if (!conflict) {
+        free(deferred[i]);
+        deferred[i] = NULL;
+      }
+    }
+  }
+
+  /* Now deal with the pointer we were passed. The most likely case is that no
+   * one else is using this pointer, so try this first.
+   */
+  bool conflict = false;
+  for (size_t i = 0; i < sizeof(hazarded) / sizeof(hazarded[i]); i++) {
+    if (i == thread_id) {
+      /* No need to check for conflicts with ourself. */
+      assert(hazarded[i] == NULL);
+      continue;
+    }
+    if (p == hazarded[i]) {
+      /* Bad luck :( */
+      conflict = true;
+      break;
+    }
+  }
+
+  if (!conflict) {
+    /* We're done! */
+    free(p);
+    return;
+  }
+
+  /* If we reached here, we need to defer this reclamation to later. */
+  for (size_t i = 0; i < sizeof(deferred) / sizeof(deferred[0]); i++) {
+    if (deferred[i] == NULL) {
+      deferred[i] = p;
+      return;
+    }
+  }
+
+  assert(!"deferred more than `THREADS` reclamations");
+  __builtin_unreachable();
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
  * The following implements a per-thread queue for pending states. The only    *
