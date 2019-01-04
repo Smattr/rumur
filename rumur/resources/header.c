@@ -1364,6 +1364,19 @@ static __attribute__((unused)) void sort(
 }
 
 /*******************************************************************************
+ * State queue node                                                            *
+ *                                                                             *
+ * See usage below.                                                            *
+ ******************************************************************************/
+
+struct queue_node {
+  struct state *s;
+  struct queue_node *next;
+};
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
  * The following implements a per-thread queue for pending states. The only    *
@@ -1371,11 +1384,6 @@ static __attribute__((unused)) void sort(
  * maintain is that all states within all queues pass the current model's      *
  * invariants.                                                                 *
  ******************************************************************************/
-
-struct queue_node {
-  struct state *s;
-  struct queue_node *next;
-};
 
 static struct {
   pthread_mutex_t lock;
