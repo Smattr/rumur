@@ -1513,6 +1513,34 @@ static __attribute__((unused)) void reclaim(struct queue_node *p) {
 /******************************************************************************/
 
 /*******************************************************************************
+ * Atomic operations on double word values                                     *
+ ******************************************************************************/
+
+#ifdef __x86_64__
+  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
+   * aligned memory. The way to work around this is apparently the following
+   * degenerate CMPXCHG.
+   */
+  #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
+#else
+  #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
+#endif
+
+#ifdef __x86_64__
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  #define atomic_cas(p, expected, new) \
+    __sync_bool_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas(p, expected, new) \
+    __atomic_compare_exchange_n((p), &(expected), (new), false, \
+      __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
+#endif
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
  * The following implements a per-thread queue for pending states. The only    *
@@ -1646,31 +1674,6 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 
-static refcounted_ptr_t refcounted_ptr_read(refcounted_ptr_t *p) {
-#ifdef __x86_64__
-  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
-   * aligned memory. The way to work around this is apparently the following
-   * degenerate CMPXCHG.
-   */
-  return __sync_val_compare_and_swap(p, 0, 0);
-#else
-  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
-#endif
-}
-
-static bool refcounted_ptr_cas(refcounted_ptr_t *p, refcounted_ptr_t expected,
-    refcounted_ptr_t new) {
-#ifdef __x86_64__
-  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
-   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
-   */
-  return __sync_bool_compare_and_swap(p, expected, new);
-#else
-  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
-#endif
-}
-
 static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
 
   /* Read the current state of the pointer. Note, we don't bother doing this
@@ -1701,7 +1704,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
   do {
 
     /* Read the current state of the pointer. */
-    old = refcounted_ptr_read(p);
+    old = atomic_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1711,7 +1714,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-    r = refcounted_ptr_cas(p, old, new);
+    r = atomic_cas(p, old, new);
   } while (!r);
 
   return ret;
@@ -1727,7 +1730,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
   do {
 
     /* Read the current state of the pointer. */
-    old = refcounted_ptr_read(p);
+    old = atomic_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1741,7 +1744,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-    r = refcounted_ptr_cas(p, old, new);
+    r = atomic_cas(p, old, new);
   } while (!r);
 
   return ret;
