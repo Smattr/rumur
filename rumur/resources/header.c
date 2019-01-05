@@ -1456,7 +1456,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
      * naturally aligned memory. The way to work around this is apparently the
      * following degenerate CMPXCHG.
      */
-    old = __sync_val_compare_and_swap(p, *p, *p);
+    old = __sync_val_compare_and_swap(p, 0, 0);
 #else
     old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
 #endif
@@ -1498,7 +1498,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
      * naturally aligned memory. The way to work around this is apparently the
      * following degenerate CMPXCHG.
      */
-    old = __sync_val_compare_and_swap(p, *p, *p);
+    old = __sync_val_compare_and_swap(p, 0, 0);
 #else
     old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
 #endif
