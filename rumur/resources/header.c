@@ -1421,6 +1421,31 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 
+static refcounted_ptr_t refcounted_ptr_read(refcounted_ptr_t *p) {
+#ifdef __x86_64__
+  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
+   * aligned memory. The way to work around this is apparently the following
+   * degenerate CMPXCHG.
+   */
+  return __sync_val_compare_and_swap(p, 0, 0);
+#else
+  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
+#endif
+}
+
+static bool refcounted_ptr_cas(refcounted_ptr_t *p, refcounted_ptr_t expected,
+    refcounted_ptr_t new) {
+#ifdef __x86_64__
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  return __sync_bool_compare_and_swap(p, expected, new);
+#else
+  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+#endif
+}
+
 static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
 
   /* Read the current state of the pointer. Note, we don't bother doing this
@@ -1451,15 +1476,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
   do {
 
     /* Read the current state of the pointer. */
-#ifdef __x86_64__
-    /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit
-     * naturally aligned memory. The way to work around this is apparently the
-     * following degenerate CMPXCHG.
-     */
-    old = __sync_val_compare_and_swap(p, 0, 0);
-#else
-    old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
-#endif
+    old = refcounted_ptr_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1469,15 +1486,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-#ifdef __x86_64__
-    /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
-     * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
-     */
-    r = __sync_bool_compare_and_swap(p, old, new);
-#else
-    r = __atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
-      __ATOMIC_SEQ_CST);
-#endif
+    r = refcounted_ptr_cas(p, old, new);
   } while (!r);
 
   return ret;
@@ -1493,15 +1502,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
   do {
 
     /* Read the current state of the pointer. */
-#ifdef __x86_64__
-    /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit
-     * naturally aligned memory. The way to work around this is apparently the
-     * following degenerate CMPXCHG.
-     */
-    old = __sync_val_compare_and_swap(p, 0, 0);
-#else
-    old = __atomic_load_n(p, __ATOMIC_SEQ_CST);
-#endif
+    old = refcounted_ptr_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1515,15 +1516,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-#ifdef __x86_64__
-    /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
-     * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
-     */
-    r = __sync_bool_compare_and_swap(p, old, new);
-#else
-    r = __atomic_compare_exchange_n(p, &old, new, false, __ATOMIC_SEQ_CST,
-      __ATOMIC_SEQ_CST);
-#endif
+    r = refcounted_ptr_cas(p, old, new);
   } while (!r);
 
   return ret;
