@@ -1617,21 +1617,9 @@ static double_ptr_t double_ptr_make(const void *q1, const void *q2) {
  ******************************************************************************/
 
 static struct {
-  pthread_mutex_t lock;
-  struct queue_node *head;
-  struct queue_node *tail;
-  size_t count;
+  double_ptr_t ends;
+  atomic_size_t count;
 } q[THREADS];
-
-static void queue_init(void) {
-  for (size_t i = 0; i < sizeof(q) / sizeof(q[0]); i++) {
-    int r = pthread_mutex_init(&q[i].lock, NULL);
-    if (r < 0) {
-      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-      exit(EXIT_FAILURE);
-    }
-  }
-}
 
 size_t queue_enqueue(struct state *s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
@@ -1640,25 +1628,92 @@ size_t queue_enqueue(struct state *s, size_t queue_id) {
   n->s = s;
   n->next = NULL;
 
-  int r __attribute__((unused)) = pthread_mutex_lock(&q[queue_id].lock);
-  ASSERT(r == 0);
+  /* Look up the tail of the queue. */
 
-  if (q[queue_id].tail == NULL) {
-    q[queue_id].head = q[queue_id].tail = n;
+  double_ptr_t ends = atomic_read(&q[queue_id].ends);
+
+retry:;
+  struct queue_node *tail = double_ptr_extract2(ends);
+
+  if (tail == NULL) {
+    /* There's nothing currently in the queue. */
+
+    assert(double_ptr_extract1(ends) == NULL && "tail of queue null while head "
+      "is non-null");
+
+    double_ptr_t new = double_ptr_make(n, n);
+
+    double_ptr_t old = atomic_cas_val(&q[queue_id].ends, ends, new);
+    if (old != ends) {
+      /* Failed. */
+      ends = old;
+      goto retry;
+    }
+
   } else {
-    q[queue_id].tail->next = n;
-    q[queue_id].tail = n;
+    /* The queue is non-empty, so we'll need to access the last element. */
+
+    /* Try to protect our upcoming access to the tail. */
+    hazard(tail);
+    {
+      double_ptr_t ends_check = atomic_read(&q[queue_id].ends);
+      if (ends != ends_check) {
+        /* Failed. Someone else modified the queue in the meantime. */
+        unhazard(tail);
+        ends = ends_check;
+        goto retry;
+      }
+    }
+
+    /* We've now notified other threads that we're going to be accessing the
+     * tail, so we can safely dereference its pointer.
+     */
+    {
+      struct queue_node *null = NULL;
+      if (!__atomic_compare_exchange_n(&tail->next, &null, n, false,
+          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        /* Failed. Someone else enqueued before we could. */
+        unhazard(tail);
+        goto retry;
+      }
+    }
+
+    struct queue_node *head = double_ptr_extract1(ends);
+    double_ptr_t new = double_ptr_make(head, n);
+
+    /* Try to update the queue. */
+    {
+      double_ptr_t old = atomic_cas_val(&q[queue_id].ends, ends, new);
+      if (old != ends) {
+        /* Failed. Someone else dequeued before we could finish. We know the
+         * operation that beat us was a dequeue and not an enqueue, because by
+         * writing to tail->next we have prevented any other enqueue from
+         * succeeding.
+         */
+
+        /* Undo the update of tail->next. We know this is safe (non-racy) because
+         * no other enqueue can proceed and a dequeue will never look into
+         * tail->next due to the way it handles the case when head == tail.
+         */
+        bool r __attribute__((unused)) = __atomic_compare_exchange_n(&tail->next,
+          &n, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+        assert(r && "undo of write to tail->next failed");
+
+        unhazard(tail);
+        ends = old;
+        goto retry;
+      }
+    }
+
+    /* Success! */
+
+    unhazard(tail);
   }
 
-  q[queue_id].count++;
+  size_t count = ++q[queue_id].count;
 
   TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
-    s, queue_id, q[queue_id].count);
-
-  size_t count = q[queue_id].count;
-
-  r = pthread_mutex_unlock(&q[queue_id].lock);
-  ASSERT(r == 0);
+    s, queue_id, count);
 
   return count;
 }
@@ -1671,27 +1726,63 @@ const struct state *queue_dequeue(size_t *queue_id) {
 
   for (size_t attempts = 0; attempts < sizeof(q) / sizeof(q[0]); attempts++) {
 
-    int r __attribute__((unused)) = pthread_mutex_lock(&q[*queue_id].lock);
-    ASSERT(r == 0);
+    double_ptr_t ends = atomic_read(&q[*queue_id].ends);
 
-    struct queue_node *n = q[*queue_id].head;
-    if (n != NULL) {
-      q[*queue_id].head = n->next;
-      if (n == q[*queue_id].tail) {
-        q[*queue_id].tail = NULL;
+retry:;
+    struct queue_node *head = double_ptr_extract1(ends);
+
+    if (head != NULL) {
+      /* This queue is non-empty. */
+
+      /* Try to protect our upcoming accesses to the head. */
+      hazard(head);
+      {
+        double_ptr_t ends_check = atomic_read(&q[*queue_id].ends);
+        if (ends != ends_check) {
+          /* Failed. Someone else updated the queue. */
+          unhazard(head);
+          ends = ends_check;
+          goto retry;
+        }
       }
-      q[*queue_id].count--;
+
+      struct queue_node *tail = double_ptr_extract2(ends);
+
+      double_ptr_t new;
+      if (head == tail) {
+        /* There is only a single element in the queue. We will need to update
+         * both head and tail.
+         */
+        new = double_ptr_make(NULL, NULL);
+      } else {
+        /* There are multiple elements in the queue; we can deal only with the
+         * head.
+         */
+        new = double_ptr_make(head->next, tail);
+      }
+
+      /* Try to remove the head. */
+      {
+        double_ptr_t old = atomic_cas_val(&q[*queue_id].ends, ends, new);
+        if (old != ends) {
+          /* Failed. Someone else either enqueued or dequeued. */
+          unhazard(head);
+          ends = old;
+          goto retry;
+        }
+      }
+
+      s = head->s;
+
+      unhazard(head);
+      reclaim(head);
+
+      size_t count = --q[*queue_id].count;
+
       TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
-        "%zu", n->s, *queue_id, q[*queue_id].count);
-    }
+        "%zu", s, *queue_id, count);
 
-    r = pthread_mutex_unlock(&q[*queue_id].lock);
-    ASSERT(r == 0);
-
-    if (n != NULL) {
-      s = n->s;
-      free(n);
-      break;
+      return s;
     }
 
     /* Move to the next queue to try. */
@@ -2451,7 +2542,6 @@ int main(void) {
   rendezvous_init();
 
   set_init();
-  queue_init();
 
   set_thread_init();
 
