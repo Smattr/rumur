@@ -1538,6 +1538,22 @@ static __attribute__((unused)) void reclaim(struct queue_node *p) {
       __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #endif
 
+#ifdef __x86_64__
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  #define atomic_cas_val(p, expected, new) \
+    __sync_val_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas_val(p, expected, new) \
+    ({ \
+      typeof(expected) _expected = (expected); \
+      __atomic_compare_exchange_n((p), &(_expected), (new), false, \
+        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+      _expected; \
+    })
+#endif
+
 /******************************************************************************/
 
 /*******************************************************************************
