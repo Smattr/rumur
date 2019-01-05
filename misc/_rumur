@@ -10,6 +10,7 @@ _arguments \
   '--help[display help information]' \
   '--max-errors[number of errors to report before exiting]:count' \
   '--monopolise[use all machine resources]' \
+  {--output,-o}'[path to write C verifier to]:filename:_files' \
   '--output-format[how verifier should print output]: :(machine-readable human-readable)' \
   {--quiet,-q}'[suppress output while generating verifier]' \
   '--sandbox[verifier privilege restriction]: :(on off)' \
