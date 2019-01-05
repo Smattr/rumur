@@ -1371,7 +1371,7 @@ static __attribute__((unused)) void sort(
 
 struct queue_node {
   struct state *s;
-  struct queue_node *next;
+  struct queue_node *_Atomic next;
 };
 
 /******************************************************************************/
@@ -1670,8 +1670,7 @@ retry:;
      */
     {
       struct queue_node *null = NULL;
-      if (!__atomic_compare_exchange_n(&tail->next, &null, n, false,
-          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+      if (!atomic_compare_exchange_strong(&tail->next, &null, n)) {
         /* Failed. Someone else enqueued before we could. */
         unhazard(tail);
         goto retry;
@@ -1695,8 +1694,8 @@ retry:;
          * no other enqueue can proceed and a dequeue will never look into
          * tail->next due to the way it handles the case when head == tail.
          */
-        bool r __attribute__((unused)) = __atomic_compare_exchange_n(&tail->next,
-          &n, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+        bool r __attribute__((unused))
+          = atomic_compare_exchange_strong(&tail->next, &n, NULL);
         assert(r && "undo of write to tail->next failed");
 
         unhazard(tail);
