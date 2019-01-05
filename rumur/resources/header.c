@@ -1541,6 +1541,57 @@ static __attribute__((unused)) void reclaim(struct queue_node *p) {
 /******************************************************************************/
 
 /*******************************************************************************
+ * Double pointers                                                             *
+ *                                                                             *
+ * A scalar type that can store the value of two pointers.                     *
+ ******************************************************************************/
+
+#if __SIZEOF_POINTER__ <= 4
+  typedef uint64_t double_ptr_t;
+#elif __SIZEOF_POINTER__ <= 8
+  typedef unsigned __int128 double_ptr_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for double_ptr_t?"
+#endif
+
+static void *double_ptr_extract1(double_ptr_t p) {
+
+  _Static_assert(sizeof(p) > sizeof(void*), "double_ptr_t is not big enough to "
+    "fit a pointer");
+
+  void *q;
+  memcpy(&q, &p, sizeof(q));
+
+  return q;
+}
+
+static void *double_ptr_extract2(double_ptr_t p) {
+
+  _Static_assert(sizeof(p) >= 2 * sizeof(void*), "double_ptr_t is not big "
+    "enough to fit two pointers");
+
+  void *q;
+  memcpy (&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+
+  return q;
+}
+
+static double_ptr_t double_ptr_make(const void *q1, const void *q2) {
+
+  double_ptr_t p = 0;
+
+  _Static_assert(sizeof(p) >= 2 * sizeof(void*), "double_ptr_t is not big "
+    "enough to fit two pointers");
+
+  memcpy(&p, &q1, sizeof(q1));
+  memcpy((unsigned char*)&p + sizeof(q1), &q2, sizeof(q2));
+
+  return p;
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
  * The following implements a per-thread queue for pending states. The only    *
