@@ -1830,7 +1830,7 @@ retry:;
 
       /* If the current slot contained a state, rehash it and insert it into the
        * new set. Note we don't need to do any state comparisons because we know
-       * everything in the old state is unique.
+       * everything in the old set is unique.
        */
       if (!slot_is_empty(s)) {
         size_t index = set_index(next, state_hash(slot_to_state(s)));
