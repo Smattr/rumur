@@ -59,12 +59,27 @@ target_include_directories(rumur
 target_link_libraries(rumur
   librumur)
 
+# Compress manpages
+add_custom_target(man-rumur
+  ALL
+  DEPENDS rumur.1.gz rumur-run.1.gz)
+add_custom_command(
+  OUTPUT rumur.1.gz
+  COMMAND gzip -9 --no-name --to-stdout doc/rumur.1 >"${CMAKE_CURRENT_BINARY_DIR}/rumur.1.gz"
+  MAIN_DEPENDENCY doc/rumur.1
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(
+  OUTPUT rumur-run.1.gz
+  COMMAND gzip -9 --no-name --to-stdout doc/rumur-run.1 >"${CMAKE_CURRENT_BINARY_DIR}/rumur-run.1.gz"
+  MAIN_DEPENDENCY doc/rumur-run.1
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 install(TARGETS rumur
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(PROGRAMS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/rumur-run
   DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/doc/rumur.1
-  ${CMAKE_CURRENT_SOURCE_DIR}/doc/rumur-run.1
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
+  ${CMAKE_CURRENT_BINARY_DIR}/rumur.1.gz
+  ${CMAKE_CURRENT_BINARY_DIR}/rumur-run.1.gz
+  DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
