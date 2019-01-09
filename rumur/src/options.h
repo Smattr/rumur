@@ -43,39 +43,39 @@ enum symmetry_reduction_t {
 };
 
 struct Options {
-  bool overflow_checks;
-  unsigned long threads;
-  log_level_t log_level;
-  size_t set_capacity;
+  bool overflow_checks = true;
+  unsigned long threads = 0;
+  log_level_t log_level = WARNINGS;
+  size_t set_capacity = 8 * 1024 * 1024;
 
   /* Limit (percentage occupancy) at which we expand the capacity of the state
    * set.
    */
-  unsigned long set_expand_threshold;
+  unsigned long set_expand_threshold = 65;
 
   // Whether to use ANSI colour codes in the checker's output.
-  tristate color;
+  tristate color = AUTO;
 
   // Bitmask of enabled tracing
-  uint64_t traces;
+  uint64_t traces = 0;
 
   // Deadlock detection enabled?
-  deadlock_detection_t deadlock_detection;
+  deadlock_detection_t deadlock_detection = DEADLOCK_DETECTION_STUTTERING;
 
   // Symmetry reduction enabled?
-  symmetry_reduction_t symmetry_reduction;
+  symmetry_reduction_t symmetry_reduction = SYMMETRY_REDUCTION_HEURISTIC;
 
   // Use OS mechanisms to sandbox the checker?
-  bool sandbox_enabled;
+  bool sandbox_enabled = false;
 
   // Number of errors to report before exiting.
-  unsigned long max_errors;
+  unsigned long max_errors = 1;
 
   // How to print counterexample traces
-  counterexample_trace_t counterexample_trace;
+  counterexample_trace_t counterexample_trace = DIFF;
 
   // Print output as XML?
-  bool machine_readable_output;
+  bool machine_readable_output = false;
 };
 
 extern Options options;
