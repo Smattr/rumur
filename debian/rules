@@ -10,5 +10,8 @@ export DH_OPTIONS
 # Enable all hardening compiler flags (-D_FORTIFY_SOURCE=2 -Wl,-z,now ...)
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
+# Set a consistent locale to enable reproducible builds
+export LC_ALL=C.UTF-8
+
 %:
 	dh $@ --with python2,python3
