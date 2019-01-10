@@ -118,7 +118,7 @@ struct If : public Stmt {
   std::vector<IfClause> clauses;
 
   If(const std::vector<IfClause> &clauses_, const location &loc_);
-  virtual ~If() = default;;
+  virtual ~If() = default;
   If *clone() const final;
 
   bool operator==(const Node &other) const final;
