@@ -1,6 +1,36 @@
 Change log
 ==========
 
+v2019.01.12
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: an issue that could have led to the corruption of reference-counted
+  pointers in the checker was addressed (commit
+  04fede03a59624f3c08ee7b80d8f928dfc1e45be).
+* The licence has been changed from the vague "public domain" to the Unlicense.
+  This is just a clarification and does not indicate a change in the licensing
+  intent (commit 592e0c62ff9b1b7bf1bada4e41fa058d2d669ab8).
+* All Python components now work with Python 2 in addition to Python 3 (commits
+  f04b1442af0b30581b17fc517aeecce99bd8f1ef,
+  de4fcd64ed20b128e7dceb44dd57b757e15096c5).
+* ``rumur-run`` and ``rumur-ast-dump`` now have accompanying manpages (commits
+  fe484a28ac3f77766b7de30569c85350b499ffbd,
+  3c2ba659f36e6b4cbedb8fd35b7f5c0f0af3be65).
+* A Zsh completion script was added (commit
+  aac9e7718f3849b66932e375d673ea6b80547ff8).
+* Missing documentation for the ``--output`` option was added (commit
+  3047fb45f4a1aee9c5064ee9bb260df25bf72c8e).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A RelaxNG schema was added for the format produced by the AST dumper (commit
+  36d26f6c327dbbd541537ad12d07636aba55f502).
+* Rumur should now be compilable with ``-pedantic`` in most environments
+  (commits b4ef8c0e8bcc1af2a1afd00204e2df735928488f,
+  526afa1fb9e00bb159caf8ce49f83e40c571f747).
+
 v2018.12.20
 -----------
 
