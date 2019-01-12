@@ -221,5 +221,5 @@ script:
   - cd build
   - cmake -DCMAKE_INSTALL_PREFIX=install ..
   - cmake --build .
-  - travis_wait 30 ../tests/integration-tests.py --verbose
+  - travis_wait 60 ../tests/integration-tests.py --verbose
   - cmake --build . -- install
