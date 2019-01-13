@@ -2,6 +2,9 @@
 
 # Test the Debian packaging infrastructure (../debian/)
 
+# Reminder about updating ../debian/changelog: Pass --date=rfc2822 to git-log to
+# get the commit dates in the right format for Debian packaging.
+
 if [[ "$(uname -v)" != *"Debian"* ]]; then
   printf 'This script is only intended to run on Debian\n' >&2
   exit 1
