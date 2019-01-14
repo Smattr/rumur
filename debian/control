@@ -5,6 +5,7 @@ Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
 Build-Depends: debhelper (>= 10)
  , bison (>= 3.0)
  , cmake (>= 3.1)
+ , dh-python
  , flex (>= 2.5.35)
  , libgmp-dev
  , python (>= 2.7)
