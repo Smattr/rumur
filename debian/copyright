@@ -1,4 +1,4 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: rumur
 Upstream-Contact: Matthew Fernandez <matthew.fernandez@gmail.com>
 Source: https://github.com/Smattr/rumur
