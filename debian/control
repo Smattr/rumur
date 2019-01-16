@@ -14,6 +14,7 @@ Standards-Version: 4.3.0
 Homepage: https://github.com/Smattr/rumur
 Vcs-Git: https://github.com/Smattr/rumur.git
 Vcs-Browser: https://github.com/Smattr/rumur.git
+Rules-Requires-Root: no
 
 Package: rumur
 Architecture: any
