@@ -20,8 +20,18 @@
 #     progress_indicator = 2
 #     allowed_distributions = .*
 
-if [[ "$(uname -v)" != *"Debian"* ]]; then
-  printf 'This script is only intended to run on Debian\n' >&2
+if [ "$(uname -s)" != "Linux" ]; then
+  printf 'This script is only intended to run on Linux (Debian unstable)\n' >&2
+  exit 1
+fi
+
+if [ "$(lsb_release --id | cut -d "	" -f2)" != "Debian" ]; then
+  printf 'This script is only intended to run on Debian unstable\n' >&2
+  exit 1
+fi
+
+if [ "$(lsb_release --release | cut -d "	" -f2)" != "unstable" ]; then
+  printf 'This script is only intended to run on Debian unstable\n' >&2
   exit 1
 fi
 
