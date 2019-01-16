@@ -2,14 +2,14 @@ Source: rumur
 Section: devel
 Priority: optional
 Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
-Build-Depends: debhelper-compat (= 12)
- , bison (>= 3.0)
- , cmake (>= 3.1)
- , dh-python
- , flex (>= 2.5.35)
- , libgmp-dev
- , python (>= 2.7)
- , python3
+Build-Depends: debhelper-compat (= 12),
+ bison (>= 3.0),
+ cmake (>= 3.1),
+ dh-python,
+ flex (>= 2.5.35),
+ libgmp-dev,
+ python (>= 2.7),
+ python3
 Standards-Version: 4.3.0
 Homepage: https://github.com/Smattr/rumur
 Vcs-Git: https://github.com/Smattr/rumur.git
