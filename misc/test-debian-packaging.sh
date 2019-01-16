@@ -2,8 +2,23 @@
 
 # Test the Debian packaging infrastructure (../debian/)
 
-# Reminder about updating ../debian/changelog: Pass --date=rfc2822 to git-log to
-# get the commit dates in the right format for Debian packaging.
+# Some relevant notes for Debian packaging:
+#   * Pass --date=rfc2822 to git-log to get the commit dates in the right format
+#     for Debian packaging.
+#   * After successful packaging, sign the release with
+#     `debsign ../rumur_<version>_<arch>.changes`.
+#   * Upload the package to mentors.debian.net with
+#     `dput mentors ../rumur_<version>_<arch>.changes`.
+#
+# For uploading to mentors.debian.net, you will need ~/.dput.cf configured:
+#
+#   [mentors]
+#     fqdn = mentors.debian.net
+#     incoming = /upload
+#     method = https
+#     allow_unsigned_uploads = 0
+#     progress_indicator = 2
+#     allowed_distributions = .*
 
 if [[ "$(uname -v)" != *"Debian"* ]]; then
   printf 'This script is only intended to run on Debian\n' >&2
