@@ -11,4 +11,4 @@ export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 export LC_ALL=C.UTF-8
 
 %:
-	dh $@ --with python2,python3
+	dh $@
