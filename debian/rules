@@ -4,9 +4,6 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# This has to be exported to make some magic below work.
-export DH_OPTIONS
-
 # Enable all hardening compiler flags (-D_FORTIFY_SOURCE=2 -Wl,-z,now ...)
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
