@@ -1,5 +1,5 @@
-rumur (2019.01.12) UNRELEASED; urgency=medium
+rumur (2019.01.12-1) UNRELEASED; urgency=medium
 
-  * Initial release
+  * Initial release. Closes: #919220.
 
- -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sat, 12 Jan 2019 13:43:05 -0800
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Wed, 16 Jan 2019 22:31:00 -0800

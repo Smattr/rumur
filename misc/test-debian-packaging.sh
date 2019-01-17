@@ -45,7 +45,7 @@ set -e
 set -x
 
 # Build the package from scratch
-dpkg-buildpackage -us -uc
+gbp buildpackage --git-ignore-new --git-upstream-tag='v%(version)s' --git-debian-branch=packaging/debian
 
 # Check for consistency errors in the built package
 lintian -i -I --show-overrides
