@@ -38,15 +38,22 @@ def get_tag():
     with open(os.devnull, 'wt') as f:
       tag = subprocess.check_output(['git', 'describe', '--tags'], stderr=f)
   except subprocess.CalledProcessError:
-    tag = None
+    return None
 
   if tag is not None:
     tag = tag.decode('utf-8', 'replace').strip()
-    if re.match(r'v[\d\.-]+$', tag) is None:
-      # Not a version tag.
-      tag = None
 
-  return tag
+    # Look for a native version tag.
+    m = re.match(r'v[\d\.]+$', tag)
+    if m is not None:
+      return tag
+
+    # Look for a Debian version tag.
+    m = re.match(r'debian/([\d\.-]+)$', tag)
+    if m is not None:
+      return 'v{}'.format(m.group(1))
+
+  return None
 
 def get_sha():
   '''
