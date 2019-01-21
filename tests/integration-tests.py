@@ -68,6 +68,7 @@ def test_template(self, model, optimised, debug, valgrind, xml):
     'ld_flags':None, # Flags to pass to cc last.
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
+    'checker_output':None, # Regex to search checker's stdout against.
   }
 
   option.update(parse_test_options(model))
@@ -130,6 +131,13 @@ def test_template(self, model, optimised, debug, valgrind, xml):
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['checker_exit_code'])
+
+    # If the test has a stdout expectation, check that now.
+    if not xml and option['checker_output'] is not None:
+      if option['checker_output'].search(stdout) is None:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertIsNotNone(option['checker_output'].search(stdout))
 
     if xml:
       # See if we have xmllint
