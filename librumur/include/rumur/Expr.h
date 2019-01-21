@@ -431,6 +431,9 @@ struct Quantifier : public Node {
    * returns true)
    */
   mpz_class count() const;
+
+  // get the lower bound of this quantified expression as a C expression
+  std::string lower_bound() const;
 };
 
 struct Exists : public Expr {

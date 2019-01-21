@@ -963,6 +963,20 @@ mpz_class Quantifier::count() const {
   return c;
 }
 
+std::string Quantifier::lower_bound() const {
+
+  if (!constant())
+    throw Error("non-constant quantifier has a lower bound that cannot be "
+      "calculated ahead of time", loc);
+
+  if (type != nullptr)
+    return type->lower_bound();
+
+  assert(from != nullptr && "quantifier with null type and null lower bound");
+
+  return "VALUE_C(" + from->constant_fold().get_str() + ")";
+}
+
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
