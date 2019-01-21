@@ -592,6 +592,8 @@ void generate_model(std::ostream &out, const Model &m) {
       << "  } else {\n"
       << "    uint64_t rule_taken = 1;\n";
 
+    mpz_class base = 1;
+
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (isa<SimpleRule>(r)) {
@@ -601,15 +603,8 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const Quantifier &q : r->quantifiers)
           generate_quantifier_header(out, q);
 
-        out << "      rule_taken++;\n";
-
-        // Close the quantifier loops.
-        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
-          generate_quantifier_footer(out, *it);
-        out << "    }\n";
-
         out
-          << "  if (s->rule_taken <= rule_taken) {\n"
+          << "  if (s->rule_taken == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
           << "      char *escaped_name = xml_escape(\""
@@ -619,12 +614,42 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      free(escaped_name);\n"
           << "      printf(\"</transition>\\n\");\n"
           << "    } else {\n"
-          << "      printf(\"Rule %s fired.\\n\", \""
+          << "      printf(\"Rule %s\", \""
             << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n"
+            << "\");\n";
+        size_t i = 0;
+        for (const Quantifier &q : r->quantifiers) {
+          out << "      printf(\", %s: %\" PRIVAL, \"" << q.name
+            << "\", (value_t)((rule_taken - " << base << ") / (1";
+          size_t j = r->quantifiers.size() - 1;
+          for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
+            if (i == j)
+              break;
+            out << " * " << it->count();
+            j--;
+          }
+          out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n";
+          i++;
+        }
+        out
+          << "      printf(\" fired.\\n\");\n"
           << "    }\n"
           << "    return;\n"
           << "  }\n";
+
+        out << "      rule_taken++;\n";
+
+        // Close the quantifier loops.
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          generate_quantifier_footer(out, *it);
+        out << "    }\n";
+
+        // update base for future comparison against rule_taken
+        mpz_class inc = 1;
+        for (const Quantifier &q : r->quantifiers) {
+          inc *= q.count();
+        }
+        base += inc;
 
         index++;
       }
