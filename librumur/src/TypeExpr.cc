@@ -53,6 +53,13 @@ mpz_class TypeExpr::width() const {
   return bits;
 }
 
+bool TypeExpr::constant() const {
+  assert(!is_simple() && "TypeExpr::constant invoked for simple type; missing "
+    "TypeExpr::constant override?");
+
+  throw Error("complex types do not have bounds to query", loc);
+}
+
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
   const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
@@ -116,6 +123,10 @@ std::string Range::to_string() const {
   return min->to_string() + ".." + max->to_string();
 }
 
+bool Range::constant() const {
+  return min->constant() && max->constant();
+}
+
 Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_):
   TypeExpr(loc_), bound(bound_) { }
 
@@ -163,6 +174,10 @@ std::string Scalarset::upper_bound() const {
 
 std::string Scalarset::to_string() const {
   return "scalarset(" + bound->to_string() + ")";
+}
+
+bool Scalarset::constant() const {
+  return bound->constant();
 }
 
 Enum::Enum(const std::vector<std::pair<std::string, location>> &members_,
@@ -225,6 +240,11 @@ std::string Enum::to_string() const {
     first = false;
   }
   return s + " }";
+}
+
+bool Enum::constant() const {
+  // enums always have a known constant bound
+  return true;
 }
 
 Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
@@ -398,6 +418,12 @@ std::string TypeExprID::upper_bound() const {
 
 std::string TypeExprID::to_string() const {
   return name;
+}
+
+bool TypeExprID::constant() const {
+  if (referent == nullptr)
+    throw Error("unresolved type symbol \"" + name + "\"", loc);
+  return referent->constant();
 }
 
 bool types_equatable(const TypeExpr *t1, const TypeExpr *t2) {
