@@ -919,6 +919,26 @@ std::string Quantifier::to_string() const {
   return name + " : " + type->to_string();
 }
 
+bool Quantifier::constant() const {
+
+  if (type != nullptr) {
+    assert(type->is_simple() && "complex type used in quantifier");
+    if (!type->constant())
+      return false;
+  }
+
+  if (from != nullptr && !from->constant())
+    return false;
+
+  if (to != nullptr && !to->constant())
+    return false;
+
+  if (step != nullptr && !step->constant())
+    return false;
+
+  return true;
+}
+
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }

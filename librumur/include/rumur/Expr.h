@@ -423,6 +423,9 @@ struct Quantifier : public Node {
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const;
+
+  // whether the quantifier's range can be constant folded
+  bool constant() const;
 };
 
 struct Exists : public Expr {
