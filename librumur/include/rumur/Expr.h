@@ -426,6 +426,11 @@ struct Quantifier : public Node {
 
   // whether the quantifier's range can be constant folded
   bool constant() const;
+
+  /* number of entries in this quantifier's range (only valid when constant()
+   * returns true)
+   */
+  mpz_class count() const;
 };
 
 struct Exists : public Expr {

@@ -939,6 +939,30 @@ bool Quantifier::constant() const {
   return true;
 }
 
+mpz_class Quantifier::count() const {
+
+  if (!constant())
+    throw Error("non-constant quantifier is uncountable", loc);
+
+  if (type != nullptr) {
+    // subtract 1 because quantified variable can never be 'undefined'
+    return type->count() - 1;
+  }
+
+  assert(from != nullptr && to != nullptr && "quantifier with null type and "
+    "bounds");
+
+  mpz_class lb = from->constant_fold();
+  mpz_class ub = to->constant_fold();
+  mpz_class inc = step == nullptr ? 1 : step->constant_fold();
+
+  mpz_class c = 0;
+  for (mpz_class i = lb; i <= ub; i += inc)
+    c++;
+
+  return c;
+}
+
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
