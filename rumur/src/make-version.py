@@ -42,7 +42,7 @@ def get_tag():
 
   if tag is not None:
     tag = tag.decode('utf-8', 'replace').strip()
-    if re.match(r'v[\d\.-]+$', tag) is None:
+    if re.match(r'v[\d\.]+$', tag) is None:
       # Not a version tag.
       tag = None
 
@@ -92,13 +92,16 @@ def main(args):
 
   version = None
 
-  # First, look for a version tag on the current commit.
+  # first, look for an environment variable that overrides other version sources
+  version = os.environ.get('RUMUR_VERSION')
+
+  # second, look for a version tag on the current commit
   if version is None and has_git():
     tag = get_tag()
     if tag is not None:
       version = '{}{}'.format(tag, ' (dirty)' if is_dirty() else '')
 
-  # Second, look for the commit hash as the version.
+  # third, look for the commit hash as the version
   if version is None and has_git():
     rev = get_sha()
     assert rev is not None
