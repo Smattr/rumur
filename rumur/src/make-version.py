@@ -42,7 +42,7 @@ def get_tag():
 
   if tag is not None:
     tag = tag.decode('utf-8', 'replace').strip()
-    if re.match(r'v[\d\.-]+$', tag) is None:
+    if re.match(r'v[\d\.]+$', tag) is None:
       # Not a version tag.
       tag = None
 
