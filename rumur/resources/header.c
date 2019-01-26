@@ -1118,6 +1118,33 @@ static __attribute__((unused)) void handle_copy(struct handle a,
   }
 }
 
+static __attribute__((unused)) bool handle_eq(struct handle a,
+    struct handle b) {
+
+  ASSERT(a.width == b.width && "comparing handles of different sizes");
+
+  /* FIXME: as with handle_copy, we do a bit-by-bit comparison which could be
+   * made more efficient.
+   */
+
+  for (size_t i = 0; i < a.width; i++) {
+
+    uint8_t *x = a.base + (a.offset + i) / 8;
+    size_t x_off = (a.offset + i) % 8;
+    bool x_bit = (*x >> x_off) & 0x1;
+
+    const uint8_t *y = b.base + (b.offset + i) / 8;
+    size_t y_off = (b.offset + i) % 8;
+    bool y_bit = (*y >> y_off) & 0x1;
+
+    if (x_bit != y_bit) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   size_t offset, size_t width) {
 
