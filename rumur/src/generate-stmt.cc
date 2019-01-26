@@ -161,6 +161,18 @@ class Generator : public ConstStmtTraversal {
        */
       bool needs_bracketing = !isa<BinaryExpr>(c.condition);
 
+      // equality comparison with complex types does not cause double bracketing
+      if (c.condition != nullptr) {
+        if (auto e = dynamic_cast<const Eq*>(&*c.condition)) {
+          if (e->lhs->type() != nullptr && !e->lhs->type()->is_simple())
+            needs_bracketing = true;
+        }
+        if (auto e = dynamic_cast<const Neq*>(&*c.condition)) {
+          if (e->lhs->type() != nullptr && !e->lhs->type()->is_simple())
+            needs_bracketing = true;
+        }
+      }
+
       if (!first)
         *out << "else ";
       if (c.condition != nullptr) {
