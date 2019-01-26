@@ -467,17 +467,7 @@ bool types_equatable(const TypeExpr *t1, const TypeExpr *t2) {
       return true;
   }
 
-  if (auto e1 = dynamic_cast<const Enum*>(t1)) {
-    if (auto e2 = dynamic_cast<const Enum*>(t2))
-      return *e1 == *e2;
-  }
-
-  if (auto s1 = dynamic_cast<const Scalarset*>(t1)) {
-    if (auto s2 = dynamic_cast<const Scalarset*>(t2))
-      return *s1 == *s2;
-  }
-
-  return false;
+  return *t1 == *t2;
 }
 
 }
