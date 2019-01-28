@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
+#include <string>
 #include "symmetry-reduction.h"
 #include "utils.h"
 #include <vector>
@@ -260,7 +261,8 @@ void generate_model(std::ostream &out, const Model &m) {
           for (const Quantifier &q : r->quantifiers)
             out << ", ru_" << q.name;
           out << ")) {\n"
-            << "      error(s, false, \"failed invariant\");\n"
+            << "      error(s, false, \"invariant "
+              << (p->name == "" ? std::to_string(index + 1) : "\\\"" + p->name + "\\\"") << " failed\");\n"
             << "    }\n";
 
           // Close the quantifier loops.
