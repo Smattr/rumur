@@ -34,7 +34,7 @@ const
   /* Number of queue nodes available for allocation. Indirectly, this would be
    * something like the available heap memory.
    */
-  QUEUE_NODES: 3
+  QUEUE_NODES: 4
 
   -- a value indicating an invalid queue node
   NULL: -1
