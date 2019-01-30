@@ -296,7 +296,7 @@ ruleset thread_id: thread_id_t do
 
     ruleset queue_id: queue_id_t do
       alias
-        n: thread_locals[thread_id].enqueue_locals.n;
+        n: thread_locals[thread_id].enqueue_locals.n
       do
         rule "enqueue start"
           pc = IDLE ==>
@@ -317,13 +317,13 @@ ruleset thread_id: thread_id_t do
     end
 
     alias
-      ends:       thread_locals[thread_id].enqueue_locals.ends;
-      ends_check: thread_locals[thread_id].enqueue_locals.ends_check;
-      head:       thread_locals[thread_id].enqueue_locals.ends.head;
-      n:          thread_locals[thread_id].enqueue_locals.n;
-      new:        thread_locals[thread_id].enqueue_locals.new;
-      queue_id:   thread_locals[thread_id].enqueue_locals.queue_id;
-      tail:       thread_locals[thread_id].enqueue_locals.ends.tail;
+      ends:       thread_locals[thread_id].enqueue_locals.ends
+      ends_check: thread_locals[thread_id].enqueue_locals.ends_check
+      head:       thread_locals[thread_id].enqueue_locals.ends.head
+      n:          thread_locals[thread_id].enqueue_locals.n
+      new:        thread_locals[thread_id].enqueue_locals.new
+      queue_id:   thread_locals[thread_id].enqueue_locals.queue_id
+      tail:       thread_locals[thread_id].enqueue_locals.ends.tail
     do
 
       rule "enqueue block 2"
@@ -448,12 +448,12 @@ ruleset thread_id: thread_id_t do
     end
 
     alias
-      ends:       thread_locals[thread_id].dequeue_locals.ends;
-      head:       thread_locals[thread_id].dequeue_locals.ends.head;
-      tail:       thread_locals[thread_id].dequeue_locals.ends.tail;
-      queue_id:   thread_locals[thread_id].dequeue_locals.queue_id;
-      attempts:   thread_locals[thread_id].dequeue_locals.attempts;
-      ends_check: thread_locals[thread_id].dequeue_locals.ends_check;
+      ends:       thread_locals[thread_id].dequeue_locals.ends
+      head:       thread_locals[thread_id].dequeue_locals.ends.head
+      tail:       thread_locals[thread_id].dequeue_locals.ends.tail
+      queue_id:   thread_locals[thread_id].dequeue_locals.queue_id
+      attempts:   thread_locals[thread_id].dequeue_locals.attempts
+      ends_check: thread_locals[thread_id].dequeue_locals.ends_check
       new:        thread_locals[thread_id].dequeue_locals.new
     do
 
@@ -541,10 +541,10 @@ ruleset thread_id: thread_id_t do
     end
 
     alias
-      head:     thread_locals[thread_id].dequeue_locals.ends.head;
-      i:        thread_locals[thread_id].reclaim_locals.i;
-      j:        thread_locals[thread_id].reclaim_locals.j;
-      conflict: thread_locals[thread_id].reclaim_locals.conflict;
+      head:     thread_locals[thread_id].dequeue_locals.ends.head
+      i:        thread_locals[thread_id].reclaim_locals.i
+      j:        thread_locals[thread_id].reclaim_locals.j
+      conflict: thread_locals[thread_id].reclaim_locals.conflict
       deferred: thread_locals[thread_id].deferred
     do
 
