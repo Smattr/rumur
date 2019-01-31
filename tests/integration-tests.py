@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
+import xml.etree.ElementTree as ET
 
 RUMUR_BIN = os.path.abspath(os.environ.get('RUMUR', 'rumur/rumur'))
 RUMUR_AST_DUMP_BIN = os.path.abspath(os.environ.get('RUMUR_AST_DUMP',
@@ -197,12 +198,14 @@ def test_ast_dumper_template(self, model, valgrind):
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
 
-def test_cmurphi_example_template(self, model, outcome):
+def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
+    states=None):
 
   with TemporaryDirectory() as tmp:
 
     model_c = os.path.join(tmp, 'model.c')
-    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model])
+    ret, stdout, stderr = run([RUMUR_BIN, '--output-format', 'machine-readable',
+      '--output', model_c, model])
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
@@ -224,6 +227,20 @@ def test_cmurphi_example_template(self, model, outcome):
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret == 0, outcome)
+
+    # parse the XML output if we're expecting a particular result
+    if rules_fired is not None or states is not None:
+      xml = ET.fromstring(stdout)
+
+      # check we got the expected number of rules fired
+      if rules_fired is not None:
+        r = int(xml.find('./summary').get('rules_fired'))
+        self.assertEqual(r, rules_fired)
+
+      # check we got the expected number of states explored
+      if states is not None:
+        s = int(xml.find('./summary').get('states'))
+        self.assertEqual(s, states)
 
 def test_ast_dumper_cmurphi_example_template(self, model):
 
