@@ -340,28 +340,28 @@ def main(argv):
   if CMURPHI_DIR is not None:
 
     models = (
-      # (Model path,           expected to pass?)
-      ('ex/mux/2_peterson.m',  True),
-      ('ex/mux/dek.m',         True),
-      ('ex/mux/mcslock1.m',    True),
-      ('ex/mux/mcslock2.m',    True),
-      ('ex/mux/n_peterson.m',  True),
-      ('ex/others/abp.m',      True),
-      ('ex/others/arbiter.m',  False),
-      ('ex/others/dp4.m',      True),
-      ('ex/others/dpnew.m',    False),
-      ('ex/sym/mcslock1.m',    True),
-      ('ex/sym/mcslock2.m',    True),
-      ('ex/sym/n_peterson.m',  True),
-      ('ex/tmp/scalarset.m',   False),
-      ('ex/toy/down.m',        False),
-      ('ex/toy/lin.m',         False),
-      ('ex/toy/pingpong.m',    True),
-      ('ex/toy/sets.m',        False),
-      ('ex/toy/sort5.m',       False),
+      # (Model path,           expected to pass?  expected rules  expected states)
+      ('ex/mux/2_peterson.m',  True,              26,             13),
+      ('ex/mux/dek.m',         True,              200,            100),
+      ('ex/mux/mcslock1.m',    True,              None,           None),
+      ('ex/mux/mcslock2.m',    True,              None,           None),
+      ('ex/mux/n_peterson.m',  True,              None,           None),
+      ('ex/others/abp.m',      True,              176,            80),
+      ('ex/others/arbiter.m',  False,             None,           None),
+      ('ex/others/dp4.m',      True,              672,            112),
+      ('ex/others/dpnew.m',    False,             None,           None),
+      ('ex/sym/mcslock1.m',    True,              None,           None),
+      ('ex/sym/mcslock2.m',    True,              None,           None),
+      ('ex/sym/n_peterson.m',  True,              None,           None),
+      ('ex/tmp/scalarset.m',   False,             None,           None),
+      ('ex/toy/down.m',        False,             None,           None),
+      ('ex/toy/lin.m',         False,             None,           None),
+      ('ex/toy/pingpong.m',    True,              6,              4),
+      ('ex/toy/sets.m',        False,             None,           None),
+      ('ex/toy/sort5.m',       False,             None,           None),
     )
 
-    for path, outcome in models:
+    for path, outcome, rules, states in models:
       fullpath = os.path.abspath(os.path.join(CMURPHI_DIR, path))
 
       test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
@@ -370,8 +370,8 @@ def main(argv):
         raise Exception('{} collides with an existing test name'.format(path))
 
       setattr(Tests, test_name,
-        lambda self, model=fullpath, outcome=outcome:
-          test_cmurphi_example_template(self, model, outcome))
+        lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
+          test_cmurphi_example_template(self, model, outcome, rules, states))
 
       test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_cmurphi_example_{}'
         .format(path))
