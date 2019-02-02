@@ -67,7 +67,10 @@ typedef int64_t value_t;
  */
 #ifndef NDEBUG
   #define ASSERT(expr) assert(expr)
+#elif defined(__clang__)
+  #define ASSERT(expr) __builtin_assume(expr)
 #else
+  /* GCC doesn't have __builtin_assume, so we need something else. */
   #define ASSERT(expr) \
     do { \
       /* The following is an idiom for teaching the compiler an assumption. */ \
