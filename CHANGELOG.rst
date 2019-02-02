@@ -1,6 +1,33 @@
 Change log
 ==========
 
+v2019.02.01
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The values of ruleset parameters are reported in counter-example traces
+  (commits 37f742797d8c76523607f90e80a5d1cc0ff16226,
+  f7a8b012bfce555f156d1682cfd1073e8ccfe462,
+  ee2d85200708cc70c2df056409d3da1283da2218).
+* The name of a failing invariant is given in the failure message (commit
+  60e864ccd8abefd617f21af4e1a78c53d1a3a66e).
+* Comparison of complex types using ``=`` or ``!=`` is supported in models
+  (commits 107f6c4ac88ce4e2c6745507aa332aa17dfd3264,
+  bbd3beebb6ce0a51475a241eff45d7c2a223bcbb).
+* ``rumur-run`` passes ``-march=native -mtune=native`` to the C compiler (commit
+  ad9e26bfafb1cdf3877f46dd31b4072e1efffb5d).
+* Rulesets with non-constant parameters are rejected (commit
+  90810e214e7fa200d683f4ee4b79ef489d9e3d34).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Various new interfaces were added to types and quantifiers (commits
+  6ea740ec2f6518733a626805af6b0f7275fc9b86,
+  41e01629c30293dc91dd460d0286b74763eba387,
+  aea30d24234777a0b0698c1ce6f28f8267b15d9f,
+  154885bac4950b70c80620566e37d5a2890d317e).
+
 v2019.01.12
 -----------
 
