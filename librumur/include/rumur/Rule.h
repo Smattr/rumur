@@ -91,6 +91,7 @@ struct Ruleset : public Rule {
   virtual ~Ruleset() = default;
   Ruleset *clone() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
 
   std::vector<Ptr<Rule>> flatten() const final;
 };

@@ -206,12 +206,20 @@ bool Ruleset::operator==(const Node &other) const {
   return true;
 }
 
+void Ruleset::validate() const {
+  for (const Quantifier &q : quantifiers) {
+    if (!q.constant())
+      throw Error("non-constant quantifier expression as ruleset parameter",
+        q.loc);
+  }
+}
+
 std::vector<Ptr<Rule>> Ruleset::flatten() const {
   std::vector<Ptr<Rule>> rs;
   for (const Ptr<Rule> &r : rules) {
     for (Ptr<Rule> &f : r->flatten()) {
       for (const Quantifier &q : quantifiers)
-        f->quantifiers.insert(f->quantifiers.begin(), q);
+        f->quantifiers.push_back(q);
       rs.push_back(f);
     }
   }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
+#include <string>
 #include "symmetry-reduction.h"
 #include "utils.h"
 #include <vector>
@@ -260,7 +261,8 @@ void generate_model(std::ostream &out, const Model &m) {
           for (const Quantifier &q : r->quantifiers)
             out << ", ru_" << q.name;
           out << ")) {\n"
-            << "      error(s, false, \"failed invariant\");\n"
+            << "      error(s, false, \"invariant "
+              << (p->name == "" ? std::to_string(index + 1) : "\\\"" + p->name + "\\\"") << " failed\");\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -548,6 +550,8 @@ void generate_model(std::ostream &out, const Model &m) {
       << "  if (s->previous == NULL) {\n"
       << "    uint64_t rule_taken = 1;\n";
 
+    mpz_class base = 1;
+
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (isa<StartState>(r)) {
@@ -557,6 +561,63 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const Quantifier &q : r->quantifiers)
           generate_quantifier_header(out, q);
 
+        out
+          << "  if (s->rule_taken == rule_taken) {\n"
+          << "    if (MACHINE_READABLE_OUTPUT) {\n"
+          << "      printf(\"<transition>\");\n"
+          << "      char *escaped_name = xml_escape(\""
+            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "      printf(\"%s\", escaped_name);\n"
+          << "      free(escaped_name);\n";
+        {
+          size_t i = 0;
+          for (const Quantifier &q : r->quantifiers) {
+            out
+              << "      escaped_name = xml_escape(\"" + q.name + "\");\n"
+              << "      printf(\"<parameter name=\\\"%s\\\">%\" PRIVAL "
+                "\"</parameter>\", escaped_name, (value_t)((rule_taken - " << base
+                << ") / (1";
+            size_t j = r->quantifiers.size() - 1;
+            for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
+              if (i == j)
+                break;
+              out << " * " << it->count();
+              j--;
+            }
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n"
+              << "      free(escaped_name);\n";
+            i++;
+          }
+        }
+        out
+          << "      printf(\"</transition>\\n\");\n"
+          << "    } else {\n"
+          << "      printf(\"Startstate %s\", \""
+            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+            << "\");\n";
+        {
+          size_t i = 0;
+          for (const Quantifier &q : r->quantifiers) {
+            out << "      printf(\", %s: %\" PRIVAL, \"" << q.name
+              << "\", (value_t)((rule_taken - " << base << ") / (1";
+            size_t j = r->quantifiers.size() - 1;
+            for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
+              if (i == j)
+                break;
+              out << " * " << it->count();
+              j--;
+            }
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n";
+            i++;
+          }
+        }
+        out
+          << "      printf(\" fired.\\n\");\n"
+          << "    }\n"
+          << "    return;\n"
+          << "  }\n";
+
         out << "      rule_taken++;\n";
 
         // Close the quantifier loops.
@@ -564,23 +625,12 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_quantifier_footer(out, *it);
         out << "    }\n";
 
-        out
-          << "  if (s->rule_taken <= rule_taken) {\n"
-          << "    if (MACHINE_READABLE_OUTPUT) {\n"
-          << "      printf(\"<transition>\");\n"
-          << "      char *escaped_name = xml_escape(\""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "      printf(\"%s\", escaped_name);\n"
-          << "      free(escaped_name);\n"
-          << "      printf(\"</transition>\\n\");\n"
-          << "    } else {\n"
-          << "      printf(\"Startstate %s fired.\\n\", \""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "    }\n"
-          << "    return;\n"
-          << "  }\n";
+        // update base for future comparison against rule_taken
+        mpz_class inc = 1;
+        for (const Quantifier &q : r->quantifiers) {
+          inc *= q.count();
+        }
+        base += inc;
 
         index++;
       }
@@ -592,6 +642,8 @@ void generate_model(std::ostream &out, const Model &m) {
       << "  } else {\n"
       << "    uint64_t rule_taken = 1;\n";
 
+    mpz_class base = 1;
+
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (isa<SimpleRule>(r)) {
@@ -601,6 +653,63 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const Quantifier &q : r->quantifiers)
           generate_quantifier_header(out, q);
 
+        out
+          << "  if (s->rule_taken == rule_taken) {\n"
+          << "    if (MACHINE_READABLE_OUTPUT) {\n"
+          << "      printf(\"<transition>\");\n"
+          << "      char *escaped_name = xml_escape(\""
+            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "      printf(\"%s\", escaped_name);\n"
+          << "      free(escaped_name);\n";
+        {
+          size_t i = 0;
+          for (const Quantifier &q : r->quantifiers) {
+            out
+              << "      escaped_name = xml_escape(\"" + q.name + "\");\n"
+              << "      printf(\"<parameter name=\\\"%s\\\">%\" PRIVAL "
+                "\"</parameter>\", escaped_name, (value_t)((rule_taken - " << base
+                << ") / (1";
+            size_t j = r->quantifiers.size() - 1;
+            for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
+              if (i == j)
+                break;
+              out << " * " << it->count();
+              j--;
+            }
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n"
+              << "      free(escaped_name);\n";
+            i++;
+          }
+        }
+        out
+          << "      printf(\"</transition>\\n\");\n"
+          << "    } else {\n"
+          << "      printf(\"Rule %s\", \""
+            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+            << "\");\n";
+        {
+          size_t i = 0;
+          for (const Quantifier &q : r->quantifiers) {
+            out << "      printf(\", %s: %\" PRIVAL, \"" << q.name
+              << "\", (value_t)((rule_taken - " << base << ") / (1";
+            size_t j = r->quantifiers.size() - 1;
+            for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
+              if (i == j)
+                break;
+              out << " * " << it->count();
+              j--;
+            }
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n";
+            i++;
+          }
+        }
+        out
+          << "      printf(\" fired.\\n\");\n"
+          << "    }\n"
+          << "    return;\n"
+          << "  }\n";
+
         out << "      rule_taken++;\n";
 
         // Close the quantifier loops.
@@ -608,23 +717,12 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_quantifier_footer(out, *it);
         out << "    }\n";
 
-        out
-          << "  if (s->rule_taken <= rule_taken) {\n"
-          << "    if (MACHINE_READABLE_OUTPUT) {\n"
-          << "      printf(\"<transition>\");\n"
-          << "      char *escaped_name = xml_escape(\""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "      printf(\"%s\", escaped_name);\n"
-          << "      free(escaped_name);\n"
-          << "      printf(\"</transition>\\n\");\n"
-          << "    } else {\n"
-          << "      printf(\"Rule %s fired.\\n\", \""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n"
-          << "    }\n"
-          << "    return;\n"
-          << "  }\n";
+        // update base for future comparison against rule_taken
+        mpz_class inc = 1;
+        for (const Quantifier &q : r->quantifiers) {
+          inc *= q.count();
+        }
+        base += inc;
 
         index++;
       }

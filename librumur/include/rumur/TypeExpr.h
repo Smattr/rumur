@@ -39,6 +39,11 @@ struct TypeExpr : public Node {
 
   // Get a string representation of this type
   virtual std::string to_string() const = 0;
+
+  /* Whether this type's bounds are constant. Only valid for TypeExprs for which
+   * is_simple() returns true.
+   */
+  virtual bool constant() const;
 };
 
 struct Range : public TypeExpr {
@@ -58,6 +63,7 @@ struct Range : public TypeExpr {
   std::string lower_bound() const final;
   std::string upper_bound() const final;
   std::string to_string() const final;
+  bool constant() const final;
 };
 
 struct Scalarset : public TypeExpr {
@@ -76,6 +82,7 @@ struct Scalarset : public TypeExpr {
   std::string lower_bound() const final;
   std::string upper_bound() const final;
   std::string to_string() const final;
+  bool constant() const final;
 };
 
 struct Enum : public TypeExpr {
@@ -94,6 +101,7 @@ struct Enum : public TypeExpr {
   std::string lower_bound() const final;
   std::string upper_bound() const final;
   std::string to_string() const final;
+  bool constant() const final;
 };
 
 struct Record : public TypeExpr {
@@ -147,6 +155,7 @@ struct TypeExprID : public TypeExpr {
   std::string lower_bound() const final;
   std::string upper_bound() const final;
   std::string to_string() const final;
+  bool constant() const final;
 };
 
 bool types_equatable(const TypeExpr *t1, const TypeExpr *t2);

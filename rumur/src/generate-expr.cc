@@ -106,7 +106,16 @@ class Generator : public ConstExprTraversal {
   void visit(const Eq &n) final {
     if (lvalue)
       invalid(n);
-    *this << "(" << *n.lhs << " == " << *n.rhs << ")";
+
+    if (n.lhs->type() != nullptr && !n.lhs->type()->is_simple()) {
+      assert(n.rhs->type() != nullptr && !n.rhs->type()->is_simple() &&
+        "comparison between simple and complex type");
+
+      *this << "handle_eq(" << *n.lhs << ", " << *n.rhs << ")";
+
+    } else {
+      *this << "(" << *n.lhs << " == " << *n.rhs << ")";
+    }
   }
 
   void visit(const Exists &n) final {
@@ -460,7 +469,16 @@ class Generator : public ConstExprTraversal {
   void visit(const Neq &n) final {
     if (lvalue)
       invalid(n);
-    *this << "(" << *n.lhs << " != " << *n.rhs << ")";
+
+    if (n.lhs->type() != nullptr && !n.lhs->type()->is_simple()) {
+      assert(n.rhs->type() != nullptr && !n.rhs->type()->is_simple() &&
+        "comparison between simple and complex type");
+
+      *this << "(!handle_eq(" << *n.lhs << ", " << *n.rhs << "))";
+
+    } else {
+      *this << "(" << *n.lhs << " != " << *n.rhs << ")";
+    }
   }
 
   void visit(const Not &n) final {

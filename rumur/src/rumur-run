@@ -105,7 +105,8 @@ def main(args):
   if ok:
     print('Compiling the checker...')
     aout = os.path.join(tmp, 'a.out')
-    cc_flags = ['-std=c11', '-O3', '-o', aout, checker_c]
+    cc_flags = ['-std=c11', '-O3', '-march=native', '-mtune=native', '-o', aout,
+      checker_c]
     if platform.machine() == 'x86_64' and cc_vendor == 'gcc':
       # GCC needs a personal invitation to use cmpxchg16b
       cc_flags += ['-mcx16']

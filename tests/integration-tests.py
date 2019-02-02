@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
+import xml.etree.ElementTree as ET
 
 RUMUR_BIN = os.path.abspath(os.environ.get('RUMUR', 'rumur/rumur'))
 RUMUR_AST_DUMP_BIN = os.path.abspath(os.environ.get('RUMUR_AST_DUMP',
@@ -68,6 +69,7 @@ def test_template(self, model, optimised, debug, valgrind, xml):
     'ld_flags':None, # Flags to pass to cc last.
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
+    'checker_output':None, # Regex to search checker's stdout against.
   }
 
   option.update(parse_test_options(model))
@@ -131,6 +133,13 @@ def test_template(self, model, optimised, debug, valgrind, xml):
       sys.stderr.write(stderr)
     self.assertEqual(ret, option['checker_exit_code'])
 
+    # If the test has a stdout expectation, check that now.
+    if not xml and option['checker_output'] is not None:
+      if option['checker_output'].search(stdout) is None:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertIsNotNone(option['checker_output'].search(stdout))
+
     if xml:
       # See if we have xmllint
       ret, _, _ = run(['which', 'xmllint'])
@@ -189,12 +198,14 @@ def test_ast_dumper_template(self, model, valgrind):
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
 
-def test_cmurphi_example_template(self, model, outcome):
+def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
+    states=None):
 
   with TemporaryDirectory() as tmp:
 
     model_c = os.path.join(tmp, 'model.c')
-    ret, stdout, stderr = run([RUMUR_BIN, '--output', model_c, model])
+    ret, stdout, stderr = run([RUMUR_BIN, '--output-format', 'machine-readable',
+      '--output', model_c, model])
     if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
@@ -216,6 +227,20 @@ def test_cmurphi_example_template(self, model, outcome):
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
     self.assertEqual(ret == 0, outcome)
+
+    # parse the XML output if we're expecting a particular result
+    if rules_fired is not None or states is not None:
+      xml = ET.fromstring(stdout)
+
+      # check we got the expected number of rules fired
+      if rules_fired is not None:
+        r = int(xml.find('./summary').get('rules_fired'))
+        self.assertEqual(r, rules_fired)
+
+      # check we got the expected number of states explored
+      if states is not None:
+        s = int(xml.find('./summary').get('states'))
+        self.assertEqual(s, states)
 
 def test_ast_dumper_cmurphi_example_template(self, model):
 
@@ -315,28 +340,28 @@ def main(argv):
   if CMURPHI_DIR is not None:
 
     models = (
-      # (Model path,           expected to pass?)
-      ('ex/mux/2_peterson.m',  True),
-      ('ex/mux/dek.m',         True),
-      ('ex/mux/mcslock1.m',    True),
-      ('ex/mux/mcslock2.m',    True),
-      ('ex/mux/n_peterson.m',  True),
-      ('ex/others/abp.m',      True),
-      ('ex/others/arbiter.m',  False),
-      ('ex/others/dp4.m',      True),
-      ('ex/others/dpnew.m',    False),
-      ('ex/sym/mcslock1.m',    True),
-      ('ex/sym/mcslock2.m',    True),
-      ('ex/sym/n_peterson.m',  True),
-      ('ex/tmp/scalarset.m',   False),
-      ('ex/toy/down.m',        False),
-      ('ex/toy/lin.m',         False),
-      ('ex/toy/pingpong.m',    True),
-      ('ex/toy/sets.m',        False),
-      ('ex/toy/sort5.m',       False),
+      # (Model path,           expected to pass?  expected rules  expected states)
+      ('ex/mux/2_peterson.m',  True,              26,             13),
+      ('ex/mux/dek.m',         True,              200,            100),
+      ('ex/mux/mcslock1.m',    True,              None,           None),
+      ('ex/mux/mcslock2.m',    True,              None,           None),
+      ('ex/mux/n_peterson.m',  True,              None,           None),
+      ('ex/others/abp.m',      True,              176,            80),
+      ('ex/others/arbiter.m',  False,             None,           None),
+      ('ex/others/dp4.m',      True,              672,            112),
+      ('ex/others/dpnew.m',    False,             None,           None),
+      ('ex/sym/mcslock1.m',    True,              None,           None),
+      ('ex/sym/mcslock2.m',    True,              None,           None),
+      ('ex/sym/n_peterson.m',  True,              None,           None),
+      ('ex/tmp/scalarset.m',   False,             None,           None),
+      ('ex/toy/down.m',        False,             None,           None),
+      ('ex/toy/lin.m',         False,             None,           None),
+      ('ex/toy/pingpong.m',    True,              6,              4),
+      ('ex/toy/sets.m',        False,             None,           None),
+      ('ex/toy/sort5.m',       False,             None,           None),
     )
 
-    for path, outcome in models:
+    for path, outcome, rules, states in models:
       fullpath = os.path.abspath(os.path.join(CMURPHI_DIR, path))
 
       test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
@@ -345,8 +370,8 @@ def main(argv):
         raise Exception('{} collides with an existing test name'.format(path))
 
       setattr(Tests, test_name,
-        lambda self, model=fullpath, outcome=outcome:
-          test_cmurphi_example_template(self, model, outcome))
+        lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
+          test_cmurphi_example_template(self, model, outcome, rules, states))
 
       test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_cmurphi_example_{}'
         .format(path))

@@ -423,6 +423,17 @@ struct Quantifier : public Node {
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const;
+
+  // whether the quantifier's range can be constant folded
+  bool constant() const;
+
+  /* number of entries in this quantifier's range (only valid when constant()
+   * returns true)
+   */
+  mpz_class count() const;
+
+  // get the lower bound of this quantified expression as a C expression
+  std::string lower_bound() const;
 };
 
 struct Exists : public Expr {

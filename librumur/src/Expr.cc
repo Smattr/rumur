@@ -919,6 +919,64 @@ std::string Quantifier::to_string() const {
   return name + " : " + type->to_string();
 }
 
+bool Quantifier::constant() const {
+
+  if (type != nullptr) {
+    assert(type->is_simple() && "complex type used in quantifier");
+    if (!type->constant())
+      return false;
+  }
+
+  if (from != nullptr && !from->constant())
+    return false;
+
+  if (to != nullptr && !to->constant())
+    return false;
+
+  if (step != nullptr && !step->constant())
+    return false;
+
+  return true;
+}
+
+mpz_class Quantifier::count() const {
+
+  if (!constant())
+    throw Error("non-constant quantifier is uncountable", loc);
+
+  if (type != nullptr) {
+    // subtract 1 because quantified variable can never be 'undefined'
+    return type->count() - 1;
+  }
+
+  assert(from != nullptr && to != nullptr && "quantifier with null type and "
+    "bounds");
+
+  mpz_class lb = from->constant_fold();
+  mpz_class ub = to->constant_fold();
+  mpz_class inc = step == nullptr ? 1 : step->constant_fold();
+
+  mpz_class c = 0;
+  for (mpz_class i = lb; i <= ub; i += inc)
+    c++;
+
+  return c;
+}
+
+std::string Quantifier::lower_bound() const {
+
+  if (!constant())
+    throw Error("non-constant quantifier has a lower bound that cannot be "
+      "calculated ahead of time", loc);
+
+  if (type != nullptr)
+    return type->lower_bound();
+
+  assert(from != nullptr && "quantifier with null type and null lower bound");
+
+  return "VALUE_C(" + from->constant_fold().get_str() + ")";
+}
+
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
