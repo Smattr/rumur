@@ -97,7 +97,8 @@ def main(args):
   # Generate the checker
   print('Generating the checker...')
   checker_c = os.path.join(tmp, 'checker.c')
-  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c])
+  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c],
+    stdin=subprocess.PIPE)
   rumur_proc.communicate()
   ok &= rumur_proc.returncode == 0
 
