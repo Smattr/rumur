@@ -463,6 +463,30 @@ static __attribute__((format(printf, 2, 3))) void trace(
   }
 }
 
+/*******************************************************************************
+ * Arithmetic wrappers                                                         *
+ *                                                                             *
+ * For compilers that support them, we call the overflow built-ins to check    *
+ * undefined operations during arithmetic. For others, we just emit the bare   *
+ * operation.                                                                  *
+ ******************************************************************************/
+
+#if defined(__clang__) || (defined(__GNUC__) && __GNUC__ >= 5)
+
+  #define ADD(a, b, c) __builtin_add_overflow((a), (b), (c))
+  #define MUL(a, b, c) __builtin_mul_overflow((a), (b), (c))
+  #define SUB(a, b, c) __builtin_sub_overflow((a), (b), (c))
+
+#else
+
+  #define ADD(a, b, c) ({ *(c) = (a) + (b); false; })
+  #define MUL(a, b, c) ({ *(c) = (a) * (b); false; })
+  #define SUB(a, b, c) ({ *(c) = (a) - (b); false; })
+
+#endif
+
+/******************************************************************************/
+
 /* The state of the current model. */
 struct state {
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
