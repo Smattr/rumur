@@ -1696,15 +1696,15 @@ retry:;
 
 typedef uintptr_t slot_t;
 
-static slot_t slot_empty(void) {
+static __attribute__((const)) slot_t slot_empty(void) {
   return 0;
 }
 
-static bool slot_is_empty(slot_t s) {
+static __attribute__((const)) bool slot_is_empty(slot_t s) {
   return s == slot_empty();
 }
 
-static bool slot_is_tombstone(slot_t s) {
+static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
   return (s & 0x1) == 0x1;
 }
 
