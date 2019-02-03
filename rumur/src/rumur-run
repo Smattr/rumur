@@ -102,6 +102,12 @@ def main(args):
   rumur_proc.communicate()
   ok &= rumur_proc.returncode == 0
 
+  # if the user asked for help or version information, Rumur will have exited
+  # without generating a checker
+  for arg in args:
+    if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
+      return 0 if ok else -1
+
   # Compile the checker
   if ok:
     print('Compiling the checker...')
