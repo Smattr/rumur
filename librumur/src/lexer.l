@@ -15,7 +15,7 @@
 /* Each time yylex() is called, update the begin position with the last end
  * position. This ensures we get correct starting column numbers.
  */
-#define YY_USER_ACTION  loc->columns(yyleng);
+#define YY_USER_ACTION  loc->step(); loc->columns(yyleng);
 
 %}
 
@@ -155,7 +155,6 @@ true {
 "∨"  { return '|';                             }
 
 [&!|:=><\-\%\+;{},\[\]\.()/\*\?] {
-  loc->step(); /* maintain correct column count */
   return YYText()[0];
 }
 
