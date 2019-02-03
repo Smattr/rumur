@@ -226,14 +226,6 @@ class Generator : public ConstExprTraversal {
     // Open a statement-expression so we can declare temporaries.
     *out << "({ ";
 
-    /* Firstly, one of our assumptions in the following is that any complex
-     * argument we have is capable of being an lvalue. This is because there is
-     * currently no syntax to express a complex rvalue.
-     */
-    for (const Ptr<Expr> &a __attribute__((unused)) : n.arguments)
-      assert((a->type() == nullptr || a->type()->is_simple() || a->is_lvalue())
-        && "non-lvalue complex argument");
-
     /* Secondly, a read-only value is never passed to a var parameter. This
      * should have been validated by FunctionCall::validate().
      */
@@ -255,11 +247,12 @@ class Generator : public ConstExprTraversal {
      *   │  no  │     simple     │    no   │     -      ║    1   │
      *   │  no  │     simple     │   yes   │     no     ║    2   │
      *   │  no  │     simple     │   yes   │    yes     ║    2   │
-     *   │  no  │    complex     │    -    │     no     ║    3   │
-     *   │  no  │    complex     │    -    │    yes     ║    3   │
+     *   │  no  │    complex     │    no   │     -      ║    5   │
+     *   │  no  │    complex     │   yes   │     no     ║    3   │
+     *   │  no  │    complex     │   yes   │    yes     ║    3   │
      *   │ yes  │     simple     │    no   │     no     ║    1   │
      *   │ yes  │     simple     │   yes   │     no     ║    4   │
-     *   │ yes  │    complex     │    -    │     no     ║    4   │
+     *   │ yes  │    complex     │   yes   │     no     ║    4   │
      *   └──────┴────────────────┴─────────┴────────────╨────────┘
      *
      *   1. We can create a temporary handle and backing storage, then extract
@@ -280,6 +273,8 @@ class Generator : public ConstExprTraversal {
      *      as have identical width.
      *
      *   4. We just pass the original handle, the lvalue of the argument.
+     *
+     *   5. We pass the original (rvalue) handle.
      */
 
     auto get_method =
@@ -293,8 +288,9 @@ class Generator : public ConstExprTraversal {
         if (!var &&  simple && !is_lvalue             ) return 1;
         if (!var &&  simple &&  is_lvalue && !readonly) return 2;
         if (!var &&  simple &&  is_lvalue &&  readonly) return 2;
-        if (!var && !simple &&               !readonly) return 3;
-        if (!var && !simple &&                readonly) return 3;
+        if (!var && !simple && !is_lvalue             ) return 5;
+        if (!var && !simple &&  is_lvalue && !readonly) return 3;
+        if (!var && !simple &&  is_lvalue &&  readonly) return 3;
         if ( var &&  simple && !is_lvalue             ) return 1;
         if ( var &&  simple &&  is_lvalue && !readonly) return 4;
         if ( var && !simple &&               !readonly) return 4;
@@ -316,7 +312,7 @@ class Generator : public ConstExprTraversal {
           + std::to_string(index);
 
         auto method = get_method(p, a);
-        assert(method >= 1 && method <= 4);
+        assert(method >= 1 && method <= 5);
 
         if (method == 1 || method == 2 || method == 3)
           *out
@@ -395,10 +391,19 @@ class Generator : public ConstExprTraversal {
         const std::string handle = "v" + std::to_string(n.unique_id) + "_"
           + std::to_string(index);
 
-        if (get_method(p, a) == 4) {
-          generate_lvalue(*out, *a);
-        } else {
-          *out << handle;
+        switch (get_method(p, a)) {
+
+          case 4:
+            generate_lvalue(*out, *a);
+            break;
+
+          case 5:
+            generate_rvalue(*out, *a);
+            break;
+
+          default:
+            *out << handle;
+            break;
         }
 
         index++;
