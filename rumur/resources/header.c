@@ -896,8 +896,8 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
 
   value_t dest = v;
 
-  bool r __attribute__((unused)) = __builtin_sub_overflow(dest, 1, &dest) ||
-    __builtin_add_overflow(dest, lb, &dest) || dest < lb || dest > ub;
+  bool r __attribute__((unused)) = SUB(dest, 1, &dest) || ADD(dest, lb, &dest)
+    || dest < lb || dest > ub;
 
   ASSERT(!r && "read of out-of-range value");
 
@@ -1082,8 +1082,8 @@ static __attribute__((unused)) void handle_write(const struct state *s,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds write in handle_write()");
 
-  if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
-      __builtin_add_overflow(value, 1, &value)) {
+  if (value < lb || value > ub || SUB(value, lb, &value) ||
+      ADD(value, 1, &value)) {
     error(s, false, "write of out-of-range value");
   }
 
@@ -1179,8 +1179,7 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
     "narrowing a handle with values that actually expand it");
 
   size_t r __attribute__((unused));
-  assert(!__builtin_add_overflow(h.offset, offset, &r) &&
-    "narrowing handle overflows a size_t");
+  assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
 
   return (struct handle){
     .base = h.base,
@@ -1198,14 +1197,12 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
   }
 
   size_t r1, r2;
-  if (__builtin_sub_overflow(index, index_min, &r1) ||
-      __builtin_mul_overflow(r1, element_width, &r2)) {
+  if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
     error(s, false, "overflow when indexing array");
   }
 
   size_t r __attribute__((unused));
-  assert(!__builtin_add_overflow(root.offset, r2, &r) &&
-    "indexing handle overflows a size_t");
+  assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
 
   return (struct handle){
     .base = root.base,
@@ -1220,16 +1217,13 @@ static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
   return v == 0;
 }
 
-/* Overflow-safe helpers for doing bounded arithmetic. The compiler built-ins
- * used are implemented in modern GCC and Clang. If you're using another
- * compiler, you'll have to implement these yourself.
- */
+/* Overflow-safe helpers for doing bounded arithmetic. */
 
 static __attribute__((unused)) value_t add(const struct state *s, value_t a,
     value_t b) {
 
   value_t r;
-  if (__builtin_add_overflow(a, b, &r)) {
+  if (ADD(a, b, &r)) {
     error(s, false, "integer overflow in addition");
   }
   return r;
@@ -1239,7 +1233,7 @@ static __attribute__((unused)) value_t sub(const struct state *s, value_t a,
     value_t b) {
 
   value_t r;
-  if (__builtin_sub_overflow(a, b, &r)) {
+  if (SUB(a, b, &r)) {
     error(s, false, "integer overflow in subtraction");
   }
   return r;
@@ -1249,7 +1243,7 @@ static __attribute__((unused)) value_t mul(const struct state *s, value_t a,
     value_t b) {
 
   value_t r;
-  if (__builtin_mul_overflow(a, b, &r)) {
+  if (MUL(a, b, &r)) {
     error(s, false, "integer overflow in multiplication");
   }
   return r;
