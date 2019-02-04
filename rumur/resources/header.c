@@ -42,7 +42,29 @@
  * enough.
  */
 typedef int64_t value_t;
-#define PRIVAL PRId64
+
+struct value_string_buffer {
+  char data[50];
+};
+
+static struct value_string_buffer value_to_string(value_t v) {
+
+  struct value_string_buffer buf;
+
+  _Generic((value_t)1,
+    int8_t:   snprintf(buf.data, sizeof(buf.data), "%" PRId8,  (int8_t)v),
+    int16_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId16, (int16_t)v),
+    int32_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId32, (int32_t)v),
+    int64_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId64, (int64_t)v),
+    uint8_t:  snprintf(buf.data, sizeof(buf.data), "%" PRIu8,  (uint8_t)v),
+    uint16_t: snprintf(buf.data, sizeof(buf.data), "%" PRIu16, (uint16_t)v),
+    uint32_t: snprintf(buf.data, sizeof(buf.data), "%" PRId32, (uint32_t)v),
+    uint64_t: snprintf(buf.data, sizeof(buf.data), "%" PRId64, (uint64_t)v),
+    default:  assert(!"no valid value_string_buffer() implementation")
+  );
+
+  return buf;
+}
 
 #define VALUE_C(x) _Generic((value_t)1,                                        \
   int8_t:   INT8_C(x),                                                         \
@@ -764,8 +786,8 @@ static value_t handle_read_raw(struct handle h) {
     "the maximum width of a simple type in this model");
 
   if (h.width == 0) {
-    trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-      (value_t)0, h.base, h.offset, h.width);
+    trace(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
+      h.base, h.offset, h.width);
     return 0;
   }
 
@@ -839,8 +861,8 @@ static value_t handle_read_raw(struct handle h) {
 
     value_t v = (value_t)low;
 
-    trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-      v, h.base, h.offset, h.width);
+    trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
+      value_to_string(v).data, h.base, h.offset, h.width);
 
     return v;
   }
@@ -886,8 +908,8 @@ static value_t handle_read_raw(struct handle h) {
 
   value_t v = (value_t)low;
 
-  trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-    v, h.base, h.offset, h.width);
+  trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
+    value_to_string(v).data, h.base, h.offset, h.width);
 
   return v;
 }
@@ -931,8 +953,8 @@ static void handle_write_raw(struct handle h, value_t value) {
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  trace(TC_HANDLE_WRITES, "writing value %" PRIVAL " to handle { %p, %zu, %zu }",
-    value, h.base, h.offset, h.width);
+  trace(TC_HANDLE_WRITES, "writing value %s to handle { %p, %zu, %zu }",
+    value_to_string(value).data, h.base, h.offset, h.width);
 
   if (h.width == 0) {
     return;

@@ -345,8 +345,8 @@ class Generator : public ConstExprTraversal {
             << "if (v != 0 && (v + " << lba << " - 1 < " << lb << " || v + "
               << lba << " - 1 > " << ub << ")) { "
             << "error(s, false, \"call to function %s passed an out-of-range "
-              << "value %\" PRIVAL \" to parameter " << (index + 1) << "\", \""
-              << n.name << "\", v + " << lba << " - 1); "
+              << "value %s to parameter " << (index + 1) << "\", \""
+              << n.name << "\", value_to_string(v + " << lba << " - 1).data); "
             << "} "
             << "handle_write_raw(" << handle << ", v == 0 ? v : (v + " << lba
               << " - " << lb << ")); "

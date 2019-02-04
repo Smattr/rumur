@@ -275,9 +275,9 @@ class Generator : public ConstStmtTraversal {
       }
     }
 
-    *out << "printf(\"%\" PRIVAL, ";
+    *out << "printf(\"%s\", value_to_string(";
     generate_rvalue(*out, *s.expr);
-    *out << ")";
+    *out << ").data)";
   }
 
   void visit(const Return &s) final {

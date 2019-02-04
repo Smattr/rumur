@@ -575,8 +575,8 @@ void generate_model(std::ostream &out, const Model &m) {
           for (const Quantifier &q : r->quantifiers) {
             out
               << "      escaped_name = xml_escape(\"" + q.name + "\");\n"
-              << "      printf(\"<parameter name=\\\"%s\\\">%\" PRIVAL "
-                "\"</parameter>\", escaped_name, (value_t)((rule_taken - " << base
+              << "      printf(\"<parameter name=\\\"%s\\\">%s</parameter>\", "
+                "escaped_name, value_to_string((value_t)((rule_taken - " << base
                 << ") / (1";
             size_t j = r->quantifiers.size() - 1;
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
@@ -585,7 +585,7 @@ void generate_model(std::ostream &out, const Model &m) {
               out << " * " << it->count();
               j--;
             }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n"
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n"
               << "      free(escaped_name);\n";
             i++;
           }
@@ -599,8 +599,8 @@ void generate_model(std::ostream &out, const Model &m) {
         {
           size_t i = 0;
           for (const Quantifier &q : r->quantifiers) {
-            out << "      printf(\", %s: %\" PRIVAL, \"" << q.name
-              << "\", (value_t)((rule_taken - " << base << ") / (1";
+            out << "      printf(\", %s: %s\", \"" << q.name
+              << "\", value_to_string((value_t)((rule_taken - " << base << ") / (1";
             size_t j = r->quantifiers.size() - 1;
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
               if (i == j)
@@ -608,7 +608,7 @@ void generate_model(std::ostream &out, const Model &m) {
               out << " * " << it->count();
               j--;
             }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n";
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n";
             i++;
           }
         }
@@ -667,8 +667,8 @@ void generate_model(std::ostream &out, const Model &m) {
           for (const Quantifier &q : r->quantifiers) {
             out
               << "      escaped_name = xml_escape(\"" + q.name + "\");\n"
-              << "      printf(\"<parameter name=\\\"%s\\\">%\" PRIVAL "
-                "\"</parameter>\", escaped_name, (value_t)((rule_taken - " << base
+              << "      printf(\"<parameter name=\\\"%s\\\">%s</parameter>\", "
+                "escaped_name, value_to_string((value_t)((rule_taken - " << base
                 << ") / (1";
             size_t j = r->quantifiers.size() - 1;
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
@@ -677,7 +677,7 @@ void generate_model(std::ostream &out, const Model &m) {
               out << " * " << it->count();
               j--;
             }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n"
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n"
               << "      free(escaped_name);\n";
             i++;
           }
@@ -691,8 +691,8 @@ void generate_model(std::ostream &out, const Model &m) {
         {
           size_t i = 0;
           for (const Quantifier &q : r->quantifiers) {
-            out << "      printf(\", %s: %\" PRIVAL, \"" << q.name
-              << "\", (value_t)((rule_taken - " << base << ") / (1";
+            out << "      printf(\", %s: %s\", \"" << q.name
+              << "\", value_to_string((value_t)((rule_taken - " << base << ") / (1";
             size_t j = r->quantifiers.size() - 1;
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
               if (i == j)
@@ -700,7 +700,7 @@ void generate_model(std::ostream &out, const Model &m) {
               out << " * " << it->count();
               j--;
             }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ");\n";
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n";
             i++;
           }
         }
