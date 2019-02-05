@@ -130,7 +130,7 @@ def main(args):
     print('Running the checker...')
     checker_proc = subprocess.Popen([aout])
     checker_proc.communicate()
-    ok &= checker_proc.returncode
+    ok &= checker_proc.returncode == 0
 
   # Clean up
   shutil.rmtree(tmp)
