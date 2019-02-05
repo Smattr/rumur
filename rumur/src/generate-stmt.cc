@@ -207,7 +207,16 @@ class Generator : public ConstStmtTraversal {
       case Property::ASSERTION:
         *out << "if (__builtin_expect(!";
         generate_property(*out, s.property);
-        *out << ", 0)) {\nerror(s, false, \"" << s.message << "\");\n}";
+        *out << ", 0)) {\nerror(s, false, \"Assertion failed: %s\", \"";
+        if (s.message == "") {
+          /* Assertion has no associated text. Use the expression itself
+           * instead.
+           */
+          *out << s.property.expr->to_string();
+        } else {
+          *out << s.message;
+        }
+        *out << "\");\n}";
         break;
 
       case Property::ASSUMPTION:
