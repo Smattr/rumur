@@ -8,7 +8,7 @@ import os, re, subprocess, sys
 
 # The version of the last tagged release of Rumur. This will be used as the
 # version number if no Git information is available.
-LAST_RELEASE = 'v2019.02.01'
+LAST_RELEASE = 'v2019.02.04'
 
 def has_git():
   '''
