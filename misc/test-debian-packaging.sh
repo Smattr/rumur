@@ -11,6 +11,9 @@
 #     `dput mentors ../rumur_<version>_<arch>.changes`.
 #   * Check consistency of ../debian/watch with
 #     `cd .. && uscan --report --verbose`.
+#   * For building with pbuilder, first
+#     `sudo pbuilder create --debootstrapopts --variant=buildd` to setup a base
+#     chroot image, then `pdebuild` to test.
 #
 # For uploading to mentors.debian.net, you will need ~/.dput.cf configured:
 #
