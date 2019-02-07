@@ -97,9 +97,16 @@ def main(args):
   # Generate the checker
   print('Generating the checker...')
   checker_c = os.path.join(tmp, 'checker.c')
-  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c])
+  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c],
+    stdin=subprocess.PIPE)
   rumur_proc.communicate()
-  ok |= rumur_proc.returncode == 0
+  ok &= rumur_proc.returncode == 0
+
+  # if the user asked for help or version information, Rumur will have exited
+  # without generating a checker
+  for arg in args:
+    if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
+      return 0 if ok else -1
 
   # Compile the checker
   if ok:
@@ -116,14 +123,14 @@ def main(args):
     cc_flags += ['-lpthread']
     cc_proc = subprocess.Popen([cc] + cc_flags)
     cc_proc.communicate()
-    ok |= cc_proc.returncode == 0
+    ok &= cc_proc.returncode == 0
 
   # Run the checker
   if ok:
     print('Running the checker...')
     checker_proc = subprocess.Popen([aout])
     checker_proc.communicate()
-    ok |= checker_proc.returncode
+    ok &= checker_proc.returncode == 0
 
   # Clean up
   shutil.rmtree(tmp)

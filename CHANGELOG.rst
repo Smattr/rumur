@@ -1,6 +1,34 @@
 Change log
 ==========
 
+v2019.02.04
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: using a non-scalar (record or array) result of a function call as an
+  input parameter to another function or procedure would previously cause an
+  assertion failure during code generation. This has been addressed and correct
+  code is now generated (commit 73dcbf237f747d8958528127f6a05442bd3bf2c0).
+* Bug fix: the convenience wrapper ``rumur-run`` now correctly exits when one of
+  its steps fails and also returns the correct exit status (commits
+  9eae5c5a22a87507713a2ebc5b57120de00e6f10,
+  46cc017ee8c6337453601c245e6e764254687f48,
+  235fbc552addefc1f34e8840a9d80845b423d30e,
+  80825dfb406eb6f39aaa01c9011eadd7b6ad9b05).
+* Bug fix: column offset information in the XML produced by ``rumur-ast-dump``
+  was sometimes off by one. This is now corrected (commit
+  7d8dc868d9e1c31243b15e3de116e4f0740a38b3).
+* GCC 4.9 is now supported. Previously the oldest version of GCC we supported
+  was 5 (commits 83ce80ad8bba3f48d4316dba29b4795c13facd03,
+  0ed86df81586b5808be82c924ad964b25cb38447).
+* The error message when a model assertion fails has been made more informative
+  (commit 608fe69abfd7aa7ab724a42b1327bb055f7fb3ac).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2019.02.01
 -----------
 

@@ -43,7 +43,6 @@ enum symmetry_reduction_t {
 };
 
 struct Options {
-  bool overflow_checks = true;
   unsigned long threads = 0;
   log_level_t log_level = WARNINGS;
   size_t set_capacity = 8 * 1024 * 1024;

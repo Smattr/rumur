@@ -42,7 +42,29 @@
  * enough.
  */
 typedef int64_t value_t;
-#define PRIVAL PRId64
+
+struct value_string_buffer {
+  char data[50];
+};
+
+static struct value_string_buffer value_to_string(value_t v) {
+
+  struct value_string_buffer buf;
+
+  _Generic((value_t)1,
+    int8_t:   snprintf(buf.data, sizeof(buf.data), "%" PRId8,  (int8_t)v),
+    int16_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId16, (int16_t)v),
+    int32_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId32, (int32_t)v),
+    int64_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId64, (int64_t)v),
+    uint8_t:  snprintf(buf.data, sizeof(buf.data), "%" PRIu8,  (uint8_t)v),
+    uint16_t: snprintf(buf.data, sizeof(buf.data), "%" PRIu16, (uint16_t)v),
+    uint32_t: snprintf(buf.data, sizeof(buf.data), "%" PRId32, (uint32_t)v),
+    uint64_t: snprintf(buf.data, sizeof(buf.data), "%" PRId64, (uint64_t)v),
+    default:  assert(!"no valid value_string_buffer() implementation")
+  );
+
+  return buf;
+}
 
 #define VALUE_C(x) _Generic((value_t)1,                                        \
   int8_t:   INT8_C(x),                                                         \
@@ -67,7 +89,10 @@ typedef int64_t value_t;
  */
 #ifndef NDEBUG
   #define ASSERT(expr) assert(expr)
+#elif defined(__clang__)
+  #define ASSERT(expr) __builtin_assume(expr)
 #else
+  /* GCC doesn't have __builtin_assume, so we need something else. */
   #define ASSERT(expr) \
     do { \
       /* The following is an idiom for teaching the compiler an assumption. */ \
@@ -460,6 +485,30 @@ static __attribute__((format(printf, 2, 3))) void trace(
   }
 }
 
+/*******************************************************************************
+ * Arithmetic wrappers                                                         *
+ *                                                                             *
+ * For compilers that support them, we call the overflow built-ins to check    *
+ * undefined operations during arithmetic. For others, we just emit the bare   *
+ * operation.                                                                  *
+ ******************************************************************************/
+
+#if defined(__clang__) || (defined(__GNUC__) && __GNUC__ >= 5)
+
+  #define ADD(a, b, c) __builtin_add_overflow((a), (b), (c))
+  #define MUL(a, b, c) __builtin_mul_overflow((a), (b), (c))
+  #define SUB(a, b, c) __builtin_sub_overflow((a), (b), (c))
+
+#else
+
+  #define ADD(a, b, c) ({ *(c) = (a) + (b); false; })
+  #define MUL(a, b, c) ({ *(c) = (a) * (b); false; })
+  #define SUB(a, b, c) ({ *(c) = (a) - (b); false; })
+
+#endif
+
+/******************************************************************************/
+
 /* The state of the current model. */
 struct state {
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
@@ -737,8 +786,8 @@ static value_t handle_read_raw(struct handle h) {
     "the maximum width of a simple type in this model");
 
   if (h.width == 0) {
-    trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-      (value_t)0, h.base, h.offset, h.width);
+    trace(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
+      h.base, h.offset, h.width);
     return 0;
   }
 
@@ -812,8 +861,8 @@ static value_t handle_read_raw(struct handle h) {
 
     value_t v = (value_t)low;
 
-    trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-      v, h.base, h.offset, h.width);
+    trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
+      value_to_string(v).data, h.base, h.offset, h.width);
 
     return v;
   }
@@ -859,8 +908,8 @@ static value_t handle_read_raw(struct handle h) {
 
   value_t v = (value_t)low;
 
-  trace(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-    v, h.base, h.offset, h.width);
+  trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
+    value_to_string(v).data, h.base, h.offset, h.width);
 
   return v;
 }
@@ -869,8 +918,8 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
 
   value_t dest = v;
 
-  bool r __attribute__((unused)) = __builtin_sub_overflow(dest, 1, &dest) ||
-    __builtin_add_overflow(dest, lb, &dest) || dest < lb || dest > ub;
+  bool r __attribute__((unused)) = SUB(dest, 1, &dest) || ADD(dest, lb, &dest)
+    || dest < lb || dest > ub;
 
   ASSERT(!r && "read of out-of-range value");
 
@@ -904,8 +953,8 @@ static void handle_write_raw(struct handle h, value_t value) {
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  trace(TC_HANDLE_WRITES, "writing value %" PRIVAL " to handle { %p, %zu, %zu }",
-    value, h.base, h.offset, h.width);
+  trace(TC_HANDLE_WRITES, "writing value %s to handle { %p, %zu, %zu }",
+    value_to_string(value).data, h.base, h.offset, h.width);
 
   if (h.width == 0) {
     return;
@@ -1055,8 +1104,8 @@ static __attribute__((unused)) void handle_write(const struct state *s,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds write in handle_write()");
 
-  if (value < lb || value > ub || __builtin_sub_overflow(value, lb, &value) ||
-      __builtin_add_overflow(value, 1, &value)) {
+  if (value < lb || value > ub || SUB(value, lb, &value) ||
+      ADD(value, 1, &value)) {
     error(s, false, "write of out-of-range value");
   }
 
@@ -1152,8 +1201,7 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
     "narrowing a handle with values that actually expand it");
 
   size_t r __attribute__((unused));
-  assert(!__builtin_add_overflow(h.offset, offset, &r) &&
-    "narrowing handle overflows a size_t");
+  assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
 
   return (struct handle){
     .base = h.base,
@@ -1171,14 +1219,12 @@ static __attribute__((unused)) struct handle handle_index(const struct state *s,
   }
 
   size_t r1, r2;
-  if (__builtin_sub_overflow(index, index_min, &r1) ||
-      __builtin_mul_overflow(r1, element_width, &r2)) {
+  if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
     error(s, false, "overflow when indexing array");
   }
 
   size_t r __attribute__((unused));
-  assert(!__builtin_add_overflow(root.offset, r2, &r) &&
-    "indexing handle overflows a size_t");
+  assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
 
   return (struct handle){
     .base = root.base,
@@ -1193,16 +1239,13 @@ static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
   return v == 0;
 }
 
-/* Overflow-safe helpers for doing bounded arithmetic. The compiler built-ins
- * used are implemented in modern GCC and Clang. If you're using another
- * compiler, you'll have to implement these yourself.
- */
+/* Overflow-safe helpers for doing bounded arithmetic. */
 
 static __attribute__((unused)) value_t add(const struct state *s, value_t a,
     value_t b) {
 
   value_t r;
-  if (__builtin_add_overflow(a, b, &r)) {
+  if (ADD(a, b, &r)) {
     error(s, false, "integer overflow in addition");
   }
   return r;
@@ -1212,7 +1255,7 @@ static __attribute__((unused)) value_t sub(const struct state *s, value_t a,
     value_t b) {
 
   value_t r;
-  if (__builtin_sub_overflow(a, b, &r)) {
+  if (SUB(a, b, &r)) {
     error(s, false, "integer overflow in subtraction");
   }
   return r;
@@ -1222,7 +1265,7 @@ static __attribute__((unused)) value_t mul(const struct state *s, value_t a,
     value_t b) {
 
   value_t r;
-  if (__builtin_mul_overflow(a, b, &r)) {
+  if (MUL(a, b, &r)) {
     error(s, false, "integer overflow in multiplication");
   }
   return r;
@@ -1693,15 +1736,15 @@ retry:;
 
 typedef uintptr_t slot_t;
 
-static slot_t slot_empty(void) {
+static __attribute__((const)) slot_t slot_empty(void) {
   return 0;
 }
 
-static bool slot_is_empty(slot_t s) {
+static __attribute__((const)) bool slot_is_empty(slot_t s) {
   return s == slot_empty();
 }
 
-static bool slot_is_tombstone(slot_t s) {
+static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
   return (s & 0x1) == 0x1;
 }
 

@@ -2,6 +2,23 @@ language: cpp
 
 matrix:
   include:
+  - name: Linux, GCC 4.9
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.9
+          - libxml2-utils
+          - valgrind
+    env:
+      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      # Fail on a compilation warning, emit debug symbols, support full back
+      # traces, enable UBSan, and abort execution on a UBSan error. Note that
+      # enabling UBSan on GCC seems to require the GOLD linker.
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, GCC 5
     os: linux
     addons:
@@ -14,9 +31,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-      # Fail on a compilation warning, emit debug symbols, support full back
-      # traces, enable UBSan, and abort execution on a UBSan error. Note that
-      # enabling UBSan on GCC seems to require the GOLD linker.
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
   - name: Linux, GCC 6
