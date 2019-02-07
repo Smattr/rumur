@@ -9,6 +9,8 @@
 #     `debsign ../rumur_<version>_<arch>.changes`.
 #   * Upload the package to mentors.debian.net with
 #     `dput mentors ../rumur_<version>_<arch>.changes`.
+#   * Check consistency of ../debian/watch with
+#     `cd .. && uscan --report --verbose`.
 #
 # For uploading to mentors.debian.net, you will need ~/.dput.cf configured:
 #
