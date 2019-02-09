@@ -650,10 +650,9 @@ void Field::validate() const {
   if (!isa<Record>(root))
     throw Error("left hand side of field expression is not a record", loc);
 
-  auto r = dynamic_cast<const Record*>(root.get());
-  assert(r != nullptr && "logic error in Field::validate");
+  auto r = dynamic_cast<const Record&>(*root);
 
-  for (const Ptr<VarDecl> &f : r->fields) {
+  for (const Ptr<VarDecl> &f : r.fields) {
     if (f->name == field)
       return;
   }
@@ -712,14 +711,13 @@ void Element::validate() const {
   if (!isa<Array>(t))
     throw Error("array index on an expression that is not an array", loc);
 
-  auto a = dynamic_cast<const Array*>(t.get());
-  assert(a != nullptr && "logic error in Element::validate");
+  auto a = dynamic_cast<const Array&>(*t);
 
   Ptr<TypeExpr> e = index->type();
   if (e != nullptr)
     e = e->resolve();
 
-  const Ptr<TypeExpr> index_type = a->index_type->resolve();
+  const Ptr<TypeExpr> index_type = a.index_type->resolve();
 
   if (isa<Range>(index_type)) {
     if (e != nullptr && !isa<Range>(e))
