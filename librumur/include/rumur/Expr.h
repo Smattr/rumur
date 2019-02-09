@@ -32,7 +32,7 @@ struct Expr : public Node {
   /* The type of this expression. A nullptr indicates the type is equivalent
    * to a numeric literal; that is, an unbounded range.
    */
-  virtual const TypeExpr *type() const = 0;
+  virtual Ptr<TypeExpr> type() const = 0;
 
   // If this expression is of boolean type.
   bool is_boolean() const;
@@ -64,7 +64,7 @@ struct Ternary : public Expr {
 
   Ternary *clone() const final;
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -102,7 +102,7 @@ struct Implication : public BooleanBinaryExpr {
   Implication *clone() const final;
   virtual ~Implication() = default;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -114,7 +114,7 @@ struct Or : public BooleanBinaryExpr {
   virtual ~Or() = default;
   Or *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -126,7 +126,7 @@ struct And : public BooleanBinaryExpr {
   virtual ~And() = default;
   And *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -149,7 +149,7 @@ struct Not : public UnaryExpr {
   virtual ~Not() = default;
   Not *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -169,7 +169,7 @@ struct Lt : public ComparisonBinaryExpr {
   virtual ~Lt() = default;
   Lt *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -181,7 +181,7 @@ struct Leq : public ComparisonBinaryExpr {
   virtual ~Leq() = default;
   Leq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -193,7 +193,7 @@ struct Gt : public ComparisonBinaryExpr {
   virtual ~Gt() = default;
   Gt *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -205,7 +205,7 @@ struct Geq : public ComparisonBinaryExpr {
   virtual ~Geq() = default;
   Geq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -224,7 +224,7 @@ struct Eq : public EquatableBinaryExpr {
   virtual ~Eq() = default;
   Eq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -236,7 +236,7 @@ struct Neq : public EquatableBinaryExpr {
   virtual ~Neq() = default;
   Neq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -255,7 +255,7 @@ struct Add : public ArithmeticBinaryExpr {
   virtual ~Add() = default;
   Add *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -267,7 +267,7 @@ struct Sub : public ArithmeticBinaryExpr {
   virtual ~Sub() = default;
   Sub *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -279,7 +279,7 @@ struct Negative : public UnaryExpr {
   virtual ~Negative() = default;
   Negative *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -292,7 +292,7 @@ struct Mul : public ArithmeticBinaryExpr {
   virtual ~Mul() = default;
   Mul *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -304,7 +304,7 @@ struct Div : public ArithmeticBinaryExpr {
   virtual ~Div() = default;
   Div *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -316,7 +316,7 @@ struct Mod : public ArithmeticBinaryExpr {
   virtual ~Mod() = default;
   Mod *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -333,7 +333,7 @@ struct ExprID : public Expr {
   ExprID *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -353,7 +353,7 @@ struct Field : public Expr {
   Field *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -373,7 +373,7 @@ struct Element : public Expr {
   Element *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -394,7 +394,7 @@ struct FunctionCall : public Expr {
   FunctionCall *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -447,7 +447,7 @@ struct Exists : public Expr {
   Exists *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -465,7 +465,7 @@ struct Forall : public Expr {
   Forall *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -481,7 +481,7 @@ struct IsUndefined : public Expr {
   IsUndefined *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;

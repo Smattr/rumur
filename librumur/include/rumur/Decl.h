@@ -39,7 +39,7 @@ struct ExprDecl : public Decl {
    */
   virtual bool is_readonly() const = 0;
 
-  virtual const TypeExpr *get_type() const = 0;
+  virtual Ptr<TypeExpr> get_type() const = 0;
 
   ExprDecl *clone() const override = 0;
 };
@@ -56,7 +56,7 @@ struct AliasDecl : public ExprDecl {
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
-  const TypeExpr *get_type() const final;
+  Ptr<TypeExpr> get_type() const final;
 };
 
 struct ConstDecl : public ExprDecl {
@@ -79,7 +79,7 @@ struct ConstDecl : public ExprDecl {
   bool is_lvalue() const final;
   bool is_readonly() const final;
   void validate() const final;
-  const TypeExpr *get_type() const final;
+  Ptr<TypeExpr> get_type() const final;
 };
 
 struct TypeDecl : public Decl {
@@ -120,7 +120,7 @@ struct VarDecl : public ExprDecl {
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
-  const TypeExpr *get_type() const final;
+  Ptr<TypeExpr> get_type() const final;
 };
 
 }

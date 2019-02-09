@@ -31,9 +31,9 @@ class Generator : public ConstTypeTraversal {
 
   void visit(const Array &n) final {
 
-    const TypeExpr *t = n.index_type->resolve();
+    const Ptr<TypeExpr> t = n.index_type->resolve();
 
-    if (auto r = dynamic_cast<const Range*>(t)) {
+    if (auto r = dynamic_cast<const Range*>(t.get())) {
 
       mpz_class lb = r->min->constant_fold();
       mpz_class ub = r->max->constant_fold();
@@ -53,7 +53,7 @@ class Generator : public ConstTypeTraversal {
       return;
     }
 
-    if (auto s = dynamic_cast<const Scalarset*>(t)) {
+    if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
 
       mpz_class b = s->bound->constant_fold();
 
@@ -69,7 +69,7 @@ class Generator : public ConstTypeTraversal {
       return;
     }
 
-    if (auto e = dynamic_cast<const Enum*>(t)) {
+    if (auto e = dynamic_cast<const Enum*>(t.get())) {
 
       mpz_class preceding_offset = 0;
       mpz_class w = n.element_type->width();

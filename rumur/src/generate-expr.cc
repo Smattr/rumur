@@ -57,9 +57,9 @@ class Generator : public ConstExprTraversal {
 
     // First, determine the width of the array's elements
 
-    const TypeExpr *t1 = n.array->type();
+    const Ptr<TypeExpr> t1 = n.array->type();
     assert(t1 != nullptr && "array with invalid type");
-    const TypeExpr *t2 = t1->resolve();
+    const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
     auto a = dynamic_cast<const Array&>(*t2);
@@ -67,17 +67,17 @@ class Generator : public ConstExprTraversal {
 
     // Second, determine the minimum and maximum values of the array's index type
 
-    const TypeExpr *t3 = a.index_type->resolve();
+    const Ptr<TypeExpr> t3 = a.index_type->resolve();
     assert(t3 != nullptr && "array with invalid index type");
 
     mpz_class min, max;
-    if (auto r = dynamic_cast<const Range*>(t3)) {
+    if (auto r = dynamic_cast<const Range*>(t3.get())) {
       min = r->min->constant_fold();
       max = r->max->constant_fold();
-    } else if (auto e = dynamic_cast<const Enum*>(t3)) {
+    } else if (auto e = dynamic_cast<const Enum*>(t3.get())) {
       min = 0;
       max = e->count() - 1;
-    } else if (auto s = dynamic_cast<const Scalarset*>(t3)) {
+    } else if (auto s = dynamic_cast<const Scalarset*>(t3.get())) {
       min = 0;
       max = s->bound->constant_fold() - 1;
     } else {
@@ -148,7 +148,7 @@ class Generator : public ConstExprTraversal {
     // This is either a state variable, a local variable or an alias.
     if (isa<AliasDecl>(n.value) || isa<VarDecl>(n.value)) {
 
-      const TypeExpr *t = n.type();
+      const Ptr<TypeExpr> t = n.type();
       assert((!n.is_lvalue() || t != nullptr) && "lvalue without a type");
 
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
@@ -172,11 +172,11 @@ class Generator : public ConstExprTraversal {
     if (lvalue && !n.is_lvalue())
       invalid(n);
 
-    const TypeExpr *root = n.record->type();
+    const Ptr<TypeExpr> root = n.record->type();
     assert(root != nullptr);
-    const TypeExpr *resolved = root->resolve();
+    const Ptr<TypeExpr> resolved = root->resolve();
     assert(resolved != nullptr);
-    if (auto r = dynamic_cast<const Record*>(resolved)) {
+    if (auto r = dynamic_cast<const Record*>(resolved.get())) {
       mpz_class offset = 0;
       for (const Ptr<VarDecl> &f : r->fields) {
         if (f->name == n.field) {

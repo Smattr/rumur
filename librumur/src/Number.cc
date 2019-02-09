@@ -7,6 +7,8 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Number.h>
+#include <rumur/Ptr.h>
+#include <rumur/TypeExpr.h>
 #include <stdexcept>
 #include <string>
 
@@ -30,7 +32,7 @@ bool Number::constant() const {
   return true;
 }
 
-const TypeExpr *Number::type() const {
+Ptr<TypeExpr> Number::type() const {
   return nullptr;
 }
 

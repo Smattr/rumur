@@ -10,7 +10,7 @@ void generate_decl(std::ostream &out, const Decl &d) {
 
   if (auto a = dynamic_cast<const AliasDecl*>(&d)) {
 
-    const TypeExpr *t = a->value->type();
+    const Ptr<TypeExpr> t = a->value->type();
     if ((t == nullptr || t->is_simple()) && !a->value->is_lvalue()) {
       out << "value_t";
     } else {

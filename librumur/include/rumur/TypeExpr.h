@@ -7,7 +7,6 @@
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
-#include <rumur/Number.h>
 #include <rumur/Ptr.h>
 #include <string>
 #include <utility>
@@ -29,7 +28,7 @@ struct TypeExpr : public Node {
   TypeExpr *clone() const override = 0;
   virtual mpz_class width() const;
   virtual mpz_class count() const = 0;
-  virtual const TypeExpr *resolve() const;
+  virtual Ptr<TypeExpr> resolve() const;
 
   /* Numeric bounds of this type as valid C code. These are only valid to use on
    * TypeExprs for which is_simple() returns true.
@@ -149,7 +148,7 @@ struct TypeExprID : public TypeExpr {
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
-  const TypeExpr *resolve() const final;
+  Ptr<TypeExpr> resolve() const final;
   void validate() const final;
 
   std::string lower_bound() const final;
@@ -158,6 +157,6 @@ struct TypeExprID : public TypeExpr {
   bool constant() const final;
 };
 
-bool types_equatable(const TypeExpr *t1, const TypeExpr *t2);
+bool types_equatable(const Ptr<TypeExpr> t1, const Ptr<TypeExpr> t2);
 
 }

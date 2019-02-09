@@ -28,7 +28,7 @@ static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
 static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
   const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
 
-  const TypeExpr *t = type.resolve();
+  const Ptr<TypeExpr> t = type.resolve();
 
   const std::string indent = std::string((depth + 1) * 2, ' ');
 
@@ -48,7 +48,7 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t)) {
+  if (auto a = dynamic_cast<const Array*>(t.get())) {
     const std::string var = "i" + std::to_string(depth);
     mpz_class ic = a->index_type->count() - 1;
     const std::string len = "SIZE_C(" + ic.get_str() + ")";
@@ -67,7 +67,7 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t)) {
+  if (auto r = dynamic_cast<const Record*>(t.get())) {
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
@@ -118,7 +118,9 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+  const Ptr<TypeExpr> type = t.resolve();
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
 
     const std::string w = "SIZE_C(" + a->element_type->width().get_str() + ")";
 
@@ -151,7 +153,7 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
 
     std::string off = offset;
 
@@ -189,7 +191,8 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
 
   const std::string indent(level * 2, ' ');
 
-  auto s = dynamic_cast<const Scalarset*>(scalarset.value->resolve());
+  const Ptr<TypeExpr> type = scalarset.value->resolve();
+  auto s = dynamic_cast<const Scalarset*>(type.get());
   assert(s != nullptr);
 
   const std::string  bound = "SIZE_C(" + s->bound->constant_fold().get_str() + ")";
@@ -219,7 +222,7 @@ static void generate_loop_footer(const TypeDecl &scalarset, size_t index,
 
   const std::string indent(level * 2, ' ');
 
-  assert(dynamic_cast<const Scalarset*>(scalarset.value->resolve()) != nullptr);
+  assert(isa<Scalarset>(scalarset.value->resolve()));
 
   const std::string i = "i" + std::to_string(index);
 
@@ -300,7 +303,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     const std::string &offset_a,  const std::string &offset_b,
     const TypeDecl &pivot, size_t depth = 0, bool used_pivot = false) {
 
-  const TypeExpr *t = type.resolve();
+  const Ptr<TypeExpr> t = type.resolve();
 
   const std::string indent((depth + 1) * 2, ' ');
 
@@ -330,7 +333,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t)) {
+  if (auto a = dynamic_cast<const Array*>(t.get())) {
 
     if (!used_pivot || !is_pivot(pivot, a->index_type.get())) {
 
@@ -358,7 +361,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t)) {
+  if (auto r = dynamic_cast<const Record*>(t.get())) {
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
@@ -417,7 +420,9 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+  const Ptr<TypeExpr> type = t.resolve();
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
 
     // The bit size of each array element as a C code string
     const std::string width = "SIZE_C(" +
@@ -460,7 +465,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
 
     std::string off = offset;
 
@@ -510,7 +515,7 @@ static void generate_compare(std::ostream &out, const TypeDecl &pivot,
 
 static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
 
-  assert(dynamic_cast<const Scalarset*>(pivot.value->resolve()) != nullptr);
+  assert(isa<Scalarset>(pivot.value->resolve()));
 
   out
     << "static void sort_" << pivot.name << "(struct state *s, "
@@ -575,7 +580,8 @@ static void generate_canonicalise_heuristic(const Model &m,
 
   for (const TypeDecl *t : scalarsets) {
 
-    auto s = dynamic_cast<const Scalarset*>(t->value->resolve());
+    const Ptr<TypeExpr> type = t->value->resolve();
+    auto s = dynamic_cast<const Scalarset*>(type.get());
     assert(s != nullptr);
 
     mpz_class bound = s->count() - 1;

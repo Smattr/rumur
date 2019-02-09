@@ -6,6 +6,8 @@
 #include <iostream>
 #include "location.hh"
 #include <rumur/Expr.h>
+#include <rumur/Ptr.h>
+#include <rumur/TypeExpr.h>
 #include <string>
 
 namespace rumur {
@@ -25,7 +27,7 @@ struct Number : public Expr {
   Number *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;

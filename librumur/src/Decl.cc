@@ -46,7 +46,7 @@ bool AliasDecl::is_readonly() const {
   return value->is_readonly();
 }
 
-const TypeExpr *AliasDecl::get_type() const {
+Ptr<TypeExpr> AliasDecl::get_type() const {
   return value->type();
 }
 
@@ -90,11 +90,11 @@ bool ConstDecl::is_readonly() const {
   return true;
 }
 
-const TypeExpr *ConstDecl::get_type() const {
+Ptr<TypeExpr> ConstDecl::get_type() const {
 
   // If this constant has an explicit type (e.g. it's an enum member), use that.
   if (type != nullptr)
-    return type.get();
+    return type;
 
   /* If this doesn't have an explicit type, fall back on the type of the value
    * it points at. This is irrelevant for numerical constants, but important for
@@ -162,8 +162,8 @@ mpz_class VarDecl::count() const {
   return type->count();
 }
 
-const TypeExpr *VarDecl::get_type() const {
-  return type.get();
+Ptr<TypeExpr> VarDecl::get_type() const {
+  return type;
 }
 
 }

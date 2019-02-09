@@ -67,7 +67,7 @@ void Assignment::validate() const {
   if (!lhs->is_lvalue())
     throw Error("non-lvalue expression cannot be assigned to", loc);
 
-  const TypeExpr *lhs_type = lhs->type();
+  Ptr<TypeExpr> lhs_type = lhs->type();
   assert(lhs_type != nullptr && "left hand side of assignment has numeric "
     "literal type");
   lhs_type = lhs_type->resolve();
@@ -75,7 +75,7 @@ void Assignment::validate() const {
   if (lhs->is_readonly())
     throw Error("read-only expression cannot be assigned to", loc);
 
-  const TypeExpr *rhs_type = rhs->type();
+  Ptr<TypeExpr> rhs_type = rhs->type();
   if (rhs_type != nullptr)
     rhs_type = rhs_type->resolve();
 
@@ -308,7 +308,7 @@ bool Switch::operator==(const Node &other) const {
 
 void Switch::validate() const {
 
-  const TypeExpr *t = expr->type();
+  const Ptr<TypeExpr> t = expr->type();
   if (t != nullptr && !t->is_simple())
     throw Error("switch expression has complex type", expr->loc);
 

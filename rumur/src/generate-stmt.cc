@@ -23,7 +23,9 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+  const Ptr<TypeExpr> type = t.resolve();
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
 
     // The number of elements in this array as a C code string
     mpz_class ic = a->index_type->count() - 1;
@@ -48,7 +50,7 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
 
     std::string off = offset;
 
@@ -257,7 +259,8 @@ class Generator : public ConstStmtTraversal {
       && "complex non-lvalue in put statement");
 
     if (s.expr->type() != nullptr) {
-      if (auto e = dynamic_cast<const Enum*>(s.expr->type()->resolve())) {
+      const Ptr<TypeExpr> type = s.expr->type()->resolve();
+      if (auto e = dynamic_cast<const Enum*>(type.get())) {
         *out
           << "{\n"
           << "  value_t v = ";
