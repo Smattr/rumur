@@ -104,7 +104,7 @@ def main(args):
 
   # if the user asked for help or version information, Rumur will have exited
   # without generating a checker
-  for arg in args:
+  for arg in args[1:]:
     if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
       return 0 if ok else -1
 
