@@ -442,7 +442,7 @@ std::string Sub::to_string() const {
 }
 
 void Negative::validate() const {
-  if (rhs->type() != nullptr && isa<Range>(rhs->type()->resolve()))
+  if (rhs->type() != nullptr && !isa<Range>(rhs->type()->resolve()))
     throw Error("expression cannot be negated", rhs->loc);
 }
 
