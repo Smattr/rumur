@@ -285,7 +285,7 @@ std::string Geq::to_string() const {
 }
 
 void EquatableBinaryExpr::validate() const {
-  if (!types_equatable(*lhs->type(), *rhs->type()))
+  if (!lhs->type()->equatable_with(*rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
 

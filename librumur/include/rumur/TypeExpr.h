@@ -43,6 +43,11 @@ struct TypeExpr : public Node {
    * is_simple() returns true.
    */
   virtual bool constant() const;
+
+  /* Whether an expression of this type can be compared to an expression of the
+   * other given type.
+   */
+  bool equatable_with(const TypeExpr &other) const;
 };
 
 struct Range : public TypeExpr {
@@ -156,7 +161,5 @@ struct TypeExprID : public TypeExpr {
   std::string to_string() const final;
   bool constant() const final;
 };
-
-bool types_equatable(const TypeExpr &t1, const TypeExpr &t2);
 
 }

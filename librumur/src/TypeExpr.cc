@@ -60,6 +60,19 @@ bool TypeExpr::constant() const {
   throw Error("complex types do not have bounds to query", loc);
 }
 
+bool TypeExpr::equatable_with(const TypeExpr &other) const {
+
+  const Ptr<TypeExpr> t1 = resolve();
+  const Ptr<TypeExpr> t2 = other.resolve();
+
+  if (isa<Range>(t1)) {
+    if (isa<Range>(t2))
+      return true;
+  }
+
+  return *t1 == *t2;
+}
+
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
   const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
@@ -424,19 +437,6 @@ bool TypeExprID::constant() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->constant();
-}
-
-bool types_equatable(const TypeExpr &t1, const TypeExpr &t2) {
-
-  const Ptr<TypeExpr> te1 = t1.resolve();
-  const Ptr<TypeExpr> te2 = t2.resolve();
-
-  if (isa<Range>(te1)) {
-    if (isa<Range>(te2))
-      return true;
-  }
-
-  return *te1 == *te2;
 }
 
 }

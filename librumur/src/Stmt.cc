@@ -311,7 +311,7 @@ void Switch::validate() const {
 
   for (const SwitchCase &c : cases) {
     for (const Ptr<Expr> &e : c.matches) {
-      if (!types_equatable(*t, *e->type()))
+      if (!t->equatable_with(*e->type()))
         throw Error("expression in case cannot be compared to switch "
           "expression", e->loc);
     }
