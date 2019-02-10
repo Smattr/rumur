@@ -761,6 +761,10 @@ bool FunctionCall::constant() const {
 Ptr<TypeExpr> FunctionCall::type() const {
   if (function == nullptr)
     throw Error("unresolved function call \"" + name + "\"", loc);
+
+  if (function->return_type == nullptr)
+    throw Error("procedure calls have no type", loc);
+
   return function->return_type;
 }
 
