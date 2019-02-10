@@ -388,6 +388,9 @@ struct FunctionCall : public Expr {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
+  // Whether this is a child of a ProcedureCall
+  bool within_procedure_call = false;
+
   FunctionCall(const std::string &name_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~FunctionCall() = default;

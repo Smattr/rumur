@@ -198,7 +198,10 @@ bool If::operator==(const Node &other) const {
 
 ProcedureCall::ProcedureCall(const std::string &name,
   const std::vector<Ptr<Expr>> &arguments, const location &loc_):
-  Stmt(loc_), call(name, arguments, loc_) { }
+  Stmt(loc_), call(name, arguments, loc_) {
+
+  call.within_procedure_call = true;
+}
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);

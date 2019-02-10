@@ -785,6 +785,8 @@ bool FunctionCall::operator==(const Node &other) const {
   }
   if (!vector_eq(arguments, o->arguments))
     return false;
+  if (within_procedure_call != o->within_procedure_call)
+    return false;
   return true;
 }
 
@@ -794,6 +796,10 @@ void FunctionCall::validate() const {
 
   if (arguments.size() != function->parameters.size())
     throw Error("incorrect number of parameters passed to function", loc);
+
+  if (!within_procedure_call && function->return_type == nullptr)
+    throw Error("procedure (function with no return value) called in "
+      "expression", loc);
 
   auto it = arguments.begin();
   for (const Ptr<VarDecl> &v : function->parameters) {
