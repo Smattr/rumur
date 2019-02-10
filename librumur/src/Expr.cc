@@ -21,7 +21,7 @@
 namespace rumur {
 
 bool Expr::is_boolean() const {
-  return type() != nullptr && *type()->resolve() == *Boolean;
+  return *type()->resolve() == *Boolean;
 }
 
 bool Expr::is_lvalue() const {
@@ -184,31 +184,6 @@ std::string Not::to_string() const {
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
 
-  if (lhs.type() == nullptr) {
-    // LHS is a numeric literal
-
-    if (rhs.type() == nullptr)
-      return true;
-
-    const Ptr<TypeExpr> t = rhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-  
-  if (rhs.type() == nullptr) {
-    // RHS is a numeric literal
-
-    const Ptr<TypeExpr> t = lhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-
   const Ptr<TypeExpr> t1 = lhs.type()->resolve();
   const Ptr<TypeExpr> t2 = rhs.type()->resolve();
 
@@ -358,31 +333,6 @@ std::string Neq::to_string() const {
 
 static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 
-  if (lhs.type() == nullptr) {
-    // LHS is a numeric literal
-
-    if (rhs.type() == nullptr)
-      return true;
-
-    const Ptr<TypeExpr> t = rhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-  
-  if (rhs.type() == nullptr) {
-    // RHS is a numeric literal
-
-    const Ptr<TypeExpr> t = lhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-
   const Ptr<TypeExpr> t1 = lhs.type()->resolve();
   const Ptr<TypeExpr> t2 = rhs.type()->resolve();
 
@@ -442,7 +392,7 @@ std::string Sub::to_string() const {
 }
 
 void Negative::validate() const {
-  if (rhs->type() != nullptr && !isa<Range>(rhs->type()->resolve()))
+  if (!isa<Range>(rhs->type()->resolve()))
     throw Error("expression cannot be negated", rhs->loc);
 }
 
@@ -617,9 +567,7 @@ bool Field::constant() const {
 Ptr<TypeExpr> Field::type() const {
 
   const Ptr<TypeExpr> root = record->type();
-  assert(root != nullptr && "invalid left hand side of field expression");
   const Ptr<TypeExpr> resolved = root->resolve();
-  assert(resolved != nullptr && "invalid left hand side of field expression");
 
   auto r = dynamic_cast<const Record*>(resolved.get());
   assert(r != nullptr && "invalid left hand side of field expression");
@@ -643,9 +591,7 @@ bool Field::operator==(const Node &other) const {
 
 void Field::validate() const {
 
-  Ptr<TypeExpr> root = record->type();
-  if (root != nullptr)
-    root = root->resolve();
+  const Ptr<TypeExpr> root = record->type()->resolve();
 
   if (!isa<Record>(root))
     throw Error("left hand side of field expression is not a record", loc);
@@ -704,27 +650,23 @@ bool Element::operator==(const Node &other) const {
 
 void Element::validate() const {
 
-  Ptr<TypeExpr> t = array->type();
-  if (t != nullptr)
-    t = t->resolve();
+  const Ptr<TypeExpr> t = array->type()->resolve();;
 
   if (!isa<Array>(t))
     throw Error("array index on an expression that is not an array", loc);
 
   auto a = dynamic_cast<const Array&>(*t);
 
-  Ptr<TypeExpr> e = index->type();
-  if (e != nullptr)
-    e = e->resolve();
+  const Ptr<TypeExpr> e = index->type()->resolve();
 
   const Ptr<TypeExpr> index_type = a.index_type->resolve();
 
   if (isa<Range>(index_type)) {
-    if (e != nullptr && !isa<Range>(e))
+    if (!isa<Range>(e))
       throw Error("array indexed using an expression of incorrect type", loc);
 
   } else {
-    if (e == nullptr || *index_type != *e)
+    if (*index_type != *e)
       throw Error("array indexed using an expression of incorrect type", loc);
 
   }
@@ -815,20 +757,11 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
         (*it)->loc);
 
-    Ptr<TypeExpr> arg_type = (*it)->type();
-    if (arg_type != nullptr)
-      arg_type = arg_type->resolve();
+    const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
 
-    Ptr<TypeExpr> param_type = v->get_type();
-    assert(param_type != nullptr && "function parameter has no type");
-    param_type = param_type->resolve();
+    const Ptr<TypeExpr> param_type = v->get_type()->resolve();
 
-    if (arg_type == nullptr) {
-      if (!isa<Range>(param_type))
-        throw Error("function call contains parameter of incorrect type",
-          (*it)->loc);
-
-    } else if (isa<Range>(arg_type)) {
+    if (isa<Range>(arg_type)) {
       if (!isa<Range>(param_type))
         throw Error("function call contains parameter of incorrect type",
           (*it)->loc);
@@ -1090,7 +1023,7 @@ void IsUndefined::validate() const {
       expr->loc);
 
   const Ptr<TypeExpr> t = expr->type();
-  if (t != nullptr && !t->is_simple())
+  if (!t->is_simple())
     throw Error("complex type used in isundefined", expr->loc);
 
 }
