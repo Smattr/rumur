@@ -157,6 +157,6 @@ struct TypeExprID : public TypeExpr {
   bool constant() const final;
 };
 
-bool types_equatable(const Ptr<TypeExpr> t1, const Ptr<TypeExpr> t2);
+bool types_equatable(const TypeExpr &t1, const TypeExpr &t2);
 
 }

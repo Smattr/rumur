@@ -426,41 +426,10 @@ bool TypeExprID::constant() const {
   return referent->constant();
 }
 
-bool types_equatable(const Ptr<TypeExpr> t1, const Ptr<TypeExpr> t2) {
+bool types_equatable(const TypeExpr &t1, const TypeExpr &t2) {
 
-  if (t1 == nullptr) {
-    // t1 is a numeric literal type
-
-    if (t2 == nullptr)
-      return true;
-
-    const Ptr<TypeExpr> t = t2->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    if (isa<Scalarset>(t))
-      return true;
-
-    return false;
-  }
-
-  if (t2 == nullptr) {
-    // t2 is a numeric literal type
-
-    const Ptr<TypeExpr> t = t1->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    if (isa<Scalarset>(t))
-      return true;
-
-    return false;
-  }
-
-  const Ptr<TypeExpr> te1 = t1->resolve();
-  const Ptr<TypeExpr> te2 = t2->resolve();
+  const Ptr<TypeExpr> te1 = t1.resolve();
+  const Ptr<TypeExpr> te2 = t2.resolve();
 
   if (isa<Range>(te1)) {
     if (isa<Range>(te2))
