@@ -33,7 +33,7 @@ bool Number::constant() const {
 }
 
 Ptr<TypeExpr> Number::type() const {
-  return nullptr;
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Number::constant_fold() const {

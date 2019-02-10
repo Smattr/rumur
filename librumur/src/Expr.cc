@@ -404,7 +404,7 @@ Add *Add::clone() const {
 }
 
 Ptr<TypeExpr> Add::type() const {
-  return nullptr;
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Add::constant_fold() const {
@@ -425,7 +425,7 @@ Sub *Sub::clone() const {
 }
 
 Ptr<TypeExpr> Sub::type() const {
-  return nullptr;
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Sub::constant_fold() const {
@@ -451,7 +451,7 @@ Negative *Negative::clone() const {
 }
 
 Ptr<TypeExpr> Negative::type() const {
-  return rhs->type();
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Negative::constant_fold() const {
@@ -472,7 +472,7 @@ Mul *Mul::clone() const {
 }
 
 Ptr<TypeExpr> Mul::type() const {
-  return nullptr;
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Mul::constant_fold() const {
@@ -493,7 +493,7 @@ Div *Div::clone() const {
 }
 
 Ptr<TypeExpr> Div::type() const {
-  return nullptr;
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Div::constant_fold() const {
@@ -518,7 +518,7 @@ Mod *Mod::clone() const {
 }
 
 Ptr<TypeExpr> Mod::type() const {
-  return nullptr;
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Mod::constant_fold() const {
