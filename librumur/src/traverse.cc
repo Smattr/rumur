@@ -316,6 +316,311 @@ void BaseTraversal::dispatch(Node &n) {
   assert(!"missed case in BaseTraversal::dispatch");
 }
 
+void Traversal::visit(Add &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(AliasDecl &n) {
+  dispatch(*n.value);
+}
+
+void Traversal::visit(AliasRule &n) {
+  for (auto &a : n.aliases)
+    dispatch(*a);
+  for (auto &r : n.rules)
+    dispatch(*r);
+}
+
+void Traversal::visit(AliasStmt &n) {
+  for (auto &a : n.aliases)
+    dispatch(*a);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(And &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Array &n) {
+  dispatch(*n.index_type);
+  dispatch(*n.element_type);
+}
+
+void Traversal::visit(Assignment &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void Traversal::visit_bexpr(BinaryExpr &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void Traversal::visit(Clear &n) {
+  dispatch(*n.rhs);
+}
+
+void Traversal::visit(ConstDecl &n) {
+  dispatch(*n.value);
+}
+
+void Traversal::visit(Div &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Element &n) {
+  dispatch(*n.array);
+  dispatch(*n.index);
+}
+
+void Traversal::visit(Enum&) { }
+
+void Traversal::visit(Eq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(ErrorStmt&) { }
+
+void Traversal::visit(Exists &n) {
+  dispatch(n.quantifier);
+  dispatch(*n.expr);
+}
+
+void Traversal::visit(ExprID&) { }
+
+void Traversal::visit(Field &n) {
+  dispatch(*n.record);
+}
+
+void Traversal::visit(For &n) {
+  dispatch(n.quantifier);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(Forall &n) {
+  dispatch(n.quantifier);
+  dispatch(*n.expr);
+}
+
+void Traversal::visit(Function &n) {
+  for (auto &p : n.parameters)
+    dispatch(*p);
+  if (n.return_type != nullptr)
+    dispatch(*n.return_type);
+  for (auto &d : n.decls)
+    dispatch(*d);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(FunctionCall &n) {
+  for (auto &a : n.arguments)
+    dispatch(*a);
+}
+
+void Traversal::visit(Geq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Gt &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(If &n) {
+  for (IfClause &c : n.clauses)
+    dispatch(c);
+}
+
+void Traversal::visit(IfClause &n) {
+  if (n.condition != nullptr)
+    dispatch(*n.condition);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(Implication &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(IsUndefined &n) {
+  dispatch(*n.expr);
+}
+
+void Traversal::visit(Leq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Lt &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Mod &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Model &n) {
+  for (auto &d : n.decls)
+    dispatch(*d);
+  for (auto &f : n.functions)
+    dispatch(*f);
+  for (auto &r : n.rules)
+    dispatch(*r);
+}
+
+void Traversal::visit(Mul &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Negative &n) {
+  visit_uexpr(static_cast<UnaryExpr&>(n));
+}
+
+void Traversal::visit(Neq &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Not &n) {
+  visit_uexpr(static_cast<UnaryExpr&>(n));
+}
+
+void Traversal::visit(Number&) { }
+
+void Traversal::visit(Or &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(ProcedureCall &n) {
+  dispatch(n.call);
+}
+
+void Traversal::visit(Property &n) {
+  dispatch(*n.expr);
+}
+
+void Traversal::visit(PropertyRule &n) {
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
+  dispatch(n.property);
+}
+
+void Traversal::visit(PropertyStmt &n) {
+  dispatch(n.property);
+}
+
+void Traversal::visit(Put &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void Traversal::visit(Quantifier &n) {
+  if (n.type != nullptr)
+    dispatch(*n.type);
+  if (n.from != nullptr)
+    dispatch(*n.from);
+  if (n.to != nullptr)
+    dispatch(*n.to);
+  if (n.step != nullptr)
+    dispatch(*n.step);
+}
+
+void Traversal::visit(Range &n) {
+  dispatch(*n.min);
+  dispatch(*n.max);
+}
+
+void Traversal::visit(Record &n) {
+  for (auto &f : n.fields)
+    dispatch(*f);
+}
+
+void Traversal::visit(Return &n) {
+  if (n.expr != nullptr)
+    dispatch(*n.expr);
+}
+
+void Traversal::visit(Ruleset &n) {
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
+  for (auto &r : n.rules)
+    dispatch(*r);
+}
+
+void Traversal::visit(Scalarset &n) {
+  dispatch(*n.bound);
+}
+
+void Traversal::visit(SimpleRule &n) {
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
+  if (n.guard != nullptr)
+    dispatch(*n.guard);
+  for (auto &d : n.decls)
+    dispatch(*d);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(StartState &n) {
+  for (Quantifier &q : n.quantifiers)
+    dispatch(q);
+  for (auto &d : n.decls)
+    dispatch(*d);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(Sub &n) {
+  visit_bexpr(static_cast<BinaryExpr&>(n));
+}
+
+void Traversal::visit(Switch &n) {
+  dispatch(*n.expr);
+  for (SwitchCase &c : n.cases)
+    dispatch(c);
+}
+
+void Traversal::visit(SwitchCase &n) {
+  for (auto &m : n.matches)
+    dispatch(*m);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+void Traversal::visit(Ternary &n) {
+  dispatch(*n.cond);
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void Traversal::visit(TypeDecl &n) {
+  dispatch(*n.value);
+}
+
+void Traversal::visit(TypeExprID&) { }
+
+void Traversal::visit_uexpr(UnaryExpr &n) {
+  dispatch(*n.rhs);
+}
+
+void Traversal::visit(Undefine &n) {
+  dispatch(*n.rhs);
+}
+
+void Traversal::visit(VarDecl &n) {
+  if (n.type != nullptr)
+    dispatch(*n.type);
+}
+
+void Traversal::visit(While &n) {
+  dispatch(*n.condition);
+  for (auto &s : n.body)
+    dispatch(*s);
+}
+
+Traversal::~Traversal() { }
+
 void ConstBaseTraversal::dispatch(const Node &n) {
 
   if (auto i = dynamic_cast<const Add*>(&n)) {

@@ -89,6 +89,77 @@ class BaseTraversal {
   virtual ~BaseTraversal() = default;
 };
 
+class Traversal : public BaseTraversal {
+
+ public:
+  void visit(Add &n) override;
+  void visit(AliasDecl &n) override;
+  void visit(AliasRule &n) override;
+  void visit(AliasStmt &n) override;
+  void visit(And &n) override;
+  void visit(Array &n) override;
+  void visit(Assignment &n) override;
+  void visit(Clear &n) override;
+  void visit(ConstDecl &n) override;
+  void visit(Div &n) override;
+  void visit(Element &n) override;
+  void visit(Enum&) override;
+  void visit(Eq &n) override;
+  void visit(ErrorStmt&) override;
+  void visit(Exists &n) override;
+  void visit(ExprID &n) override;
+  void visit(Field &n) override;
+  void visit(For &n) override;
+  void visit(Forall &n) override;
+  void visit(Function &n) override;
+  void visit(FunctionCall &n) override;
+  void visit(Geq &n) override;
+  void visit(Gt &n) override;
+  void visit(If &n) override;
+  void visit(IfClause &n) override;
+  void visit(Implication &n) override;
+  void visit(IsUndefined &n) override;
+  void visit(Leq &n) override;
+  void visit(Lt &n) override;
+  void visit(Model &n) override;
+  void visit(Mod &n) override;
+  void visit(Mul &n) override;
+  void visit(Negative &n) override;
+  void visit(Neq &n) override;
+  void visit(Not &n) override;
+  void visit(Number &n) override;
+  void visit(Or &n) override;
+  void visit(ProcedureCall &n) override;
+  void visit(Property &n) override;
+  void visit(PropertyRule &n) override;
+  void visit(PropertyStmt &n) override;
+  void visit(Put &n) override;
+  void visit(Quantifier &n) override;
+  void visit(Range &n) override;
+  void visit(Record &n) override;
+  void visit(Return &n) override;
+  void visit(Ruleset &n) override;
+  void visit(Scalarset &n) override;
+  void visit(SimpleRule &n) override;
+  void visit(StartState &n) override;
+  void visit(Sub &n) override;
+  void visit(Switch &n) override;
+  void visit(SwitchCase &n) override;
+  void visit(Ternary &n) override;
+  void visit(TypeDecl &n) override;
+  void visit(TypeExprID &n) override;
+  void visit(Undefine &n) override;
+  void visit(VarDecl &n) override;
+  void visit(While &n) override;
+
+  // Force class to be abstract
+  virtual ~Traversal() = 0;
+
+ private:
+  void visit_bexpr(BinaryExpr &n);
+  void visit_uexpr(UnaryExpr &n);
+};
+
 // Read-only equivalent of BaseTraversal.
 class ConstBaseTraversal {
 
