@@ -80,7 +80,7 @@ class Generator : public ConstStmtTraversal {
  public:
   Generator(std::ostream &o): out(&o) { }
 
-  void visit(const AliasStmt &s) final {
+  void visit_aliasstmt(const AliasStmt &s) final {
     *out << "  {\n";
 
     for (auto &a : s.aliases) {
@@ -98,7 +98,7 @@ class Generator : public ConstStmtTraversal {
     *out << "  }\n";
   }
     
-  void visit(const Assignment &s) final {
+  void visit_assignment(const Assignment &s) final {
 
     if (s.lhs->type()->is_simple()) {
       const std::string lb = s.lhs->type()->lower_bound();
@@ -119,7 +119,7 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Clear &s) final {
+  void visit_clear(const Clear &s) final {
     *out
       << "do {\n"
       << "  struct handle root = ";
@@ -134,11 +134,11 @@ class Generator : public ConstStmtTraversal {
     *out << "} while (0)";
   }
 
-  void visit(const ErrorStmt &s) final {
+  void visit_errorstmt(const ErrorStmt &s) final {
     *out << "error(s, false, \"" << s.message << "\")";
   }
 
-  void visit(const For &s) final {
+  void visit_for(const For &s) final {
     generate_quantifier_header(*out, s.quantifier);
     for (auto &st : s.body) {
       *out << "  ";
@@ -148,7 +148,7 @@ class Generator : public ConstStmtTraversal {
     generate_quantifier_footer(*out, s.quantifier);
   }
 
-  void visit(const If &s) final {
+  void visit_if(const If &s) final {
     bool first = true;
     for (const IfClause &c : s.clauses) {
 
@@ -195,11 +195,11 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const ProcedureCall &s) final {
+  void visit_procedurecall(const ProcedureCall &s) final {
     generate_rvalue(*out, s.call);
   }
 
-  void visit(const PropertyStmt &s) final {
+  void visit_propertystmt(const PropertyStmt &s) final {
     switch (s.property.category) {
 
       case Property::DISABLED:
@@ -234,7 +234,7 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Put &s) final {
+  void visit_put(const Put &s) final {
 
     if (s.expr == nullptr) {
       *out << "printf(\"%s\", \"" << s.value << "\")";
@@ -292,7 +292,7 @@ class Generator : public ConstStmtTraversal {
     *out << ").data)";
   }
 
-  void visit(const Return &s) final {
+  void visit_return(const Return &s) final {
 
     if (s.expr == nullptr) {
       *out << "return";
@@ -316,7 +316,7 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Switch &s) final {
+  void visit_switch(const Switch &s) final {
     *out
       << "do {\n"
       // Mark the following unused in case there are no cases
@@ -357,13 +357,13 @@ class Generator : public ConstStmtTraversal {
     *out << "} while (0)";
   }
 
-  void visit(const Undefine &s) final {
+  void visit_undefine(const Undefine &s) final {
     *out << "handle_zero(";
     generate_lvalue(*out, *s.rhs);
     *out << ")";
   }
 
-  void visit(const While &s) final {
+  void visit_while(const While &s) final {
     *out << "while (";
     generate_rvalue(*out, *s.condition);
     *out << ") {\n";

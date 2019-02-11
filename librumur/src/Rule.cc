@@ -27,11 +27,11 @@ namespace {
     /* Avoid recursing into functions, that may have return statements with an
      * expression.
      */
-    void visit(const Function&) final { }
-    void visit(const FunctionCall&) final { }
-    void visit(const ProcedureCall&) final { }
+    void visit_function(const Function&) final { }
+    void visit_functioncall(const FunctionCall&) final { }
+    void visit_procedurecall(const ProcedureCall&) final { }
 
-    void visit(const Return &n) final {
+    void visit_return(const Return &n) final {
       if (n.expr != nullptr)
         throw Error("return statement in rule or startstate returns a value",
           n.loc);

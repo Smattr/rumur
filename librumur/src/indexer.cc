@@ -12,16 +12,16 @@
 
 namespace rumur {
 
-void Indexer::visit(Add &n) {
+void Indexer::visit_add(Add &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(AliasDecl &n) {
+void Indexer::visit_aliasdecl(AliasDecl &n) {
   n.unique_id = next++;
   dispatch(*n.value);
 }
 
-void Indexer::visit(AliasRule &n) {
+void Indexer::visit_aliasrule(AliasRule &n) {
   n.unique_id = next++;
   for (auto &a : n.aliases)
     dispatch(*a);
@@ -29,7 +29,7 @@ void Indexer::visit(AliasRule &n) {
     dispatch(*r);
 }
 
-void Indexer::visit(AliasStmt &n) {
+void Indexer::visit_aliasstmt(AliasStmt &n) {
   n.unique_id = next++;
   for (auto &a : n.aliases)
     dispatch(*a);
@@ -37,17 +37,17 @@ void Indexer::visit(AliasStmt &n) {
     dispatch(*s);
 }
 
-void Indexer::visit(And &n) {
+void Indexer::visit_and(And &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Array &n) {
+void Indexer::visit_array(Array &n) {
   n.unique_id = next++;
   dispatch(*n.index_type);
   dispatch(*n.element_type);
 }
 
-void Indexer::visit(Assignment &n) {
+void Indexer::visit_assignment(Assignment &n) {
   n.unique_id = next++;
   dispatch(*n.lhs);
   dispatch(*n.rhs);
@@ -59,67 +59,67 @@ void Indexer::visit_bexpr(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
-void Indexer::visit(Clear &n) {
+void Indexer::visit_clear(Clear &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
 }
 
-void Indexer::visit(ConstDecl &n) {
+void Indexer::visit_constdecl(ConstDecl &n) {
   n.unique_id = next++;
   dispatch(*n.value);
 }
 
-void Indexer::visit(Div &n) {
+void Indexer::visit_div(Div &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Element &n) {
+void Indexer::visit_element(Element &n) {
   n.unique_id = next++;
   dispatch(*n.array);
   dispatch(*n.index);
 }
 
-void Indexer::visit(Enum &n) {
+void Indexer::visit_enum(Enum &n) {
   n.unique_id = next++;
 }
 
-void Indexer::visit(Eq &n) {
+void Indexer::visit_eq(Eq &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(ErrorStmt &n) {
+void Indexer::visit_errorstmt(ErrorStmt &n) {
   n.unique_id = next++;
 }
 
-void Indexer::visit(Exists &n) {
+void Indexer::visit_exists(Exists &n) {
   n.unique_id = next++;
   dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
-void Indexer::visit(ExprID &n) {
+void Indexer::visit_exprid(ExprID &n) {
   n.unique_id = next++;
 }
 
-void Indexer::visit(Field &n) {
+void Indexer::visit_field(Field &n) {
   n.unique_id = next++;
   dispatch(*n.record);
 }
 
-void Indexer::visit(For &n) {
+void Indexer::visit_for(For &n) {
   n.unique_id = next++;
   dispatch(n.quantifier);
   for (auto &s : n.body)
     dispatch(*s);
 }
 
-void Indexer::visit(Forall &n) {
+void Indexer::visit_forall(Forall &n) {
   n.unique_id = next++;
   dispatch(n.quantifier);
   dispatch(*n.expr);
 }
 
-void Indexer::visit(Function &n) {
+void Indexer::visit_function(Function &n) {
   n.unique_id = next++;
   for (auto &p : n.parameters)
     dispatch(*p);
@@ -131,27 +131,27 @@ void Indexer::visit(Function &n) {
     dispatch(*s);
 }
 
-void Indexer::visit(FunctionCall &n) {
+void Indexer::visit_functioncall(FunctionCall &n) {
   n.unique_id = next++;
   for (auto &a : n.arguments)
     dispatch(*a);
 }
 
-void Indexer::visit(Geq &n) {
+void Indexer::visit_geq(Geq &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Gt &n) {
+void Indexer::visit_gt(Gt &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(If &n) {
+void Indexer::visit_if(If &n) {
   n.unique_id = next++;
   for (IfClause &c : n.clauses)
     dispatch(c);
 }
 
-void Indexer::visit(IfClause &n) {
+void Indexer::visit_ifclause(IfClause &n) {
   n.unique_id = next++;
   if (n.condition != nullptr)
     dispatch(*n.condition);
@@ -159,28 +159,28 @@ void Indexer::visit(IfClause &n) {
     dispatch(*s);
 }
 
-void Indexer::visit(Implication &n) {
+void Indexer::visit_implication(Implication &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(IsUndefined &n) {
+void Indexer::visit_isundefined(IsUndefined &n) {
   n.unique_id = next++;
   dispatch(*n.expr);
 }
 
-void Indexer::visit(Leq &n) {
+void Indexer::visit_leq(Leq &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Lt &n) {
+void Indexer::visit_lt(Lt &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Mod &n) {
+void Indexer::visit_mod(Mod &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Model &n) {
+void Indexer::visit_model(Model &n) {
   n.unique_id = next++;
   for (auto &d : n.decls)
     dispatch(*d);
@@ -190,59 +190,59 @@ void Indexer::visit(Model &n) {
     dispatch(*r);
 }
 
-void Indexer::visit(Mul &n) {
+void Indexer::visit_mul(Mul &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Negative &n) {
+void Indexer::visit_negative(Negative &n) {
   visit_uexpr(static_cast<UnaryExpr&>(n));
 }
 
-void Indexer::visit(Neq &n) {
+void Indexer::visit_neq(Neq &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Not &n) {
+void Indexer::visit_not(Not &n) {
   visit_uexpr(static_cast<UnaryExpr&>(n));
 }
 
-void Indexer::visit(Number &n) {
+void Indexer::visit_number(Number &n) {
   n.unique_id = next++;
 }
 
-void Indexer::visit(Or &n) {
+void Indexer::visit_or(Or &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(ProcedureCall &n) {
+void Indexer::visit_procedurecall(ProcedureCall &n) {
   n.unique_id = next++;
   dispatch(n.call);
 }
 
-void Indexer::visit(Property &n) {
+void Indexer::visit_property(Property &n) {
   n.unique_id = next++;
   dispatch(*n.expr);
 }
 
-void Indexer::visit(PropertyRule &n) {
+void Indexer::visit_propertyrule(PropertyRule &n) {
   n.unique_id = next++;
   for (Quantifier &q : n.quantifiers)
     dispatch(q);
   dispatch(n.property);
 }
 
-void Indexer::visit(PropertyStmt &n) {
+void Indexer::visit_propertystmt(PropertyStmt &n) {
   n.unique_id = next++;
   dispatch(n.property);
 }
 
-void Indexer::visit(Put &n) {
+void Indexer::visit_put(Put &n) {
   n.unique_id = next++;
   if (n.expr != nullptr)
     dispatch(*n.expr);
 }
 
-void Indexer::visit(Quantifier &n) {
+void Indexer::visit_quantifier(Quantifier &n) {
   n.unique_id = next++;
   if (n.type != nullptr)
     dispatch(*n.type);
@@ -254,25 +254,25 @@ void Indexer::visit(Quantifier &n) {
     dispatch(*n.step);
 }
 
-void Indexer::visit(Range &n) {
+void Indexer::visit_range(Range &n) {
   n.unique_id = next++;
   dispatch(*n.min);
   dispatch(*n.max);
 }
 
-void Indexer::visit(Record &n) {
+void Indexer::visit_record(Record &n) {
   n.unique_id = next++;
   for (auto &f : n.fields)
     dispatch(*f);
 }
 
-void Indexer::visit(Return &n) {
+void Indexer::visit_return(Return &n) {
   n.unique_id = next++;
   if (n.expr != nullptr)
     dispatch(*n.expr);
 }
 
-void Indexer::visit(Ruleset &n) {
+void Indexer::visit_ruleset(Ruleset &n) {
   n.unique_id = next++;
   for (Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -280,12 +280,12 @@ void Indexer::visit(Ruleset &n) {
     dispatch(*r);
 }
 
-void Indexer::visit(Scalarset &n) {
+void Indexer::visit_scalarset(Scalarset &n) {
   n.unique_id = next++;
   dispatch(*n.bound);
 }
 
-void Indexer::visit(SimpleRule &n) {
+void Indexer::visit_simplerule(SimpleRule &n) {
   n.unique_id = next++;
   for (Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -297,7 +297,7 @@ void Indexer::visit(SimpleRule &n) {
     dispatch(*s);
 }
 
-void Indexer::visit(StartState &n) {
+void Indexer::visit_startstate(StartState &n) {
   n.unique_id = next++;
   for (Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -307,18 +307,18 @@ void Indexer::visit(StartState &n) {
     dispatch(*s);
 }
 
-void Indexer::visit(Sub &n) {
+void Indexer::visit_sub(Sub &n) {
   visit_bexpr(static_cast<BinaryExpr&>(n));
 }
 
-void Indexer::visit(Switch &n) {
+void Indexer::visit_switch(Switch &n) {
   n.unique_id = next++;
   dispatch(*n.expr);
   for (SwitchCase &c : n.cases)
     dispatch(c);
 }
 
-void Indexer::visit(SwitchCase &n) {
+void Indexer::visit_switchcase(SwitchCase &n) {
   n.unique_id = next++;
   for (auto &m : n.matches)
     dispatch(*m);
@@ -326,19 +326,19 @@ void Indexer::visit(SwitchCase &n) {
     dispatch(*s);
 }
 
-void Indexer::visit(Ternary &n) {
+void Indexer::visit_ternary(Ternary &n) {
   n.unique_id = next++;
   dispatch(*n.cond);
   dispatch(*n.lhs);
   dispatch(*n.rhs);
 }
 
-void Indexer::visit(TypeDecl &n) {
+void Indexer::visit_typedecl(TypeDecl &n) {
   n.unique_id = next++;
   dispatch(*n.value);
 }
 
-void Indexer::visit(TypeExprID &n) {
+void Indexer::visit_typeexprid(TypeExprID &n) {
   n.unique_id = next++;
 }
 
@@ -347,17 +347,17 @@ void Indexer::visit_uexpr(UnaryExpr &n) {
   dispatch(*n.rhs);
 }
 
-void Indexer::visit(Undefine &n) {
+void Indexer::visit_undefine(Undefine &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
 }
 
-void Indexer::visit(VarDecl &n) {
+void Indexer::visit_vardecl(VarDecl &n) {
   n.unique_id = next++;
   dispatch(*n.type);
 }
 
-void Indexer::visit(While &n) {
+void Indexer::visit_while(While &n) {
   n.unique_id = next++;
   dispatch(*n.condition);
   for (auto &s : n.body)

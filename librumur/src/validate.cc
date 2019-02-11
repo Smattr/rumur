@@ -19,18 +19,18 @@ namespace {
 class Validator : public ConstBaseTraversal {
 
  public:
-  void visit(const Add &n) final {
+  void visit_add(const Add &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const AliasDecl &n) final {
+  void visit_aliasdecl(const AliasDecl &n) final {
     dispatch(*n.value);
     n.validate();
   }
 
-  void visit(const AliasRule &n) final {
+  void visit_aliasrule(const AliasRule &n) final {
     for (auto &a : n.aliases)
       dispatch(*a);
     for (auto &r : n.rules)
@@ -38,99 +38,99 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const AliasStmt &n) final {
+  void visit_aliasstmt(const AliasStmt &n) final {
     for (auto &a : n.aliases)
       dispatch(*a);
     for (auto &s : n.body)
       dispatch(*s);
   }
 
-  void visit(const And &n) final {
+  void visit_and(const And &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Array &n) final {
+  void visit_array(const Array &n) final {
     dispatch(*n.index_type);
     dispatch(*n.element_type);
     n.validate();
   }
 
-  void visit(const Assignment &n) final {
+  void visit_assignment(const Assignment &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Clear &n) final {
+  void visit_clear(const Clear &n) final {
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const ConstDecl &n) final {
+  void visit_constdecl(const ConstDecl &n) final {
     dispatch(*n.value);
     n.validate();
   }
 
-  void visit(const Div &n) final {
+  void visit_div(const Div &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Element &n) final {
+  void visit_element(const Element &n) final {
     dispatch(*n.array);
     dispatch(*n.index);
     n.validate();
   }
 
-  void visit(const Enum &n) final {
+  void visit_enum(const Enum &n) final {
     n.validate();
   }
 
-  void visit(const Eq &n) final {
+  void visit_eq(const Eq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const ErrorStmt &n) final {
+  void visit_errorstmt(const ErrorStmt &n) final {
     n.validate();
   }
 
-  void visit(const Exists &n) final {
+  void visit_exists(const Exists &n) final {
     dispatch(n.quantifier);
     dispatch(*n.expr);
     n.validate();
   }
 
-  void visit(const ExprID &n) final {
+  void visit_exprid(const ExprID &n) final {
     /* Don't descend into *n.value because we will already validate this
      * elsewhere.
      */
     n.validate();
   }
 
-  void visit(const Field &n) final {
+  void visit_field(const Field &n) final {
     dispatch(*n.record);
     n.validate();
   }
 
-  void visit(const For &n) final {
+  void visit_for(const For &n) final {
     dispatch(n.quantifier);
     for (auto &s : n.body)
       dispatch(*s);
     n.validate();
   }
 
-  void visit(const Forall &n) final {
+  void visit_forall(const Forall &n) final {
     dispatch(n.quantifier);
     dispatch(*n.expr);
     n.validate();
   }
 
-  void visit(const Function &n) final {
+  void visit_function(const Function &n) final {
     for (auto &p : n.parameters)
       dispatch(*p);
     if (n.return_type != nullptr)
@@ -142,31 +142,31 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const FunctionCall &n) final {
+  void visit_functioncall(const FunctionCall &n) final {
     for (auto &a : n.arguments)
       dispatch(*a);
     n.validate();
   }
 
-  void visit(const Geq &n) final {
+  void visit_geq(const Geq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Gt &n) final {
+  void visit_gt(const Gt &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const If &n) final {
+  void visit_if(const If &n) final {
     for (const IfClause &c : n.clauses)
       dispatch(c);
     n.validate();
   }
 
-  void visit(const IfClause &n) final {
+  void visit_ifclause(const IfClause &n) final {
     if (n.condition != nullptr)
       dispatch(*n.condition);
     for (auto &s : n.body)
@@ -174,36 +174,36 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Implication &n) final {
+  void visit_implication(const Implication &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const IsUndefined &n) final {
+  void visit_isundefined(const IsUndefined &n) final {
     dispatch(*n.expr);
     n.validate();
   }
 
-  void visit(const Leq &n) final {
+  void visit_leq(const Leq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Lt &n) final {
+  void visit_lt(const Lt &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Mod &n) final {
+  void visit_mod(const Mod &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Model &n) final {
+  void visit_model(const Model &n) final {
     for (auto &d : n.decls)
       dispatch(*d);
     for (auto &f : n.functions)
@@ -213,67 +213,67 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Mul &n) final {
+  void visit_mul(const Mul &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Negative &n) final {
+  void visit_negative(const Negative &n) final {
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Neq &n) final {
+  void visit_neq(const Neq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Not &n) final {
+  void visit_not(const Not &n) final {
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Number &n) final {
+  void visit_number(const Number &n) final {
     n.validate();
   }
 
-  void visit(const Or &n) final {
+  void visit_or(const Or &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const ProcedureCall &n) final {
+  void visit_procedurecall(const ProcedureCall &n) final {
     dispatch(n.call);
     n.validate();
   }
 
-  void visit(const Property &n) final {
+  void visit_property(const Property &n) final {
     dispatch(*n.expr);
     n.validate();
   }
 
-  void visit(const PropertyRule &n) final {
+  void visit_propertyrule(const PropertyRule &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
     dispatch(n.property);
     n.validate();
   }
 
-  void visit(const PropertyStmt &n) final {
+  void visit_propertystmt(const PropertyStmt &n) final {
     dispatch(n.property);
     n.validate();
   }
 
-  void visit(const Put &n) final {
+  void visit_put(const Put &n) final {
     if (n.expr != nullptr)
       dispatch(*n.expr);
     n.validate();
   }
 
-  void visit(const Quantifier &n) final {
+  void visit_quantifier(const Quantifier &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);
     if (n.from != nullptr)
@@ -285,25 +285,25 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Range &n) final {
+  void visit_range(const Range &n) final {
     dispatch(*n.min);
     dispatch(*n.max);
     n.validate();
   }
 
-  void visit(const Record &n) final {
+  void visit_record(const Record &n) final {
     for (auto &f : n.fields)
       dispatch(*f);
     n.validate();
   }
 
-  void visit(const Return &n) final {
+  void visit_return(const Return &n) final {
     if (n.expr != nullptr)
       dispatch(*n.expr);
     n.validate();
   }
 
-  void visit(const Ruleset &n) final {
+  void visit_ruleset(const Ruleset &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
     for (auto &r : n.rules)
@@ -311,12 +311,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Scalarset &n) final {
+  void visit_scalarset(const Scalarset &n) final {
     dispatch(*n.bound);
     n.validate();
   }
 
-  void visit(const SimpleRule &n) final {
+  void visit_simplerule(const SimpleRule &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
     if (n.guard != nullptr)
@@ -328,7 +328,7 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const StartState &n) final {
+  void visit_startstate(const StartState &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
     for (auto &d : n.decls)
@@ -338,20 +338,20 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Sub &n) final {
+  void visit_sub(const Sub &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const Switch &n) final {
+  void visit_switch(const Switch &n) final {
     dispatch(*n.expr);
     for (const SwitchCase &c : n.cases)
       dispatch(c);
     n.validate();
   }
 
-  void visit(const SwitchCase &n) final {
+  void visit_switchcase(const SwitchCase &n) final {
     for (auto &m : n.matches)
       dispatch(*m);
     for (auto &s : n.body)
@@ -359,37 +359,37 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit(const Ternary &n) final {
+  void visit_ternary(const Ternary &n) final {
     dispatch(*n.cond);
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const TypeDecl &n) final {
+  void visit_typedecl(const TypeDecl &n) final {
     dispatch(*n.value);
     n.validate();
   }
 
-  void visit(const TypeExprID &n) final {
+  void visit_typeexprid(const TypeExprID &n) final {
     /* Don't descend into *n.referent because we will already validate this
      * elsewhere.
      */
     n.validate();
   }
 
-  void visit(const Undefine &n) final {
+  void visit_undefine(const Undefine &n) final {
     dispatch(*n.rhs);
     n.validate();
   }
 
-  void visit(const VarDecl &n) final {
+  void visit_vardecl(const VarDecl &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);
     n.validate();
   }
 
-  void visit(const While &n) final {
+  void visit_while(const While &n) final {
     dispatch(*n.condition);
     for (auto &s : n.body)
       dispatch(*s);

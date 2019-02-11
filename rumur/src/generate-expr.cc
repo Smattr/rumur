@@ -33,25 +33,25 @@ class Generator : public ConstExprTraversal {
     return *this;
   }
 
-  void visit(const Add &n) final {
+  void visit_add(const Add &n) final {
     if (lvalue)
       invalid(n);
     *this << "add(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const And &n) final {
+  void visit_and(const And &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
 
-  void visit(const Div &n) final {
+  void visit_div(const Div &n) final {
     if (lvalue)
       invalid(n);
     *this << "divide(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Element &n) final {
+  void visit_element(const Element &n) final {
     if (lvalue && !n.is_lvalue())
       invalid(n);
 
@@ -103,7 +103,7 @@ class Generator : public ConstExprTraversal {
       *out << ")";
   }
 
-  void visit(const Eq &n) final {
+  void visit_eq(const Eq &n) final {
     if (lvalue)
       invalid(n);
 
@@ -118,7 +118,7 @@ class Generator : public ConstExprTraversal {
     }
   }
 
-  void visit(const Exists &n) final {
+  void visit_exists(const Exists &n) final {
     if (lvalue)
       invalid(n);
 
@@ -129,7 +129,7 @@ class Generator : public ConstExprTraversal {
     *out << " result; })";
   }
 
-  void visit(const ExprID &n) final {
+  void visit_exprid(const ExprID &n) final {
     if (n.value == nullptr)
       throw Error("symbol \"" + n.id + "\" in expression is unresolved", n.loc);
 
@@ -168,7 +168,7 @@ class Generator : public ConstExprTraversal {
     // variable. I suspect we should just handle that the same way as a local.
   }
 
-  void visit(const Field &n) final {
+  void visit_field(const Field &n) final {
     if (lvalue && !n.is_lvalue())
       invalid(n);
 
@@ -203,7 +203,7 @@ class Generator : public ConstExprTraversal {
     throw Error("left hand side of field expression is not a record", n.loc);
   }
 
-  void visit(const Forall &n) final {
+  void visit_forall(const Forall &n) final {
     if (lvalue)
       invalid(n);
 
@@ -214,7 +214,7 @@ class Generator : public ConstExprTraversal {
     *out << " result; })";
   }
 
-  void visit(const FunctionCall &n) final {
+  void visit_functioncall(const FunctionCall &n) final {
     if (lvalue)
       invalid(n);
 
@@ -417,61 +417,61 @@ class Generator : public ConstExprTraversal {
     *out << " })";
   }
 
-  void visit(const Geq &n) final {
+  void visit_geq(const Geq &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " >= " << *n.rhs << ")";
   }
 
-  void visit(const Gt &n) final {
+  void visit_gt(const Gt &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " > " << *n.rhs << ")";
   }
 
-  void visit(const Implication &n) final {
+  void visit_implication(const Implication &n) final {
     if (lvalue)
       invalid(n);
     *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
   }
 
-  void visit(const IsUndefined &n) final {
+  void visit_isundefined(const IsUndefined &n) final {
     *this << "handle_isundefined(";
     generate_lvalue(*out, *n.expr);
     *this << ")";
   }
 
-  void visit(const Leq &n) final {
+  void visit_leq(const Leq &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
   }
 
-  void visit(const Lt &n) final {
+  void visit_lt(const Lt &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " < " << *n.rhs << ")";
   }
 
-  void visit(const Mod &n) final {
+  void visit_mod(const Mod &n) final {
     if (lvalue)
       invalid(n);
     *this << "mod(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Mul &n) final {
+  void visit_mul(const Mul &n) final {
     if (lvalue)
       invalid(n);
     *this << "mul(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Negative &n) final {
+  void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
     *this << "negate(s, " << *n.rhs << ")";
   }
 
-  void visit(const Neq &n) final {
+  void visit_neq(const Neq &n) final {
     if (lvalue)
       invalid(n);
 
@@ -486,29 +486,29 @@ class Generator : public ConstExprTraversal {
     }
   }
 
-  void visit(const Not &n) final {
+  void visit_not(const Not &n) final {
     if (lvalue)
       invalid(n);
     *this << "(!" << *n.rhs << ")";
   }
 
-  void visit(const Number &n) final {
+  void visit_number(const Number &n) final {
     *out << "VALUE_C(" << n.value << ")";
   }
 
-  void visit(const Or &n) final {
+  void visit_or(const Or &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " || " << *n.rhs << ")";
   }
    
-  void visit(const Sub &n) final {
+  void visit_sub(const Sub &n) final {
     if (lvalue)
       invalid(n);
     *this << "sub(s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Ternary &n) final {
+  void visit_ternary(const Ternary &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";

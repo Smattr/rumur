@@ -87,7 +87,7 @@ unsigned long Model::assumption_count() const {
    public:
     unsigned long assumptions = 0;
 
-    void visit(const Property &n) final {
+    void visit_property(const Property &n) final {
       if (n.category == Property::ASSUMPTION)
         assumptions++;
       dispatch(*n.expr);

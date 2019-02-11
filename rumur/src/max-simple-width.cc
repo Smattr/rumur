@@ -13,35 +13,35 @@ class Traversal : public rumur::ConstTypeTraversal {
   /* Nothing required for complex types, but we do need to descend into their
    * children.
    */
-  void visit(const rumur::Array &n) {
+  void visit_array(const rumur::Array &n) {
     dispatch(*n.index_type);
     dispatch(*n.element_type);
   }
 
-  void visit(const rumur::Enum &n) {
+  void visit_enum(const rumur::Enum &n) {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit(const rumur::Range &n) {
+  void visit_range(const rumur::Range &n) {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit(const rumur::Record &n) {
+  void visit_record(const rumur::Record &n) {
     for (auto &f : n.fields)
       dispatch(*f);
   }
 
-  void visit(const rumur::Scalarset &n) {
+  void visit_scalarset(const rumur::Scalarset &n) {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit(const rumur::TypeExprID &n) {
+  void visit_typeexprid(const rumur::TypeExprID &n) {
     if (n.is_simple()) {
       mpz_class w = n.width();
       if (w > max)

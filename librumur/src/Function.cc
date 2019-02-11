@@ -63,7 +63,7 @@ void Function::validate() const {
    public:
     ReturnChecker(const TypeExpr *rt): return_type(rt) { }
 
-    void visit(const Return &n) final {
+    void visit_return(const Return &n) final {
 
       if (return_type == nullptr) {
         if (n.expr != nullptr)

@@ -29,7 +29,7 @@ class Generator : public ConstTypeTraversal {
     out(caller.out), prefix(p), handle(h), support_diff(caller.support_diff),
     support_xml(caller.support_xml) { }
 
-  void visit(const Array &n) final {
+  void visit_array(const Array &n) final {
 
     const Ptr<TypeExpr> t = n.index_type->resolve();
 
@@ -86,7 +86,7 @@ class Generator : public ConstTypeTraversal {
     assert(!"non-range, non-enum used as array index");
   }
 
-  void visit(const Enum &n) final {
+  void visit_enum(const Enum &n) final {
     const std::string previous_handle = to_previous();
 
     *out
@@ -127,7 +127,7 @@ class Generator : public ConstTypeTraversal {
       << "}\n";
   }
 
-  void visit(const Range &n) final {
+  void visit_range(const Range &n) final {
 
     const std::string lb = n.lower_bound();
     const std::string ub = n.upper_bound();
@@ -165,7 +165,7 @@ class Generator : public ConstTypeTraversal {
       << "}\n";
   }
 
-  void visit(const Record &n) final {
+  void visit_record(const Record &n) final {
     mpz_class preceding_offset = 0;
     for (auto &f : n.fields) {
       mpz_class w = f->width();
@@ -176,7 +176,7 @@ class Generator : public ConstTypeTraversal {
     }
   }
 
-  void visit(const Scalarset&) final {
+  void visit_scalarset(const Scalarset&) final {
     const std::string previous_handle = to_previous();
 
     *out
@@ -209,7 +209,7 @@ class Generator : public ConstTypeTraversal {
       << "}\n";
   }
 
-  void visit(const TypeExprID &n) final {
+  void visit_typeexprid(const TypeExprID &n) final {
     if (n.referent == nullptr)
       throw Error("unresolved type symbol \"" + n.name + "\"", n.loc);
     dispatch(*n.referent);

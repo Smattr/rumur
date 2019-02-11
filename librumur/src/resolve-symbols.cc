@@ -43,7 +43,7 @@ class Resolver : public Traversal {
     }
   }
 
-  void visit(AliasRule &n) final {
+  void visit_aliasrule(AliasRule &n) final {
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
@@ -54,7 +54,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(AliasStmt &n) final {
+  void visit_aliasstmt(AliasStmt &n) final {
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
@@ -65,7 +65,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(Enum &n) final {
+  void visit_enum(Enum &n) final {
     auto e = Ptr<Enum>::make(n);
 
     //* Register all the enum members so they can be referenced later.
@@ -78,14 +78,14 @@ class Resolver : public Traversal {
     }
   }
 
-  void visit(Exists &n) final {
+  void visit_exists(Exists &n) final {
     symtab.open_scope();
     dispatch(n.quantifier);
     dispatch(*n.expr);
     symtab.close_scope();
   }
 
-  void visit(ExprID &n) final {
+  void visit_exprid(ExprID &n) final {
     if (n.value == nullptr) {
       // This reference is unresolved
 
@@ -97,7 +97,7 @@ class Resolver : public Traversal {
     }
   }
 
-  void visit(For &n) final {
+  void visit_for(For &n) final {
     symtab.open_scope();
     dispatch(n.quantifier);
     for (auto &s : n.body)
@@ -105,14 +105,14 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(Forall &n) final {
+  void visit_forall(Forall &n) final {
     symtab.open_scope();
     dispatch(n.quantifier);
     dispatch(*n.expr);
     symtab.close_scope();
   }
 
-  void visit(Function &n) final {
+  void visit_function(Function &n) final {
     symtab.open_scope();
     for (auto &p : n.parameters) {
       dispatch(*p);
@@ -129,7 +129,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(FunctionCall &n) final {
+  void visit_functioncall(FunctionCall &n) final {
     if (n.function == nullptr) {
       // This reference is unresolved
 
@@ -143,7 +143,7 @@ class Resolver : public Traversal {
       dispatch(*a);
   }
 
-  void visit(Model &n) final {
+  void visit_model(Model &n) final {
     for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
@@ -156,7 +156,7 @@ class Resolver : public Traversal {
       dispatch(*r);
   }
 
-  void visit(Quantifier &n) final {
+  void visit_quantifier(Quantifier &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);
     if (n.from != nullptr)
@@ -179,7 +179,7 @@ class Resolver : public Traversal {
     symtab.declare(n.name, Ptr<VarDecl>::make(n.name, t, n.loc));
   }
 
-  void visit(Ruleset &n) final {
+  void visit_ruleset(Ruleset &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -188,7 +188,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(SimpleRule &n) final {
+  void visit_simplerule(SimpleRule &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -203,7 +203,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(StartState &n) final {
+  void visit_startstate(StartState &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -216,7 +216,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit(TypeExprID &n) final {
+  void visit_typeexprid(TypeExprID &n) final {
     if (n.referent == nullptr) {
       // This reference is unresolved
 
