@@ -43,6 +43,8 @@ namespace {
       ReturnChecker c;
       c.dispatch(n);
     }
+
+    virtual ~ReturnChecker() = default;
   };
 }
 
