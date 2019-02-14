@@ -467,23 +467,34 @@ static char *xml_escape(const char *s) {
  * checker generation with '--trace ...' and is useful for debugging Rumur
  * itself.
  */
-static __attribute__((format(printf, 2, 3))) void trace(
-  enum trace_category_t category, const char *fmt, ...) {
+static __attribute__((format(printf, 1, 2))) void trace(const char *fmt, ...) {
 
-  if (category & TRACES_ENABLED) {
-    va_list ap;
-    va_start(ap, fmt);
+  va_list ap;
+  va_start(ap, fmt);
 
-    print_lock();
+  print_lock();
 
-    (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
-    (void)vfprintf(stderr, fmt, ap);
-    (void)fprintf(stderr, "\n");
+  (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
+  (void)vfprintf(stderr, fmt, ap);
+  (void)fprintf(stderr, "\n");
 
-    print_unlock();
-    va_end(ap);
-  }
+  print_unlock();
+  va_end(ap);
 }
+
+/* Wrap up trace() as a macro. It looks as if the following could just be
+ * incorporated into trace(). However, present compilers seem unwilling to
+ * inline varargs functions or do interprocedural analysis across a call to one.
+ * As a result, the compiler does not notice when tracing is disabled and a call
+ * to trace() would be a no-op that can be elided. By making the call a macro we
+ * make the category comparison visible to the compiler's optimising passes.
+ */
+#define TRACE(category, args...)                                               \
+  do {                                                                         \
+    if ((category) & TRACES_ENABLED) {                                         \
+      trace(args);                                                             \
+    }                                                                          \
+  } while (0)
 
 /*******************************************************************************
  * Arithmetic wrappers                                                         *
@@ -786,7 +797,7 @@ static value_t handle_read_raw(struct handle h) {
     "the maximum width of a simple type in this model");
 
   if (h.width == 0) {
-    trace(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
+    TRACE(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
       h.base, h.offset, h.width);
     return 0;
   }
@@ -861,7 +872,7 @@ static value_t handle_read_raw(struct handle h) {
 
     value_t v = (value_t)low;
 
-    trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
+    TRACE(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
       value_to_string(v).data, h.base, h.offset, h.width);
 
     return v;
@@ -908,7 +919,7 @@ static value_t handle_read_raw(struct handle h) {
 
   value_t v = (value_t)low;
 
-  trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
+  TRACE(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
     value_to_string(v).data, h.base, h.offset, h.width);
 
   return v;
@@ -953,7 +964,7 @@ static void handle_write_raw(struct handle h, value_t value) {
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  trace(TC_HANDLE_WRITES, "writing value %s to handle { %p, %zu, %zu }",
+  TRACE(TC_HANDLE_WRITES, "writing value %s to handle { %p, %zu, %zu }",
     value_to_string(value).data, h.base, h.offset, h.width);
 
   if (h.width == 0) {
@@ -1402,7 +1413,7 @@ size_t queue_enqueue(struct state *s, size_t queue_id) {
 
   q[queue_id].count++;
 
-  trace(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
+  TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
     s, queue_id, q[queue_id].count);
 
   size_t count = q[queue_id].count;
@@ -1431,7 +1442,7 @@ const struct state *queue_dequeue(size_t *queue_id) {
         q[*queue_id].tail = NULL;
       }
       q[*queue_id].count--;
-      trace(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
+      TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
         "%zu", n->s, *queue_id, q[*queue_id].count);
     }
 
@@ -1861,7 +1872,7 @@ static void set_thread_init(void) {
 
 static void set_migrate(void) {
 
-  trace(TC_SET, "assisting in set migration...");
+  TRACE(TC_SET, "assisting in set migration...");
 
   /* Size of a migration chunk. Threads in this function grab a chunk at a time
    * to migrate.
@@ -1922,7 +1933,7 @@ retry:;
 
   if (count == 0) {
 
-    trace(TC_SET, "arrived at rendezvous point as leader");
+    TRACE(TC_SET, "arrived at rendezvous point as leader");
 
     /* At this point, we know no one is still updating the old set's count, so
      * we can migrate its value to the next set.
@@ -1968,13 +1979,13 @@ static void set_expand(void) {
   if (s != NULL) {
     /* Someone else already expanded it. Join them in the migration effort. */
     set_expand_unlock();
-    trace(TC_SET, "attempted expansion failed because another thread got there "
+    TRACE(TC_SET, "attempted expansion failed because another thread got there "
       "first");
     set_migrate();
     return;
   }
 
-  trace(TC_SET, "expanding set from %zu slots to %zu slots...",
+  TRACE(TC_SET, "expanding set from %zu slots to %zu slots...",
     (((size_t)1) << local_seen->size_exponent) / sizeof(slot_t),
     (((size_t)1) << (local_seen->size_exponent + 1)) / sizeof(slot_t));
 
@@ -2013,7 +2024,7 @@ restart:;
         state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
       /* Success */
       *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
-      trace(TC_SET, "added state %p, set size is now %zu", s, *count);
+      TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
        * by the number of possible states based on how many bits we are using to
@@ -2037,7 +2048,7 @@ restart:;
 
     /* If we find this already in the set, we're done. */
     if (state_eq(s, slot_to_state(c))) {
-      trace(TC_SET, "skipped adding state %p that was already in set", s);
+      TRACE(TC_SET, "skipped adding state %p that was already in set", s);
       return false;
     }
 
