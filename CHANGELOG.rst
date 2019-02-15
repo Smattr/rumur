@@ -1,6 +1,33 @@
 Change log
 ==========
 
+v2019.02.14
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: calls of procedures (a.k.a. functions with no return type) are now
+  rejected when appearing within an expression (commit
+  72d9196308a8b0d3b43929566beb571029b7e006).
+* Bug fix: unary negation that never worked correctly has been repaired (commit
+  48228f32c43423cd956f988fb0567fca080b9b28).
+* Between v2019.02.01 and v2019.02.04, there was an unintended performance
+  regression in the runtime of the generated verifier (commit
+  f5589751de2f860c3cca7d681f9710160d3c20a8). This has been addressed and the
+  verifier runs faster than even v2019.02.01 (commit
+  ccf410672326e04230331576a1c76003ad2ab1a3).
+* Returning a range-typed expression within a function that returns a
+  *different* range type is now supported (commit
+  e196ed43199d6d47d36eb9f225017c2123e294c3).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Expr::type()`` returns a smart pointer that is never null (commits
+  d89de1376abe5bbbef61d68b02c45a35c4f9a12f,
+  beeffb42ad6514448e463e8a2d73d3a1d8b35898,
+  e196ed43199d6d47d36eb9f225017c2123e294c3,
+  5dcf10f2821ffb8a2080b297fc664485884747be).
+
 v2019.02.04
 -----------
 
