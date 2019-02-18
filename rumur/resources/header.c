@@ -770,7 +770,7 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
-struct handle state_handle(const struct state *s, size_t offset, size_t width) {
+static struct handle state_handle(const struct state *s, size_t offset, size_t width) {
 
   assert(sizeof(s->data) * CHAR_BIT - width >= offset && "generating an out of "
     "bounds handle in state_handle()");
@@ -1394,7 +1394,7 @@ static void queue_init(void) {
   }
 }
 
-size_t queue_enqueue(struct state *s, size_t queue_id) {
+static size_t queue_enqueue(struct state *s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
 
   struct queue_node *n = xmalloc(sizeof(*n));
@@ -1424,7 +1424,7 @@ size_t queue_enqueue(struct state *s, size_t queue_id) {
   return count;
 }
 
-const struct state *queue_dequeue(size_t *queue_id) {
+static const struct state *queue_dequeue(size_t *queue_id) {
   assert(queue_id != NULL && *queue_id < sizeof(q) / sizeof(q[0]) &&
     "out of bounds queue access");
 
