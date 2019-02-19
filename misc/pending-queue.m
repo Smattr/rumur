@@ -1,4 +1,10 @@
-/* Model of the pending queue algorithm in the generated verifier.
+/* Update: the following is based on a prior pending queue algorithm which used
+ * a single-state-per-node linked-list. It has been retained as an interesting
+ * large model to run through Rumur.
+ *
+ * ----
+ *
+ * Model of the pending queue algorithm in the generated verifier.
  *
  * The generated verifier uses a moderately complex lock-free algorithm for
  * enqueueing and dequeueing to the per-thread pending states queue. The
