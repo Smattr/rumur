@@ -937,8 +937,10 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
   return dest;
 }
 
-static __attribute__((unused)) value_t handle_read(const struct state *s,
-    value_t lb, value_t ub, struct handle h) {
+static __attribute__((unused)) value_t handle_read(const char *name,
+    const struct state *s, value_t lb, value_t ub, struct handle h) {
+
+  assert(name != NULL);
 
   /* If we happen to be reading from the current state, do a sanity check that
    * we're only reading within bounds.
@@ -950,7 +952,7 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
   value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
-    error(s, false, "read of undefined value");
+    error(s, false, "read of undefined value in %s", name);
   }
 
   return decode_value(lb, ub, dest);

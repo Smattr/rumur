@@ -87,7 +87,8 @@ class Generator : public ConstExprTraversal {
     if (!lvalue && a.element_type->is_simple()) {
       const std::string lb = a.element_type->lower_bound();
       const std::string ub = a.element_type->upper_bound();
-      *out << "handle_read(s, " << lb << ", " << ub << ", ";
+      *out << "handle_read(\"" << n.to_string() << "\", s, " << lb << ", " << ub
+        << ", ";
     }
 
     *out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
@@ -154,7 +155,8 @@ class Generator : public ConstExprTraversal {
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
         const std::string lb = t->lower_bound();
         const std::string ub = t->upper_bound();
-        *out << "handle_read(s, " << lb << ", " << ub << ", ";
+        *out << "handle_read(\"" << n.to_string() << "\", s, " << lb << ", "
+          << ub << ", ";
       }
 
       *out << "ru_" << n.id;
@@ -183,7 +185,8 @@ class Generator : public ConstExprTraversal {
           if (!lvalue && f->type->is_simple()) {
             const std::string lb = f->type->lower_bound();
             const std::string ub = f->type->upper_bound();
-            *out << "handle_read(s, " << lb << ", " << ub << ", ";
+            *out << "handle_read(\"" << n.to_string() << "\", s, " << lb << ", "
+              << ub << ", ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
