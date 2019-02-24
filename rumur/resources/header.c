@@ -770,7 +770,7 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
-static struct handle state_handle(const struct state *s, size_t offset, size_t width) {
+static __attribute__((unused)) struct handle state_handle(const struct state *s, size_t offset, size_t width) {
 
   assert(sizeof(s->data) * CHAR_BIT - width >= offset && "generating an out of "
     "bounds handle in state_handle()");
