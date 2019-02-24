@@ -1364,6 +1364,327 @@ static __attribute__((unused)) void sort(
 }
 
 /*******************************************************************************
+ * State queue node                                                            *
+ *                                                                             *
+ * Queue nodes are 4K-sized, 4K-aligned linked-list nodes. They contain        *
+ * pending states and then a pointer to the next node in the queue.            *
+ ******************************************************************************/
+
+struct queue_node {
+  struct state *s[(4096 - sizeof(struct queue_node*)) / sizeof(struct state*)];
+  struct queue_node *next;
+};
+
+_Static_assert(sizeof(struct queue_node) == 4096,
+  "incorrect queue_node size calculation");
+
+static struct queue_node *queue_node_new(void) {
+  struct queue_node *p = NULL;
+
+  int r = posix_memalign((void**)&p, sizeof(*p), sizeof(*p));
+
+  assert((r == 0 || r == ENOMEM) && "invalid alignment to posix_memalign");
+
+  if (r != 0) {
+    oom();
+  }
+
+  memset(p, 0, sizeof(*p));
+
+  return p;
+}
+
+static void queue_node_free(struct queue_node *p) {
+  free(p);
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Queue node handles                                                          *
+ *                                                                             *
+ * These are pointers to a member-aligned address within a queue_node. The     *
+ * idea is that you can have a queue_handle_t pointing at either one of the    *
+ * elements of the `s` member or at the chained `next` pointer. Since          *
+ * queue_node pointers are always 4K-aligned, you can examine the low 12 bits  *
+ * of the queue node handle to determine which member you are pointing at.     *
+ ******************************************************************************/
+
+typedef uintptr_t queue_handle_t;
+
+static queue_handle_t queue_handle_from_node_ptr(const struct queue_node *n) {
+  return (queue_handle_t)n;
+}
+
+static struct queue_node *queue_handle_base(queue_handle_t h) {
+  return (struct queue_node*)(h - h % sizeof(struct queue_node));
+}
+
+static bool queue_handle_is_state_pptr(queue_handle_t h) {
+  return h % sizeof(struct queue_node)
+    < __builtin_offsetof(struct queue_node, next);
+}
+
+static struct state **queue_handle_to_state_pptr(queue_handle_t h) {
+  assert(queue_handle_is_state_pptr(h) &&
+    "invalid use of queue_handle_to_state_pptr");
+
+  return (struct state**)h;
+}
+
+static struct queue_node **queue_handle_to_node_pptr(queue_handle_t h) {
+  assert(!queue_handle_is_state_pptr(h) &&
+    "invalid use of queue_handle_to_node_pptr");
+
+  return (struct queue_node**)h;
+}
+
+static queue_handle_t queue_handle_next(queue_handle_t h) {
+  return h + sizeof(struct state*);
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Hazard pointers                                                             *
+ *                                                                             *
+ * The idea of "hazard pointers" comes from Maged Michael, "Hazard Pointers:   *
+ * Safe Memory Reclamation for Lock-Free Objects" in TPDS 15(8) 2004. The      *
+ * basic concept is to maintain a collection of safe-to-dereference pointers.  *
+ * Before freeing a pointer, you look in this collection to see if it is in    *
+ * use and you must always add a pointer to this collection before             *
+ * dereferencing it. The finer details of how we keep this consistent and why  *
+ * the size of this collection can be statically known ahead of time are a     *
+ * little complicated, but the paper explains this in further detail.          *
+ ******************************************************************************/
+
+/* Queue node pointers currently safe to dereference. */
+static const struct queue_node *_Atomic hazarded[THREADS];
+
+/* Protect a pointer that we wish to dereference. */
+static __attribute__((unused)) void hazard(queue_handle_t h) {
+
+  /* Find the queue node this handle lies within. */
+  const struct queue_node *p = queue_handle_base(h);
+
+  /* You can't protect the null pointer because it is invalid to dereference it.
+   */
+  assert(p != NULL && "attempt to hazard an invalid pointer");
+
+  /* Each thread is only allowed a single hazarded pointer at a time. */
+  assert(hazarded[thread_id] == NULL && "hazarding multiple pointers at once");
+
+  hazarded[thread_id] = p;
+}
+
+/* Drop protection on a pointer whose target we are done accessing. */
+static __attribute__((unused)) void unhazard(queue_handle_t h) {
+
+  /* Find the queue node this handle lies within. */
+  const struct queue_node *p __attribute__((unused)) = queue_handle_base(h);
+
+  assert(p != NULL && "attempt to unhazard an invalid pointer");
+
+  assert(hazarded[thread_id] != NULL
+    && "unhazarding a pointer when none are hazarded");
+
+  assert(hazarded[thread_id] == p
+    && "unhazarding a pointer that differs from the one hazarded");
+
+  hazarded[thread_id] = NULL;
+}
+
+/* Free a pointer or, if not possible, defer this to later. */
+static __attribute__((unused)) void reclaim(queue_handle_t h) {
+
+  /* Find the queue node this handle lies within. */
+  struct queue_node *p = queue_handle_base(h);
+
+  assert(p != NULL && "reclaiming a null pointer");
+
+  /* The reclaimer is not allowed to be freeing something while also holding a
+   * hazarded pointer.
+   */
+  assert(hazarded[thread_id] == NULL
+    && "reclaiming a pointer while holding a hazarded pointer");
+
+  /* Pointers that we failed to free initially because they were in use
+   * (hazarded) at the time they were passed to reclaim().
+   *
+   * Why are we sure we will only ever have a maximum of `THREADS - 1` pointers
+   * outstanding? Anything passed to reclaim() is expected to be
+   * now-unreachable, so the only outstanding references to such are threads
+   * racing with us. Because each thread can only have one hazarded pointer at a
+   * time, the maximum number of in use pointers right now is `THREADS - 1`
+   * (because the current thread does not have one).
+   *
+   * There is an edge case where another thread (1) held a hazarded pointer we
+   * previously tried to reclaim and thus ended up on our deferred list, then
+   * (2) in-between that time and now dropped this reference and acquired a
+   * hazarded pointer to `p`. This still will not exceed our count of
+   * `THREADS - 1` as the order in which we scan the deferred list and then add
+   * `p` to it below ensures that we will discover the originally hazarded
+   * pointer (now no longer conflicted) and clear its slot, leaving this
+   * available for `p`.
+   */
+  static _Thread_local struct queue_node *deferred[THREADS - 1];
+
+  /* First try to free any previously deferred pointers. */
+  for (size_t i = 0; i < sizeof(deferred) / sizeof(deferred[0]); i++) {
+    if (deferred[i] != NULL) {
+      bool conflict = false;
+      for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
+        if (j == thread_id) {
+          /* No need to check for conflicts with ourself. */
+          assert(hazarded[j] == NULL);
+          continue;
+        }
+        if (deferred[i] == hazarded[j]) {
+          /* This pointer is in use by thread j. */
+          conflict = true;
+          break;
+        }
+      }
+      if (!conflict) {
+        queue_node_free(deferred[i]);
+        deferred[i] = NULL;
+      }
+    }
+  }
+
+  /* Now deal with the pointer we were passed. The most likely case is that no
+   * one else is using this pointer, so try this first.
+   */
+  bool conflict = false;
+  for (size_t i = 0; i < sizeof(hazarded) / sizeof(hazarded[i]); i++) {
+    if (i == thread_id) {
+      /* No need to check for conflicts with ourself. */
+      assert(hazarded[i] == NULL);
+      continue;
+    }
+    if (p == hazarded[i]) {
+      /* Bad luck :( */
+      conflict = true;
+      break;
+    }
+  }
+
+  if (!conflict) {
+    /* We're done! */
+    queue_node_free(p);
+    return;
+  }
+
+  /* If we reached here, we need to defer this reclamation to later. */
+  for (size_t i = 0; i < sizeof(deferred) / sizeof(deferred[0]); i++) {
+    if (deferred[i] == NULL) {
+      deferred[i] = p;
+      return;
+    }
+  }
+
+  assert(!"deferred more than `THREADS` reclamations");
+  __builtin_unreachable();
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Atomic operations on double word values                                     *
+ ******************************************************************************/
+
+#ifdef __x86_64__
+  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
+   * aligned memory. The way to work around this is apparently the following
+   * degenerate CMPXCHG.
+   */
+  #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
+#else
+  #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
+#endif
+
+#ifdef __x86_64__
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  #define atomic_cas(p, expected, new) \
+    __sync_bool_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas(p, expected, new) \
+    __atomic_compare_exchange_n((p), &(expected), (new), false, \
+      __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
+#endif
+
+#ifdef __x86_64__
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  #define atomic_cas_val(p, expected, new) \
+    __sync_val_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas_val(p, expected, new) \
+    ({ \
+      typeof(expected) _expected = (expected); \
+      __atomic_compare_exchange_n((p), &(_expected), (new), false, \
+        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+      _expected; \
+    })
+#endif
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Double pointers                                                             *
+ *                                                                             *
+ * A scalar type that can store the value of two pointers.                     *
+ ******************************************************************************/
+
+#if __SIZEOF_POINTER__ <= 4
+  typedef uint64_t double_ptr_t;
+#elif __SIZEOF_POINTER__ <= 8
+  typedef unsigned __int128 double_ptr_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for double_ptr_t?"
+#endif
+
+static uintptr_t double_ptr_extract1(double_ptr_t p) {
+
+  _Static_assert(sizeof(p) > sizeof(uintptr_t), "double_ptr_t is not big "
+    "enough to fit a pointer");
+
+  uintptr_t q;
+  memcpy(&q, &p, sizeof(q));
+
+  return q;
+}
+
+static uintptr_t double_ptr_extract2(double_ptr_t p) {
+
+  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t), "double_ptr_t is not big "
+    "enough to fit two pointers");
+
+  uintptr_t q;
+  memcpy (&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+
+  return q;
+}
+
+static double_ptr_t double_ptr_make(uintptr_t q1, uintptr_t q2) {
+
+  double_ptr_t p = 0;
+
+  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t), "double_ptr_t is not big "
+    "enough to fit two pointers");
+
+  memcpy(&p, &q1, sizeof(q1));
+  memcpy((unsigned char*)&p + sizeof(q1), &q2, sizeof(q2));
+
+  return p;
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
  * The following implements a per-thread queue for pending states. The only    *
@@ -1372,54 +1693,157 @@ static __attribute__((unused)) void sort(
  * invariants.                                                                 *
  ******************************************************************************/
 
-struct queue_node {
-  struct state *s;
-  struct queue_node *next;
-};
-
 static struct {
-  pthread_mutex_t lock;
-  struct queue_node *head;
-  struct queue_node *tail;
-  size_t count;
+  double_ptr_t ends;
+  atomic_size_t count;
 } q[THREADS];
-
-static void queue_init(void) {
-  for (size_t i = 0; i < sizeof(q) / sizeof(q[0]); i++) {
-    int r = pthread_mutex_init(&q[i].lock, NULL);
-    if (r < 0) {
-      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-      exit(EXIT_FAILURE);
-    }
-  }
-}
 
 static size_t queue_enqueue(struct state *s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
 
-  struct queue_node *n = xmalloc(sizeof(*n));
-  n->s = s;
-  n->next = NULL;
+  /* Look up the tail of the queue. */
 
-  int r __attribute__((unused)) = pthread_mutex_lock(&q[queue_id].lock);
-  ASSERT(r == 0);
+  double_ptr_t ends = atomic_read(&q[queue_id].ends);
 
-  if (q[queue_id].tail == NULL) {
-    q[queue_id].head = q[queue_id].tail = n;
+retry:;
+  queue_handle_t tail = double_ptr_extract2(ends);
+
+  if (tail == 0) {
+    /* There's nothing currently in the queue. */
+
+    assert(double_ptr_extract1(ends) == 0 && "tail of queue 0 while head is "
+      "non-0");
+
+    struct queue_node *n = queue_node_new();
+    n->s[0] = s;
+
+    double_ptr_t new = double_ptr_make(queue_handle_from_node_ptr(n),
+                                       queue_handle_from_node_ptr(n));
+
+    double_ptr_t old = atomic_cas_val(&q[queue_id].ends, ends, new);
+    if (old != ends) {
+      /* Failed. */
+      queue_node_free(n);
+      ends = old;
+      goto retry;
+    }
+
   } else {
-    q[queue_id].tail->next = n;
-    q[queue_id].tail = n;
+    /* The queue is non-empty, so we'll need to access the last element. */
+
+    /* Try to protect our upcoming access to the tail. */
+    hazard(tail);
+    {
+      double_ptr_t ends_check = atomic_read(&q[queue_id].ends);
+      if (ends != ends_check) {
+        /* Failed. Someone else modified the queue in the meantime. */
+        unhazard(tail);
+        ends = ends_check;
+        goto retry;
+      }
+    }
+
+    /* We've now notified other threads that we're going to be accessing the
+     * tail, so we can safely dereference its pointer.
+     */
+
+    struct queue_node *new_node = NULL;
+    queue_handle_t next_tail = queue_handle_next(tail);
+
+    if (queue_handle_is_state_pptr(next_tail)) {
+      /* There's an available slot in this queue node; no need to create a new
+       * one.
+       */
+
+      {
+        struct state **target = queue_handle_to_state_pptr(next_tail);
+        struct state *null = NULL;
+        if (!__atomic_compare_exchange_n(target, &null, s, false,
+            __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+          /* Failed. Someone else enqueued before we could. */
+          unhazard(tail);
+          goto retry;
+        }
+      }
+
+    } else {
+      /* There's no remaining slot in this queue node. We'll need to create a
+       * new (empty) queue node, add our state to this one and then append this
+       * node to the queue.
+       */
+
+      /* Create the new node. */
+      new_node = queue_node_new();
+      new_node->s[0] = s;
+
+      /* Try to update the chained pointer of the current tail to point to this
+       * new node.
+       */
+      struct queue_node **target = queue_handle_to_node_pptr(next_tail);
+      struct queue_node *null = NULL;
+      if (!__atomic_compare_exchange_n(target, &null, new_node, false,
+          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        /* Failed. Someone else enqueued before we could. */
+        queue_node_free(new_node);
+        unhazard(tail);
+        goto retry;
+      }
+
+      /* We now need the tail to point at our new node. */
+      next_tail = queue_handle_from_node_ptr(new_node);
+    }
+
+    queue_handle_t head = double_ptr_extract1(ends);
+    double_ptr_t new = double_ptr_make(head, next_tail);
+
+    /* Try to update the queue. */
+    {
+      double_ptr_t old = atomic_cas_val(&q[queue_id].ends, ends, new);
+      if (old != ends) {
+        /* Failed. Someone else dequeued before we could finish. We know the
+         * operation that beat us was a dequeue and not an enqueue, because by
+         * writing to next_tail we have prevented any other enqueue from
+         * succeeding.
+         */
+
+        /* Undo the update of next_tail. We know this is safe (non-racy) because
+         * no other enqueue can proceed and a dequeue will never look into
+         * next_tail due to the way it handles the case when head == tail.
+         */
+        next_tail = queue_handle_next(tail);
+        if (queue_handle_is_state_pptr(next_tail)) {
+          /* We previously wrote into an existing queue node. */
+          struct state **target = queue_handle_to_state_pptr(next_tail);
+          struct state *temp = s;
+          bool r __attribute__((unused)) = __atomic_compare_exchange_n(target,
+            &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+          assert(r && "undo of write to next_tail failed");
+        } else {
+          /* We previously wrote into a new queue node. */
+          struct queue_node **target = queue_handle_to_node_pptr(next_tail);
+          struct queue_node *temp = new_node;
+          bool r __attribute__((unused)) = __atomic_compare_exchange_n(target,
+            &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+          assert(r && "undo of write to next_tail failed");
+
+          queue_node_free(new_node);
+        }
+
+        unhazard(tail);
+        ends = old;
+        goto retry;
+      }
+    }
+
+    /* Success! */
+
+    unhazard(tail);
   }
 
-  q[queue_id].count++;
+  size_t count = ++q[queue_id].count;
 
   TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
-    s, queue_id, q[queue_id].count);
-
-  size_t count = q[queue_id].count;
-
-  r = pthread_mutex_unlock(&q[queue_id].lock);
-  ASSERT(r == 0);
+    s, queue_id, count);
 
   return count;
 }
@@ -1432,27 +1856,102 @@ static const struct state *queue_dequeue(size_t *queue_id) {
 
   for (size_t attempts = 0; attempts < sizeof(q) / sizeof(q[0]); attempts++) {
 
-    int r __attribute__((unused)) = pthread_mutex_lock(&q[*queue_id].lock);
-    ASSERT(r == 0);
+    double_ptr_t ends = atomic_read(&q[*queue_id].ends);
 
-    struct queue_node *n = q[*queue_id].head;
-    if (n != NULL) {
-      q[*queue_id].head = n->next;
-      if (n == q[*queue_id].tail) {
-        q[*queue_id].tail = NULL;
+retry:;
+    queue_handle_t head = double_ptr_extract1(ends);
+
+    if (head != 0) {
+      /* This queue is non-empty. */
+
+      /* Try to protect our upcoming accesses to the head. */
+      hazard(head);
+      {
+        double_ptr_t ends_check = atomic_read(&q[*queue_id].ends);
+        if (ends != ends_check) {
+          /* Failed. Someone else updated the queue. */
+          unhazard(head);
+          ends = ends_check;
+          goto retry;
+        }
       }
-      q[*queue_id].count--;
+
+      queue_handle_t tail = double_ptr_extract2(ends);
+
+      double_ptr_t new;
+      if (head == tail) {
+        /* There is only a single element in the queue. We will need to update
+         * both head and tail.
+         */
+        new = double_ptr_make(0, 0);
+      } else if (queue_handle_is_state_pptr(head)) {
+        /* There are multiple elements in the queue; we can deal only with the
+         * head.
+         */
+        new = double_ptr_make(queue_handle_next(head), tail);
+      } else {
+        /* The head of the queue is the end of a queue node. I.e. the only thing
+         * remaining in this queue node is the chained pointer to the next queue
+         * node.
+         */
+
+        /* Load the next queue node. */
+        struct queue_node **n = queue_handle_to_node_pptr(head);
+        struct queue_node *new_head = __atomic_load_n(n, __ATOMIC_SEQ_CST);
+        new = double_ptr_make(queue_handle_from_node_ptr(new_head), tail);
+
+        /* Try to replace the current head with the next node. */
+        double_ptr_t old = atomic_cas_val(&q[*queue_id].ends, ends, new);
+        /* Either way, now we'll need to retry, but if we succeeded we also need
+         * to free the queue node we just removed.
+         */
+        unhazard(head);
+        if (old == ends) {
+          /* Succeeded. */
+          reclaim(head);
+        }
+        ends = old;
+        goto retry;
+      }
+
+      /* Try to remove the head. */
+      {
+        double_ptr_t old = atomic_cas_val(&q[*queue_id].ends, ends, new);
+        if (old != ends) {
+          /* Failed. Someone else either enqueued or dequeued. */
+          unhazard(head);
+          ends = old;
+          goto retry;
+        }
+      }
+
+      /* We now have either a pointer to a state or we've just removed an empty
+       * queue node that was the last in the queue.
+       */
+
+      if (queue_handle_is_state_pptr(head)) {
+        struct state **st = queue_handle_to_state_pptr(head);
+        s = *st;
+      }
+
+      unhazard(head);
+
+      if (head == tail || !queue_handle_is_state_pptr(head)) {
+        reclaim(head);
+      }
+
+      if (s == NULL) {
+        /* Move to the next queue to try. */
+        *queue_id = (*queue_id + 1) % (sizeof(q) / sizeof(q[0]));
+        continue;
+      }
+
+      size_t count = --q[*queue_id].count;
+
       TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
-        "%zu", n->s, *queue_id, q[*queue_id].count);
-    }
+        "%zu", s, *queue_id, count);
 
-    r = pthread_mutex_unlock(&q[*queue_id].lock);
-    ASSERT(r == 0);
-
-    if (n != NULL) {
-      s = n->s;
-      free(n);
-      break;
+      return s;
     }
 
     /* Move to the next queue to try. */
@@ -1502,31 +2001,6 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 
-static refcounted_ptr_t refcounted_ptr_read(refcounted_ptr_t *p) {
-#ifdef __x86_64__
-  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
-   * aligned memory. The way to work around this is apparently the following
-   * degenerate CMPXCHG.
-   */
-  return __sync_val_compare_and_swap(p, 0, 0);
-#else
-  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
-#endif
-}
-
-static bool refcounted_ptr_cas(refcounted_ptr_t *p, refcounted_ptr_t expected,
-    refcounted_ptr_t new) {
-#ifdef __x86_64__
-  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
-   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
-   */
-  return __sync_bool_compare_and_swap(p, expected, new);
-#else
-  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
-#endif
-}
-
 static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
 
   /* Read the current state of the pointer. Note, we don't bother doing this
@@ -1557,7 +2031,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
   do {
 
     /* Read the current state of the pointer. */
-    old = refcounted_ptr_read(p);
+    old = atomic_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1567,7 +2041,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-    r = refcounted_ptr_cas(p, old, new);
+    r = atomic_cas(p, old, new);
   } while (!r);
 
   return ret;
@@ -1583,7 +2057,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
   do {
 
     /* Read the current state of the pointer. */
-    old = refcounted_ptr_read(p);
+    old = atomic_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1597,7 +2071,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-    r = refcounted_ptr_cas(p, old, new);
+    r = atomic_cas(p, old, new);
   } while (!r);
 
   return ret;
@@ -2237,7 +2711,6 @@ int main(void) {
   rendezvous_init();
 
   set_init();
-  queue_init();
 
   set_thread_init();
 
