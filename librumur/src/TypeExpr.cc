@@ -232,6 +232,16 @@ bool Enum::is_simple() const {
   return true;
 }
 
+void Enum::validate() const {
+  std::unordered_set<std::string> ms;
+  for (const std::pair<std::string, location> &member : members) {
+    auto it = ms.insert(member.first);
+    if (!it.second)
+      throw Error("duplicate enum member \"" + member.first + "\"",
+        member.second);
+  }
+}
+
 std::string Enum::lower_bound() const {
   return "0";
 }

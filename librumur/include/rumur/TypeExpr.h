@@ -101,6 +101,7 @@ struct Enum : public TypeExpr {
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
+  void validate() const final;
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
