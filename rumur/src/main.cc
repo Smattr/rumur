@@ -348,7 +348,6 @@ int main(int argc, char **argv) {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
     resolve_symbols(*m);
     validate_model(*m);
-    m->reindex();
   } catch (rumur::Error &e) {
     std::cerr << (in == nullptr ? "<stdin>" : in_filename) << ":" << e.loc
       << ":" << e.what() << "\n";
@@ -356,6 +355,12 @@ int main(int argc, char **argv) {
   }
 
   assert(m != nullptr);
+
+  /* Re-index the model (assign unique identifiers to each node that are used in
+   * generation of the verifier).
+   */
+  m->reindex();
+
   validate(*m);
 
   assert(out != nullptr);
