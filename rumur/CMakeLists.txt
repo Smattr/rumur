@@ -46,7 +46,8 @@ add_executable(rumur
   src/max-simple-width.cc
   src/options.cc
   src/output.cc
-  src/symmetry-reduction.cc)
+  src/symmetry-reduction.cc
+  src/utils.cc)
 
 target_include_directories(rumur
   PRIVATE

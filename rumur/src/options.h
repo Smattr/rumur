@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 enum tristate {
   OFF,
@@ -78,3 +79,6 @@ struct Options {
 };
 
 extern Options options;
+
+// input model's path
+extern std::string input_filename;

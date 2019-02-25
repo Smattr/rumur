@@ -19,7 +19,6 @@
 #include "utils.h"
 #include "version.h"
 
-static std::string in_filename;
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
 
@@ -293,7 +292,7 @@ static void parse_args(int argc, char **argv) {
       std::cerr << "failed to open " << argv[optind] << "\n";
       exit(EXIT_FAILURE);
     }
-    in_filename = argv[optind];
+    input_filename = argv[optind];
     in = inf;
   }
 
@@ -341,8 +340,7 @@ int main(int argc, char **argv) {
     resolve_symbols(*m);
     validate_model(*m);
   } catch (rumur::Error &e) {
-    std::cerr << (in == nullptr ? "<stdin>" : in_filename) << ":" << e.loc
-      << ":" << e.what() << "\n";
+    std::cerr << input_filename << ":" << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
 

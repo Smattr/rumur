@@ -3,6 +3,7 @@
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>
+#include "options.h"
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
@@ -209,7 +210,8 @@ class Generator : public ConstStmtTraversal {
       case Property::ASSERTION:
         *out << "if (__builtin_expect(!";
         generate_property(*out, s.property);
-        *out << ", 0)) {\nerror(s, false, \"Assertion failed: %s\", \"";
+        *out << ", 0)) {\nerror(s, false, \"Assertion failed: %s:"
+          << s.loc << ": %s\", \"" << escape(input_filename) << "\", \"";
         if (s.message == "") {
           /* Assertion has no associated text. Use the expression itself
            * instead.
