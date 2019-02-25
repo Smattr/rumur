@@ -329,14 +329,6 @@ static bool has_start_state(const rumur::Ptr<rumur::Rule> &r) {
   return false;
 }
 
-static void validate(const rumur::Model &m) {
-
-  // Check whether we have a start state.
-  if (!contains(m.rules, has_start_state))
-    std::cerr << "warning: model has no start state\n";
-
-}
-
 int main(int argc, char **argv) {
 
   // Parse command line options
@@ -361,7 +353,9 @@ int main(int argc, char **argv) {
    */
   m->reindex();
 
-  validate(*m);
+  // Check whether we have a start state.
+  if (!contains(m->rules, has_start_state))
+    *warn << "warning: model has no start state\n";
 
   assert(out != nullptr);
   if (output_checker(*out, *m) != 0)
