@@ -47,6 +47,10 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
+        out << "  static const char *rule_name __attribute__((unused)) = \"startstate "
+          << (s->name == "" ? std::to_string(index) : escape(s->name))
+          << "\";\n";
+
         /* Output the state variable handles so we can reference them within
          * this start state.
          */
@@ -109,6 +113,10 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
+        out << "  static const char *rule_name __attribute__((unused)) = \"property "
+          << (i->name == "" ? std::to_string(index) : escape(i->name))
+          << "\";\n";
+
         /* Output the state variable handles so we can reference them within
          * this property.
          */
@@ -153,6 +161,10 @@ void generate_model(std::ostream &out, const Model &m) {
             << " __attribute__((unused))";
         out << ") {\n";
 
+        out << "  static const char *rule_name __attribute__((unused)) = \"guard of "
+          << (s->name == "" ? std::to_string(index) : escape(s->name))
+          << "\";\n";
+
         /* Output the state variable handles so we can reference them within
          * this guard.
          */
@@ -188,6 +200,10 @@ void generate_model(std::ostream &out, const Model &m) {
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
+
+        out << "  static const char *rule_name __attribute__((unused)) = \"rule "
+          << (s->name == "" ? std::to_string(index) : escape(s->name))
+          << "\";\n";
 
         /* Output the state variable handles so we can reference them within
          * this rule.
@@ -244,7 +260,9 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Write invariant checker
   {
-    out << "static void check_invariants(const struct state *s __attribute__((unused))) {\n";
+    out
+      << "static void check_invariants(const struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n";
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
@@ -281,7 +299,9 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Write assumption checker
   {
-    out << "static void check_assumptions(const struct state *s __attribute__((unused))) {\n";
+    out
+      << "static void check_assumptions(const struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n";
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
@@ -325,6 +345,7 @@ void generate_model(std::ostream &out, const Model &m) {
   {
     out
       << "static void init(void) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
       << "  size_t queue_id = 0;\n"
       << "  uint64_t rule_taken = 1;\n";
 
@@ -392,6 +413,10 @@ void generate_model(std::ostream &out, const Model &m) {
   {
     out
       << "static void explore(void) {\n"
+      << "\n"
+      << "  /* Used when writing to quantifier variables. */\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "\n"
       << "  size_t last_queue_size = 0;\n"
       << "\n"
       << "  /* Identifier of the last queue we interacted with. */\n"
@@ -536,6 +561,7 @@ void generate_model(std::ostream &out, const Model &m) {
   out
     << "static void print_transition(const struct state *s __attribute__((unused))) {\n"
     << "  ASSERT(s != NULL);\n"
+    << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
     << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
     << "\n"
     << "  if (s->rule_taken == 0) {\n"

@@ -68,8 +68,8 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
     << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = " << width << " };\n"
-    << "    handle_write(\"" + q.to_string() + "\", s, lb, ub, " << handle
-      << ", " << counter << ");\n";
+    << "    handle_write(rule_name, \"" + q.to_string() + "\", s, lb, ub, "
+      << handle << ", " << counter << ");\n";
 }
 
 void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {

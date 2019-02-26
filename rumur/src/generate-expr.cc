@@ -87,8 +87,8 @@ class Generator : public ConstExprTraversal {
     if (!lvalue && a.element_type->is_simple()) {
       const std::string lb = a.element_type->lower_bound();
       const std::string ub = a.element_type->upper_bound();
-      *out << "handle_read(\"" << n.to_string() << "\", s, " << lb << ", " << ub
-        << ", ";
+      *out << "handle_read(rule_name, \"" << n.to_string() << "\", s, " << lb
+        << ", " << ub << ", ";
     }
 
     *out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
@@ -155,8 +155,8 @@ class Generator : public ConstExprTraversal {
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
         const std::string lb = t->lower_bound();
         const std::string ub = t->upper_bound();
-        *out << "handle_read(\"" << n.to_string() << "\", s, " << lb << ", "
-          << ub << ", ";
+        *out << "handle_read(rule_name, \"" << n.to_string() << "\", s, " << lb
+          << ", " << ub << ", ";
       }
 
       *out << "ru_" << n.id;
@@ -185,8 +185,8 @@ class Generator : public ConstExprTraversal {
           if (!lvalue && f->type->is_simple()) {
             const std::string lb = f->type->lower_bound();
             const std::string ub = f->type->upper_bound();
-            *out << "handle_read(\"" << n.to_string() << "\", s, " << lb << ", "
-              << ub << ", ";
+            *out << "handle_read(rule_name, \"" << n.to_string() << "\", s, "
+              << lb << ", " << ub << ", ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
@@ -329,8 +329,8 @@ class Generator : public ConstExprTraversal {
           const std::string ub = p->get_type()->upper_bound();
 
           *out
-            << "handle_write(\"<temporary>\", state_drop_const(s), " << lb
-              << ", " << ub << ", " << handle << ", ";
+            << "handle_write(rule_name, \"<temporary>\", state_drop_const(s), "
+              << lb << ", " << ub << ", " << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
 
@@ -371,7 +371,7 @@ class Generator : public ConstExprTraversal {
       }
     }
 
-    *out << "ru_" << n.name << "(state_drop_const(s)";
+    *out << "ru_" << n.name << "(rule_name, state_drop_const(s)";
 
     // Pass the return type output parameter if required.
     if (return_type != nullptr && !return_type->is_simple())

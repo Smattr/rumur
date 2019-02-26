@@ -937,8 +937,9 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
   return dest;
 }
 
-static __attribute__((unused)) value_t handle_read(const char *name,
-    const struct state *s, value_t lb, value_t ub, struct handle h) {
+static __attribute__((unused)) value_t handle_read(const char *rule_name,
+    const char *name, const struct state *s, value_t lb, value_t ub,
+    struct handle h) {
 
   assert(name != NULL);
 
@@ -952,7 +953,8 @@ static __attribute__((unused)) value_t handle_read(const char *name,
   value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
-    error(s, false, "read of undefined value in %s", name);
+    error(s, false, "read of undefined value in %s%s%s", name,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   return decode_value(lb, ub, dest);
@@ -1107,9 +1109,9 @@ static void handle_write_raw(struct handle h, value_t value) {
   }
 }
 
-static __attribute__((unused)) void handle_write(const char *name,
-    const struct state *s, value_t lb, value_t ub, struct handle h,
-    value_t value) {
+static __attribute__((unused)) void handle_write(const char *rule_name,
+    const char *name, const struct state *s, value_t lb, value_t ub,
+    struct handle h, value_t value) {
 
   assert(name != NULL);
 
@@ -1122,7 +1124,8 @@ static __attribute__((unused)) void handle_write(const char *name,
 
   if (value < lb || value > ub || SUB(value, lb, &value) ||
       ADD(value, 1, &value)) {
-    error(s, false, "write of out-of-range value into %s", name);
+    error(s, false, "write of out-of-range value into %s%s%s", name,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   handle_write_raw(h, value);
