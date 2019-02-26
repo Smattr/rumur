@@ -105,7 +105,8 @@ class Generator : public ConstStmtTraversal {
       const std::string lb = s.lhs->type()->lower_bound();
       const std::string ub = s.lhs->type()->upper_bound();
 
-      *out << "handle_write(s, " << lb << ", " << ub << ", ";
+      *out << "handle_write(\"" << s.lhs->to_string() << "\", s, " << lb << ", "
+        << ub << ", ";
       generate_lvalue(*out, *s.lhs);
       *out << ", ";
       generate_rvalue(*out, *s.rhs);

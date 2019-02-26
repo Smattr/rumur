@@ -1107,8 +1107,11 @@ static void handle_write_raw(struct handle h, value_t value) {
   }
 }
 
-static __attribute__((unused)) void handle_write(const struct state *s,
-    value_t lb, value_t ub, struct handle h, value_t value) {
+static __attribute__((unused)) void handle_write(const char *name,
+    const struct state *s, value_t lb, value_t ub, struct handle h,
+    value_t value) {
+
+  assert(name != NULL);
 
   /* If we happen to be writing to the current state, do a sanity check that
    * we're only writing within bounds.
@@ -1119,7 +1122,7 @@ static __attribute__((unused)) void handle_write(const struct state *s,
 
   if (value < lb || value > ub || SUB(value, lb, &value) ||
       ADD(value, 1, &value)) {
-    error(s, false, "write of out-of-range value");
+    error(s, false, "write of out-of-range value into %s", name);
   }
 
   handle_write_raw(h, value);
