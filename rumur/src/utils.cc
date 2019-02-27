@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <ctype.h>
+#include "options.h"
 #include <rumur/rumur.h>
+#include <sstream>
 #include <string>
 #include "utils.h"
 
@@ -24,4 +26,14 @@ std::string escape(const std::string &s) {
 
 std::string to_C_string(const rumur::Expr &expr) {
   return "\"" + escape(expr.to_string()) + "\"";
+}
+
+static std::string to_string(const rumur::location &location) {
+  std::stringstream ss;
+  ss << location;
+  return ss.str();
+}
+
+std::string to_C_string(const rumur::location &location) {
+  return "\"" + escape(input_filename) + ":" + to_string(location) + ": \"";
 }

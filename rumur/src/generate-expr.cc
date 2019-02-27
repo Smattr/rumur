@@ -36,8 +36,8 @@ class Generator : public ConstExprTraversal {
   void visit_add(const Add &n) final {
     if (lvalue)
       invalid(n);
-    *this << "add(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
-      << *n.rhs << ")";
+    *this << "add(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_and(const And &n) final {
@@ -49,8 +49,8 @@ class Generator : public ConstExprTraversal {
   void visit_div(const Div &n) final {
     if (lvalue)
       invalid(n);
-    *this << "divide(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
-      << *n.rhs << ")";
+    *this << "divide(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_element(const Element &n) final {
@@ -89,12 +89,13 @@ class Generator : public ConstExprTraversal {
     if (!lvalue && a.element_type->is_simple()) {
       const std::string lb = a.element_type->lower_bound();
       const std::string ub = a.element_type->upper_bound();
-      *out << "handle_read(rule_name, " << to_C_string(n) << ", s, " << lb
-        << ", " << ub << ", ";
+      *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
+        << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
     }
 
-    *out << "handle_index(rule_name, " << to_C_string(n) << ", s, SIZE_C("
-      << element_width << "), VALUE_C(" << min << "), VALUE_C(" << max << "), ";
+    *out << "handle_index(" << to_C_string(n.loc) << ", rule_name, "
+      << to_C_string(n) << ", s, SIZE_C(" << element_width << "), VALUE_C("
+      << min << "), VALUE_C(" << max << "), ";
     if (lvalue) {
       generate_lvalue(*out, *n.array);
     } else {
@@ -157,8 +158,8 @@ class Generator : public ConstExprTraversal {
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
         const std::string lb = t->lower_bound();
         const std::string ub = t->upper_bound();
-        *out << "handle_read(rule_name, " << to_C_string(n) << ", s, " << lb
-          << ", " << ub << ", ";
+        *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
+          << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
       }
 
       *out << "ru_" << n.id;
@@ -187,8 +188,8 @@ class Generator : public ConstExprTraversal {
           if (!lvalue && f->type->is_simple()) {
             const std::string lb = f->type->lower_bound();
             const std::string ub = f->type->upper_bound();
-            *out << "handle_read(rule_name, " << to_C_string(n) << ", s, "
-              << lb << ", " << ub << ", ";
+            *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
+              << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
@@ -330,9 +331,9 @@ class Generator : public ConstExprTraversal {
           const std::string lb = p->get_type()->lower_bound();
           const std::string ub = p->get_type()->upper_bound();
 
-          *out
-            << "handle_write(rule_name, \"<temporary>\", state_drop_const(s), "
-              << lb << ", " << ub << ", " << handle << ", ";
+          *out << "handle_write(" << to_C_string(n.loc) << ", rule_name, "
+            << "\"<temporary>\", state_drop_const(s), " << lb << ", " << ub
+            << ", " << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
 
@@ -461,21 +462,22 @@ class Generator : public ConstExprTraversal {
   void visit_mod(const Mod &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mod(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
-      << *n.rhs << ")";
+    *this << "mod(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_mul(const Mul &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mul(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
-      << *n.rhs << ")";
+    *this << "mul(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
-    *this << "negate(rule_name, " << to_C_string(n) << ", s, " << *n.rhs << ")";
+    *this << "negate(" << to_C_string(n.loc) << ", rule_name, "
+      << to_C_string(n) << ", s, " << *n.rhs << ")";
   }
 
   void visit_neq(const Neq &n) final {
@@ -512,8 +514,8 @@ class Generator : public ConstExprTraversal {
   void visit_sub(const Sub &n) final {
     if (lvalue)
       invalid(n);
-    *this << "sub(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
-      << *n.rhs << ")";
+    *this << "sub(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_ternary(const Ternary &n) final {

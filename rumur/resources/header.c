@@ -937,10 +937,11 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
   return dest;
 }
 
-static __attribute__((unused)) value_t handle_read(const char *rule_name,
-    const char *name, const struct state *s, value_t lb, value_t ub,
-    struct handle h) {
+static __attribute__((unused)) value_t handle_read(const char *context,
+    const char *rule_name, const char *name, const struct state *s, value_t lb,
+    value_t ub, struct handle h) {
 
+  assert(context != NULL);
   assert(name != NULL);
 
   /* If we happen to be reading from the current state, do a sanity check that
@@ -953,7 +954,7 @@ static __attribute__((unused)) value_t handle_read(const char *rule_name,
   value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
-    error(s, false, "read of undefined value in %s%s%s", name,
+    error(s, false, "%sread of undefined value in %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
@@ -1109,10 +1110,11 @@ static void handle_write_raw(struct handle h, value_t value) {
   }
 }
 
-static __attribute__((unused)) void handle_write(const char *rule_name,
-    const char *name, const struct state *s, value_t lb, value_t ub,
-    struct handle h, value_t value) {
+static __attribute__((unused)) void handle_write(const char *context,
+    const char *rule_name, const char *name, const struct state *s, value_t lb,
+    value_t ub, struct handle h, value_t value) {
 
+  assert(context != NULL);
   assert(name != NULL);
 
   /* If we happen to be writing to the current state, do a sanity check that
@@ -1124,7 +1126,7 @@ static __attribute__((unused)) void handle_write(const char *rule_name,
 
   if (value < lb || value > ub || SUB(value, lb, &value) ||
       ADD(value, 1, &value)) {
-    error(s, false, "write of out-of-range value into %s%s%s", name,
+    error(s, false, "%swrite of out-of-range value into %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
@@ -1229,21 +1231,23 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   };
 }
 
-static __attribute__((unused)) struct handle handle_index(const char *rule_name,
-    const char *expr, const struct state *s, size_t element_width,
-    value_t index_min, value_t index_max, struct handle root, value_t index) {
+static __attribute__((unused)) struct handle handle_index(const char *context,
+    const char *rule_name, const char *expr, const struct state *s,
+    size_t element_width, value_t index_min, value_t index_max,
+    struct handle root, value_t index) {
 
   assert(expr != NULL);
 
   if (index < index_min || index > index_max) {
-    error(s, false, "index out of range in expression %s%s%s", expr,
+    error(s, false, "%sindex out of range in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   size_t r1, r2;
   if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
-    error(s, false, "overflow when indexing array in expression %s%s%s", expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+    error(s, false, "%soverflow when indexing array in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   size_t r __attribute__((unused));
@@ -1264,91 +1268,107 @@ static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
 
 /* Overflow-safe helpers for doing bounded arithmetic. */
 
-static __attribute__((unused)) value_t add(const char *rule_name,
-    const char *expr, const struct state *s, value_t a, value_t b) {
+static __attribute__((unused)) value_t add(const char *context,
+    const char *rule_name, const char *expr, const struct state *s, value_t a,
+    value_t b) {
 
+  assert(context != NULL);
   assert(expr != NULL);
 
   value_t r;
   if (ADD(a, b, &r)) {
-    error(s, false, "integer overflow in addition in expression %s%s%s", expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
-  }
-  return r;
-}
-
-static __attribute__((unused)) value_t sub(const char *rule_name,
-    const char *expr, const struct state *s, value_t a, value_t b) {
-
-  assert(expr != NULL);
-
-  value_t r;
-  if (SUB(a, b, &r)) {
-    error(s, false, "integer overflow in subtraction in expression %s%s%s", expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
-  }
-  return r;
-}
-
-static __attribute__((unused)) value_t mul(const char *rule_name,
-    const char *expr, const struct state *s, value_t a, value_t b) {
-
-  assert(expr != NULL);
-
-  value_t r;
-  if (MUL(a, b, &r)) {
-    error(s, false, "integer overflow in multiplication in expression %s%s%s",
-      expr, rule_name == NULL ? "" : " within ",
+    error(s, false, "%sinteger overflow in addition in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t divide(const char *rule_name,
-    const char *expr, const struct state *s, value_t a, value_t b) {
+static __attribute__((unused)) value_t sub(const char *context,
+    const char *rule_name, const char *expr, const struct state *s, value_t a,
+    value_t b) {
 
+  assert(context != NULL);
+  assert(expr != NULL);
+
+  value_t r;
+  if (SUB(a, b, &r)) {
+    error(s, false, "%sinteger overflow in subtraction in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
+  }
+  return r;
+}
+
+static __attribute__((unused)) value_t mul(const char *context,
+    const char *rule_name, const char *expr, const struct state *s, value_t a,
+    value_t b) {
+
+  assert(context != NULL);
+  assert(expr != NULL);
+
+  value_t r;
+  if (MUL(a, b, &r)) {
+    error(s, false, "%sinteger overflow in multiplication in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
+  }
+  return r;
+}
+
+static __attribute__((unused)) value_t divide(const char *context,
+    const char *rule_name, const char *expr, const struct state *s, value_t a,
+    value_t b) {
+
+  assert(context != NULL);
   assert(expr != NULL);
 
   if (b == 0) {
-    error(s, false, "division by zero in expression %s%s%s", expr,
+    error(s, false, "%sdivision by zero in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   if (a == MIN(value_t) && b == -1) {
-    error(s, false, "integer overflow in division in expression %s%s%s", expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+    error(s, false, "%sinteger overflow in division in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   return a / b;
 }
 
-static __attribute__((unused)) value_t mod(const char *rule_name,
-    const char *expr, const struct state *s, value_t a, value_t b) {
+static __attribute__((unused)) value_t mod(const char *context,
+    const char *rule_name, const char *expr, const struct state *s, value_t a,
+    value_t b) {
 
+  assert(context != NULL);
   assert(expr != NULL);
 
   if (b == 0) {
-    error(s, false, "modulus by zero in expression %s%s%s", expr,
+    error(s, false, "%smodulus by zero in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
   if (a == MIN(value_t) && b == -1) {
-    error(s, false, "integer overflow in modulo in expression %s%s%s", expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+    error(s, false, "%sinteger overflow in modulo in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   return a % b;
 }
 
-static __attribute__((unused)) value_t negate(const char *rule_name,
-    const char *expr, const struct state *s, value_t a) {
+static __attribute__((unused)) value_t negate(const char *context,
+    const char *rule_name, const char *expr, const struct state *s, value_t a) {
 
+  assert(context != NULL);
   assert(expr != NULL);
 
   if (a == MIN(value_t)) {
-    error(s, false, "integer overflow in negation in expression %s%s%s", expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+    error(s, false, "%sinteger overflow in negation in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   return -a;

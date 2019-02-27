@@ -14,3 +14,6 @@ std::string escape(const std::string &s);
 
 // get a C source code string for this expression
 std::string to_C_string(const rumur::Expr &expr);
+
+// get a C source code string for this location
+std::string to_C_string(const rumur::location &location);
