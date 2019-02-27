@@ -1264,70 +1264,91 @@ static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
 
 /* Overflow-safe helpers for doing bounded arithmetic. */
 
-static __attribute__((unused)) value_t add(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t add(const char *rule_name,
+    const char *expr, const struct state *s, value_t a, value_t b) {
+
+  assert(expr != NULL);
 
   value_t r;
   if (ADD(a, b, &r)) {
-    error(s, false, "integer overflow in addition");
+    error(s, false, "integer overflow in addition in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t sub(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t sub(const char *rule_name,
+    const char *expr, const struct state *s, value_t a, value_t b) {
+
+  assert(expr != NULL);
 
   value_t r;
   if (SUB(a, b, &r)) {
-    error(s, false, "integer overflow in subtraction");
+    error(s, false, "integer overflow in subtraction in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t mul(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t mul(const char *rule_name,
+    const char *expr, const struct state *s, value_t a, value_t b) {
+
+  assert(expr != NULL);
 
   value_t r;
   if (MUL(a, b, &r)) {
-    error(s, false, "integer overflow in multiplication");
+    error(s, false, "integer overflow in multiplication in expression %s%s%s",
+      expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t divide(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t divide(const char *rule_name,
+    const char *expr, const struct state *s, value_t a, value_t b) {
+
+  assert(expr != NULL);
 
   if (b == 0) {
-    error(s, false, "division by zero");
+    error(s, false, "division by zero in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   if (a == MIN(value_t) && b == -1) {
-    error(s, false, "integer overflow in division");
+    error(s, false, "integer overflow in division in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   return a / b;
 }
 
-static __attribute__((unused)) value_t mod(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t mod(const char *rule_name,
+    const char *expr, const struct state *s, value_t a, value_t b) {
+
+  assert(expr != NULL);
 
   if (b == 0) {
-    error(s, false, "modulus by zero");
+    error(s, false, "modulus by zero in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
   if (a == MIN(value_t) && b == -1) {
-    error(s, false, "integer overflow in modulo");
+    error(s, false, "integer overflow in modulo in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   return a % b;
 }
 
-static __attribute__((unused)) value_t negate(const struct state *s,
-    value_t a) {
+static __attribute__((unused)) value_t negate(const char *rule_name,
+    const char *expr, const struct state *s, value_t a) {
+
+  assert(expr != NULL);
 
   if (a == MIN(value_t)) {
-    error(s, false, "integer overflow in negation");
+    error(s, false, "integer overflow in negation in expression %s%s%s", expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   return -a;

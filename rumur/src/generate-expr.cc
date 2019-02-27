@@ -36,7 +36,8 @@ class Generator : public ConstExprTraversal {
   void visit_add(const Add &n) final {
     if (lvalue)
       invalid(n);
-    *this << "add(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "add(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
+      << *n.rhs << ")";
   }
 
   void visit_and(const And &n) final {
@@ -48,7 +49,8 @@ class Generator : public ConstExprTraversal {
   void visit_div(const Div &n) final {
     if (lvalue)
       invalid(n);
-    *this << "divide(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "divide(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
+      << *n.rhs << ")";
   }
 
   void visit_element(const Element &n) final {
@@ -459,19 +461,21 @@ class Generator : public ConstExprTraversal {
   void visit_mod(const Mod &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mod(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "mod(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
+      << *n.rhs << ")";
   }
 
   void visit_mul(const Mul &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mul(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "mul(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
+      << *n.rhs << ")";
   }
 
   void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
-    *this << "negate(s, " << *n.rhs << ")";
+    *this << "negate(rule_name, " << to_C_string(n) << ", s, " << *n.rhs << ")";
   }
 
   void visit_neq(const Neq &n) final {
@@ -508,7 +512,8 @@ class Generator : public ConstExprTraversal {
   void visit_sub(const Sub &n) final {
     if (lvalue)
       invalid(n);
-    *this << "sub(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "sub(rule_name, " << to_C_string(n) << ", s, " << *n.lhs << ", "
+      << *n.rhs << ")";
   }
 
   void visit_ternary(const Ternary &n) final {
