@@ -105,7 +105,7 @@ class Generator : public ConstStmtTraversal {
       const std::string lb = s.lhs->type()->lower_bound();
       const std::string ub = s.lhs->type()->upper_bound();
 
-      *out << "handle_write(rule_name, \"" << s.lhs->to_string() << "\", s, "
+      *out << "handle_write(rule_name, " << to_C_string(*s.lhs) << ", s, "
         << lb << ", " << ub << ", ";
       generate_lvalue(*out, *s.lhs);
       *out << ", ";
@@ -212,16 +212,16 @@ class Generator : public ConstStmtTraversal {
         *out << "if (__builtin_expect(!";
         generate_property(*out, s.property);
         *out << ", 0)) {\nerror(s, false, \"Assertion failed: %s:"
-          << s.loc << ": %s\", \"" << escape(input_filename) << "\", \"";
+          << s.loc << ": %s\", \"" << escape(input_filename) << "\", ";
         if (s.message == "") {
           /* Assertion has no associated text. Use the expression itself
            * instead.
            */
-          *out << s.property.expr->to_string();
+          *out << to_C_string(*s.property.expr);
         } else {
-          *out << s.message;
+          *out << "\"" << escape(s.message) << "\"";
         }
-        *out << "\");\n}";
+        *out << ");\n}";
         break;
 
       case Property::ASSUMPTION:
@@ -252,7 +252,7 @@ class Generator : public ConstStmtTraversal {
       std::ostringstream buffer;
       generate_lvalue(buffer, *s.expr);
 
-      generate_print(*out, *s.expr->type(), s.expr->to_string(), buffer.str(),
+      generate_print(*out, *s.expr->type(), escape(s.expr->to_string()), buffer.str(),
         false, false);
 
       return;

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <ctype.h>
+#include <rumur/rumur.h>
 #include <string>
 #include "utils.h"
 
@@ -19,4 +20,8 @@ std::string escape(const std::string &s) {
     }
   }
   return out;
+}
+
+std::string to_C_string(const rumur::Expr &expr) {
+  return "\"" + escape(expr.to_string()) + "\"";
 }
