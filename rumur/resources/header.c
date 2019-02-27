@@ -1229,17 +1229,24 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   };
 }
 
-static __attribute__((unused)) struct handle handle_index(const struct state *s,
-  size_t element_width, value_t index_min, value_t index_max,
-  struct handle root, value_t index) {
+static __attribute__((unused)) struct handle handle_index(const char *rule_name,
+    const char *lhs, const char *rhs, const struct state *s,
+    size_t element_width, value_t index_min, value_t index_max,
+    struct handle root, value_t index) {
+
+  assert(lhs != NULL);
+  assert(rhs != NULL);
 
   if (index < index_min || index > index_max) {
-    error(s, false, "index out of range");
+    error(s, false, "index out of range in expression %s[%s]%s%s", lhs, rhs,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   size_t r1, r2;
   if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
-    error(s, false, "overflow when indexing array");
+    error(s, false, "overflow when indexing array in expression %s[%s]%s%s",
+      lhs, rhs, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   size_t r __attribute__((unused));

@@ -91,8 +91,9 @@ class Generator : public ConstExprTraversal {
         << ", " << ub << ", ";
     }
 
-    *out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
-      << "), VALUE_C(" << max << "), ";
+    *out << "handle_index(rule_name, \"" << n.array->to_string() << "\", \""
+      << n.index->to_string() << "\", s, SIZE_C(" << element_width
+      << "), VALUE_C(" << min << "), VALUE_C(" << max << "), ";
     if (lvalue) {
       generate_lvalue(*out, *n.array);
     } else {
