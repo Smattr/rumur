@@ -1,6 +1,38 @@
 Change log
 ==========
 
+v2019.03.02
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: enum types with duplicate members are now rejected. Previously,
+  members would silently shadow earlier duplicate members (commit
+  b476ffbdb7f5afb245c933a89d8f3cf9ecc8a884).
+* Bug fix: models that redeclare symbols are now rejected. Previously,
+  definitions would silently shadow earlier same-named definitions (commit
+  96b8acab16310f4e80008b92827f804ba6e3ae66).
+* The generated verifier produces more context information in error messages
+  (commits 45a63a9f26f531587d0c461da74467e2cc008c38,
+  7238dcacbf676c2649cfe82c98df25dbe96af93d,
+  9384c756477cbf164ea7f41227b053fca4c67fc5,
+  063e92bd53a5dbbb642e1d5c302a9240afff5fbc,
+  668c1d6ab02e9c55cfd8119e5a403c5595cd5b45,
+  39d35f4344633c2e1280fc0d5b28e2356140229b,
+  434fbf2f50d69b7824a224280bd5f7f3bcc2275d,
+  6822bba8a280b70d53d6dbb470f631143df0b5c4).
+* The implementation of the queue of pending states has been further optimised,
+  resulting in a ~25% reduction in the runtime of the generated verifier
+  (commits 8f0329c33343cfcf16675a110ed3211b9abc95e3,
+  2153f1f9e0ac7e2d015aff58cd0d8007901de808).
+* The warning emitted by Rumur when your model is missing a start state is now
+  suppressed when you pass ``--quiet`` (commit
+  55514d39e40b2c018379e15d2f706e0a1c56ed18).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2019.02.14
 -----------
 
