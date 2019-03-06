@@ -234,6 +234,10 @@ class Generator : public ConstStmtTraversal {
           << "}";
         break;
 
+      case Property::COVER:
+        *out << "do { /* TODO */ } while (0)";
+        break;
+
     }
   }
 

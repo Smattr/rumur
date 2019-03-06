@@ -601,7 +601,7 @@
       <ref name="location"/>
       <attribute name="category">
         <data type="string">
-          <param name="pattern">(assertion|assumption|disabled)</param>
+          <param name="pattern">(assertion|assumption|cover|disabled)</param>
         </data>
       </attribute>
       <ref name="content"/>

@@ -102,6 +102,7 @@
 %token CLEAR
 %token COLON_EQ
 %token CONST
+%token COVER
 %token DEQ
 %token DO
 %token DOTDOT
@@ -226,6 +227,8 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
 } | ASSUME {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSUMPTION);
+} | COVER {
+  $$ = std::make_shared<rumur::Property::Category>(rumur::Property::COVER);
 } | INVARIANT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
 } | PROPERTY {
