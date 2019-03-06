@@ -2636,6 +2636,26 @@ static int exit_with(int status) {
 
     /* We're now single-threaded again. */
 
+    if (error_count == 0) {
+      /* If we didn't see any other errors, print cover information. */
+      for (size_t i = 0; i < sizeof(covers) / sizeof(covers[0]); i++) {
+        if (MACHINE_READABLE_OUTPUT) {
+          printf("<cover_result index=\"%zu\" count=\"%" PRIuMAX "\"/>\n", i,
+            covers[i]);
+        }
+        if (covers[i] == 0) {
+          if (!MACHINE_READABLE_OUTPUT) {
+            printf("\t%s%scover %zu not hit%s\n", red(), bold(), i, reset());
+          }
+          error_count++;
+          status = EXIT_FAILURE;
+        } else if (!MACHINE_READABLE_OUTPUT) {
+          printf("\t%s%scover %zu hit %" PRIuMAX " times%s\n", green(), bold(),
+            i, covers[i], reset());
+        }
+      }
+    }
+
     if (!MACHINE_READABLE_OUTPUT) {
       printf("\n"
              "==========================================================================\n"

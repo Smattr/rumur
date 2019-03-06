@@ -32,6 +32,7 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ${CMAKE_CURRENT_BINARY_DIR}/version.cc
   src/generate-allocations.cc
+  src/generate-cover-array.cc
   src/generate-decl.cc
   src/generate-expr.cc
   src/generate-function.cc
