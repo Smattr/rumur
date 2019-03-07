@@ -1,4 +1,4 @@
--- checker_output: re.compile(r'^\s*cover 2 not hit$', re.MULTILINE)
+-- checker_output: re.compile(r'^\s*cover "x was 2" not hit$', re.MULTILINE)
 -- checker_exit_code: 1
 
 -- Test a set of multiple covers

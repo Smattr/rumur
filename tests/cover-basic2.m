@@ -1,4 +1,4 @@
--- checker_output: re.compile(r'^\s*cover 0 hit 2 times$', re.MULTILINE)
+-- checker_output: re.compile(r'^\s*cover "x was false" hit 2 times$', re.MULTILINE)
 
 -- Test of a cover property that is hit multiple times
 

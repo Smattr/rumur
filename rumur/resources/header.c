@@ -2640,18 +2640,21 @@ static int exit_with(int status) {
       /* If we didn't see any other errors, print cover information. */
       for (size_t i = 0; i < sizeof(covers) / sizeof(covers[0]); i++) {
         if (MACHINE_READABLE_OUTPUT) {
-          printf("<cover_result index=\"%zu\" count=\"%" PRIuMAX "\"/>\n", i,
+          char *msg = xml_escape(COVER_MESSAGES[i]);
+          printf("<cover_result message=\"%s\" count=\"%" PRIuMAX "\"/>\n", msg,
             covers[i]);
+          free(msg);
         }
         if (covers[i] == 0) {
           if (!MACHINE_READABLE_OUTPUT) {
-            printf("\t%s%scover %zu not hit%s\n", red(), bold(), i, reset());
+            printf("\t%s%scover \"%s\" not hit%s\n", red(), bold(),
+              COVER_MESSAGES[i], reset());
           }
           error_count++;
           status = EXIT_FAILURE;
         } else if (!MACHINE_READABLE_OUTPUT) {
-          printf("\t%s%scover %zu hit %" PRIuMAX " times%s\n", green(), bold(),
-            i, covers[i], reset());
+          printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
+            bold(), COVER_MESSAGES[i], covers[i], reset());
         }
       }
     }

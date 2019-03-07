@@ -1,4 +1,4 @@
--- checker_output: re.compile(r'^\s*cover 0 hit 1 times$', re.MULTILINE)
+-- checker_output: re.compile(r'^\s*cover "x was true" hit 1 times$', re.MULTILINE)
 
 -- Test a cover property used as a statement
 
