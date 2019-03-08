@@ -2658,12 +2658,14 @@ static int exit_with(int status) {
 
     /* Paranoid check that we didn't miscount during set insertions/expansions.
      */
+#ifndef NDEBUG
     size_t count = 0;
     for (size_t i = 0; i < set_size(local_seen); i++) {
       if (!slot_is_empty(local_seen->bucket[i])) {
         count++;
       }
     }
+#endif
     assert(count == local_seen->count && "seen set count is inconsistent at "
       "exit");
 
