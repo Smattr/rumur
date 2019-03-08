@@ -532,13 +532,66 @@ struct state {
   uint8_t data[STATE_SIZE_BYTES];
 };
 
+/*******************************************************************************
+ * State allocator.                                                            *
+ *                                                                             *
+ * The following implements a simple bump allocator for states. The purpose of *
+ * this (rather than simply mallocing individual states) is to speed up        *
+ * allocation by taking global locks less frequently and decrease allocator    *
+ * metadata overhead.                                                          *
+ ******************************************************************************/
+
+/* An initial size of thread-local allocator pools ~8MB. */
+static _Thread_local size_t arena_count =
+  (sizeof(struct state*) > 8 * 1024 * 1024)
+    ? 1
+    : (8 * 1024 * 1024 / sizeof(struct state*));
+
+static _Thread_local struct state *arena_base;
+static _Thread_local struct state *arena_limit;
+
 static struct state *state_new(void) {
-  return xcalloc(1, sizeof(struct state));
+
+  if (arena_base == arena_limit) {
+    /* Allocation pool is empty. We need to set up a new pool. */
+    for (;;) {
+      if (arena_count == 1) {
+        arena_base = xmalloc(sizeof(*arena_base));
+      } else {
+        arena_base = calloc(arena_count, sizeof(*arena_base));
+        if (arena_base == NULL) {
+          /* Memory pressure high. Decrease our attempted allocation and try
+           * again.
+           */
+          arena_count /= 2;
+          continue;
+        }
+      }
+
+      arena_limit = arena_base + arena_count;
+      break;
+    }
+  }
+
+  assert(arena_base != NULL);
+  assert(arena_base != arena_limit);
+
+  struct state *s = arena_base;
+  arena_base++;
+  return s;
 }
 
 static void state_free(struct state *s) {
-  free(s);
+
+  if (s == NULL) {
+    return;
+  }
+
+  assert(s + 1 == arena_base);
+  arena_base--;
 }
+
+/******************************************************************************/
 
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds print_mutex.
@@ -635,7 +688,7 @@ static bool state_eq(const struct state *a, const struct state *b) {
 }
 
 static struct state *state_dup(const struct state *s) {
-  struct state *n = xmalloc(sizeof(*n));
+  struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   n->previous = s;

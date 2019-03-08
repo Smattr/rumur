@@ -409,6 +409,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "    do {\n"
 
           << "      s = state_new();\n"
+          << "      memset(s, 0, sizeof(*s));\n"
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
           << "      s->rule_taken = rule_taken;\n"
           << "#endif\n"
