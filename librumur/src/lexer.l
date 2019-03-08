@@ -62,6 +62,7 @@ by            { return rumur::parser::token::BY;            }
 case          { return rumur::parser::token::CASE;          }
 clear         { return rumur::parser::token::CLEAR;         }
 const         { return rumur::parser::token::CONST;         }
+cover         { return rumur::parser::token::COVER;         }
 do            { return rumur::parser::token::DO;            }
 else          { return rumur::parser::token::ELSE;          }
 elsif         { return rumur::parser::token::ELSIF;         }

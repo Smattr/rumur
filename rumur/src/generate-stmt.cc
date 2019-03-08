@@ -234,6 +234,15 @@ class Generator : public ConstStmtTraversal {
           << "}";
         break;
 
+      case Property::COVER:
+        *out << "if (";
+        generate_property(*out, s.property);
+        *out
+          << ") {\n"
+          << "  covers[COVER_" << s.property.unique_id << "]++;\n"
+          << "}";
+        break;
+
     }
   }
 

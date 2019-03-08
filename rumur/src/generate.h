@@ -38,3 +38,5 @@ void generate_quantifier_header(std::ostream &out, const rumur::Quantifier &q);
 void generate_quantifier_footer(std::ostream &out, const rumur::Quantifier &q);
 
 void generate_stmt(std::ostream &out, const rumur::Stmt &s);
+
+void generate_cover_array(std::ostream &out, const rumur::Model &model);
