@@ -432,7 +432,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "        queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
           << "        s = NULL;\n"
           << "      }\n"
-          << "      free(s);\n"
+          << "      state_free(s);\n"
           << "    } while (0);\n"
           << "    rule_taken++;\n";
 
@@ -552,7 +552,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "            n = NULL;\n"
           << "          }\n"
           << "        }\n"
-          << "        free(n);\n"
+          << "        state_free(n);\n"
           << "      } while (0);\n"
           << "      rule_taken++;\n";
 

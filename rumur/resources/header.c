@@ -532,6 +532,14 @@ struct state {
   uint8_t data[STATE_SIZE_BYTES];
 };
 
+static struct state *state_new(void) {
+  return xcalloc(1, sizeof(struct state));
+}
+
+static void state_free(struct state *s) {
+  free(s);
+}
+
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds print_mutex.
  */
@@ -595,7 +603,7 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   }
 
   if (!retain) {
-    free((void*)s);
+    state_free((struct state*)s);
   }
 
 #ifdef __clang__
@@ -616,10 +624,6 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   }
 
   exit_with(EXIT_FAILURE);
-}
-
-static struct state *state_new(void) {
-  return xcalloc(1, sizeof(struct state));
 }
 
 static int state_cmp(const struct state *a, const struct state *b) {
