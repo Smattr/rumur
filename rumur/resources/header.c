@@ -14,19 +14,6 @@
   #endif
 #endif
 
-/* Generic support for minimum values of types. This is useful for,
- * e.g. size_t, where we don't properly have SIZE_MAX and SIZE_MIN.
- */
-#define MAX(type) _Generic((type)1,                                            \
-  int8_t:   INT8_MAX,                                                          \
-  int16_t:  INT16_MAX,                                                         \
-  int32_t:  INT32_MAX,                                                         \
-  int64_t:  INT64_MAX,                                                         \
-  uint8_t:  UINT8_MAX,                                                         \
-  uint16_t: UINT16_MAX,                                                        \
-  uint32_t: UINT32_MAX,                                                        \
-  uint64_t: UINT64_MAX)
-
 /* Abstraction over the type we use for scalar values. Other code should be
  * agnostic to what the underlying type is, so if you are porting this code to a
  * future platform where you need a wider type, modifying these lines should be
