@@ -37,14 +37,6 @@ static struct value_string_buffer value_to_string(value_t v) {
   return buf;
 }
 
-/* XXX: intypes.h does not seem to give us this. */
-#ifndef SIZE_C
-  #define SIZE_C(x) _Generic((size_t)1,                                        \
-    unsigned: x ## u,                                                          \
-    unsigned long: x ## ul,                                                    \
-    unsigned long long: x ## ull)
-#endif
-
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
  */
