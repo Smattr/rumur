@@ -60,6 +60,13 @@ static struct value_string_buffer value_to_string(value_t v) {
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
+/* Implement _Thread_local for GCC <4.9, which is missing this. */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+  #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+    #define _Thread_local __thread
+  #endif
+#endif
+
 /* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
  * sufficient. The two are:
