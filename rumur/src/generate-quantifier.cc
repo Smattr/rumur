@@ -27,7 +27,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   if (q.type == nullptr) {
     width = "(sizeof(value_t) * 8 + 1)";
   } else {
-    width = "SIZE_C(" + q.type->width().get_str() + ")";
+    width = "((size_t)" + q.type->width().get_str() + "ull)";
   }
 
   /* Write out the step in advance. We generate this here, rather than inline so

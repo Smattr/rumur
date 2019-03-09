@@ -220,8 +220,8 @@ class Generator : public ConstTypeTraversal {
  private:
   std::string derive_handle(mpz_class offset, mpz_class width) const {
     return "((struct handle){ .base = " + handle + ".base, .offset = " + handle
-      + ".offset + SIZE_C(" + offset.get_str() + "), .width = SIZE_C("
-      + width.get_str() + ") })";
+      + ".offset + ((size_t)" + offset.get_str() + "), .width = "
+      + width.get_str() + "ull })";
   }
 
   std::string to_previous() const {
