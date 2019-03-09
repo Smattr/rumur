@@ -42,6 +42,7 @@
  * enough.
  */
 typedef int64_t value_t;
+#define VALUE_MIN INT64_MIN
 
 struct value_string_buffer {
   char data[50];
@@ -1385,7 +1386,7 @@ static __attribute__((unused)) value_t divide(const char *context,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  if (a == MIN(value_t) && b == -1) {
+  if (a == VALUE_MIN && b == -1) {
     error(s, false, "%sinteger overflow in division in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1407,7 +1408,7 @@ static __attribute__((unused)) value_t mod(const char *context,
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (a == MIN(value_t) && b == -1) {
+  if (a == VALUE_MIN && b == -1) {
     error(s, false, "%sinteger overflow in modulo in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1422,7 +1423,7 @@ static __attribute__((unused)) value_t negate(const char *context,
   assert(context != NULL);
   assert(expr != NULL);
 
-  if (a == MIN(value_t)) {
+  if (a == VALUE_MIN) {
     error(s, false, "%sinteger overflow in negation in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
