@@ -17,7 +17,7 @@
 /* Abstraction over the type we use for scalar values. Other code should be
  * agnostic to what the underlying type is, so if you are porting this code to a
  * future platform where you need a wider type, modifying these lines should be
- * enough.
+ * enough. One (temporary) exception is value_to_string() below.
  */
 typedef int64_t value_t;
 #define VALUE_MIN INT64_MIN
@@ -32,17 +32,7 @@ static struct value_string_buffer value_to_string(value_t v) {
 
   struct value_string_buffer buf;
 
-  _Generic((value_t)1,
-    int8_t:   snprintf(buf.data, sizeof(buf.data), "%" PRId8,  (int8_t)v),
-    int16_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId16, (int16_t)v),
-    int32_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId32, (int32_t)v),
-    int64_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId64, (int64_t)v),
-    uint8_t:  snprintf(buf.data, sizeof(buf.data), "%" PRIu8,  (uint8_t)v),
-    uint16_t: snprintf(buf.data, sizeof(buf.data), "%" PRIu16, (uint16_t)v),
-    uint32_t: snprintf(buf.data, sizeof(buf.data), "%" PRId32, (uint32_t)v),
-    uint64_t: snprintf(buf.data, sizeof(buf.data), "%" PRId64, (uint64_t)v),
-    default:  assert(!"no valid value_string_buffer() implementation")
-  );
+  snprintf(buf.data, sizeof(buf.data), "%" PRId64, v);
 
   return buf;
 }
