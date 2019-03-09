@@ -60,20 +60,21 @@ static struct value_string_buffer value_to_string(value_t v) {
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
-/* A word about atomics... There are three different atomic operation mechanisms
+/* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
- * sufficient. The three are:
+ * sufficient. The two are:
  *
- *   1. C11 atomics: used for variables that are consistently accessed with
- *      atomic semantics. This mechanism is simple, concise and standardised.
- *   2. GCC __atomic built-ins: Used for variables that are sometimes accessed
+ *   1. GCC __atomic built-ins: Used for variables that are sometimes accessed
  *      with atomic semantics and sometimes as regular memory operations. The
  *      C11 atomics cannot give us this and the __atomic built-ins are
  *      implemented by the major compilers.
- *   3. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
+ *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
  *      seems the __atomic built-ins do not result in a CMPXCHG instruction, but
  *      rather in a less efficient library call. See
  *      https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+ *
+ * Though this is intended to be a C11 program, we avoid the C11 atomics to be
+ * compatible with GCC <4.9.
  */
 
 /* Identifier of the current thread. This counts up from 0 and thus is suitable
@@ -94,7 +95,7 @@ static enum { WARMUP, RUN } phase = WARMUP;
 /* Number of errors we've noted so far. If a thread sees this hit or exceed
  * MAX_ERRORS, they should attempt to exit gracefully as soon as possible.
  */
-static atomic_ulong error_count;
+static unsigned long error_count;
 
 /* Number of rules that have been processed. There are two representations of
  * this: a thread-local count of how many rules we have fired thus far and a
@@ -560,7 +561,8 @@ static _Noreturn int exit_with(int status);
 static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   const struct state *s, bool retain, const char *fmt, ...) {
 
-  unsigned long prior_errors = error_count++;
+  unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
+    __ATOMIC_SEQ_CST);
 
   if (prior_errors < MAX_ERRORS) {
 
@@ -1522,7 +1524,7 @@ static queue_handle_t queue_handle_next(queue_handle_t h) {
  ******************************************************************************/
 
 /* Queue node pointers currently safe to dereference. */
-static const struct queue_node *_Atomic hazarded[THREADS];
+static const struct queue_node *hazarded[THREADS];
 
 /* Protect a pointer that we wish to dereference. */
 static __attribute__((unused)) void hazard(queue_handle_t h) {
@@ -1535,9 +1537,10 @@ static __attribute__((unused)) void hazard(queue_handle_t h) {
   assert(p != NULL && "attempt to hazard an invalid pointer");
 
   /* Each thread is only allowed a single hazarded pointer at a time. */
-  assert(hazarded[thread_id] == NULL && "hazarding multiple pointers at once");
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
+    && "hazarding multiple pointers at once");
 
-  hazarded[thread_id] = p;
+  __atomic_store_n(&hazarded[thread_id], p, __ATOMIC_SEQ_CST);
 }
 
 /* Drop protection on a pointer whose target we are done accessing. */
@@ -1548,13 +1551,13 @@ static __attribute__((unused)) void unhazard(queue_handle_t h) {
 
   assert(p != NULL && "attempt to unhazard an invalid pointer");
 
-  assert(hazarded[thread_id] != NULL
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) != NULL
     && "unhazarding a pointer when none are hazarded");
 
-  assert(hazarded[thread_id] == p
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == p
     && "unhazarding a pointer that differs from the one hazarded");
 
-  hazarded[thread_id] = NULL;
+  __atomic_store_n(&hazarded[thread_id], NULL, __ATOMIC_SEQ_CST);
 }
 
 /* Free a pointer or, if not possible, defer this to later. */
@@ -1568,7 +1571,7 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   /* The reclaimer is not allowed to be freeing something while also holding a
    * hazarded pointer.
    */
-  assert(hazarded[thread_id] == NULL
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
     && "reclaiming a pointer while holding a hazarded pointer");
 
   /* Pointers that we failed to free initially because they were in use
@@ -1599,10 +1602,10 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
       for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
         if (j == thread_id) {
           /* No need to check for conflicts with ourself. */
-          assert(hazarded[j] == NULL);
+          assert(__atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST) == NULL);
           continue;
         }
-        if (deferred[i] == hazarded[j]) {
+        if (deferred[i] == __atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST)) {
           /* This pointer is in use by thread j. */
           conflict = true;
           break;
@@ -1622,10 +1625,10 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   for (size_t i = 0; i < sizeof(hazarded) / sizeof(hazarded[i]); i++) {
     if (i == thread_id) {
       /* No need to check for conflicts with ourself. */
-      assert(hazarded[i] == NULL);
+      assert(__atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST) == NULL);
       continue;
     }
-    if (p == hazarded[i]) {
+    if (p == __atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST)) {
       /* Bad luck :( */
       conflict = true;
       break;
@@ -1758,7 +1761,7 @@ static double_ptr_t double_ptr_make(uintptr_t q1, uintptr_t q2) {
 
 static struct {
   double_ptr_t ends;
-  atomic_size_t count;
+  size_t count;
 } q[THREADS];
 
 static size_t queue_enqueue(struct state *s, size_t queue_id) {
@@ -1903,7 +1906,7 @@ retry:;
     unhazard(tail);
   }
 
-  size_t count = ++q[queue_id].count;
+  size_t count = __atomic_add_fetch(&q[queue_id].count, 1, __ATOMIC_SEQ_CST);
 
   TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
     s, queue_id, count);
@@ -2009,7 +2012,8 @@ retry:;
         continue;
       }
 
-      size_t count = --q[*queue_id].count;
+      size_t count = __atomic_sub_fetch(&q[*queue_id].count, 1,
+        __ATOMIC_SEQ_CST);
 
       TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
         "%zu", s, *queue_id, count);
