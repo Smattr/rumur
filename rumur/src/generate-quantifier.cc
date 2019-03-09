@@ -77,8 +77,8 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
   const std::string counter = "_ru1_" + q.name;
 
   out
-    << "    if (MAX(value_t) - step < ub && " << counter
-      << " > MAX(value_t) - step) {\n"
+    << "    if (VALUE_MAX - step < ub && " << counter
+      << " > VALUE_MAX - step) {\n"
     << "      break;\n"
     << "    }\n"
     << "  }\n"

@@ -34,6 +34,7 @@
  */
 typedef int64_t value_t;
 #define VALUE_MIN INT64_MIN
+#define VALUE_MAX INT64_MAX
 
 struct value_string_buffer {
   char data[50];
