@@ -14,34 +14,15 @@
   #endif
 #endif
 
-/* Generic support for maximum and minimum values of types. This is useful for,
- * e.g. size_t, where we don't properly have SIZE_MAX and SIZE_MIN.
- */
-#define MIN(type) _Generic((type)1,                                            \
-  int8_t:   INT8_MIN,                                                          \
-  int16_t:  INT16_MIN,                                                         \
-  int32_t:  INT32_MIN,                                                         \
-  int64_t:  INT64_MIN,                                                         \
-  uint8_t:  (uint8_t)0,                                                        \
-  uint16_t: (uint16_t)0,                                                       \
-  uint32_t: (uint32_t)0,                                                       \
-  uint64_t: (uint64_t)0)
-#define MAX(type) _Generic((type)1,                                            \
-  int8_t:   INT8_MAX,                                                          \
-  int16_t:  INT16_MAX,                                                         \
-  int32_t:  INT32_MAX,                                                         \
-  int64_t:  INT64_MAX,                                                         \
-  uint8_t:  UINT8_MAX,                                                         \
-  uint16_t: UINT16_MAX,                                                        \
-  uint32_t: UINT32_MAX,                                                        \
-  uint64_t: UINT64_MAX)
-
 /* Abstraction over the type we use for scalar values. Other code should be
  * agnostic to what the underlying type is, so if you are porting this code to a
  * future platform where you need a wider type, modifying these lines should be
- * enough.
+ * enough. One (temporary) exception is value_to_string() below.
  */
 typedef int64_t value_t;
+#define VALUE_MIN INT64_MIN
+#define VALUE_MAX INT64_MAX
+#define VALUE_C(x) INT64_C(x)
 
 struct value_string_buffer {
   char data[50];
@@ -51,38 +32,10 @@ static struct value_string_buffer value_to_string(value_t v) {
 
   struct value_string_buffer buf;
 
-  _Generic((value_t)1,
-    int8_t:   snprintf(buf.data, sizeof(buf.data), "%" PRId8,  (int8_t)v),
-    int16_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId16, (int16_t)v),
-    int32_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId32, (int32_t)v),
-    int64_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId64, (int64_t)v),
-    uint8_t:  snprintf(buf.data, sizeof(buf.data), "%" PRIu8,  (uint8_t)v),
-    uint16_t: snprintf(buf.data, sizeof(buf.data), "%" PRIu16, (uint16_t)v),
-    uint32_t: snprintf(buf.data, sizeof(buf.data), "%" PRId32, (uint32_t)v),
-    uint64_t: snprintf(buf.data, sizeof(buf.data), "%" PRId64, (uint64_t)v),
-    default:  assert(!"no valid value_string_buffer() implementation")
-  );
+  snprintf(buf.data, sizeof(buf.data), "%" PRId64, v);
 
   return buf;
 }
-
-#define VALUE_C(x) _Generic((value_t)1,                                        \
-  int8_t:   INT8_C(x),                                                         \
-  int16_t:  INT16_C(x),                                                        \
-  int32_t:  INT32_C(x),                                                        \
-  int64_t:  INT64_C(x),                                                        \
-  uint8_t:  UINT8_C(x),                                                        \
-  uint16_t: UINT16_C(x),                                                       \
-  uint32_t: UINT32_C(x),                                                       \
-  uint64_t: UINT64_C(x))
-
-/* XXX: intypes.h does not seem to give us this. */
-#ifndef SIZE_C
-  #define SIZE_C(x) _Generic((size_t)1,                                        \
-    unsigned: x ## u,                                                          \
-    unsigned long: x ## ul,                                                    \
-    unsigned long long: x ## ull)
-#endif
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
@@ -107,20 +60,28 @@ static struct value_string_buffer value_to_string(value_t v) {
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
-/* A word about atomics... There are three different atomic operation mechanisms
+/* Implement _Thread_local for GCC <4.9, which is missing this. */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+  #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+    #define _Thread_local __thread
+  #endif
+#endif
+
+/* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
- * sufficient. The three are:
+ * sufficient. The two are:
  *
- *   1. C11 atomics: used for variables that are consistently accessed with
- *      atomic semantics. This mechanism is simple, concise and standardised.
- *   2. GCC __atomic built-ins: Used for variables that are sometimes accessed
+ *   1. GCC __atomic built-ins: Used for variables that are sometimes accessed
  *      with atomic semantics and sometimes as regular memory operations. The
  *      C11 atomics cannot give us this and the __atomic built-ins are
  *      implemented by the major compilers.
- *   3. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
+ *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
  *      seems the __atomic built-ins do not result in a CMPXCHG instruction, but
  *      rather in a less efficient library call. See
  *      https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+ *
+ * Though this is intended to be a C11 program, we avoid the C11 atomics to be
+ * compatible with GCC <4.9.
  */
 
 /* Identifier of the current thread. This counts up from 0 and thus is suitable
@@ -141,7 +102,7 @@ static enum { WARMUP, RUN } phase = WARMUP;
 /* Number of errors we've noted so far. If a thread sees this hit or exceed
  * MAX_ERRORS, they should attempt to exit gracefully as soon as possible.
  */
-static atomic_ulong error_count;
+static unsigned long error_count;
 
 /* Number of rules that have been processed. There are two representations of
  * this: a thread-local count of how many rules we have fired thus far and a
@@ -607,7 +568,8 @@ static _Noreturn int exit_with(int status);
 static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   const struct state *s, bool retain, const char *fmt, ...) {
 
-  unsigned long prior_errors = error_count++;
+  unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
+    __ATOMIC_SEQ_CST);
 
   if (prior_errors < MAX_ERRORS) {
 
@@ -1385,7 +1347,7 @@ static __attribute__((unused)) value_t divide(const char *context,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  if (a == MIN(value_t) && b == -1) {
+  if (a == VALUE_MIN && b == -1) {
     error(s, false, "%sinteger overflow in division in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1407,7 +1369,7 @@ static __attribute__((unused)) value_t mod(const char *context,
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (a == MIN(value_t) && b == -1) {
+  if (a == VALUE_MIN && b == -1) {
     error(s, false, "%sinteger overflow in modulo in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1422,7 +1384,7 @@ static __attribute__((unused)) value_t negate(const char *context,
   assert(context != NULL);
   assert(expr != NULL);
 
-  if (a == MIN(value_t)) {
+  if (a == VALUE_MIN) {
     error(s, false, "%sinteger overflow in negation in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1569,7 +1531,7 @@ static queue_handle_t queue_handle_next(queue_handle_t h) {
  ******************************************************************************/
 
 /* Queue node pointers currently safe to dereference. */
-static const struct queue_node *_Atomic hazarded[THREADS];
+static const struct queue_node *hazarded[THREADS];
 
 /* Protect a pointer that we wish to dereference. */
 static __attribute__((unused)) void hazard(queue_handle_t h) {
@@ -1582,9 +1544,10 @@ static __attribute__((unused)) void hazard(queue_handle_t h) {
   assert(p != NULL && "attempt to hazard an invalid pointer");
 
   /* Each thread is only allowed a single hazarded pointer at a time. */
-  assert(hazarded[thread_id] == NULL && "hazarding multiple pointers at once");
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
+    && "hazarding multiple pointers at once");
 
-  hazarded[thread_id] = p;
+  __atomic_store_n(&hazarded[thread_id], p, __ATOMIC_SEQ_CST);
 }
 
 /* Drop protection on a pointer whose target we are done accessing. */
@@ -1595,13 +1558,13 @@ static __attribute__((unused)) void unhazard(queue_handle_t h) {
 
   assert(p != NULL && "attempt to unhazard an invalid pointer");
 
-  assert(hazarded[thread_id] != NULL
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) != NULL
     && "unhazarding a pointer when none are hazarded");
 
-  assert(hazarded[thread_id] == p
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == p
     && "unhazarding a pointer that differs from the one hazarded");
 
-  hazarded[thread_id] = NULL;
+  __atomic_store_n(&hazarded[thread_id], NULL, __ATOMIC_SEQ_CST);
 }
 
 /* Free a pointer or, if not possible, defer this to later. */
@@ -1615,7 +1578,7 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   /* The reclaimer is not allowed to be freeing something while also holding a
    * hazarded pointer.
    */
-  assert(hazarded[thread_id] == NULL
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
     && "reclaiming a pointer while holding a hazarded pointer");
 
   /* Pointers that we failed to free initially because they were in use
@@ -1646,10 +1609,10 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
       for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
         if (j == thread_id) {
           /* No need to check for conflicts with ourself. */
-          assert(hazarded[j] == NULL);
+          assert(__atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST) == NULL);
           continue;
         }
-        if (deferred[i] == hazarded[j]) {
+        if (deferred[i] == __atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST)) {
           /* This pointer is in use by thread j. */
           conflict = true;
           break;
@@ -1669,10 +1632,10 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   for (size_t i = 0; i < sizeof(hazarded) / sizeof(hazarded[i]); i++) {
     if (i == thread_id) {
       /* No need to check for conflicts with ourself. */
-      assert(hazarded[i] == NULL);
+      assert(__atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST) == NULL);
       continue;
     }
-    if (p == hazarded[i]) {
+    if (p == __atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST)) {
       /* Bad luck :( */
       conflict = true;
       break;
@@ -1805,7 +1768,7 @@ static double_ptr_t double_ptr_make(uintptr_t q1, uintptr_t q2) {
 
 static struct {
   double_ptr_t ends;
-  atomic_size_t count;
+  size_t count;
 } q[THREADS];
 
 static size_t queue_enqueue(struct state *s, size_t queue_id) {
@@ -1950,7 +1913,7 @@ retry:;
     unhazard(tail);
   }
 
-  size_t count = ++q[queue_id].count;
+  size_t count = __atomic_add_fetch(&q[queue_id].count, 1, __ATOMIC_SEQ_CST);
 
   TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
     s, queue_id, count);
@@ -2056,7 +2019,8 @@ retry:;
         continue;
       }
 
-      size_t count = --q[*queue_id].count;
+      size_t count = __atomic_sub_fetch(&q[*queue_id].count, 1,
+        __ATOMIC_SEQ_CST);
 
       TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
         "%zu", s, *queue_id, count);
@@ -2615,7 +2579,7 @@ restart:;
        * represent the state data.
        */
       if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= SIZE_C(1) << STATE_SIZE_BITS && "seen set size "
+        assert(*count <= 1 << STATE_SIZE_BITS && "seen set size "
           "exceeds total possible number of states");
       }
 

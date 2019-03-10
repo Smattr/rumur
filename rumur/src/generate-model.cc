@@ -359,7 +359,8 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ", ru_" << q.name;
           out << ")) {\n"
             << "      /* Covered. */\n"
-            << "      covers[COVER_" << p->property.unique_id << "]++;\n"
+            << "      (void)__atomic_fetch_add(&covers[COVER_"
+              << p->property.unique_id << "], 1, __ATOMIC_SEQ_CST);\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -465,7 +466,8 @@ void generate_model(std::ostream &out, const Model &m) {
       << "\n"
       << "  for (;;) {\n"
       << "\n"
-      << "    if (THREADS > 1 && error_count >= MAX_ERRORS) {\n"
+      << "    if (THREADS > 1 && __atomic_load_n(&error_count,\n"
+      << "        __ATOMIC_SEQ_CST) >= MAX_ERRORS) {\n"
       << "      /* Another thread found an error. */\n"
       << "      break;\n"
       << "    }\n"

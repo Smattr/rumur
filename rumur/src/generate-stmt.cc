@@ -12,14 +12,14 @@
 using namespace rumur;
 
 static void clear(std::ostream &out, const rumur::TypeExpr &t,
-    const std::string &offset = "SIZE_C(0)", size_t depth = 0) {
+    const std::string &offset = "((size_t)0)", size_t depth = 0) {
 
   const std::string indent = std::string(2 * (depth + 1), ' ');
 
   if (t.is_simple()) {
     out << indent << "handle_write_raw((struct handle){ .base = root.base, "
-      << ".offset = root.offset + " << offset << ", .width = SIZE_C("
-      << t.width() << ") }, 1);\n";
+      << ".offset = root.offset + " << offset << ", .width = "
+      << t.width() << "ull }, 1);\n";
 
     return;
   }
@@ -30,11 +30,11 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
 
     // The number of elements in this array as a C code string
     mpz_class ic = a->index_type->count() - 1;
-    const std::string ub = "SIZE_C(" + ic.get_str() + ")";
+    const std::string ub = "((size_t)" + ic.get_str() + "ull)";
 
     // The bit size of each array element as a C code string
-    const std::string width = "SIZE_C(" +
-      a->element_type->width().get_str() + ")";
+    const std::string width = "((size_t)" +
+      a->element_type->width().get_str() + "ull)";
 
     // Generate a loop to iterate over all the elements
     const std::string var = "i" + std::to_string(depth);
@@ -61,7 +61,8 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
       clear(out, *f->type, off, depth);
 
       // Jump over this field to get the offset of the next field
-      const std::string width = "SIZE_C(" + f->type->width().get_str() + ")";
+      const std::string width = "((size_t)" + f->type->width().get_str()
+        + "ull)";
       off += " + " + width;
     }
 
@@ -239,7 +240,8 @@ class Generator : public ConstStmtTraversal {
         generate_property(*out, s.property);
         *out
           << ") {\n"
-          << "  covers[COVER_" << s.property.unique_id << "]++;\n"
+          << "  (void)__atomic_fetch_add(&covers[COVER_" << s.property.unique_id
+            << "], 1, __ATOMIC_SEQ_CST);\n"
           << "}";
         break;
 

@@ -75,5 +75,5 @@ void generate_cover_array(std::ostream &out, const rumur::Model &model) {
   mg.dispatch(model);
   out << "};\n\n";
 
-  out << "static atomic_uintmax_t covers[" << ca.get_count() << "];\n\n";
+  out << "static uintmax_t covers[" << ca.get_count() << "];\n\n";
 }

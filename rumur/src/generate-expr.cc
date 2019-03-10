@@ -94,7 +94,7 @@ class Generator : public ConstExprTraversal {
     }
 
     *out << "handle_index(" << to_C_string(n.loc) << ", rule_name, "
-      << to_C_string(n) << ", s, SIZE_C(" << element_width << "), VALUE_C("
+      << to_C_string(n) << ", s, " << element_width << "ull, VALUE_C("
       << min << "), VALUE_C(" << max << "), ";
     if (lvalue) {
       generate_lvalue(*out, *n.array);
@@ -325,7 +325,7 @@ class Generator : public ConstExprTraversal {
             << "uint8_t " << storage << "[BITS_TO_BYTES(" << p->width()
               << ")] = { 0 }; "
             << "struct handle " << handle << " = { .base = " << storage
-              << ", .offset = 0, .width = SIZE_C(" << p->width() << ") }; ";
+              << ", .offset = 0, .width = " << p->width() << "ull }; ";
 
         if (method == 1) {
           const std::string lb = p->get_type()->lower_bound();
@@ -379,7 +379,7 @@ class Generator : public ConstExprTraversal {
     // Pass the return type output parameter if required.
     if (return_type != nullptr && !return_type->is_simple())
       *out << ", (struct handle){ .base = ret" << n.unique_id
-        << ", .offset = 0ul, .width = SIZE_C(" << return_type->width() << ") }";
+        << ", .offset = 0ul, .width = " << return_type->width() << "ull }";
 
     // Now emit the arguments to the function.
     {

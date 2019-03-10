@@ -27,7 +27,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   if (q.type == nullptr) {
     width = "(sizeof(value_t) * 8 + 1)";
   } else {
-    width = "SIZE_C(" + q.type->width().get_str() + ")";
+    width = "((size_t)" + q.type->width().get_str() + "ull)";
   }
 
   /* Write out the step in advance. We generate this here, rather than inline so
@@ -77,8 +77,8 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
   const std::string counter = "_ru1_" + q.name;
 
   out
-    << "    if (MAX(value_t) - step < ub && " << counter
-      << " > MAX(value_t) - step) {\n"
+    << "    if (VALUE_MAX - step < ub && " << counter
+      << " > VALUE_MAX - step) {\n"
     << "      break;\n"
     << "    }\n"
     << "  }\n"
