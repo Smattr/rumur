@@ -640,14 +640,18 @@ void generate_model(std::ostream &out, const Model &m) {
             << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
             << "\");\n"
           << "      printf(\"%s\", escaped_name);\n"
-          << "      free(escaped_name);\n";
+          << "      free(escaped_name);\n"
+          << "    } else {\n"
+          << "      printf(\"Startstate %s\", \""
+            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "    }\n";
         {
           size_t i = 0;
           for (const Quantifier &q : r->quantifiers) {
             out
-              << "      escaped_name = xml_escape(\"" + q.name + "\");\n"
-              << "      printf(\"<parameter name=\\\"%s\\\">%s</parameter>\", "
-                "escaped_name, value_to_string((value_t)((rule_taken - " << base
+              << "    {\n"
+              << "      value_t v = (value_t)((rule_taken - " << base
                 << ") / (1";
             size_t j = r->quantifiers.size() - 1;
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
@@ -656,34 +660,30 @@ void generate_model(std::ostream &out, const Model &m) {
               out << " * " << it->count();
               j--;
             }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n"
-              << "      free(escaped_name);\n";
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
+
+              << "      if (MACHINE_READABLE_OUTPUT) {\n"
+              << "        char *escaped_name = xml_escape(\"" << q.name
+                << "\");\n"
+              << "        printf(\"<parameter name=\\\"%s\\\">\", "
+                << "escaped_name);\n"
+              << "        free(escaped_name);\n"
+              << "      } else {\n"
+              << "        printf(\", %s: \", \"" << q.name << "\");\n"
+              << "      }\n"
+              << "      if (MACHINE_READABLE_OUTPUT) {\n"
+              << "        printf(\"%s</parameter>\", value_to_string(v).data);\n"
+              << "      } else {\n"
+              << "        printf(\"%s\", value_to_string(v).data);\n"
+              << "      }\n"
+              << "    }\n";
             i++;
           }
         }
         out
+          << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"</transition>\\n\");\n"
           << "    } else {\n"
-          << "      printf(\"Startstate %s\", \""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
-            << "\");\n";
-        {
-          size_t i = 0;
-          for (const Quantifier &q : r->quantifiers) {
-            out << "      printf(\", %s: %s\", \"" << q.name
-              << "\", value_to_string((value_t)((rule_taken - " << base << ") / (1";
-            size_t j = r->quantifiers.size() - 1;
-            for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
-              if (i == j)
-                break;
-              out << " * " << it->count();
-              j--;
-            }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n";
-            i++;
-          }
-        }
-        out
           << "      printf(\" fired.\\n\");\n"
           << "    }\n"
           << "    return;\n"
@@ -732,15 +732,18 @@ void generate_model(std::ostream &out, const Model &m) {
             << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
             << "\");\n"
           << "      printf(\"%s\", escaped_name);\n"
-          << "      free(escaped_name);\n";
+          << "      free(escaped_name);\n"
+          << "    } else {\n"
+          << "      printf(\"Rule %s\", \""
+            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+            << "\");\n"
+          << "    }\n";
         {
           size_t i = 0;
           for (const Quantifier &q : r->quantifiers) {
             out
-              << "      escaped_name = xml_escape(\"" + q.name + "\");\n"
-              << "      printf(\"<parameter name=\\\"%s\\\">%s</parameter>\", "
-                "escaped_name, value_to_string((value_t)((rule_taken - " << base
-                << ") / (1";
+              << "    {\n"
+              << "      value_t v = (value_t)((rule_taken - " << base << ") / (1";
             size_t j = r->quantifiers.size() - 1;
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
               if (i == j)
@@ -748,34 +751,30 @@ void generate_model(std::ostream &out, const Model &m) {
               out << " * " << it->count();
               j--;
             }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n"
-              << "      free(escaped_name);\n";
+            out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
+
+              << "      if (MACHINE_READABLE_OUTPUT) {\n"
+              << "        char *escaped_name = xml_escape(\"" << q.name
+                << "\");\n"
+              << "        printf(\"<parameter name=\\\"%s\\\">\", "
+                << "escaped_name);\n"
+              << "        free(escaped_name);\n"
+              << "      } else {\n"
+              << "        printf(\", %s: \", \"" << q.name << "\");\n"
+              << "      }\n"
+              << "      if (MACHINE_READABLE_OUTPUT) {\n"
+              << "        printf(\"%s</parameter>\", value_to_string(v).data);\n"
+              << "      } else {\n"
+              << "        printf(\"%s\", value_to_string(v).data);\n"
+              << "      }\n"
+              << "    }\n";
             i++;
           }
         }
         out
+          << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"</transition>\\n\");\n"
           << "    } else {\n"
-          << "      printf(\"Rule %s\", \""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n";
-        {
-          size_t i = 0;
-          for (const Quantifier &q : r->quantifiers) {
-            out << "      printf(\", %s: %s\", \"" << q.name
-              << "\", value_to_string((value_t)((rule_taken - " << base << ") / (1";
-            size_t j = r->quantifiers.size() - 1;
-            for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++) {
-              if (i == j)
-                break;
-              out << " * " << it->count();
-              j--;
-            }
-            out << ") % " << q.count() << ") + " << q.lower_bound() << ").data);\n";
-            i++;
-          }
-        }
-        out
           << "      printf(\" fired.\\n\");\n"
           << "    }\n"
           << "    return;\n"
