@@ -670,11 +670,38 @@ void generate_model(std::ostream &out, const Model &m) {
               << "        free(escaped_name);\n"
               << "      } else {\n"
               << "        printf(\", %s: \", \"" << q.name << "\");\n"
-              << "      }\n"
+              << "      }\n";
+
+            const Ptr<TypeExpr> t = q.type->resolve();
+            if (auto e = dynamic_cast<const Enum*>(t.get())) {
+              size_t member_index = 0;
+              for (const std::pair<std::string, location> &member : e->members) {
+                out << "      ";
+                if (member_index > 0)
+                  out << "else ";
+                out << "if (v == VALUE_C(" << member_index << ")) {\n"
+                  << "        if (MACHINE_READABLE_OUTPUT) {\n"
+                  << "          char *escaped_name = xml_escape(\""
+                    << member.first << "\");\n"
+                  << "          printf(\"%s\", escaped_name);\n"
+                  << "          free(escaped_name);\n"
+                  << "        } else {\n"
+                  << "          printf(\"%s\", \"" << member.first << "\");\n"
+                  << "        }\n"
+                  << "      }\n";
+                member_index++;
+              }
+              out
+                << "      else {\n"
+                << "        ASSERT(!\"illegal value for " << q.name << "\");\n"
+                << "      }\n";
+            } else {
+              out << "      printf(\"%s\", value_to_string(v).data);\n";
+            }
+
+            out
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        printf(\"%s</parameter>\", value_to_string(v).data);\n"
-              << "      } else {\n"
-              << "        printf(\"%s\", value_to_string(v).data);\n"
+              << "        printf(\"</parameter>\");\n"
               << "      }\n"
               << "    }\n";
             i++;
@@ -761,11 +788,38 @@ void generate_model(std::ostream &out, const Model &m) {
               << "        free(escaped_name);\n"
               << "      } else {\n"
               << "        printf(\", %s: \", \"" << q.name << "\");\n"
-              << "      }\n"
+              << "      }\n";
+
+            const Ptr<TypeExpr> t = q.type->resolve();
+            if (auto e = dynamic_cast<const Enum*>(t.get())) {
+              size_t member_index = 0;
+              for (const std::pair<std::string, location> &member : e->members) {
+                out << "      ";
+                if (member_index > 0)
+                  out << "else ";
+                out << "if (v == VALUE_C(" << member_index << ")) {\n"
+                  << "        if (MACHINE_READABLE_OUTPUT) {\n"
+                  << "          char *escaped_name = xml_escape(\""
+                    << member.first << "\");\n"
+                  << "          printf(\"%s\", escaped_name);\n"
+                  << "          free(escaped_name);\n"
+                  << "        } else {\n"
+                  << "          printf(\"%s\", \"" << member.first << "\");\n"
+                  << "        }\n"
+                  << "      }\n";
+                member_index++;
+              }
+              out
+                << "      else {\n"
+                << "        ASSERT(!\"illegal value for " << q.name << "\");\n"
+                << "      }\n";
+            } else {
+              out << "      printf(\"%s\", value_to_string(v).data);\n";
+            }
+
+            out
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        printf(\"%s</parameter>\", value_to_string(v).data);\n"
-              << "      } else {\n"
-              << "        printf(\"%s\", value_to_string(v).data);\n"
+              << "        printf(\"</parameter>\");\n"
               << "      }\n"
               << "    }\n";
             i++;
