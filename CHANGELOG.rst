@@ -1,6 +1,44 @@
 Change log
 ==========
 
+v2019.03.11
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: enums and booleans that were used as ruleset parameters would
+  previously have their values printed numerically in counterexample traces. For
+  example, ``false`` would be printed as ``0``. Both are now printed as their
+  textual names (commit 40c281d80342e684401425769e8e91ec78e3b019).
+* Support for "cover" properties has been introduced. These are described in
+  doc/properties.rst (commits 22a865897d23e2281541fe43276277b4b980a14d,
+  29ac671ca93a0eef79b4f2b85a43da624d10938f,
+  f9fe9614a4beb930f54db50250e4004ad773cee5,
+  b4c5ead18eb3d99d2434aad6732cfce305c629c2).
+* State allocation has been optimised, resulting in a speed up of ~46% and
+  peak memory usage reduction of ~9% in the generated verifier (commit
+  7ddf00bbce10a5f0cdd994658ac4545b186826ac).
+* When using GCC, the minimum required version has been reduced from 4.9 to 4.8
+  (commits c84bad26079f49a40b4c9cbdcd50b508292a8689,
+  657eea8b8b84d269916207268edab85d71aba532,
+  ff5a32521e4f937bd4d81b3ac7ae7204c8f913ec,
+  227f340a059ce704ac1dff9cff75d721b987e147,
+  7ba30edd5657c94fe5fe8c559fbde179817c795b,
+  554d37e47cc9f878f65161d3ae51f6fbb9345bd8,
+  3c827ae7b0f20d3f3f10118f61adcf73e58ee701,
+  e929000525239eb357ad780c95aa54008633c678,
+  a1ece0ad453ef95decd6256dac69b2af99ced2ff,
+  b18e0430c8cd1cb5f67827e8ca2a6b0ab4117147,
+  4e04bb5a6333df60444710f949486ea34739acc0).
+* A Vim extension is included in misc/murphi.vim to add support for syntax
+  highlighting Rumur's Murphi extensions (commit
+  6dbcd208025a4a07b94d818110613a69efc05e4a).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: the test suite no longer attempts to output decoded UTF-8 data on
+  stdout/stderr (commit 551d18398189cb11ba6274d708d3ff293af034c7).
+
 v2019.03.02
 -----------
 
