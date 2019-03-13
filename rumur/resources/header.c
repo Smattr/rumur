@@ -680,12 +680,16 @@ static size_t state_hash(const struct state *s) {
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
 static __attribute__((unused)) size_t state_depth(const struct state *s) {
+#if BOUND > 0
+  return (size_t)s->bound + 1;
+#else
   size_t d = 0;
   while (s != NULL) {
     d++;
     s = s->previous;
   }
   return d;
+#endif
 }
 #endif
 
