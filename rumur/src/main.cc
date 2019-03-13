@@ -26,6 +26,7 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option opts[] = {
+      { "bound", required_argument, 0, 140 },
       { "color", required_argument, 0, 128 },
       { "colour", required_argument, 0, 128 },
       { "counterexample-trace", required_argument, 0, 137 },
@@ -267,6 +268,15 @@ static void parse_args(int argc, char **argv) {
       case 139: // --version
         std::cout << "Rumur version " << VERSION << "\n";
         exit(EXIT_SUCCESS);
+
+      case 140: // --bound ...
+        try {
+          options.bound = std::stoul(optarg);
+        } catch (std::exception&) {
+          std::cerr << "invalid --bound argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
 
       default:
         std::cerr << "unexpected error\n";

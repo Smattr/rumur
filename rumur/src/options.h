@@ -76,6 +76,9 @@ struct Options {
 
   // Print output as XML?
   bool machine_readable_output = false;
+
+  // Limit for exploration. 0 means unbounded.
+  unsigned long bound = 0;
 };
 
 extern Options options;

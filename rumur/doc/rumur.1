@@ -7,6 +7,14 @@ rumur \- Yet another explicit state model checker
 Rumur is a reimplementation of the model checker CMurphi with improved
 performance and a slightly different feature set.
 .SH OPTIONS
+\fB--bound\fR \fISTEPS\fR
+.RS
+Set a limit for state space exploration. The verifier will stop checking beyond
+this depth. A bound of \fB0\fR, the default, indicates unlimited exploration.
+That is, the verifier will not stop checking until it has expanded all seen
+states.
+.RE
+.PP
 \fB--colour\fR [\fBauto\fR | \fBoff\fR | \fBon\fR]
 .RS
 Enable or disable the use of ANSI colour codes in the verifier's output. The

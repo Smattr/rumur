@@ -3,6 +3,7 @@
 # Zsh completion script for Rumur
 
 _arguments \
+  '--bound[limit of the state space exploration depth]:steps' \
   '--colour[enable or disable ANSI colour codes]: :(auto off on)' \
   '--counterexample-trace[how to print counterexample traces]: :(diff full off)' \
   '--deadlock-detection[deadlock semantics to use]: :(off stuck stuttering)' \

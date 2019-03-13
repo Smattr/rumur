@@ -490,6 +490,18 @@ struct state {
   uint64_t rule_taken;
 #endif
 
+#if BOUND > UINT64_MAX
+  #error "no type large enough for state.bound"
+#elif BOUND > UINT32_MAX
+  uint64_t bound;
+#elif BOUND > UINT16_MAX
+  uint32_t bound;
+#elif BOUND > UINT8_MAX
+  uint16_t bound;
+#elif BOUND > 0
+  uint8_t bound;
+#endif
+
   uint8_t data[STATE_SIZE_BYTES];
 };
 
@@ -654,6 +666,10 @@ static struct state *state_dup(const struct state *s) {
   memcpy(n->data, s->data, sizeof(n->data));
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   n->previous = s;
+#endif
+#if BOUND > 0
+  assert(s->bound < BOUND && "exceeding bounded exploration depth");
+  n->bound = s->bound + 1;
 #endif
   return n;
 }

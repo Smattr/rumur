@@ -100,7 +100,8 @@ int output_checker(const std::string &path, const Model &model) {
       ? "CEX_OFF" : (options.counterexample_trace == DIFF ? "DIFF" : "FULL")) << "\n\n"
     << "enum { MACHINE_READABLE_OUTPUT = " << options.machine_readable_output
       << " };\n\n"
-    << "enum { MAX_SIMPLE_WIDTH = " << max_simple_width(model) << " };\n\n";
+    << "enum { MAX_SIMPLE_WIDTH = " << max_simple_width(model) << " };\n\n"
+    << "#define BOUND " << options.bound << "\n\n";
 
   generate_cover_array(out, model);
 
