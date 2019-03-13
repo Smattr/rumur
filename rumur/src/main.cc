@@ -22,6 +22,17 @@
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
 
+static bool make_ul(unsigned long &value, const std::string &s) {
+  try {
+    value = std::stoul(s);
+  } catch (std::invalid_argument&) {
+    return false;
+  } catch (std::out_of_range&) {
+    return false;
+  }
+  return true;
+}
+
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
@@ -64,13 +75,8 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 'e':
-        try {
-          options.set_expand_threshold = std::stoul(optarg);
-        } catch (std::exception&) {
-          std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        if (options.set_expand_threshold < 1 ||
+        if (!make_ul(options.set_expand_threshold, optarg) ||
+            options.set_expand_threshold < 1 ||
             options.set_expand_threshold > 100) {
           std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
@@ -91,18 +97,14 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 's':
-        try {
-          options.set_capacity = std::stoul(optarg);
-        } catch (std::exception&) {
+        if (!make_ul(options.set_capacity, optarg)) {
           std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
 
       case 't':
-        try {
-          options.threads = std::stoul(optarg);
-        } catch (std::exception&) {
+        if (!make_ul(options.threads, optarg)) {
           std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -225,13 +227,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 136: // --max-errors ...
-        try {
-          options.max_errors = std::stoul(optarg);
-        } catch (std::exception&) {
-          std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        if (options.max_errors == 0) {
+        if (!make_ul(options.max_errors, optarg) || options.max_errors == 0) {
           std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
@@ -270,9 +266,7 @@ static void parse_args(int argc, char **argv) {
         exit(EXIT_SUCCESS);
 
       case 140: // --bound ...
-        try {
-          options.bound = std::stoul(optarg);
-        } catch (std::exception&) {
+        if (!make_ul(options.bound, optarg)) {
           std::cerr << "invalid --bound argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
