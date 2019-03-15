@@ -92,7 +92,8 @@ matrix:
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-  - name: Linux, Clang 3.8
+
+  - name: Linux, Clang 3.8 (1/2)
     os: linux
     addons:
       apt:
@@ -105,9 +106,29 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - MAX_TEST=500
       - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Linux, Clang 3.8 (2/2)
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-precise-3.8
+        packages:
+          - clang-3.8
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=501
+      - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
   - name: Linux, Clang 3.9
     os: linux
     addons:
@@ -126,7 +147,8 @@ matrix:
       # packages seem conflicting in Travis' Ubuntu image. More information:
       # https://github.com/travis-ci/travis-ci/issues/8026.
       - CXXFLAGS="-pedantic -Werror"
-  - name: Linux, Clang 4.0
+
+  - name: Linux, Clang 4.0 (1/2)
     os: linux
     addons:
       apt:
@@ -139,10 +161,30 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - MAX_TEST=500
       - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
-  - name: Linux, Clang 5.0
+
+  - name: Linux, Clang 4.0 (2/2)
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-4.0
+        packages:
+          - clang-4.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=501
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Linux, Clang 5.0 (1/2)
     os: linux
     addons:
       apt:
@@ -155,10 +197,30 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - MAX_TEST=500
       - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
-  - name: Linux, Clang 6.0
+
+  - name: Linux, Clang 5.0 (2/2)
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-5.0
+        packages:
+          - clang-5.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=501
+      - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Linux, Clang 6.0 (1/2)
     os: linux
     addons:
       apt:
@@ -171,6 +233,25 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - MAX_TEST=500
+      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Linux, Clang 6.0 (2/2)
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-6.0
+        packages:
+          - clang-6.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=501
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
