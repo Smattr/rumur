@@ -9,6 +9,22 @@ RUMUR_AST_DUMP_BIN = os.path.abspath(os.environ.get('RUMUR_AST_DUMP',
 CC = os.environ.get('CC', subprocess.check_output(['which', 'cc'],
   universal_newlines=True).strip())
 
+# let the user define a range of tests to run
+try:
+  MIN_TEST = int(os.environ['MIN_TEST'])
+except:
+  MIN_TEST = None
+try:
+  MAX_TEST = int(os.environ['MAX_TEST'])
+except:
+  MAX_TEST = None
+def in_range(index):
+  if MIN_TEST is not None and index < MIN_TEST:
+    return False
+  if MAX_TEST is not None and index > MAX_TEST:
+    return False
+  return True
+
 try:
   VALGRIND = subprocess.check_output(['which', 'valgrind'],
     universal_newlines=True).strip()
@@ -276,6 +292,8 @@ def main(argv):
     sys.stderr.write('{} not found\n'.format(RUMUR_BIN))
     return -1
 
+  index = 0
+
   # Find test cases in subdirectories.
 
   root = os.path.dirname(os.path.abspath(__file__))
@@ -309,9 +327,11 @@ def main(argv):
             if hasattr(Tests, test_name):
               raise Exception('{} collides with an existing test name'.format(m))
 
-            setattr(Tests, test_name,
-              lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml:
-                test_template(self, model, o, d, v, x))
+            if in_range(index):
+              setattr(Tests, test_name,
+                lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml:
+                  test_template(self, model, o, d, v, x))
+            index += 1
 
     for valgrind in (False, True):
 
@@ -332,8 +352,10 @@ def main(argv):
       if hasattr(Tests, test_name):
         raise Exception('{} collides with an existing test name'.format(m))
 
-      setattr(Tests, test_name,
-        lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
+      if in_range(index):
+        setattr(Tests, test_name,
+          lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
+      index += 1
 
   # If the user has told us where a copy of the CMurphi source is, test some of
   # the example models distributed with CMurphi.
@@ -370,9 +392,11 @@ def main(argv):
       if hasattr(Tests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
-      setattr(Tests, test_name,
-        lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
-          test_cmurphi_example_template(self, model, outcome, rules, states))
+      if in_range(index):
+        setattr(Tests, test_name,
+          lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
+            test_cmurphi_example_template(self, model, outcome, rules, states))
+      index += 1
 
       test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_cmurphi_example_{}'
         .format(path))
@@ -380,9 +404,11 @@ def main(argv):
       if hasattr(Tests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
-      setattr(Tests, test_name,
-        lambda self, model=fullpath:
-          test_ast_dumper_cmurphi_example_template(self, model))
+      if in_range(index):
+        setattr(Tests, test_name,
+          lambda self, model=fullpath:
+            test_ast_dumper_cmurphi_example_template(self, model))
+      index += 1
 
   unittest.main()
 
