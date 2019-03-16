@@ -603,7 +603,7 @@ void XMLPrinter::visit_put(const Put &n) {
 
 void XMLPrinter::visit_quantifier(const Quantifier &n) {
   sync_to(n);
-  *o << "<quantifier ";
+  *o << "<quantifier name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (n.type != nullptr) {
