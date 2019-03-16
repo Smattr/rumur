@@ -43,8 +43,8 @@ void generate_decl(std::ostream &out, const Decl &d) {
     // If this has a valid offset, it's a state variable.
     if (v->offset >= 0) {
       out << "const struct handle ru_" << v->name << " __attribute__((unused)) "
-        << "= { .base = (uint8_t*)s->data, .offset = " << v->offset
-        << "ull, .width = " << v->type->width() << "ull }";
+        << "= state_handle(s, " << v->offset << "ull, " << v->type->width()
+        << "ull)";
 
     // Otherwise we need to allocate backing memory for it.
     } else {
