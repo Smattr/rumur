@@ -790,10 +790,6 @@ struct handle {
   size_t width;
 };
 
-static __attribute__((unused)) bool handle_aligned(struct handle h) {
-  return h.offset % 8 == 0 && h.width % 8 == 0;
-}
-
 static struct handle handle_align(struct handle h) {
 
   size_t offset = h.offset - (h.offset % 8);
