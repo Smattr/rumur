@@ -792,15 +792,16 @@ struct handle {
 
 static struct handle handle_align(struct handle h) {
 
-  size_t offset = h.offset - (h.offset % 8);
-  size_t width = h.width + (h.offset % 8);
+  ASSERT(h.offset < CHAR_BIT && "handle has an offset outside the base byte");
+
+  size_t width = h.width + h.offset;
   if (width % 8 != 0) {
     width += 8 - width % 8;
   }
 
   return (struct handle){
     .base = h.base,
-    .offset = offset,
+    .offset = 0,
     .width = width,
   };
 }
@@ -843,6 +844,7 @@ static value_t handle_read_raw(struct handle h) {
    * have an unaligned handle.
    */
   struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
 
   /* The code below attempts to provide four alternatives for reading out the
    * bits corresponding to a value of simple type referenced by a handle, and to
@@ -879,11 +881,11 @@ static value_t handle_read_raw(struct handle h) {
       low_size = sizeof(low);
     }
     {
-      const uint8_t *src = aligned.base + aligned.offset / 8;
+      const uint8_t *src = aligned.base;
       memcpy(&low, src, low_size);
     }
 
-    low >>= h.offset - aligned.offset;
+    low >>= h.offset;
 
     size_t high_size = aligned.width / 8 - low_size;
 
@@ -891,10 +893,10 @@ static value_t handle_read_raw(struct handle h) {
     ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
     if (high_size != 0) {
       unsigned __int128 high = 0;
-      const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+      const uint8_t *src = aligned.base + sizeof(low);
       memcpy(&high, src, high_size);
 
-      high <<= sizeof(low) * 8 - (h.offset - aligned.offset);
+      high <<= sizeof(low) * 8 - h.offset;
 
       /* Combine the two halves into a single double-word. */
       low |= high;
@@ -923,11 +925,11 @@ static value_t handle_read_raw(struct handle h) {
     low_size = sizeof(low);
   }
   {
-    const uint8_t *src = aligned.base + aligned.offset / 8;
+    const uint8_t *src = aligned.base;
     memcpy(&low, src, low_size);
   }
 
-  low >>= h.offset - aligned.offset;
+  low >>= h.offset;
 
   size_t high_size = aligned.width / 8 - low_size;
 
@@ -935,10 +937,10 @@ static value_t handle_read_raw(struct handle h) {
   ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
   if (high_size != 0) {
     uint64_t high = 0;
-    const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+    const uint8_t *src = aligned.base + sizeof(low);
     memcpy(&high, src, high_size);
 
-    high <<= sizeof(low) * 8 - (h.offset - aligned.offset);
+    high <<= sizeof(low) * 8 - h.offset;
 
     /* Combine the high and low words. Note that we know we can store the final
      * result in a single word because, if we've reached this point,
@@ -1013,6 +1015,7 @@ static void handle_write_raw(struct handle h, value_t value) {
 
   /* Generate a offset- and width-aligned handle on byte boundaries. */
   struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
 
 #ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
 
@@ -1029,20 +1032,18 @@ static void handle_write_raw(struct handle h, value_t value) {
       low_size = sizeof(low);
     }
     {
-      const uint8_t *src = aligned.base + aligned.offset / 8;
+      const uint8_t *src = aligned.base;
       memcpy(&low, src, low_size);
     }
 
     {
-      unsigned __int128 or_mask
-        = (((unsigned __int128)value) << (h.offset - aligned.offset));
+      unsigned __int128 or_mask = ((unsigned __int128)value) << h.offset;
       if (low_size < sizeof(low)) {
         or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
       }
-      unsigned __int128 and_mask
-        = (((unsigned __int128)1) << (h.offset - aligned.offset)) - 1;
+      unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
       if (low_size < sizeof(low)) {
-        size_t high_bits = aligned.width - (h.offset - aligned.offset) - h.width;
+        size_t high_bits = aligned.width - h.offset - h.width;
         assert(high_bits >= 0);
         and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
       }
@@ -1051,7 +1052,7 @@ static void handle_write_raw(struct handle h, value_t value) {
     }
 
     {
-      uint8_t *dest = aligned.base + aligned.offset / 8;
+      uint8_t *dest = aligned.base;
       memcpy(dest, &low, low_size);
     }
 
@@ -1063,13 +1064,13 @@ static void handle_write_raw(struct handle h, value_t value) {
     if (high_size != 0) {
       unsigned __int128 high = 0;
       {
-        const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+        const uint8_t *src = aligned.base + sizeof(low);
         memcpy(&high, src, high_size);
       }
 
       {
         unsigned __int128 or_mask
-          = ((unsigned __int128)value) >> (sizeof(low) * 8 - (h.offset - aligned.offset));
+          = ((unsigned __int128)value) >> (sizeof(low) * 8 - h.offset);
         unsigned __int128 and_mask
           = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (aligned.width - h.width)) - 1);
 
@@ -1077,7 +1078,7 @@ static void handle_write_raw(struct handle h, value_t value) {
       }
 
       {
-        uint8_t *dest = aligned.base + aligned.offset / 8 + sizeof(low);
+        uint8_t *dest = aligned.base + sizeof(low);
         memcpy(dest, &high, high_size);
       }
     }
@@ -1095,18 +1096,18 @@ static void handle_write_raw(struct handle h, value_t value) {
     low_size = sizeof(low);
   }
   {
-    const uint8_t *src = aligned.base + aligned.offset / 8;
+    const uint8_t *src = aligned.base;
     memcpy(&low, src, low_size);
   }
 
   {
-    uint64_t or_mask = (((uint64_t)value) << (h.offset - aligned.offset));
+    uint64_t or_mask = ((uint64_t)value) << h.offset;
     if (low_size < sizeof(low)) {
       or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
     }
-    uint64_t and_mask = (UINT64_C(1) << (h.offset - aligned.offset)) - 1;
+    uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
     if (low_size < sizeof(low)) {
-      size_t high_bits = aligned.width - (h.offset - aligned.offset) - h.width;
+      size_t high_bits = aligned.width - h.offset - h.width;
       assert(high_bits >= 0);
       and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
     }
@@ -1115,7 +1116,7 @@ static void handle_write_raw(struct handle h, value_t value) {
   }
 
   {
-    uint8_t *dest = aligned.base + aligned.offset / 8;
+    uint8_t *dest = aligned.base;
     memcpy(dest, &low, low_size);
   }
 
@@ -1125,13 +1126,12 @@ static void handle_write_raw(struct handle h, value_t value) {
   if (high_size != 0) {
     uint64_t high = 0;
     {
-      const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+      const uint8_t *src = aligned.base + sizeof(low);
       memcpy(&high, src, high_size);
     }
 
     {
-      uint64_t or_mask
-        = ((uint64_t)value) >> (sizeof(low) * 8 - (h.offset - aligned.offset));
+      uint64_t or_mask = ((uint64_t)value) >> (sizeof(low) * 8 - h.offset);
       uint64_t and_mask
         = (~UINT64_C(0)) & ~((UINT64_C(1) << (aligned.width - h.width)) - 1);
 
@@ -1139,7 +1139,7 @@ static void handle_write_raw(struct handle h, value_t value) {
     }
 
     {
-      uint8_t *dest = aligned.base + aligned.offset / 8 + sizeof(low);
+      uint8_t *dest = aligned.base + sizeof(low);
       memcpy(dest, &high, high_size);
     }
   }
