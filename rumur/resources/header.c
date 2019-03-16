@@ -811,8 +811,8 @@ static __attribute__((unused)) struct handle state_handle(const struct state *s,
     "bounds handle in state_handle()");
 
   return (struct handle){
-    .base = (uint8_t*)s->data,
-    .offset = offset,
+    .base = (uint8_t*)s->data + offset / CHAR_BIT,
+    .offset = offset % CHAR_BIT,
     .width = width,
   };
 }
@@ -1260,8 +1260,8 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
 
   return (struct handle){
-    .base = h.base,
-    .offset = h.offset + offset,
+    .base = h.base + (h.offset + offset) / CHAR_BIT,
+    .offset = (h.offset + offset) % CHAR_BIT,
     .width = width,
   };
 }
@@ -1289,8 +1289,8 @@ static __attribute__((unused)) struct handle handle_index(const char *context,
   assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
 
   return (struct handle){
-    .base = root.base,
-    .offset = root.offset + r2,
+    .base = root.base + (root.offset + r2) / CHAR_BIT,
+    .offset = (root.offset + r2) % CHAR_BIT,
     .width = element_width,
   };
 }

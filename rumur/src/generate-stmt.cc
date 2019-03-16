@@ -17,8 +17,9 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
   const std::string indent = std::string(2 * (depth + 1), ' ');
 
   if (t.is_simple()) {
-    out << indent << "handle_write_raw((struct handle){ .base = root.base, "
-      << ".offset = root.offset + " << offset << ", .width = "
+    out << indent << "handle_write_raw((struct handle){ .base = root.base + "
+      << "(root.offset + " << offset << ") / CHAR_BIT, .offset = "
+      << "(root.offset + " << offset << ") % CHAR_BIT, .width = "
       << t.width() << "ull }, 1);\n";
 
     return;
