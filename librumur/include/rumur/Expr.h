@@ -21,7 +21,7 @@ struct VarDecl;
 
 struct Expr : public Node {
 
-  using Node::Node;
+  Expr(const location &loc_);
   virtual ~Expr() = default;
 
   virtual Expr *clone() const = 0;
@@ -90,7 +90,8 @@ struct BinaryExpr : public Expr {
 
 struct BooleanBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  BooleanBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
   BooleanBinaryExpr() = delete;
 
   void validate() const final;
@@ -98,7 +99,8 @@ struct BooleanBinaryExpr : public BinaryExpr {
 
 struct Implication : public BooleanBinaryExpr {
 
-  using BooleanBinaryExpr::BooleanBinaryExpr;
+  Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
   Implication *clone() const final;
   virtual ~Implication() = default;
 
@@ -110,7 +112,7 @@ struct Implication : public BooleanBinaryExpr {
 
 struct Or : public BooleanBinaryExpr {
 
-  using BooleanBinaryExpr::BooleanBinaryExpr;
+  Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Or() = default;
   Or *clone() const final;
 
@@ -122,7 +124,7 @@ struct Or : public BooleanBinaryExpr {
 
 struct And : public BooleanBinaryExpr {
 
-  using BooleanBinaryExpr::BooleanBinaryExpr;
+  And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~And() = default;
   And *clone() const final;
 
@@ -145,7 +147,7 @@ struct UnaryExpr : public Expr {
 
 struct Not : public UnaryExpr {
 
-  using UnaryExpr::UnaryExpr;
+  Not(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Not() = default;
   Not *clone() const final;
 
@@ -158,14 +160,15 @@ struct Not : public UnaryExpr {
 
 struct ComparisonBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  ComparisonBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
 
 struct Lt : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Lt() = default;
   Lt *clone() const final;
 
@@ -177,7 +180,7 @@ struct Lt : public ComparisonBinaryExpr {
 
 struct Leq : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Leq() = default;
   Leq *clone() const final;
 
@@ -189,7 +192,7 @@ struct Leq : public ComparisonBinaryExpr {
 
 struct Gt : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Gt() = default;
   Gt *clone() const final;
 
@@ -201,7 +204,7 @@ struct Gt : public ComparisonBinaryExpr {
 
 struct Geq : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Geq() = default;
   Geq *clone() const final;
 
@@ -213,14 +216,15 @@ struct Geq : public ComparisonBinaryExpr {
 
 struct EquatableBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  EquatableBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
 
 struct Eq : public EquatableBinaryExpr {
 
-  using EquatableBinaryExpr::EquatableBinaryExpr;
+  Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Eq() = default;
   Eq *clone() const final;
 
@@ -232,7 +236,7 @@ struct Eq : public EquatableBinaryExpr {
 
 struct Neq : public EquatableBinaryExpr {
 
-  using EquatableBinaryExpr::EquatableBinaryExpr;
+  Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Neq() = default;
   Neq *clone() const final;
 
@@ -244,14 +248,15 @@ struct Neq : public EquatableBinaryExpr {
 
 struct ArithmeticBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
 
 struct Add : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Add() = default;
   Add *clone() const final;
 
@@ -263,7 +268,7 @@ struct Add : public ArithmeticBinaryExpr {
 
 struct Sub : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Sub() = default;
   Sub *clone() const final;
 
@@ -275,7 +280,7 @@ struct Sub : public ArithmeticBinaryExpr {
 
 struct Negative : public UnaryExpr {
 
-  using UnaryExpr::UnaryExpr;
+  Negative(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Negative() = default;
   Negative *clone() const final;
 
@@ -288,7 +293,7 @@ struct Negative : public UnaryExpr {
 
 struct Mul : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mul() = default;
   Mul *clone() const final;
 
@@ -300,7 +305,7 @@ struct Mul : public ArithmeticBinaryExpr {
 
 struct Div : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Div() = default;
   Div *clone() const final;
 
@@ -312,7 +317,7 @@ struct Div : public ArithmeticBinaryExpr {
 
 struct Mod : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mod() = default;
   Mod *clone() const final;
 

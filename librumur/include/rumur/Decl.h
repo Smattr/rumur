@@ -26,8 +26,7 @@ struct Decl : public Node {
 
 struct ExprDecl : public Decl {
 
-  using Decl::Decl;
-
+  ExprDecl(const std::string &name_, const location &loc_);
   virtual ~ExprDecl() = default;
 
   // Return true if this declaration is usable as an lvalue

@@ -19,6 +19,9 @@ Decl::Decl(const std::string &name_, const location &loc_):
 Decl::~Decl() {
 }
 
+ExprDecl::ExprDecl(const std::string &name_, const location &loc_):
+  Decl(name_, loc_) { }
+
 AliasDecl::AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
     const location &loc_):
   ExprDecl(name_, loc_), value(value_) { }

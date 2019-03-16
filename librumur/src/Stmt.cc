@@ -17,6 +17,8 @@
 
 namespace rumur {
 
+Stmt::Stmt(const location &loc_): Node(loc_) { }
+
 AliasStmt::AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), aliases(aliases_), body(body_) { }

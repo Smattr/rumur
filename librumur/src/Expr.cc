@@ -20,6 +20,8 @@
 
 namespace rumur {
 
+Expr::Expr(const location &loc_): Node(loc_) { }
+
 bool Expr::is_boolean() const {
   return *type()->resolve() == *Boolean;
 }
@@ -76,6 +78,9 @@ bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
 }
 
+BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
 void BooleanBinaryExpr::validate() const {
   if (!lhs->is_boolean())
     throw Error("left hand side of expression is not a boolean", lhs->loc);
@@ -84,6 +89,9 @@ void BooleanBinaryExpr::validate() const {
     throw Error("right hand side of expression is not a boolean",
       rhs->loc);
 }
+
+Implication::Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+  const location &loc_): BooleanBinaryExpr(lhs_, rhs_, loc_) { }
 
 Implication *Implication::clone() const {
   return new Implication(*this);
@@ -106,6 +114,9 @@ std::string Implication::to_string() const {
   return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
 }
 
+Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+
 Or *Or::clone() const {
   return new Or(*this);
 }
@@ -126,6 +137,9 @@ bool Or::operator==(const Node &other) const {
 std::string Or::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
+
+And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  BooleanBinaryExpr(lhs_, rhs_, loc_) { }
 
 And *And::clone() const {
   return new And(*this);
@@ -155,6 +169,8 @@ UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
 bool UnaryExpr::constant() const {
   return rhs->constant();
 }
+
+Not::Not(const Ptr<Expr> &rhs_, const location &loc_): UnaryExpr(rhs_, loc_) { }
 
 Not *Not::clone() const {
   return new Not(*this);
@@ -195,10 +211,16 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
+ComparisonBinaryExpr::ComparisonBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
 void ComparisonBinaryExpr::validate() const {
   if (!comparable(*lhs, *rhs))
     throw Error("expressions are not comparable", loc);
 }
+
+Lt::Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
 
 Lt *Lt::clone() const {
   return new Lt(*this);
@@ -221,6 +243,9 @@ std::string Lt::to_string() const {
   return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
 }
 
+Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+
 Leq *Leq::clone() const {
   return new Leq(*this);
 }
@@ -241,6 +266,9 @@ bool Leq::operator==(const Node &other) const {
 std::string Leq::to_string() const {
   return "(" + lhs->to_string() + " <= " + rhs->to_string() + ")";
 }
+
+Gt::Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
 
 Gt *Gt::clone() const {
   return new Gt(*this);
@@ -263,6 +291,9 @@ std::string Gt::to_string() const {
   return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
 }
 
+Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+
 Geq *Geq::clone() const {
   return new Geq(*this);
 }
@@ -284,10 +315,16 @@ std::string Geq::to_string() const {
   return "(" + lhs->to_string() + " >= " + rhs->to_string() + ")";
 }
 
+EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
 void EquatableBinaryExpr::validate() const {
   if (!lhs->type()->equatable_with(*rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
+
+Eq::Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  EquatableBinaryExpr(lhs_, rhs_, loc_) { }
 
 Eq *Eq::clone() const {
   return new Eq(*this);
@@ -309,6 +346,9 @@ bool Eq::operator==(const Node &other) const {
 std::string Eq::to_string() const {
   return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
 }
+
+Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  EquatableBinaryExpr(lhs_, rhs_, loc_) { }
 
 Neq *Neq::clone() const {
   return new Neq(*this);
@@ -342,12 +382,17 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
+ArithmeticBinaryExpr::ArithmeticBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
 
 void ArithmeticBinaryExpr::validate() const {
   if (!arithmetic(*lhs, *rhs))
     throw Error("expressions are incompatible in arithmetic expression",
       loc);
 }
+
+Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 
 Add *Add::clone() const {
   return new Add(*this);
@@ -370,6 +415,9 @@ std::string Add::to_string() const {
   return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
 }
 
+Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Sub *Sub::clone() const {
   return new Sub(*this);
 }
@@ -390,6 +438,9 @@ bool Sub::operator==(const Node &other) const {
 std::string Sub::to_string() const {
   return "(" + lhs->to_string() + " - " + rhs->to_string() + ")";
 }
+
+Negative::Negative(const Ptr<Expr> &rhs_, const location &loc_):
+  UnaryExpr(rhs_, loc_) { }
 
 void Negative::validate() const {
   if (!isa<Range>(rhs->type()->resolve()))
@@ -417,6 +468,9 @@ std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
 
+Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Mul *Mul::clone() const {
   return new Mul(*this);
 }
@@ -437,6 +491,9 @@ bool Mul::operator==(const Node &other) const {
 std::string Mul::to_string() const {
   return "(" + lhs->to_string() + " * " + rhs->to_string() + ")";
 }
+
+Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 
 Div *Div::clone() const {
   return new Div(*this);
@@ -462,6 +519,9 @@ bool Div::operator==(const Node &other) const {
 std::string Div::to_string() const {
   return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
 }
+
+Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 
 Mod *Mod::clone() const {
   return new Mod(*this);
