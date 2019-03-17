@@ -14,8 +14,9 @@ class scanner : public yyFlexLexer {
 
  public:
 
-  // Inherit yyFlexLexer's constructor
-  using yyFlexLexer::yyFlexLexer;
+  // Delegate to yyFlexLexer's constructor
+	scanner(FLEX_STD istream* arg_yyin = 0, FLEX_STD ostream* arg_yyout = 0):
+    yyFlexLexer(arg_yyin, arg_yyout) { }
 
 /* XXX: Clang's -Woverloaded-virtual decides that the following declaration is
  * possibly a mistake. However, we are deliberately overloading this method with

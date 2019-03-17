@@ -3,6 +3,22 @@ language: cpp
 matrix:
   include:
 
+  - name: Linux, GCC 4.7
+    os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
+      # Fail on a compilation warning, emit debug symbols, support full back
+      # traces.
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
   - name: Linux, GCC 4.8
     os: linux
     addons:
@@ -15,8 +31,6 @@ matrix:
           - valgrind
     env:
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
-      # Fail on a compilation warning, emit debug symbols, support full back
-      # traces.
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
   - name: Linux, GCC 4.9

@@ -18,6 +18,8 @@
 
 namespace rumur {
 
+TypeExpr::TypeExpr(const location &loc_): Node(loc_) { }
+
 bool TypeExpr::is_simple() const {
   return false;
 }

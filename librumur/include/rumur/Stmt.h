@@ -16,7 +16,7 @@ namespace rumur {
 
 struct Stmt : public Node {
 
-  using Node::Node;
+  Stmt(const location &loc_);
 
   virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;

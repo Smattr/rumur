@@ -19,7 +19,7 @@ struct VarDecl;
 
 struct TypeExpr : public Node {
 
-  using Node::Node;
+  TypeExpr(const location &loc_);
   virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
