@@ -36,7 +36,7 @@ def valgrind_wrap(args):
   return [VALGRIND, '--leak-check=full', '--show-leak-kinds=all',
     '--error-exitcode=42'] + args
 
-X86_64 = platform.machine() == 'x86_64'
+X86_64 = platform.machine() in ('amd64', 'x86_64')
 
 def run(args):
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
