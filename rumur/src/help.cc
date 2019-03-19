@@ -28,8 +28,9 @@ int help(void) {
   }
 
   // Create a temporary file
-  char *path = new char[tmp.size() + sizeof("/temp.XXXXXX")];
-  sprintf(path, "%s/temp.XXXXXX", tmp.c_str());
+  size_t size = tmp.size() + sizeof("/temp.XXXXXX");
+  char *path = new char[size];
+  snprintf(path, size, "%s/temp.XXXXXX", tmp.c_str());
   int fd = mkstemp(path);
   if (fd == -1) {
     ret = errno;
