@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <iostream>
 
 #ifndef yyFlexLexerOnce
   #include <FlexLexer.h>
@@ -15,7 +16,7 @@ class scanner : public yyFlexLexer {
  public:
 
   // Delegate to yyFlexLexer's constructor
-	scanner(FLEX_STD istream* arg_yyin = 0, FLEX_STD ostream* arg_yyout = 0):
+	scanner(std::istream *arg_yyin = 0, std::ostream *arg_yyout = 0):
     yyFlexLexer(arg_yyin, arg_yyout) { }
 
 /* XXX: Clang's -Woverloaded-virtual decides that the following declaration is
