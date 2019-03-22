@@ -1,6 +1,39 @@
 Change log
 ==========
 
+v2019.03.21
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* A new bounded model checking mode is available using the command line option
+  ``--bound``. See the manpage or ``--help`` for more detailed information
+  (commit e60697531ab636d374946d547ae65cd380b2ce0b).
+* The names of quantifier variables are now included in the XML produced by
+  ``rumur-ast-dump`` (commit 78539fa086bbdaf06c5a079e5e482637cf6f2e11).
+* Some optimisation has been done to state handles, resulting in a ~9% decrease
+  in the runtime of the generated verifier (commits
+  d783655eae837b805b69185d1d198ea142825973,
+  96268246ad3c9635998647fb31faf73e6721c83b).
+* Support for GCC on Linux has been extended from 4.8 back to GCC 4.7. It is
+  unlikely Rumur will ever support a lesser GCC version than this (commit
+  76a97b5354cc10cbd5fd188c385eeb457b3fd2ab).
+* All major BSD flavours (DragonFly, FreeBSD, NetBSD, OpenBSD) are supported.
+  Rumur now runs on all major desktop operating systems except Windows (commits
+  6524f1eaedc6724fb26462ec901c241ded7861e1,
+  026c9a476ba5efea5dd4fd7a5a8bcec7588381e8,
+  7e9addb34df01abe7449823c33772985e9f6172b).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: a memory leak on passing invalid command line options has been
+  removed. This is under "Internal changes" because the leak occurred
+  immediately prior to program exit, so would only have affected users debugging
+  or embedding Rumur (commit 4f89903e244c7c188577d082c204bdb344ed1af8).
+* New options for scoping the range of tests that the test suite runs. This is
+  mainly for use by the continuous integration setup (commit
+  ba2377a3b7240774d6bfb6745bb3c424c67b9277).
+
 v2019.03.11
 -----------
 
