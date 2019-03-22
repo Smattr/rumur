@@ -2063,6 +2063,7 @@ retry:;
  * Of these functions, only the following are thread safe:                     *
  *                                                                             *
  *   * refcounted_ptr_get                                                      *
+ *   * refcounted_ptr_peek                                                     *
  *   * refcounted_ptr_put                                                      *
  *                                                                             *
  * The caller is expected to coordinate with other threads to exclude them     *
@@ -2165,6 +2166,17 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
   } while (!r);
 
   return ret;
+}
+
+static void *refcounted_ptr_peek(refcounted_ptr_t *p) {
+
+  /* Read out the state of the pointer. */
+  refcounted_ptr_t value = atomic_read(p);
+  struct refcounted_ptr ptr;
+  memcpy(&ptr, &value, sizeof(value));
+
+  /* Extract the pointer part. */
+  return ptr.ptr;
 }
 
 static void refcounted_ptr_shift(refcounted_ptr_t *current, refcounted_ptr_t *next) {
