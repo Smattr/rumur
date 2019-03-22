@@ -2550,8 +2550,7 @@ static void set_expand(void) {
   set_expand_lock();
 
   /* Check if another thread beat us to expanding the set. */
-  struct set *s = refcounted_ptr_get(&next_global_seen);
-  (void)refcounted_ptr_put(&next_global_seen, s);
+  struct set *s = refcounted_ptr_peek(&next_global_seen);
   if (s != NULL) {
     /* Someone else already expanded it. Join them in the migration effort. */
     set_expand_unlock();
