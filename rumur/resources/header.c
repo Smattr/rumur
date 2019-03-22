@@ -2570,12 +2570,25 @@ retry:;
 
 static void set_expand(void) {
 
+  /* Using double-checked locking, we look to see if someone else has already
+   * started expanding the set. We do this by first checking before acquiring
+   * the set mutex, and then later again checking after we've acquired the
+   * mutex. The idea here is that, with multiple threads, you'll frequently find
+   * someone else beat you to expansion and you can jump straight to helping
+   * them with migration without having the expense of acquiring the set mutex.
+   */
+  if (refcounted_ptr_peek(&next_global_seen) != NULL) {
+    /* Someone else already expanded it. Join them in the migration effort. */
+    TRACE(TC_SET, "attempted expansion failed because another thread got there "
+      "first");
+    set_migrate();
+    return;
+  }
+
   set_expand_lock();
 
-  /* Check if another thread beat us to expanding the set. */
-  struct set *s = refcounted_ptr_peek(&next_global_seen);
-  if (s != NULL) {
-    /* Someone else already expanded it. Join them in the migration effort. */
+  /* Check again, as described above. */
+  if (refcounted_ptr_peek(&next_global_seen) != NULL) {
     set_expand_unlock();
     TRACE(TC_SET, "attempted expansion failed because another thread got there "
       "first");
