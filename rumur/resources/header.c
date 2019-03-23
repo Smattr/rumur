@@ -2084,12 +2084,12 @@ retry:;
  *   * refcounted_ptr_get                                                      *
  *   * refcounted_ptr_peek                                                     *
  *   * refcounted_ptr_put                                                      *
+ *   * refcounted_ptr_set                                                      *
  *                                                                             *
  * The caller is expected to coordinate with other threads to exclude them     *
  * operating on the relevant refcounted_ptr_t when using one of the other      *
  * functions:                                                                  *
  *                                                                             *
- *   * refcounted_ptr_set                                                      *
  *   * refcounted_ptr_shift                                                    *
  *                                                                             *
  ******************************************************************************/
@@ -2113,23 +2113,24 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
 
 static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
 
-  /* Read the current state of the pointer. Note, we don't bother doing this
-   * atomically as it's only for debugging and no one else should be using the
-   * pointer source right now.
-   */
+#ifndef NDEBUG
+  /* Read the current state of the pointer. */
+  refcounted_ptr_t old = atomic_read(p);
   struct refcounted_ptr p2;
-  memcpy(&p2, p, sizeof(*p));
-  ASSERT(p2.count == 0 && "overwriting a pointer source while someone still "
+  memcpy(&p2, &old, sizeof(old));
+  assert(p2.count == 0 && "overwriting a pointer source while someone still "
     "has a reference to this pointer");
+#endif
 
   /* Set the current source pointer with no outstanding references. */
-  p2.ptr = ptr;
-  p2.count = 0;
+  struct refcounted_ptr p3;
+  p3.ptr = ptr;
+  p3.count = 0;
 
-  /* Commit the result. Again, we do not operate atomically because no one else
-   * should be using the pointer source.
-   */
-  memcpy(p, &p2, sizeof(*p));
+  /* Commit the result. */
+  refcounted_ptr_t new;
+  memcpy(&new, &p3, sizeof(p3));
+  atomic_write(p, new);
 }
 
 static void *refcounted_ptr_get(refcounted_ptr_t *p) {
