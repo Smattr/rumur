@@ -2428,22 +2428,28 @@ static size_t next_migration;
 static pthread_mutex_t set_expand_mutex;
 
 static void set_expand_lock(void) {
-  int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
-  ASSERT(r == 0);
+  if (THREADS > 1) {
+    int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
+    ASSERT(r == 0);
+  }
 }
 
 static void set_expand_unlock(void) {
-  int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
-  ASSERT(r == 0);
+  if (THREADS > 1) {
+    int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
+    ASSERT(r == 0);
+  }
 }
 
 
 static void set_init(void) {
 
-  int r = pthread_mutex_init(&set_expand_mutex, NULL);
-  if (r < 0) {
-    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-    exit(EXIT_FAILURE);
+  if (THREADS > 1) {
+    int r = pthread_mutex_init(&set_expand_mutex, NULL);
+    if (r < 0) {
+      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
+      exit(EXIT_FAILURE);
+    }
   }
 
   /* Allocate the set we'll store seen states in at some conservative initial
@@ -2577,7 +2583,7 @@ static void set_expand(void) {
    * someone else beat you to expansion and you can jump straight to helping
    * them with migration without having the expense of acquiring the set mutex.
    */
-  if (refcounted_ptr_peek(&next_global_seen) != NULL) {
+  if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
     /* Someone else already expanded it. Join them in the migration effort. */
     TRACE(TC_SET, "attempted expansion failed because another thread got there "
       "first");
@@ -2588,7 +2594,7 @@ static void set_expand(void) {
   set_expand_lock();
 
   /* Check again, as described above. */
-  if (refcounted_ptr_peek(&next_global_seen) != NULL) {
+  if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
     set_expand_unlock();
     TRACE(TC_SET, "attempted expansion failed because another thread got there "
       "first");
