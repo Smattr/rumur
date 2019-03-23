@@ -2523,6 +2523,9 @@ retry:;
     free(local_seen->bucket);
     free(local_seen);
 
+    /* Reset migration state for the next time we expand the set. */
+    next_migration = 0;
+
     /* Update the global pointer to the new set. We know all the above
      * migrations have completed and no one needs the old set.
      */
@@ -2576,7 +2579,6 @@ static void set_expand(void) {
   /* We now need to migrate all slots from the old set to the new one, but we
    * can do this multithreaded.
    */
-  next_migration = 0; /* initialise migration state */
   set_expand_unlock();
   set_migrate();
 }
