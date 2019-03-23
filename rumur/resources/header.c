@@ -1713,7 +1713,7 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
 #else
   #define atomic_cas_val(p, expected, new) \
     ({ \
-      typeof(expected) _expected = (expected); \
+      __typeof__(expected) _expected = (expected); \
       __atomic_compare_exchange_n((p), &(_expected), (new), false, \
         __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
       _expected; \
