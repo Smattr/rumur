@@ -1693,6 +1693,25 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
 #endif
 
 #ifdef __x86_64__
+  /* As explained above, we need some extra gymnastics to avoid a call to
+   * libatomic on x86-64.
+   */
+  #define atomic_write(p, v) \
+    do { \
+      __typeof__(p) _target = (p); \
+      __typeof__(*(p)) _expected; \
+      __typeof__(*(p)) _old = 0; \
+      __typeof__(*(p)) _new = (v); \
+      do { \
+        _expected = _old; \
+        _old = __sync_val_compare_and_swap(_target, _expected, _new); \
+      } while (_expected != _old); \
+    } while (0)
+#else
+  #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
+#endif
+
+#ifdef __x86_64__
   /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
