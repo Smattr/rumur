@@ -166,6 +166,16 @@ static void sandbox(void) {
   }
 #endif
 
+#ifdef __FreeBSD__
+  {
+    if (cap_enter() != 0) {
+      perror("cap_enter");
+      exit(EXIT_FAILURE);
+    }
+    return;
+  }
+#endif
+
 #if defined(__linux__)
   #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
   {

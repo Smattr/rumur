@@ -19,6 +19,8 @@
 
 #ifdef __APPLE__
   #include <sandbox.h>
+#elif defined(__FreeBSD__)
+  #include <sys/capsicum.h>
 #elif defined(__linux__)
   #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
     #include <linux/audit.h>
