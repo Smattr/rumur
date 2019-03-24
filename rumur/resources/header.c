@@ -271,6 +271,16 @@ static void sandbox(void) {
   #endif
 #endif
 
+#ifdef __OpenBSD__
+  {
+    if (pledge("stdio", "") != 0) {
+      perror("pledge");
+      exit(EXIT_FAILURE);
+    }
+    return;
+  }
+#endif
+
   /* No sandbox available. */
   fprintf(stderr, "no sandboxing facilities available\n");
   exit(EXIT_FAILURE);
