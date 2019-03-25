@@ -1713,6 +1713,25 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
 #endif
 
 #ifdef __x86_64__
+  /* As explained above, we need some extra gymnastics to avoid a call to
+   * libatomic on x86-64.
+   */
+  #define atomic_write(p, v) \
+    do { \
+      __typeof__(p) _target = (p); \
+      __typeof__(*(p)) _expected; \
+      __typeof__(*(p)) _old = 0; \
+      __typeof__(*(p)) _new = (v); \
+      do { \
+        _expected = _old; \
+        _old = __sync_val_compare_and_swap(_target, _expected, _new); \
+      } while (_expected != _old); \
+    } while (0)
+#else
+  #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
+#endif
+
+#ifdef __x86_64__
   /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
@@ -1733,7 +1752,7 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
 #else
   #define atomic_cas_val(p, expected, new) \
     ({ \
-      typeof(expected) _expected = (expected); \
+      __typeof__(expected) _expected = (expected); \
       __atomic_compare_exchange_n((p), &(_expected), (new), false, \
         __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
       _expected; \
@@ -2083,13 +2102,14 @@ retry:;
  * Of these functions, only the following are thread safe:                     *
  *                                                                             *
  *   * refcounted_ptr_get                                                      *
+ *   * refcounted_ptr_peek                                                     *
  *   * refcounted_ptr_put                                                      *
+ *   * refcounted_ptr_set                                                      *
  *                                                                             *
  * The caller is expected to coordinate with other threads to exclude them     *
  * operating on the relevant refcounted_ptr_t when using one of the other      *
  * functions:                                                                  *
  *                                                                             *
- *   * refcounted_ptr_set                                                      *
  *   * refcounted_ptr_shift                                                    *
  *                                                                             *
  ******************************************************************************/
@@ -2113,23 +2133,24 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
 
 static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
 
-  /* Read the current state of the pointer. Note, we don't bother doing this
-   * atomically as it's only for debugging and no one else should be using the
-   * pointer source right now.
-   */
+#ifndef NDEBUG
+  /* Read the current state of the pointer. */
+  refcounted_ptr_t old = atomic_read(p);
   struct refcounted_ptr p2;
-  memcpy(&p2, p, sizeof(*p));
-  ASSERT(p2.count == 0 && "overwriting a pointer source while someone still "
+  memcpy(&p2, &old, sizeof(old));
+  assert(p2.count == 0 && "overwriting a pointer source while someone still "
     "has a reference to this pointer");
+#endif
 
   /* Set the current source pointer with no outstanding references. */
-  p2.ptr = ptr;
-  p2.count = 0;
+  struct refcounted_ptr p3;
+  p3.ptr = ptr;
+  p3.count = 0;
 
-  /* Commit the result. Again, we do not operate atomically because no one else
-   * should be using the pointer source.
-   */
-  memcpy(p, &p2, sizeof(*p));
+  /* Commit the result. */
+  refcounted_ptr_t new;
+  memcpy(&new, &p3, sizeof(p3));
+  atomic_write(p, new);
 }
 
 static void *refcounted_ptr_get(refcounted_ptr_t *p) {
@@ -2185,6 +2206,20 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
   } while (!r);
 
   return ret;
+}
+
+static void *refcounted_ptr_peek(refcounted_ptr_t *p) {
+
+  /* Read out the state of the pointer. This rather unpleasant expression is
+   * designed to emit an atomic load at a smaller granularity than the entire
+   * refcounted_ptr structure. Because we only need the pointer -- and not the
+   * count -- we can afford to just atomically read the first word.
+   */
+  void *ptr = __atomic_load_n(
+    (void**)((void*)p + __builtin_offsetof(struct refcounted_ptr, ptr)),
+    __ATOMIC_SEQ_CST);
+
+  return ptr;
 }
 
 static void refcounted_ptr_shift(refcounted_ptr_t *current, refcounted_ptr_t *next) {
@@ -2416,22 +2451,28 @@ static size_t next_migration;
 static pthread_mutex_t set_expand_mutex;
 
 static void set_expand_lock(void) {
-  int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
-  ASSERT(r == 0);
+  if (THREADS > 1) {
+    int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
+    ASSERT(r == 0);
+  }
 }
 
 static void set_expand_unlock(void) {
-  int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
-  ASSERT(r == 0);
+  if (THREADS > 1) {
+    int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
+    ASSERT(r == 0);
+  }
 }
 
 
 static void set_init(void) {
 
-  int r = pthread_mutex_init(&set_expand_mutex, NULL);
-  if (r < 0) {
-    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-    exit(EXIT_FAILURE);
+  if (THREADS > 1) {
+    int r = pthread_mutex_init(&set_expand_mutex, NULL);
+    if (r < 0) {
+      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
+      exit(EXIT_FAILURE);
+    }
   }
 
   /* Allocate the set we'll store seen states in at some conservative initial
@@ -2531,6 +2572,9 @@ retry:;
     free(local_seen->bucket);
     free(local_seen);
 
+    /* Reset migration state for the next time we expand the set. */
+    next_migration = 0;
+
     /* Update the global pointer to the new set. We know all the above
      * migrations have completed and no one needs the old set.
      */
@@ -2555,13 +2599,25 @@ retry:;
 
 static void set_expand(void) {
 
+  /* Using double-checked locking, we look to see if someone else has already
+   * started expanding the set. We do this by first checking before acquiring
+   * the set mutex, and then later again checking after we've acquired the
+   * mutex. The idea here is that, with multiple threads, you'll frequently find
+   * someone else beat you to expansion and you can jump straight to helping
+   * them with migration without having the expense of acquiring the set mutex.
+   */
+  if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
+    /* Someone else already expanded it. Join them in the migration effort. */
+    TRACE(TC_SET, "attempted expansion failed because another thread got there "
+      "first");
+    set_migrate();
+    return;
+  }
+
   set_expand_lock();
 
-  /* Check if another thread beat us to expanding the set. */
-  struct set *s = refcounted_ptr_get(&next_global_seen);
-  (void)refcounted_ptr_put(&next_global_seen, s);
-  if (s != NULL) {
-    /* Someone else already expanded it. Join them in the migration effort. */
+  /* Check again, as described above. */
+  if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
     set_expand_unlock();
     TRACE(TC_SET, "attempted expansion failed because another thread got there "
       "first");
@@ -2585,7 +2641,6 @@ static void set_expand(void) {
   /* We now need to migrate all slots from the old set to the new one, but we
    * can do this multithreaded.
    */
-  next_migration = 0; /* initialise migration state */
   set_expand_unlock();
   set_migrate();
 }
