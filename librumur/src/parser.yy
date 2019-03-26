@@ -135,6 +135,7 @@
 %token INVARIANT
 %token ISUNDEFINED
 %token LEQ
+%token LIVENESS
 %token NEQ
 %token <std::string> NUMBER
 %token OF
@@ -231,6 +232,8 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::COVER);
 } | INVARIANT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
+} | LIVENESS {
+  $$ = std::make_shared<rumur::Property::Category>(rumur::Property::LIVENESS);
 } | PROPERTY {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::DISABLED);
 };

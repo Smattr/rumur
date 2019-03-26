@@ -542,6 +542,7 @@ void XMLPrinter::visit_property(const Property &n) {
     case Property::ASSERTION:  *o << "assertion";  break;
     case Property::ASSUMPTION: *o << "assumption"; break;
     case Property::COVER:      *o << "cover";      break;
+    case Property::LIVENESS:   *o << "liveness";   break;
   }
   *o << "\" ";
   add_location(n);

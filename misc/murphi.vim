@@ -12,6 +12,7 @@
 syntax case ignore
 syn keyword murphiKeyword assume
 syn keyword murphiKeyword cover
+syn keyword murphiKeyword liveness
 syntax case match
 
 " support for hex numbers in addition to decimal

@@ -47,6 +47,7 @@ struct PropertyStmt : public Stmt {
   virtual ~PropertyStmt() = default;
 
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Assignment : public Stmt {

@@ -17,6 +17,7 @@ struct Property : public Node {
     ASSERTION,
     ASSUMPTION,
     COVER,
+    LIVENESS,
   };
 
   Category category;
