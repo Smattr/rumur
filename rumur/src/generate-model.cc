@@ -320,7 +320,7 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ")) {\n"
             << "      /* Assumption violated. */\n"
             << "      assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
-            << "      longjmp(checkpoint, 1);\n"
+            << "      siglongjmp(checkpoint, 1);\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -415,7 +415,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      s->rule_taken = rule_taken;\n"
           << "#endif\n"
           << "      if (JMP_BUF_NEEDED) {\n"
-          << "        if (setjmp(checkpoint)) {\n"
+          << "        if (sigsetjmp(checkpoint, 0)) {\n"
           << "          /* error() was called. */\n"
           << "          break;\n"
           << "        }\n"
@@ -497,7 +497,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "        n->rule_taken = rule_taken;\n"
           << "#endif\n"
           << "        if (JMP_BUF_NEEDED) {\n"
-          << "          if (setjmp(checkpoint)) {\n"
+          << "          if (sigsetjmp(checkpoint, 0)) {\n"
           << "            /* error() was called. */\n"
           << "            break;\n"
           << "          }\n"

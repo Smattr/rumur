@@ -118,7 +118,7 @@ static uintmax_t rules_fired[THREADS];
 /* Checkpoint to restore to after reporting an error. This is only used if we
  * are tolerating more than one error before exiting.
  */
-static _Thread_local jmp_buf checkpoint;
+static _Thread_local sigjmp_buf checkpoint;
 
 _Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
 
@@ -667,7 +667,7 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   #pragma GCC diagnostic pop
 #endif
     assert(JMP_BUF_NEEDED && "longjmping without a setup jmp_buf");
-    longjmp(checkpoint, 1);
+    siglongjmp(checkpoint, 1);
   }
 
   exit_with(EXIT_FAILURE);

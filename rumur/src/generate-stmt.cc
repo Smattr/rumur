@@ -232,7 +232,7 @@ class Generator : public ConstStmtTraversal {
         *out
           << ", 0)) {\n"
           << "  assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
-          << "  longjmp(checkpoint, 1);\n"
+          << "  siglongjmp(checkpoint, 1);\n"
           << "}";
         break;
 
