@@ -377,6 +377,47 @@ void generate_model(std::ostream &out, const Model &m) {
     out << "}\n\n";
   }
 
+  // Write liveness checker
+  {
+    out
+      << "static void check_liveness(struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "  size_t liveness_index __attribute__((unused)) = 0;\n";
+    size_t index = 0;
+    for (const Ptr<Rule> &r : flat_rules) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
+        if (p->property.category == Property::LIVENESS) {
+
+          // Open a scope so we don't have to think about name collisions.
+          out << "  {\n";
+
+          // Set up quantifiers.
+          for (const Quantifier &q : r->quantifiers)
+            generate_quantifier_header(out, q);
+
+          out << "    if (property" << index << "(s";
+          for (const Quantifier &q : r->quantifiers)
+            out << ", ru_" << q.name;
+          out << ")) {\n"
+            << "      /* Hit. */\n"
+            << "      mark_liveness(s, liveness_index, false);\n"
+            << "    }\n"
+            << "    liveness_index++;\n";
+
+          // Close the quantifier loops.
+          for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+            generate_quantifier_footer(out, *it);
+
+          // Close this cover's scope.
+          out << "  }\n";
+
+        }
+        index++;
+      }
+    }
+    out << "}\n\n";
+  }
+
   // Write out the symmetry reduction canonicalisation function
   generate_canonicalise(m, out);
   out << "\n\n";
@@ -430,6 +471,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      size_t size;\n"
           << "      if (set_insert(s, &size)) {\n"
           << "        check_covers(s);\n"
+          << "        check_liveness(s);\n"
           << "        (void)queue_enqueue(s, queue_id);\n"
           << "        queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
           << "        s = NULL;\n"
@@ -521,6 +563,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          if (set_insert(n, &size)) {\n"
           << "\n"
           << "            check_covers(n);\n"
+          << "            check_liveness(n);\n"
           << "\n"
           << "#if BOUND > 0\n"
           << "            if (n->bound < BOUND) {\n"

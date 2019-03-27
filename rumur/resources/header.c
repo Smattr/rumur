@@ -2712,6 +2712,49 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(NULL) - START_TIME);
 }
 
+/* Set one of the liveness bits (i.e. mark the matching property as 'hit') in a
+ * state and all its predecessors.
+ */
+static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
+    bool shared) {
+
+  assert(s != NULL);
+  ASSERT(index < sizeof(s->liveness) * CHAR_BIT
+    && "out of range liveness write");
+
+  size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);
+  size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);
+
+  uintptr_t previous_value;
+  uintptr_t *target = &s->liveness[word_index];
+  uintptr_t mask = ((uintptr_t)1) << bit_index;
+
+  if (shared) {
+    /* If this state is shared (accessible by other threads) we need to operate
+     * on its liveness data atomically.
+     */
+    previous_value = __atomic_fetch_or(target, mask, __ATOMIC_SEQ_CST);
+  } else {
+    /* Otherwise we can use a cheaper ordinary OR. */
+    previous_value = *target;
+    *target |= mask;
+  }
+
+  /* If the given bit was already set, we know all the predecessors of this
+   * state have already had their corresponding bit marked. However, if it was
+   * not we now need to recurse to mark them. Note that we assume any
+   * predecessors of this state are globally visible and hence shared. The
+   * recursion depth here can be indeterminately deep, but we assume the
+   * compiler can tail-optimise this call.
+   */
+  if ((previous_value & mask) != mask && s->previous != NULL) {
+    /* Cheat a little and cast away the constness of the previous state for
+     * which we may need to update liveness data.
+     */
+    mark_liveness((struct state*)s->previous, index, true);
+  }
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
