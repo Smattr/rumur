@@ -510,6 +510,10 @@ struct state {
   uint64_t rule_taken;
 #endif
 
+  uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
+    (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
+     LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
+
 #if BOUND > UINT64_MAX
   #error "no type large enough for state.bound"
 #elif BOUND > UINT32_MAX
@@ -691,6 +695,7 @@ static struct state *state_dup(const struct state *s) {
   assert(s->bound < BOUND && "exceeding bounded exploration depth");
   n->bound = s->bound + 1;
 #endif
+  memset(n->liveness, 0, sizeof(n->liveness));
   return n;
 }
 
