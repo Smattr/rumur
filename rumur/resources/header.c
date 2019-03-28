@@ -2820,30 +2820,64 @@ static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
   }
 }
 
-/* Whether we know all liveness properties are satisfied for a given state. This
- * is only expected to be called from a single-threaded context, so we don't use
- * atomic reads.
- */
+/* Whether we know all liveness properties are satisfied for a given state. */
 static bool known_liveness(const struct state *s) {
 
   assert(s != NULL);
 
-  for (size_t i = 0; i < LIVENESS_COUNT; i++) {
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
 
-    size_t word_index = i / (sizeof(s->liveness[0]) * CHAR_BIT);
-    size_t bit_index = i % (sizeof(s->liveness[0]) * CHAR_BIT);
+    uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
 
-    if (!((s->liveness[word_index] >> bit_index) & 0x1)) {
-      return false;
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+        break;
+      }
+
+      if (!((word >> j) & 0x1)) {
+        return false;
+      }
     }
   }
 
   return true;
 }
 
+static unsigned long learn_liveness(struct state *s, const struct state *predecessor) {
+
+  assert(s != NULL);
+  assert(predecessor != NULL);
+
+  unsigned long new_info = 0;
+
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+
+    uintptr_t word_src = __atomic_load_n(&predecessor->liveness[i], __ATOMIC_SEQ_CST);
+    uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+        break;
+      }
+
+      bool live_src = !!((word_src >> j) & 0x1);
+      bool live_dst = !!((word_dst >> j) & 0x1);
+
+      if (live_dst && !live_src) {
+        mark_liveness(s, i * sizeof(s->liveness[0]) * CHAR_BIT + j, true);
+        new_info++;
+      }
+    }
+  }
+
+  return new_info;
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
+static unsigned long check_liveness_final(size_t *chunk_ptr);
+static unsigned long check_liveness_summarize(void);
 
 static int exit_with(int status) {
 
@@ -2885,6 +2919,50 @@ static int exit_with(int status) {
   }
 
   rendezvous_depart(1, leader);
+
+  /* If we have liveness properties to assess and have seen no previous errors,
+   * do a final check of them now.
+   */
+  if (LIVENESS_COUNT > 0
+      && __atomic_load_n(&error_count, __ATOMIC_SEQ_CST) == 0) {
+
+    /* A shared index that all threads will use to step through the seen set. */
+    static size_t chunk;
+
+    /* shared progress indicator */
+    static unsigned long progress;
+
+    static bool complete;
+
+    do {
+      unsigned long prog = check_liveness_final(&chunk);
+      __atomic_fetch_add(&progress, prog, __ATOMIC_SEQ_CST);
+
+      bool leader = rendezvous_arrive(1);
+      if (leader) {
+        if (progress == 0) {
+          complete = true;
+        } else {
+          if (MACHINE_READABLE_OUTPUT) {
+            printf("<liveness_progress count=\"%lu\"/>", progress);
+          } else {
+            printf("\t%lu further liveness conditions satisfied.\n", progress);
+          }
+          chunk = 0;
+          progress = 0;
+        }
+      }
+      rendezvous_depart(1, leader);
+    } while (!__atomic_load_n(&complete, __ATOMIC_SEQ_CST));
+
+    if (thread_id == 0) {
+      unsigned long failed = check_liveness_summarize();
+      if (failed > 0) {
+        error_count += failed;
+        status = EXIT_FAILURE;
+      }
+    }
+  }
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
