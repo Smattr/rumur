@@ -2801,6 +2801,27 @@ static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
   }
 }
 
+/* Whether we know all liveness properties are satisfied for a given state. This
+ * is only expected to be called from a single-threaded context, so we don't use
+ * atomic reads.
+ */
+static bool known_liveness(const struct state *s) {
+
+  assert(s != NULL);
+
+  for (size_t i = 0; i < LIVENESS_COUNT; i++) {
+
+    size_t word_index = i / (sizeof(s->liveness[0]) * CHAR_BIT);
+    size_t bit_index = i % (sizeof(s->liveness[0]) * CHAR_BIT);
+
+    if (!((s->liveness[word_index] >> bit_index) & 0x1)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
