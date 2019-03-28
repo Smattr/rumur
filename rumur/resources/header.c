@@ -2704,6 +2704,52 @@ restart:;
   return set_insert(s, count);
 }
 
+/* Find an existing element in the set.
+ *
+ * Why would you ever want to do this? If you already have the state, why do you
+ * want to find a copy of it? The answer is for liveness information. When
+ * checking liveness properties, a duplicate of your current state that is
+ * already contained in the state set might know some of the liveness properties
+ * are satisfied that your current state considers unknown.
+ */
+static const struct state *set_find(const struct state *s) {
+
+  assert(s != NULL);
+
+  size_t index = set_index(local_seen, state_hash(s));
+
+  size_t attempts = 0;
+  for (size_t i = index; attempts < set_size(local_seen); i = set_index(local_seen, i + 1)) {
+
+    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+
+    /* This function is only expected to be called during the final liveness
+     * scan, in which all threads participate. So we should never encounter a
+     * set undergoing migration.
+     */
+    ASSERT(!slot_is_tombstone(slot)
+      && "tombstone encountered during final phase");
+
+    if (slot_is_empty(slot)) {
+      /* reached the end of the linear block in which this state could lie */
+      break;
+    }
+
+    const struct state *n = slot_to_state(slot);
+    ASSERT(n != NULL && "null pointer stored in state set");
+
+    if (state_eq(s, n)) {
+      /* found */
+      return n;
+    }
+
+    attempts++;
+  }
+
+  /* not found */
+  return NULL;
+}
+
 /******************************************************************************/
 
 static time_t START_TIME;
