@@ -2801,6 +2801,29 @@ static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
   }
 }
 
+/* Whether we know all liveness properties are satisfied for a given state. */
+static bool known_liveness(const struct state *s) {
+
+  assert(s != NULL);
+
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+
+    uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+        break;
+      }
+
+      if (!((word >> j) & 0x1)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
