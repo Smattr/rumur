@@ -287,9 +287,33 @@ matrix:
       - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
+  - name: macOS, XCode 9.0 Clang, Homebrew
+    os: osx
+    osx_image: xcode9
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 9.1 Clang, Homebrew
+    os: osx
+    osx_image: xcode9.1
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
   - name: macOS, XCode 9.2 Clang, Homebrew
     os: osx
     osx_image: xcode9.2
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 9.3 Clang, Homebrew
+    os: osx
+    osx_image: xcode9.3
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
       - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
@@ -339,9 +363,36 @@ matrix:
       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
+  - name: macOS, XCode 9.0 Clang, Macports
+    os: osx
+    osx_image: xcode9
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 9.1 Clang, Macports
+    os: osx
+    osx_image: xcode9.1
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
   - name: macOS, XCode 9.2 Clang, Macports
     os: osx
     osx_image: xcode9.2
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 9.3 Clang, Macports
+    os: osx
+    osx_image: xcode9.3
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
