@@ -332,6 +332,69 @@ static bool has_start_state(const rumur::Ptr<rumur::Rule> &r) {
   return false;
 }
 
+static bool use_colors() {
+  return options.color == ON ||
+         (options.color == AUTO && isatty(STDERR_FILENO));
+}
+
+static std::string bold() {
+  if (use_colors())
+    return "\033[1m";
+  return "";
+}
+
+static std::string green() {
+  if (use_colors())
+    return "\033[32m";
+  return "";
+}
+
+static std::string red() {
+  if (use_colors())
+    return "\033[31m";
+  return "";
+}
+
+static std::string reset() {
+  if (use_colors())
+    return "\033[0m";
+  return "";
+}
+
+static std::string white() {
+  if (use_colors())
+    return "\033[37m";
+  return "";
+}
+
+static void print_location(const std::string &file,
+    const rumur::location &location) {
+
+  // don't try to open stdin (see default in options.cc)
+  if (file == "<stdin>")
+    return;
+
+  std::ifstream f(file);
+  if (!f.is_open()) {
+    // ignore failure here as it's non-critical
+    return;
+  }
+
+  std::string line;
+  unsigned long lineno = 0;
+  while (lineno < location.begin.line) {
+    if (!std::getline(f, line))
+      return;
+    lineno++;
+  }
+
+  std::cerr << line << "\n";
+
+  for (unsigned long c = 1; c < location.begin.column; c++)
+    std::cerr << ' ';
+  std::cerr << green() << bold() << "^" << reset() << "\n";
+}
+
 int main(int argc, char **argv) {
 
   // Parse command line options
@@ -344,7 +407,10 @@ int main(int argc, char **argv) {
     resolve_symbols(*m);
     validate_model(*m);
   } catch (rumur::Error &e) {
-    std::cerr << input_filename << ":" << e.loc << ":" << e.what() << "\n";
+    std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
+      << reset() << " " << red() << bold() << "error:" << reset() << " "
+      << white() << bold() << e.what() << reset() << "\n";
+    print_location(input_filename, e.loc);
     return EXIT_FAILURE;
   }
 
