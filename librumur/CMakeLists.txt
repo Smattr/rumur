@@ -26,8 +26,15 @@ flex_target(lexer
 add_flex_bison_dependency(lexer parser)
 
 # Suppress warnings in generated code.
-set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
-set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-register)
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG(-Wsign-compare HAS_WARNING_SIGN_COMPARE)
+if(HAS_WARNING_SIGN_COMPARE)
+  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
+endif()
+CHECK_CXX_COMPILER_FLAG(-Wregister HAS_WARNING_REGISTER)
+if(HAS_WARNING_REGISTER)
+  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-register)
+endif()
 
 add_library(librumur
   src/Boolean.cc
