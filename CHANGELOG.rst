@@ -1,6 +1,35 @@
 Change log
 ==========
 
+v2019.03.30
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: an error when compiling the generated verifier on non-x86-64 was
+  addressed (commit 7e59f1c25a71fd6c3444fc11adc6f932b32ce926).
+* Bug fix: the Vim syntax extensions were missing the ``property`` keyword which
+  has now been added (commit 9e70f6114899ca04556c3cdeb198928a65ab19fc).
+* Errors when generating the verifier are now printed showing the relevant
+  source line from the model. They are also colourised Clang-style when possible
+  (commit e7f2b615cb432bf8fab55d3a00225f3b26e8d8d9).
+* Support for sandboxing the generated verifier has been extended from Linux and
+  macOS to include FreeBSD (using Capsicum) and OpenBSD (using ``pledge``)
+  (commits b73b180dd7fedb2795f19e8a065eefe429f1177e,
+  cb53074aaa1c898c6c0a3d6e962597b9c77c3785).
+* Expansion of the set of seen states has been optimised, resulting in a ~4%
+  decrease in the runtime of the verifier. This change reduced contention, so
+  likely leads to greater speed ups on large, multicore platforms (commits
+  022c3708b24b828a96f3a50c0f11c7cc1476a439,
+  5f4bb2cd96660a48518680f992fee041566ac722,
+  2e84387ec6f56c42f41ea21e17ba99eef501ab65,
+  5b29f2c4cb96989ba862a19acfcae0912a19f86c,
+  9287f5af063a430e83c8957d9f7282d1af33d6ba).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2019.03.21
 -----------
 
