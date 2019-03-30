@@ -270,9 +270,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: macOS, XCode 8.3 Clang, Homebrew
+  - name: macOS, XCode 7.3.1 Clang, Homebrew
     os: osx
-    osx_image: xcode8.3
+    osx_image: xcode7.3
     env:
       # To quote Homebrew, "bison is keg-only, which means it was not symlinked
       # into /usr/local, because some formulae require a newer version of
@@ -280,10 +280,26 @@ matrix:
       # originally, but we'll force this.
       - PATH=/usr/local/opt/bison/bin:${PATH}
 
-      # The version of Bison that comes with XCode 8.3 is too old to support
+      # The version of Bison that comes with XCode 7.3 is too old to support
       # some of the flags/features we use. To install newer versions and make
       # them available to CMake we need to link them into the system
       # directories.
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address"
+
+  - name: macOS, XCode 8.0 Clang, Homebrew
+    os: osx
+    osx_image: xcode8
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 8.3.3 Clang, Homebrew
+    os: osx
+    osx_image: xcode8.3
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
       - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
@@ -351,14 +367,32 @@ matrix:
       - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
-  - name: macOS, XCode 8.3 Clang, Macports
+  - name: macOS, XCode 7.3.1 Clang, Macports
     os: osx
-    osx_image: xcode8.3
+    osx_image: xcode7.3
     env:
       # We need to set this because Macports seems incapable of running
       # without it.
       - COLUMNS=80
 
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address"
+
+  - name: macOS, XCode 8.0 Clang, Macports
+    os: osx
+    osx_image: xcode8
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 8.3.3 Clang, Macports
+    os: osx
+    osx_image: xcode8.3
+    env:
+      - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
