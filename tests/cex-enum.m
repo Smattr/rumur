@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: re.compile(r'^Rule Rule 0, y:\s*[AB] fired.$', re.MULTILINE)
+-- checker_output: re.compile(r'^Rule\s+1, y:\s*[AB] fired.$', re.MULTILINE)
 
 /* An example that causes a counter-example trace involving an enum. The
  * motivation for this is that rulesets quantifying over enums led to enums

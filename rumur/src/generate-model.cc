@@ -11,6 +11,12 @@
 
 using namespace rumur;
 
+static std::string rule_name_string(const Rule &r, size_t index) {
+  if (r.name == "")
+    return std::to_string(index + 1);
+  return "\\\"" + escape(r.name) + "\\\"";
+}
+
 void generate_model(std::ostream &out, const Model &m) {
 
   // Generate each defined constant.
@@ -48,8 +54,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out << ") {\n";
 
         out << "  static const char *rule_name __attribute__((unused)) = \"startstate "
-          << (s->name == "" ? std::to_string(index) : escape(s->name))
-          << "\";\n";
+          << rule_name_string(*s, index) << "\";\n";
 
         /* Output the state variable handles so we can reference them within
          * this start state.
@@ -114,8 +119,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out << ") {\n";
 
         out << "  static const char *rule_name __attribute__((unused)) = \"property "
-          << (i->name == "" ? std::to_string(index) : escape(i->name))
-          << "\";\n";
+          << rule_name_string(*i, index) << "\";\n";
 
         /* Output the state variable handles so we can reference them within
          * this property.
@@ -161,9 +165,8 @@ void generate_model(std::ostream &out, const Model &m) {
             << " __attribute__((unused))";
         out << ") {\n";
 
-        out << "  static const char *rule_name __attribute__((unused)) = \"guard of "
-          << (s->name == "" ? std::to_string(index) : escape(s->name))
-          << "\";\n";
+        out << "  static const char *rule_name __attribute__((unused)) = \""
+          << "guard of rule " << rule_name_string(*s, index) << "\";\n";
 
         /* Output the state variable handles so we can reference them within
          * this guard.
@@ -202,8 +205,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out << ") {\n";
 
         out << "  static const char *rule_name __attribute__((unused)) = \"rule "
-          << (s->name == "" ? std::to_string(index) : escape(s->name))
-          << "\";\n";
+          << rule_name_string(*s, index) << "\";\n";
 
         /* Output the state variable handles so we can reference them within
          * this rule.
@@ -279,8 +281,8 @@ void generate_model(std::ostream &out, const Model &m) {
           for (const Quantifier &q : r->quantifiers)
             out << ", ru_" << q.name;
           out << ")) {\n"
-            << "      error(s, false, \"invariant "
-              << (p->name == "" ? std::to_string(index + 1) : "\\\"" + p->name + "\\\"") << " failed\");\n"
+            << "      error(s, false, \"invariant %s failed\", \""
+              << rule_name_string(*p, index) << "\");\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -643,14 +645,12 @@ void generate_model(std::ostream &out, const Model &m) {
           << "  if (s->rule_taken == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
-          << "      char *escaped_name = xml_escape(\""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
-            << "\");\n"
+          << "      char *escaped_name = xml_escape(\"Startstate "
+            << rule_name_string(*r, index) << "\");\n"
           << "      printf(\"%s\", escaped_name);\n"
           << "      free(escaped_name);\n"
           << "    } else {\n"
-          << "      printf(\"Startstate %s\", \""
-            << (r->name == "" ? "Startstate " + std::to_string(index) : r->name)
+          << "      printf(\"Startstate %s\", \"" << rule_name_string(*r, index)
             << "\");\n"
           << "    }\n";
         {
@@ -762,14 +762,12 @@ void generate_model(std::ostream &out, const Model &m) {
           << "  if (s->rule_taken == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
-          << "      char *escaped_name = xml_escape(\""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
-            << "\");\n"
+          << "      char *escaped_name = xml_escape(\"Rule "
+            << rule_name_string(*r, index) << "\");\n"
           << "      printf(\"%s\", escaped_name);\n"
           << "      free(escaped_name);\n"
           << "    } else {\n"
-          << "      printf(\"Rule %s\", \""
-            << (r->name == "" ? "Rule " + std::to_string(index) : r->name)
+          << "      printf(\"Rule %s\", \"" << rule_name_string(*r, index)
             << "\");\n"
           << "    }\n";
         {

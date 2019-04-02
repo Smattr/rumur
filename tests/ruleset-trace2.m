@@ -1,8 +1,8 @@
 -- checker_exit_code: 1
--- checker_output: re.compile(r'^Rule\s+Rule 1\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
+-- checker_output: re.compile(r'^Rule\s+2\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
 
 /* Similar to ruleset-trace.m, but with a benign first ruleset that ensures the
- * ruleset we're expecting to appear in the trace does not end up being index 0.
+ * ruleset we're expecting to appear in the trace does not end up being index 1.
  * This is relevant with respect to how Rumur works internally, numbering rule
  * transitions via the rule_taken variable.
  */

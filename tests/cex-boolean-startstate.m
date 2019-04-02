@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: re.compile(r'^Startstate Startstate 0, y:\s*(true|false) fired.$', re.MULTILINE)
+-- checker_output: re.compile(r'^Startstate\s+1, y:\s*(true|false) fired.$', re.MULTILINE)
 
 -- Similar to cex-boolean.m, but using a ruleset startstate.
 
