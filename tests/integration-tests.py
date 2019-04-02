@@ -118,7 +118,7 @@ def test_template(self, model, optimised, debug, valgrind, xml):
       return
 
     if option['c_flags'] is None:
-      cflags = ['-std=c11']
+      cflags = ['-std=c11', '-Werror=format']
       if X86_64:
         cflags.append('-mcx16')
       if optimised:
@@ -228,7 +228,7 @@ def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
 
-    cflags = ['-std=c11', '-O3', '-fwhole-program']
+    cflags = ['-std=c11', '-O3', '-fwhole-program', '-Werror=format']
     if X86_64:
       cflags.append('-mcx16')
     model_bin = os.path.join(tmp, 'model.bin')
