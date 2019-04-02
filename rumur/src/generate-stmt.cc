@@ -139,7 +139,7 @@ class Generator : public ConstStmtTraversal {
   }
 
   void visit_errorstmt(const ErrorStmt &s) final {
-    *out << "error(s, false, \"" << s.message << "\")";
+    *out << "error(s, false, \"%s\", \"" << escape(s.message) << "\")";
   }
 
   void visit_for(const For &s) final {
