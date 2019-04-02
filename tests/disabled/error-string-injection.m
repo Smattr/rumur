@@ -1,4 +1,4 @@
--- c_flags: ['-std=c11', '-Werror=format']
+-- c_flags: ['-std=c11', '-Werror=format'] + (['-mcx16'] if X86_64 else [])
 
 /* This model checks we have not reintroduced a problem first observed on commit
  * e1b74738ba73df5352622464be47b69db688c633, wherein invariant names involving
