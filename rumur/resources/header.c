@@ -438,6 +438,7 @@ static char *xml_escape(const char *s) {
       break;
     } else {
       p[i] = *s;
+      i++;
     }
   }
 
