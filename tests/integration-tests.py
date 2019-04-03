@@ -150,7 +150,7 @@ def test_template(self, model, optimised, debug, valgrind, xml):
     self.assertEqual(ret, option['checker_exit_code'])
 
     # If the test has a stdout expectation, check that now.
-    if not xml and option['checker_output'] is not None:
+    if option['checker_output'] is not None:
       output = stdout.decode('utf-8', 'replace')
       if option['checker_output'].search(output) is None:
         sys.stdout.write(stdout)
