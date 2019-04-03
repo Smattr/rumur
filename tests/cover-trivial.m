@@ -1,4 +1,4 @@
--- checker_output: re.compile(r'^\s*cover "dummy" hit 2 times$', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^\s*cover "dummy" hit 2 times$', re.MULTILINE)
 
 -- Test a degenerate cover property
 

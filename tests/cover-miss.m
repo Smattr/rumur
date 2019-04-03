@@ -1,4 +1,4 @@
--- checker_output: re.compile(r'^\s*cover "x was 2" not hit$', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^\s*cover "x was 2" not hit$', re.MULTILINE)
 -- checker_exit_code: 1
 
 -- Test a cover that is never hit

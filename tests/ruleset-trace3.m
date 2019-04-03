@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: re.compile(r'^Startstate\s+1\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^Startstate\s+1\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
 
 /* This is a similar test to ruleset-trace.m but using a ruleset-contained
  * startstate, instead of an ordinary rule.
