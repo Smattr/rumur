@@ -59,7 +59,7 @@ class TemporaryDirectory(object):
 class Tests(unittest.TestCase):
   pass
 
-def parse_test_options(model):
+def parse_test_options(model, xml):
   option = {}
 
   # Check for special lines at the start of the current model overriding the
@@ -88,7 +88,7 @@ def test_template(self, model, optimised, debug, valgrind, xml):
     'checker_output':None, # Regex to search checker's stdout against.
   }
 
-  option.update(parse_test_options(model))
+  option.update(parse_test_options(model, xml))
 
   with TemporaryDirectory() as tmp:
 
@@ -342,7 +342,7 @@ def main(argv):
       # Now we want to add an AST dumper test, but skip this if the input model is
       # expected to fail.
       option = { 'rumur_exit_code':0 }
-      option.update(parse_test_options(m))
+      option.update(parse_test_options(m, False)) # <- False used as dummy arg
       if not valgrind and option['rumur_exit_code'] != 0:
         continue
 
