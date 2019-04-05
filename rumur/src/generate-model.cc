@@ -266,6 +266,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "static void check_invariants(const struct state *s __attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n";
     size_t index = 0;
+    size_t invariant_index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
         if (p->property.category == Property::ASSERTION) {
@@ -282,7 +283,7 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ", ru_" << q.name;
           out << ")) {\n"
             << "      error(s, false, \"invariant %s failed\", \""
-              << rule_name_string(*p, index) << "\");\n"
+              << rule_name_string(*p, invariant_index) << "\");\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -292,6 +293,7 @@ void generate_model(std::ostream &out, const Model &m) {
           // Close this invariant's scope.
           out << "  }\n";
 
+          invariant_index++;
         }
         index++;
       }
