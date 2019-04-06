@@ -282,7 +282,7 @@ void generate_model(std::ostream &out, const Model &m) {
           for (const Quantifier &q : r->quantifiers)
             out << ", ru_" << q.name;
           out << ")) {\n"
-            << "      error(s, false, \"invariant %s failed\", \""
+            << "      error(s, \"invariant %s failed\", \""
               << rule_name_string(*p, invariant_index) << "\");\n"
             << "    }\n";
 
@@ -594,7 +594,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "            break;\n"
       << "          }\n"
       << "        }\n"
-      << "        error(s, true, \"deadlock\");\n"
+      << "        error(s, \"deadlock\");\n"
       << "      } while (0);\n"
       << "    }\n"
       << "\n"

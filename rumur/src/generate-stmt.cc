@@ -139,7 +139,7 @@ class Generator : public ConstStmtTraversal {
   }
 
   void visit_errorstmt(const ErrorStmt &s) final {
-    *out << "error(s, false, \"%s\", \"" << escape(s.message) << "\")";
+    *out << "error(s, \"%s\", \"" << escape(s.message) << "\")";
   }
 
   void visit_for(const For &s) final {
@@ -213,8 +213,8 @@ class Generator : public ConstStmtTraversal {
       case Property::ASSERTION:
         *out << "if (__builtin_expect(!";
         generate_property(*out, s.property);
-        *out << ", 0)) {\nerror(s, false, \"Assertion failed: %s:"
-          << s.loc << ": %s\", \"" << escape(input_filename) << "\", ";
+        *out << ", 0)) {\nerror(s, \"Assertion failed: %s:" << s.loc
+          << ": %s\", \"" << escape(input_filename) << "\", ";
         if (s.message == "") {
           /* Assertion has no associated text. Use the expression itself
            * instead.

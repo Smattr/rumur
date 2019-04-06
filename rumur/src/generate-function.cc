@@ -87,8 +87,8 @@ void generate_function(std::ostream &out, const rumur::Function &f,
    * function that doesn't return.
    */
   if (f.return_type != nullptr)
-    out << "  error(s, false, \"The end of function %s reached without "
-      << "returning values.\", \"" << f.name << "\");\n";
+    out << "  error(s, \"The end of function %s reached without returning "
+      << "values.\", \"" << f.name << "\");\n";
 
   // Close the scope we created.
   out << "  }\n";

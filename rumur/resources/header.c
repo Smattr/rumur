@@ -598,8 +598,8 @@ static void print_counterexample(const struct state *s __attribute__((unused)));
  */
 static _Noreturn int exit_with(int status);
 
-static __attribute__((format(printf, 3, 4))) _Noreturn void error(
-  const struct state *s, bool retain, const char *fmt, ...) {
+static __attribute__((format(printf, 2, 3))) _Noreturn void error(
+  const struct state *s, const char *fmt, ...) {
 
   unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
     __ATOMIC_SEQ_CST);
@@ -1008,7 +1008,7 @@ static __attribute__((unused)) value_t handle_read(const char *context,
   value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
-    error(s, false, "%sread of undefined value in %s%s%s", context, name,
+    error(s, "%sread of undefined value in %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
@@ -1178,7 +1178,7 @@ static __attribute__((unused)) void handle_write(const char *context,
 
   if (value < lb || value > ub || SUB(value, lb, &value) ||
       ADD(value, 1, &value)) {
-    error(s, false, "%swrite of out-of-range value into %s%s%s", context, name,
+    error(s, "%swrite of out-of-range value into %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
@@ -1291,14 +1291,14 @@ static __attribute__((unused)) struct handle handle_index(const char *context,
   assert(expr != NULL);
 
   if (index < index_min || index > index_max) {
-    error(s, false, "%sindex out of range in expression %s%s%s", context, expr,
+    error(s, "%sindex out of range in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   size_t r1, r2;
   if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
-    error(s, false, "%soverflow when indexing array in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
+    error(s, "%soverflow when indexing array in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
 
@@ -1329,8 +1329,8 @@ static __attribute__((unused)) value_t add(const char *context,
 
   value_t r;
   if (ADD(a, b, &r)) {
-    error(s, false, "%sinteger overflow in addition in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
+    error(s, "%sinteger overflow in addition in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
   return r;
@@ -1345,8 +1345,8 @@ static __attribute__((unused)) value_t sub(const char *context,
 
   value_t r;
   if (SUB(a, b, &r)) {
-    error(s, false, "%sinteger overflow in subtraction in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
+    error(s, "%sinteger overflow in subtraction in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
   return r;
@@ -1361,7 +1361,7 @@ static __attribute__((unused)) value_t mul(const char *context,
 
   value_t r;
   if (MUL(a, b, &r)) {
-    error(s, false, "%sinteger overflow in multiplication in expression %s%s%s",
+    error(s, "%sinteger overflow in multiplication in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
@@ -1376,13 +1376,13 @@ static __attribute__((unused)) value_t divide(const char *context,
   assert(expr != NULL);
 
   if (b == 0) {
-    error(s, false, "%sdivision by zero in expression %s%s%s", context, expr,
+    error(s, "%sdivision by zero in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   if (a == VALUE_MIN && b == -1) {
-    error(s, false, "%sinteger overflow in division in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
+    error(s, "%sinteger overflow in division in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
 
@@ -1397,13 +1397,13 @@ static __attribute__((unused)) value_t mod(const char *context,
   assert(expr != NULL);
 
   if (b == 0) {
-    error(s, false, "%smodulus by zero in expression %s%s%s", context, expr,
+    error(s, "%smodulus by zero in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
   if (a == VALUE_MIN && b == -1) {
-    error(s, false, "%sinteger overflow in modulo in expression %s%s%s",
+    error(s, "%sinteger overflow in modulo in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
@@ -1418,7 +1418,7 @@ static __attribute__((unused)) value_t negate(const char *context,
   assert(expr != NULL);
 
   if (a == VALUE_MIN) {
-    error(s, false, "%sinteger overflow in negation in expression %s%s%s",
+    error(s, "%sinteger overflow in negation in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
   }
