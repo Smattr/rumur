@@ -650,10 +650,6 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
     print_unlock();
   }
 
-  if (!retain) {
-    state_free((struct state*)s);
-  }
-
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
