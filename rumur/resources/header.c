@@ -2252,22 +2252,31 @@ static void refcounted_ptr_shift(refcounted_ptr_t *current, refcounted_ptr_t *ne
  * Thread rendezvous support                                                   *
  ******************************************************************************/
 
-static pthread_mutex_t rendezvous_lock; /* mutual exclusion mechanism for below. */
-static pthread_cond_t rendezvous_cond;  /* sleep mechanism for below. */
-static size_t running_count = 1;            /* how many threads are opted in to rendezvous? */
-static size_t rendezvous_pending = 1;   /* how many threads are opted in and not sleeping? */
+/* number of rendezvous points supported */
+enum { RENDEZVOUS_COUNT = 2 };
+
+static pthread_mutex_t rendezvous_lock[RENDEZVOUS_COUNT]; /* mutual exclusion mechanism for below. */
+static pthread_cond_t rendezvous_cond[RENDEZVOUS_COUNT];  /* sleep mechanism for below. */
+static size_t running_count[RENDEZVOUS_COUNT];            /* how many threads are opted in to rendezvous? */
+static size_t rendezvous_pending[RENDEZVOUS_COUNT];       /* how many threads are opted in and not sleeping? */
 
 static void rendezvous_init(void) {
-  int r = pthread_mutex_init(&rendezvous_lock, NULL);
-  if (r != 0) {
-    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-    exit(EXIT_FAILURE);
-  }
+  for (size_t i = 0; i < RENDEZVOUS_COUNT; i++) {
 
-  r = pthread_cond_init(&rendezvous_cond, NULL);
-  if (r != 0) {
-    fprintf(stderr, "pthread_cond_init failed: %s\n", strerror(r));
-    exit(EXIT_FAILURE);
+    int r = pthread_mutex_init(&rendezvous_lock[i], NULL);
+    if (r != 0) {
+      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
+      exit(EXIT_FAILURE);
+    }
+
+    r = pthread_cond_init(&rendezvous_cond[i], NULL);
+    if (r != 0) {
+      fprintf(stderr, "pthread_cond_init failed: %s\n", strerror(r));
+      exit(EXIT_FAILURE);
+    }
+
+    running_count[i] = 1;
+    rendezvous_pending[i] = 1;
   }
 }
 
@@ -2276,21 +2285,24 @@ static void rendezvous_init(void) {
  * This is a low level function, not expected to be directly used outside of the
  * context of the rendezvous implementation.
  *
+ * @param index Which rendezvous point to interact with.
  * @return True if the caller was the last to arrive and henceforth dubbed the
  *   'leader'.
  */
-static bool rendezvous_arrive(void) {
-  int r __attribute__((unused)) = pthread_mutex_lock(&rendezvous_lock);
+static bool rendezvous_arrive(size_t index) {
+  ASSERT(index < RENDEZVOUS_COUNT);
+
+  int r __attribute__((unused)) = pthread_mutex_lock(&rendezvous_lock[index]);
   assert(r == 0);
 
   /* Take a token from the rendezvous down-counter. */
-  assert(rendezvous_pending > 0);
-  rendezvous_pending--;
+  assert(rendezvous_pending[index] > 0);
+  rendezvous_pending[index]--;
 
   /* If we were the last to arrive then it was our arrival that dropped the
    * counter to zero.
    */
-  return rendezvous_pending == 0;
+  return rendezvous_pending[index] == 0;
 }
 
 /* Call this at the end of a rendezvous point.
@@ -2298,66 +2310,73 @@ static bool rendezvous_arrive(void) {
  * This is a low level function, not expected to be directly used outside of the
  * context of the rendezvous implementation.
  *
+ * @param index Which rendezvous point to interact with.
  * @param leader Whether the caller is the 'leader'. If you call this when you
  *   are the 'leader' it will unblock all 'followers' at the rendezvous point.
  */
-static void rendezvous_depart(bool leader) {
+static void rendezvous_depart(size_t index, bool leader) {
+  ASSERT(index < RENDEZVOUS_COUNT);
+
   int r __attribute((unused));
 
   if (leader) {
     /* Reset the counter for the next rendezvous. */
-    assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
-      "while some participating threads have yet to arrive");
-    rendezvous_pending = running_count;
+    assert(rendezvous_pending[index] == 0 && "a rendezvous point is being "
+      "exited while some participating threads have yet to arrive");
+    rendezvous_pending[index] = running_count[index];
 
     /* Wake up the 'followers'. */
-    r = pthread_cond_broadcast(&rendezvous_cond);
+    r = pthread_cond_broadcast(&rendezvous_cond[index]);
     assert(r == 0);
 
   } else {
 
     /* Wait on the 'leader' to wake us up. */
-    r = pthread_cond_wait(&rendezvous_cond, &rendezvous_lock);
+    r = pthread_cond_wait(&rendezvous_cond[index], &rendezvous_lock[index]);
     assert(r == 0);
   }
 
-  r = pthread_mutex_unlock(&rendezvous_lock);
+  r = pthread_mutex_unlock(&rendezvous_lock[index]);
   assert(r == 0);
 }
 
 /* Exposed friendly function for performing a rendezvous. */
-static void rendezvous(void) {
-  bool leader = rendezvous_arrive();
-  rendezvous_depart(leader);
+static void rendezvous(size_t index) {
+  ASSERT(index < RENDEZVOUS_COUNT);
+  bool leader = rendezvous_arrive(index);
+  rendezvous_depart(index, leader);
 }
 
 /* Remove the caller from the pool of threads who participate in this
  * rendezvous.
+ *
+ * @param index Which rendezvous point to interact with.
  */
-static void rendezvous_opt_out(void) {
+static void rendezvous_opt_out(index) {
+  ASSERT(index < RENDEZVOUS_COUNT);
 
 retry:;
 
   /* "Arrive" at the rendezvous to decrement the count of outstanding threads.
    */
-  bool leader = rendezvous_arrive();
+  bool leader = rendezvous_arrive(index);
 
-  if (leader && running_count > 1) {
+  if (leader && running_count[index] > 1) {
     /* We unfortunately opted out of this rendezvous while the remaining threads
      * were arriving at one and we were the last to arrive. Let's pretend we are
      * participating in the rendezvous and unblock them.
      */
-    rendezvous_depart(true);
+    rendezvous_depart(index, true);
 
     /* Re-attempt opting-out. */
     goto retry;
   }
 
   /* Remove ourselves from the known threads. */
-  assert(running_count > 0);
-  running_count--;
+  assert(running_count[index] > 0);
+  running_count[index]--;
 
-  int r __attribute__((unused)) = pthread_mutex_unlock(&rendezvous_lock);
+  int r __attribute__((unused)) = pthread_mutex_unlock(&rendezvous_lock[index]);
   assert(r == 0);
 }
 
@@ -2593,7 +2612,7 @@ retry:;
    * are still working on the old set. It's possible to make such a scheme work
    * but the synchronisation requirements just seem too complicated.
    */
-  rendezvous();
+  rendezvous(0);
 
   /* We're now ready to resume model checking. Note that we already have a
    * (reference counted) pointer to the now-current global seen set, so we don't
@@ -2829,7 +2848,7 @@ static _Noreturn void explore(void);
 static int exit_with(int status) {
 
   /* Opt out of the thread-wide rendezvous protocol. */
-  rendezvous_opt_out();
+  rendezvous_opt_out(0);
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
@@ -2957,10 +2976,12 @@ static void start_secondary_threads(void) {
    * thundering herd bearing down on them. It is safe to do this without holding
    * rendezvous_lock because we are still single threaded at this point.
    */
-  assert(running_count == 1);
-  running_count = THREADS;
-  assert(rendezvous_pending == 1);
-  rendezvous_pending = THREADS;
+  for (size_t i = 0; i < RENDEZVOUS_COUNT; i++) {
+    assert(running_count[i] == 1);
+    running_count[i] = THREADS;
+    assert(rendezvous_pending[i] == 1);
+    rendezvous_pending[i] = THREADS;
+  }
 
 #ifdef __clang__
   #pragma clang diagnostic push
