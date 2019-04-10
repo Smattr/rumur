@@ -2850,6 +2850,42 @@ static int exit_with(int status) {
   /* Opt out of the thread-wide rendezvous protocol. */
   rendezvous_opt_out(0);
 
+  /* Rendezvous using the second point to corral all threads here. We need to
+   * use a second point because if we use the first we may accidentally
+   * synchronise with threads expanding the seen set.
+   */
+  bool leader = rendezvous_arrive(1);
+
+  /* If we arrived as the leader, summarize cover information while we're
+   * single-threaded.
+   */
+  if (leader) {
+    if (error_count == 0) {
+      /* If we didn't see any other errors, print cover information. */
+      for (size_t i = 0; i < sizeof(covers) / sizeof(covers[0]); i++) {
+        if (MACHINE_READABLE_OUTPUT) {
+          char *msg = xml_escape(COVER_MESSAGES[i]);
+          printf("<cover_result message=\"%s\" count=\"%" PRIuMAX "\"/>\n", msg,
+            covers[i]);
+          free(msg);
+        }
+        if (covers[i] == 0) {
+          if (!MACHINE_READABLE_OUTPUT) {
+            printf("\t%s%scover \"%s\" not hit%s\n", red(), bold(),
+              COVER_MESSAGES[i], reset());
+          }
+          error_count++;
+          status = EXIT_FAILURE;
+        } else if (!MACHINE_READABLE_OUTPUT) {
+          printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
+            bold(), COVER_MESSAGES[i], covers[i], reset());
+        }
+      }
+    }
+  }
+
+  rendezvous_depart(1, leader);
+
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
 
@@ -2881,29 +2917,6 @@ static int exit_with(int status) {
     }
 
     /* We're now single-threaded again. */
-
-    if (error_count == 0) {
-      /* If we didn't see any other errors, print cover information. */
-      for (size_t i = 0; i < sizeof(covers) / sizeof(covers[0]); i++) {
-        if (MACHINE_READABLE_OUTPUT) {
-          char *msg = xml_escape(COVER_MESSAGES[i]);
-          printf("<cover_result message=\"%s\" count=\"%" PRIuMAX "\"/>\n", msg,
-            covers[i]);
-          free(msg);
-        }
-        if (covers[i] == 0) {
-          if (!MACHINE_READABLE_OUTPUT) {
-            printf("\t%s%scover \"%s\" not hit%s\n", red(), bold(),
-              COVER_MESSAGES[i], reset());
-          }
-          error_count++;
-          status = EXIT_FAILURE;
-        } else if (!MACHINE_READABLE_OUTPUT) {
-          printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
-            bold(), COVER_MESSAGES[i], covers[i], reset());
-        }
-      }
-    }
 
     if (!MACHINE_READABLE_OUTPUT) {
       printf("\n"
