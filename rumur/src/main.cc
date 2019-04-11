@@ -11,7 +11,6 @@
 #include "log.h"
 #include <memory>
 #include "options.h"
-#include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
 #include <sys/stat.h>
