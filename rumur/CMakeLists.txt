@@ -1,18 +1,21 @@
 # Define resources.
 add_custom_command(
   OUTPUT resources_manpage.cc
-  COMMAND xxd -include doc/rumur.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  COMMAND python resources/xxd.py doc/rumur.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   MAIN_DEPENDENCY doc/rumur.1
+  DEPENDS resources/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT resources_includes.cc
-  COMMAND xxd -include resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
+  COMMAND python resources/xxd.py resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   MAIN_DEPENDENCY resources/includes.c
+  DEPENDS resources/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT resources_header.cc
-  COMMAND xxd -include resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  COMMAND python resources/xxd.py resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   MAIN_DEPENDENCY resources/header.c
+  DEPENDS resources/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT version.cc

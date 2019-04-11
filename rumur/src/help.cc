@@ -40,8 +40,8 @@ int help(void) {
 
   // Write the manpage to the temporary file
   {
-    ssize_t r = write(fd, doc_rumur_1, static_cast<size_t>(doc_rumur_1_len));
-    if (r != doc_rumur_1_len) {
+    ssize_t r = write(fd, doc_rumur_1.c_str(), doc_rumur_1.size());
+    if (r < 0 || (size_t)r != doc_rumur_1.size()) {
       ret = errno;
       std::cerr << "failed to write manpage to temporary file\n";
       goto done;
