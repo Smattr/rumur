@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstddef>
-#include <string>
 
-extern const std::string resources_includes_c;
+extern const unsigned char resources_includes_c[];
+extern const size_t resources_includes_c_len;
 
-extern const std::string resources_header_c;
+extern const unsigned char resources_header_c[];
+extern const size_t resources_header_c_len;
 
-extern const std::string doc_rumur_1;
+extern const unsigned char doc_rumur_1[];
+extern const size_t doc_rumur_1_len;

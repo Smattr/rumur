@@ -62,7 +62,7 @@ int output_checker(const std::string &path, const Model &model) {
   out
 
     // #includes
-    << resources_includes_c
+    << std::string((const char*)resources_includes_c, resources_includes_c_len)
     << "\n"
 
     // Settings that are used in header.c
@@ -107,7 +107,7 @@ int output_checker(const std::string &path, const Model &model) {
 
     // Static boiler plate code
   out
-    << resources_header_c
+    << std::string((const char*)resources_header_c, resources_header_c_len)
     << "\n";
 
   // the model itself

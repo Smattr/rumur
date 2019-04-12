@@ -14,38 +14,30 @@ def main(args):
     help='output file')
   options = parser.parse_args(args[1:])
 
+  array = re.sub(r'[^\w\d]', '_', options.input.name)
+  size = '{}_len'.format(array)
+
   options.output.write(
-    '#include <string>\n'
+    '#include <cstddef>\n'
     '\n'
-    'extern const std::string {} =\n'
-    '  "'.format(re.sub(r'[^\w\d]', '_', options.input.name)))
+    'extern const unsigned char {}[] = {{'.format(array))
 
   index = 0
   for line in options.input:
     for c in line:
 
-      if c == '"':
-        options.output.write('\\"')
-        index += 1
+      if index % 12 == 0:
+        options.output.write('\n ')
 
-      elif c == '\n':
-        options.output.write('\\n')
-        index += 1
-
-      elif c == '\\':
-        options.output.write('\\\\')
-        index += 1
-
-      else:
-        options.output.write(c)
+      options.output.write(' 0x{:02x},'.format(ord(c)))
 
       index += 1
 
-      if index >= 77:
-        options.output.write('"\n  "')
-        index = 0
-
-  options.output.write('";')
+  options.output.write(
+    '\n'
+    '}};\n'
+    'extern const size_t {} = sizeof({}) / sizeof({}[0]);\n'
+    .format(size, array, array))
 
   return 0
 
