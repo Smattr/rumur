@@ -381,6 +381,240 @@ void generate_model(std::ostream &out, const Model &m) {
     out << "}\n\n";
   }
 
+  // Write liveness checker
+  {
+    out
+      << "static void check_liveness(struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "  size_t liveness_index __attribute__((unused)) = 0;\n";
+    size_t index = 0;
+    for (const Ptr<Rule> &r : flat_rules) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
+        if (p->property.category == Property::LIVENESS) {
+
+          // Open a scope so we don't have to think about name collisions.
+          out << "  {\n";
+
+          // Set up quantifiers.
+          for (const Quantifier &q : r->quantifiers)
+            generate_quantifier_header(out, q);
+
+          out << "    if (property" << index << "(s";
+          for (const Quantifier &q : r->quantifiers)
+            out << ", ru_" << q.name;
+          out << ")) {\n"
+            << "      /* Hit. */\n"
+            << "      mark_liveness(s, liveness_index, false);\n"
+            << "    }\n"
+            << "    liveness_index++;\n";
+
+          // Close the quantifier loops.
+          for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+            generate_quantifier_footer(out, *it);
+
+          // Close this cover's scope.
+          out << "  }\n";
+
+        }
+        index++;
+      }
+    }
+    out << "}\n\n";
+  }
+
+  // Write final liveness checker, the one that runs just prior to termination
+  {
+    out
+      << "static void check_liveness_final(void) {\n"
+      << "\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "\n"
+      << "  bool progress = true;\n"
+      << "  while (progress) {\n"
+      << "    progress = false;\n"
+      << "\n"
+      << "    /* Run through all seen states trying to learn new liveness information. */\n"
+      << "    for (size_t i = 0; i < set_size(local_seen); i++) {\n"
+      << "\n"
+      << "      slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);\n"
+      << "\n"
+      << "      ASSERT(!slot_is_tombstone(slot)\n"
+      << "        && \"seen set being migrated during final liveness check\");\n"
+      << "\n"
+      << "      if (slot_is_empty(slot)) {\n"
+      << "        /* skip empty entries in the hash table */\n"
+      << "        continue;\n"
+      << "      }\n"
+      << "\n"
+      << "      struct state *s = slot_to_state(slot);\n"
+      << "      ASSERT(s != NULL && \"null pointer stored in state set\");\n"
+      << "\n"
+      << "      if (known_liveness(s)) {\n"
+      << "        /* skip entries where liveness is fully satisfied already */\n"
+      << "        continue;\n"
+      << "      }\n"
+      << "\n"
+      << "#if BOUND > 0\n"
+      << "      /* If we're doing bounded checking and this state is at the bound limit,\n"
+      << "       * it's not valid to expand beyond this.\n"
+      << "       */\n"
+      << "      ASSERT(s->bound <= BOUND && \"a state that exceeded the bound depth was explored\");\n"
+      << "      if (s->bound == BOUND) {\n"
+      << "        continue;\n"
+      << "      }\n"
+      << "#endif\n"
+      << "\n";
+    size_t index = 0;
+    for (const Ptr<Rule> &r : flat_rules) {
+      if (isa<SimpleRule>(r)) {
+
+        // Open a scope so we don't have to think about name collisions.
+        out << "      {\n";
+
+        for (const Quantifier &q : r->quantifiers)
+          generate_quantifier_header(out, q);
+
+        out
+          // Use a dummy do-while to give us 'break' as a local goto.
+          << "        do {\n"
+          << "          struct state *n = state_dup(s);\n"
+          << "\n"
+          << "          if (JMP_BUF_NEEDED) {\n"  // FIXME: This will use a jmp_buf even if we have no assumptions, and hence a jmp_buf would not be needed here
+          << "            if (sigsetjmp(checkpoint, 0)) {\n"
+          << "              /* assumption violated. */\n"
+          << "              state_free(n);\n"
+          << "              break;\n"
+          << "            }\n"
+          << "          }\n"
+          << "          if (guard" << index << "(n";
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
+        out << ")) {\n"
+          << "            rule" << index << "(n";
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
+        out << ");\n"
+          << "            state_canonicalise(n);\n"
+          << "            check_assumptions(n);\n"
+          << "\n"
+          << "            /* note that we can skip an invariant check because we already know it\n"
+          << "             * passed from prior expansion of this state.\n"
+          << "             */\n"
+          << "\n"
+          << "            /* We should be able to find this state in the seen set. */\n"
+          << "            const struct state *t = set_find(n);\n"
+          << "            ASSERT(t != NULL && \"state encountered during final liveness wrap up \"\n"
+          << "              \"that was not previously seen\");\n"
+          << "\n"
+          << "            /* See if this successor state learned a liveness property it never\n"
+          << "             * passed back to us. This can occur if the state our exploration\n"
+          << "             * encountered (`n`) was not the first of its kind seen and thus was\n"
+          << "             * de-duped and never made it into the seen set with a back pointer\n"
+          << "             * to `s`.\n"
+          << "             */\n"
+          << "            progress |= learn_liveness(s, t) > 0;\n"
+          << "          }\n"
+          << "          /* we don't need this state anymore. */\n"
+          << "          state_free(n);\n"
+          << "        } while (0);\n";
+
+        // Close the quantifier loops.
+        for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+          generate_quantifier_footer(out, *it);
+
+        // Close this rule's scope.
+        out << "}\n";
+
+        index++;
+      }
+    }
+    out
+      << "    }\n"
+      << "  }\n"
+      << "}\n"
+      << "\n"
+      << "\n"
+      << "static unsigned long check_liveness_summarize(void) {\n"
+      << "\n"
+      << "  /* We can now finally check whether all liveness properties were hit. */\n"
+      << "  bool missed[LIVENESS_COUNT];\n"
+      << "  memset(missed, 0, sizeof(missed));\n"
+      << "  for (size_t i = 0; i < set_size(local_seen); i++) {\n"
+      << "\n"
+      << "    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);\n"
+      << "\n"
+      << "    ASSERT(!slot_is_tombstone(slot)\n"
+      << "      && \"seen set being migrated during final liveness check\");\n"
+      << "\n"
+      << "    if (slot_is_empty(slot)) {\n"
+      << "      /* skip empty entries in the hash table */\n"
+      << "      continue;\n"
+      << "    }\n"
+      << "\n"
+      << "    const struct state *s = slot_to_state(slot);\n"
+      << "    ASSERT(s != NULL && \"null pointer stored in state set\");\n"
+      << "\n"
+      << "    size_t index __attribute__((unused)) = 0;\n";
+    index = 0;
+    for (const Ptr<Rule> &r : flat_rules) {
+      if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
+        if (p->property.category == Property::LIVENESS) {
+
+          // Open a scope so we don't have to think about name collisions.
+          out << "    {\n";
+
+          // Set up quantifiers. Note, in this case they are not used.
+          for (const Quantifier &q : r->quantifiers)
+            generate_quantifier_header(out, q);
+
+          out
+            << "      size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);\n"
+            << "      size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);\n"
+            << "      if (!missed[index] && !((s->liveness[word_index] >> bit_index) & 0x1)) {\n"
+            << "        /* missed */\n"
+            << "        missed[index] = true;\n"
+            << "        if (MACHINE_READABLE_OUTPUT) {\n"
+            << "          char *msg = xml_escape(\""
+              << (p->name == "" ? std::to_string(index + 1) : "\\\"" + escape(p->name) + "\\\"") << "\");\n"
+            << "          printf(\"<error><message>liveness property %s violated</message>\", msg);\n"
+            << "          free(msg);\n"
+            << "        } else {\n"
+            << "          printf(\"\\t%s%sliveness property %s violated:%s\\n\", red(), bold(), \""
+              << (p->name == "" ? std::to_string(index + 1) : "\\\"" + escape(p->name) + "\\\"") << "\", reset());\n"
+            << "        }\n"
+            << "        print_counterexample(s);\n"
+            << "        if (MACHINE_READABLE_OUTPUT) {\n"
+            << "          printf(\"</error>\\n\");\n"
+            << "        }\n"
+            << "      }\n"
+            << "      index++;\n";
+
+          // Close the quantifier loops.
+          for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend(); it++)
+            generate_quantifier_footer(out, *it);
+
+          // Close this cover's scope.
+          out << "    }\n";
+
+          index++;
+        }
+      }
+    }
+    out
+      << "  }\n"
+      << "\n"
+      << "  /* total up how many misses we saw */\n"
+      << "  unsigned long total = 0;\n"
+      << "  for (size_t i = 0; i < sizeof(missed) / sizeof(missed[0]); i++) {\n"
+      << "    if (missed[i]) {\n"
+      << "      total++;\n"
+      << "    }\n"
+      << "  }\n"
+      << "\n"
+      << "  return total;\n"
+      << "}\n\n";
+  }
+
   // Write out the symmetry reduction canonicalisation function
   generate_canonicalise(m, out);
   out << "\n\n";
@@ -435,6 +669,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      size_t size;\n"
           << "      if (set_insert(s, &size)) {\n"
           << "        check_covers(s);\n"
+          << "        check_liveness(s);\n"
           << "        (void)queue_enqueue(s, queue_id);\n"
           << "        queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
           << "      } else {\n"
@@ -527,6 +762,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          if (set_insert(n, &size)) {\n"
           << "\n"
           << "            check_covers(n);\n"
+          << "            check_liveness(n);\n"
           << "\n"
           << "#if BOUND > 0\n"
           << "            if (n->bound < BOUND) {\n"

@@ -511,6 +511,10 @@ struct state {
   uint64_t rule_taken;
 #endif
 
+  uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
+    (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
+     LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
+
 #if BOUND > UINT64_MAX
   #error "no type large enough for state.bound"
 #elif BOUND > UINT32_MAX
@@ -688,6 +692,7 @@ static struct state *state_dup(const struct state *s) {
   assert(s->bound < BOUND && "exceeding bounded exploration depth");
   n->bound = s->bound + 1;
 #endif
+  memset(n->liveness, 0, sizeof(n->liveness));
   return n;
 }
 
@@ -2696,6 +2701,52 @@ restart:;
   return set_insert(s, count);
 }
 
+/* Find an existing element in the set.
+ *
+ * Why would you ever want to do this? If you already have the state, why do you
+ * want to find a copy of it? The answer is for liveness information. When
+ * checking liveness properties, a duplicate of your current state that is
+ * already contained in the state set might know some of the liveness properties
+ * are satisfied that your current state considers unknown.
+ */
+static const struct state *set_find(const struct state *s) {
+
+  assert(s != NULL);
+
+  size_t index = set_index(local_seen, state_hash(s));
+
+  size_t attempts = 0;
+  for (size_t i = index; attempts < set_size(local_seen); i = set_index(local_seen, i + 1)) {
+
+    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+
+    /* This function is only expected to be called during the final liveness
+     * scan, in which all threads participate. So we should never encounter a
+     * set undergoing migration.
+     */
+    ASSERT(!slot_is_tombstone(slot)
+      && "tombstone encountered during final phase");
+
+    if (slot_is_empty(slot)) {
+      /* reached the end of the linear block in which this state could lie */
+      break;
+    }
+
+    const struct state *n = slot_to_state(slot);
+    ASSERT(n != NULL && "null pointer stored in state set");
+
+    if (state_eq(s, n)) {
+      /* found */
+      return n;
+    }
+
+    attempts++;
+  }
+
+  /* not found */
+  return NULL;
+}
+
 /******************************************************************************/
 
 static time_t START_TIME;
@@ -2704,9 +2755,117 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(NULL) - START_TIME);
 }
 
+/* Set one of the liveness bits (i.e. mark the matching property as 'hit') in a
+ * state and all its predecessors.
+ */
+static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
+    bool shared) {
+
+  assert(s != NULL);
+  ASSERT(index < sizeof(s->liveness) * CHAR_BIT
+    && "out of range liveness write");
+
+  size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);
+  size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);
+
+  uintptr_t previous_value;
+  uintptr_t *target = &s->liveness[word_index];
+  uintptr_t mask = ((uintptr_t)1) << bit_index;
+
+  if (shared) {
+    /* If this state is shared (accessible by other threads) we need to operate
+     * on its liveness data atomically.
+     */
+    previous_value = __atomic_fetch_or(target, mask, __ATOMIC_SEQ_CST);
+  } else {
+    /* Otherwise we can use a cheaper ordinary OR. */
+    previous_value = *target;
+    *target |= mask;
+  }
+
+  /* If the given bit was already set, we know all the predecessors of this
+   * state have already had their corresponding bit marked. However, if it was
+   * not we now need to recurse to mark them. Note that we assume any
+   * predecessors of this state are globally visible and hence shared. The
+   * recursion depth here can be indeterminately deep, but we assume the
+   * compiler can tail-optimise this call.
+   */
+  if ((previous_value & mask) != mask && s->previous != NULL) {
+    /* Cheat a little and cast away the constness of the previous state for
+     * which we may need to update liveness data.
+     */
+    mark_liveness((struct state*)s->previous, index, true);
+  }
+}
+
+/* Whether we know all liveness properties are satisfied for a given state. */
+static bool known_liveness(const struct state *s) {
+
+  assert(s != NULL);
+
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+
+    uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+        break;
+      }
+
+      if (!((word >> j) & 0x1)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/* Learn new liveness information about the state `s` from its successor. Note
+ * that typically `successor->previous != s` because `successor` is actually one
+ * of the de-duped aliases of the original successor to `s`.
+ *
+ * @param s State to learn information about
+ * @param successor Successor to s
+ * @return Number of new liveness information facts learnt
+ */
+static unsigned long learn_liveness(struct state *s,
+    const struct state *successor) {
+
+  assert(s != NULL);
+  assert(successor != NULL);
+
+  unsigned long new_info = 0;
+
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+
+    uintptr_t word_src = __atomic_load_n(&successor->liveness[i],
+      __ATOMIC_SEQ_CST);
+    uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+        break;
+      }
+
+      bool live_src = !!((word_src >> j) & 0x1);
+      bool live_dst = !!((word_dst >> j) & 0x1);
+
+      if (!live_dst && live_src) {
+        mark_liveness(s, i * sizeof(s->liveness[0]) * CHAR_BIT + j, true);
+        new_info++;
+      }
+    }
+  }
+
+  return new_info;
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
+static void check_liveness_final(void);
+static unsigned long check_liveness_summarize(void);
 
 static int exit_with(int status) {
 
@@ -2765,6 +2924,19 @@ static int exit_with(int status) {
           printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
             bold(), COVER_MESSAGES[i], covers[i], reset());
         }
+      }
+    }
+
+    /* If we have liveness properties to assess and have seen no previous
+     * errors, do a final check of them now.
+     */
+    if (LIVENESS_COUNT > 0 && error_count == 0) {
+      check_liveness_final();
+
+      unsigned long failed = check_liveness_summarize();
+      if (failed > 0) {
+        error_count += failed;
+        status = EXIT_FAILURE;
       }
     }
 

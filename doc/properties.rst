@@ -1,10 +1,10 @@
 Properties
 ==========
 When creating a model of a system, an important part to include is its
-definition of correctness. Rumur gives you three different types of global
-properties you can write: invariants, covers, and assumptions. Each of these can
-also be used locally (within a function, procedure, or rule). However, the local
-equivalent of an invariant is known as an assertion.
+definition of correctness. Rumur gives you four different types of global
+properties you can write: invariants, covers, assumptions, and liveness. Each of
+these except liveness can also be used locally (within a function, procedure, or
+rule). However, the local equivalent of an invariant is known as an assertion.
 
 Invariants
 ----------
@@ -162,6 +162,67 @@ failure (either local within a rule or global after a rule transition) causes
 the invariant and cover checks to be skipped and the resulting (invalid) state
 to be ignored.
 
+Liveness
+--------
+Liveness properties express something that should be reachable from every state.
+That is, a property that may not be true in a given state but will be true in at
+least one of the successors of every state. Using the counter example, we might
+write,
+
+.. code-block:: murphi
+
+  liveness "counter can always become 4" counter = 4;
+
+to capture that we should always be able to reach the state where ``counter`` is
+``4``. Unlike the other property types, liveness can only be used globally and
+not locally as a statement.
+
+Sometimes you might want to write a conditional liveness property. For example,
+that a variable ``x`` can always become ``1`` but only once you are out of some
+initial setup phase and into the steady state of your system. You can do this by
+also referencing a variable that captures the phase of your system in the
+liveness property. For example,
+
+.. code-block:: murphi
+
+  type
+    phase_t: enum { SETUP, RUN };
+
+  var
+    phase: phase_t;
+    halt: boolean;
+    x: 0 .. 10;
+
+  startstate begin
+    phase := SETUP;
+    halt := false;
+  end;
+
+  ruleset has_err: boolean do
+    rule "init" !halt & phase = SETUP ==> begin
+      if has_err then
+        halt := true;
+      else
+        x := 0;
+        phase := RUN;
+      end;
+    end;
+  end;
+
+  rule phase = RUN & x < 10 ==> begin
+    x := x + 1;
+  end;
+
+  rule phase = RUN & x > 0 ==> begin
+    x := x - 1;
+  end;
+
+  liveness "x can be 1" phase = SETUP | x = 1;
+
+For large models, note that Rumur's algorithm for checking liveness properties
+is not as efficient as other types of properties. You may find that checking a
+liveness properties on a large state space requires a long time.
+
 Relationship to Linear Temporal Logic
 -------------------------------------
 Readers familiar with Linear Temporal Logic (LTL) might notice a similarity in
@@ -170,5 +231,6 @@ available properties are more constrained than LTL. To be pragmatic, they are
 limited to some that can be checked efficiently within an explicit state model
 checking algorithm.
 
-Invariants roughly correspond to LTL's "always" operator, ``G`` or ``□``. The
-other types of properties do not have direct LTL equivalents.
+Invariants roughly correspond to LTL's "always" operator, ``G`` or ``□``.
+Liveness roughly corresponds to "always eventually", ``G F`` or ``□ ◊``.
+The other types of properties do not have direct LTL equivalents.

@@ -12,6 +12,7 @@
 syntax case ignore
 syn keyword murphiKeyword assume
 syn keyword murphiKeyword cover
+syn keyword murphiKeyword liveness
 syn keyword murphiKeyword property
 syntax case match
 

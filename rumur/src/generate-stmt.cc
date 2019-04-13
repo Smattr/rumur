@@ -246,6 +246,11 @@ class Generator : public ConstStmtTraversal {
           << "}";
         break;
 
+      case Property::LIVENESS:
+        assert(s.property.category != Property::LIVENESS && "liveness property "
+          "illegally appearing in statement instead of at the top level");
+        break;
+
     }
   }
 

@@ -36,6 +36,12 @@ struct Model : public Node {
   // Get the number of (global or local) assumptions in the model.
   unsigned long assumption_count() const;
 
+  /* Get the number of global liveness properties in the model. Unlike
+   * assumption_count, this considers the "flat" model. That is, a
+   * ruleset-contained liveness property may count for more than one.
+   */
+  mpz_class liveness_count() const;
+
   /* Update the bit offset of each variable declaration in the model and reindex
    * all AST nodes.
    */

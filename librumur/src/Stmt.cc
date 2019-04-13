@@ -51,6 +51,12 @@ bool PropertyStmt::operator==(const Node &other) const {
   return o != nullptr && property == o->property && message == o->message;
 }
 
+void PropertyStmt::validate() const {
+  if (property.category == Property::LIVENESS)
+    throw Error("liveness property appearing as a statement instead of a top "
+      "level property", loc);
+}
+
 Assignment::Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) { }

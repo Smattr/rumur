@@ -89,6 +89,7 @@ function      { return rumur::parser::token::FUNCTION;      }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
 isundefined   { return rumur::parser::token::ISUNDEFINED;   }
+liveness      { return rumur::parser::token::LIVENESS;      }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
 property      { return rumur::parser::token::PROPERTY;      }
