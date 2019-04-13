@@ -1,6 +1,52 @@
 Change log
 ==========
 
+v2019.04.13
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: malicious models can no longer cause bad printf format strings to
+  be generated (commits 6b30d43f6672278db0c0d7c8dfd5dbe83785fad5,
+  a27c2391ede24c0833b045d0d4a138ecb829434b,
+  322d1e26b343cdc308efb50ce2d952bb26ad9ad8).
+* Bug fix: characters in text like rule names are no longer dropped when using
+  XML output (commit f119f745218ed9404f6922e95aa6076bc0bdf291).
+* Bug fix: unnamed invariants are now correctly numbered when they are referred
+  to (commit 450a2e7b9ced7f670eaf568e9ba484ea43a2dcb4).
+* Bug fix: with deadlock detection enabled (default) and multiple errors
+  (``--max-errors ...`` with a value > 1), deadlock counterexamples are no
+  longer duplicated in the error output (commit
+  17ebb307b68cb323ad0840903b96070ea1b6ca0a).
+* New syntax has been added for writing liveness properties. See
+  doc/properties.rst for how to use this (commits
+  e99fa1104ff578106075f6dc19c35b4ef2f7d986,
+  ee1aecd172edb9fa5be775548841e38c4aa547b0,
+  36fae15066562eedee594fa1fd77e60af19e13bd,
+  4c6ee24bc922955f419c05391fa1ddc49cbc122e,
+  53f80d8565af4217bfe11ac2bfe549d9b2ada0af,
+  b094269cfe516bad7bd3ab0993288ff7f3a8285a,
+  6ed296f61b7b942323974a7d40c2b20f7003ff26,
+  ac54ed1cef5326260128d189a3705679a3ba02aa,
+  85cbc94ac9b734572874d3564d9a4240f10614f9).
+* Support for macOS has been extended back to XCode 7.3 (commit
+  35e1803b370f8a47df84812eab19bbb01dcf4e41).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The test case tweak snippets (``-- ...`` Python comments at the beginning of
+  test cases) can now refer to whether XML output is in use or not (commit
+  af393a106773c98b79f283f02e250ec9ca9a73a5).
+* Using the ``-- checker_output: ...`` test case tweak no longer limits a test
+  case to running when XML output is not in use (commit
+  af393a106773c98b79f283f02e250ec9ca9a73a5).
+* There is a new API function for counting the liveness properties in a model
+  (commit ee1aecd172edb9fa5be775548841e38c4aa547b0).
+* The build dependency on ``xxd`` (bundled with Vim) has been removed (commits
+  a8575179f9a5c956be5bb50c182bbb89f1d8d057,
+  6b907684c4d7696acf6f9ea2a2ca566e5175da18,
+  43759055bf873814ec18cb692ee9a6d9d6889d1a).
+
 v2019.03.30
 -----------
 
