@@ -2824,6 +2824,46 @@ static bool known_liveness(const struct state *s) {
   return true;
 }
 
+/* Learn new liveness information about the state `s` from its successor. Note
+ * that typically `successor->previous != s` because `successor` is actually one
+ * of the de-duped aliases of the original successor to `s`.
+ *
+ * @param s State to learn information about
+ * @param successor Successor to s
+ * @return Number of new liveness information facts learnt
+ */
+static unsigned long learn_liveness(struct state *s,
+    const struct state *successor) {
+
+  assert(s != NULL);
+  assert(successor != NULL);
+
+  unsigned long new_info = 0;
+
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+
+    uintptr_t word_src = __atomic_load_n(&successor->liveness[i],
+      __ATOMIC_SEQ_CST);
+    uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+        break;
+      }
+
+      bool live_src = !!((word_src >> j) & 0x1);
+      bool live_dst = !!((word_dst >> j) & 0x1);
+
+      if (!live_dst && live_src) {
+        mark_liveness(s, i * sizeof(s->liveness[0]) * CHAR_BIT + j, true);
+        new_info++;
+      }
+    }
+  }
+
+  return new_info;
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
