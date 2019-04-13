@@ -578,7 +578,7 @@ void generate_model(std::ostream &out, const Model &m) {
             << "          printf(\"\\t%s%sliveness property %s violated:%s\\n\", red(), bold(), \""
               << (p->name == "" ? std::to_string(index + 1) : "\\\"" + escape(p->name) + "\\\"") << "\", reset());\n"
             << "        }\n"
-            << "        state_print(NULL, s);\n"
+            << "        print_counterexample(s);\n"
             << "        if (MACHINE_READABLE_OUTPUT) {\n"
             << "          printf(\"</error>\\n\");\n"
             << "        }\n"
