@@ -2867,6 +2867,8 @@ static unsigned long learn_liveness(struct state *s,
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
+static void check_liveness_final(void);
+static unsigned long check_liveness_summarize(void);
 
 static int exit_with(int status) {
 
@@ -2925,6 +2927,19 @@ static int exit_with(int status) {
           printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
             bold(), COVER_MESSAGES[i], covers[i], reset());
         }
+      }
+    }
+
+    /* If we have liveness properties to assess and have seen no previous
+     * errors, do a final check of them now.
+     */
+    if (LIVENESS_COUNT > 0 && error_count == 0) {
+      check_liveness_final();
+
+      unsigned long failed = check_liveness_summarize();
+      if (failed > 0) {
+        error_count += failed;
+        status = EXIT_FAILURE;
       }
     }
 
