@@ -56,7 +56,7 @@ def main(argv):
   if p.returncode != 0:
     return p.returncode
 
-  # Copy into the test case directory all tests that are not expected to fail
+  # Copy into the test case directory all active tests
   sys.stdout.write(' Populating {}/testcase_dir...\n'.format(tmp))
   test_root = os.path.dirname(__file__)
   testcase_dir = os.path.join(tmp, 'testcase_dir')
