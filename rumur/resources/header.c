@@ -2651,7 +2651,8 @@ static bool set_insert(struct state *s, size_t *count) {
 
 restart:;
 
-  if (local_seen->count * 100 / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
+  if (__atomic_load_n(&local_seen->count, __ATOMIC_SEQ_CST) * 100
+      / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
     set_expand();
 
   size_t index = set_index(local_seen, state_hash(s));
