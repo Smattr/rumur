@@ -2411,7 +2411,6 @@ enum { INITIAL_SET_SIZE_EXPONENT = sizeof(unsigned long long) * 8 - 1 -
 struct set {
   slot_t *bucket;
   size_t size_exponent;
-  size_t count;
 };
 
 /* Some utility functions for dealing with exponents. */
@@ -2430,6 +2429,9 @@ static size_t set_index(const struct set *set, size_t index) {
  */
 static refcounted_ptr_t global_seen;
 static _Thread_local struct set *local_seen;
+
+/* Number of elements in the global set (i.e. occupancy). */
+static size_t seen_count;
 
 /* The "next" 'global_seen' value. See below for an explanation. */
 static refcounted_ptr_t next_global_seen;
@@ -2483,7 +2485,6 @@ static void set_init(void) {
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = INITIAL_SET_SIZE_EXPONENT;
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
-  set->count = 0;
 
   /* Stash this somewhere for threads to later retrieve it from. Note that we
    * initialize its reference count to zero as we (the setup logic) are not
@@ -2562,11 +2563,6 @@ retry:;
 
     TRACE(TC_SET, "arrived at rendezvous point as leader");
 
-    /* At this point, we know no one is still updating the old set's count, so
-     * we can migrate its value to the next set.
-     */
-    next->count = local_seen->count;
-
     /* We were the last thread to release our reference to the old set. Clean it
      * up now. Note that we're using the pointer we just gave up our reference
      * count to, but we know no one else will be invalidating it.
@@ -2635,7 +2631,6 @@ static void set_expand(void) {
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = local_seen->size_exponent + 1;
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
-  set->count = 0; /* will be updated in set_migrate(). */
 
   /* Advertise this as the newly expanded global set. */
   refcounted_ptr_set(&next_global_seen, set);
@@ -2651,7 +2646,7 @@ static bool set_insert(struct state *s, size_t *count) {
 
 restart:;
 
-  if (__atomic_load_n(&local_seen->count, __ATOMIC_SEQ_CST) * 100
+  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100
       / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
     set_expand();
 
@@ -2665,7 +2660,7 @@ restart:;
     if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
         state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
       /* Success */
-      *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
+      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
@@ -2971,19 +2966,18 @@ static int exit_with(int status) {
       }
     }
 #endif
-    assert(count == local_seen->count && "seen set count is inconsistent at "
-      "exit");
+    assert(count == seen_count && "seen set count is inconsistent at exit");
 
     if (MACHINE_READABLE_OUTPUT) {
       printf("<summary states=\"%zu\" rules_fired=\"%" PRIuMAX "\" errors=\"%lu\" "
-        "duration_seconds=\"%llu\"/>\n", local_seen->count, fire_count, error_count,
+        "duration_seconds=\"%llu\"/>\n", seen_count, fire_count, error_count,
         gettime());
       printf("</rumur_run>\n");
     } else {
       printf("State Space Explored:\n"
              "\n"
              "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
-             local_seen->count, fire_count, gettime());
+             seen_count, fire_count, gettime());
     }
 
     exit(status);
