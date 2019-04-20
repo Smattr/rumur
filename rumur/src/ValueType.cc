@@ -15,7 +15,7 @@ static const std::unordered_map<std::string, ValueType> types = {
   { "uint64_t", { "uint_fast64_t", "((uint64_t)0)",  "UINT_FAST64_MAX", "UINT64_C", "PRIuFAST64"  } },
 };
 
-const ValueType &get_value_type(const std::string &name) {
+ValueType get_value_type(const std::string &name) {
 
   auto it = types.find(name);
   if (it != types.end())

@@ -56,6 +56,7 @@ static void parse_args(int argc, char **argv) {
       { "symmetry-reduction", required_argument, 0, 134 },
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, 130 },
+      { "value-type", required_argument, 0, 141 },
       { "verbose", no_argument, 0, 'v' },
       { "version", no_argument, 0, 139 },
       { 0, 0, 0, 0 },
@@ -272,6 +273,10 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
+      case 141: // --value-type ...
+        options.value_type = optarg;
+        break;
+
       default:
         std::cerr << "unexpected error\n";
         exit(EXIT_FAILURE);
@@ -426,8 +431,14 @@ int main(int argc, char **argv) {
     *warn << "warning: model has no start state\n";
 
   // get value_t to use in the checker
-  // TODO: allow this to be controlled by command-line arguments
-  const ValueType &value_type = get_value_type("int64_t");
+  ValueType value_type;
+  try {
+    value_type = get_value_type(options.value_type);
+  } catch (std::runtime_error &e) {
+    std::cerr << "invalid --value-type " << options.value_type << ": "
+      << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
   assert(out != nullptr);
   if (output_checker(*out, *m, value_type) != 0)

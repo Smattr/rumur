@@ -188,6 +188,20 @@ argument multiple times. Note that enabling tracing will significantly slow the
 verifier and is only intended for debugging purposes.
 .RE
 .PP
+\fB--value-type\fR \fITYPE\fR
+.RS
+Change the C type used to represent scalar values in the generated verifier.
+Valid values are the C fixed-width types, \fIint8_t\fR, \fIuint8_t\fR,
+\fIint16_t\fR, \fIuint16_t\fR, \fIint32_t\fR, \fIuint32_t\fR, \fIint64_t\fR,
+and \fIuint64_t\fR. The type you select is mapped to its fast equivalent (e.g.
+\fIint_fast8_t\fR) and then used in the verifier. By default \fIint64_t\fR
+(mapped to \fIint_fast64_t\fR) is used but you can change this to another type
+to optimise the execution of the verifier. Note that there is no check that the
+scalar values needed by your model lie in the range of the given type, so
+selecting a type that is too narrow can cause the verifier to report errors
+resulting from integer overflow.
+.RE
+.PP
 \fB--verbose\fR or \fB-v\fR
 .RS
 Output informational messages while generating the verifier.

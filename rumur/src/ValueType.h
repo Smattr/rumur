@@ -12,4 +12,4 @@ struct ValueType {
   std::string pri;     // equivalent of PRId64
 };
 
-const ValueType &get_value_type(const std::string &name);
+ValueType get_value_type(const std::string &name);
