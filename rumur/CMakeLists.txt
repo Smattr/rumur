@@ -51,7 +51,8 @@ add_executable(rumur
   src/options.cc
   src/output.cc
   src/symmetry-reduction.cc
-  src/utils.cc)
+  src/utils.cc
+  src/ValueType.cc)
 
 target_include_directories(rumur
   PRIVATE
