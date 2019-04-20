@@ -5,9 +5,11 @@
 #include <memory>
 #include <rumur/rumur.h>
 #include <string>
+#include "ValueType.h"
 #include <vector>
 
-int output_checker(const std::string &path, const rumur::Model &model);
+int output_checker(const std::string &path, const rumur::Model &model,
+  const ValueType &value_type);
 
 // Generate prelude definitions to allocate memory for function returns
 void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);

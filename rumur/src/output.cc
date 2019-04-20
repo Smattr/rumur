@@ -7,6 +7,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include "ValueType.h"
 
 using namespace rumur;
 
@@ -50,7 +51,8 @@ static std::ostream &operator<<(std::ostream &out, symmetry_reduction_t s) {
   return out;
 }
 
-int output_checker(const std::string &path, const Model &model) {
+int output_checker(const std::string &path, const Model &model,
+    const ValueType &value_type) {
 
   std::ofstream out(path);
   if (!out)
@@ -102,7 +104,11 @@ int output_checker(const std::string &path, const Model &model) {
     << "enum { MACHINE_READABLE_OUTPUT = " << options.machine_readable_output
       << " };\n\n"
     << "enum { MAX_SIMPLE_WIDTH = " << max_simple_width(model) << " };\n\n"
-    << "#define BOUND " << options.bound << "\n\n";
+    << "#define BOUND " << options.bound << "\n\n"
+    << "typedef " << value_type.c_type << " value_t;\n"
+    << "#define VALUE_MIN " << value_type.int_min << "\n"
+    << "#define VALUE_MAX " << value_type.int_max << "\n"
+    << "#define VALUE_C(x) " << value_type.int_c << "(x)\n\n";
 
   generate_cover_array(out, model);
 

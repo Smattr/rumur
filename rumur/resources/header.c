@@ -14,16 +14,6 @@
   #endif
 #endif
 
-/* Abstraction over the type we use for scalar values. Other code should be
- * agnostic to what the underlying type is, so if you are porting this code to a
- * future platform where you need a wider type, modifying these lines should be
- * enough. One (temporary) exception is value_to_string() below.
- */
-typedef int64_t value_t;
-#define VALUE_MIN INT64_MIN
-#define VALUE_MAX INT64_MAX
-#define VALUE_C(x) INT64_C(x)
-
 struct value_string_buffer {
   char data[50];
 };

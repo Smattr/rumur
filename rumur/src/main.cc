@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "utils.h"
+#include "ValueType.h"
 #include "version.h"
 
 static std::shared_ptr<std::istream> in;
@@ -424,8 +425,12 @@ int main(int argc, char **argv) {
   if (!contains(m->rules, has_start_state))
     *warn << "warning: model has no start state\n";
 
+  // get value_t to use in the checker
+  // TODO: allow this to be controlled by command-line arguments
+  const ValueType &value_type = get_value_type("int64_t");
+
   assert(out != nullptr);
-  if (output_checker(*out, *m) != 0)
+  if (output_checker(*out, *m, value_type) != 0)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;
