@@ -22,7 +22,7 @@ static struct value_string_buffer value_to_string(value_t v) {
 
   struct value_string_buffer buf;
 
-  snprintf(buf.data, sizeof(buf.data), "%" PRId64, v);
+  snprintf(buf.data, sizeof(buf.data), "%" PRIVAL, v);
 
   return buf;
 }

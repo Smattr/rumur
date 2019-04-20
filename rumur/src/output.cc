@@ -108,7 +108,8 @@ int output_checker(const std::string &path, const Model &model,
     << "typedef " << value_type.c_type << " value_t;\n"
     << "#define VALUE_MIN " << value_type.int_min << "\n"
     << "#define VALUE_MAX " << value_type.int_max << "\n"
-    << "#define VALUE_C(x) " << value_type.int_c << "(x)\n\n";
+    << "#define VALUE_C(x) " << value_type.int_c << "(x)\n"
+    << "#define PRIVAL " << value_type.pri << "\n\n";
 
   generate_cover_array(out, model);
 

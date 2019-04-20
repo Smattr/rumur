@@ -9,6 +9,7 @@ struct ValueType {
   std::string int_min; // equivalent of INT_MIN
   std::string int_max; // equivalent of INT_MAX
   std::string int_c;   // equivalent of INT_C
+  std::string pri;     // equivalent of PRId64
 };
 
 const ValueType &get_value_type(const std::string &name);
