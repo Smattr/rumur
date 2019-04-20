@@ -1375,7 +1375,7 @@ static __attribute__((unused)) value_t divide(const char *context,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  if (a == VALUE_MIN && b == -1) {
+  if (VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1) {
     error(s, "%sinteger overflow in division in expression %s%s%s", context,
       expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1396,8 +1396,8 @@ static __attribute__((unused)) value_t mod(const char *context,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (a == VALUE_MIN && b == -1) {
+  // Is INT_MIN % -1 UD? Reading the C spec I'm not sure.
+  if (VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1) {
     error(s, "%sinteger overflow in modulo in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
