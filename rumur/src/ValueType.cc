@@ -2,11 +2,79 @@
 #include <cstdint>
 #include <gmpxx.h>
 #include <limits.h>
+#include "log.h"
+#include <rumur/rumur.h>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include "ValueType.h"
+#include <vector>
 
+using namespace rumur;
+
+namespace {
+
+class BoundsFinder : public ConstTraversal {
+
+ public:
+  mpz_class min = 0;
+  mpz_class max = 0;
+
+ private:
+  void increase_max(const mpz_class &new_value, const std::string &cause) {
+    *debug << "increasing maximum numerical bound to " << new_value
+      << " due to \"" << cause << "\"\n";
+    max = new_value;
+  }
+
+  void decrease_min(const mpz_class &new_value, const std::string &cause) {
+    *debug << "decreasing minimum numerical bound to " << new_value
+      << " due to \"" << cause << "\"\n";
+    min = new_value;
+  }
+
+ public:
+  void visit_enum(const Enum &n) final {
+    if (n.members.size() > max)
+      increase_max(n.members.size(), n.to_string());
+  }
+
+  void visit_number(const Number &n) final {
+    if (n.value < min)
+      decrease_min(n.value, n.to_string());
+    if (n.value > max)
+      increase_max(n.value, n.to_string());
+  }
+
+  void visit_range(const Range &n) final {
+    if (n.min->constant()) {
+      mpz_class m = n.min->constant_fold();
+      if (m < min)
+        decrease_min(m, n.min->to_string());
+      if (m > max)
+        increase_max(m, n.min->to_string());
+    }
+    if (n.max->constant()) {
+      mpz_class m = n.max->constant_fold();
+      if (m < min)
+        decrease_min(m, n.max->to_string());
+      if (m > max)
+        increase_max(m, n.max->to_string());
+    }
+  }
+
+  void visit_scalarset(const Scalarset &n) final {
+    if (n.bound->constant()) {
+      mpz_class m = n.bound->constant_fold();
+      if (m < min)
+        decrease_min(m, n.bound->to_string());
+      if (m > max)
+        increase_max(m, n.bound->to_string());
+    }
+  }
+};
+
+}
 
 static const std::unordered_map<std::string, ValueType> types = {
   { "int8_t",   { "int_fast8_t",   "INT_FAST8_MIN",  "INT_FAST8_MAX",   "INT8_C",   "PRIdFAST8",  mpz_class(std::to_string(INT8_MIN)),  mpz_class(std::to_string(INT8_MAX))   } },
@@ -19,7 +87,31 @@ static const std::unordered_map<std::string, ValueType> types = {
   { "uint64_t", { "uint_fast64_t", "((uint64_t)0)",  "UINT_FAST64_MAX", "UINT64_C", "PRIuFAST64", 0,                                    mpz_class(std::to_string(UINT64_MAX)) } },
 };
 
-ValueType get_value_type(const std::string &name) {
+ValueType get_value_type(const std::string &name, const Model &m) {
+
+  if (name == "auto") {
+
+    // find least and greatest numerical values needed for this model
+    BoundsFinder bf;
+    bf.dispatch(m);
+
+    // a list of the types sorted by estimated expense
+    static const std::vector<std::string> TYPES = { "uint8_t", "int8_t",
+      "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t" };
+
+    // find the first type that satisfies these
+    for (const std::string &t : TYPES) {
+      *debug << "considering type " << t << "...\n";
+      const ValueType &vt = types.at(t);
+      if (vt.min <= bf.min && vt.max >= bf.max) {
+        *info << "using numerical type " << t << " at value type\n";
+        return vt;
+      }
+    }
+
+    throw std::runtime_error("model's numerical bounds are [" + bf.min.get_str()
+      + ", " + bf.max.get_str() + "] which no supported type contains");
+  }
 
   auto it = types.find(name);
   if (it != types.end())

@@ -20,7 +20,7 @@ _arguments \
   '--symmetry-reduction[symmetry reduction optimisation]: :(off heuristic exhaustive)' \
   {--threads,-t}'[number of threads to use in the verifier]:count' \
   '--trace[tracing messages to print in the verifier]: :(handle_reads handle_writes queue set symmetry_reduction all)' \
-  '--value-type[C type to use for scalar values in the verifier]: :(int8_t uint8_t int16_t uint16_t int32_t uint32_t int64_t uint64_t)' \
+  '--value-type[C type to use for scalar values in the verifier]: :(auto int8_t uint8_t int16_t uint16_t int32_t uint32_t int64_t uint64_t)' \
   {--verbose,-v}'[output more detail while generating verifier]' \
   '--version[output version information]' \
   '*::filename:_files -g "*.m"'

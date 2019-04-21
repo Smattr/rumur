@@ -433,7 +433,7 @@ int main(int argc, char **argv) {
   // get value_t to use in the checker
   ValueType value_type;
   try {
-    value_type = get_value_type(options.value_type);
+    value_type = get_value_type(options.value_type, *m);
   } catch (std::runtime_error &e) {
     std::cerr << "invalid --value-type " << options.value_type << ": "
       << e.what() << "\n";
