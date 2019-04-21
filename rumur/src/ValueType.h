@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <gmpxx.h>
 #include <string>
 
 // abstraction over the type used to represent scalar values during checking
@@ -10,6 +11,8 @@ struct ValueType {
   std::string int_max; // equivalent of INT_MAX
   std::string int_c;   // equivalent of INT_C
   std::string pri;     // equivalent of PRId64
+  mpz_class min;       // minimum value that can be represented in this type
+  mpz_class max;       // maximum value that can be represented in this type
 };
 
 ValueType get_value_type(const std::string &name);
