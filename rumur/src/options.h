@@ -81,7 +81,7 @@ struct Options {
   unsigned long bound = 0;
 
   // Type used for value_t in the checker
-  std::string value_type = "int64_t";
+  std::string value_type = "auto";
 };
 
 extern Options options;
