@@ -260,7 +260,7 @@ std::string Enum::to_string() const {
   bool first = true;
   for (const std::pair<std::string, location> &m : members) {
     if (!first)
-      s + ", ";
+      s += ", ";
     s += m.first;
     first = false;
   }
