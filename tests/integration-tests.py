@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 
-import json, os, platform, re, shutil, subprocess, sys, tempfile, unittest
+import json
+import multiprocessing
+import os
+import platform
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
 import xml.etree.ElementTree as ET
 
 RUMUR_BIN = os.path.abspath(os.environ.get('RUMUR', 'rumur/rumur'))
@@ -75,7 +84,7 @@ def parse_test_options(model, xml):
 
   return option
 
-def test_template(self, model, optimised, debug, valgrind, xml):
+def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
 
   # Default options to use for this test.
   option = {
@@ -98,6 +107,11 @@ def test_template(self, model, optimised, debug, valgrind, xml):
       rumur_flags.append('--debug')
     if xml:
       rumur_flags.extend(['--output-format', 'machine-readable'])
+    if multithreaded and multiprocessing.cpu_count() == 1:
+      # we need to force multiple threads, or Rumur will autodetect --threads 1
+      rumur_flags.extend(['--threads', '2'])
+    elif not multithreaded:
+      rumur_flags.extend(['--threads', '1'])
     args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
     if valgrind:
       args = valgrind_wrap(args)
@@ -308,30 +322,34 @@ def main(argv):
       for debug in (False, True):
         for valgrind in (False, True):
           for xml in (False, True):
+            for multithreaded in (False, True):
 
-            # Don't test machine-readable output for a debug or Valgrind run, as
-            # this messes up XML.
-            if xml and (debug or valgrind):
-              continue
+              # Don't test machine-readable output for a debug or Valgrind run,
+              # as this messes up XML.
+              if xml and (debug or valgrind):
+                continue
 
-            if valgrind and VALGRIND is None:
-              # Valgrind unavailable
-              continue
+              if valgrind and VALGRIND is None:
+                # Valgrind unavailable
+                continue
 
-            test_name = re.sub(r'[^\w]', '_', 'test_{}{}{}{}{}'.format(
-              'debug_' if debug else '',
-              'optimised_' if optimised else 'unoptimised_',
-              'valgrind_' if valgrind else '',
-              'xml_' if xml else '', m_name))
+              test_name = re.sub(r'[^\w]', '_', 'test_{}{}{}{}{}{}'.format(
+                'debug_' if debug else '',
+                'optimised_' if optimised else 'unoptimised_',
+                'valgrind_' if valgrind else '',
+                'xml_' if xml else '',
+                'multithreaded_' if multithreaded else 'singlethreaded_',
+                m_name))
 
-            if hasattr(Tests, test_name):
-              raise Exception('{} collides with an existing test name'.format(m))
+              if hasattr(Tests, test_name):
+                raise Exception('{} collides with an existing test name'.format(m))
 
-            if in_range(index):
-              setattr(Tests, test_name,
-                lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml:
-                  test_template(self, model, o, d, v, x))
-            index += 1
+              if in_range(index):
+                setattr(Tests, test_name,
+                  lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml,
+                    m=multithreaded:
+                      test_template(self, model, o, d, v, x, m))
+              index += 1
 
     for valgrind in (False, True):
 
