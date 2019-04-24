@@ -13,6 +13,14 @@
    */
 %define api.value.type variant
 
+  /* Enable more explanatory error messages. Without this, Bison just says
+   * "syntax error" for any problem. The extra information can sometimes be
+   * inaccurate unless you define "parse.lac full" which is not available for
+   * C++, but even a slightly inaccurate message is typically more useful to the
+   * user than "syntax error".
+   */
+%define parse.error verbose
+
   /* Turn on some safety checks for construction and destruction of variant
    * types. This is only relevant if we enable them (api.value.type variant).
    */
