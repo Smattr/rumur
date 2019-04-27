@@ -36,10 +36,10 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
 
     out
       << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
-      << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
-        << ", " << t->width() << "ull));\n"
-      << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
-        << ", " << t->width() << "ull));\n"
+      << indent << "  raw_value_t a = handle_read_raw(state_handle(s, "
+        << offset_a << ", " << t->width() << "ull));\n"
+      << indent << "  raw_value_t b = handle_read_raw(state_handle(s, "
+        << offset_b << ", " << t->width() << "ull));\n"
       << indent << "  handle_write_raw(state_handle(s, " << offset_b
         << ", " << t->width() << "ull), a);\n"
       << indent << "  handle_write_raw(state_handle(s, " << offset_a
@@ -101,11 +101,11 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
 
         out
           << indent << "if (x != y) {\n"
-          << indent << "  value_t v = handle_read_raw(" << h << ");\n"
+          << indent << "  raw_value_t v = handle_read_raw(" << h << ");\n"
           << indent << "  if (v != 0) {\n"
-          << indent << "    if (v - 1 == (value_t)x) {\n"
+          << indent << "    if (v - 1 == (raw_value_t)x) {\n"
           << indent << "      handle_write_raw(" << h << ", y + 1);\n"
-          << indent << "    } else if (v - 1 == (value_t)y) {\n"
+          << indent << "    } else if (v - 1 == (raw_value_t)y) {\n"
           << indent << "      handle_write_raw(" << h << ", x + 1);\n"
           << indent << "    }\n"
           << indent << "  }\n"
@@ -320,9 +320,9 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
 
       out
         << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
-        << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
+        << indent << "  raw_value_t a = handle_read_raw(state_handle(s, " << offset_a
           << ", " << t->width() << "ull));\n"
-        << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
+        << indent << "  raw_value_t b = handle_read_raw(state_handle(s, " << offset_b
           << ", " << t->width() << "ull));\n"
         << indent << "  if (a < b) {\n"
         << indent << "    return -1;\n"
@@ -402,13 +402,13 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
          */
         << indent << "{\n"
 
-        << indent << "  value_t v = handle_read_raw(state_handle(s, " << offset
+        << indent << "  raw_value_t v = handle_read_raw(state_handle(s, " << offset
           << ", " << width << "));\n"
 
         << indent << "  if (v != 0) { /* ignored 'undefined' */\n"
-        << indent << "    if (v - 1 == (value_t)x) {\n"
+        << indent << "    if (v - 1 == (raw_value_t)x) {\n"
         << indent << "      return -1;\n"
-        << indent << "    } else if (v - 1 == (value_t)y) {\n"
+        << indent << "    } else if (v - 1 == (raw_value_t)y) {\n"
         << indent << "      return 1;\n"
         << indent << "    }\n"
         << indent << "  }\n"

@@ -91,8 +91,8 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw(" << handle << ");\n"
-      << "  value_t v_previous = VALUE_C(0);\n";
+      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
@@ -136,8 +136,8 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw(" << handle << ");\n"
-      << "  value_t v_previous = VALUE_C(0);\n";
+      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
@@ -181,8 +181,8 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw(" << handle << ");\n"
-      << "  value_t v_previous = VALUE_C(0);\n";
+      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out

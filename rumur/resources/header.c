@@ -15,6 +15,7 @@
 #endif
 
 #define value_to_string(v) ((value_t)(v))
+#define raw_value_to_string(v) ((raw_value_t)(v))
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
@@ -822,13 +823,13 @@ static __attribute__((unused)) struct handle state_handle(const struct state *s,
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
-static value_t handle_read_raw(struct handle h) {
+static raw_value_t handle_read_raw(struct handle h) {
 
   // FIXME: When we get a user-configurable value type, users will be able to
   // cause this assertion to fail, so we should validate the necessary
   // conditions at code generation time.
-  assert(h.width <= sizeof(value_t) * 8 && "read of a handle to a value that "
-    "is larger than our value type");
+  assert(h.width <= sizeof(raw_value_t) * 8 && "read of a handle to a value "
+    "that is larger than our raw value type");
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
     "the maximum width of a simple type in this model");
@@ -908,10 +909,10 @@ static value_t handle_read_raw(struct handle h) {
       low &= mask;
     }
 
-    value_t v = (value_t)low;
+    raw_value_t v = (raw_value_t)low;
 
-    TRACE(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-      value_to_string(v), h.base, h.offset, h.width);
+    TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
+      raw_value_to_string(v), h.base, h.offset, h.width);
 
     return v;
   }
@@ -955,19 +956,19 @@ static value_t handle_read_raw(struct handle h) {
     low &= mask;
   }
 
-  value_t v = (value_t)low;
+  raw_value_t v = (raw_value_t)low;
 
-  TRACE(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
-    value_to_string(v), h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
+    raw_value_to_string(v), h.base, h.offset, h.width);
 
   return v;
 }
 
-static value_t decode_value(value_t lb, value_t ub, value_t v) {
+static value_t decode_value(value_t lb, value_t ub, raw_value_t v) {
 
-  value_t dest = v;
+  value_t dest = 0;
 
-  bool r __attribute__((unused)) = SUB(dest, 1, &dest) || ADD(dest, lb, &dest)
+  bool r __attribute__((unused)) = SUB(v, 1, &v) || ADD(v, lb, &dest)
     || dest < lb || dest > ub;
 
   ASSERT(!r && "read of out-of-range value");
@@ -989,7 +990,7 @@ static __attribute__((unused)) value_t handle_read(const char *context,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds read in handle_read()");
 
-  value_t dest = handle_read_raw(h);
+  raw_value_t dest = handle_read_raw(h);
 
   if (dest == 0) {
     error(s, "%sread of undefined value in %s%s%s", context, name,
@@ -999,16 +1000,16 @@ static __attribute__((unused)) value_t handle_read(const char *context,
   return decode_value(lb, ub, dest);
 }
 
-static void handle_write_raw(struct handle h, value_t value) {
+static void handle_write_raw(struct handle h, raw_value_t value) {
 
-  assert(h.width <= sizeof(value_t) * 8 && "write of a handle to a value that "
-    "is larger than our value type");
+  assert(h.width <= sizeof(raw_value_t) * 8 && "write of a handle to a value "
+    "that is larger than our raw value type");
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  TRACE(TC_HANDLE_WRITES, "writing value %" PRIVAL " to handle { %p, %zu, %zu }",
-    value_to_string(value), h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
+    raw_value_to_string(value), h.base, h.offset, h.width);
 
   if (h.width == 0) {
     return;
@@ -1160,13 +1161,13 @@ static __attribute__((unused)) void handle_write(const char *context,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds write in handle_write()");
 
-  if (value < lb || value > ub || SUB(value, lb, &value) ||
-      ADD(value, 1, &value)) {
+  raw_value_t r;
+  if (value < lb || value > ub || SUB(value, lb, &r) || ADD(r, 1, &r)) {
     error(s, "%swrite of out-of-range value into %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  handle_write_raw(h, value);
+  handle_write_raw(h, r);
 }
 
 static __attribute__((unused)) void handle_zero(struct handle h) {
@@ -1297,7 +1298,7 @@ static __attribute__((unused)) struct handle handle_index(const char *context,
 }
 
 static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
-  value_t v = handle_read_raw(h);
+  raw_value_t v = handle_read_raw(h);
 
   return v == 0;
 }

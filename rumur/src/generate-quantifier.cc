@@ -36,9 +36,9 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
    */
   out
     << "{\n"
-    << "  const value_t step = ";
+    << "  const raw_value_t step = (raw_value_t)";
   if (q.step == nullptr) {
-    out << "VALUE_C(1)";
+    out << "1";
   } else {
     generate_rvalue(out, *q.step);
   }
@@ -46,7 +46,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 
   // Similar for the upper and lower bounds.
 
-  out << "  const value_t lb = ";
+  out << "  const raw_value_t lb = (raw_value_t)";
   if (q.type == nullptr) {
     assert(q.from != nullptr);
     generate_rvalue(out, *q.from);
@@ -55,7 +55,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   }
   out << ";\n";
 
-  out << "  const value_t ub = ";
+  out << "  const raw_value_t ub = (raw_value_t)";
   if (q.type == nullptr) {
     assert(q.to != nullptr);
     generate_rvalue(out, *q.to);
@@ -64,12 +64,12 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   }
   out << ";\n";
 
-  out << "  for (value_t " << counter << " = lb; " << counter << " <= ub; "
+  out << "  for (raw_value_t " << counter << " = 1; " << counter << " <= ub - lb + 1; "
     << counter << " += step) {\n"
     << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = " << width << " };\n"
-    << "    handle_write_raw(" << handle << ", " << counter << " - lb + 1);\n";
+    << "    handle_write_raw(" << handle << ", " << counter << ");\n";
 }
 
 void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
@@ -77,8 +77,8 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
   const std::string counter = "_ru1_" + q.name;
 
   out
-    << "    if (VALUE_MAX - step < ub && " << counter
-      << " > VALUE_MAX - step) {\n"
+    << "    if (RAW_VALUE_MAX - step < ub - lb + 1 && " << counter
+      << " > RAW_VALUE_MAX - step) {\n"
     << "      break;\n"
     << "    }\n"
     << "  }\n"
