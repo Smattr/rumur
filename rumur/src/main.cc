@@ -442,7 +442,7 @@ int main(int argc, char **argv) {
   }
 
   assert(out != nullptr);
-  if (output_checker(*out, *m, value_types.first) != 0)
+  if (output_checker(*out, *m, value_types) != 0)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;

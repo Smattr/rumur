@@ -7,6 +7,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <utility>
 #include "ValueType.h"
 
 using namespace rumur;
@@ -52,7 +53,7 @@ static std::ostream &operator<<(std::ostream &out, symmetry_reduction_t s) {
 }
 
 int output_checker(const std::string &path, const Model &model,
-    const ValueType &value_type) {
+    const std::pair<ValueType, ValueType> &value_types) {
 
   std::ofstream out(path);
   if (!out)
@@ -105,11 +106,15 @@ int output_checker(const std::string &path, const Model &model,
       << " };\n\n"
     << "enum { MAX_SIMPLE_WIDTH = " << max_simple_width(model) << " };\n\n"
     << "#define BOUND " << options.bound << "\n\n"
-    << "typedef " << value_type.c_type << " value_t;\n"
-    << "#define VALUE_MIN " << value_type.int_min << "\n"
-    << "#define VALUE_MAX " << value_type.int_max << "\n"
-    << "#define VALUE_C(x) " << value_type.int_c << "(x)\n"
-    << "#define PRIVAL " << value_type.pri << "\n\n";
+    << "typedef " << value_types.first.c_type << " value_t;\n"
+    << "#define VALUE_MIN " << value_types.first.int_min << "\n"
+    << "#define VALUE_MAX " << value_types.first.int_max << "\n"
+    << "#define VALUE_C(x) " << value_types.first.int_c << "(x)\n"
+    << "#define PRIVAL " << value_types.first.pri << "\n"
+    << "typedef " << value_types.second.c_type << " raw_value_t;\n"
+    << "#define RAW_VALUE_MIN " << value_types.second.int_min << "\n"
+    << "#define RAW_VALUE_MAX " << value_types.second.int_max << "\n"
+    << "#define PRIRAWVAL " << value_types.second.pri << "\n\n";
 
   generate_cover_array(out, model);
 

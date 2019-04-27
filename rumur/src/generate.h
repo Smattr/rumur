@@ -5,11 +5,12 @@
 #include <memory>
 #include <rumur/rumur.h>
 #include <string>
+#include <utility>
 #include "ValueType.h"
 #include <vector>
 
 int output_checker(const std::string &path, const rumur::Model &model,
-  const ValueType &value_type);
+  const std::pair<ValueType, ValueType> &value_types);
 
 // Generate prelude definitions to allocate memory for function returns
 void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);
