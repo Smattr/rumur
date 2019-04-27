@@ -4,6 +4,7 @@
 #include <gmpxx.h>
 #include <rumur/rumur.h>
 #include <string>
+#include <utility>
 
 // abstraction over the type used to represent scalar values during checking
 struct ValueType {
@@ -16,4 +17,4 @@ struct ValueType {
   mpz_class max;       // maximum value that can be represented in this type
 };
 
-ValueType get_value_type(const std::string &name, const rumur::Model &m);
+std::pair<ValueType, ValueType> get_value_type(const std::string &name, const rumur::Model &m);

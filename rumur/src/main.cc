@@ -15,6 +15,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utility>
 #include "utils.h"
 #include "ValueType.h"
 #include "version.h"
@@ -431,9 +432,9 @@ int main(int argc, char **argv) {
     *warn << "warning: model has no start state\n";
 
   // get value_t to use in the checker
-  ValueType value_type;
+  std::pair<ValueType, ValueType> value_types;
   try {
-    value_type = get_value_type(options.value_type, *m);
+    value_types = get_value_type(options.value_type, *m);
   } catch (std::runtime_error &e) {
     std::cerr << "invalid --value-type " << options.value_type << ": "
       << e.what() << "\n";
@@ -441,7 +442,7 @@ int main(int argc, char **argv) {
   }
 
   assert(out != nullptr);
-  if (output_checker(*out, *m, value_type) != 0)
+  if (output_checker(*out, *m, value_types.first) != 0)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;

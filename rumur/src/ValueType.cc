@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <gmpxx.h>
@@ -7,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include "ValueType.h"
 #include <vector>
 
@@ -87,7 +89,34 @@ static const std::unordered_map<std::string, ValueType> types = {
   { "uint64_t", { "uint_fast64_t", "((uint64_t)0)",  "UINT_FAST64_MAX", "UINT64_C", "PRIuFAST64", 0,                                    mpz_class(std::to_string(UINT64_MAX)) } },
 };
 
-ValueType get_value_type(const std::string &name, const Model &m) {
+// a list of the types sorted by estimated expense
+static const std::vector<std::string> TYPES = { "uint8_t", "int8_t", "uint16_t",
+  "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t" };
+
+// find an unsigned type that can contain the given range shifted to be 1-based
+static const ValueType raw_type(const mpz_class &min, const mpz_class &max) {
+
+  assert(min <= max && "reversed bounds in raw_type()");
+
+  mpz_class limit = max - min + 1;
+
+  for (const std::string &t : TYPES) {
+    const ValueType &vt = types.at(t);
+
+    // skip signed types
+    if (vt.min < 0)
+      continue;
+
+    if (vt.max >= limit)
+      return vt;
+  }
+
+  throw std::runtime_error("no supported unsigned type is wide enough to "
+    "contain enough values to cover the range [" + min.get_str() + ", "
+    + max.get_str() + "]");
+}
+
+std::pair<ValueType, ValueType> get_value_type(const std::string &name, const Model &m) {
 
   if (name == "auto") {
 
@@ -95,17 +124,13 @@ ValueType get_value_type(const std::string &name, const Model &m) {
     BoundsFinder bf;
     bf.dispatch(m);
 
-    // a list of the types sorted by estimated expense
-    static const std::vector<std::string> TYPES = { "uint8_t", "int8_t",
-      "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t" };
-
     // find the first type that satisfies these
     for (const std::string &t : TYPES) {
       *debug << "considering type " << t << "...\n";
       const ValueType &vt = types.at(t);
       if (vt.min <= bf.min && vt.max >= bf.max) {
-        *info << "using numerical type " << t << " at value type\n";
-        return vt;
+        *info << "using numerical type " << t << " as value type\n";
+        return { vt, raw_type(bf.min, bf.max) };
       }
     }
 
@@ -114,8 +139,10 @@ ValueType get_value_type(const std::string &name, const Model &m) {
   }
 
   auto it = types.find(name);
-  if (it != types.end())
-    return it->second;
+  if (it == types.end())
+    throw std::runtime_error("unknown type " + name);
 
-  throw std::runtime_error("unknown type " + name);
+  const ValueType &vt = it->second;
+
+  return { vt, raw_type(vt.min, vt.max) };
 }
