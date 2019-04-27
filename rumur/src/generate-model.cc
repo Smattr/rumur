@@ -951,7 +951,7 @@ void generate_model(std::ostream &out, const Model &m) {
                 << "        ASSERT(!\"illegal value for " << q.name << "\");\n"
                 << "      }\n";
             } else {
-              out << "      printf(\"%s\", value_to_string(v).data);\n";
+              out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
             }
 
             out
@@ -1067,7 +1067,7 @@ void generate_model(std::ostream &out, const Model &m) {
                 << "        ASSERT(!\"illegal value for " << q.name << "\");\n"
                 << "      }\n";
             } else {
-              out << "      printf(\"%s\", value_to_string(v).data);\n";
+              out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
             }
 
             out

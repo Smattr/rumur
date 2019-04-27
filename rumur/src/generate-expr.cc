@@ -350,9 +350,9 @@ class Generator : public ConstExprTraversal {
           *out << "); "
             << "if (v != 0 && (v + " << lba << " - 1 < " << lb << " || v + "
               << lba << " - 1 > " << ub << ")) { "
-            << "error(s, \"call to function %s passed an out-of-range value %s "
-              << "to parameter " << (index + 1) << "\", \"" << n.name
-              << "\", value_to_string(v + " << lba << " - 1).data); "
+            << "error(s, \"call to function %s passed an out-of-range value "
+              << "%\" PRIVAL \" to parameter " << (index + 1) << "\", \""
+              << n.name << "\", value_to_string(v + " << lba << " - 1)); "
             << "} "
             << "handle_write_raw(" << handle << ", v == 0 ? v : (v + " << lba
               << " - " << lb << ")); "

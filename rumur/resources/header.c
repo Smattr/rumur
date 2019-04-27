@@ -14,18 +14,7 @@
   #endif
 #endif
 
-struct value_string_buffer {
-  char data[50];
-};
-
-static struct value_string_buffer value_to_string(value_t v) {
-
-  struct value_string_buffer buf;
-
-  snprintf(buf.data, sizeof(buf.data), "%" PRIVAL, v);
-
-  return buf;
-}
+#define value_to_string(v) ((value_t)(v))
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
@@ -921,8 +910,8 @@ static value_t handle_read_raw(struct handle h) {
 
     value_t v = (value_t)low;
 
-    TRACE(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
-      value_to_string(v).data, h.base, h.offset, h.width);
+    TRACE(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
+      value_to_string(v), h.base, h.offset, h.width);
 
     return v;
   }
@@ -968,8 +957,8 @@ static value_t handle_read_raw(struct handle h) {
 
   value_t v = (value_t)low;
 
-  TRACE(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
-    value_to_string(v).data, h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_READS, "read value %" PRIVAL " from handle { %p, %zu, %zu }",
+    value_to_string(v), h.base, h.offset, h.width);
 
   return v;
 }
@@ -1018,8 +1007,8 @@ static void handle_write_raw(struct handle h, value_t value) {
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  TRACE(TC_HANDLE_WRITES, "writing value %s to handle { %p, %zu, %zu }",
-    value_to_string(value).data, h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_WRITES, "writing value %" PRIVAL " to handle { %p, %zu, %zu }",
+    value_to_string(value), h.base, h.offset, h.width);
 
   if (h.width == 0) {
     return;
