@@ -1402,7 +1402,7 @@ static __attribute__((unused)) value_t negate(const char *context,
   assert(context != NULL);
   assert(expr != NULL);
 
-  if (a == VALUE_MIN) {
+  if (VALUE_MIN != 0 && a == VALUE_MIN) {
     error(s, "%sinteger overflow in negation in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
