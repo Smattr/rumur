@@ -3018,6 +3018,9 @@ int main(void) {
   if (COLOR == AUTO)
     istty = isatty(STDOUT_FILENO) != 0;
 
+  /* We don't need to read anything from stdin, so discard it. */
+  (void)fclose(stdin);
+
   sandbox();
 
   if (MACHINE_READABLE_OUTPUT) {
