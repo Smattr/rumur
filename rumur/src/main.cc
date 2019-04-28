@@ -15,7 +15,9 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <utility>
 #include "utils.h"
+#include "ValueType.h"
 #include "version.h"
 
 static std::shared_ptr<std::istream> in;
@@ -55,6 +57,7 @@ static void parse_args(int argc, char **argv) {
       { "symmetry-reduction", required_argument, 0, 134 },
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, 130 },
+      { "value-type", required_argument, 0, 141 },
       { "verbose", no_argument, 0, 'v' },
       { "version", no_argument, 0, 139 },
       { 0, 0, 0, 0 },
@@ -271,6 +274,10 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
+      case 141: // --value-type ...
+        options.value_type = optarg;
+        break;
+
       default:
         std::cerr << "unexpected error\n";
         exit(EXIT_FAILURE);
@@ -424,8 +431,18 @@ int main(int argc, char **argv) {
   if (!contains(m->rules, has_start_state))
     *warn << "warning: model has no start state\n";
 
+  // get value_t to use in the checker
+  std::pair<ValueType, ValueType> value_types;
+  try {
+    value_types = get_value_type(options.value_type, *m);
+  } catch (std::runtime_error &e) {
+    std::cerr << "invalid --value-type " << options.value_type << ": "
+      << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
+
   assert(out != nullptr);
-  if (output_checker(*out, *m) != 0)
+  if (output_checker(*out, *m, value_types) != 0)
     return EXIT_FAILURE;
 
   return EXIT_SUCCESS;
