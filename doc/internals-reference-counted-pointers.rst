@@ -1,5 +1,5 @@
-Data Structures — Reference Counted Pointers
-============================================
+Internals — Reference Counted Pointers
+======================================
 The generated verifier contains an implementation of reference counted pointers,
 ``refcounted_ptr``. This document describes their design and how they work.
 
