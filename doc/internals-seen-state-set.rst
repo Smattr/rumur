@@ -77,12 +77,13 @@ A thread calls the set insertion function:
 
   bool set_insert(struct state *s, size_t *count);
 
-Within the function, a hash function (to be described in forthcoming
-documentation) is used to compute the index at which the element should be
-stored. Using a thread-local pointer to access the currently active seen
-state set, the insertion algorithm uses `linear probing`_ to find an empty slot
-to insert the state pointer into.
+Within the function, a hash function (described in
+`internals-hash-function.rst`_) is used to compute the index at which the
+element should be stored. Using a thread-local pointer to access the currently
+active seen state set, the insertion algorithm uses `linear probing`_ to find an
+empty slot to insert the state pointer into.
 
+.. _`internals-hash-function.rst`: ./internals-hash-function.rst
 .. _`linear probing`: https://en.wikipedia.org/wiki/Linear_probing
 
 If you are following along in `../rumur/resources/header.c`_, you will have
