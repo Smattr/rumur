@@ -66,7 +66,7 @@ reference counted (see `internals-reference-counted-pointers.rst`_). The
 motivation for this and mechanics of pointer borrowing and returning will become
 clearer when we discuss set expansion.
 
-.. _`internals-reference-counted_pointers.rst`: internals-reference-counted_pointers.rst
+.. _`internals-reference-counted-pointers.rst`: ./internals-reference-counted-pointers.rst
 
 Set Insertion
 -------------
