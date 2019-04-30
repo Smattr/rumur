@@ -1,6 +1,44 @@
 Change log
 ==========
 
+v2019.04.28
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: enum types that are printed in error messages now correctly have
+  their members separated by a comma and a space (commit
+  1107d95909bdd9df019f55f1208c857de5db7239).
+* Bug fix: one case where the size of the seen set was incorrectly read
+  non-atomically has been fixed. This would only have affected platforms where
+  naturally aligned reads are not already atomic (e.g. not x86). The result
+  would have been a rare chance of a miscalculation of when to expand the seen
+  set. (commit 02d2803ecb6a459a1a41f7d1c630d1b84d6d75ff).
+* Syntax error messages now provide more information about what token the lexer
+  was expecting to see (commit 06dfee962cb3541fcedf2f319ca4504f90ee0514).
+* Instead of unconditionally using ``int64_t`` to represent scalar values in the
+  generated verifier, the fastest type that can contain all scalar values in
+  your model is used. You can override automatic selection with the new
+  ``--value-type`` command line argument. This change has no immediate benefit
+  but it opens the way to optimisations using Single Instruction Multiple Data
+  (SIMD) or even SIMD Within A Register (SWAR). (commits
+  0a5129fb89358ea67ecc32fb07b1d768f655223e,
+  0933edbb4831c5fc9e483e865b202a6609090b54,
+  f5c8cc54a8a02338a62985aaf2190d7f5fc79ca0,
+  2fde1dbf0fff5c3776fb77e7468a2e83693a444b,
+  6d20e571685f18cdb2d9bf6dd77c615ce1ab5385,
+  e98a3d0041d64dd331a16e45897e9c3a789e0235,
+  f9a29ea64cccbc41155b689d80ea6eb3be9189e9,
+  c95df7007b48a89df981eec037679dd3cb87dab5,
+  5b33f977a55a4bd370aefea205548b1b0bf887d9,
+  5e5945535ff60ed01501d2b10282220b96b009bc,
+  5e1ee6dbe6e784516a1171996bb442e9936e426b,
+  79579fd5ee7cc3c120439b5d3187a09ffd5dcd6e).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2019.04.13
 -----------
 
