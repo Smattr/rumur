@@ -27,13 +27,15 @@ add_flex_bison_dependency(lexer parser)
 
 # Suppress warnings in generated code.
 include(CheckCXXCompilerFlag)
+set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "")
 CHECK_CXX_COMPILER_FLAG(-Wsign-compare HAS_WARNING_SIGN_COMPARE)
 if(HAS_WARNING_SIGN_COMPARE)
-  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
+  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-sign-compare")
 endif()
+get_source_file_property(LEXER_COMPILE_FLAGS lexer.l.cc COMPILE_FLAGS)
 CHECK_CXX_COMPILER_FLAG(-Wregister HAS_WARNING_REGISTER)
 if(HAS_WARNING_REGISTER)
-  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS -Wno-register)
+  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-register")
 endif()
 
 add_library(librumur
