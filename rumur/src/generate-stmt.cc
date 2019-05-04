@@ -206,10 +206,6 @@ class Generator : public ConstStmtTraversal {
   void visit_propertystmt(const PropertyStmt &s) final {
     switch (s.property.category) {
 
-      case Property::DISABLED:
-        *out << "do { } while (0)";
-        break;
-
       case Property::ASSERTION:
         *out << "if (__builtin_expect(!";
         generate_property(*out, s.property);

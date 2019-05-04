@@ -92,7 +92,6 @@ isundefined   { return rumur::parser::token::ISUNDEFINED;   }
 liveness      { return rumur::parser::token::LIVENESS;      }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
-property      { return rumur::parser::token::PROPERTY;      }
 put           { return rumur::parser::token::PUT;           }
 real          { throw rumur::Error("real types are not supported", *loc); }
 record        { return rumur::parser::token::RECORD;        }

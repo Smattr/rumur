@@ -148,7 +148,6 @@
 %token <std::string> NUMBER
 %token OF
 %token PROCEDURE
-%token PROPERTY
 %token PUT
 %token RECORD
 %token RETURN
@@ -242,8 +241,6 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
 } | LIVENESS {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::LIVENESS);
-} | PROPERTY {
-  $$ = std::make_shared<rumur::Property::Category>(rumur::Property::DISABLED);
 };
 
 comma_opt: ',' | %empty;

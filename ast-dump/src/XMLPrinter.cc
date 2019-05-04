@@ -538,7 +538,6 @@ void XMLPrinter::visit_property(const Property &n) {
   sync_to(n);
   *o << "<property category=\"";
   switch (n.category) {
-    case Property::DISABLED:   *o << "disabled";   break;
     case Property::ASSERTION:  *o << "assertion";  break;
     case Property::ASSUMPTION: *o << "assumption"; break;
     case Property::COVER:      *o << "cover";      break;
