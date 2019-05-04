@@ -226,7 +226,8 @@ class Generator : public ConstTypeTraversal {
   }
 
   std::string to_previous() const {
-    return "((struct handle){ .base = (uint8_t*)previous->data, .offset = "
+    return "((struct handle){ .base = (uint8_t*)previous->data + (" + handle
+      + ".base - (const uint8_t*)s->data), .offset = "
       + handle + ".offset, .width = " + handle + ".width })";
   }
 };
