@@ -534,7 +534,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "}\n"
       << "\n"
       << "\n"
-      << "static unsigned long check_liveness_summarize(void) {\n"
+      << "static unsigned long check_liveness_summarise(void) {\n"
       << "\n"
       << "  /* We can now finally check whether all liveness properties were hit. */\n"
       << "  bool missed[LIVENESS_COUNT];\n"

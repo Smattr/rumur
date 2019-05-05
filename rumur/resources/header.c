@@ -2901,7 +2901,7 @@ static unsigned long learn_liveness(struct state *s,
 static void init(void);
 static _Noreturn void explore(void);
 static void check_liveness_final(void);
-static unsigned long check_liveness_summarize(void);
+static unsigned long check_liveness_summarise(void);
 
 static int exit_with(int status) {
 
@@ -2981,7 +2981,7 @@ static int exit_with(int status) {
     if (LIVENESS_COUNT > 0 && error_count == 0) {
       check_liveness_final();
 
-      unsigned long failed = check_liveness_summarize();
+      unsigned long failed = check_liveness_summarise();
       if (failed > 0) {
         error_count += failed;
         status = EXIT_FAILURE;
