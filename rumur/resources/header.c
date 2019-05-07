@@ -484,7 +484,7 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *fmt, ...) {
 
 /* The state of the current model. */
 struct state {
-#if COUNTEREXAMPLE_TRACE != CEX_OFF
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
   const struct state *previous;
 
   /* Index of the rule we took to reach this state. */
@@ -665,7 +665,7 @@ static bool state_eq(const struct state *a, const struct state *b) {
 static struct state *state_dup(const struct state *s) {
   struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
-#if COUNTEREXAMPLE_TRACE != CEX_OFF
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
   n->previous = s;
 #endif
 #if BOUND > 0
