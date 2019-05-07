@@ -2771,6 +2771,22 @@ static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
     *target |= mask;
   }
 
+  /* The following looks a little odd. Why do we only initialise this pointer
+   * properly when we have liveness properties? The answer is that the
+   * `previous` pointer in the state struct only exists when we have liveness
+   * properties, so the access would cause a compile error if we did it
+   * unconditionally. We leave the rest of this function visible to the compiler
+   * even when we have no liveness properties to confirm it is syntactically
+   * valid.
+   */
+  struct state *previous = NULL;
+#if LIVENESS_COUNT > 0
+  /* Cheat a little and cast away the constness of the previous state for which
+   * we may need to update liveness data.
+   */
+  previous = (struct state*)s->previous;
+#endif
+
   /* If the given bit was already set, we know all the predecessors of this
    * state have already had their corresponding bit marked. However, if it was
    * not we now need to recurse to mark them. Note that we assume any
@@ -2778,11 +2794,8 @@ static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
    * recursion depth here can be indeterminately deep, but we assume the
    * compiler can tail-optimise this call.
    */
-  if ((previous_value & mask) != mask && s->previous != NULL) {
-    /* Cheat a little and cast away the constness of the previous state for
-     * which we may need to update liveness data.
-     */
-    mark_liveness((struct state*)s->previous, index, true);
+  if ((previous_value & mask) != mask && previous != NULL) {
+    mark_liveness(previous, index, true);
   }
 }
 
