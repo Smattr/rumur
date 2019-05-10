@@ -41,6 +41,24 @@ class BoundsFinder : public ConstTraversal {
       increase_max(n.members.size(), n.to_string());
   }
 
+  /* We explicitly handle negative expressions because the Rumur AST sees them
+   * as something compound, but users tend to think of them as an atom. For
+   * example, if a user writes "-1" they expect the automatically derived type
+   * will be able to contain -1. If we did not handle Negate specifically, this
+   * analysis would only look at the inner "1" and conclude a narrower range
+   * than was intuitive to the user.
+   */
+  void visit_negative(const Negative &n) final {
+    if (auto l = dynamic_cast<const Number*>(&*n.rhs)) {
+      mpz_class v = -l->value;
+      if (v < min)
+        decrease_min(v, n.to_string());
+      if (v > max)
+        increase_max(v, n.to_string());
+    }
+    dispatch(*n.rhs);
+  }
+
   void visit_number(const Number &n) final {
     if (n.value < min)
       decrease_min(n.value, n.to_string());
