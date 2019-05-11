@@ -104,16 +104,11 @@ _Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
 
 /* Whether we need to save and restore checkpoints. This is determined by
  * whether we ever need to perform the action "discard the current state and
- * skip to checking the next." This scenario can occur for two reasons:
- *   1. We are running multithreaded, have just found an error and have not yet
- *      hit MAX_ERRORS. In this case we want to longjmp back to resume checking.
- *   2. We failed an assumption. In this case we want to mark the current state
- *      as invalid and resume checking with the next state.
- * In either scenario the actual longjmp performed is the same, but by knowing
- * statically whether either can occur we can avoid calling setjmp if both are
- * impossible.
+ * skip to checking the next." This scenario can only occur for one reason: We
+ * have just found an error and have not yet hit MAX_ERRORS. In this case we
+ * want to longjmp back to resume checking.
  */
-enum { JMP_BUF_NEEDED = MAX_ERRORS > 1 || ASSUMPTION_COUNT > 0};
+enum { JMP_BUF_NEEDED = MAX_ERRORS > 1 };
 
 /*******************************************************************************
  * Sandbox support.                                                            *
