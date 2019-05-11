@@ -311,7 +311,7 @@ class Generator : public ConstStmtTraversal {
   void visit_return(const Return &s) final {
 
     if (s.expr == nullptr) {
-      *out << "return";
+      *out << "return true";
 
     } else {
       if (s.expr->type() == nullptr || s.expr->type()->is_simple()) {

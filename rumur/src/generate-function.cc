@@ -15,7 +15,15 @@ void generate_function(std::ostream &out, const rumur::Function &f,
    */
   out << "static ";
   if (f.return_type == nullptr) {
-    out << "void";
+    /* We need to give void-returning functions a dummy boolean return type to
+     * align with the type signature for rules. More specifically a return
+     * can appear either within a rule or within a function/procedure. Within a
+     * rule, it needs to return true to indicate to the caller no errors were
+     * encountered during the rule. To allow a return statement to be emitted
+     * uniformly without having to first check whether its within a rule or a
+     * function/procedure we make the latter return a (ignored) boolean as well.
+     */
+    out << "bool";
   } else if (f.return_type->is_simple()) {
     out << "value_t";
   } else {
@@ -89,6 +97,9 @@ void generate_function(std::ostream &out, const rumur::Function &f,
   if (f.return_type != nullptr)
     out << "  error(s, \"The end of function %s reached without returning "
       << "values.\", \"" << f.name << "\");\n";
+
+  if (f.return_type == nullptr)
+    out << "  return true; /* ignored by caller */\n";
 
   // Close the scope we created.
   out << "  }\n";

@@ -48,13 +48,21 @@ void generate_model(std::ostream &out, const Model &m) {
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto s = dynamic_cast<const StartState*>(r.get())) {
-        out << "static void startstate" << index << "(struct state *s";
+        out << "static bool startstate" << index << "(struct state *s";
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
         out << "  static const char *rule_name __attribute__((unused)) = \"startstate "
           << rule_name_string(*s, index) << "\";\n";
+
+        out
+          << "  if (JMP_BUF_NEEDED) {\n"
+          << "    if (sigsetjmp(checkpoint, 0)) {\n"
+          << "      /* error triggered during this startstate */\n"
+          << "      return false;\n"
+          << "    }\n"
+          << "  }\n";
 
         /* Output the state variable handles so we can reference them within
          * this start state.
@@ -102,6 +110,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out
           << "  }\n"
           << std::string(s->aliases.size(), '}') << "\n"
+          << "  return true;\n"
           << "}\n\n";
         index++;
       }
@@ -158,7 +167,7 @@ void generate_model(std::ostream &out, const Model &m) {
       if (auto s = dynamic_cast<const SimpleRule*>(r.get())) {
 
         // Write the guard
-        out << "static bool guard" << index << "(const struct state *s "
+        out << "static int guard" << index << "(const struct state *s "
           "__attribute__((unused))";
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name
@@ -167,6 +176,14 @@ void generate_model(std::ostream &out, const Model &m) {
 
         out << "  static const char *rule_name __attribute__((unused)) = \""
           << "guard of rule " << rule_name_string(*s, index) << "\";\n";
+
+        out
+          << "  if (JMP_BUF_NEEDED) {\n"
+          << "    if (sigsetjmp(checkpoint, 0)) {\n"
+          << "      /* this guard triggered an error */\n"
+          << "      return -1;\n"
+          << "    }\n"
+          << "  }\n";
 
         /* Output the state variable handles so we can reference them within
          * this guard.
@@ -194,18 +211,26 @@ void generate_model(std::ostream &out, const Model &m) {
         } else {
           generate_rvalue(out, *s->guard);
         }
-        out << ";\n"
+        out << " ? 1 : 0;\n"
           << std::string(s->aliases.size(), '}') << "\n"
           << "}\n\n";
 
         // Write the body
-        out << "static void rule" << index << "(struct state *s";
+        out << "static bool rule" << index << "(struct state *s";
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
 
         out << "  static const char *rule_name __attribute__((unused)) = \"rule "
           << rule_name_string(*s, index) << "\";\n";
+
+        out
+          << "  if (JMP_BUF_NEEDED) {\n"
+          << "    if (sigsetjmp(checkpoint, 0)) {\n"
+          << "      /* an error was triggered during this rule */\n"
+          << "      return false;\n"
+          << "    }\n"
+          << "  }\n";
 
         /* Output the state variable handles so we can reference them within
          * this rule.
@@ -253,6 +278,7 @@ void generate_model(std::ostream &out, const Model &m) {
         out
           << "  }\n"
           << std::string(s->aliases.size(), '}') << "\n"
+          << "  return true;\n"
           << "}\n\n";
 
         index++;
@@ -263,8 +289,14 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write invariant checker
   {
     out
-      << "static void check_invariants(const struct state *s __attribute__((unused))) {\n"
-      << "  static const char *rule_name __attribute__((unused)) = NULL;\n";
+      << "static bool check_invariants(const struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "  if (JMP_BUF_NEEDED) {\n"
+      << "    if (sigsetjmp(checkpoint, 0)) {\n"
+      << "      /* invariant violated */\n"
+      << "      return false;\n"
+      << "    }\n"
+      << "  }\n";
     size_t index = 0;
     size_t invariant_index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
@@ -298,14 +330,22 @@ void generate_model(std::ostream &out, const Model &m) {
         index++;
       }
     }
-    out << "}\n\n";
+    out
+      << "  return true;\n"
+      << "}\n\n";
   }
 
   // Write assumption checker
   {
     out
-      << "static void check_assumptions(const struct state *s __attribute__((unused))) {\n"
-      << "  static const char *rule_name __attribute__((unused)) = NULL;\n";
+      << "static bool check_assumptions(const struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "  if (JMP_BUF_NEEDED) {\n"
+      << "    if (sigsetjmp(checkpoint, 0)) {\n"
+      << "      /* one of the properties triggered an error */\n"
+      << "      return false;\n"
+      << "    }\n"
+      << "  }\n";
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
@@ -323,8 +363,7 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ", ru_" << q.name;
           out << ")) {\n"
             << "      /* Assumption violated. */\n"
-            << "      assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
-            << "      siglongjmp(checkpoint, 1);\n"
+            << "      return false;\n"
             << "    }\n";
 
           // Close the quantifier loops.
@@ -338,14 +377,22 @@ void generate_model(std::ostream &out, const Model &m) {
         index++;
       }
     }
-    out << "}\n\n";
+    out
+      << "  return true;\n"
+      << "}\n\n";
   }
 
   // Write cover checker
   {
     out
-      << "static void check_covers(const struct state *s __attribute__((unused))) {\n"
-      << "  static const char *rule_name __attribute__((unused)) = NULL;\n";
+      << "static bool check_covers(const struct state *s __attribute__((unused))) {\n"
+      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "  if (JMP_BUF_NEEDED) {\n"
+      << "    if (sigsetjmp(checkpoint, 0)) {\n"
+      << "      /* one of the properties triggered an error */\n"
+      << "      return false;\n"
+      << "    }\n"
+      << "  }\n";
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto p = dynamic_cast<const PropertyRule*>(r.get())) {
@@ -378,14 +425,22 @@ void generate_model(std::ostream &out, const Model &m) {
         index++;
       }
     }
-    out << "}\n\n";
+    out
+      << "  return true;\n"
+      << "}\n\n";
   }
 
   // Write liveness checker
   {
     out
-      << "static void check_liveness(struct state *s __attribute__((unused))) {\n"
+      << "static bool check_liveness(struct state *s __attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+      << "  if (JMP_BUF_NEEDED) {\n"
+      << "    if (sigsetjmp(checkpoint, 0)) {\n"
+      << "      /* one of the liveness properties triggered an error */\n"
+      << "      return false;\n"
+      << "    }\n"
+      << "  }\n"
       << "  size_t liveness_index __attribute__((unused)) = 0;\n";
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
@@ -419,7 +474,9 @@ void generate_model(std::ostream &out, const Model &m) {
         index++;
       }
     }
-    out << "}\n\n";
+    out
+      << "  return true;\n"
+      << "}\n\n";
   }
 
   // Write final liveness checker, the one that runs just prior to termination
@@ -479,23 +536,29 @@ void generate_model(std::ostream &out, const Model &m) {
           << "        do {\n"
           << "          struct state *n = state_dup(s);\n"
           << "\n"
-          << "          if (JMP_BUF_NEEDED) {\n"  // FIXME: This will use a jmp_buf even if we have no assumptions, and hence a jmp_buf would not be needed here
-          << "            if (sigsetjmp(checkpoint, 0)) {\n"
-          << "              /* assumption violated. */\n"
-          << "              state_free(n);\n"
-          << "              break;\n"
-          << "            }\n"
-          << "          }\n"
-          << "          if (guard" << index << "(n";
-        for (const Quantifier &q : r->quantifiers)
-          out << ", ru_" << q.name;
-        out << ")) {\n"
-          << "            rule" << index << "(n";
+          << "          int g = guard" << index << "(n";
         for (const Quantifier &q : r->quantifiers)
           out << ", ru_" << q.name;
         out << ");\n"
+          << "          if (g == -1) {\n"
+          << "            /* guard triggered an error */\n"
+          << "            state_free(n);\n"
+          << "            break;\n"
+          << "          } else if (g == 1) {\n"
+          << "            if (!rule" << index << "(n";
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
+        out << ")) {\n"
+          << "              /* this rule triggered an error */\n"
+          << "              state_free(n);\n"
+          << "              break;\n"
+          << "            }\n"
           << "            state_canonicalise(n);\n"
-          << "            check_assumptions(n);\n"
+          << "            if (!check_assumptions(n)) {\n"
+          << "              /* assumption violated */\n"
+          << "              state_free(n);\n"
+          << "              break;\n"
+          << "            }\n"
           << "\n"
           << "            /* note that we can skip an invariant check because we already know it\n"
           << "             * passed from prior expansion of this state.\n"
@@ -664,24 +727,35 @@ void generate_model(std::ostream &out, const Model &m) {
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
           << "      s->rule_taken = rule_taken;\n"
           << "#endif\n"
-          << "      if (JMP_BUF_NEEDED) {\n"
-          << "        if (sigsetjmp(checkpoint, 0)) {\n"
-          << "          /* error() was called. */\n"
-          << "          state_free(s);\n"
-          << "          break;\n"
-          << "        }\n"
-          << "      }\n"
-          << "      startstate" << index << "(s";
+          << "      if (!startstate" << index << "(s";
         for (const Quantifier &q : r->quantifiers)
           out << ", ru_" << q.name;
-        out << ");\n"
+        out << ")) {\n"
+          << "        /* startstate triggered an error */\n"
+          << "        state_free(s);\n"
+          << "        break;\n"
+          << "      }\n"
           << "      state_canonicalise(s);\n"
-          << "      check_assumptions(s);\n"
-          << "      check_invariants(s);\n"
+          << "      if (!check_assumptions(s)) {\n"
+          << "        /* assumption violated */\n"
+          << "        state_free(s);\n"
+          << "        break;\n"
+          << "      }\n"
+          << "      if (!check_invariants(s)) {\n"
+          << "        /* invariant violated */\n"
+          << "        state_free(s);\n"
+          << "        break;\n"
+          << "      }\n"
           << "      size_t size;\n"
           << "      if (set_insert(s, &size)) {\n"
-          << "        check_covers(s);\n"
-          << "        check_liveness(s);\n"
+          << "        if (!check_covers(s)) {\n"
+          << "          /* one of the cover properties triggered an error */\n"
+          << "          break;\n"
+          << "        }\n"
+          << "        if (!check_liveness(s)) {\n"
+          << "          /* one of the liveness properties triggered an error */\n"
+          << "          break;\n"
+          << "        }\n"
           << "        (void)queue_enqueue(s, queue_id);\n"
           << "        queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
           << "      } else {\n"
@@ -748,33 +822,49 @@ void generate_model(std::ostream &out, const Model &m) {
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
           << "        n->rule_taken = rule_taken;\n"
           << "#endif\n"
-          << "        if (JMP_BUF_NEEDED) {\n"
-          << "          if (sigsetjmp(checkpoint, 0)) {\n"
-          << "            /* error() was called. */\n"
-          << "            state_free(n);\n"
-          << "            break;\n"
-          << "          }\n"
-          << "        }\n"
-          << "        if (guard" << index << "(n";
-        for (const Quantifier &q : r->quantifiers)
-          out << ", ru_" << q.name;
-        out << ")) {\n"
-          << "          rule" << index << "(n";
+          << "        int g = guard" << index << "(n";
         for (const Quantifier &q : r->quantifiers)
           out << ", ru_" << q.name;
         out << ");\n"
+          << "        if (g == -1) {\n"
+          << "          /* error() was called */\n"
+          << "          state_free(n);\n"
+          << "          break;\n"
+          << "        } else if (g == 1) {\n"
+          << "          if (!rule" << index << "(n";
+        for (const Quantifier &q : r->quantifiers)
+          out << ", ru_" << q.name;
+        out << ")) {\n"
+          << "            /* this rule triggered an error */\n"
+          << "            state_free(n);\n"
+          << "            break;\n"
+          << "          }\n"
           << "          rules_fired_local++;\n"
           << "          if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_STUTTERING || !state_eq(s, n)) {\n"
           << "            possible_deadlock = false;\n"
           << "          }\n"
           << "          state_canonicalise(n);\n"
-          << "          check_assumptions(n);\n"
-          << "          check_invariants(n);\n"
+          << "          if (!check_assumptions(n)) {\n"
+          << "            /* assumption violated */\n"
+          << "            state_free(n);\n"
+          << "            break;\n"
+          << "          }\n"
+          << "          if (!check_invariants(n)) {\n"
+          << "            /* invariant violated */\n"
+          << "            state_free(n);\n"
+          << "            break;\n"
+          << "          }\n"
           << "          size_t size;\n"
           << "          if (set_insert(n, &size)) {\n"
           << "\n"
-          << "            check_covers(n);\n"
-          << "            check_liveness(n);\n"
+          << "            if (!check_covers(n)) {\n"
+          << "              /* one of the cover properties triggered an error */\n"
+          << "              break;\n"
+          << "            }\n"
+          << "            if (!check_liveness(n)) {\n"
+          << "              /* one of the liveness properties triggered an error */\n"
+          << "              break;\n"
+          << "            }\n"
           << "\n"
           << "#if BOUND > 0\n"
           << "            if (n->bound < BOUND) {\n"
@@ -835,15 +925,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "     * have a deadlock.\n"
       << "     */\n"
       << "    if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_OFF && possible_deadlock) {\n"
-      << "      do {\n"
-      << "        if (JMP_BUF_NEEDED) {\n"
-      << "          if (sigsetjmp(checkpoint, 0)) {\n"
-      << "            /* error() longjmped back to us. */\n"
-      << "            break;\n"
-      << "          }\n"
-      << "        }\n"
-      << "        error(s, \"deadlock\");\n"
-      << "      } while (0);\n"
+      << "      deadlock(s);\n"
       << "    }\n"
       << "\n"
       << "  }\n"

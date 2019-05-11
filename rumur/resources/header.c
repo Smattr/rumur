@@ -654,6 +654,16 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   exit_with(EXIT_FAILURE);
 }
 
+static void deadlock(const struct state *s) {
+  if (JMP_BUF_NEEDED) {
+    if (sigsetjmp(checkpoint, 0)) {
+      /* error() longjmped back to us. */
+      return;
+    }
+  }
+  error(s, "deadlock");
+}
+
 static int state_cmp(const struct state *a, const struct state *b) {
   return memcmp(a->data, b->data, sizeof(a->data));
 }
