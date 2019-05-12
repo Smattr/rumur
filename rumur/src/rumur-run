@@ -9,6 +9,7 @@ an alternative to having to run the model generation, compilation and execution
 steps manually.
 '''
 
+import atexit
 import os
 import platform
 import shutil
@@ -91,6 +92,7 @@ def main(args):
 
   # Setup a temporary directory in which to generate the checker
   tmp = tempfile.mkdtemp()
+  atexit.register(shutil.rmtree, tmp)
 
   ok = True
 
@@ -132,10 +134,10 @@ def main(args):
     checker_proc.communicate()
     ok &= checker_proc.returncode == 0
 
-  # Clean up
-  shutil.rmtree(tmp)
-
   return 0 if ok else -1
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  try:
+    sys.exit(main(sys.argv))
+  except KeyboardInterrupt:
+    sys.exit(130)
