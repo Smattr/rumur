@@ -1,6 +1,47 @@
 Change log
 ==========
 
+v2019.05.11
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: Counterexample traces using "diff" mode (the default) now correctly
+  only show the value of a variable if it has changed compared to the previous
+  state. Previously variables whose values did not change were sometimes
+  repeated (commit 94ef1dec8a82d643dba459d97af3870c9e325528).
+* Bug fix: Running with counterexample traces disabled
+  (``--counterexample-trace off``) is repaired. Previously this would result in
+  generated code that did not compile (commits
+  f78335f5d72c3fa5b4565103697c678ef62379cf,
+  58b7ac310caa008d57af71039080095c801956a2).
+* Bug fix: negative literals are taken into account when determining a type to
+  represent scalars. Previously Rumur would fail to notice that something like
+  ``-1`` in your model implied that values could be negative, and it might have
+  inferred that an unsigned type like ``uint8_t`` was suitable to store this in
+  (commit 2b27e22f00354080589815416b7796d06b37fb6c).
+* Bug fix: Using ``--max-errors`` with a value greater than ``1`` produces safe
+  code. Previously this would emit a call to ``sigsetjmp`` with live
+  non-volatile local variables. The result could lead to memory corruption or
+  an inaccurate fired rules count, but neither of these were observed in the
+  wild (commit 7dda120345da13f739427915fde630d71bae9ff5).
+* Bug fix: some spurious ``-Wtype-limits`` and ``-Wtautological-compare``
+  warnings when building the generated verifier have been suppressed (commit
+  d82f251210560df694f03a6d8b6c5c2cbbe04886).
+* The concept of disabled properties has been removed. This feature was never
+  documented and had no use yet, so its removal is unlikely to affect any users
+  (commit 4e30098aee291414b5108936548218657fb47900).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Some spurious ``-Wsign-compare`` warnings when using older GCC versions have
+  been suppressed (commit 25847dca93e45a3b0616c9f2bd254eae1738f7a1).
+* The documentation available under doc/ has been extended (commits
+  5a56d259bf2b9e039ed18a4b48861b48083e730e,
+  7ab3e74ae2a63809ee657ea981cb2d9ae0da3fb4,
+  b6e8ed7c4c4818aa13d7ec24cc3f7fb40f1d9842,
+  d76467f065585a2cbc5f4f237ea20fb367140c26)
+
 v2019.04.28
 -----------
 
