@@ -665,8 +665,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 5.0 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (1/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -683,8 +684,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 5.0 (2/4)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -702,8 +704,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 5.0 (3/4)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -721,8 +724,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 5.0 (4/4)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -739,8 +743,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 6.0 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (1/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -757,8 +762,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 6.0 (2/4)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -776,8 +782,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 6.0 (3/4)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -795,8 +802,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 6.0 (4/4)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
