@@ -30,7 +30,7 @@ void generate_function(std::ostream &out, const rumur::Function &f,
     out << "struct handle";
   }
   out << " ru_" << f.name << "(const char *rule_name __attribute__((unused)), "
-    << "struct state *s __attribute__((unused))";
+    << "struct state *NONNULL s __attribute__((unused))";
 
   // If required, generate the return (out) parameter.
   if (f.return_type != nullptr && !f.return_type->is_simple())

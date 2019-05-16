@@ -48,7 +48,7 @@ void generate_model(std::ostream &out, const Model &m) {
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto s = dynamic_cast<const StartState*>(r.get())) {
-        out << "static bool startstate" << index << "(struct state *s";
+        out << "static bool startstate" << index << "(struct state *NONNULL s";
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
@@ -122,7 +122,8 @@ void generate_model(std::ostream &out, const Model &m) {
     size_t index = 0;
     for (const Ptr<Rule> &r : flat_rules) {
       if (auto i = dynamic_cast<const PropertyRule*>(r.get())) {
-        out << "static __attribute__((unused)) bool property" << index << "(const struct state *s";
+        out << "static __attribute__((unused)) bool property" << index
+          << "(const struct state *NONNULL s";
         for (const Quantifier &q : i->quantifiers)
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
@@ -167,7 +168,7 @@ void generate_model(std::ostream &out, const Model &m) {
       if (auto s = dynamic_cast<const SimpleRule*>(r.get())) {
 
         // Write the guard
-        out << "static int guard" << index << "(const struct state *s "
+        out << "static int guard" << index << "(const struct state *NONNULL s "
           "__attribute__((unused))";
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name
@@ -216,7 +217,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "}\n\n";
 
         // Write the body
-        out << "static bool rule" << index << "(struct state *s";
+        out << "static bool rule" << index << "(struct state *NONNULL s";
         for (const Quantifier &q : s->quantifiers)
           out << ", struct handle ru_" << q.name;
         out << ") {\n";
@@ -289,7 +290,8 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write invariant checker
   {
     out
-      << "static bool check_invariants(const struct state *s __attribute__((unused))) {\n"
+      << "static bool check_invariants(const struct state *NONNULL s "
+        << "__attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
       << "  if (JMP_BUF_NEEDED) {\n"
       << "    if (sigsetjmp(checkpoint, 0)) {\n"
@@ -338,7 +340,8 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write assumption checker
   {
     out
-      << "static bool check_assumptions(const struct state *s __attribute__((unused))) {\n"
+      << "static bool check_assumptions(const struct state *NONNULL s "
+        << "__attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
       << "  if (JMP_BUF_NEEDED) {\n"
       << "    if (sigsetjmp(checkpoint, 0)) {\n"
@@ -385,7 +388,8 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write cover checker
   {
     out
-      << "static bool check_covers(const struct state *s __attribute__((unused))) {\n"
+      << "static bool check_covers(const struct state *NONNULL s "
+        << "__attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
       << "  if (JMP_BUF_NEEDED) {\n"
       << "    if (sigsetjmp(checkpoint, 0)) {\n"
@@ -433,7 +437,8 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write liveness checker
   {
     out
-      << "static bool check_liveness(struct state *s __attribute__((unused))) {\n"
+      << "static bool check_liveness(struct state *NONNULL s "
+        << "__attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
       << "  if (JMP_BUF_NEEDED) {\n"
       << "    if (sigsetjmp(checkpoint, 0)) {\n"
@@ -934,8 +939,8 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   // Write a function to print the state.
-  out
-    << "static void state_print(const struct state *previous, const struct state *s) {\n";
+  out << "static void state_print(const struct state *previous, const struct "
+    << "state *NONNULL s) {\n";
   /* Output the state variable handles so we can reference them within this
    * function.
    */
@@ -955,7 +960,8 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Write a function to print state transitions.
   out
-    << "static void print_transition(const struct state *s __attribute__((unused))) {\n"
+    << "static void print_transition(const struct state *NONNULL s "
+      << "__attribute__((unused))) {\n"
     << "  ASSERT(s != NULL);\n"
     << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
     << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"

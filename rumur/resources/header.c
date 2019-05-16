@@ -47,6 +47,12 @@ enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
   #endif
 #endif
 
+#ifdef __clang__
+  #define NONNULL _Nonnull
+#else
+  #define NONNULL /* nothing; other compilers don't have _Nonnull */
+#endif
+
 /* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
  * sufficient. The two are:
@@ -303,7 +309,7 @@ static const char *reset() {
  * More information on this at https://github.com/aappleby/smhasher/           *
  ******************************************************************************/
 
-static uint64_t MurmurHash64A(const void *key, size_t len) {
+static uint64_t MurmurHash64A(const void *NONNULL key, size_t len) {
 
   static const uint64_t seed = 0;
 
@@ -389,7 +395,7 @@ static void print_unlock(void) {
   assert(r == 0);
 }
 
-static char *xml_escape(const char *s) {
+static char *xml_escape(const char *NONNULL s) {
   char *p = xmalloc(strlen(s) * strlen("&quot;") + 1);
 
   for (size_t i = 0; ; s++) {
@@ -424,7 +430,8 @@ static char *xml_escape(const char *s) {
  * checker generation with '--trace ...' and is useful for debugging Rumur
  * itself.
  */
-static __attribute__((format(printf, 1, 2))) void trace(const char *fmt, ...) {
+static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
+    ...) {
 
   va_list ap;
   va_start(ap, fmt);
@@ -569,7 +576,8 @@ static void state_free(struct state *s) {
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds print_mutex.
  */
-static void print_counterexample(const struct state *s __attribute__((unused)));
+static void print_counterexample(
+  const struct state *NONNULL s __attribute__((unused)));
 
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
  * the correct way to exit the checker is for every thread to eventually call
@@ -578,7 +586,7 @@ static void print_counterexample(const struct state *s __attribute__((unused)));
 static _Noreturn int exit_with(int status);
 
 static __attribute__((format(printf, 2, 3))) _Noreturn void error(
-  const struct state *s, const char *fmt, ...) {
+  const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
   unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
     __ATOMIC_SEQ_CST);
@@ -649,7 +657,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   exit_with(EXIT_FAILURE);
 }
 
-static void deadlock(const struct state *s) {
+static void deadlock(const struct state *NONNULL s) {
   if (JMP_BUF_NEEDED) {
     if (sigsetjmp(checkpoint, 0)) {
       /* error() longjmped back to us. */
@@ -659,15 +667,17 @@ static void deadlock(const struct state *s) {
   error(s, "deadlock");
 }
 
-static int state_cmp(const struct state *a, const struct state *b) {
+static int state_cmp(const struct state *NONNULL a,
+    const struct state *NONNULL b) {
   return memcmp(a->data, b->data, sizeof(a->data));
 }
 
-static bool state_eq(const struct state *a, const struct state *b) {
+static bool state_eq(const struct state *NONNULL a,
+    const struct state *NONNULL b) {
   return state_cmp(a, b) == 0;
 }
 
-static struct state *state_dup(const struct state *s) {
+static struct state *state_dup(const struct state *NONNULL s) {
   struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
@@ -681,12 +691,13 @@ static struct state *state_dup(const struct state *s) {
   return n;
 }
 
-static size_t state_hash(const struct state *s) {
+static size_t state_hash(const struct state *NONNULL s) {
   return (size_t)MurmurHash64A(s->data, sizeof(s->data));
 }
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
-static __attribute__((unused)) size_t state_depth(const struct state *s) {
+static __attribute__((unused)) size_t state_depth(
+    const struct state *NONNULL s) {
 #if BOUND > 0
   return (size_t)s->bound + 1;
 #else
@@ -706,10 +717,10 @@ static __attribute__((unused)) struct state *state_drop_const(const struct state
 }
 
 /* These functions are generated. */
-static void state_canonicalise_heuristic(struct state *s);
-static void state_canonicalise_exhaustive(struct state *s);
+static void state_canonicalise_heuristic(struct state *NONNULL s);
+static void state_canonicalise_exhaustive(struct state *NONNULL s);
 
-static void state_canonicalise(struct state *s) {
+static void state_canonicalise(struct state *NONNULL s) {
 
   assert(s != NULL && "attempt to canonicalise NULL state");
 
@@ -736,14 +747,16 @@ static __attribute__((unused)) void state_print_field_offsets(void);
  * that the caller already holds print_mutex.
  */
 static __attribute__((unused)) void state_print(const struct state *previous,
-  const struct state *s);
+  const struct state *NONNULL s);
 
 /* Print the first rule that resulted in s. This function is generated. This
  * function assumes that the caller holds print_mutex.
  */
-static __attribute__((unused)) void print_transition(const struct state *s);
+static __attribute__((unused)) void print_transition(
+    const struct state *NONNULL s);
 
-static void print_counterexample(const struct state *s __attribute__((unused))) {
+static void print_counterexample(
+    const struct state *NONNULL s __attribute__((unused))) {
 
   assert(s != NULL && "missing state in request for counterexample trace");
 
@@ -813,7 +826,8 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
-static __attribute__((unused)) struct handle state_handle(const struct state *s, size_t offset, size_t width) {
+static __attribute__((unused)) struct handle state_handle(
+    const struct state *NONNULL s, size_t offset, size_t width) {
 
   assert(sizeof(s->data) * CHAR_BIT - width >= offset && "generating an out of "
     "bounds handle in state_handle()");
@@ -981,9 +995,9 @@ static value_t decode_value(value_t lb, value_t ub, raw_value_t v) {
   return dest;
 }
 
-static __attribute__((unused)) value_t handle_read(const char *context,
-    const char *rule_name, const char *name, const struct state *s, value_t lb,
-    value_t ub, struct handle h) {
+static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL name,
+    const struct state *NONNULL s, value_t lb, value_t ub, struct handle h) {
 
   assert(context != NULL);
   assert(name != NULL);
@@ -1152,9 +1166,10 @@ static void handle_write_raw(struct handle h, raw_value_t value) {
   }
 }
 
-static __attribute__((unused)) void handle_write(const char *context,
-    const char *rule_name, const char *name, const struct state *s, value_t lb,
-    value_t ub, struct handle h, value_t value) {
+static __attribute__((unused)) void handle_write(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL name,
+    const struct state *NONNULL s, value_t lb, value_t ub, struct handle h,
+    value_t value) {
 
   assert(context != NULL);
   assert(name != NULL);
@@ -1273,8 +1288,9 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   };
 }
 
-static __attribute__((unused)) struct handle handle_index(const char *context,
-    const char *rule_name, const char *expr, const struct state *s,
+static __attribute__((unused)) struct handle handle_index(
+    const char *NONNULL context, const char *rule_name,
+    const char *NONNULL expr, const struct state *NONNULL s,
     size_t element_width, value_t index_min, value_t index_max,
     struct handle root, value_t index) {
 
@@ -1310,9 +1326,9 @@ static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
 
 /* Overflow-safe helpers for doing bounded arithmetic. */
 
-static __attribute__((unused)) value_t add(const char *context,
-    const char *rule_name, const char *expr, const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t add(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1326,9 +1342,9 @@ static __attribute__((unused)) value_t add(const char *context,
   return r;
 }
 
-static __attribute__((unused)) value_t sub(const char *context,
-    const char *rule_name, const char *expr, const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t sub(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1342,9 +1358,9 @@ static __attribute__((unused)) value_t sub(const char *context,
   return r;
 }
 
-static __attribute__((unused)) value_t mul(const char *context,
-    const char *rule_name, const char *expr, const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t mul(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1358,9 +1374,9 @@ static __attribute__((unused)) value_t mul(const char *context,
   return r;
 }
 
-static __attribute__((unused)) value_t divide(const char *context,
-    const char *rule_name, const char *expr, const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t divide(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1379,9 +1395,9 @@ static __attribute__((unused)) value_t divide(const char *context,
   return a / b;
 }
 
-static __attribute__((unused)) value_t mod(const char *context,
-    const char *rule_name, const char *expr, const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t mod(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1401,8 +1417,9 @@ static __attribute__((unused)) value_t mod(const char *context,
   return a % b;
 }
 
-static __attribute__((unused)) value_t negate(const char *context,
-    const char *rule_name, const char *expr, const struct state *s, value_t a) {
+static __attribute__((unused)) value_t negate(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1420,8 +1437,9 @@ static __attribute__((unused)) value_t negate(const char *context,
  * serve as a proxy for the collection being sorted.
  */
 static __attribute__((unused)) void sort(
-  int (*compare)(const struct state *s, size_t a, size_t b),
-  size_t *schedule, struct state *s, size_t lower, size_t upper) {
+  int (*NONNULL compare)(const struct state *s, size_t a, size_t b),
+  size_t *NONNULL schedule, struct state *NONNULL s, size_t lower,
+  size_t upper) {
 
   /* If we have nothing to sort, bail out. */
   if (lower >= upper) {
@@ -1813,7 +1831,7 @@ static struct {
   size_t count;
 } q[THREADS];
 
-static size_t queue_enqueue(struct state *s, size_t queue_id) {
+static size_t queue_enqueue(struct state *NONNULL s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
 
   /* Look up the tail of the queue. */
@@ -1963,7 +1981,7 @@ retry:;
   return count;
 }
 
-static const struct state *queue_dequeue(size_t *queue_id) {
+static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
   assert(queue_id != NULL && *queue_id < sizeof(q) / sizeof(q[0]) &&
     "out of bounds queue access");
 
@@ -2118,7 +2136,7 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 
-static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
+static void refcounted_ptr_set(refcounted_ptr_t *NONNULL p, void *ptr) {
 
 #ifndef NDEBUG
   /* Read the current state of the pointer. */
@@ -2140,7 +2158,7 @@ static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
   atomic_write(p, new);
 }
 
-static void *refcounted_ptr_get(refcounted_ptr_t *p) {
+static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
 
   refcounted_ptr_t old, new;
   void *ret;
@@ -2165,7 +2183,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
   return ret;
 }
 
-static size_t refcounted_ptr_put(refcounted_ptr_t *p,
+static size_t refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
   void *ptr __attribute__((unused))) {
 
   refcounted_ptr_t old, new;
@@ -2195,7 +2213,7 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
   return ret;
 }
 
-static void *refcounted_ptr_peek(refcounted_ptr_t *p) {
+static void *refcounted_ptr_peek(refcounted_ptr_t *NONNULL p) {
 
   /* Read out the state of the pointer. This rather unpleasant expression is
    * designed to emit an atomic load at a smaller granularity than the entire
@@ -2209,7 +2227,8 @@ static void *refcounted_ptr_peek(refcounted_ptr_t *p) {
   return ptr;
 }
 
-static void refcounted_ptr_shift(refcounted_ptr_t *current, refcounted_ptr_t *next) {
+static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
+    refcounted_ptr_t *NONNULL next) {
 
   /* None of the operations in this function are performed atomically because we
    * assume the caller has synchronised with other threads via other means.
@@ -2400,11 +2419,11 @@ struct set {
 
 /* Some utility functions for dealing with exponents. */
 
-static size_t set_size(const struct set *set) {
+static size_t set_size(const struct set *NONNULL set) {
   return ((size_t)1) << set->size_exponent;
 }
 
-static size_t set_index(const struct set *set, size_t index) {
+static size_t set_index(const struct set *NONNULL set, size_t index) {
   return index & (set_size(set) - 1);
 }
 
@@ -2627,7 +2646,7 @@ static void set_expand(void) {
   set_migrate();
 }
 
-static bool set_insert(struct state *s, size_t *count) {
+static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
@@ -2690,7 +2709,7 @@ restart:;
  * already contained in the state set might know some of the liveness properties
  * are satisfied that your current state considers unknown.
  */
-static const struct state *set_find(const struct state *s) {
+static const struct state *set_find(const struct state *NONNULL s) {
 
   assert(s != NULL);
 
@@ -2739,8 +2758,8 @@ static unsigned long long gettime() {
 /* Set one of the liveness bits (i.e. mark the matching property as 'hit') in a
  * state and all its predecessors.
  */
-static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
-    bool shared) {
+static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
+    size_t index, bool shared) {
 
   assert(s != NULL);
 #ifdef __clang__
@@ -2805,7 +2824,7 @@ static __attribute__((unused)) void mark_liveness(struct state *s, size_t index,
 }
 
 /* Whether we know all liveness properties are satisfied for a given state. */
-static bool known_liveness(const struct state *s) {
+static bool known_liveness(const struct state *NONNULL s) {
 
   assert(s != NULL);
 
@@ -2859,8 +2878,8 @@ static bool known_liveness(const struct state *s) {
  * @param successor Successor to s
  * @return Number of new liveness information facts learnt
  */
-static unsigned long learn_liveness(struct state *s,
-    const struct state *successor) {
+static unsigned long learn_liveness(struct state *NONNULL s,
+    const struct state *NONNULL successor) {
 
   assert(s != NULL);
   assert(successor != NULL);
