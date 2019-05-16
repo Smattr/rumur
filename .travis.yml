@@ -647,7 +647,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 4.0 (3/4)
+  - name: Linux, Clang 4.0 (4/4)
     os: linux
     addons:
       apt:
