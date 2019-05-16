@@ -591,8 +591,9 @@ matrix:
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
-  - name: Linux, Clang 4.0 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 4.0 (1/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -609,8 +610,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 4.0 (2/4)
+  - name: Ubuntu Linux 14.04, Clang 4.0 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -628,8 +630,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 4.0 (3/4)
+  - name: Ubuntu Linux 14.04, Clang 4.0 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -647,13 +650,92 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 4.0 (4/4)
+  - name: Ubuntu Linux 14.04, Clang 4.0 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
           - llvm-toolchain-trusty-4.0
+        packages:
+          - clang-4.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, Clang 4.0 (1/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-xenial-4.0
+        packages:
+          - clang-4.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, Clang 4.0 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-xenial-4.0
+        packages:
+          - clang-4.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, Clang 4.0 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-xenial-4.0
+        packages:
+          - clang-4.0
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, Clang 4.0 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-xenial-4.0
         packages:
           - clang-4.0
           - g++-6
