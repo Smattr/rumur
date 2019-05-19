@@ -3,8 +3,9 @@ language: cpp
 matrix:
   include:
 
-  - name: Linux, GCC 4.7 (1/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (1/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -20,8 +21,9 @@ matrix:
       # traces.
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.7 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -36,8 +38,9 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.7 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -52,8 +55,9 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.7 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -67,8 +71,77 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.8 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 4.7 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
+      # Fail on a compilation warning, emit debug symbols, support full back
+      # traces.
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 16.04, GCC 4.7 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 16.04, GCC 4.7 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 16.04, GCC 4.7 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 14.04, GCC 4.8 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -82,8 +155,9 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.8 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 4.8 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -98,8 +172,9 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.8 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 4.8 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -114,8 +189,9 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.8 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 4.8 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -129,8 +205,75 @@ matrix:
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Linux, GCC 4.9 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 4.8 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 16.04, GCC 4.8 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 16.04, GCC 4.8 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 16.04, GCC 4.8 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 14.04, GCC 4.9 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -148,8 +291,9 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 4.9 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 4.9 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -165,8 +309,9 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 4.9 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 4.9 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -182,8 +327,9 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 4.9 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 4.9 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -198,8 +344,82 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 5 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 4.9 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.9
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      # In addition to earlier options, enable UBSan, and abort execution on a
+      # UBSan error. Note that enabling UBSan on GCC seems to require the GOLD
+      # linker.
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 4.9 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.9
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 4.9 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.9
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 4.9 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-4.9
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, GCC 5 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -214,8 +434,9 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 5 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 5 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -231,8 +452,9 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 5 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 5 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -248,8 +470,9 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 5 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 5 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -264,8 +487,79 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 6 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 5 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-5
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 5 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-5
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 5 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-5
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 5 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-5
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, GCC 6 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -280,8 +574,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 6 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 6 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -297,8 +592,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 6 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 6 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -314,8 +610,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 6 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 6 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -330,8 +627,79 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 7 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 6 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 6 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 6 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 6 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-6
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, GCC 7 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -346,8 +714,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 7 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 7 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -363,8 +732,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 7 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 7 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -380,8 +750,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 7 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 7 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -396,8 +767,79 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 8 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 7 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 7 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 7 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 7 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-7
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, GCC 8 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -412,8 +854,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 8 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 8 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -429,8 +872,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 8 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 8 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -446,8 +890,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, GCC 8 (4/4)
+  - name: Ubuntu Linux 14.04, GCC 8 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -462,8 +907,79 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 3.8 (1/4)
+  - name: Ubuntu Linux 16.04, GCC 8 (1/4)
     os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 8 (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 8 (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC 8 (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-8
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, Clang 3.8 (1/4)
+    os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -480,8 +996,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 3.8 (2/4)
+  - name: Ubuntu Linux 14.04, Clang 3.8 (2/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -499,8 +1016,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 3.8 (3/4)
+  - name: Ubuntu Linux 14.04, Clang 3.8 (3/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -518,8 +1036,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 3.8 (4/4)
+  - name: Ubuntu Linux 14.04, Clang 3.8 (4/4)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -536,8 +1055,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Linux, Clang 3.9 (1/3)
+  - name: Ubuntu Linux 14.04, Clang 3.9 (1/3)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -556,8 +1076,9 @@ matrix:
       # https://github.com/travis-ci/travis-ci/issues/8026.
       - CXXFLAGS="-pedantic -Werror"
 
-  - name: Linux, Clang 3.9 (2/3)
+  - name: Ubuntu Linux 14.04, Clang 3.9 (2/3)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
@@ -574,8 +1095,9 @@ matrix:
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
-  - name: Linux, Clang 3.9 (3/3)
+  - name: Ubuntu Linux 14.04, Clang 3.9 (3/3)
     os: linux
+    dist: trusty
     addons:
       apt:
         sources:
