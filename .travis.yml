@@ -1532,9 +1532,10 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_INSTALL_PREFIX=install ..
-  - cmake --build .
-  - travis_wait 60 ../tests/integration-tests.py --verbose
-  - cmake --build . -- install
+  - if [ ! -z "${CUSTOM_COMMAND}" ]; then eval "${CUSTOM_COMMAND}"; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then mkdir build; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cd build; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cmake -DCMAKE_INSTALL_PREFIX=install ..; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cmake --build .; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then travis_wait 60 ../tests/integration-tests.py --verbose; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cmake --build . -- install; fi
