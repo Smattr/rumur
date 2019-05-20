@@ -51,7 +51,7 @@ struct Options {
   /* Limit (percentage occupancy) at which we expand the capacity of the state
    * set.
    */
-  unsigned long set_expand_threshold = 65;
+  unsigned long set_expand_threshold = 75;
 
   // Whether to use ANSI colour codes in the checker's output.
   tristate color = AUTO;
