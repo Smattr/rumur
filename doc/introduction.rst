@@ -1,6 +1,9 @@
 An Introduction to Rumur
 ========================
-Rumur is a tool for formal verification.
+Rumur is a tool for formal verification of complex systems. It falls into a
+family known as "model checkers." This document gives a brief introduction to
+formal verification and model checking, aimed at helping Rumur users understand
+at a high level how the tool works.
 
 Formal Verification
 -------------------
