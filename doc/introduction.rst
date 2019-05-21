@@ -1,20 +1,20 @@
 An Introduction to Rumur
 ========================
 Rumur is a tool for formal verification of complex systems. It falls into a
-family known as "model checkers." This document gives a brief introduction to
+family known as “model checkers.” This document gives a brief introduction to
 formal verification and model checking, aimed at helping Rumur users understand
 at a high level how the tool works.
 
 Formal Verification
 -------------------
 When building a complex system, you would like to know that it is correct.
-"Correct" is subjective and something specific to a particular system, but a
+“Correct” is subjective and something specific to a particular system, but a
 person building a system generally knows what they expect that system to do (and
 what they expect it *not* to do).
 
 The traditional way of gaining confidence in a piece of software is to write
-tests. But as Dijkstra famously said, "testing can be used to show the presence
-of bugs, but never to show their absence." Formal verification approaches this
+tests. But as Dijkstra famously said, “testing can be used to show the presence
+of bugs, but never to show their absence.” Formal verification approaches this
 problem from the other direction. Instead of writing tests to give your system
 specific inputs and relying on the cleverness of the test author to exercise all
 the system's edge cases, formal verification covers *all possible inputs*.
@@ -22,7 +22,7 @@ the system's edge cases, formal verification covers *all possible inputs*.
 When first encountering this family of techniques they may seem like magic, and
 some of the more advanced formal verification approaches are indeed complex to
 understand. However, Rumur is a particular type of formal verification tool
-called a "model checker" whose operation is actually quite simple, as we shall
+called a “model checker” whose operation is actually quite simple, as we shall
 see.
 
 Model Checking
