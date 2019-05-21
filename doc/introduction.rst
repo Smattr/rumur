@@ -17,7 +17,7 @@ tests. But as Dijkstra famously said, “testing can be used to show the presenc
 of bugs, but never to show their absence.” Formal verification approaches this
 problem from the other direction. Instead of writing tests to give your system
 specific inputs and relying on the cleverness of the test author to exercise all
-the system's edge cases, formal verification covers *all possible inputs*.
+the system’s edge cases, formal verification covers *all possible inputs*.
 
 When first encountering this family of techniques they may seem like magic, and
 some of the more advanced formal verification approaches are indeed complex to
