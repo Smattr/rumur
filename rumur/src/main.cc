@@ -12,6 +12,7 @@
 #include <memory>
 #include "options.h"
 #include <rumur/rumur.h>
+#include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -394,11 +395,25 @@ static void print_location(const std::string &file,
     lineno++;
   }
 
-  std::cerr << line << "\n";
+  // print the line, and construct an underline indicating the column location
+  std::ostringstream buf;
+  unsigned long col = 1;
+  for (const char &c : line) {
+    if (col == location.begin.column) {
+      buf << green() << bold() << "^" << reset();
+    } else if (col < location.begin.column) {
+      if (c == '\t') {
+        buf << '\t';
+      } else {
+        buf << ' ';
+      }
+    }
+    std::cerr << c;
+    col++;
+  }
+  std::cerr << "\n";
 
-  for (unsigned long c = 1; c < location.begin.column; c++)
-    std::cerr << ' ';
-  std::cerr << green() << bold() << "^" << reset() << "\n";
+  std::cerr << buf.str() << "\n";
 }
 
 int main(int argc, char **argv) {
