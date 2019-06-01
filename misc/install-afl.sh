@@ -2,6 +2,11 @@
 
 # Download and install AFL. For use in CI.
 
+if [ -z "${CI}" ]; then
+  printf 'CI variable not set. Set it and re-run if you really meant this to execute.\n' >&2
+  exit 1
+fi
+
 # exit on error
 set -e
 
