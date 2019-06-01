@@ -1,6 +1,30 @@
 Change log
 ==========
 
+v2019.06.01
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: the output message for a syntax error on a line containing a tab
+  character previously indicated the wrong column offset with the underlining
+  caret. This has now been corrected (commit
+  323fda58984e1768b659298afddc5c022160c428).
+* ``rumur-run`` now exits cleanly and cleans up temporary directories when you
+  terminate it with Ctrl-C (commit 9acb49fd46d8eeddd59104d48621aa1a3c71cd34).
+* The default load factor of the seen state set has been changed from 65% to
+  75%. On most models, this decreases the runtime of the verifier. As before, it
+  is still possible to change this value with the ``--set-expand-threshold``
+  command line option (commit 8ac5bf762d744fc68d8e64918fc7af120b4fc3c7).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The documentation available under doc/ has been extended (commits
+  63e0db1b8d67529e3f042e1b1ed7ffd65ca78cab,
+  49e8c6a857ba8f9b46d3cf36bb702268d7e822da,
+  f39447766ba43ccf2f218370d6a644024a3e1215,
+  ba0521cfcd2b30d19a125b319ade63775505c73f).
+
 v2019.05.11
 -----------
 
