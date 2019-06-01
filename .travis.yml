@@ -2044,9 +2044,15 @@ matrix:
       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
-  - name: Ubuntu Linux 16.04, GCC, AFL
+  - name: Ubuntu Linux 16.04, GCC 8, AFL
     os: linux
     dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-8
     env:
       # install AFL and let it catch crashes via core dumps
       - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh"
@@ -2057,6 +2063,7 @@ matrix:
       # suppress normal animated UI and use periodic text output
       - AFL_NO_UI=1
 
+      - AFL_HARNESS_CC=gcc-8
       - CUSTOM_COMMAND="python tests/afl-wrapper.py 1800"
 
 # This file initially contained entries to test GCC on macOS as well, but I
