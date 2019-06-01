@@ -602,12 +602,30 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
       printf("<error includes_trace=\"%s\">\n",
         (s == NULL || COUNTEREXAMPLE_TRACE == CEX_OFF) ? "false" : "true");
 
-      char *escaped_fmt = xml_escape(fmt);
       printf("<message>");
-      vprintf(escaped_fmt, ap);
-      printf("</message>\n");
+      {
+        va_list ap2;
+        va_copy(ap2, ap);
 
-      free(escaped_fmt);
+        int size = vsnprintf(NULL, 0, fmt, ap2);
+        va_end(ap2);
+        if (size < 0) {
+          fputs("vsnprintf failed", stderr);
+          exit(EXIT_FAILURE);
+        }
+
+        char *buffer = xmalloc(size);
+        if (vsnprintf(buffer, size, fmt, ap) != size) {
+          fputs("vsnprintf failed", stderr);
+          exit(EXIT_FAILURE);
+        }
+
+        char *escaped_fmt = xml_escape(buffer);
+        printf("%s", escaped_fmt);
+        free(escaped_fmt);
+        free(buffer);
+      }
+      printf("</message>\n");
 
       if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
         print_counterexample(s);
