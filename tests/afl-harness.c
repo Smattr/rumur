@@ -136,7 +136,9 @@ int main(int argc, char **argv) {
     return r;
 
   // find the C compiler
-  const char *cc = getenv("CC");
+  const char *cc = getenv("AFL_HARNESS_CC");
+  if (cc == NULL)
+    cc = getenv("CC");
   if (cc == NULL)
     cc = "cc";
 
