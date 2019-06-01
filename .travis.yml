@@ -2044,6 +2044,21 @@ matrix:
       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
+  - name: Ubuntu Linux 16.04, GCC, AFL
+    os: linux
+    dist: xenial
+    env:
+      # install AFL and let it catch crashes via core dumps
+      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh"
+
+      # quit if we succeed exhaustively fuzzing (unlikely)
+      - AFL_EXIT_WHEN_DONE=1
+
+      # suppress normal animated UI and use periodic text output
+      - AFL_NO_UI=1
+
+      - CUSTOM_COMMAND="python tests/afl-wrapper.py 1800"
+
 # This file initially contained entries to test GCC on macOS as well, but I
 # could not figure out how to get these working. One show stopper seems to be
 # that the available libgmps on macOS all seem to have been built with Clang in
@@ -2054,9 +2069,10 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
-  - mkdir build
-  - cd build
-  - cmake -DCMAKE_INSTALL_PREFIX=install ..
-  - cmake --build .
-  - travis_wait 60 ../tests/integration-tests.py --verbose
-  - cmake --build . -- install
+  - if [ ! -z "${CUSTOM_COMMAND}" ]; then eval "${CUSTOM_COMMAND}"; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then mkdir build; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cd build; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cmake -DCMAKE_INSTALL_PREFIX=install ..; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cmake --build .; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then travis_wait 60 ../tests/integration-tests.py --verbose; fi
+  - if [ -z "${CUSTOM_COMMAND}" ]; then cmake --build . -- install; fi
