@@ -42,22 +42,6 @@ def main(argv):
   tmp = tempfile.mkdtemp()
   sys.stdout.write('Working in {}...\n'.format(tmp))
 
-  if CMAKE is None:
-    sys.stderr.write('cmake not found\n')
-    return -1
-
-  if AFL_CC is None:
-    sys.stderr.write('afl-cc not found\n')
-    return -1
-
-  if AFL_CXX is None:
-    sys.stderr.write('afl-c++ not found\n')
-    return -1
-
-  if AFL_FUZZ is None:
-    sys.stderr.write('afl-fuzz not found\n')
-    return -1
-
   sys.stdout.write(' Configuring...\n')
   env = os.environ.copy()
   env['CXX'] = AFL_CXX
@@ -66,10 +50,6 @@ def main(argv):
   p.communicate()
   if p.returncode != 0:
     return p.returncode
-
-  if MAKE is None:
-    sys.stderr.write('make not found\n')
-    return -1
 
   sys.stdout.write(' Building...\n')
   p = subprocess.Popen([MAKE, 'rumur'], cwd=tmp)
