@@ -42,21 +42,6 @@ def main(argv):
   tmp = tempfile.mkdtemp()
   sys.stdout.write('Working in {}...\n'.format(tmp))
 
-  sys.stdout.write(' Configuring...\n')
-  env = os.environ.copy()
-  env['CXX'] = AFL_CXX
-  p = subprocess.Popen([CMAKE, '-G', 'Unix Makefiles', RUMUR_ROOT], cwd=tmp,
-    env=env)
-  p.communicate()
-  if p.returncode != 0:
-    return p.returncode
-
-  sys.stdout.write(' Building...\n')
-  p = subprocess.Popen([MAKE, 'rumur'], cwd=tmp)
-  p.communicate()
-  if p.returncode != 0:
-    return p.returncode
-
   sys.stdout.write('Building AFL harness...\n')
   src = os.path.join(os.path.dirname(__file__), 'afl-harness.c')
   aout = os.path.join(tmp, 'afl-harness')
@@ -82,7 +67,7 @@ def main(argv):
     shutil.copyfile(src, dst)
 
   env = os.environ.copy()
-  env['PATH'] = '{}:{}'.format(env['PATH'], os.path.join(tmp, 'rumur'))
+  env['PATH'] = '{}:{}'.format(env['PATH'], os.path.abspath('rumur'))
 
   # note we need to up AFL's default memory limit (50MB) to support running CC
   sys.stdout.write(' Running AFL...\n')
