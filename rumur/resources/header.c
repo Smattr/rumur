@@ -395,35 +395,17 @@ static void print_unlock(void) {
   assert(r == 0);
 }
 
-static char *xml_escape(const char *NONNULL s) {
-  char *p = xmalloc(strlen(s) * strlen("&quot;") + 1);
-
-  for (size_t i = 0; ; s++) {
-    if (*s == '"') {
-      strcpy(&p[i], "&quot;");
-      i += strlen("&quot;");
-    } else if (*s == '\'') {
-      strcpy(&p[i], "&apos;");
-      i += strlen("&apos;");
-    } else if (*s == '<') {
-      strcpy(&p[i], "&lt;");
-      i += strlen("&lt;");
-    } else if (*s == '>') {
-      strcpy(&p[i], "&gt;");
-      i += strlen("&gt;");
-    } else if (*s == '&') {
-      strcpy(&p[i], "&amp;");
-      i += strlen("&amp;");
-    } else if (*s == '\0') {
-      p[i] = '\0';
-      break;
-    } else {
-      p[i] = *s;
-      i++;
+static void xml_printf(const char *NONNULL s) {
+  while (*s != '\0') {
+    switch (*s) {
+      case '"': printf("&quot;"); break;
+      case '<': printf("&lt;");   break;
+      case '>': printf("&gt;");   break;
+      case '&': printf("&amp;");  break;
+      default:  printf("%c", *s); break;
     }
+    s++;
   }
-
-  return p;
 }
 
 /* Supporting for tracing specific operations. This can be enabled during
@@ -620,9 +602,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
           exit(EXIT_FAILURE);
         }
 
-        char *escaped_fmt = xml_escape(buffer);
-        printf("%s", escaped_fmt);
-        free(escaped_fmt);
+        xml_printf(buffer);
         free(buffer);
       }
       printf("</message>\n");
@@ -3011,10 +2991,9 @@ static int exit_with(int status) {
   #pragma GCC diagnostic pop
 #endif
         if (MACHINE_READABLE_OUTPUT) {
-          char *msg = xml_escape(COVER_MESSAGES[i]);
-          printf("<cover_result message=\"%s\" count=\"%" PRIuMAX "\"/>\n", msg,
-            covers[i]);
-          free(msg);
+          printf("<cover_result message=\"");
+          xml_printf(COVER_MESSAGES[i]);
+          printf("\" count=\"%" PRIuMAX "\"/>\n", covers[i]);
         }
         if (covers[i] == 0) {
           if (!MACHINE_READABLE_OUTPUT) {

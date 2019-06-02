@@ -642,10 +642,10 @@ void generate_model(std::ostream &out, const Model &m) {
             << "        /* missed */\n"
             << "        missed[index] = true;\n"
             << "        if (MACHINE_READABLE_OUTPUT) {\n"
-            << "          char *msg = xml_escape(\""
+            << "          printf(\"<error><message>liveness property \");\n"
+            << "          xml_printf(\""
               << (p->name == "" ? std::to_string(index + 1) : "\\\"" + escape(p->name) + "\\\"") << "\");\n"
-            << "          printf(\"<error><message>liveness property %s violated</message>\", msg);\n"
-            << "          free(msg);\n"
+            << "          printf(\" violated</message>\");\n"
             << "        } else {\n"
             << "          printf(\"\\t%s%sliveness property %s violated:%s\\n\", red(), bold(), \""
               << (p->name == "" ? std::to_string(index + 1) : "\\\"" + escape(p->name) + "\\\"") << "\", reset());\n"
@@ -993,10 +993,8 @@ void generate_model(std::ostream &out, const Model &m) {
           << "  if (s->rule_taken == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
-          << "      char *escaped_name = xml_escape(\"Startstate "
+          << "      xml_printf(\"Startstate "
             << rule_name_string(*r, index) << "\");\n"
-          << "      printf(\"%s\", escaped_name);\n"
-          << "      free(escaped_name);\n"
           << "    } else {\n"
           << "      printf(\"Startstate %s\", \"" << rule_name_string(*r, index)
             << "\");\n"
@@ -1018,11 +1016,9 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
 
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        char *escaped_name = xml_escape(\"" << q.name
-                << "\");\n"
-              << "        printf(\"<parameter name=\\\"%s\\\">\", "
-                << "escaped_name);\n"
-              << "        free(escaped_name);\n"
+              << "        printf(\"<parameter name=\\\"\");\n"
+              << "        xml_printf(\"" << q.name << "\");\n"
+              << "        printf(\"\\\">\");\n"
               << "      } else {\n"
               << "        printf(\", %s: \", \"" << q.name << "\");\n"
               << "      }\n";
@@ -1036,10 +1032,7 @@ void generate_model(std::ostream &out, const Model &m) {
                   out << "else ";
                 out << "if (v == VALUE_C(" << member_index << ")) {\n"
                   << "        if (MACHINE_READABLE_OUTPUT) {\n"
-                  << "          char *escaped_name = xml_escape(\""
-                    << member.first << "\");\n"
-                  << "          printf(\"%s\", escaped_name);\n"
-                  << "          free(escaped_name);\n"
+                  << "          xml_printf(\"" << member.first << "\");\n"
                   << "        } else {\n"
                   << "          printf(\"%s\", \"" << member.first << "\");\n"
                   << "        }\n"
@@ -1110,10 +1103,8 @@ void generate_model(std::ostream &out, const Model &m) {
           << "  if (s->rule_taken == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
-          << "      char *escaped_name = xml_escape(\"Rule "
-            << rule_name_string(*r, index) << "\");\n"
-          << "      printf(\"%s\", escaped_name);\n"
-          << "      free(escaped_name);\n"
+          << "      xml_printf(\"Rule " << rule_name_string(*r, index)
+            << "\");\n"
           << "    } else {\n"
           << "      printf(\"Rule %s\", \"" << rule_name_string(*r, index)
             << "\");\n"
@@ -1134,11 +1125,9 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
 
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        char *escaped_name = xml_escape(\"" << q.name
-                << "\");\n"
-              << "        printf(\"<parameter name=\\\"%s\\\">\", "
-                << "escaped_name);\n"
-              << "        free(escaped_name);\n"
+              << "        printf(\"<parameter name=\\\"\");\n"
+              << "        xml_printf(\"" << q.name << "\");\n"
+              << "        printf(\"\\\">\");\n"
               << "      } else {\n"
               << "        printf(\", %s: \", \"" << q.name << "\");\n"
               << "      }\n";
@@ -1152,10 +1141,7 @@ void generate_model(std::ostream &out, const Model &m) {
                   out << "else ";
                 out << "if (v == VALUE_C(" << member_index << ")) {\n"
                   << "        if (MACHINE_READABLE_OUTPUT) {\n"
-                  << "          char *escaped_name = xml_escape(\""
-                    << member.first << "\");\n"
-                  << "          printf(\"%s\", escaped_name);\n"
-                  << "          free(escaped_name);\n"
+                  << "          xml_printf(\"" << member.first << "\");\n"
                   << "        } else {\n"
                   << "          printf(\"%s\", \"" << member.first << "\");\n"
                   << "        }\n"
