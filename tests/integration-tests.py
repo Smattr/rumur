@@ -51,7 +51,7 @@ X86_64 = platform.machine() in ('amd64', 'x86_64')
 def run(args):
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout, stderr = p.communicate()
-  return p.returncode, stdout, stderr
+  return p.returncode, stdout.decode('utf-8', 'replace'), stderr.decode('utf-8', 'replace')
 
 class TemporaryDirectory(object):
 
@@ -166,11 +166,10 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
 
     # If the test has a stdout expectation, check that now.
     if option['checker_output'] is not None:
-      output = stdout.decode('utf-8', 'replace')
-      if option['checker_output'].search(output) is None:
+      if option['checker_output'].search(stdout) is None:
         sys.stdout.write(stdout)
         sys.stderr.write(stderr)
-      self.assertIsNotNone(option['checker_output'].search(output))
+      self.assertIsNotNone(option['checker_output'].search(stdout))
 
     if xml:
       # See if we have xmllint
@@ -181,7 +180,7 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
       # Validate the XML
       output_xml = os.path.join(tmp, 'output.xml')
       with open(output_xml, 'wt') as f:
-        f.write(stdout.decode('utf-8', 'replace'))
+        f.write(stdout)
         f.flush()
       ret, stdout, stderr = run(['xmllint', '--noout', output_xml])
       if ret != 0:
@@ -262,7 +261,7 @@ def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
 
     # parse the XML output if we're expecting a particular result
     if rules_fired is not None or states is not None:
-      xml = ET.fromstring(stdout.decode('utf-8', 'replace'))
+      xml = ET.fromstring(stdout)
 
       # check we got the expected number of rules fired
       if rules_fired is not None:
