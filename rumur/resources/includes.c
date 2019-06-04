@@ -1,4 +1,9 @@
-#define _POSIX_C_SOURCE 200809L
+/* Setting a POSIX version on FreeBSD causes other functions to become hidden.
+ */
+#ifndef __FreeBSD__
+  #define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
