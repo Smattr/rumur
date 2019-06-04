@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import io
 import json
 import multiprocessing
 import os
@@ -73,7 +74,7 @@ def parse_test_options(model, xml):
 
   # Check for special lines at the start of the current model overriding the
   # defaults.
-  with open(model, 'rt') as f:
+  with io.open(model, 'rt', encoding='utf-8') as f:
     for line in f:
       m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
       if m is None:
