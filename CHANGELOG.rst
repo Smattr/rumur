@@ -1,6 +1,26 @@
 Change log
 ==========
 
+v2019.06.05
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: when generating XML output from the verifier
+  (``--output-format machine-readable``) some text within error messages was not
+  correctly escaped, leading to invalid XML. This has now been corrected
+  (commit ca97a1eb90ac667f3e5f32b41ccbb59940804516).
+* Bug fix: FreeBSD compatibility which had been accidentally broken was
+  restored. Thanks to Yuri Victorovich for reporting this (commit
+  43054e83417e028c48b18739f6ac7916cfcbac47).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: the test suite should now run successfully in a non-UTF-8 locale. As
+  for the above entry, thanks to Yuri Victorovich for reporting this (commits
+  a88c8d2faf2b003e2b65af26cc42b2bcdd82e819,
+  a9e327cd43f94ea22129244f514261ea3880eedb).
+
 v2019.06.01
 -----------
 
