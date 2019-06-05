@@ -26,12 +26,6 @@ def find(env_var, cmd):
 # Allow environment variables to override any of the tools we need
 
 AFL_FUZZ = find('AFL_FUZZ', 'afl-fuzz')
-CMAKE    = find('CMAKE', 'cmake')
-AFL_CC   = find('AFL_CC', 'afl-clang' if platform.system() == 'Darwin' else 'afl-gcc')
-AFL_CXX  = find('AFL_CXX', 'afl-clang++' if platform.system() == 'Darwin' else 'afl-g++')
-MAKE     = find('MAKE', 'make')
-RUMUR_ROOT = os.path.abspath(os.environ.get('RUMUR_ROOT',
-  os.path.join(os.path.dirname(__file__), '..')))
 
 def main(argv):
 
