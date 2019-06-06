@@ -7,7 +7,6 @@ Wrapper for fuzzing Rumur with AFL using the existing test suite.
 import os
 import subprocess
 import sys
-import tempfile
 import time
 
 def main(argv):
@@ -16,9 +15,6 @@ def main(argv):
   if len(argv) > 1:
     timeout = int(argv[1])
 
-  tmp = tempfile.mkdtemp()
-  sys.stdout.write('Working in {}...\n'.format(tmp))
-
   env = os.environ.copy()
   env['PATH'] = '{}:{}'.format(env['PATH'], os.path.abspath('rumur'))
 
@@ -26,7 +22,7 @@ def main(argv):
   sys.stdout.write(' Running AFL...\n')
   testdir = os.path.abspath(os.path.dirname(__file__))
   p = subprocess.Popen(['afl-fuzz', '-m', '8192', '-i', testdir, '-o', 'findings_dir',
-    'afl-harness', '@@'], cwd=tmp, env=env)
+    'afl-harness', '@@'], env=env)
 
   start = time.time()
   counter = 0
@@ -50,7 +46,7 @@ def main(argv):
     p.wait()
 
   found = False
-  crashes = os.path.join(tmp, 'findings_dir/crashes')
+  crashes = 'findings_dir/crashes'
   if os.path.exists(crashes):
     for i in os.listdir(crashes):
       found = True
