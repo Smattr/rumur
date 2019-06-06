@@ -42,15 +42,6 @@ def main(argv):
   tmp = tempfile.mkdtemp()
   sys.stdout.write('Working in {}...\n'.format(tmp))
 
-  sys.stdout.write('Building AFL harness...\n')
-  src = os.path.join(os.path.dirname(__file__), 'afl-harness.c')
-  aout = os.path.join(tmp, 'afl-harness')
-  p = subprocess.Popen(
-    [AFL_CC, '-std=c11', '-O3', '-Wall', '-Wextra', '-o', aout, src])
-  p.communicate()
-  if p.returncode != 0:
-    return p.returncode
-
   # Copy into the test case directory all active tests
   sys.stdout.write(' Populating {}/testcase_dir...\n'.format(tmp))
   test_root = os.path.abspath(os.path.dirname(__file__))
@@ -72,7 +63,7 @@ def main(argv):
   # note we need to up AFL's default memory limit (50MB) to support running CC
   sys.stdout.write(' Running AFL...\n')
   p = subprocess.Popen([AFL_FUZZ, '-m', '8192', '-i', 'testcase_dir', '-o', 'findings_dir',
-    aout, '@@'], cwd=tmp, env=env)
+    'afl-harness', '@@'], cwd=tmp, env=env)
 
   start = time.time()
   counter = 0
