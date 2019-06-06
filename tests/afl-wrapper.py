@@ -1,31 +1,14 @@
 #!/usr/bin/env python
 
 '''
-Wrapper for compiling Rumur with instrumentation for American Fuzzy Lop (AFL)
-and then fuzzing using the existing test suite.
+Wrapper for fuzzing Rumur with AFL using the existing test suite.
 '''
 
 import os
-import platform
-import shutil
 import subprocess
 import sys
 import tempfile
 import time
-
-def which(cmd):
-  try:
-    with open(os.devnull, 'wt') as null:
-      return subprocess.check_output(['which', cmd], stderr=null).strip()
-  except:
-    return None
-
-def find(env_var, cmd):
-  return which(os.environ.get(env_var, cmd))
-
-# Allow environment variables to override any of the tools we need
-
-AFL_FUZZ = find('AFL_FUZZ', 'afl-fuzz')
 
 def main(argv):
 
@@ -42,7 +25,7 @@ def main(argv):
   # note we need to up AFL's default memory limit (50MB) to support running CC
   sys.stdout.write(' Running AFL...\n')
   testdir = os.path.abspath(os.path.dirname(__file__))
-  p = subprocess.Popen([AFL_FUZZ, '-m', '8192', '-i', testdir, '-o', 'findings_dir',
+  p = subprocess.Popen(['afl-fuzz', '-m', '8192', '-i', testdir, '-o', 'findings_dir',
     'afl-harness', '@@'], cwd=tmp, env=env)
 
   start = time.time()
