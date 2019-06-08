@@ -303,6 +303,65 @@ static const char *reset() {
   return "";
 }
 
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+
+  #define UINT128_MAX \
+    ((((unsigned __int128)UINT64_MAX) << 64) | ((unsigned __int128)UINT64_MAX))
+
+  #define INT128_MAX ((((__int128)INT64_MAX) << 64) | ((__int128)UINT64_MAX))
+  #define INT128_MIN (-INT128_MAX - 1)
+
+  struct string_buffer {
+    char data[41];
+  };
+
+  static struct string_buffer value_u128_to_string(unsigned __int128 v) {
+
+    struct string_buffer buffer;
+
+    if (v == 0) {
+      buffer.data[0] = '0';
+      buffer.data[1] = '\0';
+      return buffer;
+    }
+
+    size_t i = sizeof(buffer.data);
+    while (v != 0) {
+      i--;
+      buffer.data[i] = '0' + v % 10;
+      v /= 10;
+    }
+
+    memmove(buffer.data, &buffer.data[i], sizeof(buffer) - i);
+    buffer.data[sizeof(buffer) - i] = '\0';
+
+    return buffer;
+  }
+  static __attribute__((unused)) struct string_buffer value_128_to_string(
+      __int128 v) {
+
+    if (v == INT128_MIN) {
+      struct string_buffer buffer;
+      strcpy(buffer.data, "-170141183460469231731687303715884105728");
+      return buffer;
+    }
+
+    bool negative = v < 0;
+    if (negative) {
+      v = -v;
+    }
+
+    struct string_buffer buffer = value_u128_to_string(v);
+
+    if (negative) {
+      memmove(&buffer.data[1], buffer.data, strlen(buffer.data) + 1);
+      buffer.data[0] = '-';
+    }
+
+    return buffer;
+  }
+#endif
+
 /*******************************************************************************
  * MurmurHash by Austin Appleby                                                *
  *                                                                             *
