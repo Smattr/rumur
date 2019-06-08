@@ -760,13 +760,9 @@ static void print_counterexample(
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   /* Construct an array of the states we need to print by walking backwards to
-   * the initial starting state. We could do this with recursion, but it turns
-   * out that larger traces overflow our stack.
+   * the initial starting state.
    */
-  size_t trace_length = 0;
-  for (const struct state *p = s; p != NULL; p = p->previous) {
-    trace_length++;
-  }
+  size_t trace_length = state_depth(s);
 
   const struct state **cex = xcalloc(trace_length, sizeof(cex[0]));
 
