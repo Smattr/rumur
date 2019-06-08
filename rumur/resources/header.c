@@ -2295,11 +2295,16 @@ static bool rendezvous_arrive(void) {
  *
  * @param leader Whether the caller is the 'leader'. If you call this when you
  *   are the 'leader' it will unblock all 'followers' at the rendezvous point.
+ * @param action Optional code for the leader to run.
  */
-static void rendezvous_depart(bool leader) {
+static void rendezvous_depart(bool leader, void (*action)(void)) {
   int r __attribute((unused));
 
   if (leader) {
+    if (action != NULL) {
+      action();
+    }
+
     /* Reset the counter for the next rendezvous. */
     assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
       "while some participating threads have yet to arrive");
@@ -2321,15 +2326,18 @@ static void rendezvous_depart(bool leader) {
 }
 
 /* Exposed friendly function for performing a rendezvous. */
-static void rendezvous(void) {
+static void rendezvous(void (*action)(void)) {
   bool leader = rendezvous_arrive();
-  rendezvous_depart(leader);
+  if (leader) {
+    TRACE(TC_SET, "arrived at rendezvous point as leader");
+  }
+  rendezvous_depart(leader, action);
 }
 
 /* Remove the caller from the pool of threads who participate in this
  * rendezvous.
  */
-static void rendezvous_opt_out(void) {
+static void rendezvous_opt_out(void (*action)(void)) {
 
 retry:;
 
@@ -2342,7 +2350,7 @@ retry:;
      * were arriving at one and we were the last to arrive. Let's pretend we are
      * participating in the rendezvous and unblock them.
      */
-    rendezvous_depart(true);
+    rendezvous_depart(true, action);
 
     /* Re-attempt opting-out. */
     goto retry;
@@ -2496,6 +2504,29 @@ static void set_thread_init(void) {
   local_seen = refcounted_ptr_get(&global_seen);
 }
 
+static void set_update(void) {
+  /* Guard against the case where we've been called from exit_with() and we're
+   * not finishing a migration, but just opting out of the rendezvous protocol.
+   */
+  if (refcounted_ptr_peek(&next_global_seen) != NULL) {
+
+    /* Clean up the old set. Note that we are using a pointer we have already
+     * given up our reference count to here, but we rely on the caller to ensure
+     * this access is safe.
+     */
+    free(local_seen->bucket);
+    free(local_seen);
+
+    /* Reset migration state for the next time we expand the set. */
+    next_migration = 0;
+
+    /* Update the global pointer to the new set. We know all the above
+     * migrations have completed and no one needs the old set.
+     */
+    refcounted_ptr_shift(&global_seen, &next_global_seen);
+  }
+}
+
 static void set_migrate(void) {
 
   TRACE(TC_SET, "assisting in set migration...");
@@ -2555,27 +2586,7 @@ retry:;
   }
 
   /* Release our reference to the old set now we're done with it. */
-  size_t count = refcounted_ptr_put(&global_seen, local_seen);
-
-  if (count == 0) {
-
-    TRACE(TC_SET, "arrived at rendezvous point as leader");
-
-    /* We were the last thread to release our reference to the old set. Clean it
-     * up now. Note that we're using the pointer we just gave up our reference
-     * count to, but we know no one else will be invalidating it.
-     */
-    free(local_seen->bucket);
-    free(local_seen);
-
-    /* Reset migration state for the next time we expand the set. */
-    next_migration = 0;
-
-    /* Update the global pointer to the new set. We know all the above
-     * migrations have completed and no one needs the old set.
-     */
-    refcounted_ptr_shift(&global_seen, &next_global_seen);
-  }
+  (void)refcounted_ptr_put(&global_seen, local_seen);
 
   /* Now we need to make sure all the threads get to this point before any one
    * thread leaves. The purpose of this is to guarantee we only ever have at
@@ -2584,7 +2595,7 @@ retry:;
    * are still working on the old set. It's possible to make such a scheme work
    * but the synchronisation requirements just seem too complicated.
    */
-  rendezvous();
+  rendezvous(set_update);
 
   /* We're now ready to resume model checking. Note that we already have a
    * (reference counted) pointer to the now-current global seen set, so we don't
@@ -2937,7 +2948,9 @@ static unsigned long check_liveness_summarise(void);
 static int exit_with(int status) {
 
   /* Opt out of the thread-wide rendezvous protocol. */
-  rendezvous_opt_out();
+  (void)refcounted_ptr_put(&global_seen, local_seen);
+  rendezvous_opt_out(set_update);
+  local_seen = NULL;
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
@@ -2970,6 +2983,12 @@ static int exit_with(int status) {
     }
 
     /* We're now single-threaded again. */
+
+    /* Reacquire a pointer to the seen set. Note that this may not be the same
+     * value as what we previously had in local_seen because the other threads
+     * may have expanded and migrated the seen set in the meantime.
+     */
+    local_seen = refcounted_ptr_get(&global_seen);
 
     if (error_count == 0) {
       /* If we didn't see any other errors, print cover information. */
