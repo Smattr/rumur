@@ -2177,11 +2177,10 @@ static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
   return ret;
 }
 
-static size_t refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
+static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
   void *ptr __attribute__((unused))) {
 
   refcounted_ptr_t old, new;
-  size_t ret;
   bool r;
 
   do {
@@ -2197,14 +2196,11 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
     ASSERT(p2.count > 0 && "releasing a reference to a pointer when it had no "
       "outstanding references");
     p2.count--;
-    ret = p2.count;
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
     r = atomic_cas(p, old, new);
   } while (!r);
-
-  return ret;
 }
 
 static void *refcounted_ptr_peek(refcounted_ptr_t *NONNULL p) {
@@ -2586,7 +2582,7 @@ retry:;
   }
 
   /* Release our reference to the old set now we're done with it. */
-  (void)refcounted_ptr_put(&global_seen, local_seen);
+  refcounted_ptr_put(&global_seen, local_seen);
 
   /* Now we need to make sure all the threads get to this point before any one
    * thread leaves. The purpose of this is to guarantee we only ever have at
@@ -2948,7 +2944,7 @@ static unsigned long check_liveness_summarise(void);
 static int exit_with(int status) {
 
   /* Opt out of the thread-wide rendezvous protocol. */
-  (void)refcounted_ptr_put(&global_seen, local_seen);
+  refcounted_ptr_put(&global_seen, local_seen);
   rendezvous_opt_out(set_update);
   local_seen = NULL;
 
