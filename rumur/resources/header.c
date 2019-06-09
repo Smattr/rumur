@@ -47,6 +47,10 @@ enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
   #endif
 #endif
 
+/* whether to only report a counterexample if it results in the shortest trace.
+ */
+#define SHORTEST_TRACE (COUNTEREXAMPLE_TRACE != CEX_OFF && MAX_ERRORS == 1)
+
 #ifdef __clang__
   #define NONNULL _Nonnull
 #else
@@ -89,6 +93,9 @@ static enum { WARMUP, RUN } phase = WARMUP;
  * MAX_ERRORS, they should attempt to exit gracefully as soon as possible.
  */
 static unsigned long error_count;
+
+/* Depth of the last found error. */
+static size_t error_depth;
 
 /* Number of rules that have been processed. There are two representations of
  * this: a thread-local count of how many rules we have fired thus far and a
@@ -653,14 +660,57 @@ static _Noreturn int exit_with(int status);
 static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
-  if (MAX_ERRORS == 1) {
-    resign();
+  bool report = false;
+
+#if SHORTEST_TRACE
+  /* Compare the trace we found to the previously known shortest. */
+  size_t depth = 0;
+  size_t my_depth = state_depth(s);
+  for (;;) {
+    if (depth == 0 || my_depth < depth) {
+      /* Ours is the first error trace or shorter than the previous. Notify
+       * other threads of ours.
+       */
+      report = true;
+      if (__atomic_compare_exchange_n(&error_depth, &depth, my_depth, false,
+          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        break;
+      }
+    } else {
+      /* There was a previously found trace shorter than ours. */
+      report = false;
+      break;
+    }
   }
+
+  resign();
+
+  while (report) {
+
+    depth = __atomic_load_n(&error_depth, __ATOMIC_SEQ_CST);
+    if (depth < my_depth) {
+      report = false;
+      break;
+    }
+
+    if (__atomic_load_n(&running_count, __ATOMIC_SEQ_CST) == 0) {
+      depth = __atomic_load_n(&error_depth, __ATOMIC_SEQ_CST);
+      if (depth < my_depth) {
+        report = false;
+      }
+      break;
+    }
+  }
+#endif
 
   unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
     __ATOMIC_SEQ_CST);
 
-  if (prior_errors < MAX_ERRORS) {
+#if !SHORTEST_TRACE
+  report = prior_errors < MAX_ERRORS;
+#endif
+
+  if (report) {
 
     print_lock();
 
@@ -739,9 +789,9 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
     siglongjmp(checkpoint, 1);
   }
 
-  if (MAX_ERRORS != 1) {
-    resign();
-  }
+#if !SHORTEST_TRACE
+  resign();
+#endif
 
   exit_with(EXIT_FAILURE);
 }
