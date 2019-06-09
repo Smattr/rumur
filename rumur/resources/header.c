@@ -116,6 +116,9 @@ _Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
  */
 enum { JMP_BUF_NEEDED = MAX_ERRORS > 1 };
 
+/* How many threads are currently running. */
+static size_t running_count = 1;
+
 /*******************************************************************************
  * Sandbox support.                                                            *
  *                                                                             *
@@ -2317,7 +2320,6 @@ static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
 
 static pthread_mutex_t rendezvous_lock; /* mutual exclusion mechanism for below. */
 static pthread_cond_t rendezvous_cond;  /* sleep mechanism for below. */
-static size_t running_count = 1;            /* how many threads are opted in to rendezvous? */
 static size_t rendezvous_pending = 1;   /* how many threads are opted in and not sleeping? */
 
 static void rendezvous_init(void) {
