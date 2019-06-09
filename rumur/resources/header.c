@@ -612,6 +612,22 @@ static void state_free(struct state *s) {
   arena_base--;
 }
 
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
+static __attribute__((unused)) size_t state_depth(
+    const struct state *NONNULL s) {
+#if BOUND > 0
+  return (size_t)s->bound + 1;
+#else
+  size_t d = 0;
+  while (s != NULL) {
+    d++;
+    s = s->previous;
+  }
+  return d;
+#endif
+}
+#endif
+
 /******************************************************************************/
 
 /* Print a counterexample trace terminating at the given state. This function
@@ -751,22 +767,6 @@ static struct state *state_dup(const struct state *NONNULL s) {
 static size_t state_hash(const struct state *NONNULL s) {
   return (size_t)MurmurHash64A(s->data, sizeof(s->data));
 }
-
-#if COUNTEREXAMPLE_TRACE != CEX_OFF
-static __attribute__((unused)) size_t state_depth(
-    const struct state *NONNULL s) {
-#if BOUND > 0
-  return (size_t)s->bound + 1;
-#else
-  size_t d = 0;
-  while (s != NULL) {
-    d++;
-    s = s->previous;
-  }
-  return d;
-#endif
-}
-#endif
 
 /* A type-safe const cast. */
 static __attribute__((unused)) struct state *state_drop_const(const struct state *s) {
