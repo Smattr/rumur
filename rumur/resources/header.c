@@ -2378,7 +2378,7 @@ static void rendezvous_depart(bool leader) {
     /* Reset the counter for the next rendezvous. */
     assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
       "while some participating threads have yet to arrive");
-    rendezvous_pending = running_count;
+    rendezvous_pending = __atomic_load_n(&running_count, __ATOMIC_SEQ_CST);
 
     /* Wake up the 'followers'. */
     r = pthread_cond_broadcast(&rendezvous_cond);
@@ -2415,7 +2415,7 @@ retry:;
    */
   bool leader = rendezvous_arrive();
 
-  if (leader && running_count > 1) {
+  if (leader && __atomic_load_n(&running_count, __ATOMIC_SEQ_CST) > 1) {
     /* We unfortunately opted out of this rendezvous while the remaining threads
      * were arriving at one and we were the last to arrive. Let's pretend we are
      * participating in the rendezvous and unblock them.
@@ -2427,8 +2427,8 @@ retry:;
   }
 
   /* Remove ourselves from the known threads. */
-  assert(running_count > 0);
-  running_count--;
+  assert(__atomic_load_n(&running_count, __ATOMIC_SEQ_CST) > 0);
+  (void)__atomic_fetch_sub(&running_count, 1, __ATOMIC_SEQ_CST);
 
   int r __attribute__((unused)) = pthread_mutex_unlock(&rendezvous_lock);
   assert(r == 0);
