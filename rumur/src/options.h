@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <gmpxx.h>
 #include <string>
 
 enum tristate {
@@ -44,14 +45,14 @@ enum symmetry_reduction_t {
 };
 
 struct Options {
-  unsigned long threads = 0;
+  mpz_class threads = 0;
   log_level_t log_level = WARNINGS;
-  size_t set_capacity = 8 * 1024 * 1024;
+  mpz_class set_capacity = 8 * 1024 * 1024;
 
   /* Limit (percentage occupancy) at which we expand the capacity of the state
    * set.
    */
-  unsigned long set_expand_threshold = 75;
+  unsigned set_expand_threshold = 75;
 
   // Whether to use ANSI colour codes in the checker's output.
   tristate color = AUTO;
@@ -69,7 +70,7 @@ struct Options {
   bool sandbox_enabled = false;
 
   // Number of errors to report before exiting.
-  unsigned long max_errors = 1;
+  mpz_class max_errors = 1;
 
   // How to print counterexample traces
   counterexample_trace_t counterexample_trace = DIFF;
@@ -78,7 +79,7 @@ struct Options {
   bool machine_readable_output = false;
 
   // Limit for exploration. 0 means unbounded.
-  unsigned long bound = 0;
+  mpz_class bound = 0;
 
   // Type used for value_t in the checker
   std::string value_type = "auto";

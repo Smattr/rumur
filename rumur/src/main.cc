@@ -24,15 +24,16 @@
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
 
-static bool make_ul(unsigned long &value, const std::string &s) {
+static unsigned string_to_percentage(const std::string &s) {
+  int p;
   try {
-    value = std::stoul(s);
-  } catch (std::invalid_argument&) {
-    return false;
+    p = std::stoi(s);
+    if (p < 1 || p > 100)
+      throw std::invalid_argument("");
   } catch (std::out_of_range&) {
-    return false;
+    throw std::invalid_argument("");
   }
-  return true;
+  return (unsigned)p;
 }
 
 static void parse_args(int argc, char **argv) {
@@ -77,14 +78,19 @@ static void parse_args(int argc, char **argv) {
         set_log_level(options.log_level);
         break;
 
-      case 'e':
-        if (!make_ul(options.set_expand_threshold, optarg) ||
-            options.set_expand_threshold < 1 ||
-            options.set_expand_threshold > 100) {
+      case 'e': {
+        bool valid = true;
+        try {
+          options.set_expand_threshold = string_to_percentage(optarg);
+        } catch (std::invalid_argument&) {
+          valid = false;
+        }
+        if (!valid) {
           std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
+      }
 
       case 'h': // --help
         help();
@@ -99,19 +105,37 @@ static void parse_args(int argc, char **argv) {
         set_log_level(options.log_level);
         break;
 
-      case 's':
-        if (!make_ul(options.set_capacity, optarg)) {
+      case 's': {
+        bool valid = true;
+        try {
+          options.set_capacity = optarg;
+          if (options.set_capacity <= 0)
+            valid = false;
+        } catch (std::invalid_argument&) {
+          valid = false;
+        }
+        if (!valid) {
           std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
+      }
 
-      case 't':
-        if (!make_ul(options.threads, optarg)) {
+      case 't': {
+        bool valid = true;
+        try {
+          options.threads = optarg;
+          if (options.threads < 0)
+            valid = false;
+        } catch (std::invalid_argument&) {
+          valid = false;
+        }
+        if (!valid) {
           std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
+      }
 
       case 'v': // --verbose
         options.log_level = INFO;
@@ -229,12 +253,21 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 136: // --max-errors ...
-        if (!make_ul(options.max_errors, optarg) || options.max_errors == 0) {
+      case 136: { // --max-errors ...
+        bool valid = true;
+        try {
+          options.max_errors = optarg;
+          if (options.max_errors <= 0)
+            valid = false;
+        } catch (std::invalid_argument&) {
+          valid = false;
+        }
+        if (!valid) {
           std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
+      }
 
       case 137: // --counterexample-trace ...
         if (strcmp(optarg, "full") == 0) {
@@ -268,12 +301,21 @@ static void parse_args(int argc, char **argv) {
         std::cout << "Rumur version " << VERSION << "\n";
         exit(EXIT_SUCCESS);
 
-      case 140: // --bound ...
-        if (!make_ul(options.bound, optarg)) {
+      case 140: { // --bound ...
+        bool valid = true;
+        try {
+          options.bound = optarg;
+          if (options.bound < 0)
+            valid = false;
+        } catch (std::invalid_argument&) {
+          valid = false;
+        }
+        if (!valid) {
           std::cerr << "invalid --bound argument \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
+      }
 
       case 141: // --value-type ...
         options.value_type = optarg;
@@ -318,7 +360,7 @@ static void parse_args(int argc, char **argv) {
     if (r < 1) {
       options.threads = 1;
     } else {
-      options.threads = static_cast<unsigned long>(r);
+      options.threads = r;
     }
   }
 }
