@@ -1,6 +1,26 @@
 Change log
 ==========
 
+v2019.06.12
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: an unlikely edge case was possible wherein the results of checking
+  could be reported inaccurately if one thread was exiting while other threads
+  decided to expand the seen state set. This was never seen in the wild, but has
+  been corrected in this release anyway (commit
+  8cf9d785c925554e6ec4b2a8a55e619f3ecc66f2).
+* The generated verifier no longer requires linking against libatomic on i386
+  platforms. This change means FreeBSD on i386 is now supported (commit
+  0da98254af604a4812201b8f06dc885dcebb9787).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Rumur now compiles correctly on platforms where ``size_t`` is not
+  ``unsigned long``. Thanks to Yuri Victorovich for reporting this (commit
+  38489a811f0abc4aaaf6f6425dd6321325f959a0).
+
 v2019.06.05
 -----------
 
