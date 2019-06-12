@@ -1760,19 +1760,22 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
  * Atomic operations on double word values                                     *
  ******************************************************************************/
 
-#ifdef __x86_64__
-  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
-   * aligned memory. The way to work around this is apparently the following
-   * degenerate CMPXCHG.
+#if defined(__x86_64__) || defined(__i386__)
+  /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
+   *   memory. The way to work around this is apparently the following
+   *   degenerate CMPXCHG16B.
+   * i386: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
+   *   __sync built-in instead.
    */
   #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
 #else
   #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
 #endif
 
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(__i386__)
   /* As explained above, we need some extra gymnastics to avoid a call to
-   * libatomic on x86-64.
+   * libatomic on x86-64 and i386.
    */
   #define atomic_write(p, v) \
     do { \
@@ -1789,8 +1792,8 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
 #endif
 
-#ifdef __x86_64__
-  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+#if defined(__x86_64__) || defined(__i386__)
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
   #define atomic_cas(p, expected, new) \
@@ -1801,8 +1804,8 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
       __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #endif
 
-#ifdef __x86_64__
-  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
+#if defined(__x86_64__) || defined(__i386__)
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
   #define atomic_cas_val(p, expected, new) \
