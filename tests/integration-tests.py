@@ -67,7 +67,74 @@ class TemporaryDirectory(object):
       shutil.rmtree(self.tmp)
 
 class Tests(unittest.TestCase):
-  pass
+
+  def _test_lock_freedom(self, args):
+    '''
+    Test that a compiled verifier does not depend on libatomic.
+
+    Uses of __atomic built-ins and C11 atomics can sometimes cause the compiler
+    to emit calls to libatomic instead of inline instructions. This is a problem
+    because we use these in the verifier to implement lock-free algorithms,
+    while the libatomic implementations take locks, defeating the purpose of
+    using them. This test checks that we end up with no libatomic calls in the
+    compiled verifier.
+    '''
+
+    model = 'var x: boolean; startstate begin x := false; end; rule begin x := !x; end;'
+
+    with TemporaryDirectory() as tmp:
+
+      # write the model to a temporary file
+      model_m = os.path.join(tmp, 'model.m')
+      with open(model_m, 'wt') as f:
+        f.write(model)
+
+      # generate a verifier
+      argv = [RUMUR_BIN, '--output', 'model.c', model_m]
+      subprocess.check_call(argv, cwd=tmp)
+
+      # compile it to assembly
+      argv = [CC, '-O3', '-std=c11'] + args + ['-S', 'model.c']
+      subprocess.check_call(argv, cwd=tmp)
+
+      # check for calls to libatomic functions
+      model_s = os.path.join(tmp, 'model.s')
+      with open(model_s, 'rt') as f:
+        data = f.read()
+
+      m = re.search('__atomic_', data)
+      self.assertIsNone(m)
+
+  @unittest.skipIf(not X86_64 or MAX_TEST is not None, 'only relevant for x86-64')
+  def test_lock_freedom_x86_64(self):
+    self._test_lock_freedom(['-mcx16'])
+
+  @unittest.skipIf(not X86_64 or MAX_TEST is not None, 'only relevant for x86-64')
+  def test_lock_freedom_i386(self):
+
+    # check that we have the i386 headers installed
+    with TemporaryDirectory() as tmp:
+
+      test_c = os.path.join(tmp, 'test.c')
+      with open(test_c, 'wt') as out:
+
+        includes = os.path.abspath(os.path.join(os.path.dirname(__file__),
+          '../rumur/resources/includes.c'))
+        with open(includes, 'rt') as inp:
+          out.write(inp.read())
+
+        out.write('\nint main(void) { return 0; }\n')
+
+      try:
+        subprocess.check_call([CC, '-std=c11', '-m32', '-o', os.devnull, test_c])
+      except subprocess.CalledProcessError:
+        raise unittest.SkipTest('32-bit headers unavailable')
+
+    self._test_lock_freedom(['-m32'])
+
+  @unittest.skipIf(X86_64 or MAX_TEST is not None, 'not relevant on x86-64')
+  def test_lock_freedom(self):
+    self._test_lock_freedom([])
 
 def parse_test_options(model, xml):
   option = {}
