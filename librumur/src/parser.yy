@@ -443,7 +443,7 @@ quantifier: ID ':' typeexpr {
   $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, @$);
 };
 
-quantifiers: quantifiers ';' quantifier {
+quantifiers: quantifiers semis quantifier {
   $$ = $1;
   $$.push_back(*$3);
 } | quantifier {
@@ -478,7 +478,9 @@ ruleset: RULESET quantifiers DO rules endruleset {
   $$ = rumur::Ptr<rumur::Ruleset>::make($2, $4, @$);
 };
 
-semi_opt: ';' | %empty;
+semi_opt: semi_opt ';' | %empty;
+
+semis: semi_opt ';';
 
 simplerule: RULE string_opt guard_opt decls_header stmts endrule {
   $$ = rumur::Ptr<rumur::SimpleRule>::make($2, $3, $4, $5, @$);
@@ -540,10 +542,10 @@ stmts: stmts_cont stmt semi_opt {
 } | %empty {
 };
 
-stmts_cont: stmts_cont stmt ';' {
+stmts_cont: stmts_cont stmt semis {
   $$ = $1;
   $$.push_back($2);
-} | stmt ';' {
+} | stmt semis {
   $$.push_back($1);
 };
 
