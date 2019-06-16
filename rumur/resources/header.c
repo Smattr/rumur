@@ -2343,6 +2343,9 @@ static bool rendezvous_arrive(void) {
   return rendezvous_pending == 0;
 }
 
+/* This function is defined later. */
+static void set_update(void);
+
 /* Call this at the end of a rendezvous point.
  *
  * This is a low level function, not expected to be directly used outside of the
@@ -2350,15 +2353,12 @@ static bool rendezvous_arrive(void) {
  *
  * @param leader Whether the caller is the 'leader'. If you call this when you
  *   are the 'leader' it will unblock all 'followers' at the rendezvous point.
- * @param action Optional code for the leader to run.
  */
-static void rendezvous_depart(bool leader, void (*action)(void)) {
+static void rendezvous_depart(bool leader) {
   int r __attribute((unused));
 
   if (leader) {
-    if (action != NULL) {
-      action();
-    }
+    set_update();
 
     /* Reset the counter for the next rendezvous. */
     assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
@@ -2381,18 +2381,18 @@ static void rendezvous_depart(bool leader, void (*action)(void)) {
 }
 
 /* Exposed friendly function for performing a rendezvous. */
-static void rendezvous(void (*action)(void)) {
+static void rendezvous(void) {
   bool leader = rendezvous_arrive();
   if (leader) {
     TRACE(TC_SET, "arrived at rendezvous point as leader");
   }
-  rendezvous_depart(leader, action);
+  rendezvous_depart(leader);
 }
 
 /* Remove the caller from the pool of threads who participate in this
  * rendezvous.
  */
-static void rendezvous_opt_out(void (*action)(void)) {
+static void rendezvous_opt_out(void) {
 
 retry:;
 
@@ -2405,7 +2405,7 @@ retry:;
      * were arriving at one and we were the last to arrive. Let's pretend we are
      * participating in the rendezvous and unblock them.
      */
-    rendezvous_depart(true, action);
+    rendezvous_depart(true);
 
     /* Re-attempt opting-out. */
     goto retry;
@@ -2580,6 +2580,12 @@ static void set_update(void) {
      */
     refcounted_ptr_shift(&global_seen, &next_global_seen);
   }
+
+  /* Mark the local seen pointer now invalid. We require the caller to write a
+   * new local_seen pointer, but this is a bit of paranoia to force a NULL
+   * pointer dereference if they don't.
+   */
+  local_seen = NULL;
 }
 
 static void set_migrate(void) {
@@ -2650,7 +2656,7 @@ retry:;
    * are still working on the old set. It's possible to make such a scheme work
    * but the synchronisation requirements just seem too complicated.
    */
-  rendezvous(set_update);
+  rendezvous();
 
   /* We're now ready to resume model checking. Note that we already have a
    * (reference counted) pointer to the now-current global seen set, so we don't
@@ -3004,8 +3010,7 @@ static int exit_with(int status) {
 
   /* Opt out of the thread-wide rendezvous protocol. */
   refcounted_ptr_put(&global_seen, local_seen);
-  rendezvous_opt_out(set_update);
-  local_seen = NULL;
+  rendezvous_opt_out();
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
