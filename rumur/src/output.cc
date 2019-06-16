@@ -92,7 +92,7 @@ int output_checker(const std::string &path, const Model &model,
     << "  SYMMETRY_REDUCTION_EXHAUSTIVE,\n"
     << "} SYMMETRY_REDUCTION = " << options.symmetry_reduction << ";\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
-    << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
+    << "#define MAX_ERRORS " << options.max_errors << "ul\n\n"
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
     << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
