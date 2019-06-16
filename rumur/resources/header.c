@@ -636,6 +636,11 @@ static __attribute__((unused)) size_t state_depth(
 static void print_counterexample(
   const struct state *NONNULL s __attribute__((unused)));
 
+/* Opt out the thread rendezvous protocol and return any held reference to the
+ * global seen set.
+ */
+static void resign(void);
+
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
  * the correct way to exit the checker is for every thread to eventually call
  * this function.
@@ -644,6 +649,10 @@ static _Noreturn int exit_with(int status);
 
 static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   const struct state *NONNULL s, const char *NONNULL fmt, ...) {
+
+  if (MAX_ERRORS == 1) {
+    resign();
+  }
 
   unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
     __ATOMIC_SEQ_CST);
@@ -725,6 +734,10 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 #endif
     assert(JMP_BUF_NEEDED && "longjmping without a setup jmp_buf");
     siglongjmp(checkpoint, 1);
+  }
+
+  if (MAX_ERRORS != 1) {
+    resign();
   }
 
   exit_with(EXIT_FAILURE);
@@ -3006,11 +3019,13 @@ static _Noreturn void explore(void);
 static void check_liveness_final(void);
 static unsigned long check_liveness_summarise(void);
 
-static int exit_with(int status) {
-
+static void resign(void) {
   /* Opt out of the thread-wide rendezvous protocol. */
   refcounted_ptr_put(&global_seen, local_seen);
   rendezvous_opt_out();
+}
+
+static int exit_with(int status) {
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;

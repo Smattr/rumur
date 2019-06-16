@@ -934,6 +934,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "    }\n"
       << "\n"
       << "  }\n"
+      << "  resign();\n"
       << "  exit_with(EXIT_SUCCESS);\n"
       << "}\n\n";
   }
