@@ -2494,8 +2494,37 @@ static size_t set_index(const struct set *NONNULL set, size_t index) {
 static refcounted_ptr_t global_seen;
 static _Thread_local struct set *local_seen;
 
-/* Number of elements in the global set (i.e. occupancy). */
+/* Number of elements in the global set (i.e. occupancy). Note that this count
+ * can be stale (see local counters below).
+ */
 static size_t seen_count;
+
+/* Thread-local version of seen count. This is the last value the current thread
+ * read from `seen_count`.
+ */
+static _Thread_local size_t local_seen_count;
+
+/* Number of entries the current thread has added to the seen set since last
+ * reading `seen_count`. I.e. the amount we believe `seen_count` should be ahead
+ * of `local_count`.
+ */
+static _Thread_local size_t local_seen_count_offset;
+
+static void seen_count_sync(void) {
+  local_seen_count = __atomic_add_fetch(&seen_count, local_seen_count_offset,
+    __ATOMIC_SEQ_CST);
+  local_seen_count_offset = 0;
+}
+
+static size_t seen_count_get(void) {
+  /* Arbitrarily choose 100 as the amount we let the local count drift before
+   * re-aligning it with the global count.
+   */
+  if (local_seen_count_offset >= 100) {
+    seen_count_sync();
+  }
+  return local_seen_count + local_seen_count_offset;
+}
 
 /* The "next" 'global_seen' value. See below for an explanation. */
 static refcounted_ptr_t next_global_seen;
@@ -2713,9 +2742,9 @@ static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
-  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100
-      / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
+  if (seen_count_get() * 100 / set_size(local_seen) >= SET_EXPAND_THRESHOLD) {
     set_expand();
+  }
 
   size_t index = set_index(local_seen, state_hash(s));
 
@@ -2727,7 +2756,8 @@ restart:;
     if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
         state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
       /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
+      local_seen_count_offset++;
+      *count = seen_count_get();
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
@@ -3012,6 +3042,9 @@ static int exit_with(int status) {
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
+
+  /* Flush our outstanding seen set additions to the global occupancy count. */
+  seen_count_sync();
 
   if (thread_id == 0) {
     /* We are the initial thread. Wait on the others before exiting. */
