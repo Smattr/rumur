@@ -18,9 +18,12 @@ The process of cutting a new Rumur release should follow these steps:
    reliable and many errors are caused by infrastructure failures rather than
    your actual changes. So if you get a failure, check the logs to make sure
    it's not a false positive.
-6. Tag the commit with the version number in "vYYYY.MM.DD" format.
-7. Push the new version tag upstream.
-8. Package Rumur for Debian (see below).
+6. Build and test the commit on FreeBSD x86-64 and i386. While Rumur is
+   `packaged for FreeBSD`_ we have no automated CI testing on FreeBSD, so need
+   to test manually.
+7. Tag the commit with the version number in "vYYYY.MM.DD" format.
+8. Push the new version tag upstream.
+9. Package Rumur for Debian (see below).
 
 Github's automated release process should notice the version tag and show the
 new release as a downloadable zip/tarball on the "releases" tab of
@@ -45,5 +48,6 @@ it into distribution there.*
    signing, and uploading the resulting package.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
+.. _`packaged for FreeBSD`: https://svnweb.freebsd.org/ports/head/math/rumur/
 .. _`upstream on Github`: https://github.com/Smattr/rumur
 .. _`Travis CI regression tests`: https://travis-ci.org/Smattr/rumur/builds/
