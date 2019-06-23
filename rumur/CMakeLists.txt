@@ -51,6 +51,7 @@ add_executable(rumur
   src/options.cc
   src/output.cc
   src/process.cc
+  src/smt/solver.cc
   src/symmetry-reduction.cc
   src/utils.cc
   src/ValueType.cc)
