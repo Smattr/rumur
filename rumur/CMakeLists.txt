@@ -50,6 +50,7 @@ add_executable(rumur
   src/max-simple-width.cc
   src/options.cc
   src/output.cc
+  src/process.cc
   src/symmetry-reduction.cc
   src/utils.cc
   src/ValueType.cc)
