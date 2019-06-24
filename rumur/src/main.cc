@@ -39,29 +39,44 @@ static unsigned string_to_percentage(const std::string &s) {
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
+    enum {
+      OPT_BOUND = 128,
+      OPT_COLOUR,
+      OPT_COUNTEREXAMPLE_TRACE,
+      OPT_DEADLOCK_DETECTION,
+      OPT_MAX_ERRORS,
+      OPT_MONOPOLISE,
+      OPT_OUTPUT_FORMAT,
+      OPT_SANDBOX,
+      OPT_SYMMETRY_REDUCTION,
+      OPT_TRACE,
+      OPT_VALUE_TYPE,
+      OPT_VERSION,
+    };
+
     static struct option opts[] = {
-      { "bound", required_argument, 0, 140 },
-      { "color", required_argument, 0, 128 },
-      { "colour", required_argument, 0, 128 },
-      { "counterexample-trace", required_argument, 0, 137 },
-      { "deadlock-detection", required_argument, 0, 131 },
+      { "bound", required_argument, 0, OPT_BOUND },
+      { "color", required_argument, 0, OPT_COLOUR },
+      { "colour", required_argument, 0, OPT_COLOUR },
+      { "counterexample-trace", required_argument, 0, OPT_COUNTEREXAMPLE_TRACE },
+      { "deadlock-detection", required_argument, 0, OPT_DEADLOCK_DETECTION },
       { "debug", no_argument, 0, 'd' },
       { "help", no_argument, 0, 'h' },
-      { "max-errors", required_argument, 0, 136 },
-      { "monopolise", no_argument, 0, 133 },
-      { "monopolize", no_argument, 0, 133 },
+      { "max-errors", required_argument, 0, OPT_MAX_ERRORS },
+      { "monopolise", no_argument, 0, OPT_MONOPOLISE },
+      { "monopolize", no_argument, 0, OPT_MONOPOLISE },
       { "output", required_argument, 0, 'o' },
-      { "output-format", required_argument, 0, 138 },
+      { "output-format", required_argument, 0, OPT_OUTPUT_FORMAT },
       { "quiet", no_argument, 0, 'q' },
-      { "sandbox", required_argument, 0, 135 },
+      { "sandbox", required_argument, 0, OPT_SANDBOX },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
-      { "symmetry-reduction", required_argument, 0, 134 },
+      { "symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION },
       { "threads", required_argument, 0, 't' },
-      { "trace", required_argument, 0, 130 },
-      { "value-type", required_argument, 0, 141 },
+      { "trace", required_argument, 0, OPT_TRACE },
+      { "value-type", required_argument, 0, OPT_VALUE_TYPE },
       { "verbose", no_argument, 0, 'v' },
-      { "version", no_argument, 0, 139 },
+      { "version", no_argument, 0, OPT_VERSION },
       { 0, 0, 0, 0 },
     };
 
@@ -73,12 +88,12 @@ static void parse_args(int argc, char **argv) {
 
     switch (c) {
 
-      case 'd':
+      case 'd': // --debug
         options.log_level = DEBUG;
         set_log_level(options.log_level);
         break;
 
-      case 'e': {
+      case 'e': { // --set-expand-threshold ...
         bool valid = true;
         try {
           options.set_expand_threshold = string_to_percentage(optarg);
@@ -96,7 +111,7 @@ static void parse_args(int argc, char **argv) {
         help();
         exit(EXIT_SUCCESS);
 
-      case 'o':
+      case 'o': // --output ...
         out = std::make_shared<std::string>(optarg);
         break;
 
@@ -105,7 +120,7 @@ static void parse_args(int argc, char **argv) {
         set_log_level(options.log_level);
         break;
 
-      case 's': {
+      case 's': { // --set-capacity ...
         bool valid = true;
         try {
           options.set_capacity = optarg;
@@ -121,7 +136,7 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 't': {
+      case 't': { // --threads ...
         bool valid = true;
         try {
           options.threads = optarg;
@@ -146,7 +161,7 @@ static void parse_args(int argc, char **argv) {
         std::cerr << "run `" << argv[0] << " --help` to see available options\n";
         exit(EXIT_FAILURE);
 
-      case 128: // --colour
+      case OPT_COLOUR: // --colour ...
         if (strcmp(optarg, "auto") == 0) {
           options.color = AUTO;
         } else if (strcmp(optarg, "on") == 0) {
@@ -166,7 +181,7 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 130: // --trace ...
+      case OPT_TRACE: // --trace ...
         if (strcmp(optarg, "handle_reads") == 0) {
           options.traces |= TC_HANDLE_READS;
         } else if (strcmp(optarg, "handle_writes") == 0) {
@@ -188,7 +203,7 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 131: // --deadlock-detection ...
+      case OPT_DEADLOCK_DETECTION: // --deadlock-detection ...
         if (strcmp(optarg, "off") == 0) {
           options.deadlock_detection = DEADLOCK_DETECTION_OFF;
         } else if (strcmp(optarg, "stuck") == 0) {
@@ -202,7 +217,7 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 133: { // --monopolise
+      case OPT_MONOPOLISE: { // --monopolise
 
         long pagesize = sysconf(_SC_PAGESIZE);
         if (pagesize < 0) {
@@ -228,7 +243,7 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 134: // --symmetry-reduction ...
+      case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
         if (strcmp(optarg, "off") == 0) {
           options.symmetry_reduction = SYMMETRY_REDUCTION_OFF;
         } else if (strcmp(optarg, "heuristic") == 0) {
@@ -242,7 +257,7 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 135: // --sandbox ...
+      case OPT_SANDBOX: // --sandbox ...
         if (strcmp(optarg, "on") == 0) {
           options.sandbox_enabled = true;
         } else if (strcmp(optarg, "off") == 0) {
@@ -253,7 +268,7 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 136: { // --max-errors ...
+      case OPT_MAX_ERRORS: { // --max-errors ...
         bool valid = true;
         try {
           options.max_errors = optarg;
@@ -269,7 +284,7 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 137: // --counterexample-trace ...
+      case OPT_COUNTEREXAMPLE_TRACE: // --counterexample-trace ...
         if (strcmp(optarg, "full") == 0) {
           options.counterexample_trace = FULL;
         } else if (strcmp(optarg, "diff") == 0) {
@@ -283,7 +298,7 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 138: // --output-format ...
+      case OPT_OUTPUT_FORMAT: // --output-format ...
         if (strcmp(optarg, "machine-readable") == 0) {
           options.machine_readable_output = true;
           // Disable colour that would interfere with XML
@@ -297,11 +312,11 @@ static void parse_args(int argc, char **argv) {
         }
         break;
 
-      case 139: // --version
+      case OPT_VERSION: // --version
         std::cout << "Rumur version " << VERSION << "\n";
         exit(EXIT_SUCCESS);
 
-      case 140: { // --bound ...
+      case OPT_BOUND: { // --bound ...
         bool valid = true;
         try {
           options.bound = optarg;
@@ -317,7 +332,7 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 141: // --value-type ...
+      case OPT_VALUE_TYPE: // --value-type ...
         options.value_type = optarg;
         break;
 
