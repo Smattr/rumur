@@ -12,6 +12,8 @@
 #include <memory>
 #include "options.h"
 #include <rumur/rumur.h>
+#include "smt/except.h"
+#include "smt/simplify.h"
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -48,6 +50,10 @@ static void parse_args(int argc, char **argv) {
       OPT_MONOPOLISE,
       OPT_OUTPUT_FORMAT,
       OPT_SANDBOX,
+      OPT_SMT_ARG,
+      OPT_SMT_BUDGET,
+      OPT_SMT_PATH,
+      OPT_SMT_SIMPLIFICATION,
       OPT_SYMMETRY_REDUCTION,
       OPT_TRACE,
       OPT_VALUE_TYPE,
@@ -71,6 +77,10 @@ static void parse_args(int argc, char **argv) {
       { "sandbox", required_argument, 0, OPT_SANDBOX },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
+      { "smt-arg", required_argument, 0, OPT_SMT_ARG },
+      { "smt-budget", required_argument, 0, OPT_SMT_BUDGET },
+      { "smt-path", required_argument, 0, OPT_SMT_PATH },
+      { "smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION },
       { "symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION },
       { "threads", required_argument, 0, 't' },
       { "trace", required_argument, 0, OPT_TRACE },
@@ -336,6 +346,42 @@ static void parse_args(int argc, char **argv) {
         options.value_type = optarg;
         break;
 
+      case OPT_SMT_ARG: // --smt-arg ...
+        options.smt.args.emplace_back(optarg);
+        break;
+
+      case OPT_SMT_BUDGET: { // --smt-budget ...
+        bool valid = true;
+        try {
+          options.smt.budget = optarg;
+          if (options.smt.budget < 0)
+            valid = false;
+        } catch (std::invalid_argument&) {
+          valid = false;
+        }
+        if (!valid) {
+          std::cerr << "invalid --smt-budget, \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+      }
+
+      case OPT_SMT_PATH: // --smt-path ...
+        options.smt.path = optarg;
+        break;
+
+      case OPT_SMT_SIMPLIFICATION: // --smt-simplification ...
+        if (strcmp(optarg, "on") == 0) {
+          options.smt.simplification = true;
+        } else if (strcmp(optarg, "off") == 0) {
+          options.smt.simplification = false;
+        } else {
+          std::cerr << "invalid argument to --smt-simplification, \"" << optarg
+            << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+
       default:
         std::cerr << "unexpected error\n";
         exit(EXIT_FAILURE);
@@ -377,6 +423,20 @@ static void parse_args(int argc, char **argv) {
     } else {
       options.threads = r;
     }
+  }
+
+  if (!options.smt.simplification) {
+    if (options.smt.path != "" || !options.smt.args.empty()) {
+      *warn << "a path and/or arguments to an SMT solver were provided but SMT "
+        "simplification was not enabled (--smt-simplification on) so the "
+        "solver will not be used\n";
+    }
+  }
+
+  if (options.smt.simplification && options.smt.path == "") {
+    *warn << "SMT simplification was enabled but no path was provided to the "
+      << "solver (--smt-path ...), so it will be disabled\n";
+    options.smt.simplification = false;
   }
 }
 
@@ -502,6 +562,17 @@ int main(int argc, char **argv) {
   // Check whether we have a start state.
   if (!contains(m->rules, has_start_state))
     *warn << "warning: model has no start state\n";
+
+  // run SMT simplification if the user enabled it
+  if (options.smt.simplification) {
+    try {
+      smt::simplify(*m);
+    } catch (smt::BudgetExhausted&) {
+      *info << "SMT solver budget (" << options.smt.budget << "ms) exhausted\n";
+    } catch (smt::Unsupported&) {
+      *info << "SMT solver encountered an unsupported expression\n";
+    }
+  }
 
   // get value_t to use in the checker
   std::pair<ValueType, ValueType> value_types;
