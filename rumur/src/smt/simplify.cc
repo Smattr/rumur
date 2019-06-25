@@ -99,7 +99,12 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.index);
   }
 
-  void visit_enum(Enum&) final {
+  void visit_enum(Enum &n) final {
+
+    // boolean is an SMT built-in we don't need to declare
+    if (n == *Boolean)
+      return;
+
     throw Unsupported();
   }
 
