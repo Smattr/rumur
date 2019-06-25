@@ -258,8 +258,21 @@ int run(const std::vector<std::string> &args, const std::string &input,
     // check if the child has exited
     int status;
     if (waitpid(pid, &status, WNOHANG) == pid) {
-      if (WIFEXITED(status))
+#if 0
+      /* It's useful to uncomment this when testing new SMT modes or new Rumur
+       * syntax, to make a solver failure crash Rumur. Obviously you don't want
+       * this enabled in a production build because the solver is just an
+       * arbitrary user-defined program that's free to fail or crash if it wants
+       * to.
+       */
+      assert(WIFSTOPPED(status) ||
+        (WIFEXITED(status) && WEXITSTATUS(status) == EXIT_SUCCESS));
+#endif
+      if (WIFEXITED(status)) {
+        if (WEXITSTATUS(status) != EXIT_SUCCESS)
+          *debug << "child returned exit status " << WEXITSTATUS(status) << "\n";
         break;
+      }
       if (WIFSIGNALED(status)) {
         *debug << "child exited due to signal " << WTERMSIG(status) << "\n";
         break;
