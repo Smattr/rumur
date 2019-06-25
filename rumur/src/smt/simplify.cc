@@ -433,7 +433,14 @@ namespace { class Simplifier : public BaseTraversal {
     if (!e->is_boolean())
       return;
 
-    const std::string claim = translate(*e);
+    std::string claim;
+    try {
+      claim = translate(*e);
+    } catch (Unsupported&) {
+      *info << "skipping SMT simplification of unsupported expression \""
+        << e->to_string() << "\"\n";
+      return;
+    }
 
     if (solver->is_true(claim)) {
       *info << "simplifying \"" << e->to_string() << "\" to true\n";
