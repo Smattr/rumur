@@ -105,7 +105,7 @@ namespace { class Simplifier : public BaseTraversal {
     if (n == *Boolean)
       return;
 
-    throw Unsupported();
+    throw Unsupported(n.to_string());
   }
 
   void visit_eq(Eq &n) final { visit_bexpr(n); }

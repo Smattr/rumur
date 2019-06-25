@@ -37,8 +37,8 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(and " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_element(const Element&) {
-    throw Unsupported();
+  void visit_element(const Element &n) {
+    throw Unsupported(n.to_string());
   }
 
   void visit_exprid(const ExprID &n) {
@@ -49,24 +49,24 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(= " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_exists(const Exists&) {
-    throw Unsupported();
+  void visit_exists(const Exists &n) {
+    throw Unsupported(n.to_string());
   }
 
   void visit_div(const Div &n) {
     *this << "(div " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_field(const Field&) {
-    throw Unsupported();
+  void visit_field(const Field &n) {
+    throw Unsupported(n.to_string());
   }
 
-  void visit_forall(const Forall&) {
-    throw Unsupported();
+  void visit_forall(const Forall &n) {
+    throw Unsupported(n.to_string());
   }
 
-  void visit_functioncall(const FunctionCall&) {
-    throw Unsupported();
+  void visit_functioncall(const FunctionCall &n) {
+    throw Unsupported(n.to_string());
   }
 
   void visit_geq(const Geq &n) {
@@ -81,8 +81,8 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(=> " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_isundefined(const IsUndefined&) {
-    throw Unsupported();
+  void visit_isundefined(const IsUndefined &n) {
+    throw Unsupported(n.to_string());
   }
 
   void visit_leq(const Leq &n) {

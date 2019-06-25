@@ -569,8 +569,8 @@ int main(int argc, char **argv) {
       smt::simplify(*m);
     } catch (smt::BudgetExhausted&) {
       *info << "SMT solver budget (" << options.smt.budget << "ms) exhausted\n";
-    } catch (smt::Unsupported&) {
-      *info << "SMT solver encountered an unsupported expression\n";
+    } catch (smt::Unsupported &e) {
+      *info << e.what() << "\n";
     }
   }
 
