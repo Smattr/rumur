@@ -433,6 +433,10 @@ namespace { class Simplifier : public BaseTraversal {
     if (!e->is_boolean())
       return;
 
+    // there's no point trying to simplify a literal we will replace with itself
+    if (*e == *True || *e == *False)
+      return;
+
     std::string claim;
     try {
       claim = translate(*e);
