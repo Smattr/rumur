@@ -453,16 +453,12 @@ namespace { class Simplifier : public BaseTraversal {
 
   // invent a reference to "true"
   static Ptr<Expr> make_true(void) {
-    auto n = Ptr<Number>::make(1, location());
-    auto cd = Ptr<ConstDecl>::make("boolean", n, Boolean, location());
-    return Ptr<ExprID>::make("true", cd, location());
+    return Ptr<Expr>(True);
   }
 
   // invent a reference to "false"
   static Ptr<Expr> make_false(void) {
-    auto n = Ptr<Number>::make(0, location());
-    auto cd = Ptr<ConstDecl>::make("boolean", n, Boolean, location());
-    return Ptr<ExprID>::make("false", cd, location());
+    return Ptr<Expr>(False);
   }
 
   // declare a variable/type to the solver
