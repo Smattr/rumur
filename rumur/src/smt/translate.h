@@ -9,4 +9,7 @@ namespace smt {
 // translate an expression to its SMTLIB equivalent
 std::string translate(const rumur::Expr &expr);
 
+// name-mangle a symbol to make it a safe SMT variable
+std::string mangle(const std::string &s);
+
 }

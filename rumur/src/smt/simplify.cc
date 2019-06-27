@@ -271,14 +271,15 @@ namespace { class Simplifier : public BaseTraversal {
       if (n.step != nullptr)
         simplify(n.step);
 
-      *solver << "(declare-const " << n.name << " Int)\n";
+      const std::string name = mangle(n.name);
+      *solver << "(declare-const " << name << " Int)\n";
       if (n.from->constant()) {
         const std::string lb = n.from->constant_fold().get_str();
-        *solver << "(assert (>= " << n.name << " " << lb << "))\n";
+        *solver << "(assert (>= " << name << " " << lb << "))\n";
       }
       if (n.to->constant()) {
         const std::string ub = n.to->constant_fold().get_str();
-        *solver << "(assert (<= " << n.name << " " << ub << "))\n";
+        *solver << "(assert (<= " << name << " " << ub << "))\n";
       }
     }
   }
@@ -480,12 +481,14 @@ namespace { class Simplifier : public BaseTraversal {
 
     const Ptr<TypeExpr> t = type.resolve();
 
+    const std::string n = mangle(name);
+
     // the solver already knows boolean, so we can just declare it
     if (*t == *Boolean) {
-      *solver << "(declare-const " << name << " Bool)\n";
+      *solver << "(declare-const " << mangle(name) << " Bool)\n";
 
     } else if (isa<Range>(t)) {
-      *solver << "(declare-const " << name << " Int)\n";
+      *solver << "(declare-const " << n << " Int)\n";
 
       // if this range's bounds are static, make them known to the solver
       auto r = dynamic_cast<const Range&>(*t);
@@ -493,8 +496,8 @@ namespace { class Simplifier : public BaseTraversal {
         const std::string lb = r.min->constant_fold().get_str();
         const std::string ub = r.max->constant_fold().get_str();
         *solver
-          << "(assert (>= " << name << " " << lb << "))\n"
-          << "(assert (<= " << name << " " << ub << "))\n";
+          << "(assert (>= " << n << " " << lb << "))\n"
+          << "(assert (<= " << n << " " << ub << "))\n";
       }
 
     } else if (isa<Scalarset>(t)) {
@@ -503,14 +506,14 @@ namespace { class Simplifier : public BaseTraversal {
        * symmetry reasoning.
        */
       *solver
-        << "(declare-const " << name << " Int)\n"
-        << "(assert (>= " << name << " 0))\n";
+        << "(declare-const " << n << " Int)\n"
+        << "(assert (>= " << n << " 0))\n";
 
       // if this scalarset's bounds are static, make them known to the solver
       auto s = dynamic_cast<const Scalarset&>(*t);
       if (s.constant()) {
         const std::string bound = s.bound->constant_fold().get_str();
-        *solver << "(assert (< " << name << " " << bound << "))\n";
+        *solver << "(assert (< " << n << " " << bound << "))\n";
       }
 
     } else {

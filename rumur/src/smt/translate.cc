@@ -42,7 +42,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_exprid(const ExprID &n) {
-    *this << n.id;
+    *this << mangle(n.id);
   }
 
   void visit_eq(const Eq &n) {
@@ -134,6 +134,10 @@ std::string translate(const Expr &expr) {
   Translator t;
   t.dispatch(expr);
   return t.str();
+}
+
+std::string mangle(const std::string &s) {
+  return "ru_" + s;
 }
 
 }
