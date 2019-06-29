@@ -1,6 +1,36 @@
 Change log
 ==========
 
+v2019.06.30
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: duplicated semi-colons are now ignored. For example, an empty
+  statement no longer causes a syntax error (commit
+  7e0a3eeff15707e6a67515acd499dce9e598d9ee).
+* Rumur gained some rudimentary ability to interact with an SMT solver. See the
+  manpage or ``rumur --help`` for information on how to use this functionality.
+  This simplification performed via SMT will incrementally improve in future
+  releases. (commits 45f56b3d06759bd9a0e6343334b5fa2bf2161f2a,
+  1c75eefb8c9c1b3e1e543cefd992b91066929081,
+  0f8c1aa01f5ec517d4186ab8f65b81872dcc4374,
+  9aa75f12adc38efd7a107c90f659ca4d98e8d925,
+  dce3565a8d059e480efd34ff35c5d43134eed607,
+  4a0b72a25318e642a4648dbcb1082068f7c20354,
+  4bf443d4a1eb4f069998109f8f4e9380ad35ef6c,
+  c66061ffa216e291a325e3a33cb55fd6d911960b,
+  c32ed61d1b51439e760558712c5c3de5e8cc2a4c).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A new member of ``VarDecl`` has been added for determining whether a variable
+  declaration is part of the global state or not (commit
+  80e6154c748b3cbd36c3b9fb9e1164447e85246f).
+* ``True`` and ``False`` constants are available to use for comparison or
+  cloning when working with the librumur AST (commit
+  dcb3559fbe03014bdf353649f390fc368b7e813c).
+
 v2019.06.12
 -----------
 
