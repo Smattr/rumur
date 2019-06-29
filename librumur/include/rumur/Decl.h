@@ -108,6 +108,12 @@ struct VarDecl : public ExprDecl {
    */
   bool readonly = false;
 
+  /* Whether this variable declaration is a global; part of the state. That is,
+   * not a local declaration, function parameter, etc. This gets set during
+   * parse().
+   */
+  bool state_variable = false;
+
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc_);
   VarDecl *clone() const final;
