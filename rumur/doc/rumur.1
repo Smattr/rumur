@@ -129,7 +129,7 @@ result in the set only expanding when completely full. This may sound ideal, but
 will actually result in a much longer runtime.
 .RE
 .PP
-\fB--symmetry-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR ]
+\fB--symmetry-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR]
 .RS
 Enable or disable symmetry reduction. Symmetry reduction is an optimisation that
 decreases the state space that must be searched by deriving a canonical
@@ -210,6 +210,62 @@ Output informational messages while generating the verifier.
 \fB--version\fR
 .RS
 Display version information and exit.
+.RE
+.SH SMT OPTIONS
+If you have a Satisfiability Modulo Theories (SMT) solver installed, Rumur can
+use it to optimise your model while generating a verifier. This functionality is
+not enabled by default, but you can use the following options to configure Rumur
+to find and use your SMT solver. Some examples of solver configuration:
+.PP
+.RS
+# for Z3 with a 5 second timeout
+.br
+\fBrumur --smt-simplification on --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
+.PP
+# for CVC4 with a 5 second timeout
+.br
+\fBrumur --smt-simplification on --smt-path cvc4 --smt-arg=--lang=smt2 --smt-arg=--tlimit=5000 ...\fR
+.RE
+.PP
+For other solvers, consult their manpages or documentation to determine what
+command line parameters they accept. Then use the options described below to
+instruct Rumur how to use them. Note that Rumur can only use a single SMT
+solver and specifying the \fB--smt-path\fR option multiple times will only
+retain the last path given.
+.PP
+\fB--smt-arg\fR \fBARG\fI
+.RS
+A command line argument to pass to the SMT solver. This option can be given
+multiple times and arguments are passed in the order listed. E.g. if you specify
+\fB--smt-arg=--tlimit\fR \fB--smt-arg=5000\fR the solver will be called with the
+command line arguments \fB--tlimit\fR \fB5000\fR.
+.RE
+.PP
+\fB--smt-budget\fR \fIMILLISECONDS\fR
+.RS
+Total time allotted for running the SMT solver. That is, the time the solver
+will be allowed to run for over multiple executions. This defaults to
+\fI30000\fR, 30 seconds. So if the solver runs for 10 seconds the first time it
+is called, then 5 seconds the second time it is called, then 20 seconds the
+third time it is called, it will not be called again. Note that Rumur trusts the
+SMT solver to limit itself to a reasonable timeout per run, so its final run can
+exceed the budget. You may want to use the \fB--smt-arg\fR option to pass the
+SMT solver a timeout limit if it supports one.
+.RE
+.PP
+\fB--smt-path\fR \fIPATH\fR
+.RS
+Command or path to the SMT solver. This will use your environment's \fBPATH\fR
+variable, so if the solver is in one of your system directories you can simply
+provide the name of its binary. Note that this option has no effect unless you
+also pass \fB--smt-simplification\fR \fBon\fR.
+.RE
+.PP
+\fB--smt-simplification\fR [\fBoff\fR | \fBon\fR]
+.RS
+Disable or enable using the SMT solver to simplify the input model. By default,
+this is \fBoff\fR. Note that this option has no effect unless you also configure
+a path to the SMT solver with \fB--smt-path\fR.
 .RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez

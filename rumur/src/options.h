@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <gmpxx.h>
 #include <string>
+#include <vector>
 
 enum tristate {
   OFF,
@@ -83,6 +84,23 @@ struct Options {
 
   // Type used for value_t in the checker
   std::string value_type = "auto";
+
+  // options related to SMT solver interaction
+  struct {
+
+    // Path to SMT solver. "" indicates we have no solver.
+    std::string path;
+
+    // arguments to pass to SMT solver when calling it
+    std::vector<std::string> args;
+
+    // total SMT solver execution time allowed in milliseconds
+    mpz_class budget = 30000;
+
+    // use SMT solver for expression simplification?
+    bool simplification = false;
+
+  } smt;
 };
 
 extern Options options;
