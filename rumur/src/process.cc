@@ -57,8 +57,8 @@ static int init(void) {
   {
     int r = sigchld_pipe[READ_FD];
     int w = sigchld_pipe[WRITE_FD];
-    if (fcntl(r, F_SETFD, fcntl(r, F_GETFD) | O_NONBLOCK) == -1 ||
-        fcntl(w, F_SETFD, fcntl(w, F_GETFD) | O_NONBLOCK) == -1) {
+    if (fcntl(r, F_SETFL, fcntl(r, F_GETFL) | O_NONBLOCK) == -1 ||
+        fcntl(w, F_SETFL, fcntl(w, F_GETFL) | O_NONBLOCK) == -1) {
       *debug << "failed to set SIGCHLD pipe non-blocking\n";
       goto fail;
     }
@@ -139,8 +139,8 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // set the ends the parent (us) will use as non-blocking
-  if (fcntl(in[WRITE_FD], F_SETFD, fcntl(in[WRITE_FD], F_GETFD) | O_NONBLOCK) == -1 ||
-      fcntl(out[READ_FD], F_SETFD, fcntl(out[READ_FD], F_GETFD) | O_NONBLOCK) == -1) {
+  if (fcntl(in[WRITE_FD], F_SETFL, fcntl(in[WRITE_FD], F_GETFL) | O_NONBLOCK) == -1 ||
+      fcntl(out[READ_FD], F_SETFL, fcntl(out[READ_FD], F_GETFL) | O_NONBLOCK) == -1) {
     *debug << "failed to set O_NONBLOCK: " << strerror(errno) << "\n";
     goto done;
   }
