@@ -126,7 +126,9 @@ class Tests(unittest.TestCase):
         out.write('\nint main(void) { return 0; }\n')
 
       try:
-        subprocess.check_call([CC, '-std=c11', '-m32', '-o', os.devnull, test_c])
+        with open(os.devnull, 'wt') as null:
+          subprocess.check_call([CC, '-std=c11', '-m32', '-o', os.devnull, test_c],
+            stdout=null, stderr=null)
       except subprocess.CalledProcessError:
         raise unittest.SkipTest('32-bit headers unavailable')
 
