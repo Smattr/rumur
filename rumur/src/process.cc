@@ -134,7 +134,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
 
   // create some pipes we'll use to communicate with the child
   if (pipe(in) < 0 || pipe(out) < 0) {
-    *debug<< "failed pipe: " << strerror(errno) << "\n";
+    *debug << "failed pipe: " << strerror(errno) << "\n";
     goto done;
   }
 
