@@ -36,7 +36,7 @@ class Solver {
   // can this expression be proven always-false?
   bool is_false(const std::string &claim);
 
-  // add something to the prelude (e.g. a declaration "(declare-const v Int)")
+  // add something to the prelude (e.g. a declaration "(declare-fun v () Int)")
   Solver &operator<<(const std::string &s);
 
   // open a new (nested) variable scope

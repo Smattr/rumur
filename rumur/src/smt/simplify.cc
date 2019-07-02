@@ -272,7 +272,7 @@ namespace { class Simplifier : public BaseTraversal {
         simplify(n.step);
 
       const std::string name = mangle(n.name);
-      *solver << "(declare-const " << name << " Int)\n";
+      *solver << "(declare-fun " << name << " () Int)\n";
       if (n.from->constant()) {
         const std::string lb = n.from->constant_fold().get_str();
         *solver << "(assert (>= " << name << " " << lb << "))\n";
@@ -485,10 +485,10 @@ namespace { class Simplifier : public BaseTraversal {
 
     // the solver already knows boolean, so we can just declare it
     if (*t == *Boolean) {
-      *solver << "(declare-const " << mangle(name) << " Bool)\n";
+      *solver << "(declare-fun " << mangle(name) << " () Bool)\n";
 
     } else if (isa<Range>(t)) {
-      *solver << "(declare-const " << n << " Int)\n";
+      *solver << "(declare-fun " << n << " () Int)\n";
 
       // if this range's bounds are static, make them known to the solver
       auto r = dynamic_cast<const Range&>(*t);
@@ -506,7 +506,7 @@ namespace { class Simplifier : public BaseTraversal {
        * symmetry reasoning.
        */
       *solver
-        << "(declare-const " << n << " Int)\n"
+        << "(declare-fun " << n << " () Int)\n"
         << "(assert (>= " << n << " 0))\n";
 
       // if this scalarset's bounds are static, make them known to the solver
