@@ -4,6 +4,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
 #include <rumur/Model.h>
+#include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Property.h>
 #include <rumur/Rule.h>
@@ -404,6 +405,11 @@ class Validator : public ConstBaseTraversal {
 void validate_model(const Model &m) {
   Validator v;
   v.dispatch(m);
+}
+
+void validate(const Node &n) {
+  Validator v;
+  v.dispatch(n);
 }
 
 }
