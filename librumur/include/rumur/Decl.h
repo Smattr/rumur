@@ -108,10 +108,9 @@ struct VarDecl : public ExprDecl {
    */
   bool readonly = false;
 
-  /* Whether this variable declaration is a global; part of the state. That is,
-   * not a local declaration, function parameter, etc. This gets set during
-   * parse().
-   */
+  // DEPRECATED, DO NOT USE
+  // Commented out because it triggers warnings when the copy ctor is invoked:
+  // [[gnu::deprecated("state_variable has been replaced by is_in_state()")]]
   bool state_variable = false;
 
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
