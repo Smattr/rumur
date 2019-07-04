@@ -158,7 +158,7 @@ bool VarDecl::is_readonly() const {
 }
 
 bool VarDecl::is_in_state() const {
-  return state_variable;
+  return offset >= 0;
 }
 
 mpz_class VarDecl::width() const {
