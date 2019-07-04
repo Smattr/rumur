@@ -240,7 +240,12 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
         sys.stderr.write(stderr)
       self.assertIsNotNone(option['checker_output'].search(stdout))
 
-    if xml:
+    # coarse grained check for whether the model contains a 'put' statement that
+    # could screw up XML validation
+    with io.open(model, 'rt', encoding='utf-8') as f:
+      has_put = re.search(r'\bput\b', f.read()) is not None
+
+    if xml and not has_put:
       # See if we have xmllint
       ret, _, _ = run(['which', 'xmllint'])
       if ret != 0:
