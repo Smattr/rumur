@@ -122,6 +122,11 @@ struct VarDecl : public ExprDecl {
   mpz_class count() const;
   mpz_class width() const;
 
+  /* Whether this variable declaration is a global; part of the state. That is,
+   * not a local declaration, function parameter, etc.
+   */
+  bool is_in_state() const;
+
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;

@@ -157,6 +157,10 @@ bool VarDecl::is_readonly() const {
   return readonly;
 }
 
+bool VarDecl::is_in_state() const {
+  return state_variable;
+}
+
 mpz_class VarDecl::width() const {
   return type->width();
 }
