@@ -14,6 +14,7 @@
 #include <rumur/Symtab.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/validate.h>
 #include <string>
 #include <utility>
 
@@ -144,8 +145,44 @@ class Resolver : public Traversal {
   }
 
   void visit_model(Model &n) final {
+
+    // running marker of offset in the global state data
+    mpz_class offset = 0;
+
+    /* whether we have not yet hit any problems that make offset calculation
+     * impossible
+     */
+    bool ok = true;
+
     for (auto &d : n.decls) {
       dispatch(*d);
+
+      /* if this was a variable declaration, we now know enough to determine its
+       * offset in the global state data
+       */
+      if (ok) {
+        if (auto v = dynamic_cast<VarDecl*>(d.get())) {
+
+          /* If the declaration or one of its children does not validate, it is
+           * unsafe to call width().
+           */
+          try {
+            validate(*v);
+          } catch (Error&) {
+            /* Skip this and future offset calculations and assume our caller
+             * will eventually discover the underlying reason when they call
+             * validate_model.
+             */
+            ok = false;
+          }
+
+          if (ok) {
+            v->offset = offset;
+            offset += v->type->width();
+          }
+        }
+      }
+
       symtab.declare(d->name, d);
     }
     for (auto &f : n.functions) {
