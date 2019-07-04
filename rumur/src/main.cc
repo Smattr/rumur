@@ -542,8 +542,6 @@ int main(int argc, char **argv) {
   rumur::Ptr<rumur::Model> m;
   try {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
-    resolve_symbols(*m);
-    validate(*m);
   } catch (rumur::Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
       << reset() << " " << red() << bold() << "error:" << reset() << " "
@@ -558,6 +556,18 @@ int main(int argc, char **argv) {
    * generation of the verifier).
    */
   m->reindex();
+
+  // resolve symbolic references and validate the model
+  try {
+    resolve_symbols(*m);
+    validate(*m);
+  } catch (rumur::Error &e) {
+    std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
+      << reset() << " " << red() << bold() << "error:" << reset() << " "
+      << white() << bold() << e.what() << reset() << "\n";
+    print_location(input_filename, e.loc);
+    return EXIT_FAILURE;
+  }
 
   // Check whether we have a start state.
   if (!contains(m->rules, has_start_state))
