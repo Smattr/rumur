@@ -106,9 +106,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_exprid(const ExprID &n) final {
-    /* Don't descend into *n.value because we will already validate this
-     * elsewhere.
-     */
+    if (n.value != nullptr)
+      dispatch(*n.value);
     n.validate();
   }
 
@@ -143,6 +142,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_functioncall(const FunctionCall &n) final {
+    if (n.function != nullptr)
+      dispatch(*n.function);
     for (auto &a : n.arguments)
       dispatch(*a);
     n.validate();
@@ -372,9 +373,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_typeexprid(const TypeExprID &n) final {
-    /* Don't descend into *n.referent because we will already validate this
-     * elsewhere.
-     */
+    if (n.referent != nullptr)
+      dispatch(*n.referent);
     n.validate();
   }
 
