@@ -252,11 +252,14 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
         self.skipTest('xmllint not available for validation')
 
       # Validate the XML
+      rng = os.path.abspath(os.path.join(os.path.dirname(__file__),
+        '..', 'misc', 'verifier.rng'))
       output_xml = os.path.join(tmp, 'output.xml')
       with open(output_xml, 'wt') as f:
         f.write(stdout)
         f.flush()
-      ret, stdout, stderr = run(['xmllint', '--noout', output_xml])
+      ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout',
+        output_xml])
       if ret != 0:
         sys.stderr.write('Failed to XML-validate machine readable output\n')
         sys.stdout.write(stdout)
