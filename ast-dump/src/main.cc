@@ -92,7 +92,6 @@ int main(int argc, char **argv) {
   try {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
     resolve_symbols(*m);
-    m->reindex();
     validate_model(*m);
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
