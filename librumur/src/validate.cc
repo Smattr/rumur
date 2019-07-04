@@ -403,8 +403,7 @@ class Validator : public ConstBaseTraversal {
 }
 
 void validate_model(const Model &m) {
-  Validator v;
-  v.dispatch(m);
+  validate(m);
 }
 
 void validate(const Node &n) {
