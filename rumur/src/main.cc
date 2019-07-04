@@ -543,7 +543,7 @@ int main(int argc, char **argv) {
   try {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
     resolve_symbols(*m);
-    validate_model(*m);
+    validate(*m);
   } catch (rumur::Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
       << reset() << " " << red() << bold() << "error:" << reset() << " "
