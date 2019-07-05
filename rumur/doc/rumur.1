@@ -253,6 +253,13 @@ exceed the budget. You may want to use the \fB--smt-arg\fR option to pass the
 SMT solver a timeout limit if it supports one.
 .RE
 .PP
+\fB--smt-logic\fR \fILOGIC\fR
+.RS
+Set the target logic used for communication with the SMT solver. By default,
+this is \fBQF_LIA\fR. Supported logics are those supporting integer arithmetic
+or bitvector arithmetic.
+.RE
+.PP
 \fB--smt-path\fR \fIPATH\fR
 .RS
 Command or path to the SMT solver. This will use your environment's \fBPATH\fR
