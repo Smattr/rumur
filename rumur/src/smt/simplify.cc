@@ -477,10 +477,31 @@ namespace { class Simplifier : public BaseTraversal {
 
     if (auto v = dynamic_cast<const VarDecl*>(&decl)) {
       declare_var(v->name, *v->type);
-    } else {
-      // TODO
-      throw Unsupported();
+      return;
     }
+
+    if (auto c = dynamic_cast<const ConstDecl*>(&decl)) {
+
+      if (c->type == nullptr) {
+        // integer constant
+        assert(c->value->constant()
+          && "non-constant value declared as constant");
+
+        const std::string value =
+          logic->numeric_literal(c->value->constant_fold());
+
+        *solver << "(declare-fun " << mangle(c->name) << " () "
+          << logic->integer_type() << ")\n"
+          << "(assert (= " << mangle(c->name) << " " << value << "))\n";
+
+        return;
+      }
+
+      // TODO: enum constants
+    }
+
+    // TODO
+    throw Unsupported();
   }
 
   void declare_var(const std::string &name, const TypeExpr &type) {
