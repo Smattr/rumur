@@ -100,6 +100,9 @@ struct Options {
     // use SMT solver for expression simplification?
     bool simplification = false;
 
+    // SMTLIB logic to use when building problems
+    std::string logic = "QF_LIA";
+
   } smt;
 };
 
