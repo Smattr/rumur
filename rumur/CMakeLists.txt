@@ -51,6 +51,7 @@ add_executable(rumur
   src/options.cc
   src/output.cc
   src/process.cc
+  src/smt/logic.cc
   src/smt/simplify.cc
   src/smt/solver.cc
   src/smt/translate.cc

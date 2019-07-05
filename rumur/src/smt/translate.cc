@@ -1,6 +1,8 @@
 #include <cstddef>
 #include <rumur/rumur.h>
 #include "except.h"
+#include "logic.h"
+#include "../options.h"
 #include "translate.h"
 #include <sstream>
 #include <string>
@@ -13,8 +15,11 @@ namespace { class Translator : public ConstExprTraversal {
 
  private:
   std::ostringstream buffer;
+  const Logic *logic;
 
  public:
+  Translator(const Logic &logic_): logic(&logic_) { }
+
   std::string str() const {
     return buffer.str();
   }
@@ -30,7 +35,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_add(const Add &n) {
-    *this << "(+ " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->add() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_and(const And &n) {
@@ -54,7 +59,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_div(const Div &n) {
-    *this << "(div " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->div() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_field(const Field &n) {
@@ -70,11 +75,11 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_geq(const Geq &n) {
-    *this << "(>= " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->geq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_gt(const Gt &n) {
-    *this << "(> " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->gt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_implication(const Implication &n) {
@@ -86,23 +91,23 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_leq(const Leq &n) {
-    *this << "(<= " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->leq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_lt(const Lt &n) {
-    *this << "(< " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->lt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_mod(const Mod &n) {
-    *this << "(mod " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->mod() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_mul(const Mul &n) {
-    *this << "(* " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->mul() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_negative(const Negative &n) {
-    *this << "(- " << *n.rhs << ")";
+    *this << "(" << logic->neg() << " " << *n.rhs << ")";
   }
 
   void visit_neq(const Neq &n) {
@@ -110,7 +115,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_number(const Number &n) {
-    *this << n.value.get_str();
+    *this << logic->numeric_literal(n.value);
   }
 
   void visit_not(const Not &n) {
@@ -122,7 +127,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_sub(const Sub &n) {
-    *this << "(sub " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << logic->sub() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_ternary(const Ternary &n) {
@@ -131,7 +136,9 @@ namespace { class Translator : public ConstExprTraversal {
 }; }
 
 std::string translate(const Expr &expr) {
-  Translator t;
+  const Logic &logic = get_logic(options.smt.logic);
+
+  Translator t(logic);
   t.dispatch(expr);
   return t.str();
 }

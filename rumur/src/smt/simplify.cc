@@ -2,6 +2,7 @@
 #include <cstddef>
 #include "except.h"
 #include "../log.h"
+#include "logic.h"
 #include <rumur/rumur.h>
 #include "simplify.h"
 #include "solver.h"
@@ -22,9 +23,11 @@ namespace { class Simplifier : public BaseTraversal {
 
  private:
   Solver *solver;
+  const Logic *logic;
 
  public:
-  Simplifier(Solver &solver_): solver(&solver_) { }
+  Simplifier(Solver &solver_, const Logic &logic_):
+    solver(&solver_), logic(&logic_) { }
 
   /* if you are editing the visitation logic, note that the calls to
    * open_scope/close_scope are intended to match the pattern in
@@ -272,14 +275,17 @@ namespace { class Simplifier : public BaseTraversal {
         simplify(n.step);
 
       const std::string name = mangle(n.name);
-      *solver << "(declare-fun " << name << " () Int)\n";
+      *solver << "(declare-fun " << name << " () " << logic->integer_type()
+        << ")\n";
       if (n.from->constant()) {
-        const std::string lb = n.from->constant_fold().get_str();
-        *solver << "(assert (>= " << name << " " << lb << "))\n";
+        const std::string lb = logic->numeric_literal(n.from->constant_fold());
+        const std::string geq = logic->geq();
+        *solver << "(assert (" << geq << " " << name << " " << lb << "))\n";
       }
       if (n.to->constant()) {
-        const std::string ub = n.to->constant_fold().get_str();
-        *solver << "(assert (<= " << name << " " << ub << "))\n";
+        const std::string ub = logic->numeric_literal(n.to->constant_fold());
+        const std::string leq = logic->leq();
+        *solver << "(assert (" << leq << " " << name << " " << ub << "))\n";
       }
     }
   }
@@ -488,16 +494,19 @@ namespace { class Simplifier : public BaseTraversal {
       *solver << "(declare-fun " << mangle(name) << " () Bool)\n";
 
     } else if (isa<Range>(t)) {
-      *solver << "(declare-fun " << n << " () Int)\n";
+      *solver << "(declare-fun " << n << " () " << logic->integer_type()
+        << ")\n";
 
       // if this range's bounds are static, make them known to the solver
       auto r = dynamic_cast<const Range&>(*t);
       if (r.constant()) {
-        const std::string lb = r.min->constant_fold().get_str();
-        const std::string ub = r.max->constant_fold().get_str();
+        const std::string lb = logic->numeric_literal(r.min->constant_fold());
+        const std::string geq = logic->geq();
+        const std::string ub = logic->numeric_literal(r.max->constant_fold());
+        const std::string leq = logic->leq();
         *solver
-          << "(assert (>= " << n << " " << lb << "))\n"
-          << "(assert (<= " << n << " " << ub << "))\n";
+          << "(assert (" << geq << " " << n << " " << lb << "))\n"
+          << "(assert (" << leq << " " << n << " " << ub << "))\n";
       }
 
     } else if (isa<Scalarset>(t)) {
@@ -505,15 +514,18 @@ namespace { class Simplifier : public BaseTraversal {
        * declare it as an integer and don't expect the solver to use any
        * symmetry reasoning.
        */
+      const std::string geq = logic->geq();
+      const std::string zero = logic->numeric_literal(mpz_class(0));
       *solver
-        << "(declare-fun " << n << " () Int)\n"
-        << "(assert (>= " << n << " 0))\n";
+        << "(declare-fun " << n << " () " << logic->integer_type() << ")\n"
+        << "(assert (" << geq << " " << n << " " << zero << "))\n";
 
       // if this scalarset's bounds are static, make them known to the solver
       auto s = dynamic_cast<const Scalarset&>(*t);
       if (s.constant()) {
-        const std::string bound = s.bound->constant_fold().get_str();
-        *solver << "(assert (< " << n << " " << bound << "))\n";
+        const std::string b = logic->numeric_literal(s.bound->constant_fold());
+        const std::string lt = logic->lt();
+        *solver << "(assert (" << lt << " " << n << " " << b << "))\n";
       }
 
     } else {
@@ -532,8 +544,11 @@ void simplify(Model &m) {
   // establish our connection to the solver
   Solver solver;
 
+  // find the logic we're using
+  const Logic &logic = get_logic(options.smt.logic);
+
   // recursively traverse the model, simplifying as we go
-  Simplifier simplifier(solver);
+  Simplifier simplifier(solver, logic);
   simplifier.dispatch(m);
 }
 
