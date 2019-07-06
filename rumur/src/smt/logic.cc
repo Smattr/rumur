@@ -13,6 +13,11 @@ class BV : public Logic {
   static const size_t BITVECTOR_WIDTH;
 
  public:
+  /* XXX: Clang < 3.9 won't let you construct an object of constant type without
+   * a user-provided default constructor, so we need to provide a useless one.
+   */
+  BV() { }
+
   std::string integer_type(void) const final {
     return "(_ BitVec " + std::to_string(BITVECTOR_WIDTH) + ")";
   }
@@ -43,6 +48,9 @@ static const BV BV;
 class IA : public Logic {
 
  public:
+  // XXX: see previous comment about Clang < 3.9
+  IA() { }
+
   std::string integer_type(void) const final {
     return "Int";
   }
