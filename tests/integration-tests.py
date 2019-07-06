@@ -46,6 +46,34 @@ def valgrind_wrap(args):
   return [VALGRIND, '--leak-check=full', '--show-leak-kinds=all',
     '--error-exitcode=42'] + args
 
+# functions used by test cases for SMT detection
+def smt_args():
+
+  # preference 1: Z3
+  has_z3 = True
+  try:
+    with open(os.devnull, 'wt') as null:
+      subprocess.check_call(['which', 'z3'], stdout=null, stderr=null)
+  except subprocess.CalledProcessError:
+    has_z3 = False
+
+  if has_z3:
+    return ['--smt-path', 'z3', '--smt-arg=-smt2', '--smt-arg=-in']
+
+  # preference 2: CVC4
+  has_cvc4 = True
+  try:
+    with open(os.devnull, 'wt') as null:
+      subprocess.check_call(['which', 'cvc4'], stdout=null, stderr=null)
+  except subprocess.CalledProcessError:
+    has_cvc4 = False
+
+  if has_cvc4:
+    return ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2']
+
+  # otherwise, give up
+  return []
+
 X86_64 = platform.machine() in ('amd64', 'x86_64')
 
 def run(args):
