@@ -193,9 +193,13 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
     'checker_output':None, # Regex to search checker's stdout against.
+    'skip_reason':None, # a reason to skip this test
   }
 
   option.update(parse_test_options(model, xml))
+
+  if option['skip_reason'] is not None:
+    self.skipTest(option['skip_reason'])
 
   with TemporaryDirectory() as tmp:
 
