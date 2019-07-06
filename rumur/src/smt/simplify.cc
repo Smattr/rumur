@@ -102,13 +102,8 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.index);
   }
 
-  void visit_enum(Enum &n) final {
-
-    // boolean is an SMT built-in we don't need to declare
-    if (n == *Boolean)
-      return;
-
-    throw Unsupported(n.to_string());
+  void visit_enum(Enum&) final {
+    // nothing required (see declare_decl)
   }
 
   void visit_eq(Eq &n) final { visit_bexpr(n); }
@@ -510,6 +505,19 @@ namespace { class Simplifier : public BaseTraversal {
       if (isa<Range>(type) || isa<Scalarset>(type))
         return;
 
+      // if it's an enum we need to emit its members as values...
+      if (auto e = dynamic_cast<const Enum*>(type.get())) {
+
+        /* ...unless they've already been emitted, so first is this a typedef of
+         * a typedef?
+         */
+        bool nested = isa<TypeExprID>(t->value);
+
+        if (!nested)
+          declare_enum(*e);
+
+        return;
+      }
     }
 
     // TODO
@@ -567,8 +575,45 @@ namespace { class Simplifier : public BaseTraversal {
       return;
     }
 
+    if (auto e = dynamic_cast<const Enum*>(t.get())) {
+
+      /* if this is an inline definition of the enum itself, we need to declare
+       * its members now
+       */
+      if (isa<Enum>(&type))
+        declare_enum(*e);
+
+      // declare the variable itself as an integer
+      const std::string typ = logic->integer_type();
+      *solver << "(declare-fun " << n << " () " << typ << ")\n";
+
+      // constrain its values based on the number of enum members
+      const std::string geq = logic->geq();
+      const std::string zero = logic->numeric_literal(0);
+      *solver << "(assert (" << geq << " " << n << " " << zero << "))\n";
+      const std::string lt = logic->lt();
+      const std::string size = logic->numeric_literal(e->members.size());
+      *solver << "(assert (" << lt << " " << n << " " << size << "))\n";
+
+      return;
+    }
+
     // TODO
     throw Unsupported();
+  }
+
+  void declare_enum(const Enum &e) {
+    // emit the members of the enum as integer constants
+    mpz_class index = 0;
+    for (const std::pair<std::string, location> &member : e.members) {
+      const std::string name = mangle(member.first);
+      const std::string type = logic->integer_type();
+      const std::string value = logic->numeric_literal(index);
+      *solver
+        << "(declare-fun " << name << " () " << type << ")\n"
+        << "(assert (= " << name << " " << value << "))\n";
+      index++;
+    }
   }
 
   void declare_func(const Function&) {
