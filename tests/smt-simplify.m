@@ -1,4 +1,5 @@
--- rumur_flags: ['--smt-simplification', 'on', '--smt-path', 'python', '--smt-arg', os.path.join(os.path.dirname(__file__), '../misc/toy-smt.py')]
+-- rumur_flags: ['--smt-simplification', 'on'] + smt_args()
+-- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
 
 /* This model tests whether Rumur is capable of simplifying simple conditions at
  * code generation time. If it is, then it will replace the `y = y` check with
