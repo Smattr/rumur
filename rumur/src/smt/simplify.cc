@@ -500,6 +500,18 @@ namespace { class Simplifier : public BaseTraversal {
       // TODO: enum constants
     }
 
+    if (auto t = dynamic_cast<const TypeDecl*>(&decl)) {
+
+      const Ptr<TypeExpr> type = t->value->resolve();
+
+      /* we can ignore range and scalarset types as their constraints are
+       * emitted for a VarDecl that is declared as an Int
+       */
+      if (isa<Range>(type) || isa<Scalarset>(type))
+        return;
+
+    }
+
     // TODO
     throw Unsupported();
   }
