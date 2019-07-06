@@ -82,6 +82,7 @@ matrix:
           - g++-4.7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
@@ -100,6 +101,7 @@ matrix:
           - g++-4.7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -117,6 +119,7 @@ matrix:
           - g++-4.7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -134,6 +137,7 @@ matrix:
           - g++-4.7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-4.7 && CXX=g++-4.7"
@@ -216,6 +220,7 @@ matrix:
           - g++-4.8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
@@ -232,6 +237,7 @@ matrix:
           - g++-4.8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -249,6 +255,7 @@ matrix:
           - g++-4.8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -266,6 +273,7 @@ matrix:
           - g++-4.8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-4.8 && CXX=g++-4.8"
@@ -355,6 +363,7 @@ matrix:
           - g++-4.9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
@@ -375,6 +384,7 @@ matrix:
           - g++-4.9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -393,6 +403,7 @@ matrix:
           - g++-4.9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -411,6 +422,7 @@ matrix:
           - g++-4.9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
@@ -498,6 +510,7 @@ matrix:
           - g++-5
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
@@ -515,6 +528,7 @@ matrix:
           - g++-5
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -533,6 +547,7 @@ matrix:
           - g++-5
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -551,6 +566,7 @@ matrix:
           - g++-5
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
@@ -638,6 +654,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
@@ -655,6 +672,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -673,6 +691,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -691,6 +710,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
@@ -778,6 +798,7 @@ matrix:
           - g++-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
@@ -795,6 +816,7 @@ matrix:
           - g++-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -813,6 +835,7 @@ matrix:
           - g++-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -831,6 +854,7 @@ matrix:
           - g++-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
@@ -918,6 +942,7 @@ matrix:
           - g++-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -935,6 +960,7 @@ matrix:
           - g++-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -953,6 +979,7 @@ matrix:
           - g++-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -971,6 +998,7 @@ matrix:
           - g++-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
@@ -1058,6 +1086,7 @@ matrix:
           - g++-9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
@@ -1075,6 +1104,7 @@ matrix:
           - g++-9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -1093,6 +1123,7 @@ matrix:
           - g++-9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -1111,6 +1142,7 @@ matrix:
           - g++-9
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
@@ -1344,6 +1376,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
@@ -1363,6 +1396,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -1383,6 +1417,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -1403,6 +1438,7 @@ matrix:
           - g++-6
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
@@ -1496,6 +1532,7 @@ matrix:
           - clang-5.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
@@ -1511,6 +1548,7 @@ matrix:
           - clang-5.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -1527,6 +1565,7 @@ matrix:
           - clang-5.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -1543,6 +1582,7 @@ matrix:
           - clang-5.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
@@ -1636,6 +1676,7 @@ matrix:
           - clang-6.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
@@ -1651,6 +1692,7 @@ matrix:
           - clang-6.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -1667,6 +1709,7 @@ matrix:
           - clang-6.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -1683,6 +1726,7 @@ matrix:
           - clang-6.0
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
@@ -1778,6 +1822,7 @@ matrix:
           - clang-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
@@ -1795,6 +1840,7 @@ matrix:
           - clang-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -1813,6 +1859,7 @@ matrix:
           - clang-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -1831,6 +1878,7 @@ matrix:
           - clang-7
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
@@ -1926,6 +1974,7 @@ matrix:
           - clang-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MAX_TEST=1000
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
@@ -1943,6 +1992,7 @@ matrix:
           - clang-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=1001
       - MAX_TEST=2000
@@ -1961,6 +2011,7 @@ matrix:
           - clang-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=2001
       - MAX_TEST=3000
@@ -1979,6 +2030,7 @@ matrix:
           - clang-8
           - libxml2-utils
           - valgrind
+          - z3
     env:
       - MIN_TEST=3001
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
