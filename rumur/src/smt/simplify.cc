@@ -525,24 +525,28 @@ namespace { class Simplifier : public BaseTraversal {
     // the solver already knows boolean, so we can just declare it
     if (*t == *Boolean) {
       *solver << "(declare-fun " << mangle(name) << " () Bool)\n";
+      return;
+    }
 
-    } else if (isa<Range>(t)) {
+    if (auto r = dynamic_cast<const Range*>(t.get())) {
       *solver << "(declare-fun " << n << " () " << logic->integer_type()
         << ")\n";
 
       // if this range's bounds are static, make them known to the solver
-      auto r = dynamic_cast<const Range&>(*t);
-      if (r.constant()) {
-        const std::string lb = logic->numeric_literal(r.min->constant_fold());
+      if (r->constant()) {
+        const std::string lb = logic->numeric_literal(r->min->constant_fold());
         const std::string geq = logic->geq();
-        const std::string ub = logic->numeric_literal(r.max->constant_fold());
+        const std::string ub = logic->numeric_literal(r->max->constant_fold());
         const std::string leq = logic->leq();
         *solver
           << "(assert (" << geq << " " << n << " " << lb << "))\n"
           << "(assert (" << leq << " " << n << " " << ub << "))\n";
       }
 
-    } else if (isa<Scalarset>(t)) {
+      return;
+    }
+
+    if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
       /* A scalarset is nothing special to the SMT solver. That is, we just
        * declare it as an integer and don't expect the solver to use any
        * symmetry reasoning.
@@ -554,17 +558,17 @@ namespace { class Simplifier : public BaseTraversal {
         << "(assert (" << geq << " " << n << " " << zero << "))\n";
 
       // if this scalarset's bounds are static, make them known to the solver
-      auto s = dynamic_cast<const Scalarset&>(*t);
-      if (s.constant()) {
-        const std::string b = logic->numeric_literal(s.bound->constant_fold());
+      if (s->constant()) {
+        const std::string b = logic->numeric_literal(s->bound->constant_fold());
         const std::string lt = logic->lt();
         *solver << "(assert (" << lt << " " << n << " " << b << "))\n";
       }
 
-    } else {
-      // TODO
-      throw Unsupported();
+      return;
     }
+
+    // TODO
+    throw Unsupported();
   }
 
   void declare_func(const Function&) {
