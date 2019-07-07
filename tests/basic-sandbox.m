@@ -1,5 +1,5 @@
 -- rumur_flags: ['--sandbox', 'on']
--- skip_reason: 'sandboxing unavailable on Linux prior to 3.5.0' if platform.system() == 'Linux' and tuple(int(x) for x in platform.release().split('.')) < (3, 5, 0) else None
+-- skip_reason: None if has_sandbox() else 'no suitable sandboxing facilities available on this platform'
 
 /* Test that the sandboxing functionality is usable. Note that this merely
  * checks that the sandboxing option results in compilable code, not that the

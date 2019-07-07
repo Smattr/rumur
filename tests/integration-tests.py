@@ -46,7 +46,7 @@ def valgrind_wrap(args):
   return [VALGRIND, '--leak-check=full', '--show-leak-kinds=all',
     '--error-exitcode=42'] + args
 
-# functions used by test cases for SMT detection
+# function used by test cases for SMT detection
 def smt_args():
 
   # preference 1: Z3
@@ -75,6 +75,30 @@ def smt_args():
   return []
 
 X86_64 = platform.machine() in ('amd64', 'x86_64')
+
+# whether the current platform has sandboxing support for the verifier
+def has_sandbox():
+
+  if platform.system() == 'Darwin':
+    return True
+
+  if platform.system() == 'FreeBSD':
+    return True
+
+  if platform.system() == 'Linux':
+    release = platform.release()
+    m = re.match(r'(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)', release)
+
+    assert m is not None, 'unrecognised platform.release() string'
+
+    version = tuple(int(m.group(f)) for f in ('major', 'minor', 'patch'))
+
+    return version >= (3, 5, 0)
+
+  if platform.system() == 'OpenBSD':
+    return True
+
+  return False
 
 def run(args):
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
