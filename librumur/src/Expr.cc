@@ -57,7 +57,7 @@ Ptr<TypeExpr> Ternary::type() const {
 }
 
 mpz_class Ternary::constant_fold() const {
-  return (cond->constant_fold() != 0) ? lhs->constant_fold() : rhs->constant_fold();
+  return cond->constant_fold() != 0 ? lhs->constant_fold() : rhs->constant_fold();
 }
 
 void Ternary::validate() const {
