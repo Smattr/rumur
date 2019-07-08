@@ -95,7 +95,6 @@ int output_checker(const std::string &path, const Model &model,
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
     << "enum { THREADS = " << options.threads << "ul };\n\n"
     << "enum { STATE_SIZE_BITS = " << model.size_bits() << "ul };\n\n"
-    << "enum { ASSUMPTION_COUNT = " << model.assumption_count() << "ul };\n\n"
     << "#define LIVENESS_COUNT " << model.liveness_count() << "\n\n"
     << "#define CEX_OFF 0\n"
     << "#define DIFF 1\n"
