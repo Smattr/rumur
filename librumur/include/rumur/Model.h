@@ -33,7 +33,8 @@ struct Model : public Node {
   bool operator==(const Node &other) const final;
   void validate() const final;
 
-  // Get the number of (global or local) assumptions in the model.
+  // DEPRECATED, DO NOT USE
+  __attribute__((deprecated("Model::assumption_count() will be removed in a future release")))
   unsigned long assumption_count() const;
 
   /* Get the number of global liveness properties in the model. Unlike
