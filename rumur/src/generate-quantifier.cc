@@ -64,8 +64,9 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   }
   out << ";\n";
 
-  out << "  for (raw_value_t " << counter << " = 1; " << counter << " <= ub - lb + 1; "
-    << counter << " += step) {\n"
+  out
+    << "  for (raw_value_t " << counter << " = 1; (value_t)" << counter
+      << " <= (value_t)(ub - lb + 1); " << counter << " += step) {\n"
     << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = " << width << " };\n"
