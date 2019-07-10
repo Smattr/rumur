@@ -1117,6 +1117,72 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
+  - name: Ubuntu Linux 16.04, GCC multilib (1/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        packages:
+          - g++-multilib
+          - libc6-dev-i386
+          - libxml2-utils
+          - valgrind
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc && CXX=g++"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC multilib (2/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        packages:
+          - g++-multilib
+          - libc6-dev-i386
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc && CXX=g++"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC multilib (3/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        packages:
+          - g++-multilib
+          - libc6-dev-i386
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc && CXX=g++"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 16.04, GCC multilib (4/4)
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        packages:
+          - g++-multilib
+          - libc6-dev-i386
+          - libxml2-utils
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc && CXX=g++"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
   - name: Ubuntu Linux 14.04, Clang 3.8 (1/4)
     os: linux
     dist: trusty
