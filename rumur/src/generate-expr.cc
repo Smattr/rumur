@@ -348,14 +348,15 @@ class Generator : public ConstExprTraversal {
             << "raw_value_t v = handle_read_raw(";
           generate_lvalue(*out, *a);
           *out << "); "
-            << "if (v != 0 && (v + " << lba << " - 1 < " << lb << " || v + "
-              << lba << " - 1 > " << ub << ")) { "
+            << "value_t v2;\n"
+            << "if (v != 0 && (ADD(v, " << lba << ", &v2) || SUB(v2, 1, &v2) "
+              << "|| v2 < " << lb << " || v2 > " << ub << ")) { "
             << "error(s, \"call to function %s passed an out-of-range value "
               << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
               << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
             << "} "
-            << "handle_write_raw(" << handle << ", v == 0 ? v : (v + " << lba
-              << " - " << lb << ")); "
+            << "handle_write_raw(" << handle << ", v == 0 ? v : (v2 + " << lba
+              << " + 1 - " << lb << ")); "
             << "} ";
 
         } else if (method == 3) {
