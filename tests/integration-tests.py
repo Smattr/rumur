@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import codecs
 import io
 import json
 import multiprocessing
@@ -434,6 +435,16 @@ def test_ast_dumper_cmurphi_example_template(self, model):
     self.assertEqual(ret, 0)
 
 def main(argv):
+
+  # setup stdout/stderr to make encoding errors non-fatal
+  try:
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'replace')
+  except:
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout, 'replace')
+  try:
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'replace')
+  except:
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr, 'replace')
 
   if not os.path.isfile(RUMUR_BIN):
     sys.stderr.write('{} not found\n'.format(RUMUR_BIN))
