@@ -259,7 +259,7 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
       return
 
     if option['c_flags'] is None:
-      cflags = ['-std=c11', '-Werror=format']
+      cflags = ['-std=c11', '-Werror=format', '-Werror=sign-compare']
       if X86_64:
         cflags.append('-mcx16')
       if optimised:
