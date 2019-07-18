@@ -39,7 +39,7 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
   query << "(set-option :print-success false)\n";
 
   // select quantifier-free linear integer arithmetic logic
-  query << "(set-logic QF_LIA)\n";
+  query << "(set-logic " << options.smt.logic << ")\n";
 
   // append the declarations etc
   for (const std::shared_ptr<std::ostringstream> &scope : prelude)

@@ -52,6 +52,7 @@ static void parse_args(int argc, char **argv) {
       OPT_SANDBOX,
       OPT_SMT_ARG,
       OPT_SMT_BUDGET,
+      OPT_SMT_LOGIC,
       OPT_SMT_PATH,
       OPT_SMT_SIMPLIFICATION,
       OPT_SYMMETRY_REDUCTION,
@@ -79,6 +80,7 @@ static void parse_args(int argc, char **argv) {
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "smt-arg", required_argument, 0, OPT_SMT_ARG },
       { "smt-budget", required_argument, 0, OPT_SMT_BUDGET },
+      { "smt-logic", required_argument, 0, OPT_SMT_LOGIC },
       { "smt-path", required_argument, 0, OPT_SMT_PATH },
       { "smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION },
       { "symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION },
@@ -365,6 +367,10 @@ static void parse_args(int argc, char **argv) {
         }
         break;
       }
+
+      case OPT_SMT_LOGIC: // --smt-logic ...
+        options.smt.logic = optarg;
+        break;
 
       case OPT_SMT_PATH: // --smt-path ...
         options.smt.path = optarg;

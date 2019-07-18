@@ -19,6 +19,7 @@ _arguments \
   {--set-expand-threshold,-e}'[limit at which to expand the seen set]:occupancy percentage' \
   '--smt-arg[argument to pass to SMT solver]:ARG' \
   '--smt-budget[time allotment for SMT solver]:MILLISECONDS' \
+  '--smt-logic[logic to use for communication with SMT solver]:LOGIC' \
   '--smt-path[path to SMT solver]:path:_cmdstring' \
   '--smt-simplification[disable or enable using SMT solver for simplification]: :(off on)' \
   '--symmetry-reduction[symmetry reduction optimisation]: :(off heuristic exhaustive)' \

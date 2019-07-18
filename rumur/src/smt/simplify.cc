@@ -2,6 +2,7 @@
 #include <cstddef>
 #include "except.h"
 #include "../log.h"
+#include "logic.h"
 #include <rumur/rumur.h>
 #include "simplify.h"
 #include "solver.h"
@@ -22,9 +23,11 @@ namespace { class Simplifier : public BaseTraversal {
 
  private:
   Solver *solver;
+  const Logic *logic;
 
  public:
-  Simplifier(Solver &solver_): solver(&solver_) { }
+  Simplifier(Solver &solver_, const Logic &logic_):
+    solver(&solver_), logic(&logic_) { }
 
   /* if you are editing the visitation logic, note that the calls to
    * open_scope/close_scope are intended to match the pattern in
@@ -99,13 +102,8 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.index);
   }
 
-  void visit_enum(Enum &n) final {
-
-    // boolean is an SMT built-in we don't need to declare
-    if (n == *Boolean)
-      return;
-
-    throw Unsupported(n.to_string());
+  void visit_enum(Enum&) final {
+    // nothing required (see declare_decl)
   }
 
   void visit_eq(Eq &n) final { visit_bexpr(n); }
@@ -272,14 +270,17 @@ namespace { class Simplifier : public BaseTraversal {
         simplify(n.step);
 
       const std::string name = mangle(n.name);
-      *solver << "(declare-fun " << name << " () Int)\n";
+      *solver << "(declare-fun " << name << " () " << logic->integer_type()
+        << ")\n";
       if (n.from->constant()) {
-        const std::string lb = n.from->constant_fold().get_str();
-        *solver << "(assert (>= " << name << " " << lb << "))\n";
+        const std::string lb = logic->numeric_literal(n.from->constant_fold());
+        const std::string geq = logic->geq();
+        *solver << "(assert (" << geq << " " << name << " " << lb << "))\n";
       }
       if (n.to->constant()) {
-        const std::string ub = n.to->constant_fold().get_str();
-        *solver << "(assert (<= " << name << " " << ub << "))\n";
+        const std::string ub = logic->numeric_literal(n.to->constant_fold());
+        const std::string leq = logic->leq();
+        *solver << "(assert (" << leq << " " << name << " " << ub << "))\n";
       }
     }
   }
@@ -471,10 +472,56 @@ namespace { class Simplifier : public BaseTraversal {
 
     if (auto v = dynamic_cast<const VarDecl*>(&decl)) {
       declare_var(v->name, *v->type);
-    } else {
-      // TODO
-      throw Unsupported();
+      return;
     }
+
+    if (auto c = dynamic_cast<const ConstDecl*>(&decl)) {
+
+      if (c->type == nullptr) {
+        // integer constant
+        assert(c->value->constant()
+          && "non-constant value declared as constant");
+
+        const std::string value =
+          logic->numeric_literal(c->value->constant_fold());
+
+        *solver << "(declare-fun " << mangle(c->name) << " () "
+          << logic->integer_type() << ")\n"
+          << "(assert (= " << mangle(c->name) << " " << value << "))\n";
+
+        return;
+      }
+
+      // TODO: enum constants
+    }
+
+    if (auto t = dynamic_cast<const TypeDecl*>(&decl)) {
+
+      const Ptr<TypeExpr> type = t->value->resolve();
+
+      /* we can ignore range and scalarset types as their constraints are
+       * emitted for a VarDecl that is declared as an Int
+       */
+      if (isa<Range>(type) || isa<Scalarset>(type))
+        return;
+
+      // if it's an enum we need to emit its members as values...
+      if (auto e = dynamic_cast<const Enum*>(type.get())) {
+
+        /* ...unless they've already been emitted, so first is this a typedef of
+         * a typedef?
+         */
+        bool nested = isa<TypeExprID>(t->value);
+
+        if (!nested)
+          declare_enum(*e);
+
+        return;
+      }
+    }
+
+    // TODO
+    throw Unsupported();
   }
 
   void declare_var(const std::string &name, const TypeExpr &type) {
@@ -486,39 +533,86 @@ namespace { class Simplifier : public BaseTraversal {
     // the solver already knows boolean, so we can just declare it
     if (*t == *Boolean) {
       *solver << "(declare-fun " << mangle(name) << " () Bool)\n";
+      return;
+    }
 
-    } else if (isa<Range>(t)) {
-      *solver << "(declare-fun " << n << " () Int)\n";
+    if (auto r = dynamic_cast<const Range*>(t.get())) {
+      *solver << "(declare-fun " << n << " () " << logic->integer_type()
+        << ")\n";
 
       // if this range's bounds are static, make them known to the solver
-      auto r = dynamic_cast<const Range&>(*t);
-      if (r.constant()) {
-        const std::string lb = r.min->constant_fold().get_str();
-        const std::string ub = r.max->constant_fold().get_str();
+      if (r->constant()) {
+        const std::string lb = logic->numeric_literal(r->min->constant_fold());
+        const std::string geq = logic->geq();
+        const std::string ub = logic->numeric_literal(r->max->constant_fold());
+        const std::string leq = logic->leq();
         *solver
-          << "(assert (>= " << n << " " << lb << "))\n"
-          << "(assert (<= " << n << " " << ub << "))\n";
+          << "(assert (" << geq << " " << n << " " << lb << "))\n"
+          << "(assert (" << leq << " " << n << " " << ub << "))\n";
       }
 
-    } else if (isa<Scalarset>(t)) {
+      return;
+    }
+
+    if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
       /* A scalarset is nothing special to the SMT solver. That is, we just
        * declare it as an integer and don't expect the solver to use any
        * symmetry reasoning.
        */
+      const std::string geq = logic->geq();
+      const std::string zero = logic->numeric_literal(mpz_class(0));
       *solver
-        << "(declare-fun " << n << " () Int)\n"
-        << "(assert (>= " << n << " 0))\n";
+        << "(declare-fun " << n << " () " << logic->integer_type() << ")\n"
+        << "(assert (" << geq << " " << n << " " << zero << "))\n";
 
       // if this scalarset's bounds are static, make them known to the solver
-      auto s = dynamic_cast<const Scalarset&>(*t);
-      if (s.constant()) {
-        const std::string bound = s.bound->constant_fold().get_str();
-        *solver << "(assert (< " << n << " " << bound << "))\n";
+      if (s->constant()) {
+        const std::string b = logic->numeric_literal(s->bound->constant_fold());
+        const std::string lt = logic->lt();
+        *solver << "(assert (" << lt << " " << n << " " << b << "))\n";
       }
 
-    } else {
-      // TODO
-      throw Unsupported();
+      return;
+    }
+
+    if (auto e = dynamic_cast<const Enum*>(t.get())) {
+
+      /* if this is an inline definition of the enum itself, we need to declare
+       * its members now
+       */
+      if (isa<Enum>(&type))
+        declare_enum(*e);
+
+      // declare the variable itself as an integer
+      const std::string typ = logic->integer_type();
+      *solver << "(declare-fun " << n << " () " << typ << ")\n";
+
+      // constrain its values based on the number of enum members
+      const std::string geq = logic->geq();
+      const std::string zero = logic->numeric_literal(0);
+      *solver << "(assert (" << geq << " " << n << " " << zero << "))\n";
+      const std::string lt = logic->lt();
+      const std::string size = logic->numeric_literal(e->members.size());
+      *solver << "(assert (" << lt << " " << n << " " << size << "))\n";
+
+      return;
+    }
+
+    // TODO
+    throw Unsupported();
+  }
+
+  void declare_enum(const Enum &e) {
+    // emit the members of the enum as integer constants
+    mpz_class index = 0;
+    for (const std::pair<std::string, location> &member : e.members) {
+      const std::string name = mangle(member.first);
+      const std::string type = logic->integer_type();
+      const std::string value = logic->numeric_literal(index);
+      *solver
+        << "(declare-fun " << name << " () " << type << ")\n"
+        << "(assert (= " << name << " " << value << "))\n";
+      index++;
     }
   }
 
@@ -532,8 +626,11 @@ void simplify(Model &m) {
   // establish our connection to the solver
   Solver solver;
 
+  // find the logic we're using
+  const Logic &logic = get_logic(options.smt.logic);
+
   // recursively traverse the model, simplifying as we go
-  Simplifier simplifier(solver);
+  Simplifier simplifier(solver, logic);
   simplifier.dispatch(m);
 }
 
