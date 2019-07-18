@@ -560,7 +560,7 @@ namespace { class Simplifier : public BaseTraversal {
        * symmetry reasoning.
        */
       const std::string geq = logic->geq();
-      const std::string zero = logic->numeric_literal(mpz_class(0));
+      const std::string zero = logic->numeric_literal(0);
       *solver
         << "(declare-fun " << n << " () " << logic->integer_type() << ")\n"
         << "(assert (" << geq << " " << n << " " << zero << "))\n";
