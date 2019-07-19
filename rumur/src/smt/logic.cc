@@ -28,7 +28,7 @@ class BV : public Logic {
   }
 
   std::string add(void) const final { return "bvadd";  }
-  std::string div(void) const final { return "bvdiv";  }
+  std::string div(void) const final { return "bvsdiv";  }
   std::string geq(void) const final { return "bvsge";  }
   std::string gt(void) const final  { return "bvsgt";  }
   std::string leq(void) const final { return "bvsle";  }
