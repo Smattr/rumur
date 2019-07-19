@@ -70,7 +70,7 @@ def smt_args():
     has_cvc4 = False
 
   if has_cvc4:
-    return ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2']
+    return ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2', '--smt-arg=--rewrite-divk']
 
   # otherwise, give up
   return []

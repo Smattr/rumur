@@ -224,7 +224,7 @@ to find and use your SMT solver. Some examples of solver configuration:
 .PP
 # for CVC4 with a 5 second timeout
 .br
-\fBrumur --smt-simplification on --smt-path cvc4 --smt-arg=--lang=smt2 --smt-arg=--tlimit=5000 ...\fR
+\fBrumur --smt-simplification on --smt-path cvc4 --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
 .RE
 .PP
 For other solvers, consult their manpages or documentation to determine what

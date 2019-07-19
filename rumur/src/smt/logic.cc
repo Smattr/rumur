@@ -60,7 +60,12 @@ class IA : public Logic {
   }
 
   std::string add(void) const final { return "+";   }
+
+  /* XXX: may cause solvers like CVC4 to fail with an error. Not visible to the
+   * user unless passing --debug though, so left as-is for now.
+   */
   std::string div(void) const final { return "div"; }
+
   std::string geq(void) const final { return ">=";  }
   std::string gt(void) const final  { return ">";   }
   std::string leq(void) const final { return "<=";  }
