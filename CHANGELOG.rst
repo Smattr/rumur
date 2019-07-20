@@ -1,6 +1,72 @@
 Change log
 ==========
 
+v2019.07.21
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: quantified ranges that span 0 (e.g. ``-1 .. 1``) now iterate
+  correctly. Previously such loops would become no-ops which could cause the
+  verifier to incorrectly not explore some states. This bug was introduced in
+  v2019.04.28 (commit 2329056db14d87301bba9c56115cdd4539bed1af).
+* Bug fix: models that contain assume statements but no top level assumptions no
+  longer segfault. This bug was introduced in v2019.05.11 (commits
+  eab626a859982d55b2ebfae8ca216ce79aec25ee,
+  d4ae6d2c88cf0ca5a4e2a4f1f94b375d1405b2a5,
+  ad79600751bb017ff8f85ef34e2747924c0e6eca,
+  0fd8636f2eca1ed6d90545ab3ee91f4ebae1da85).
+* Bug fix: the file descriptors used to communicate with the SMT bridge were
+  being configured incorrectly. This caused inconsistent behaviour across
+  different Libc implementations. This bug was introduced in v2019.06.30. Thanks
+  to @wangqr for reporting this (commit
+  53f20cc00398eefd81a7a1d015517d3051b23548).
+* The dialect used to communicate with SMT solvers was backported from SMTLIB
+  2.5 to SMTLIB 2.0. This enables support for more diverse solvers (commit
+  e0e9c5d46c8c2192d6c70987de2a1d50889dc3fd).
+* There is a new option for specifying the logic in which to encode SMT problems
+  for the external solver, ``--smt-logic``. See the manpage for more information
+  (commits e6b76b518439c0667de0b4b575ec18e5e6994705,
+  6ba664c341f5796a99a7b4623f424ad4f33c9852,
+  07ff7f7df1f4e8473f4e5f63dc0654009abb18db).
+* The SMT bridge learned to understand type-declared ranges/scalarsets, integer
+  constants and enum types. It is still of limited use
+  because it does not understand records or arrays, but support for these will
+  arrive in future (commits c38a0f1188924622e716abbc4dcee924cb10ce52,
+  33ce2be1adf8c0922ea6fa7594ad9c783df35e20,
+  7d0146ead2cf30b15ed515beb3c56dd1da8464a8,
+  ca07c576bb272193c1177790c359b5984f636180).
+* The SMT bridge has increased support for division when using CVC4 (commit
+  e55c4c1b274dfd8797f71f49209d2e0e5eb799d7).
+* Some inconsistency in the XML output when using
+  ``--output-format machine-readable`` was corrected (commit
+  22a0c59054563116f6210a886dd538bdfd7cd90a).
+* Some ``-Wsign-compare`` warnings when compiling the verifier have been
+  suppressed (commits d2949e3516c613f6183ce3219d403e4b3e96add9,
+  1a7342956115a691118b315bf8ea1cb551f718f9).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Model::assumption_count()`` has been deprecated (commit
+  99529844092fcbe1bbbfb3170c7b9a8364a6d055).
+* ``VarDecl::state_variable`` has been deprecated (commits
+  39bf6a2661bb6a296fbd73d9f466f052c4865477,
+  175193b6e0a920f016545008796a99ec3a588bfa,
+  6a4f9ac363b8c90beac7d5b5ddacc152f5e329d4).
+* A RelaxNG schema is now included for the XML output of the verifier (commit
+  123e2507ddf6694ddb7d2bb1baf654e467f28e23).
+* The validation API has been extended and now also descends into referents. The
+  function ``validate_model()`` has been deprecated (commits
+  860f71d1db91e71bcab60a8fc8097ad37d3895a0,
+  499857ec7ab25886be5c4a76802889cb1fc034f8,
+  5d2449ac780c39cb72f21a03b498c766607fabb7,
+  45f095c97174b96df5612d0c762283f7187ba0f7).
+* The data members of referents (e.g. ``ExprID::value``) now have accurate
+  values. This avoids confusion as users can now access these and rely on
+  getting the same, e.g., ``offset`` as the target (commits
+  7268f636cd9187c30f6bc990abef8e4b493b0534,
+  c3d23559c40b1504bb1a284f76303891fafae23f).
+
 v2019.06.30
 -----------
 
