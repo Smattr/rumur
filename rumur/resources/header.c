@@ -1123,7 +1123,6 @@ static void handle_write_raw(struct handle h, raw_value_t value) {
       unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
       if (low_size < sizeof(low)) {
         size_t high_bits = aligned.width - h.offset - h.width;
-        assert(high_bits >= 0);
         and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
       }
 
@@ -1187,7 +1186,6 @@ static void handle_write_raw(struct handle h, raw_value_t value) {
     uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
     if (low_size < sizeof(low)) {
       size_t high_bits = aligned.width - h.offset - h.width;
-      assert(high_bits >= 0);
       and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
     }
 
