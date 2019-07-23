@@ -245,7 +245,7 @@ void Enum::validate() const {
 }
 
 std::string Enum::lower_bound() const {
-  return "0";
+  return "VALUE_C(0)";
 }
 
 std::string Enum::upper_bound() const {
