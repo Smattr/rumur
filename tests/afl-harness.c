@@ -30,6 +30,8 @@ static const char *CFLAGS[] = {
   "c",
   "-o",
   "/dev/null",
+  "-Werror=format",
+  "-Werror=sign-compare",
 };
 
 static const size_t CFLAGS_size = sizeof(CFLAGS) / sizeof(CFLAGS[0]);
