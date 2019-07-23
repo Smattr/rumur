@@ -1698,9 +1698,10 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
    * available for `p`.
    */
   static _Thread_local struct queue_node *deferred[THREADS - 1];
+  static const size_t DEFERRED_SIZE = sizeof(deferred) / sizeof(deferred[0]);
 
   /* First try to free any previously deferred pointers. */
-  for (size_t i = 0; i < sizeof(deferred) / sizeof(deferred[0]); i++) {
+  for (size_t i = 0; i < DEFERRED_SIZE; i++) {
     if (deferred[i] != NULL) {
       bool conflict = false;
       for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
@@ -1746,7 +1747,7 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   }
 
   /* If we reached here, we need to defer this reclamation to later. */
-  for (size_t i = 0; i < sizeof(deferred) / sizeof(deferred[0]); i++) {
+  for (size_t i = 0; i < DEFERRED_SIZE; i++) {
     if (deferred[i] == NULL) {
       deferred[i] = p;
       return;
