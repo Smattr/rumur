@@ -2739,7 +2739,7 @@ restart:;
        * represent the state data.
        */
       if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= 1 << STATE_SIZE_BITS && "seen set size "
+        assert(*count <= ((size_t)1) << STATE_SIZE_BITS && "seen set size "
           "exceeds total possible number of states");
       }
 
