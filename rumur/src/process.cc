@@ -41,7 +41,7 @@ static void handler(int sigchld __attribute__((unused))) {
   assert(sigchld_pipe[WRITE_FD] != -1 && "SIGCHLD handler called before "
     "SIGCHLD pipe has been setup");
 
-  (void)write(sigchld_pipe[WRITE_FD], "\0", 1);
+  ssize_t w __attribute__((unused)) = write(sigchld_pipe[WRITE_FD], "\0", 1);
 }
 
 static bool inited = false;
@@ -202,7 +202,8 @@ int run(const std::vector<std::string> &args, const std::string &input,
     // clear any SIGCHLD notification
     if (FD_ISSET(sigchld_pipe[READ_FD], &readfds)) {
       char ignored[BUFSIZ];
-      (void)read(sigchld_pipe[READ_FD], ignored, sizeof(ignored));
+      ssize_t r __attribute__((unused)) = read(sigchld_pipe[READ_FD], ignored,
+        sizeof(ignored));
     }
 
     // read any data available from the child
