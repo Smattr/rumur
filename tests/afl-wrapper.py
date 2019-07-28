@@ -18,11 +18,13 @@ def main(argv):
   env = os.environ.copy()
   env['PATH'] = '{}:{}'.format(env['PATH'], os.path.abspath('rumur'))
 
+  model_c = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'model.c')
+
   # note we need to up AFL's default memory limit (50MB) to support running CC
   sys.stdout.write(' Running AFL...\n')
   testdir = os.path.abspath(os.path.dirname(__file__))
   p = subprocess.Popen(['afl-fuzz', '-m', '8192', '-i', testdir, '-o', 'findings_dir',
-    'afl-harness', '@@'], env=env)
+    'rumur', '--output', model_c, '@@'], env=env)
 
   start = time.time()
   counter = 0

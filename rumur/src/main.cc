@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include "generate.h"
@@ -14,14 +15,29 @@
 #include <rumur/rumur.h>
 #include "smt/except.h"
 #include "smt/simplify.h"
+#include <spawn.h>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <utility>
 #include "utils.h"
 #include "ValueType.h"
 #include "version.h"
+
+#ifdef __APPLE__
+  #include <crt_externs.h>
+#endif
+
+static char **get_environ() {
+#ifdef __APPLE__
+  // on macOS, environ is not directly accessible
+  return *_NSGetEnviron();
+#else
+  return environ;
+#endif
+}
 
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
@@ -603,6 +619,50 @@ int main(int argc, char **argv) {
   assert(out != nullptr);
   if (output_checker(*out, *m, value_types) != 0)
     return EXIT_FAILURE;
+
+#ifndef __AFL_COMPILER
+  #define __AFL_COMPILER 0
+#endif
+
+  if (__AFL_COMPILER) { // extra steps for when we're being fuzzed
+
+    // find the C compiler
+    const char *cc = getenv("CC");
+    if (cc == nullptr)
+      cc = "cc";
+
+    // setup an argument vector for calling the C compiler
+    const char *args[] = { cc, "-std=c11", "-x", "c", "-o",
+      "/dev/null", "-Werror=format", "-Werror=sign-compare", out->c_str(),
+#ifdef __x86_64__
+      "-mcx16",
+#endif
+      "-lpthread" };
+
+    // start the C compiler
+    int r = posix_spawnp(nullptr, args[0], nullptr, nullptr,
+      const_cast<char*const*>(args), get_environ());
+    if (r != 0) {
+      std::cerr << "posix_spawnp failed: " << strerror(r) << "\n";
+      abort();
+    }
+
+    // wait for it to finish
+    int stat_loc;
+    pid_t pid = wait(&stat_loc);
+    if (pid == -1) {
+      std::cerr << "wait failed\n";
+      abort();
+    }
+
+    // if it terminated abnormally, pass an error up to the fuzzer
+    if (WIFSIGNALED(stat_loc) || WIFSTOPPED(stat_loc)) {
+      std::cerr << "subprocess either signalled or stopped\n";
+      abort();
+    }
+
+    assert(WIFEXITED(stat_loc));
+  }
 
   return EXIT_SUCCESS;
 }

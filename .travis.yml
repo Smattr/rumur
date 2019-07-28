@@ -2313,7 +2313,7 @@ matrix:
           - g++-9
     env:
       # install AFL and let it catch crashes via core dumps
-      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh && CC=afl-gcc && CXX=afl-g++"
+      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh && CC=gcc-9 && CXX=afl-g++"
 
       # quit if we succeed exhaustively fuzzing (unlikely)
       - AFL_EXIT_WHEN_DONE=1
@@ -2321,8 +2321,7 @@ matrix:
       # suppress normal animated UI and use periodic text output
       - AFL_NO_UI=1
 
-      - AFL_HARNESS_CC=gcc-9
-      - CUSTOM_COMMAND="afl-gcc -std=c11 -O3 -Wall -Wextra -Werror -o rumur/afl-harness ../tests/afl-harness.c && python ../tests/afl-wrapper.py 1800"
+      - CUSTOM_COMMAND="python ../tests/afl-wrapper.py 1800"
 
 # This file initially contained entries to test GCC on macOS as well, but I
 # could not figure out how to get these working. One show stopper seems to be
