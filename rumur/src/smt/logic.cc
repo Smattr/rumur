@@ -3,89 +3,191 @@
 #include <gmpxx.h>
 #include "logic.h"
 #include <string>
+#include <unordered_map>
 
 namespace smt {
 
-// configuration for any logic supporting bitvectors
-class BV : public Logic {
+static const size_t BITVECTOR_WIDTH = 64;
 
- private:
-  static const size_t BITVECTOR_WIDTH;
+Logic::Logic(bool, bool bv, bool ia):
+    bitvectors(bv),
+    integers(ia) { }
 
- public:
-  /* XXX: Clang < 3.9 won't let you construct an object of constant type without
-   * a user-provided default constructor, so we need to provide a useless one.
-   */
-  BV() { }
+std::string Logic::integer_type() const {
 
-  std::string integer_type(void) const final {
+  if (integers)
+    return "Int";
+
+  if (bitvectors)
     return "(_ BitVec " + std::to_string(BITVECTOR_WIDTH) + ")";
-  }
 
-  std::string numeric_literal(const mpz_class &value) const final {
+  throw Unsupported();
+}
+
+std::string Logic::numeric_literal(const mpz_class &value) const {
+
+  if (integers)
+    return value.get_str();
+
+  if (bitvectors)
     return "(_ bv" + value.get_str() + " " + std::to_string(BITVECTOR_WIDTH)
       + ")";
+
+  throw Unsupported();
+}
+
+std::string Logic::add(void) const {
+
+  if (integers)
+    return "+";
+
+  if (bitvectors)
+    return "bvadd";
+
+  throw Unsupported();
+}
+
+std::string Logic::div(void) const {
+
+  if (integers) {
+    /* XXX: may cause solvers like CVC4 to fail with an error. Not visible to
+     * the user unless passing --debug though, so left as-is for now.
+     */
+    return "div";
   }
 
-  std::string add(void) const final { return "bvadd";  }
-  std::string div(void) const final { return "bvsdiv";  }
-  std::string geq(void) const final { return "bvsge";  }
-  std::string gt(void) const final  { return "bvsgt";  }
-  std::string leq(void) const final { return "bvsle";  }
-  std::string lt(void) const final  { return "bvslt";  }
-  std::string mod(void) const final { return "bvsmod"; }
-  std::string mul(void) const final { return "bvmul";  }
-  std::string neg(void) const final { return "bvneg";  }
-  std::string sub(void) const final { return "bvsub";  }
+  if (bitvectors)
+    return "bvsdiv";
 
+  throw Unsupported();
+}
+
+std::string Logic::geq(void) const {
+
+  if (integers)
+    return ">=";
+
+  if (bitvectors)
+    return "bvsge";
+
+  throw Unsupported();
+}
+
+std::string Logic::gt(void) const {
+  
+  if (integers)
+    return ">";
+    
+  if (bitvectors)
+    return "bvsgt";
+    
+  throw Unsupported();
+}
+
+std::string Logic::leq(void) const {
+  
+  if (integers)
+    return "<=";
+    
+  if (bitvectors)
+    return "bvsle";
+    
+  throw Unsupported();
+}
+
+std::string Logic::lt (void) const {
+  
+  if (integers)
+    return "<";
+    
+  if (bitvectors)
+    return "bvslt";
+    
+  throw Unsupported();
+}
+
+std::string Logic::mod(void) const {
+
+  if (integers)
+    return "mod";
+
+  if (bitvectors)
+    return "bvsmod";
+    
+  throw Unsupported();
+}
+
+std::string Logic::mul(void) const {
+  
+  if (integers)
+    return "*";
+    
+  if (bitvectors)
+    return "bvmul";
+    
+  throw Unsupported();
+}
+
+std::string Logic::neg(void) const {
+  
+  if (integers)
+    return "-";
+    
+  if (bitvectors)
+    return "bvneg";
+    
+  throw Unsupported();
+}
+
+std::string Logic::sub(void) const {
+  
+  if (integers)
+    return "-";
+    
+  if (bitvectors)
+    return "bvsub";
+    
+  throw Unsupported();
+}
+
+static const std::unordered_map<std::string, Logic> LOGICS = {
+                 //    A      BV     IA  
+  { "ALIA",      Logic(true,  false, true ) },
+  { "AUFLIA",    Logic(true,  false, true ) },
+  { "AUFLIRA",   Logic(true,  false, true ) },
+  { "AUFNIRA",   Logic(true,  false, true ) },
+  { "LIA",       Logic(false, false, true ) },
+  { "LRA",       Logic(false, false, false) },
+  { "NIA",       Logic(false, false, true ) },
+  { "NRA",       Logic(false, false, false) },
+  { "QF_ABV",    Logic(true,  true,  false) },
+  { "QF_ALIA",   Logic(true,  false, true ) },
+  { "QF_AUFBV",  Logic(true,  true,  false) },
+  { "QF_AUFLIA", Logic(true,  false, true ) },
+  { "QF_AX",     Logic(true,  false, false) },
+  { "QF_BV",     Logic(false, true,  false) },
+  { "QF_IDL",    Logic(false, false, false) },
+  { "QF_LIA",    Logic(false, false, true ) },
+  { "QF_LRA",    Logic(false, false, false) },
+  { "QF_NIA",    Logic(false, false, true ) },
+  { "QF_NRA",    Logic(false, false, false) },
+  { "QF_RDL",    Logic(false, false, false) },
+  { "QF_UF",     Logic(false, false, false) },
+  { "QF_UFBV",   Logic(false, true,  false) },
+  { "QF_UFIDL",  Logic(false, false, false) },
+  { "QF_UFLIA",  Logic(false, false, true ) },
+  { "QF_UFLRA",  Logic(false, false, false) },
+  { "QF_UFNIA",  Logic(false, false, true ) },
+  { "QF_UFNRA",  Logic(false, false, false) },
+  { "UFLRA",     Logic(false, false, false) },
+  { "UFNIA",     Logic(false, false, true ) },
 };
-
-const size_t BV::BITVECTOR_WIDTH = 64;
-
-static const BV BV;
-
-// configuration for any logic supporting integer arithmetic
-class IA : public Logic {
-
- public:
-  // XXX: see previous comment about Clang < 3.9
-  IA() { }
-
-  std::string integer_type(void) const final {
-    return "Int";
-  }
-
-  std::string numeric_literal(const mpz_class &value) const final {
-    return value.get_str();
-  }
-
-  std::string add(void) const final { return "+";   }
-
-  /* XXX: may cause solvers like CVC4 to fail with an error. Not visible to the
-   * user unless passing --debug though, so left as-is for now.
-   */
-  std::string div(void) const final { return "div"; }
-
-  std::string geq(void) const final { return ">=";  }
-  std::string gt(void) const final  { return ">";   }
-  std::string leq(void) const final { return "<=";  }
-  std::string lt(void) const final  { return "<";   }
-  std::string mod(void) const final { return "mod"; }
-  std::string mul(void) const final { return "*";   }
-  std::string neg(void) const final { return "-";   }
-  std::string sub(void) const final { return "-";   }
-};
-
-static const IA IA;
 
 const Logic &get_logic(const std::string &name) {
 
-  // prefer integer reasoning
-  if (name.find("IA") != std::string::npos)
-    return IA;
-
-  if (name.find("BV") != std::string::npos)
-    return BV;
+  auto it = LOGICS.find(name);
+  if (it != LOGICS.end())
+    return it->second;
 
   throw Unsupported("unknown logic " + name);
 }
