@@ -602,6 +602,8 @@ int main(int argc, char **argv) {
     } catch (smt::BudgetExhausted&) {
       *info << "SMT solver budget (" << options.smt.budget << "ms) exhausted\n";
     } catch (smt::Unsupported &e) {
+      if (e.expr != nullptr)
+        *info << e.expr->loc << ": ";
       *info << e.what() << "\n";
     }
   }

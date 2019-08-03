@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstddef>
+#include <rumur/rumur.h>
 #include <stdexcept>
 #include <string>
 
@@ -15,11 +16,17 @@ class BudgetExhausted : public std::runtime_error {
 
 class Unsupported : public std::runtime_error {
  public:
-  Unsupported(): std::runtime_error("part of an expression was outside the "
+  const rumur::Expr *expr = nullptr;
+
+  explicit Unsupported(): std::runtime_error("part of an expression was outside the "
     "currently implemented SMT functionality") { }
 
-  Unsupported(const std::string &expr): std::runtime_error("SMT solver "
-    "encountered unsupported expression \"" + expr + "\"") { }
+  explicit Unsupported(const rumur::Expr &expr_):
+    std::runtime_error("SMT solver encountered unsupported expression \""
+      + expr_.to_string() + "\""), expr(&expr_) { }
+
+  explicit Unsupported(const std::string &message): std::runtime_error(message)
+    { }
 };
 
 }

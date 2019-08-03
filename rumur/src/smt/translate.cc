@@ -43,7 +43,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_element(const Element &n) {
-    throw Unsupported(n.to_string());
+    throw Unsupported(n);
   }
 
   void visit_exprid(const ExprID &n) {
@@ -55,7 +55,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_exists(const Exists &n) {
-    throw Unsupported(n.to_string());
+    throw Unsupported(n);
   }
 
   void visit_div(const Div &n) {
@@ -63,15 +63,15 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_field(const Field &n) {
-    throw Unsupported(n.to_string());
+    throw Unsupported(n);
   }
 
   void visit_forall(const Forall &n) {
-    throw Unsupported(n.to_string());
+    throw Unsupported(n);
   }
 
   void visit_functioncall(const FunctionCall &n) {
-    throw Unsupported(n.to_string());
+    throw Unsupported(n);
   }
 
   void visit_geq(const Geq &n) {
@@ -87,7 +87,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_isundefined(const IsUndefined &n) {
-    throw Unsupported(n.to_string());
+    throw Unsupported(n);
   }
 
   void visit_leq(const Leq &n) {
