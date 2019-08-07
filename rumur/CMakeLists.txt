@@ -56,6 +56,7 @@ add_executable(rumur
   src/smt/simplify.cc
   src/smt/solver.cc
   src/smt/translate.cc
+  src/smt/typeexpr-to-smt.cc
   src/symmetry-reduction.cc
   src/utils.cc
   src/ValueType.cc)
