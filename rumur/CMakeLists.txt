@@ -52,6 +52,7 @@ add_executable(rumur
   src/options.cc
   src/output.cc
   src/process.cc
+  src/smt/define-enum-members.cc
   src/smt/logic.cc
   src/smt/simplify.cc
   src/smt/solver.cc
