@@ -1,10 +1,10 @@
 #include <cstddef>
 #include "define-enum-members.h"
 #include <gmpxx.h>
-#include <iostream>
 #include "logic.h"
 #include "../options.h"
 #include <rumur/rumur.h>
+#include "solver.h"
 #include <string>
 #include "translate.h"
 #include <utility>
@@ -16,11 +16,11 @@ namespace smt {
 namespace { class Definer : public ConstTypeTraversal {
 
  private:
-  std::ostream *out;
+  Solver *solver;
   const Logic *logic;
 
  public:
-  explicit Definer(std::ostream &out_): out(&out_),
+  explicit Definer(Solver &solver_): solver(&solver_),
     logic(&get_logic(options.smt.logic)) { }
 
   void visit_array(const Array &n) final {
@@ -40,7 +40,7 @@ namespace { class Definer : public ConstTypeTraversal {
       const std::string name = mangle(member.first);
       const std::string type = logic->integer_type();
       const std::string value = logic->numeric_literal(index);
-      *out
+      *solver
         << "(declare-fun " << name << " () " << type << ")\n"
         << "(assert (= " << name << " " << value << "))\n";
       index++;
@@ -68,8 +68,8 @@ namespace { class Definer : public ConstTypeTraversal {
   }
 }; }
 
-void define_enum_members(std::ostream &out, const TypeExpr &type) {
-  Definer definer(out);
+void define_enum_members(Solver &solver, const TypeExpr &type) {
+  Definer definer(solver);
   definer.dispatch(type);
 }
 
