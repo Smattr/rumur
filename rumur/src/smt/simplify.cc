@@ -8,6 +8,7 @@
 #include "solver.h"
 #include <string>
 #include "translate.h"
+#include "typeexpr-to-smt.h"
 #include "../utils.h"
 
 using namespace rumur;
@@ -530,15 +531,13 @@ namespace { class Simplifier : public BaseTraversal {
 
     const std::string n = mangle(name);
 
-    // the solver already knows boolean, so we can just declare it
-    if (*t == *Boolean) {
-      *solver << "(declare-fun " << mangle(name) << " () Bool)\n";
+    *solver << "(declare-fun " << n << " () " << typeexpr_to_smt(*t) << ")\n";;
+
+    // the solver already knows boolean, so we're done
+    if (*t == *Boolean)
       return;
-    }
 
     if (auto r = dynamic_cast<const Range*>(t.get())) {
-      *solver << "(declare-fun " << n << " () " << logic->integer_type()
-        << ")\n";
 
       // if this range's bounds are static, make them known to the solver
       if (r->constant()) {
@@ -555,15 +554,11 @@ namespace { class Simplifier : public BaseTraversal {
     }
 
     if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
-      /* A scalarset is nothing special to the SMT solver. That is, we just
-       * declare it as an integer and don't expect the solver to use any
-       * symmetry reasoning.
-       */
+
+      // scalarset values are at least 0
       const std::string geq = logic->geq();
       const std::string zero = logic->numeric_literal(0);
-      *solver
-        << "(declare-fun " << n << " () " << logic->integer_type() << ")\n"
-        << "(assert (" << geq << " " << n << " " << zero << "))\n";
+      *solver << "(assert (" << geq << " " << n << " " << zero << "))\n";
 
       // if this scalarset's bounds are static, make them known to the solver
       if (s->constant()) {
@@ -582,10 +577,6 @@ namespace { class Simplifier : public BaseTraversal {
        */
       if (isa<Enum>(&type))
         declare_enum(*e);
-
-      // declare the variable itself as an integer
-      const std::string typ = logic->integer_type();
-      *solver << "(declare-fun " << n << " () " << typ << ")\n";
 
       // constrain its values based on the number of enum members
       const std::string geq = logic->geq();
