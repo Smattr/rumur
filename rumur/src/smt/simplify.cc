@@ -1,8 +1,10 @@
 #include <cassert>
 #include <cstddef>
+#include "define-enum-members.h"
 #include "except.h"
 #include "../log.h"
 #include "logic.h"
+#include "../options.h"
 #include <rumur/rumur.h>
 #include "simplify.h"
 #include "solver.h"
@@ -515,7 +517,7 @@ namespace { class Simplifier : public BaseTraversal {
         bool nested = isa<TypeExprID>(t->value);
 
         if (!nested)
-          declare_enum(*e);
+          define_enum_members(*solver, *e);
 
         return;
       }
@@ -531,6 +533,10 @@ namespace { class Simplifier : public BaseTraversal {
 
     const std::string n = mangle(name);
 
+    // define any enum members that occur as part of the variable's type
+    define_enum_members(*solver, type);
+
+    // define the variable itself
     *solver << "(declare-fun " << n << " () " << typeexpr_to_smt(*t) << ")\n";;
 
     // the solver already knows boolean, so we're done
@@ -571,12 +577,6 @@ namespace { class Simplifier : public BaseTraversal {
     }
 
     if (auto e = dynamic_cast<const Enum*>(t.get())) {
-
-      /* if this is an inline definition of the enum itself, we need to declare
-       * its members now
-       */
-      if (isa<Enum>(&type))
-        declare_enum(*e);
 
       // constrain its values based on the number of enum members
       const std::string geq = logic->geq();
