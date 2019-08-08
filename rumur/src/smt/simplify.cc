@@ -593,20 +593,6 @@ namespace { class Simplifier : public BaseTraversal {
     throw Unsupported();
   }
 
-  void declare_enum(const Enum &e) {
-    // emit the members of the enum as integer constants
-    mpz_class index = 0;
-    for (const std::pair<std::string, location> &member : e.members) {
-      const std::string name = mangle(member.first);
-      const std::string type = logic->integer_type();
-      const std::string value = logic->numeric_literal(index);
-      *solver
-        << "(declare-fun " << name << " () " << type << ")\n"
-        << "(assert (= " << name << " " << value << "))\n";
-      index++;
-    }
-  }
-
   void declare_func(const Function&) {
     throw Unsupported();
   }
