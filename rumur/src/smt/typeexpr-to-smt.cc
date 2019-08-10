@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cassert>
 #include "except.h"
 #include "logic.h"
 #include "../options.h"
@@ -71,7 +72,8 @@ namespace { class Translator : public ConstTypeTraversal {
   }
 
   void visit_typeexprid(const TypeExprID &n) final {
-    *this << n.name;
+    assert(n.referent != nullptr && "unresolved TypeExprID in AST");
+    *this << *n.referent;
   }
 }; }
 
