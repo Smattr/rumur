@@ -502,12 +502,6 @@ namespace { class Simplifier : public BaseTraversal {
 
       const Ptr<TypeExpr> type = t->value->resolve();
 
-      /* we can ignore range and scalarset types as their constraints are
-       * emitted for a VarDecl that is declared as an Int
-       */
-      if (isa<Range>(type) || isa<Scalarset>(type))
-        return;
-
       // if it's an enum we need to emit its members as values...
       if (auto e = dynamic_cast<const Enum*>(type.get())) {
 
@@ -518,9 +512,12 @@ namespace { class Simplifier : public BaseTraversal {
 
         if (!nested)
           define_enum_members(*solver, *e);
-
-        return;
       }
+
+      /* we can ignore any other type of TypeDecl because types are emitted
+       * inline when used in, e.g., a VarDecl
+       */
+      return;
     }
 
     // TODO
