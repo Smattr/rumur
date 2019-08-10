@@ -10,7 +10,6 @@
 #include "solver.h"
 #include <string>
 #include "translate.h"
-#include "typedecl-to-smt.h"
 #include "typeexpr-to-smt.h"
 #include "../utils.h"
 
@@ -500,8 +499,28 @@ namespace { class Simplifier : public BaseTraversal {
     }
 
     if (auto t = dynamic_cast<const TypeDecl*>(&decl)) {
-      typedecl_to_smt(*solver, *t);
-      return;
+
+      const Ptr<TypeExpr> type = t->value->resolve();
+
+      /* we can ignore range and scalarset types as their constraints are
+       * emitted for a VarDecl that is declared as an Int
+       */
+      if (isa<Range>(type) || isa<Scalarset>(type))
+        return;
+
+      // if it's an enum we need to emit its members as values...
+      if (auto e = dynamic_cast<const Enum*>(type.get())) {
+
+        /* ...unless they've already been emitted, so first is this a typedef of
+         * a typedef?
+         */
+        bool nested = isa<TypeExprID>(t->value);
+
+        if (!nested)
+          define_enum_members(*solver, *e);
+
+        return;
+      }
     }
 
     // TODO
