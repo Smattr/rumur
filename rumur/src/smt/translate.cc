@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <rumur/rumur.h>
 #include "except.h"
+#include <locale>
 #include "logic.h"
 #include "../options.h"
 #include "translate.h"
@@ -143,7 +144,21 @@ std::string translate(const Expr &expr) {
   return t.str();
 }
 
+static std::string lower(const std::string &s) {
+  std::string s1;
+  for (char c : s)
+    s1 += tolower(c);
+  return s1;
+}
+
 std::string mangle(const std::string &s) {
+
+  const std::string l = lower(s);
+
+  // if this is a boolean literal, the solver already knows of it
+  if (l == "true" || l == "false")
+    return l;
+
   return "ru_" + s;
 }
 
