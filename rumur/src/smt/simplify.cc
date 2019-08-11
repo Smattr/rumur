@@ -540,54 +540,72 @@ namespace { class Simplifier : public BaseTraversal {
     if (*t == *Boolean)
       return;
 
-    if (auto r = dynamic_cast<const Range*>(t.get())) {
+    class ConstraintEmitter : public ConstTypeTraversal {
 
-      // if this range's bounds are static, make them known to the solver
-      if (r->constant()) {
-        const std::string lb = logic->numeric_literal(r->min->constant_fold());
+     private:
+      Solver *solver;
+      const std::string name;
+      const Logic *logic;
+
+     public:
+      ConstraintEmitter(Solver &solver_, const std::string &name_):
+        solver(&solver_), name(name_), logic(&get_logic(options.smt.logic)) { }
+
+      void visit_array(const Array&) final {
+        throw Unsupported();
+      }
+
+      void visit_enum(const Enum &n) final {
+
+        // constrain its values based on the number of enum members
         const std::string geq = logic->geq();
-        const std::string ub = logic->numeric_literal(r->max->constant_fold());
-        const std::string leq = logic->leq();
-        *solver
-          << "(assert (" << geq << " " << n << " " << lb << "))\n"
-          << "(assert (" << leq << " " << n << " " << ub << "))\n";
-      }
-
-      return;
-    }
-
-    if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
-
-      // scalarset values are at least 0
-      const std::string geq = logic->geq();
-      const std::string zero = logic->numeric_literal(0);
-      *solver << "(assert (" << geq << " " << n << " " << zero << "))\n";
-
-      // if this scalarset's bounds are static, make them known to the solver
-      if (s->constant()) {
-        const std::string b = logic->numeric_literal(s->bound->constant_fold());
+        const std::string zero = logic->numeric_literal(0);
+        *solver << "(assert (" << geq << " " << name << " " << zero << "))\n";
         const std::string lt = logic->lt();
-        *solver << "(assert (" << lt << " " << n << " " << b << "))\n";
+        const std::string size = logic->numeric_literal(n.members.size());
+        *solver << "(assert (" << lt << " " << name << " " << size << "))\n";
       }
 
-      return;
-    }
+      void visit_range(const Range &n) final {
 
-    if (auto e = dynamic_cast<const Enum*>(t.get())) {
+        // if this range's bounds are static, make them known to the solver
+        if (n.constant()) {
+          const std::string lb = logic->numeric_literal(n.min->constant_fold());
+          const std::string geq = logic->geq();
+          const std::string ub = logic->numeric_literal(n.max->constant_fold());
+          const std::string leq = logic->leq();
+          *solver
+            << "(assert (" << geq << " " << name << " " << lb << "))\n"
+            << "(assert (" << leq << " " << name << " " << ub << "))\n";
+        }
+      }
 
-      // constrain its values based on the number of enum members
-      const std::string geq = logic->geq();
-      const std::string zero = logic->numeric_literal(0);
-      *solver << "(assert (" << geq << " " << n << " " << zero << "))\n";
-      const std::string lt = logic->lt();
-      const std::string size = logic->numeric_literal(e->members.size());
-      *solver << "(assert (" << lt << " " << n << " " << size << "))\n";
+      void visit_record(const Record&) final {
+        throw Unsupported();
+      }
 
-      return;
-    }
+      void visit_scalarset(const Scalarset &n) final {
 
-    // TODO
-    throw Unsupported();
+        // scalarset values are at least 0
+        const std::string geq = logic->geq();
+        const std::string zero = logic->numeric_literal(0);
+        *solver << "(assert (" << geq << " " << name << " " << zero << "))\n";
+
+        // if this scalarset's bounds are static, make them known to the solver
+        if (n.constant()) {
+          const std::string b = logic->numeric_literal(n.bound->constant_fold());
+          const std::string lt = logic->lt();
+          *solver << "(assert (" << lt << " " << name << " " << b << "))\n";
+        }
+      }
+
+      void visit_typeexprid(const TypeExprID&) final {
+        assert(!"unreachable");
+      }
+    };
+
+    ConstraintEmitter emitter(*solver, n);
+    emitter.dispatch(*t);
   }
 
   void declare_func(const Function&) {
