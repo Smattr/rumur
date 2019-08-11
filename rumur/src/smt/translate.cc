@@ -44,7 +44,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_element(const Element &n) {
-    throw Unsupported(n);
+    *this << "(select " << *n.array << " " << *n.index << ")";
   }
 
   void visit_exprid(const ExprID &n) {
