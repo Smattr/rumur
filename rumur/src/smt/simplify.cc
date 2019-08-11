@@ -552,7 +552,7 @@ namespace { class Simplifier : public BaseTraversal {
         solver(&solver_), name(name_), logic(&get_logic(options.smt.logic)) { }
 
       void visit_array(const Array&) final {
-        throw Unsupported();
+        // no constraints required
       }
 
       void visit_enum(const Enum &n) final {
@@ -581,7 +581,7 @@ namespace { class Simplifier : public BaseTraversal {
       }
 
       void visit_record(const Record&) final {
-        throw Unsupported();
+        // no constraints required
       }
 
       void visit_scalarset(const Scalarset &n) final {
