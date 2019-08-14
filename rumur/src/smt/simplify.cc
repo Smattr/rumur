@@ -524,13 +524,14 @@ namespace { class Simplifier : public BaseTraversal {
 
     const Ptr<TypeExpr> t = type.resolve();
 
-    const std::string n = mangle(name);
+    const std::string mangled = mangle(name);
 
     // define any enum members that occur as part of the variable's type
     define_enum_members(*solver, type);
 
     // define the variable itself
-    *solver << "(declare-fun " << n << " () " << typeexpr_to_smt(*t) << ")\n";;
+    *solver
+      << "(declare-fun " << mangled << " () " << typeexpr_to_smt(*t) << ")\n";
 
     // the solver already knows boolean, so we're done
     if (*t == *Boolean)
@@ -600,7 +601,7 @@ namespace { class Simplifier : public BaseTraversal {
       }
     };
 
-    ConstraintEmitter emitter(*solver, n);
+    ConstraintEmitter emitter(*solver, mangled);
     emitter.dispatch(*t);
   }
 
