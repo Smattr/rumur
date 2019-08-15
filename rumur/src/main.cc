@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "environ.h"
 #include <fstream>
 #include "generate.h"
 #include <getopt.h>
@@ -25,19 +26,6 @@
 #include "utils.h"
 #include "ValueType.h"
 #include "version.h"
-
-#ifdef __APPLE__
-  #include <crt_externs.h>
-#endif
-
-static char **get_environ() {
-#ifdef __APPLE__
-  // on macOS, environ is not directly accessible
-  return *_NSGetEnviron();
-#else
-  return environ;
-#endif
-}
 
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;

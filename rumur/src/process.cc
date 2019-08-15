@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include "environ.h"
 #include <fcntl.h>
 #include <iostream>
 #include "process.h"
@@ -21,10 +22,6 @@
   #define debug (&std::cerr)
 #else
   #include "log.h"
-#endif
-
-#ifdef __APPLE__
-    #include <crt_externs.h>
 #endif
 
 enum { READ_FD = 0, WRITE_FD = 1 };
@@ -82,22 +79,6 @@ fail:
     }
   }
   return -1;
-}
-
-static char **get_environ() {
-#if __APPLE__
-    /* Bizarrely Apple don't give programs a symbol for environ, but have an
-     * indirect way of accessing it.
-     */
-    return *_NSGetEnviron();
-#else
-    /* some platforms fail to expose environ in a header (e.g. FreeBSD), so
-     * declare it ourselves and assume it will be available when linking
-     */
-    extern char **environ;
-
-    return environ;
-#endif
 }
 
 static int max(int a, int b) {
