@@ -1,6 +1,31 @@
 Change log
 ==========
 
+v2019.08.18
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: Boolean literals (``false`` and ``true``) are now supported by the
+  SMT bridge. These previously led to a malformed SMT problem (commit
+  0c9917b87523db07b604c566e2f8e3481872857b).
+* Array types are now supported by the SMT bridge. The bridge is still of
+  limited use as there are many constructs it cannot handle, but it improves
+  incrementally (commits 424467a264b923c53a1b1738604630a05457315c,
+  5d4f1939ddc5d5d9336f0ce35e953c51e8b5aeca,
+  5e07b5527a910d12be558d665110a7809838360c).
+* The default logic for the SMT bridge has been changed to QF_ALIA. As before,
+  this is controllable via the ``--smt-logic`` command line option (commit
+  dc81631881a16764d55dea834ae39d8715b13e83).
+* Some compiler warnings in the generated verifier have been suppressed (commits
+  e60db38a76b2cd1ce169ad17b442b5285ee83b4c,
+  ef5dd68576dc37d109e2370c653f1a6286042f78,
+  a657bb19ae4ce589e64b217823b0e2c49b8b282e).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2019.07.21
 -----------
 
