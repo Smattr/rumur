@@ -5,15 +5,17 @@
 #endif
 
 static inline char **get_environ() {
-#if __APPLE__
+#ifdef __APPLE__
   // on macOS, environ is not directly accessible
   return *_NSGetEnviron();
-#else
-  /* some platforms fail to expose environ in a header (e.g. FreeBSD), so
-   * declare it ourselves and assume it will be available when linking
+#elif defined(__FreeBSD__)
+  /* FreeBSD does not expose environ in a header, so declare it ourselves and
+   * assume it will be available when linking
    */
   extern char **environ;
 
+  return environ;
+#else
   return environ;
 #endif
 }
