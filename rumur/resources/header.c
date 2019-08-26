@@ -142,7 +142,7 @@ static void sandbox(void) {
     int r = sandbox_init(kSBXProfilePureComputation, SANDBOX_NAMED, &err);
 #pragma clang diagnostic pop
 
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       fprintf(stderr, "sandbox_init failed: %s\n", err);
       free(err);
       exit(EXIT_FAILURE);
@@ -154,7 +154,7 @@ static void sandbox(void) {
 
 #ifdef __FreeBSD__
   {
-    if (cap_enter() != 0) {
+    if (__builtin_expect(cap_enter() != 0, 0)) {
       perror("cap_enter");
       exit(EXIT_FAILURE);
     }
@@ -167,7 +167,7 @@ static void sandbox(void) {
   {
     /* Disable the addition of new privileges via execve and friends. */
     int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       perror("prctl(PR_SET_NO_NEW_PRIVS) failed");
       exit(EXIT_FAILURE);
     }
@@ -247,7 +247,7 @@ static void sandbox(void) {
 
     /* Apply the above filter to ourselves. */
     r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       perror("prctl(PR_SET_SECCOMP) failed");
       exit(EXIT_FAILURE);
     }
@@ -259,7 +259,7 @@ static void sandbox(void) {
 
 #ifdef __OpenBSD__
   {
-    if (pledge("stdio", "") != 0) {
+    if (__builtin_expect(pledge("stdio", "") != 0, 0)) {
       perror("pledge");
       exit(EXIT_FAILURE);
     }
@@ -429,7 +429,7 @@ static _Noreturn void oom(void) {
 
 static void *xmalloc(size_t size) {
   void *p = malloc(size);
-  if (p == NULL) {
+  if (__builtin_expect(p == NULL, 0)) {
     oom();
   }
   return p;
@@ -437,7 +437,7 @@ static void *xmalloc(size_t size) {
 
 static void *xcalloc(size_t count, size_t size) {
   void *p = calloc(count, size);
-  if (p == NULL) {
+  if (__builtin_expect(p == NULL, 0)) {
     oom();
   }
   return p;
@@ -585,7 +585,7 @@ static struct state *state_new(void) {
         arena_base = xmalloc(sizeof(*arena_base));
       } else {
         arena_base = calloc(arena_count, sizeof(*arena_base));
-        if (arena_base == NULL) {
+        if (__builtin_expect(arena_base == NULL, 0)) {
           /* Memory pressure high. Decrease our attempted allocation and try
            * again.
            */
@@ -637,7 +637,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
     __ATOMIC_SEQ_CST);
 
-  if (prior_errors < MAX_ERRORS) {
+  if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 
     print_lock();
 
@@ -655,13 +655,13 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 
         int size = vsnprintf(NULL, 0, fmt, ap2);
         va_end(ap2);
-        if (size < 0) {
+        if (__builtin_expect(size < 0, 0)) {
           fputs("vsnprintf failed", stderr);
           exit(EXIT_FAILURE);
         }
 
         char *buffer = xmalloc(size);
-        if (vsnprintf(buffer, size, fmt, ap) != size) {
+        if (__builtin_expect(vsnprintf(buffer, size, fmt, ap) != size, 0)) {
           fputs("vsnprintf failed", stderr);
           exit(EXIT_FAILURE);
         }
@@ -1069,7 +1069,7 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
 
   raw_value_t dest = handle_read_raw(h);
 
-  if (dest == 0) {
+  if (__builtin_expect(dest == 0, 0)) {
     error(s, "%sread of undefined value in %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
@@ -1238,7 +1238,8 @@ static __attribute__((unused)) void handle_write(const char *NONNULL context,
     && "out of bounds write in handle_write()");
 
   raw_value_t r;
-  if (value < lb || value > ub || SUB(value, lb, &r) || ADD(r, 1, &r)) {
+  if (__builtin_expect(value < lb || value > ub || SUB(value, lb, &r)
+      || ADD(r, 1, &r), 0)) {
     error(s, "%swrite of out-of-range value into %s%s%s", context, name,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
@@ -1352,13 +1353,14 @@ static __attribute__((unused)) struct handle handle_index(
 
   assert(expr != NULL);
 
-  if (index < index_min || index > index_max) {
+  if (__builtin_expect(index < index_min || index > index_max, 0)) {
     error(s, "%sindex out of range in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   size_t r1, r2;
-  if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
+  if (__builtin_expect(SUB(index, index_min, &r1)
+      || MUL(r1, element_width, &r2), 0)) {
     error(s, "%soverflow when indexing array in expression %s%s%s", context,
       expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1390,7 +1392,7 @@ static __attribute__((unused)) value_t add(const char *NONNULL context,
   assert(expr != NULL);
 
   value_t r;
-  if (ADD(a, b, &r)) {
+  if (__builtin_expect(ADD(a, b, &r), 0)) {
     error(s, "%sinteger overflow in addition in expression %s%s%s", context,
       expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1406,7 +1408,7 @@ static __attribute__((unused)) value_t sub(const char *NONNULL context,
   assert(expr != NULL);
 
   value_t r;
-  if (SUB(a, b, &r)) {
+  if (__builtin_expect(SUB(a, b, &r), 0)) {
     error(s, "%sinteger overflow in subtraction in expression %s%s%s", context,
       expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1422,7 +1424,7 @@ static __attribute__((unused)) value_t mul(const char *NONNULL context,
   assert(expr != NULL);
 
   value_t r;
-  if (MUL(a, b, &r)) {
+  if (__builtin_expect(MUL(a, b, &r), 0)) {
     error(s, "%sinteger overflow in multiplication in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1437,12 +1439,12 @@ static __attribute__((unused)) value_t divide(const char *NONNULL context,
   assert(context != NULL);
   assert(expr != NULL);
 
-  if (b == 0) {
+  if (__builtin_expect(b == 0, 0)) {
     error(s, "%sdivision by zero in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  if (VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1) {
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1, 0)) {
     error(s, "%sinteger overflow in division in expression %s%s%s", context,
       expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1458,13 +1460,13 @@ static __attribute__((unused)) value_t mod(const char *NONNULL context,
   assert(context != NULL);
   assert(expr != NULL);
 
-  if (b == 0) {
+  if (__builtin_expect(b == 0, 0)) {
     error(s, "%smodulus by zero in expression %s%s%s", context, expr,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   // Is INT_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1) {
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1, 0)) {
     error(s, "%sinteger overflow in modulo in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1480,7 +1482,7 @@ static __attribute__((unused)) value_t negate(const char *NONNULL context,
   assert(context != NULL);
   assert(expr != NULL);
 
-  if (VALUE_MIN != 0 && a == VALUE_MIN) {
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN, 0)) {
     error(s, "%sinteger overflow in negation in expression %s%s%s",
       context, expr, rule_name == NULL ? "" : " within ",
       rule_name == NULL ? "" : rule_name);
@@ -1554,7 +1556,7 @@ static struct queue_node *queue_node_new(void) {
 
   assert((r == 0 || r == ENOMEM) && "invalid alignment to posix_memalign");
 
-  if (r != 0) {
+  if (__builtin_expect(r != 0, 0)) {
     oom();
   }
 
@@ -2316,13 +2318,13 @@ static size_t rendezvous_pending = 1;   /* how many threads are opted in and not
 
 static void rendezvous_init(void) {
   int r = pthread_mutex_init(&rendezvous_lock, NULL);
-  if (r != 0) {
+  if (__builtin_expect(r != 0, 0)) {
     fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
     exit(EXIT_FAILURE);
   }
 
   r = pthread_cond_init(&rendezvous_cond, NULL);
-  if (r != 0) {
+  if (__builtin_expect(r != 0, 0)) {
     fprintf(stderr, "pthread_cond_init failed: %s\n", strerror(r));
     exit(EXIT_FAILURE);
   }
@@ -2541,7 +2543,7 @@ static void set_init(void) {
 
   if (THREADS > 1) {
     int r = pthread_mutex_init(&set_expand_mutex, NULL);
-    if (r < 0) {
+    if (__builtin_expect(r < 0, 0)) {
       fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
       exit(EXIT_FAILURE);
     }
@@ -3035,7 +3037,7 @@ static int exit_with(int status) {
 #endif
       void *ret;
       int r = pthread_join(threads[i], &ret);
-      if (r != 0) {
+      if (__builtin_expect(r != 0, 0)) {
         print_lock();
         fprintf(stderr, "failed to join thread: %s\n", strerror(r));
         print_unlock();
@@ -3189,7 +3191,7 @@ static void start_secondary_threads(void) {
 #endif
     int r = pthread_create(&threads[i], NULL, thread_main,
       (void*)(uintptr_t)(i + 1));
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       fprintf(stderr, "pthread_create failed: %s\n", strerror(r));
       exit(EXIT_FAILURE);
     }
