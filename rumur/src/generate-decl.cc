@@ -28,8 +28,7 @@ void generate_decl(std::ostream &out, const Decl &d) {
   }
 
   if (auto c = dynamic_cast<const ConstDecl*>(&d)) {
-    assert((c->type == nullptr || c->type->is_simple())
-      && "complex const decl");
+    assert(c->get_type()->is_simple() && "complex const decl");
 
     out << "static const value_t ru_" << c->name << " __attribute__((unused)) "
       << "= VALUE_C(" << c->value->constant_fold()
