@@ -11,7 +11,7 @@
 
 using namespace rumur;
 
-static void clear(std::ostream &out, const rumur::TypeExpr &t,
+static void clear(std::ostream &out, const TypeExpr &t,
     const std::string &offset = "((size_t)0)", size_t depth = 0) {
 
   const std::string indent = std::string(2 * (depth + 1), ' ');
@@ -388,7 +388,7 @@ class Generator : public ConstStmtTraversal {
 
 }
 
-void generate_stmt(std::ostream &out, const rumur::Stmt &s) {
+void generate_stmt(std::ostream &out, const Stmt &s) {
   Generator g(out);
   g.dispatch(s);
 }

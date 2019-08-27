@@ -4,8 +4,10 @@
 #include <memory>
 #include <rumur/rumur.h>
 
+using namespace rumur;
+
 // An AST traversal that learns the maximum simple type width.
-class Traversal : public rumur::ConstTypeTraversal {
+namespace { class Measurer : public ConstTypeTraversal {
 
  public:
   mpz_class max = 0;
@@ -13,35 +15,35 @@ class Traversal : public rumur::ConstTypeTraversal {
   /* Nothing required for complex types, but we do need to descend into their
    * children.
    */
-  void visit_array(const rumur::Array &n) {
+  void visit_array(const Array &n) {
     dispatch(*n.index_type);
     dispatch(*n.element_type);
   }
 
-  void visit_enum(const rumur::Enum &n) {
+  void visit_enum(const Enum &n) {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit_range(const rumur::Range &n) {
+  void visit_range(const Range &n) {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit_record(const rumur::Record &n) {
+  void visit_record(const Record &n) {
     for (auto &f : n.fields)
       dispatch(*f);
   }
 
-  void visit_scalarset(const rumur::Scalarset &n) {
+  void visit_scalarset(const Scalarset &n) {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit_typeexprid(const rumur::TypeExprID &n) {
+  void visit_typeexprid(const TypeExprID &n) {
     if (n.is_simple()) {
       mpz_class w = n.width();
       if (w > max)
@@ -52,10 +54,10 @@ class Traversal : public rumur::ConstTypeTraversal {
      * 'boolean' that is a simple type.
      */
   }
-};
+}; }
 
-mpz_class max_simple_width(const rumur::Model &m) {
-  Traversal t;
+mpz_class max_simple_width(const Model &m) {
+  Measurer t;
   t.dispatch(m);
   return t.max;
 }

@@ -234,7 +234,7 @@ class Generator : public ConstTypeTraversal {
 
 }
 
-void generate_print(std::ostream &out, const rumur::TypeExpr &e,
+void generate_print(std::ostream &out, const TypeExpr &e,
   const std::string &prefix, const std::string &handle, bool support_diff,
   bool support_xml) {
 

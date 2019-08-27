@@ -3,9 +3,11 @@
 #include <rumur/rumur.h>
 #include "utils.h"
 
+using namespace rumur;
+
 namespace {
 
-class CoverAccumulator : public rumur::ConstTraversal {
+class CoverAccumulator : public ConstTraversal {
 
  private:
   std::ostream *out;
@@ -14,8 +16,8 @@ class CoverAccumulator : public rumur::ConstTraversal {
  public:
   CoverAccumulator(std::ostream &o): out(&o) { }
 
-  void visit_property(const rumur::Property &n) final {
-    if (n.category == rumur::Property::COVER) {
+  void visit_property(const Property &n) final {
+    if (n.category == Property::COVER) {
       *out << "  COVER_" << n.unique_id << " = " << count << ",\n";
       count++;
     }
@@ -26,7 +28,7 @@ class CoverAccumulator : public rumur::ConstTraversal {
   }
 };
 
-class MessageGenerator : public rumur::ConstTraversal {
+class MessageGenerator : public ConstTraversal {
 
  private:
   std::ostream *out;
@@ -34,8 +36,8 @@ class MessageGenerator : public rumur::ConstTraversal {
  public:
   MessageGenerator(std::ostream &o): out(&o) { }
 
-  void visit_propertyrule(const rumur::PropertyRule &n) final {
-    if (n.property.category == rumur::Property::COVER) {
+  void visit_propertyrule(const PropertyRule &n) final {
+    if (n.property.category == Property::COVER) {
       if (n.name == "") {
         // No associated message. Just use the expression itself.
         *out << "  \"" << to_C_string(*n.property.expr) << "\",\n";
@@ -45,8 +47,8 @@ class MessageGenerator : public rumur::ConstTraversal {
     }
   }
 
-  void visit_propertystmt(const rumur::PropertyStmt &n) final {
-    if (n.property.category == rumur::Property::COVER) {
+  void visit_propertystmt(const PropertyStmt &n) final {
+    if (n.property.category == Property::COVER) {
       if (n.message == "") {
         // No associated message. Just use the expression itself.
         *out << "  \"" << to_C_string(*n.property.expr) << "\",\n";
@@ -59,7 +61,7 @@ class MessageGenerator : public rumur::ConstTraversal {
 
 }
 
-void generate_cover_array(std::ostream &out, const rumur::Model &model) {
+void generate_cover_array(std::ostream &out, const Model &model) {
   out << "enum {\n";
 
   CoverAccumulator ca(out);
