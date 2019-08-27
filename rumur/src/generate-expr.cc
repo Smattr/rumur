@@ -111,8 +111,8 @@ class Generator : public ConstExprTraversal {
     if (lvalue)
       invalid(n);
 
-    if (n.lhs->type() != nullptr && !n.lhs->type()->is_simple()) {
-      assert(n.rhs->type() != nullptr && !n.rhs->type()->is_simple() &&
+    if (!n.lhs->type()->is_simple()) {
+      assert(!n.rhs->type()->is_simple() &&
         "comparison between simple and complex type");
 
       *this << "handle_eq(" << *n.lhs << ", " << *n.rhs << ")";
@@ -488,8 +488,8 @@ class Generator : public ConstExprTraversal {
     if (lvalue)
       invalid(n);
 
-    if (n.lhs->type() != nullptr && !n.lhs->type()->is_simple()) {
-      assert(n.rhs->type() != nullptr && !n.rhs->type()->is_simple() &&
+    if (!n.lhs->type()->is_simple()) {
+      assert(!n.rhs->type()->is_simple() &&
         "comparison between simple and complex type");
 
       *this << "(!handle_eq(" << *n.lhs << ", " << *n.rhs << "))";

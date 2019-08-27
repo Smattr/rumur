@@ -130,9 +130,6 @@ class Generator : public ConstStmtTraversal {
     generate_lvalue(*out, *s.rhs);
     *out << ";\n";
 
-    assert(s.rhs->type() != nullptr && "clearing an expression without a type "
-      "(non-lvalue?)");
-
     clear(*out, *s.rhs->type());
 
     *out << "} while (0)";
@@ -170,11 +167,11 @@ class Generator : public ConstStmtTraversal {
       // equality comparison with complex types does not cause double bracketing
       if (c.condition != nullptr) {
         if (auto e = dynamic_cast<const Eq*>(&*c.condition)) {
-          if (e->lhs->type() != nullptr && !e->lhs->type()->is_simple())
+          if (!e->lhs->type()->is_simple())
             needs_bracketing = true;
         }
         if (auto e = dynamic_cast<const Neq*>(&*c.condition)) {
-          if (e->lhs->type() != nullptr && !e->lhs->type()->is_simple())
+          if (!e->lhs->type()->is_simple())
             needs_bracketing = true;
         }
       }
@@ -258,8 +255,6 @@ class Generator : public ConstStmtTraversal {
     }
 
     if (s.expr->is_lvalue()) {
-      assert(s.expr->type() != nullptr && "lvalue expression has numeric "
-        "literal type");
 
       // Construct a string containing a handle to this expression
       std::ostringstream buffer;
@@ -271,36 +266,33 @@ class Generator : public ConstStmtTraversal {
       return;
     }
 
-    assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
-      && "complex non-lvalue in put statement");
+    assert(s.expr->type()->is_simple() && "complex non-lvalue in put statement");
 
-    if (s.expr->type() != nullptr) {
-      const Ptr<TypeExpr> type = s.expr->type()->resolve();
-      if (auto e = dynamic_cast<const Enum*>(type.get())) {
-        *out
-          << "{\n"
-          << "  value_t v = ";
-        generate_rvalue(*out, *s.expr);
-        *out << ";\n";
-        size_t i = 0;
-        for (const std::pair<std::string, location> &m : e->members) {
-          *out << "  ";
-          if (i != 0)
-            *out << "else ";
-          *out << "if (v == " << i << ") {\n"
-            << "    printf(\"%s\", \"" << m.first << "\");\n"
-            << "  }\n";
-          i++;
-        }
-        if (!e->members.empty())
-          *out
-            << "else {\n"
-            << "  assert(\"illegal value read from enum expression\");\n"
-            << "}\n";
-
-        *out << "}";
-        return;
+    const Ptr<TypeExpr> type = s.expr->type()->resolve();
+    if (auto e = dynamic_cast<const Enum*>(type.get())) {
+      *out
+        << "{\n"
+        << "  value_t v = ";
+      generate_rvalue(*out, *s.expr);
+      *out << ";\n";
+      size_t i = 0;
+      for (const std::pair<std::string, location> &m : e->members) {
+        *out << "  ";
+        if (i != 0)
+          *out << "else ";
+        *out << "if (v == " << i << ") {\n"
+          << "    printf(\"%s\", \"" << m.first << "\");\n"
+          << "  }\n";
+        i++;
       }
+      if (!e->members.empty())
+        *out
+          << "else {\n"
+          << "  assert(\"illegal value read from enum expression\");\n"
+          << "}\n";
+
+      *out << "}";
+      return;
     }
 
     *out << "printf(\"%\" PRIVAL, value_to_string(";
@@ -314,7 +306,7 @@ class Generator : public ConstStmtTraversal {
       *out << "return true";
 
     } else {
-      if (s.expr->type() == nullptr || s.expr->type()->is_simple()) {
+      if (s.expr->type()->is_simple()) {
         *out << "return ";
         generate_rvalue(*out, *s.expr);
       } else {
