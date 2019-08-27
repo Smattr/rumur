@@ -42,7 +42,7 @@ class Solver {
   // open a new (nested) variable scope
   void open_scope(void);
 
-  // close a scope are return the previous one
+  // close a scope
   void close_scope(void);
 };
 

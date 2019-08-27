@@ -35,7 +35,7 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
 
   std::ostringstream query;
 
-  // disabled printing of "success" in response to commands
+  // disable printing of "success" in response to commands
   query << "(set-option :print-success false)\n";
 
   // select quantifier-free linear integer arithmetic logic
