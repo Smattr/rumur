@@ -4,7 +4,7 @@
 #include <iostream>
 #include "options.h"
 
-void set_log_level(log_level_t level);
+void set_log_level(LogLevel level);
 
 extern std::ostream *debug;
 extern std::ostream *info;

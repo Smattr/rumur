@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-enum tristate {
+enum struct Color {
   OFF,
   ON,
   AUTO,
@@ -20,34 +20,34 @@ enum trace_category_t {
   TC_SYMMETRY_REDUCTION = 0x10,
 };
 
-enum log_level_t {
+enum struct LogLevel {
   SILENT,
   WARNINGS,
   INFO,
   DEBUG,
 };
 
-enum deadlock_detection_t {
-  DEADLOCK_DETECTION_OFF,
-  DEADLOCK_DETECTION_STUCK,
-  DEADLOCK_DETECTION_STUTTERING,
+enum struct DeadlockDetection {
+  OFF,
+  STUCK,
+  STUTTERING,
 };
 
-enum counterexample_trace_t {
-  CEX_OFF,
+enum struct CounterexampleTrace {
+  OFF,
   DIFF,
   FULL,
 };
 
-enum symmetry_reduction_t {
-  SYMMETRY_REDUCTION_OFF,
-  SYMMETRY_REDUCTION_HEURISTIC,
-  SYMMETRY_REDUCTION_EXHAUSTIVE,
+enum struct SymmetryReduction {
+  OFF,
+  HEURISTIC,
+  EXHAUSTIVE,
 };
 
 struct Options {
   mpz_class threads = 0;
-  log_level_t log_level = WARNINGS;
+  LogLevel log_level = LogLevel::WARNINGS;
   mpz_class set_capacity = 8 * 1024 * 1024;
 
   /* Limit (percentage occupancy) at which we expand the capacity of the state
@@ -56,16 +56,16 @@ struct Options {
   unsigned set_expand_threshold = 75;
 
   // Whether to use ANSI colour codes in the checker's output.
-  tristate color = AUTO;
+  Color color = Color::AUTO;
 
   // Bitmask of enabled tracing
   uint64_t traces = 0;
 
   // Deadlock detection enabled?
-  deadlock_detection_t deadlock_detection = DEADLOCK_DETECTION_STUTTERING;
+  DeadlockDetection deadlock_detection = DeadlockDetection::STUTTERING;
 
   // Symmetry reduction enabled?
-  symmetry_reduction_t symmetry_reduction = SYMMETRY_REDUCTION_HEURISTIC;
+  SymmetryReduction symmetry_reduction = SymmetryReduction::HEURISTIC;
 
   // Use OS mechanisms to sandbox the checker?
   bool sandbox_enabled = false;
@@ -74,7 +74,7 @@ struct Options {
   mpz_class max_errors = 1;
 
   // How to print counterexample traces
-  counterexample_trace_t counterexample_trace = DIFF;
+  CounterexampleTrace counterexample_trace = CounterexampleTrace::DIFF;
 
   // Print output as XML?
   bool machine_readable_output = false;

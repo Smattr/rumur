@@ -105,7 +105,7 @@ static void parse_args(int argc, char **argv) {
     switch (c) {
 
       case 'd': // --debug
-        options.log_level = DEBUG;
+        options.log_level = LogLevel::DEBUG;
         set_log_level(options.log_level);
         break;
 
@@ -132,7 +132,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 'q': // --quiet
-        options.log_level = SILENT;
+        options.log_level = LogLevel::SILENT;
         set_log_level(options.log_level);
         break;
 
@@ -169,7 +169,7 @@ static void parse_args(int argc, char **argv) {
       }
 
       case 'v': // --verbose
-        options.log_level = INFO;
+        options.log_level = LogLevel::INFO;
         set_log_level(options.log_level);
         break;
 
@@ -179,16 +179,16 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_COLOUR: // --colour ...
         if (strcmp(optarg, "auto") == 0) {
-          options.color = AUTO;
+          options.color = Color::AUTO;
         } else if (strcmp(optarg, "on") == 0) {
           if (options.machine_readable_output) {
             std::cerr << "colour is not supported in combination with "
               << "--output-format \"machine readable\"\n";
             exit(EXIT_FAILURE);
           }
-          options.color = ON;
+          options.color = Color::ON;
         } else if (strcmp(optarg, "off") == 0) {
-          options.color = OFF;
+          options.color = Color::OFF;
         } else {
           std::cerr
             << "invalid --colour argument \"" << optarg << "\"\n"
@@ -221,11 +221,11 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_DEADLOCK_DETECTION: // --deadlock-detection ...
         if (strcmp(optarg, "off") == 0) {
-          options.deadlock_detection = DEADLOCK_DETECTION_OFF;
+          options.deadlock_detection = DeadlockDetection::OFF;
         } else if (strcmp(optarg, "stuck") == 0) {
-          options.deadlock_detection = DEADLOCK_DETECTION_STUCK;
+          options.deadlock_detection = DeadlockDetection::STUCK;
         } else if (strcmp(optarg, "stuttering") == 0) {
-          options.deadlock_detection = DEADLOCK_DETECTION_STUTTERING;
+          options.deadlock_detection = DeadlockDetection::STUTTERING;
         } else {
           std::cerr << "invalid argument to --deadlock-detection, \"" << optarg
             << "\"\n";
@@ -261,11 +261,11 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
         if (strcmp(optarg, "off") == 0) {
-          options.symmetry_reduction = SYMMETRY_REDUCTION_OFF;
+          options.symmetry_reduction = SymmetryReduction::OFF;
         } else if (strcmp(optarg, "heuristic") == 0) {
-          options.symmetry_reduction = SYMMETRY_REDUCTION_HEURISTIC;
+          options.symmetry_reduction = SymmetryReduction::HEURISTIC;
         } else if (strcmp(optarg, "exhaustive") == 0) {
-          options.symmetry_reduction = SYMMETRY_REDUCTION_EXHAUSTIVE;
+          options.symmetry_reduction = SymmetryReduction::EXHAUSTIVE;
         } else {
           std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
             << "\"\n";
@@ -302,11 +302,11 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_COUNTEREXAMPLE_TRACE: // --counterexample-trace ...
         if (strcmp(optarg, "full") == 0) {
-          options.counterexample_trace = FULL;
+          options.counterexample_trace = CounterexampleTrace::FULL;
         } else if (strcmp(optarg, "diff") == 0) {
-          options.counterexample_trace = DIFF;
+          options.counterexample_trace = CounterexampleTrace::DIFF;
         } else if (strcmp(optarg, "off") == 0) {
-          options.counterexample_trace = CEX_OFF;
+          options.counterexample_trace = CounterexampleTrace::OFF;
         } else {
           std::cerr << "invalid argument to --counterexample-trace, \""
             << optarg << "\"\n";
@@ -318,7 +318,7 @@ static void parse_args(int argc, char **argv) {
         if (strcmp(optarg, "machine-readable") == 0) {
           options.machine_readable_output = true;
           // Disable colour that would interfere with XML
-          options.color = OFF;
+          options.color = Color::OFF;
         } else if (strcmp(optarg, "human-readable") == 0) {
           options.machine_readable_output = false;
         } else {
@@ -467,8 +467,8 @@ static bool has_start_state(const rumur::Ptr<rumur::Rule> &r) {
 }
 
 static bool use_colors() {
-  return options.color == ON ||
-         (options.color == AUTO && isatty(STDERR_FILENO));
+  return options.color == Color::ON ||
+         (options.color == Color::AUTO && isatty(STDERR_FILENO));
 }
 
 static std::string bold() {

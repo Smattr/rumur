@@ -13,18 +13,38 @@
 
 using namespace rumur;
 
-static std::ostream &operator<<(std::ostream &out, deadlock_detection_t d) {
+static std::ostream &operator<<(std::ostream &out, Color c) {
+  switch (c) {
+
+    case Color::OFF:
+      out << "OFF";
+      break;
+
+    case Color::ON:
+      out << "ON";
+      break;
+
+    case Color::AUTO:
+      out << "AUTO";
+      break;
+
+  }
+
+  return out;
+}
+
+static std::ostream &operator<<(std::ostream &out, DeadlockDetection d) {
   switch (d) {
 
-    case DEADLOCK_DETECTION_OFF:
+    case DeadlockDetection::OFF:
       out << "DEADLOCK_DETECTION_OFF";
       break;
 
-    case DEADLOCK_DETECTION_STUCK:
+    case DeadlockDetection::STUCK:
       out << "DEADLOCK_DETECTION_STUCK";
       break;
 
-    case DEADLOCK_DETECTION_STUTTERING:
+    case DeadlockDetection::STUTTERING:
       out << "DEADLOCK_DETECTION_STUTTERING";
       break;
 
@@ -33,19 +53,39 @@ static std::ostream &operator<<(std::ostream &out, deadlock_detection_t d) {
   return out;
 }
 
-static std::ostream &operator<<(std::ostream &out, symmetry_reduction_t s) {
+static std::ostream &operator<<(std::ostream &out, SymmetryReduction s) {
   switch (s) {
 
-    case SYMMETRY_REDUCTION_OFF:
+    case SymmetryReduction::OFF:
       out << "SYMMETRY_REDUCTION_OFF";
       break;
 
-    case SYMMETRY_REDUCTION_HEURISTIC:
+    case SymmetryReduction::HEURISTIC:
       out << "SYMMETRY_REDUCTION_HEURISTIC";
       break;
 
-    case SYMMETRY_REDUCTION_EXHAUSTIVE:
+    case SymmetryReduction::EXHAUSTIVE:
       out << "SYMMETRY_REDUCTION_EXHAUSTIVE";
+      break;
+
+  }
+
+  return out;
+}
+
+static std::ostream &operator<<(std::ostream &out, CounterexampleTrace c) {
+  switch (c) {
+
+    case CounterexampleTrace::OFF:
+      out << "CEX_OFF";
+      break;
+
+    case CounterexampleTrace::DIFF:
+      out << "DIFF";
+      break;
+
+    case CounterexampleTrace::FULL:
+      out << "FULL";
       break;
 
   }
@@ -60,7 +100,7 @@ int output_checker(const std::string &path, const Model &model,
   if (!out)
     return -1;
 
-  if (options.log_level < DEBUG)
+  if (options.log_level < LogLevel::DEBUG)
     out << "#define NDEBUG 1\n\n";
 
   out
@@ -72,8 +112,7 @@ int output_checker(const std::string &path, const Model &model,
     // Settings that are used in header.c
     << "enum { SET_CAPACITY = " << options.set_capacity << "ul };\n\n"
     << "enum { SET_EXPAND_THRESHOLD = " << options.set_expand_threshold << " };\n\n"
-    << "static const enum { OFF, ON, AUTO } COLOR = " << (options.color == OFF ? "OFF" :
-      options.color == ON ? "ON" : "AUTO") << ";\n\n"
+    << "static const enum { OFF, ON, AUTO } COLOR = " << options.color << ";\n\n"
     << "enum trace_category_t {\n"
     << "  TC_HANDLE_READS       = " << TC_HANDLE_READS << ",\n"
     << "  TC_HANDLE_WRITES      = " << TC_HANDLE_WRITES << ",\n"
@@ -101,8 +140,7 @@ int output_checker(const std::string &path, const Model &model,
     << "#define CEX_OFF 0\n"
     << "#define DIFF 1\n"
     << "#define FULL 2\n"
-    << "#define COUNTEREXAMPLE_TRACE " << (options.counterexample_trace == CEX_OFF
-      ? "CEX_OFF" : (options.counterexample_trace == DIFF ? "DIFF" : "FULL")) << "\n\n"
+    << "#define COUNTEREXAMPLE_TRACE " << options.counterexample_trace << "\n\n"
     << "enum { MACHINE_READABLE_OUTPUT = " << options.machine_readable_output
       << " };\n\n"
     << "enum { MAX_SIMPLE_WIDTH = " << max_simple_width(model) << " };\n\n"
