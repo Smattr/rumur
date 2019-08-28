@@ -14,6 +14,7 @@
 #include "log.h"
 #include <memory>
 #include "options.h"
+#include "resources.h"
 #include <rumur/rumur.h>
 #include "smt/except.h"
 #include "smt/simplify.h"
@@ -127,7 +128,7 @@ static void parse_args(int argc, char **argv) {
       }
 
       case 'h': // --help
-        help();
+        help(doc_rumur_1, doc_rumur_1_len);
         exit(EXIT_SUCCESS);
 
       case 'o': // --output ...

@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include "help.h"
 #include <iostream>
-#include "resources.h"
 #include <string>
 #include <unistd.h>
 
@@ -14,7 +13,7 @@
  * macOS, we just do it uniformly through a temporary file for all platforms.
  */
 
-int help(void) {
+int help(const unsigned char *manpage, size_t manpage_len) {
 
   int ret = 0;
 
@@ -40,8 +39,8 @@ int help(void) {
 
   // Write the manpage to the temporary file
   {
-    ssize_t r = write(fd, doc_rumur_1, doc_rumur_1_len);
-    if (r < 0 || (size_t)r != doc_rumur_1_len) {
+    ssize_t r = write(fd, manpage, manpage_len);
+    if (r < 0 || (size_t)r != manpage_len) {
       ret = errno;
       std::cerr << "failed to write manpage to temporary file\n";
       goto done;
