@@ -7,6 +7,7 @@ add_custom_command(
 
 add_executable(rumur-ast-dump
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
+  ../common/help.cc
   src/main.cc
   src/XMLPrinter.cc)
 
