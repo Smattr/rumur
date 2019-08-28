@@ -27,6 +27,8 @@
 #include "ValueType.h"
 #include "version.h"
 
+using namespace rumur;
+
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::string> out;
 
@@ -456,12 +458,12 @@ static bool contains(const T &container, U predicate) {
     != container.end();
 }
 
-static bool has_start_state(const rumur::Ptr<rumur::Rule> &r) {
-  if (isa<rumur::StartState>(r))
+static bool has_start_state(const Ptr<Rule> &r) {
+  if (isa<StartState>(r))
     return true;
-  if (auto a = dynamic_cast<const rumur::AliasRule*>(r.get()))
+  if (auto a = dynamic_cast<const AliasRule*>(r.get()))
     return contains(a->rules, has_start_state);
-  if (auto s = dynamic_cast<const rumur::Ruleset*>(r.get()))
+  if (auto s = dynamic_cast<const Ruleset*>(r.get()))
     return contains(s->rules, has_start_state);
   return false;
 }
@@ -501,8 +503,7 @@ static std::string white() {
   return "";
 }
 
-static void print_location(const std::string &file,
-    const rumur::location &location) {
+static void print_location(const std::string &file, const location &location) {
 
   // don't try to open stdin (see default in options.cc)
   if (file == "<stdin>")
@@ -549,10 +550,10 @@ int main(int argc, char **argv) {
   parse_args(argc, argv);
 
   // Parse input model
-  rumur::Ptr<rumur::Model> m;
+  Ptr<Model> m;
   try {
-    m = rumur::parse(in == nullptr ? &std::cin : in.get());
-  } catch (rumur::Error &e) {
+    m = parse(in == nullptr ? &std::cin : in.get());
+  } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
       << reset() << " " << red() << bold() << "error:" << reset() << " "
       << white() << bold() << e.what() << reset() << "\n";
@@ -571,7 +572,7 @@ int main(int argc, char **argv) {
   try {
     resolve_symbols(*m);
     validate(*m);
-  } catch (rumur::Error &e) {
+  } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
       << reset() << " " << red() << bold() << "error:" << reset() << " "
       << white() << bold() << e.what() << reset() << "\n";

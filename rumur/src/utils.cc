@@ -6,6 +6,8 @@
 #include <string>
 #include "utils.h"
 
+using namespace rumur;
+
 static std::string octal(char c) {
   char buffer[sizeof("\\000")];
   snprintf(buffer, sizeof(buffer), "\\%03o", c);
@@ -24,16 +26,16 @@ std::string escape(const std::string &s) {
   return out;
 }
 
-std::string to_C_string(const rumur::Expr &expr) {
+std::string to_C_string(const Expr &expr) {
   return "\"" + escape(expr.to_string()) + "\"";
 }
 
-static std::string to_string(const rumur::location &location) {
+static std::string to_string(const location &location) {
   std::stringstream ss;
   ss << location;
   return ss.str();
 }
 
-std::string to_C_string(const rumur::location &location) {
+std::string to_C_string(const location &location) {
   return "\"" + escape(input_filename) + ":" + to_string(location) + ": \"";
 }
