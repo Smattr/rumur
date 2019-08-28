@@ -9,7 +9,7 @@
 #include "generate.h"
 #include <getopt.h>
 #include "has-start-state.h"
-#include "help.h"
+#include "../../common/help.h"
 #include <iostream>
 #include "log.h"
 #include <memory>
