@@ -46,6 +46,7 @@ add_executable(rumur
   src/generate-property.cc
   src/generate-quantifier.cc
   src/generate-stmt.cc
+  src/has-start-state.cc
   src/help.cc
   src/log.cc
   src/main.cc

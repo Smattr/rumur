@@ -8,6 +8,7 @@
 #include <fstream>
 #include "generate.h"
 #include <getopt.h>
+#include "has-start-state.h"
 #include "help.h"
 #include <iostream>
 #include "log.h"
@@ -452,22 +453,6 @@ static void parse_args(int argc, char **argv) {
   }
 }
 
-template<typename T, typename U>
-static bool contains(const T &container, U predicate) {
-  return std::find_if(container.begin(), container.end(), predicate)
-    != container.end();
-}
-
-static bool has_start_state(const Ptr<Rule> &r) {
-  if (isa<StartState>(r))
-    return true;
-  if (auto a = dynamic_cast<const AliasRule*>(r.get()))
-    return contains(a->rules, has_start_state);
-  if (auto s = dynamic_cast<const Ruleset*>(r.get()))
-    return contains(s->rules, has_start_state);
-  return false;
-}
-
 static bool use_colors() {
   return options.color == Color::ON ||
          (options.color == Color::AUTO && isatty(STDERR_FILENO));
@@ -581,7 +566,7 @@ int main(int argc, char **argv) {
   }
 
   // Check whether we have a start state.
-  if (!contains(m->rules, has_start_state))
+  if (!has_start_state(*m))
     *warn << "warning: model has no start state\n";
 
   // run SMT simplification if the user enabled it
