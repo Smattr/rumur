@@ -500,19 +500,22 @@ namespace { class Simplifier : public BaseTraversal {
 
     if (auto t = dynamic_cast<const TypeDecl*>(&decl)) {
 
-      const Ptr<TypeExpr> type = t->value->resolve();
-      bool nested = isa<TypeExprID>(t->value);
+      // define any enum members that occur as part of this TypeDecl
+      define_enum_members(*solver, *t->value);
 
-      /* If this is not a nested TypeDecl (i.e. a TypeDecl whose referent is a
-       * former TypeDecl), it may contain enum definitions. We need to extract
-       * the members of these enums and define them now.
-       */
-      if (!nested)
-        define_enum_members(*solver, *type);
+      const std::string my_name = mangle(t->name);
 
-      /* nothing else required for TypeDecls because types are emitted inline
-       * when used in, e.g., a VarDecl
-       */
+      // nested TypeDecl (i.e. a typedecl of a typedecl)
+      if (auto ref = dynamic_cast<const TypeExprID*>(t->value.get())) {
+        const std::string ref_name = mangle(ref->name);
+        *solver << "(define-sort " << my_name << " () " << ref_name << ")\n";
+
+      } else {
+        // generic type definition
+        *solver << "(define-sort " << my_name << " () "
+          << typeexpr_to_smt(*t->value) << ")\n";
+      }
+
       return;
     }
 
