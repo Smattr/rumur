@@ -159,6 +159,10 @@ std::string mangle(const std::string &s) {
   if (l == "true" || l == "false")
     return l;
 
+  // if this is the boolean type, the solver already knows of it
+  if (l == "boolean")
+    return "Bool";
+
   return "ru_" + s;
 }
 
