@@ -525,16 +525,22 @@ namespace { class Simplifier : public BaseTraversal {
 
   void declare_var(const std::string &name, const TypeExpr &type) {
 
-    const Ptr<TypeExpr> t = type.resolve();
-
-    const std::string mangled = mangle(name);
-
     // define any enum members that occur as part of the variable's type
     define_enum_members(*solver, type);
 
-    // define the variable itself
-    *solver
-      << "(declare-fun " << mangled << " () " << typeexpr_to_smt(*t) << ")\n";
+    const std::string mangled = mangle(name);
+
+    if (auto t = dynamic_cast<const TypeExprID*>(&type)) {
+      // this has a previously defined type, so we know how to declare it
+      const std::string tname = mangle(t->name);
+      *solver << "(declare-fun " << mangled << " () " << tname << ")\n";
+    } else {
+      // otherwise declare it generically
+      const std::string tname = typeexpr_to_smt(type);
+      *solver << "(declare-fun " << mangled << " () " << tname << ")\n";
+    }
+
+    const Ptr<TypeExpr> t = type.resolve();
 
     // the solver already knows boolean, so we're done
     if (*t == *Boolean)
