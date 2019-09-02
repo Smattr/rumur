@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include "define-enum-members.h"
+#include "define-records.h"
 #include "except.h"
 #include "../log.h"
 #include "logic.h"
@@ -503,6 +504,9 @@ namespace { class Simplifier : public BaseTraversal {
       // define any enum members that occur as part of this TypeDecl
       define_enum_members(*solver, *t->value);
 
+      // define any records that occur as part of this TypeDecl
+      define_records(*solver, *t->value);
+
       const std::string my_name = mangle(t->name);
 
       // nested TypeDecl (i.e. a typedecl of a typedecl)
@@ -527,6 +531,9 @@ namespace { class Simplifier : public BaseTraversal {
 
     // define any enum members that occur as part of the variable's type
     define_enum_members(*solver, type);
+
+    // define any records that occur as part of this variable's type
+    define_records(*solver, type);
 
     const std::string mangled = mangle(name);
 
