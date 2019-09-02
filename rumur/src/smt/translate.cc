@@ -64,7 +64,18 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_field(const Field &n) {
-    throw Unsupported(n);
+    // the record type that forms the root of this expression will have
+    // previously been defined as a synthesised type (see define-records.cc)
+
+    // determine the (mangled) SMT name the root was given
+    const Ptr<TypeExpr> type = n.record->type()->resolve();
+    const std::string root = mangle(std::to_string(type->unique_id));
+
+    // we can now compute the accessor for this field (see define-records.cc)
+    const std::string getter = root + "_" + n.field;
+
+    // now construct the SMT expression
+    *this << "(" << getter << " " << *n.record << ")";
   }
 
   void visit_forall(const Forall &n) {
