@@ -96,4 +96,32 @@ void Function::validate() const {
     rt.dispatch(*s);
 }
 
+bool Function::is_recursive() const {
+
+  // a traversal that finds calls to a given function
+  class CallFinder : public ConstTraversal {
+
+   private:
+    const Function *needle;
+
+   public:
+    bool found = false;
+
+    explicit CallFinder(const Function &needle_): needle(&needle_) { }
+
+    void visit_functioncall(const FunctionCall &n) final {
+      if (n.function != nullptr && n.function->unique_id == needle->unique_id)
+        found = true;
+    }
+
+    virtual ~CallFinder() = default;
+  };
+
+  // run the traversal on ourselves
+  CallFinder cf(*this);
+  cf.dispatch(*this);
+
+  return cf.found;
+}
+
 }
