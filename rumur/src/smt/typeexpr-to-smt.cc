@@ -6,6 +6,7 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
+#include "translate.h"
 #include "typeexpr-to-smt.h"
 
 using namespace rumur;
@@ -59,8 +60,10 @@ namespace { class Translator : public ConstTypeTraversal {
     *this << logic->integer_type();
   }
 
-  void visit_record(const Record&) final {
-    throw Unsupported();
+  void visit_record(const Record &n) final {
+    // this type will have been previously constructed using its unique
+    // identifier (see define-records.cc)
+    *this << mangle(std::to_string(n.unique_id));
   }
 
   void visit_scalarset(const Scalarset&) final {
