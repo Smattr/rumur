@@ -115,12 +115,15 @@ class Resolver : public Traversal {
 
   void visit_function(Function &n) final {
     symtab.open_scope();
-    for (auto &p : n.parameters) {
+    for (auto &p : n.parameters)
       dispatch(*p);
-      symtab.declare(p->name, p);
-    }
     if (n.return_type != nullptr)
       dispatch(*n.return_type);
+    // only register the function parameters now, to avoid their names shadowing
+    // anything that needs to be resolved during symbol resolution of another
+    // parameter or the return type
+    for (auto &p : n.parameters)
+      symtab.declare(p->name, p);
     for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
