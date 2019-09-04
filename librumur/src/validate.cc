@@ -143,8 +143,6 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_functioncall(const FunctionCall &n) final {
-    if (n.function != nullptr)
-      dispatch(*n.function);
     for (auto &a : n.arguments)
       dispatch(*a);
     n.validate();
