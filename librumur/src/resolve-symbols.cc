@@ -119,6 +119,10 @@ class Resolver : public Traversal {
       dispatch(*p);
     if (n.return_type != nullptr)
       dispatch(*n.return_type);
+    // register the function itself, even though its body has not yet been
+    // resolved, in order to allow contained function calls to resolve to the
+    // containing function, supporting recursion
+    symtab.declare(n.name, Ptr<Function>::make(n));
     // only register the function parameters now, to avoid their names shadowing
     // anything that needs to be resolved during symbol resolution of another
     // parameter or the return type

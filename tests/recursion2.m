@@ -1,5 +1,3 @@
--- rumur_exit_code: 1
-
 -- test a recursive procedure definition
 
 var
