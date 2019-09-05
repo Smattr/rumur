@@ -1,6 +1,53 @@
 Change log
 ==========
 
+v2019.09.07
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The SMT bridge now supports record types. This makes SMT simplification
+  (``--smt-simplification on``) realistically usable on real world models.
+  Simplification will still give up on some unsupported expressions (commits
+  787f074328874a470d595576ae9e8b16837582f4,
+  33d120df8fc7bedf1361a59f328930d311478376,
+  308a8239eee6dc42684c3bed21210ea95d0dd66e,
+  b9dd7f185d6f22c31d98dfbeb2af4418fb661b79,
+  13092b8d8c5e62da0178b71825328cc7e75bea5b).
+* Recursive functions and procedures are now supported. These are supported by
+  CMurphi, Rumur's precursor, but seemingly rarely used in real world models so
+  their absence in Rumur went unnoticed until recently. Mutual recursion is
+  still unsupported (commits e61b8a787ab46bde3c0ce14da885cd3005cc54c9,
+  a9bd211028e591d90e28e2410f5988700bc5efcd).
+* ``rumur-ast-dump --help`` now shows its manpage instead of abbreviated help
+  text (commits 4198edc67ed37c3dfa91031f90fdfb9e8a5190aa,
+  8cf86df9ef718d1e22d1ba47a63c9f1a6ba1ad78,
+  295b565f88660ecf4264ad1ace4e6f88423fab69,
+  8c612b898e9d42a17847cca3a9435fc575c58135,
+  577ae2862a45a1d89fe995c1a9bd7bb11fc7e34d,
+  38a61d670d748d7072162e506c873afa13e757ec).
+* Function or procedure parameters that shadow a return type are now supported.
+  Previously Rumur would reject such models (commit
+  ff5bbb8cd7a016fbe210757dd1c4b90093c44b4d). E.g.:
+
+.. code-block:: murphi
+
+  type t: 0 .. 1;
+
+  function foo(t: boolean): t; begin
+  ...
+
+* It is now valid to name two rules identically in a model. This can lead to
+  confusing counterexample traces, but sometimes it is natural to name multiple
+  rules the same so supporting this seemed reasonable (commit
+  a1d419c4d70f99d0945164e708ddd90379ddc858).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A new interface, ``Function::is_recursive()``, is available for querying
+  whether a function calls itself (commit
+  de4cd48cc2ff64b8ba8eb41163ea45fd1676658c).
+
 v2019.08.18
 -----------
 
