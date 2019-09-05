@@ -67,17 +67,6 @@ void Model::validate() const {
       }
     }
   }
-
-  // Check all rule names are distinct.
-  {
-    std::unordered_set<std::string> names;
-    for (const Ptr<Rule> &r : rules) {
-      if (r->name != "") {
-        if (!names.insert(r->name).second)
-          throw Error("duplicate rule name " + r->name, r->loc);
-      }
-    }
-  }
 }
 
 unsigned long Model::assumption_count() const {
