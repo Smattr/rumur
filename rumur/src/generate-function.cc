@@ -11,11 +11,20 @@ using namespace rumur;
 void generate_function(std::ostream &out, const Function &f,
     const std::vector<Ptr<Decl>> &decls) {
 
+  out << "static ";
+
+  bool needs_return_handle
+    = f.return_type != nullptr && !f.return_type->is_simple();
+
+  // if this function has no side effects and doesn’t have output arguments,
+  // pass the compiler a hint for this
+  if (!needs_return_handle && f.is_pure())
+    out << "__attribute__((pure)) ";
+
   /* Functions returning a simple type return a value, as expected. Functions
    * returning a complex type return a handle that is actually the same as their
    * second parameter (see below).
    */
-  out << "static ";
   if (f.return_type == nullptr) {
     /* We need to give void-returning functions a dummy boolean return type to
      * align with the type signature for rules. More specifically a return
@@ -35,7 +44,7 @@ void generate_function(std::ostream &out, const Function &f,
     << "struct state *NONNULL s __attribute__((unused))";
 
   // If required, generate the return (out) parameter.
-  if (f.return_type != nullptr && !f.return_type->is_simple())
+  if (needs_return_handle)
     out << ", struct handle ret";
 
   for (const Ptr<VarDecl> &p : f.parameters)
