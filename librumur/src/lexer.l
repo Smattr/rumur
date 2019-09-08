@@ -159,9 +159,25 @@ true {
   return YYText()[0];
 }
 
-\"(\\.|[^\\\"])*\" {
+(\"|“)(\\.|[^\\\"]|\\”)*(\"|”) {
   std::string s(YYText());
-  lval->build<std::string>(s.substr(1, s.length() - 2).c_str());
+
+  /* figure out which quote character this string starts with */
+  const std::string opener = s.find("“") == 0 ? "“" : "\"";
+  assert(s.find(opener) == 0 && "logic bug in string lexing rule");
+
+  /* figure out which quote character this string ends with */
+  static const std::string squote = "”";
+  size_t offset = s.size() - squote.size();
+  const std::string closer
+    = s.size() > squote.size() && s.find(squote, offset) == offset
+    ? squote
+    : "\"";
+
+  /* build a string, stripping the quote delimiters */
+  lval->build<std::string>(s.substr(opener.size(),
+    s.size() - opener.size() - closer.size()).c_str());
+
   return rumur::parser::token::STRING;
 }
 

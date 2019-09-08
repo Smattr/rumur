@@ -25,4 +25,4 @@ syn match murphiOperator "==[^>]"he=e-1
 syn match murphiOperator "[∀∃≔≥→≤≠⇒¬∧∨]"
 
 " recognise escape sequences in strings
-syn region murphiString start=+"+ skip=+\\\\\|\\"+ end=+"+
+syn region murphiString start=+"\|“+ skip=+\\\\\|\\"\|\\”+ end=+"\|”+
