@@ -558,7 +558,14 @@ ExprID *ExprID::clone() const {
 }
 
 bool ExprID::constant() const {
-  return isa<ConstDecl>(value);
+
+  if (isa<ConstDecl>(value))
+    return true;
+
+  if (auto a = dynamic_cast<const AliasDecl*>(value.get()))
+    return a->value->constant();
+
+  return false;
 }
 
 Ptr<TypeExpr> ExprID::type() const {
@@ -569,8 +576,13 @@ Ptr<TypeExpr> ExprID::type() const {
 }
 
 mpz_class ExprID::constant_fold() const {
+
   if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
     return c->value->constant_fold();
+
+  if (auto a = dynamic_cast<const AliasDecl*>(value.get()))
+    return a->value->constant_fold();
+
   throw Error("symbol \"" + id + "\" is not a constant", loc);
 }
 
