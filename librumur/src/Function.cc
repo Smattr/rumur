@@ -154,6 +154,11 @@ bool Function::is_pure() const {
       dispatch(*n.rhs);
     }
 
+    void visit_errorstmt(const ErrorStmt&) final {
+      // treat any error as a side effect
+      pure = false;
+    }
+
     void visit_functioncall(const FunctionCall &n) final {
 
       assert(n.function != nullptr && "unresolved function call");
@@ -164,6 +169,12 @@ bool Function::is_pure() const {
       // check if this is a recursive call, to avoid looping
       if (n.function->unique_id != root->unique_id)
         pure &= n.function->is_pure();
+    }
+
+    void visit_propertystmt(const PropertyStmt&) final {
+      // treat any property statement as a side effect
+      pure = false;
+      // no need to further descend
     }
 
     void visit_put(const Put&) final {
