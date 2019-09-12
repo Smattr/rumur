@@ -69,13 +69,19 @@ class Resolver : public Traversal {
   void visit_enum(Enum &n) final {
     auto e = Ptr<Enum>::make(n);
 
-    //* Register all the enum members so they can be referenced later.
+    // register all the enum members so they can be referenced later
     mpz_class index = 0;
+    size_t id = e->unique_id + 1;
     for (const std::pair<std::string, location> &m : n.members) {
       auto cd = Ptr<ConstDecl>::make(m.first,
         Ptr<Number>::make(index, m.second), e, m.second);
+      // assign this member a unique id so that referrers can use it if need be
+      assert(id < e->unique_id_limit && "number of enum members exceeds what "
+        "was expected");
+      cd->unique_id = id;
       symtab.declare(m.first, cd);
       index++;
+      id++;
     }
   }
 
