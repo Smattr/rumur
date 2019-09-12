@@ -1,5 +1,6 @@
 #pragma once
 
+#include <climits>
 #include <cstddef>
 #include <gmpxx.h>
 #include <iostream>
@@ -92,6 +93,11 @@ struct Scalarset : public TypeExpr {
 struct Enum : public TypeExpr {
 
   std::vector<std::pair<std::string, location>> members;
+
+  // The range [unique_id, unique_id_limit) is usable by this node as
+  // identifiers. Enum types need this specialisation due to the way references
+  // to their members are resolved (see resolve_symbols()).
+  size_t unique_id_limit = SIZE_MAX;
 
   Enum(const std::vector<std::pair<std::string, location>> &members_,
     const location &loc_);

@@ -81,6 +81,10 @@ void Indexer::visit_element(Element &n) {
 
 void Indexer::visit_enum(Enum &n) {
   n.unique_id = next++;
+  // allocate a block of IDs that this Enum can use for its members during type
+  // checking (see resolve_symbols())
+  n.unique_id_limit = next + n.members.size();
+  next = n.unique_id_limit;
 }
 
 void Indexer::visit_eq(Eq &n) {
