@@ -274,7 +274,7 @@ class Resolver : public Traversal {
       if (t == nullptr)
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
-      n.referent = t->value;
+      n.referent = t;
     }
   }
 

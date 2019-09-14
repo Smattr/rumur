@@ -212,7 +212,7 @@ class Generator : public ConstTypeTraversal {
   void visit_typeexprid(const TypeExprID &n) final {
     if (n.referent == nullptr)
       throw Error("unresolved type symbol \"" + n.name + "\"", n.loc);
-    dispatch(*n.referent);
+    dispatch(*n.referent->value);
   }
 
   virtual ~Generator() = default;

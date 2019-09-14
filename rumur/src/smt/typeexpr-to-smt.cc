@@ -76,7 +76,7 @@ namespace { class Translator : public ConstTypeTraversal {
 
   void visit_typeexprid(const TypeExprID &n) final {
     assert(n.referent != nullptr && "unresolved TypeExprID in AST");
-    *this << *n.referent;
+    *this << *n.referent->value;
   }
 }; }
 

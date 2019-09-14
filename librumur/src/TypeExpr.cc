@@ -379,7 +379,7 @@ std::string Array::to_string() const {
 }
 
 TypeExprID::TypeExprID(const std::string &name_,
-  const Ptr<TypeExpr> &referent_, const location &loc_):
+  const Ptr<TypeDecl> &referent_, const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
 
 TypeExprID *TypeExprID::clone() const {
@@ -389,18 +389,18 @@ TypeExprID *TypeExprID::clone() const {
 mpz_class TypeExprID::width() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->width();
+  return referent->value->width();
 }
 
 mpz_class TypeExprID::count() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->count();
+  return referent->value->count();
 }
 
 bool TypeExprID::operator==(const Node &other) const {
   if (referent != nullptr)
-    return *referent == other;
+    return *referent->value == other;
 
   auto o = dynamic_cast<const TypeExprID*>(&other);
   if (o == nullptr)
@@ -415,13 +415,13 @@ bool TypeExprID::operator==(const Node &other) const {
 bool TypeExprID::is_simple() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->is_simple();
+  return referent->value->is_simple();
 }
 
 Ptr<TypeExpr> TypeExprID::resolve() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->resolve();
+  return referent->value->resolve();
 }
 
 void TypeExprID::validate() const {
@@ -432,13 +432,13 @@ void TypeExprID::validate() const {
 std::string TypeExprID::lower_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->lower_bound();
+  return referent->value->lower_bound();
 }
 
 std::string TypeExprID::upper_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->upper_bound();
+  return referent->value->upper_bound();
 }
 
 std::string TypeExprID::to_string() const {
@@ -448,7 +448,7 @@ std::string TypeExprID::to_string() const {
 bool TypeExprID::constant() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->constant();
+  return referent->value->constant();
 }
 
 }

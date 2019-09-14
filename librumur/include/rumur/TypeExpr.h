@@ -16,6 +16,7 @@
 namespace rumur {
 
 // Forward declare to avoid circular #include
+struct TypeDecl;
 struct VarDecl;
 
 struct TypeExpr : public Node {
@@ -149,9 +150,9 @@ struct Array : public TypeExpr {
 struct TypeExprID : public TypeExpr {
 
   std::string name;
-  Ptr<TypeExpr> referent;
+  Ptr<TypeDecl> referent;
 
-  TypeExprID(const std::string &name_, const Ptr<TypeExpr> &referent_,
+  TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
     const location &loc_);
   TypeExprID *clone() const final;
   virtual ~TypeExprID() = default;
