@@ -37,6 +37,9 @@ namespace { class Translator : public ConstTypeTraversal {
   }
 
   void visit_array(const Array &n) final {
+    if (!logic->supports_arrays())
+      throw Unsupported("model contains array types which are unsupported by "
+        "the given SMT logic");
     *this << "(Array " << *n.index_type << " " << *n.element_type << ")";
   }
 
