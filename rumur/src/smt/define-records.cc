@@ -41,7 +41,7 @@ namespace { class Definer : public ConstTypeTraversal {
     // now we're ready to define this one itself
 
     // synthesise a name for the SMT type
-    const std::string name = mangle(std::to_string(n.unique_id));
+    const std::string name = mangle("", n.unique_id);
 
     // a name for the constructor (we never actually use this)
     const std::string ctor = "mk" + name;

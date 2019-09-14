@@ -258,7 +258,7 @@ namespace { class Simplifier : public BaseTraversal {
     if (n.type != nullptr) {
       dispatch(*n.type);
 
-      declare_var(n.name, *n.type);
+      declare_var(n.name, n.unique_id, *n.type);
     } else {
       assert(n.from != nullptr);
       assert(n.to != nullptr);
@@ -273,7 +273,7 @@ namespace { class Simplifier : public BaseTraversal {
       if (n.step != nullptr)
         simplify(n.step);
 
-      const std::string name = mangle(n.name);
+      const std::string name = mangle(n.name, n.unique_id);
       *solver << "(declare-fun " << name << " () " << logic->integer_type()
         << ")\n";
       if (n.from->constant()) {
@@ -473,7 +473,7 @@ namespace { class Simplifier : public BaseTraversal {
   void declare_decl(const Decl &decl) {
 
     if (auto v = dynamic_cast<const VarDecl*>(&decl)) {
-      declare_var(v->name, *v->type);
+      declare_var(v->name, v->unique_id, *v->type);
       return;
     }
 
@@ -487,9 +487,11 @@ namespace { class Simplifier : public BaseTraversal {
         const std::string value =
           logic->numeric_literal(c->value->constant_fold());
 
-        *solver << "(declare-fun " << mangle(c->name) << " () "
-          << logic->integer_type() << ")\n"
-          << "(assert (= " << mangle(c->name) << " " << value << "))\n";
+        const std::string name = mangle(c->name, c->unique_id);
+
+        *solver
+          << "(declare-fun " << name << " () " << logic->integer_type() << ")\n"
+          << "(assert (= " << name << " " << value << "))\n";
 
         return;
       }
@@ -505,11 +507,11 @@ namespace { class Simplifier : public BaseTraversal {
       // define any records that occur as part of this TypeDecl
       define_records(*solver, *t->value);
 
-      const std::string my_name = mangle(t->name);
+      const std::string my_name = mangle(t->name, t->unique_id);
 
       // nested TypeDecl (i.e. a typedecl of a typedecl)
       if (auto ref = dynamic_cast<const TypeExprID*>(t->value.get())) {
-        const std::string ref_name = mangle(ref->name);
+        const std::string ref_name = mangle(ref->name, ref->referent->unique_id);
         *solver << "(define-sort " << my_name << " () " << ref_name << ")\n";
 
       } else {
@@ -525,7 +527,7 @@ namespace { class Simplifier : public BaseTraversal {
     throw Unsupported();
   }
 
-  void declare_var(const std::string &name, const TypeExpr &type) {
+  void declare_var(const std::string &name, size_t id, const TypeExpr &type) {
 
     // define any enum members that occur as part of the variable's type
     define_enum_members(*solver, type);
@@ -533,11 +535,11 @@ namespace { class Simplifier : public BaseTraversal {
     // define any records that occur as part of this variable's type
     define_records(*solver, type);
 
-    const std::string mangled = mangle(name);
+    const std::string mangled = mangle(name, id);
 
     if (auto t = dynamic_cast<const TypeExprID*>(&type)) {
       // this has a previously defined type, so we know how to declare it
-      const std::string tname = mangle(t->name);
+      const std::string tname = mangle(t->name, t->referent->unique_id);
       *solver << "(declare-fun " << mangled << " () " << tname << ")\n";
     } else {
       // otherwise declare it generically

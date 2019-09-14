@@ -48,7 +48,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_exprid(const ExprID &n) {
-    *this << mangle(n.id);
+    *this << mangle(n.id, n.value->unique_id);
   }
 
   void visit_eq(const Eq &n) {
@@ -69,7 +69,7 @@ namespace { class Translator : public ConstExprTraversal {
 
     // determine the (mangled) SMT name the root was given
     const Ptr<TypeExpr> type = n.record->type()->resolve();
-    const std::string root = mangle(std::to_string(type->unique_id));
+    const std::string root = mangle("", type->unique_id);
 
     // we can now compute the accessor for this field (see define-records.cc)
     const std::string getter = root + "_" + n.field;
@@ -162,19 +162,24 @@ static std::string lower(const std::string &s) {
   return s1;
 }
 
-std::string mangle(const std::string &s) {
+std::string mangle(const std::string &s, size_t id) {
+
+  // if you're debugging a bad translation to SMT, you can change this to `true`
+  // to get the Murphi name of a symbol output as a comment in the SMT problem
+  const std::string suffix = false ? "; " + s + "\n" : "";
 
   const std::string l = lower(s);
 
   // if this is a boolean literal, the solver already knows of it
   if (l == "true" || l == "false")
-    return l;
+    return l + suffix;
 
   // if this is the boolean type, the solver already knows of it
   if (l == "boolean")
-    return "Bool";
+    return "Bool" + suffix;
 
-  return "ru_" + s;
+  // otherwise synthesise a node-unique name for this
+  return "s" + std::to_string(id) + suffix;
 }
 
 }

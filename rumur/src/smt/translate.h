@@ -10,6 +10,6 @@ namespace smt {
 std::string translate(const rumur::Expr &expr);
 
 // name-mangle a symbol to make it a safe SMT variable
-std::string mangle(const std::string &s);
+std::string mangle(const std::string &s, size_t id);
 
 }

@@ -63,7 +63,7 @@ namespace { class Translator : public ConstTypeTraversal {
   void visit_record(const Record &n) final {
     // this type will have been previously constructed using its unique
     // identifier (see define-records.cc)
-    *this << mangle(std::to_string(n.unique_id));
+    *this << mangle("", n.unique_id);
   }
 
   void visit_scalarset(const Scalarset&) final {

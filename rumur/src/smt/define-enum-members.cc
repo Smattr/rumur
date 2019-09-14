@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cassert>
 #include "define-enum-members.h"
 #include <gmpxx.h>
 #include "logic.h"
@@ -36,14 +37,17 @@ namespace { class Definer : public ConstTypeTraversal {
 
     // emit the members of the enum as integer constants
     mpz_class index = 0;
+    size_t id = n.unique_id + 1;
     for (const std::pair<std::string, location> &member : n.members) {
-      const std::string name = mangle(member.first);
+      assert(id < n.unique_id_limit && "unexpected number of enum members");
+      const std::string name = mangle(member.first, id);
       const std::string type = logic->integer_type();
       const std::string value = logic->numeric_literal(index);
       *solver
         << "(declare-fun " << name << " () " << type << ")\n"
         << "(assert (= " << name << " " << value << "))\n";
       index++;
+      id++;
     }
   }
 
