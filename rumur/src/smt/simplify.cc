@@ -394,9 +394,7 @@ namespace { class Simplifier : public BaseTraversal {
     dispatch(*n.value);
   }
 
-  void visit_typeexprid(TypeExprID &n) final {
-    dispatch(*n.referent);
-  }
+  void visit_typeexprid(TypeExprID&) final { }
 
   void visit_undefine(Undefine &n) final {
     dispatch(*n.rhs);
