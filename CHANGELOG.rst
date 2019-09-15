@@ -1,6 +1,40 @@
 Change log
 ==========
 
+v2019.09.15
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: an alias of a constant is now correctly recognised as constant
+  itself. This makes it possible to, for example, use such an alias as the lower
+  or upper bound of an integer range (commit
+  e4d139880498cfe140ae3298985c615d44f3930d).
+* The SMT bridge supports variable and type shadowing. For example, if your
+  model has a rule with a local variable with the same name as something in the
+  global state. Such models would previously cause malformed SMT problems to be
+  passed to the solver (commits
+  b2d5c1566530fa009c06b1c2710617b71f7c8c57,
+  4f5611986b12cbafa9663f1dd7b31f33d3211d25,
+  7b1718259185ff3e5ceabbb34fca41028da12010).
+* Smart quotes (“ and ”) can now be used as string delimiters in models (commit
+  82db1716e7b18259b00ea1941163c4808513793c).
+* Using an SMT logic without array support (for example, ``--smt-logic QF_LIA``)
+  suppresses SMT simplification in models with arrays. Previously this would
+  cause a malformed problem to be passed to the solver (commit
+  1100fae5b5c629b2d3e1f7dc386906ae16d7bd5a).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Breaking change: ``TypeExprID::referent`` is now a ``TypeDecl`` instead of a
+  ``TypeExpr``. The ``TypeExpr`` that would previously be stored here is
+  available via ``referent->value`` (commit
+  117ae412d6aa863f54d25fa87106265cced7f680).
+* A new method ``Function::is_pure`` is available for determining whether a
+  function is side effect free (commits
+  455acdc883a7080ad764524a7d22e8bf056c9e09,
+  ef5eb689d81bf96c183ad6f74a754eab47229095).
+
 v2019.09.07
 -----------
 
