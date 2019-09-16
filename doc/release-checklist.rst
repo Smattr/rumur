@@ -31,12 +31,8 @@ https://github.com/Smattr/rumur.
 
 Packaging for Debian
 --------------------
-
-+------------------------------------------------------------------------------+
-| Rumur is not yet in Debian but still waiting in Debian’s New Queue. You can  |
-| ignore these steps until Debian Buster is released and (hopefully) Rumur     |
-| makes it into distribution there.                                            |
-+------------------------------------------------------------------------------+
+Rumur is currently `packaged in Debian unstable`_. To update the Debian Rumur
+package follow these steps.
 
 1. Switch to the branch packaging/debian.
 2. Merge from master.
@@ -53,5 +49,6 @@ Packaging for Debian
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
 .. _`Cirrus CI FreeBSD tests`: https://cirrus-ci.com/github/Smattr/rumur
 .. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
+.. _`packaged in Debian unstable`: https://packages.debian.org/sid/rumur
 .. _`upstream on Github`: https://github.com/Smattr/rumur
 .. _`Travis CI regression tests`: https://travis-ci.org/Smattr/rumur/builds/
