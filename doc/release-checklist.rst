@@ -31,6 +31,7 @@ https://github.com/Smattr/rumur.
 
 Packaging for Debian
 --------------------
+
 +------------------------------------------------------------------------------+
 | Rumur is not yet in Debian but still waiting in Debian’s New Queue. You can  |
 | ignore these steps until Debian Buster is released and (hopefully) Rumur     |
