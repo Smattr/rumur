@@ -36,7 +36,7 @@ Packaging for Debian
 | Rumur is not yet in Debian but still waiting in Debian’s New Queue. You can  |
 | ignore these steps until Debian Buster is released and (hopefully) Rumur     |
 | makes it into distribution there.                                            |
-+==============================================================================+
++------------------------------------------------------------------------------+
 
 1. Switch to the branch packaging/debian.
 2. Merge from master.
