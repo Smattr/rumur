@@ -17,7 +17,7 @@ The process of cutting a new Rumur release should follow these steps:
 5. Wait for the `Travis CI regression tests`_ to pass. Travis is not very
    reliable and many errors are caused by infrastructure failures rather than
    your actual changes. So if you get a failure, check the logs to make sure
-   it's not a false positive.
+   it is not a false positive.
 6. Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
    release to work on FreeBSD because Rumur is in
    `FreeBSD’s package repository`_ and new releases are pulled in automatically.
@@ -25,15 +25,17 @@ The process of cutting a new Rumur release should follow these steps:
 8. Push the new version tag upstream.
 9. Package Rumur for Debian (see below).
 
-Github's automated release process should notice the version tag and show the
+Github’s automated release process should notice the version tag and show the
 new release as a downloadable zip/tarball on the "releases" tab of
 https://github.com/Smattr/rumur.
 
 Packaging for Debian
 --------------------
-*Rumur is not yet in Debian but still waiting in Debian's New Queue. You can
-ignore these steps until Debian Buster is released and (hopefully) Rumur makes
-it into distribution there.*
++------------------------------------------------------------------------------+
+| Rumur is not yet in Debian but still waiting in Debian’s New Queue. You can  |
+| ignore these steps until Debian Buster is released and (hopefully) Rumur     |
+| makes it into distribution there.                                            |
++==============================================================================+
 
 1. Switch to the branch packaging/debian.
 2. Merge from master.
