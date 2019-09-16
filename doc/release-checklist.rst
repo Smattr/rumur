@@ -18,9 +18,9 @@ The process of cutting a new Rumur release should follow these steps:
    reliable and many errors are caused by infrastructure failures rather than
    your actual changes. So if you get a failure, check the logs to make sure
    it's not a false positive.
-6. Build and test the commit on FreeBSD x86-64 and i386. While Rumur is
-   `packaged for FreeBSD`_ we have no automated CI testing on FreeBSD, so need
-   to test manually.
+6. Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
+   release to work on FreeBSD because Rumur is in
+   `FreeBSD’s package repository`_ and new releases are pulled in automatically.
 7. Tag the commit with the version number in "vYYYY.MM.DD" format.
 8. Push the new version tag upstream.
 9. Package Rumur for Debian (see below).
@@ -48,6 +48,7 @@ it into distribution there.*
    signing, and uploading the resulting package.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
-.. _`packaged for FreeBSD`: https://svnweb.freebsd.org/ports/head/math/rumur/
+.. _`Cirrus CI FreeBSD tests`: https://cirrus-ci.com/github/Smattr/rumur
+.. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
 .. _`upstream on Github`: https://github.com/Smattr/rumur
 .. _`Travis CI regression tests`: https://travis-ci.org/Smattr/rumur/builds/
