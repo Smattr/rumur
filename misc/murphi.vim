@@ -16,7 +16,7 @@ syn keyword murphiKeyword liveness
 syntax case match
 
 " support for hex numbers in addition to decimal
-syn match murphiNumber "\<\(0x\x\+\|\d\+\)\>"
+syn match murphiNumber "\<\(0[xX]\x\+\|\d\+\)\>"
 
 " override the base syntax's highlighting of `==` as an error
 syn match murphiOperator "==[^>]"he=e-1
