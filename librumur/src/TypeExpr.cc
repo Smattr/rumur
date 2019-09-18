@@ -411,6 +411,12 @@ bool TypeExprID::operator==(const Node &other) const {
   if (o->referent != nullptr)
     return false;
 
+  // Compare by name if we got to this point. Note that the name is irrelevant
+  // if either type was resolved, as we want to consider resolved types to be
+  // equal if they have equal referents.
+  if (name != o->name)
+    return false;
+
   return true;
 }
 
