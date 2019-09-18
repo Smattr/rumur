@@ -50,9 +50,7 @@ struct TypeExpr : public Node {
   // given type?
   bool coerces_to(const TypeExpr &other) const;
 
-  /* Whether an expression of this type can be compared to an expression of the
-   * other given type.
-   */
+  __attribute__((deprecated("equatable_with() has been replaced by coerces_to()")))
   bool equatable_with(const TypeExpr &other) const;
 };
 
