@@ -319,7 +319,7 @@ EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
 
 void EquatableBinaryExpr::validate() const {
-  if (!lhs->type()->equatable_with(*rhs->type()))
+  if (!lhs->type()->coerces_to(*rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
 
