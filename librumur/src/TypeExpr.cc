@@ -67,10 +67,8 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
   const Ptr<TypeExpr> t1 = resolve();
   const Ptr<TypeExpr> t2 = other.resolve();
 
-  if (isa<Range>(t1)) {
-    if (isa<Range>(t2))
-      return true;
-  }
+  if (isa<Range>(t1) && isa<Range>(t2))
+    return true;
 
   return *t1 == *t2;
 }
