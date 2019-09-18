@@ -62,7 +62,7 @@ bool TypeExpr::constant() const {
   throw Error("complex types do not have bounds to query", loc);
 }
 
-bool TypeExpr::equatable_with(const TypeExpr &other) const {
+bool TypeExpr::coerces_to(const TypeExpr &other) const {
 
   const Ptr<TypeExpr> t1 = resolve();
   const Ptr<TypeExpr> t2 = other.resolve();
@@ -73,6 +73,10 @@ bool TypeExpr::equatable_with(const TypeExpr &other) const {
   }
 
   return *t1 == *t2;
+}
+
+bool TypeExpr::equatable_with(const TypeExpr &other) const {
+  return coerces_to(other);
 }
 
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
