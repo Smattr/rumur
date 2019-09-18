@@ -75,20 +75,11 @@ void Assignment::validate() const {
   if (!lhs->is_lvalue())
     throw Error("non-lvalue expression cannot be assigned to", loc);
 
-  const Ptr<TypeExpr> lhs_type = lhs->type()->resolve();
-
   if (lhs->is_readonly())
     throw Error("read-only expression cannot be assigned to", loc);
 
-  const Ptr<TypeExpr> rhs_type = rhs->type()->resolve();
-
-  if (isa<Range>(lhs_type) && isa<Range>(rhs_type))
-    return;
-
-  if (*lhs_type == *rhs_type)
-    return;
-
-  throw Error("invalid assignment from incompatible type", loc);
+  if (!lhs->type()->coerces_to(*rhs->type()))
+    throw Error("invalid assignment from incompatible type", loc);
 }
 
 Clear::Clear(const Ptr<Expr> &rhs_, const location &loc_):
