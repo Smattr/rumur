@@ -13,7 +13,7 @@ class Logic {
   bool integers;
 
  public:
-  Logic(bool a, bool bv, bool ia);
+  Logic(bool bv, bool ia);
 
   std::string integer_type() const;
 
