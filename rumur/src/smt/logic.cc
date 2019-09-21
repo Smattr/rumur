@@ -9,8 +9,7 @@ namespace smt {
 
 static const size_t BITVECTOR_WIDTH = 64;
 
-Logic::Logic(bool a, bool bv, bool ia):
-    arrays(a),
+Logic::Logic(bool, bool bv, bool ia):
     bitvectors(bv),
     integers(ia) { }
 
@@ -149,10 +148,6 @@ std::string Logic::sub(void) const {
     return "bvsub";
     
   throw Unsupported();
-}
-
-bool Logic::supports_arrays() const {
-  return arrays;
 }
 
 static const std::unordered_map<std::string, Logic> LOGICS = {
