@@ -39,7 +39,8 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
   query << "(set-option :print-success false)\n";
 
   // set SMT logic
-  query << "(set-logic " << options.smt.logic << ")\n";
+  if (options.smt.logic != "")
+    query << "(set-logic " << options.smt.logic << ")\n";
 
   // append the declarations etc
   for (const std::shared_ptr<std::ostringstream> &scope : prelude)

@@ -181,6 +181,7 @@ static const std::unordered_map<std::string, Logic> LOGICS = {
   { "QF_UFNRA",  Logic(false, false) },
   { "UFLRA",     Logic(false, false) },
   { "UFNIA",     Logic(false, true ) },
+  { "",          Logic(true,  true ) }, // unknown
 };
 
 const Logic &get_logic(const std::string &name) {
@@ -189,7 +190,8 @@ const Logic &get_logic(const std::string &name) {
   if (it != LOGICS.end())
     return it->second;
 
-  throw Unsupported("unknown logic " + name);
+  // unknown logic
+  return LOGICS.at("");
 }
 
 }
