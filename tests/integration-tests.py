@@ -59,7 +59,10 @@ def smt_args():
     has_z3 = False
 
   if has_z3:
-    return ['--smt-path', 'z3', '--smt-arg=-smt2', '--smt-arg=-in']
+    # We set a blank logic here, as Z3 performs best when not given a logic. The
+    # BV test cases will still override this.
+    return ['--smt-logic', '', '--smt-path', 'z3', '--smt-arg=-smt2',
+      '--smt-arg=-in']
 
   # preference 2: CVC4
   has_cvc4 = True
