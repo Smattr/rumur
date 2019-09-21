@@ -38,7 +38,7 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
   // disable printing of "success" in response to commands
   query << "(set-option :print-success false)\n";
 
-  // select quantifier-free linear integer arithmetic logic
+  // set SMT logic
   query << "(set-logic " << options.smt.logic << ")\n";
 
   // append the declarations etc
