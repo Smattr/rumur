@@ -101,7 +101,7 @@ struct Options {
     bool simplification = false;
 
     // SMTLIB logic to use when building problems
-    std::string logic = "QF_AUFLIA";
+    std::string logic = "AUFLIA";
 
   } smt;
 };
