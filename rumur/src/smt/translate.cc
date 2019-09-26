@@ -4,9 +4,10 @@
 #include <locale>
 #include "logic.h"
 #include "../options.h"
-#include "translate.h"
 #include <sstream>
 #include <string>
+#include "translate.h"
+#include "../utils.h"
 
 using namespace rumur;
 
@@ -76,7 +77,70 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_forall(const Forall &n) {
-    throw Unsupported(n);
+
+    // TODO: we cannot yet handle forall expressions with a non-1 step
+    if (n.quantifier.type == nullptr && n.quantifier.step != nullptr
+        && (!n.quantifier.step->constant()
+        || n.quantifier.step->constant_fold() != 1))
+      throw Unsupported(n);
+
+    // find a name for the quantified variable
+    const std::string qname
+      = mangle(n.quantifier.decl->name, n.quantifier.decl->unique_id);
+    const std::string qtype = integer_type();
+
+    *this << "(forall ((" << qname << " " << qtype << ")) (or";
+
+    // emit a constraint for the lower bound of the quantified variable
+    *this << " (" << lt() << " " << qname << " ";
+    if (n.quantifier.type != nullptr) {
+      const Ptr<TypeExpr> t = n.quantifier.type->resolve();
+
+      if (isa<Enum>(t) || isa<Scalarset>(t)) {
+        *this << numeric_literal(0);
+      } else {
+        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
+          "forall quantifier");
+        const Range &r = dynamic_cast<const Range&>(*t);
+        assert(r.min != nullptr && "unbounded range type");
+        *this << *r.min;
+      }
+    } else {
+      assert(n.quantifier.from != nullptr && "forall-quantified variable has "
+        "no type and also no lower bound");
+      *this << *n.quantifier.from;
+    }
+    *this << ")";
+
+    // emit a constraint for the upper bound of the quantified variable
+    *this << " (";
+    if (n.quantifier.type != nullptr) {
+      const Ptr<TypeExpr> t = n.quantifier.type->resolve();
+
+      assert ((isa<Enum>(t) || isa<Range>(t) || isa<Scalarset>(t)) &&
+        "non-(range|enum|scalarset) variable in forall quantifier");
+
+      if (auto e = dynamic_cast<const Enum*>(t.get())) {
+        *this << geq() << " " << qname << " "
+          << numeric_literal(e->members.size());
+
+      } else if (auto r = dynamic_cast<const Range*>(t.get())) {
+        assert (r->max != nullptr && "unbounded range type");
+        *this << gt() << " " << qname << " " << *r->max;
+
+      } else {
+        auto s = dynamic_cast<const Scalarset&>(*t);
+        *this << geq() << " " << qname << " " << *s.bound;
+      }
+    } else {
+      assert(n.quantifier.to != nullptr && "forall-quantified variable has "
+        "no type and also no upper bound");
+      *this << gt() << " " << qname << " " << *n.quantifier.to;
+    }
+    *this << ")";
+
+    // finally the enclosed expression itself
+    *this << " " << *n.expr << "))";
   }
 
   void visit_functioncall(const FunctionCall &n) {
