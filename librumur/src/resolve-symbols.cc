@@ -226,7 +226,13 @@ class Resolver : public Traversal {
     } else {
       t = n.type;
     }
-    symtab.declare(n.name, Ptr<VarDecl>::make(n.name, t, n.loc));
+    auto v = Ptr<VarDecl>::make(n.name, t, n.loc);
+    // give this VarDecl the same unique ID as the originating quantifier so
+    // anything relying on this (e.g. Rumur's SMT bridge) will get the expected
+    // value
+    // FIXME: invent a more principled way to do this
+    v->unique_id = n.unique_id;
+    symtab.declare(n.name, v);
   }
 
   void visit_ruleset(Ruleset &n) final {
