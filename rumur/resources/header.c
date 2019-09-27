@@ -569,9 +569,9 @@ struct state {
 
 /* An initial size of thread-local allocator pools ~8MB. */
 static _Thread_local size_t arena_count =
-  (sizeof(struct state*) > 8 * 1024 * 1024)
+  (sizeof(struct state) > 8 * 1024 * 1024)
     ? 1
-    : (8 * 1024 * 1024 / sizeof(struct state*));
+    : (8 * 1024 * 1024 / sizeof(struct state));
 
 static _Thread_local struct state *arena_base;
 static _Thread_local struct state *arena_limit;
