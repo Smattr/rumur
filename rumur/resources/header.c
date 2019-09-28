@@ -14,75 +14,8 @@
   #endif
 #endif
 
-/* Generic support for maximum and minimum values of types. This is useful for,
- * e.g. size_t, where we don't properly have SIZE_MAX and SIZE_MIN.
- */
-#define MIN(type) _Generic((type)1,                                            \
-  int8_t:   INT8_MIN,                                                          \
-  int16_t:  INT16_MIN,                                                         \
-  int32_t:  INT32_MIN,                                                         \
-  int64_t:  INT64_MIN,                                                         \
-  uint8_t:  (uint8_t)0,                                                        \
-  uint16_t: (uint16_t)0,                                                       \
-  uint32_t: (uint32_t)0,                                                       \
-  uint64_t: (uint64_t)0)
-#define MAX(type) _Generic((type)1,                                            \
-  int8_t:   INT8_MAX,                                                          \
-  int16_t:  INT16_MAX,                                                         \
-  int32_t:  INT32_MAX,                                                         \
-  int64_t:  INT64_MAX,                                                         \
-  uint8_t:  UINT8_MAX,                                                         \
-  uint16_t: UINT16_MAX,                                                        \
-  uint32_t: UINT32_MAX,                                                        \
-  uint64_t: UINT64_MAX)
-
-/* Abstraction over the type we use for scalar values. Other code should be
- * agnostic to what the underlying type is, so if you are porting this code to a
- * future platform where you need a wider type, modifying these lines should be
- * enough.
- */
-typedef int64_t value_t;
-
-struct value_string_buffer {
-  char data[50];
-};
-
-static struct value_string_buffer value_to_string(value_t v) {
-
-  struct value_string_buffer buf;
-
-  _Generic((value_t)1,
-    int8_t:   snprintf(buf.data, sizeof(buf.data), "%" PRId8,  (int8_t)v),
-    int16_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId16, (int16_t)v),
-    int32_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId32, (int32_t)v),
-    int64_t:  snprintf(buf.data, sizeof(buf.data), "%" PRId64, (int64_t)v),
-    uint8_t:  snprintf(buf.data, sizeof(buf.data), "%" PRIu8,  (uint8_t)v),
-    uint16_t: snprintf(buf.data, sizeof(buf.data), "%" PRIu16, (uint16_t)v),
-    uint32_t: snprintf(buf.data, sizeof(buf.data), "%" PRId32, (uint32_t)v),
-    uint64_t: snprintf(buf.data, sizeof(buf.data), "%" PRId64, (uint64_t)v),
-    default:  assert(!"no valid value_string_buffer() implementation")
-  );
-
-  return buf;
-}
-
-#define VALUE_C(x) _Generic((value_t)1,                                        \
-  int8_t:   INT8_C(x),                                                         \
-  int16_t:  INT16_C(x),                                                        \
-  int32_t:  INT32_C(x),                                                        \
-  int64_t:  INT64_C(x),                                                        \
-  uint8_t:  UINT8_C(x),                                                        \
-  uint16_t: UINT16_C(x),                                                       \
-  uint32_t: UINT32_C(x),                                                       \
-  uint64_t: UINT64_C(x))
-
-/* XXX: intypes.h does not seem to give us this. */
-#ifndef SIZE_C
-  #define SIZE_C(x) _Generic((size_t)1,                                        \
-    unsigned: x ## u,                                                          \
-    unsigned long: x ## ul,                                                    \
-    unsigned long long: x ## ull)
-#endif
+#define value_to_string(v) ((value_t)(v))
+#define raw_value_to_string(v) ((raw_value_t)(v))
 
 /* A more powerful assert that treats the assertion as an assumption when
  * assertions are disabled.
@@ -107,20 +40,34 @@ static struct value_string_buffer value_to_string(value_t v) {
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
-/* A word about atomics... There are three different atomic operation mechanisms
+/* Implement _Thread_local for GCC <4.9, which is missing this. */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+  #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+    #define _Thread_local __thread
+  #endif
+#endif
+
+#ifdef __clang__
+  #define NONNULL _Nonnull
+#else
+  #define NONNULL /* nothing; other compilers don't have _Nonnull */
+#endif
+
+/* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
- * sufficient. The three are:
+ * sufficient. The two are:
  *
- *   1. C11 atomics: used for variables that are consistently accessed with
- *      atomic semantics. This mechanism is simple, concise and standardised.
- *   2. GCC __atomic built-ins: Used for variables that are sometimes accessed
+ *   1. GCC __atomic built-ins: Used for variables that are sometimes accessed
  *      with atomic semantics and sometimes as regular memory operations. The
  *      C11 atomics cannot give us this and the __atomic built-ins are
  *      implemented by the major compilers.
- *   3. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
+ *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
  *      seems the __atomic built-ins do not result in a CMPXCHG instruction, but
  *      rather in a less efficient library call. See
  *      https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+ *
+ * Though this is intended to be a C11 program, we avoid the C11 atomics to be
+ * compatible with GCC <4.9.
  */
 
 /* Identifier of the current thread. This counts up from 0 and thus is suitable
@@ -141,7 +88,7 @@ static enum { WARMUP, RUN } phase = WARMUP;
 /* Number of errors we've noted so far. If a thread sees this hit or exceed
  * MAX_ERRORS, they should attempt to exit gracefully as soon as possible.
  */
-static atomic_ulong error_count;
+static unsigned long error_count;
 
 /* Number of rules that have been processed. There are two representations of
  * this: a thread-local count of how many rules we have fired thus far and a
@@ -157,7 +104,7 @@ static uintmax_t rules_fired[THREADS];
 /* Checkpoint to restore to after reporting an error. This is only used if we
  * are tolerating more than one error before exiting.
  */
-static _Thread_local jmp_buf checkpoint;
+static _Thread_local sigjmp_buf checkpoint;
 
 _Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
 
@@ -166,13 +113,13 @@ _Static_assert(MAX_ERRORS > 0, "illegal MAX_ERRORS value");
  * skip to checking the next." This scenario can occur for two reasons:
  *   1. We are running multithreaded, have just found an error and have not yet
  *      hit MAX_ERRORS. In this case we want to longjmp back to resume checking.
- *   2. We failed an assumption. In this case we want to mark the current state
- *      as invalid and resume checking with the next state.
+ *   2. We failed an assume statement. In this case we want to mark the current
+ *      state as invalid and resume checking with the next state.
  * In either scenario the actual longjmp performed is the same, but by knowing
  * statically whether either can occur we can avoid calling setjmp if both are
  * impossible.
  */
-enum { JMP_BUF_NEEDED = MAX_ERRORS > 1 || ASSUMPTION_COUNT > 0};
+enum { JMP_BUF_NEEDED = MAX_ERRORS > 1 || ASSUME_STATEMENTS_COUNT > 0 };
 
 /*******************************************************************************
  * Sandbox support.                                                            *
@@ -195,7 +142,7 @@ static void sandbox(void) {
     int r = sandbox_init(kSBXProfilePureComputation, SANDBOX_NAMED, &err);
 #pragma clang diagnostic pop
 
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       fprintf(stderr, "sandbox_init failed: %s\n", err);
       free(err);
       exit(EXIT_FAILURE);
@@ -205,12 +152,22 @@ static void sandbox(void) {
   }
 #endif
 
+#ifdef __FreeBSD__
+  {
+    if (__builtin_expect(cap_enter() != 0, 0)) {
+      perror("cap_enter");
+      exit(EXIT_FAILURE);
+    }
+    return;
+  }
+#endif
+
 #if defined(__linux__)
   #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
   {
     /* Disable the addition of new privileges via execve and friends. */
     int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       perror("prctl(PR_SET_NO_NEW_PRIVS) failed");
       exit(EXIT_FAILURE);
     }
@@ -290,7 +247,7 @@ static void sandbox(void) {
 
     /* Apply the above filter to ourselves. */
     r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       perror("prctl(PR_SET_SECCOMP) failed");
       exit(EXIT_FAILURE);
     }
@@ -298,6 +255,16 @@ static void sandbox(void) {
     return;
   }
   #endif
+#endif
+
+#ifdef __OpenBSD__
+  {
+    if (__builtin_expect(pledge("stdio", "") != 0, 0)) {
+      perror("pledge");
+      exit(EXIT_FAILURE);
+    }
+    return;
+  }
 #endif
 
   /* No sandbox available. */
@@ -341,13 +308,72 @@ static const char *reset() {
   return "";
 }
 
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+
+  #define UINT128_MAX \
+    ((((unsigned __int128)UINT64_MAX) << 64) | ((unsigned __int128)UINT64_MAX))
+
+  #define INT128_MAX ((((__int128)INT64_MAX) << 64) | ((__int128)UINT64_MAX))
+  #define INT128_MIN (-INT128_MAX - 1)
+
+  struct string_buffer {
+    char data[41];
+  };
+
+  static struct string_buffer value_u128_to_string(unsigned __int128 v) {
+
+    struct string_buffer buffer;
+
+    if (v == 0) {
+      buffer.data[0] = '0';
+      buffer.data[1] = '\0';
+      return buffer;
+    }
+
+    size_t i = sizeof(buffer.data);
+    while (v != 0) {
+      i--;
+      buffer.data[i] = '0' + v % 10;
+      v /= 10;
+    }
+
+    memmove(buffer.data, &buffer.data[i], sizeof(buffer) - i);
+    buffer.data[sizeof(buffer) - i] = '\0';
+
+    return buffer;
+  }
+  static __attribute__((unused)) struct string_buffer value_128_to_string(
+      __int128 v) {
+
+    if (v == INT128_MIN) {
+      struct string_buffer buffer;
+      strcpy(buffer.data, "-170141183460469231731687303715884105728");
+      return buffer;
+    }
+
+    bool negative = v < 0;
+    if (negative) {
+      v = -v;
+    }
+
+    struct string_buffer buffer = value_u128_to_string(v);
+
+    if (negative) {
+      memmove(&buffer.data[1], buffer.data, strlen(buffer.data) + 1);
+      buffer.data[0] = '-';
+    }
+
+    return buffer;
+  }
+#endif
+
 /*******************************************************************************
  * MurmurHash by Austin Appleby                                                *
  *                                                                             *
  * More information on this at https://github.com/aappleby/smhasher/           *
  ******************************************************************************/
 
-static uint64_t MurmurHash64A(const void *key, size_t len) {
+static uint64_t MurmurHash64A(const void *NONNULL key, size_t len) {
 
   static const uint64_t seed = 0;
 
@@ -403,7 +429,7 @@ static _Noreturn void oom(void) {
 
 static void *xmalloc(size_t size) {
   void *p = malloc(size);
-  if (p == NULL) {
+  if (__builtin_expect(p == NULL, 0)) {
     oom();
   }
   return p;
@@ -411,7 +437,7 @@ static void *xmalloc(size_t size) {
 
 static void *xcalloc(size_t count, size_t size) {
   void *p = calloc(count, size);
-  if (p == NULL) {
+  if (__builtin_expect(p == NULL, 0)) {
     oom();
   }
   return p;
@@ -433,57 +459,52 @@ static void print_unlock(void) {
   assert(r == 0);
 }
 
-static char *xml_escape(const char *s) {
-  char *p = xmalloc(strlen(s) * strlen("&quot;") + 1);
-
-  for (size_t i = 0; ; s++) {
-    if (*s == '"') {
-      strcpy(&p[i], "&quot;");
-      i += strlen("&quot;");
-    } else if (*s == '\'') {
-      strcpy(&p[i], "&apos;");
-      i += strlen("&apos;");
-    } else if (*s == '<') {
-      strcpy(&p[i], "&lt;");
-      i += strlen("&lt;");
-    } else if (*s == '>') {
-      strcpy(&p[i], "&gt;");
-      i += strlen("&gt;");
-    } else if (*s == '&') {
-      strcpy(&p[i], "&amp;");
-      i += strlen("&amp;");
-    } else if (*s == '\0') {
-      p[i] = '\0';
-      break;
-    } else {
-      p[i] = *s;
+static void xml_printf(const char *NONNULL s) {
+  while (*s != '\0') {
+    switch (*s) {
+      case '"': printf("&quot;"); break;
+      case '<': printf("&lt;");   break;
+      case '>': printf("&gt;");   break;
+      case '&': printf("&amp;");  break;
+      default:  printf("%c", *s); break;
     }
+    s++;
   }
-
-  return p;
 }
 
 /* Supporting for tracing specific operations. This can be enabled during
  * checker generation with '--trace ...' and is useful for debugging Rumur
  * itself.
  */
-static __attribute__((format(printf, 2, 3))) void trace(
-  enum trace_category_t category, const char *fmt, ...) {
+static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
+    ...) {
 
-  if (category & TRACES_ENABLED) {
-    va_list ap;
-    va_start(ap, fmt);
+  va_list ap;
+  va_start(ap, fmt);
 
-    print_lock();
+  print_lock();
 
-    (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
-    (void)vfprintf(stderr, fmt, ap);
-    (void)fprintf(stderr, "\n");
+  (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
+  (void)vfprintf(stderr, fmt, ap);
+  (void)fprintf(stderr, "\n");
 
-    print_unlock();
-    va_end(ap);
-  }
+  print_unlock();
+  va_end(ap);
 }
+
+/* Wrap up trace() as a macro. It looks as if the following could just be
+ * incorporated into trace(). However, present compilers seem unwilling to
+ * inline varargs functions or do interprocedural analysis across a call to one.
+ * As a result, the compiler does not notice when tracing is disabled and a call
+ * to trace() would be a no-op that can be elided. By making the call a macro we
+ * make the category comparison visible to the compiler's optimising passes.
+ */
+#define TRACE(category, args...)                                               \
+  do {                                                                         \
+    if ((category) & TRACES_ENABLED) {                                         \
+      trace(args);                                                             \
+    }                                                                          \
+  } while (0)
 
 /*******************************************************************************
  * Arithmetic wrappers                                                         *
@@ -511,20 +532,98 @@ static __attribute__((format(printf, 2, 3))) void trace(
 
 /* The state of the current model. */
 struct state {
-#if COUNTEREXAMPLE_TRACE != CEX_OFF
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
   const struct state *previous;
 
   /* Index of the rule we took to reach this state. */
   uint64_t rule_taken;
 #endif
 
+  uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
+    (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
+     LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
+
+#if BOUND > UINT64_MAX
+  #error "no type large enough for state.bound"
+#elif BOUND > UINT32_MAX
+  uint64_t bound;
+#elif BOUND > UINT16_MAX
+  uint32_t bound;
+#elif BOUND > UINT8_MAX
+  uint16_t bound;
+#elif BOUND > 0
+  uint8_t bound;
+#endif
+
   uint8_t data[STATE_SIZE_BYTES];
 };
+
+/*******************************************************************************
+ * State allocator.                                                            *
+ *                                                                             *
+ * The following implements a simple bump allocator for states. The purpose of *
+ * this (rather than simply mallocing individual states) is to speed up        *
+ * allocation by taking global locks less frequently and decrease allocator    *
+ * metadata overhead.                                                          *
+ ******************************************************************************/
+
+/* An initial size of thread-local allocator pools ~8MB. */
+static _Thread_local size_t arena_count =
+  (sizeof(struct state*) > 8 * 1024 * 1024)
+    ? 1
+    : (8 * 1024 * 1024 / sizeof(struct state*));
+
+static _Thread_local struct state *arena_base;
+static _Thread_local struct state *arena_limit;
+
+static struct state *state_new(void) {
+
+  if (arena_base == arena_limit) {
+    /* Allocation pool is empty. We need to set up a new pool. */
+    for (;;) {
+      if (arena_count == 1) {
+        arena_base = xmalloc(sizeof(*arena_base));
+      } else {
+        arena_base = calloc(arena_count, sizeof(*arena_base));
+        if (__builtin_expect(arena_base == NULL, 0)) {
+          /* Memory pressure high. Decrease our attempted allocation and try
+           * again.
+           */
+          arena_count /= 2;
+          continue;
+        }
+      }
+
+      arena_limit = arena_base + arena_count;
+      break;
+    }
+  }
+
+  assert(arena_base != NULL);
+  assert(arena_base != arena_limit);
+
+  struct state *s = arena_base;
+  arena_base++;
+  return s;
+}
+
+static void state_free(struct state *s) {
+
+  if (s == NULL) {
+    return;
+  }
+
+  assert(s + 1 == arena_base);
+  arena_base--;
+}
+
+/******************************************************************************/
 
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds print_mutex.
  */
-static void print_counterexample(const struct state *s __attribute__((unused)));
+static void print_counterexample(
+  const struct state *NONNULL s __attribute__((unused)));
 
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
  * the correct way to exit the checker is for every thread to eventually call
@@ -532,12 +631,13 @@ static void print_counterexample(const struct state *s __attribute__((unused)));
  */
 static _Noreturn int exit_with(int status);
 
-static __attribute__((format(printf, 3, 4))) _Noreturn void error(
-  const struct state *s, bool retain, const char *fmt, ...) {
+static __attribute__((format(printf, 2, 3))) _Noreturn void error(
+  const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
-  unsigned long prior_errors = error_count++;
+  unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
+    __ATOMIC_SEQ_CST);
 
-  if (prior_errors < MAX_ERRORS) {
+  if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 
     print_lock();
 
@@ -548,12 +648,28 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
       printf("<error includes_trace=\"%s\">\n",
         (s == NULL || COUNTEREXAMPLE_TRACE == CEX_OFF) ? "false" : "true");
 
-      char *escaped_fmt = xml_escape(fmt);
       printf("<message>");
-      vprintf(escaped_fmt, ap);
-      printf("</message>\n");
+      {
+        va_list ap2;
+        va_copy(ap2, ap);
 
-      free(escaped_fmt);
+        int size = vsnprintf(NULL, 0, fmt, ap2);
+        va_end(ap2);
+        if (__builtin_expect(size < 0, 0)) {
+          fputs("vsnprintf failed", stderr);
+          exit(EXIT_FAILURE);
+        }
+
+        char *buffer = xmalloc(size);
+        if (__builtin_expect(vsnprintf(buffer, size, fmt, ap) != size, 0)) {
+          fputs("vsnprintf failed", stderr);
+          exit(EXIT_FAILURE);
+        }
+
+        xml_printf(buffer);
+        free(buffer);
+      }
+      printf("</message>\n");
 
       if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
         print_counterexample(s);
@@ -583,10 +699,6 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
     print_unlock();
   }
 
-  if (!retain) {
-    free((void*)s);
-  }
-
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
@@ -601,45 +713,63 @@ static __attribute__((format(printf, 3, 4))) _Noreturn void error(
   #pragma GCC diagnostic pop
 #endif
     assert(JMP_BUF_NEEDED && "longjmping without a setup jmp_buf");
-    longjmp(checkpoint, 1);
+    siglongjmp(checkpoint, 1);
   }
 
   exit_with(EXIT_FAILURE);
 }
 
-static struct state *state_new(void) {
-  return xcalloc(1, sizeof(struct state));
+static void deadlock(const struct state *NONNULL s) {
+  if (JMP_BUF_NEEDED) {
+    if (sigsetjmp(checkpoint, 0)) {
+      /* error() longjmped back to us. */
+      return;
+    }
+  }
+  error(s, "deadlock");
 }
 
-static int state_cmp(const struct state *a, const struct state *b) {
+static int state_cmp(const struct state *NONNULL a,
+    const struct state *NONNULL b) {
   return memcmp(a->data, b->data, sizeof(a->data));
 }
 
-static bool state_eq(const struct state *a, const struct state *b) {
+static bool state_eq(const struct state *NONNULL a,
+    const struct state *NONNULL b) {
   return state_cmp(a, b) == 0;
 }
 
-static struct state *state_dup(const struct state *s) {
-  struct state *n = xmalloc(sizeof(*n));
+static struct state *state_dup(const struct state *NONNULL s) {
+  struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
-#if COUNTEREXAMPLE_TRACE != CEX_OFF
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
   n->previous = s;
 #endif
+#if BOUND > 0
+  assert(s->bound < BOUND && "exceeding bounded exploration depth");
+  n->bound = s->bound + 1;
+#endif
+  memset(n->liveness, 0, sizeof(n->liveness));
   return n;
 }
 
-static size_t state_hash(const struct state *s) {
+static size_t state_hash(const struct state *NONNULL s) {
   return (size_t)MurmurHash64A(s->data, sizeof(s->data));
 }
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
-static __attribute__((unused)) size_t state_depth(const struct state *s) {
+static __attribute__((unused)) size_t state_depth(
+    const struct state *NONNULL s) {
+#if BOUND > 0
+  return (size_t)s->bound + 1;
+#else
   size_t d = 0;
   while (s != NULL) {
     d++;
     s = s->previous;
   }
   return d;
+#endif
 }
 #endif
 
@@ -649,10 +779,10 @@ static __attribute__((unused)) struct state *state_drop_const(const struct state
 }
 
 /* These functions are generated. */
-static void state_canonicalise_heuristic(struct state *s);
-static void state_canonicalise_exhaustive(struct state *s);
+static void state_canonicalise_heuristic(struct state *NONNULL s);
+static void state_canonicalise_exhaustive(struct state *NONNULL s);
 
-static void state_canonicalise(struct state *s) {
+static void state_canonicalise(struct state *NONNULL s) {
 
   assert(s != NULL && "attempt to canonicalise NULL state");
 
@@ -679,26 +809,24 @@ static __attribute__((unused)) void state_print_field_offsets(void);
  * that the caller already holds print_mutex.
  */
 static __attribute__((unused)) void state_print(const struct state *previous,
-  const struct state *s);
+  const struct state *NONNULL s);
 
 /* Print the first rule that resulted in s. This function is generated. This
  * function assumes that the caller holds print_mutex.
  */
-static __attribute__((unused)) void print_transition(const struct state *s);
+static __attribute__((unused)) void print_transition(
+    const struct state *NONNULL s);
 
-static void print_counterexample(const struct state *s __attribute__((unused))) {
+static void print_counterexample(
+    const struct state *NONNULL s __attribute__((unused))) {
 
   assert(s != NULL && "missing state in request for counterexample trace");
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   /* Construct an array of the states we need to print by walking backwards to
-   * the initial starting state. We could do this with recursion, but it turns
-   * out that larger traces overflow our stack.
+   * the initial starting state.
    */
-  size_t trace_length = 0;
-  for (const struct state *p = s; p != NULL; p = p->previous) {
-    trace_length++;
-  }
+  size_t trace_length = state_depth(s);
 
   const struct state **cex = xcalloc(trace_length, sizeof(cex[0]));
 
@@ -740,33 +868,31 @@ struct handle {
   size_t width;
 };
 
-static __attribute__((unused)) bool handle_aligned(struct handle h) {
-  return h.offset % 8 == 0 && h.width % 8 == 0;
-}
-
 static struct handle handle_align(struct handle h) {
 
-  size_t offset = h.offset - (h.offset % 8);
-  size_t width = h.width + (h.offset % 8);
+  ASSERT(h.offset < CHAR_BIT && "handle has an offset outside the base byte");
+
+  size_t width = h.width + h.offset;
   if (width % 8 != 0) {
     width += 8 - width % 8;
   }
 
   return (struct handle){
     .base = h.base,
-    .offset = offset,
+    .offset = 0,
     .width = width,
   };
 }
 
-struct handle state_handle(const struct state *s, size_t offset, size_t width) {
+static __attribute__((unused)) struct handle state_handle(
+    const struct state *NONNULL s, size_t offset, size_t width) {
 
   assert(sizeof(s->data) * CHAR_BIT - width >= offset && "generating an out of "
     "bounds handle in state_handle()");
 
   return (struct handle){
-    .base = (uint8_t*)s->data,
-    .offset = offset,
+    .base = (uint8_t*)s->data + offset / CHAR_BIT,
+    .offset = offset % CHAR_BIT,
     .width = width,
   };
 }
@@ -774,19 +900,19 @@ struct handle state_handle(const struct state *s, size_t offset, size_t width) {
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
-static value_t handle_read_raw(struct handle h) {
+static raw_value_t handle_read_raw(struct handle h) {
 
   // FIXME: When we get a user-configurable value type, users will be able to
   // cause this assertion to fail, so we should validate the necessary
   // conditions at code generation time.
-  assert(h.width <= sizeof(value_t) * 8 && "read of a handle to a value that "
-    "is larger than our value type");
+  assert(h.width <= sizeof(raw_value_t) * 8 && "read of a handle to a value "
+    "that is larger than our raw value type");
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
   if (h.width == 0) {
-    trace(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
+    TRACE(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
       h.base, h.offset, h.width);
     return 0;
   }
@@ -797,6 +923,7 @@ static value_t handle_read_raw(struct handle h) {
    * have an unaligned handle.
    */
   struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
 
   /* The code below attempts to provide four alternatives for reading out the
    * bits corresponding to a value of simple type referenced by a handle, and to
@@ -833,11 +960,11 @@ static value_t handle_read_raw(struct handle h) {
       low_size = sizeof(low);
     }
     {
-      const uint8_t *src = aligned.base + aligned.offset / 8;
+      const uint8_t *src = aligned.base;
       memcpy(&low, src, low_size);
     }
 
-    low >>= h.offset - aligned.offset;
+    low >>= h.offset;
 
     size_t high_size = aligned.width / 8 - low_size;
 
@@ -845,10 +972,10 @@ static value_t handle_read_raw(struct handle h) {
     ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
     if (high_size != 0) {
       unsigned __int128 high = 0;
-      const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+      const uint8_t *src = aligned.base + sizeof(low);
       memcpy(&high, src, high_size);
 
-      high <<= sizeof(low) * 8 - (h.offset - aligned.offset);
+      high <<= sizeof(low) * 8 - h.offset;
 
       /* Combine the two halves into a single double-word. */
       low |= high;
@@ -859,10 +986,10 @@ static value_t handle_read_raw(struct handle h) {
       low &= mask;
     }
 
-    value_t v = (value_t)low;
+    raw_value_t v = (raw_value_t)low;
 
-    trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
-      value_to_string(v).data, h.base, h.offset, h.width);
+    TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
+      raw_value_to_string(v), h.base, h.offset, h.width);
 
     return v;
   }
@@ -877,11 +1004,11 @@ static value_t handle_read_raw(struct handle h) {
     low_size = sizeof(low);
   }
   {
-    const uint8_t *src = aligned.base + aligned.offset / 8;
+    const uint8_t *src = aligned.base;
     memcpy(&low, src, low_size);
   }
 
-  low >>= h.offset - aligned.offset;
+  low >>= h.offset;
 
   size_t high_size = aligned.width / 8 - low_size;
 
@@ -889,10 +1016,10 @@ static value_t handle_read_raw(struct handle h) {
   ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
   if (high_size != 0) {
     uint64_t high = 0;
-    const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+    const uint8_t *src = aligned.base + sizeof(low);
     memcpy(&high, src, high_size);
 
-    high <<= sizeof(low) * 8 - (h.offset - aligned.offset);
+    high <<= sizeof(low) * 8 - h.offset;
 
     /* Combine the high and low words. Note that we know we can store the final
      * result in a single word because, if we've reached this point,
@@ -906,19 +1033,19 @@ static value_t handle_read_raw(struct handle h) {
     low &= mask;
   }
 
-  value_t v = (value_t)low;
+  raw_value_t v = (raw_value_t)low;
 
-  trace(TC_HANDLE_READS, "read value %s from handle { %p, %zu, %zu }",
-    value_to_string(v).data, h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
+    raw_value_to_string(v), h.base, h.offset, h.width);
 
   return v;
 }
 
-static value_t decode_value(value_t lb, value_t ub, value_t v) {
+static value_t decode_value(value_t lb, value_t ub, raw_value_t v) {
 
-  value_t dest = v;
+  value_t dest = 0;
 
-  bool r __attribute__((unused)) = SUB(dest, 1, &dest) || ADD(dest, lb, &dest)
+  bool r __attribute__((unused)) = SUB(v, 1, &v) || ADD(v, lb, &dest)
     || dest < lb || dest > ub;
 
   ASSERT(!r && "read of out-of-range value");
@@ -926,8 +1053,12 @@ static value_t decode_value(value_t lb, value_t ub, value_t v) {
   return dest;
 }
 
-static __attribute__((unused)) value_t handle_read(const struct state *s,
-    value_t lb, value_t ub, struct handle h) {
+static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL name,
+    const struct state *NONNULL s, value_t lb, value_t ub, struct handle h) {
+
+  assert(context != NULL);
+  assert(name != NULL);
 
   /* If we happen to be reading from the current state, do a sanity check that
    * we're only reading within bounds.
@@ -936,25 +1067,26 @@ static __attribute__((unused)) value_t handle_read(const struct state *s,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds read in handle_read()");
 
-  value_t dest = handle_read_raw(h);
+  raw_value_t dest = handle_read_raw(h);
 
-  if (dest == 0) {
-    error(s, false, "read of undefined value");
+  if (__builtin_expect(dest == 0, 0)) {
+    error(s, "%sread of undefined value in %s%s%s", context, name,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   return decode_value(lb, ub, dest);
 }
 
-static void handle_write_raw(struct handle h, value_t value) {
+static void handle_write_raw(struct handle h, raw_value_t value) {
 
-  assert(h.width <= sizeof(value_t) * 8 && "write of a handle to a value that "
-    "is larger than our value type");
+  assert(h.width <= sizeof(raw_value_t) * 8 && "write of a handle to a value "
+    "that is larger than our raw value type");
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  trace(TC_HANDLE_WRITES, "writing value %s to handle { %p, %zu, %zu }",
-    value_to_string(value).data, h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
+    raw_value_to_string(value), h.base, h.offset, h.width);
 
   if (h.width == 0) {
     return;
@@ -962,6 +1094,7 @@ static void handle_write_raw(struct handle h, value_t value) {
 
   /* Generate a offset- and width-aligned handle on byte boundaries. */
   struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
 
 #ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
 
@@ -978,21 +1111,18 @@ static void handle_write_raw(struct handle h, value_t value) {
       low_size = sizeof(low);
     }
     {
-      const uint8_t *src = aligned.base + aligned.offset / 8;
+      const uint8_t *src = aligned.base;
       memcpy(&low, src, low_size);
     }
 
     {
-      unsigned __int128 or_mask
-        = (((unsigned __int128)value) << (h.offset - aligned.offset));
+      unsigned __int128 or_mask = ((unsigned __int128)value) << h.offset;
       if (low_size < sizeof(low)) {
         or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
       }
-      unsigned __int128 and_mask
-        = (((unsigned __int128)1) << (h.offset - aligned.offset)) - 1;
+      unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
       if (low_size < sizeof(low)) {
-        size_t high_bits = aligned.width - (h.offset - aligned.offset) - h.width;
-        assert(high_bits >= 0);
+        size_t high_bits = aligned.width - h.offset - h.width;
         and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
       }
 
@@ -1000,7 +1130,7 @@ static void handle_write_raw(struct handle h, value_t value) {
     }
 
     {
-      uint8_t *dest = aligned.base + aligned.offset / 8;
+      uint8_t *dest = aligned.base;
       memcpy(dest, &low, low_size);
     }
 
@@ -1012,13 +1142,13 @@ static void handle_write_raw(struct handle h, value_t value) {
     if (high_size != 0) {
       unsigned __int128 high = 0;
       {
-        const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+        const uint8_t *src = aligned.base + sizeof(low);
         memcpy(&high, src, high_size);
       }
 
       {
         unsigned __int128 or_mask
-          = ((unsigned __int128)value) >> (sizeof(low) * 8 - (h.offset - aligned.offset));
+          = ((unsigned __int128)value) >> (sizeof(low) * 8 - h.offset);
         unsigned __int128 and_mask
           = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (aligned.width - h.width)) - 1);
 
@@ -1026,7 +1156,7 @@ static void handle_write_raw(struct handle h, value_t value) {
       }
 
       {
-        uint8_t *dest = aligned.base + aligned.offset / 8 + sizeof(low);
+        uint8_t *dest = aligned.base + sizeof(low);
         memcpy(dest, &high, high_size);
       }
     }
@@ -1044,19 +1174,18 @@ static void handle_write_raw(struct handle h, value_t value) {
     low_size = sizeof(low);
   }
   {
-    const uint8_t *src = aligned.base + aligned.offset / 8;
+    const uint8_t *src = aligned.base;
     memcpy(&low, src, low_size);
   }
 
   {
-    uint64_t or_mask = (((uint64_t)value) << (h.offset - aligned.offset));
+    uint64_t or_mask = ((uint64_t)value) << h.offset;
     if (low_size < sizeof(low)) {
       or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
     }
-    uint64_t and_mask = (UINT64_C(1) << (h.offset - aligned.offset)) - 1;
+    uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
     if (low_size < sizeof(low)) {
-      size_t high_bits = aligned.width - (h.offset - aligned.offset) - h.width;
-      assert(high_bits >= 0);
+      size_t high_bits = aligned.width - h.offset - h.width;
       and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
     }
 
@@ -1064,7 +1193,7 @@ static void handle_write_raw(struct handle h, value_t value) {
   }
 
   {
-    uint8_t *dest = aligned.base + aligned.offset / 8;
+    uint8_t *dest = aligned.base;
     memcpy(dest, &low, low_size);
   }
 
@@ -1074,13 +1203,12 @@ static void handle_write_raw(struct handle h, value_t value) {
   if (high_size != 0) {
     uint64_t high = 0;
     {
-      const uint8_t *src = aligned.base + aligned.offset / 8 + sizeof(low);
+      const uint8_t *src = aligned.base + sizeof(low);
       memcpy(&high, src, high_size);
     }
 
     {
-      uint64_t or_mask
-        = ((uint64_t)value) >> (sizeof(low) * 8 - (h.offset - aligned.offset));
+      uint64_t or_mask = ((uint64_t)value) >> (sizeof(low) * 8 - h.offset);
       uint64_t and_mask
         = (~UINT64_C(0)) & ~((UINT64_C(1) << (aligned.width - h.width)) - 1);
 
@@ -1088,14 +1216,19 @@ static void handle_write_raw(struct handle h, value_t value) {
     }
 
     {
-      uint8_t *dest = aligned.base + aligned.offset / 8 + sizeof(low);
+      uint8_t *dest = aligned.base + sizeof(low);
       memcpy(dest, &high, high_size);
     }
   }
 }
 
-static __attribute__((unused)) void handle_write(const struct state *s,
-    value_t lb, value_t ub, struct handle h, value_t value) {
+static __attribute__((unused)) void handle_write(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL name,
+    const struct state *NONNULL s, value_t lb, value_t ub, struct handle h,
+    value_t value) {
+
+  assert(context != NULL);
+  assert(name != NULL);
 
   /* If we happen to be writing to the current state, do a sanity check that
    * we're only writing within bounds.
@@ -1104,12 +1237,14 @@ static __attribute__((unused)) void handle_write(const struct state *s,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds write in handle_write()");
 
-  if (value < lb || value > ub || SUB(value, lb, &value) ||
-      ADD(value, 1, &value)) {
-    error(s, false, "write of out-of-range value");
+  raw_value_t r;
+  if (__builtin_expect(value < lb || value > ub || SUB(value, lb, &r)
+      || ADD(r, 1, &r), 0)) {
+    error(s, "%swrite of out-of-range value into %s%s%s", context, name,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  handle_write_raw(h, value);
+  handle_write_raw(h, r);
 }
 
 static __attribute__((unused)) void handle_zero(struct handle h) {
@@ -1204,107 +1339,153 @@ static __attribute__((unused)) struct handle handle_narrow(struct handle h,
   assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
 
   return (struct handle){
-    .base = h.base,
-    .offset = h.offset + offset,
+    .base = h.base + (h.offset + offset) / CHAR_BIT,
+    .offset = (h.offset + offset) % CHAR_BIT,
     .width = width,
   };
 }
 
-static __attribute__((unused)) struct handle handle_index(const struct state *s,
-  size_t element_width, value_t index_min, value_t index_max,
-  struct handle root, value_t index) {
+static __attribute__((unused)) struct handle handle_index(
+    const char *NONNULL context, const char *rule_name,
+    const char *NONNULL expr, const struct state *NONNULL s,
+    size_t element_width, value_t index_min, value_t index_max,
+    struct handle root, value_t index) {
 
-  if (index < index_min || index > index_max) {
-    error(s, false, "index out of range");
+  assert(expr != NULL);
+
+  if (__builtin_expect(index < index_min || index > index_max, 0)) {
+    error(s, "%sindex out of range in expression %s%s%s", context, expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
   size_t r1, r2;
-  if (SUB(index, index_min, &r1) || MUL(r1, element_width, &r2)) {
-    error(s, false, "overflow when indexing array");
+  if (__builtin_expect(SUB(index, index_min, &r1)
+      || MUL(r1, element_width, &r2), 0)) {
+    error(s, "%soverflow when indexing array in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   size_t r __attribute__((unused));
   assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
 
   return (struct handle){
-    .base = root.base,
-    .offset = root.offset + r2,
+    .base = root.base + (root.offset + r2) / CHAR_BIT,
+    .offset = (root.offset + r2) % CHAR_BIT,
     .width = element_width,
   };
 }
 
 static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
-  value_t v = handle_read_raw(h);
+  raw_value_t v = handle_read_raw(h);
 
   return v == 0;
 }
 
 /* Overflow-safe helpers for doing bounded arithmetic. */
 
-static __attribute__((unused)) value_t add(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t add(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
+
+  assert(context != NULL);
+  assert(expr != NULL);
 
   value_t r;
-  if (ADD(a, b, &r)) {
-    error(s, false, "integer overflow in addition");
+  if (__builtin_expect(ADD(a, b, &r), 0)) {
+    error(s, "%sinteger overflow in addition in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t sub(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t sub(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
+
+  assert(context != NULL);
+  assert(expr != NULL);
 
   value_t r;
-  if (SUB(a, b, &r)) {
-    error(s, false, "integer overflow in subtraction");
+  if (__builtin_expect(SUB(a, b, &r), 0)) {
+    error(s, "%sinteger overflow in subtraction in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t mul(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t mul(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
+
+  assert(context != NULL);
+  assert(expr != NULL);
 
   value_t r;
-  if (MUL(a, b, &r)) {
-    error(s, false, "integer overflow in multiplication");
+  if (__builtin_expect(MUL(a, b, &r), 0)) {
+    error(s, "%sinteger overflow in multiplication in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
-static __attribute__((unused)) value_t divide(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t divide(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
-  if (b == 0) {
-    error(s, false, "division by zero");
+  assert(context != NULL);
+  assert(expr != NULL);
+
+  if (__builtin_expect(b == 0, 0)) {
+    error(s, "%sdivision by zero in expression %s%s%s", context, expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  if (a == MIN(value_t) && b == -1) {
-    error(s, false, "integer overflow in division");
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1, 0)) {
+    error(s, "%sinteger overflow in division in expression %s%s%s", context,
+      expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   return a / b;
 }
 
-static __attribute__((unused)) value_t mod(const struct state *s, value_t a,
-    value_t b) {
+static __attribute__((unused)) value_t mod(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a, value_t b) {
 
-  if (b == 0) {
-    error(s, false, "modulus by zero");
+  assert(context != NULL);
+  assert(expr != NULL);
+
+  if (__builtin_expect(b == 0, 0)) {
+    error(s, "%smodulus by zero in expression %s%s%s", context, expr,
+      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  // Is INT64_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (a == MIN(value_t) && b == -1) {
-    error(s, false, "integer overflow in modulo");
+  // Is INT_MIN % -1 UD? Reading the C spec I'm not sure.
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1, 0)) {
+    error(s, "%sinteger overflow in modulo in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   return a % b;
 }
 
-static __attribute__((unused)) value_t negate(const struct state *s,
-    value_t a) {
+static __attribute__((unused)) value_t negate(const char *NONNULL context,
+    const char *rule_name, const char *NONNULL expr,
+    const struct state *NONNULL s, value_t a) {
 
-  if (a == MIN(value_t)) {
-    error(s, false, "integer overflow in negation");
+  assert(context != NULL);
+  assert(expr != NULL);
+
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN, 0)) {
+    error(s, "%sinteger overflow in negation in expression %s%s%s",
+      context, expr, rule_name == NULL ? "" : " within ",
+      rule_name == NULL ? "" : rule_name);
   }
 
   return -a;
@@ -1314,8 +1495,9 @@ static __attribute__((unused)) value_t negate(const struct state *s,
  * serve as a proxy for the collection being sorted.
  */
 static __attribute__((unused)) void sort(
-  int (*compare)(const struct state *s, size_t a, size_t b),
-  size_t *schedule, struct state *s, size_t lower, size_t upper) {
+  int (*NONNULL compare)(const struct state *s, size_t a, size_t b),
+  size_t *NONNULL schedule, struct state *NONNULL s, size_t lower,
+  size_t upper) {
 
   /* If we have nothing to sort, bail out. */
   if (lower >= upper) {
@@ -1353,6 +1535,351 @@ static __attribute__((unused)) void sort(
 }
 
 /*******************************************************************************
+ * State queue node                                                            *
+ *                                                                             *
+ * Queue nodes are 4K-sized, 4K-aligned linked-list nodes. They contain        *
+ * pending states and then a pointer to the next node in the queue.            *
+ ******************************************************************************/
+
+struct queue_node {
+  struct state *s[(4096 - sizeof(struct queue_node*)) / sizeof(struct state*)];
+  struct queue_node *next;
+};
+
+_Static_assert(sizeof(struct queue_node) == 4096,
+  "incorrect queue_node size calculation");
+
+static struct queue_node *queue_node_new(void) {
+  struct queue_node *p = NULL;
+
+  int r = posix_memalign((void**)&p, sizeof(*p), sizeof(*p));
+
+  assert((r == 0 || r == ENOMEM) && "invalid alignment to posix_memalign");
+
+  if (__builtin_expect(r != 0, 0)) {
+    oom();
+  }
+
+  memset(p, 0, sizeof(*p));
+
+  return p;
+}
+
+static void queue_node_free(struct queue_node *p) {
+  free(p);
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Queue node handles                                                          *
+ *                                                                             *
+ * These are pointers to a member-aligned address within a queue_node. The     *
+ * idea is that you can have a queue_handle_t pointing at either one of the    *
+ * elements of the `s` member or at the chained `next` pointer. Since          *
+ * queue_node pointers are always 4K-aligned, you can examine the low 12 bits  *
+ * of the queue node handle to determine which member you are pointing at.     *
+ ******************************************************************************/
+
+typedef uintptr_t queue_handle_t;
+
+static queue_handle_t queue_handle_from_node_ptr(const struct queue_node *n) {
+  return (queue_handle_t)n;
+}
+
+static struct queue_node *queue_handle_base(queue_handle_t h) {
+  return (struct queue_node*)(h - h % sizeof(struct queue_node));
+}
+
+static bool queue_handle_is_state_pptr(queue_handle_t h) {
+  return h % sizeof(struct queue_node)
+    < __builtin_offsetof(struct queue_node, next);
+}
+
+static struct state **queue_handle_to_state_pptr(queue_handle_t h) {
+  assert(queue_handle_is_state_pptr(h) &&
+    "invalid use of queue_handle_to_state_pptr");
+
+  return (struct state**)h;
+}
+
+static struct queue_node **queue_handle_to_node_pptr(queue_handle_t h) {
+  assert(!queue_handle_is_state_pptr(h) &&
+    "invalid use of queue_handle_to_node_pptr");
+
+  return (struct queue_node**)h;
+}
+
+static queue_handle_t queue_handle_next(queue_handle_t h) {
+  return h + sizeof(struct state*);
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Hazard pointers                                                             *
+ *                                                                             *
+ * The idea of "hazard pointers" comes from Maged Michael, "Hazard Pointers:   *
+ * Safe Memory Reclamation for Lock-Free Objects" in TPDS 15(8) 2004. The      *
+ * basic concept is to maintain a collection of safe-to-dereference pointers.  *
+ * Before freeing a pointer, you look in this collection to see if it is in    *
+ * use and you must always add a pointer to this collection before             *
+ * dereferencing it. The finer details of how we keep this consistent and why  *
+ * the size of this collection can be statically known ahead of time are a     *
+ * little complicated, but the paper explains this in further detail.          *
+ ******************************************************************************/
+
+/* Queue node pointers currently safe to dereference. */
+static const struct queue_node *hazarded[THREADS];
+
+/* Protect a pointer that we wish to dereference. */
+static __attribute__((unused)) void hazard(queue_handle_t h) {
+
+  /* Find the queue node this handle lies within. */
+  const struct queue_node *p = queue_handle_base(h);
+
+  /* You can't protect the null pointer because it is invalid to dereference it.
+   */
+  assert(p != NULL && "attempt to hazard an invalid pointer");
+
+  /* Each thread is only allowed a single hazarded pointer at a time. */
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
+    && "hazarding multiple pointers at once");
+
+  __atomic_store_n(&hazarded[thread_id], p, __ATOMIC_SEQ_CST);
+}
+
+/* Drop protection on a pointer whose target we are done accessing. */
+static __attribute__((unused)) void unhazard(queue_handle_t h) {
+
+  /* Find the queue node this handle lies within. */
+  const struct queue_node *p __attribute__((unused)) = queue_handle_base(h);
+
+  assert(p != NULL && "attempt to unhazard an invalid pointer");
+
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) != NULL
+    && "unhazarding a pointer when none are hazarded");
+
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == p
+    && "unhazarding a pointer that differs from the one hazarded");
+
+  __atomic_store_n(&hazarded[thread_id], NULL, __ATOMIC_SEQ_CST);
+}
+
+/* Free a pointer or, if not possible, defer this to later. */
+static __attribute__((unused)) void reclaim(queue_handle_t h) {
+
+  /* Find the queue node this handle lies within. */
+  struct queue_node *p = queue_handle_base(h);
+
+  assert(p != NULL && "reclaiming a null pointer");
+
+  /* The reclaimer is not allowed to be freeing something while also holding a
+   * hazarded pointer.
+   */
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
+    && "reclaiming a pointer while holding a hazarded pointer");
+
+  /* Pointers that we failed to free initially because they were in use
+   * (hazarded) at the time they were passed to reclaim().
+   *
+   * Why are we sure we will only ever have a maximum of `THREADS - 1` pointers
+   * outstanding? Anything passed to reclaim() is expected to be
+   * now-unreachable, so the only outstanding references to such are threads
+   * racing with us. Because each thread can only have one hazarded pointer at a
+   * time, the maximum number of in use pointers right now is `THREADS - 1`
+   * (because the current thread does not have one).
+   *
+   * There is an edge case where another thread (1) held a hazarded pointer we
+   * previously tried to reclaim and thus ended up on our deferred list, then
+   * (2) in-between that time and now dropped this reference and acquired a
+   * hazarded pointer to `p`. This still will not exceed our count of
+   * `THREADS - 1` as the order in which we scan the deferred list and then add
+   * `p` to it below ensures that we will discover the originally hazarded
+   * pointer (now no longer conflicted) and clear its slot, leaving this
+   * available for `p`.
+   */
+  static _Thread_local struct queue_node *deferred[THREADS - 1];
+  static const size_t DEFERRED_SIZE = sizeof(deferred) / sizeof(deferred[0]);
+
+  /* First try to free any previously deferred pointers. */
+  for (size_t i = 0; i < DEFERRED_SIZE; i++) {
+    if (deferred[i] != NULL) {
+      bool conflict = false;
+      for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
+        if (j == thread_id) {
+          /* No need to check for conflicts with ourself. */
+          assert(__atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST) == NULL);
+          continue;
+        }
+        if (deferred[i] == __atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST)) {
+          /* This pointer is in use by thread j. */
+          conflict = true;
+          break;
+        }
+      }
+      if (!conflict) {
+        queue_node_free(deferred[i]);
+        deferred[i] = NULL;
+      }
+    }
+  }
+
+  /* Now deal with the pointer we were passed. The most likely case is that no
+   * one else is using this pointer, so try this first.
+   */
+  bool conflict = false;
+  for (size_t i = 0; i < sizeof(hazarded) / sizeof(hazarded[i]); i++) {
+    if (i == thread_id) {
+      /* No need to check for conflicts with ourself. */
+      assert(__atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST) == NULL);
+      continue;
+    }
+    if (p == __atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST)) {
+      /* Bad luck :( */
+      conflict = true;
+      break;
+    }
+  }
+
+  if (!conflict) {
+    /* We're done! */
+    queue_node_free(p);
+    return;
+  }
+
+  /* If we reached here, we need to defer this reclamation to later. */
+  for (size_t i = 0; i < DEFERRED_SIZE; i++) {
+    if (deferred[i] == NULL) {
+      deferred[i] = p;
+      return;
+    }
+  }
+
+  assert(!"deferred more than `THREADS` reclamations");
+  __builtin_unreachable();
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Atomic operations on double word values                                     *
+ ******************************************************************************/
+
+#if defined(__x86_64__) || defined(__i386__)
+  /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
+   *   memory. The way to work around this is apparently the following
+   *   degenerate CMPXCHG16B.
+   * i386: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
+   *   __sync built-in instead.
+   */
+  #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
+#else
+  #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+  /* As explained above, we need some extra gymnastics to avoid a call to
+   * libatomic on x86-64 and i386.
+   */
+  #define atomic_write(p, v) \
+    do { \
+      __typeof__(p) _target = (p); \
+      __typeof__(*(p)) _expected; \
+      __typeof__(*(p)) _old = 0; \
+      __typeof__(*(p)) _new = (v); \
+      do { \
+        _expected = _old; \
+        _old = __sync_val_compare_and_swap(_target, _expected, _new); \
+      } while (_expected != _old); \
+    } while (0)
+#else
+  #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  #define atomic_cas(p, expected, new) \
+    __sync_bool_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas(p, expected, new) \
+    __atomic_compare_exchange_n((p), &(expected), (new), false, \
+      __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   */
+  #define atomic_cas_val(p, expected, new) \
+    __sync_val_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas_val(p, expected, new) \
+    ({ \
+      __typeof__(expected) _expected = (expected); \
+      __atomic_compare_exchange_n((p), &(_expected), (new), false, \
+        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+      _expected; \
+    })
+#endif
+
+/******************************************************************************/
+
+/*******************************************************************************
+ * Double pointers                                                             *
+ *                                                                             *
+ * A scalar type that can store the value of two pointers.                     *
+ ******************************************************************************/
+
+#if __SIZEOF_POINTER__ <= 4
+  typedef uint64_t double_ptr_t;
+#elif __SIZEOF_POINTER__ <= 8
+  typedef unsigned __int128 double_ptr_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for double_ptr_t?"
+#endif
+
+static uintptr_t double_ptr_extract1(double_ptr_t p) {
+
+  _Static_assert(sizeof(p) > sizeof(uintptr_t), "double_ptr_t is not big "
+    "enough to fit a pointer");
+
+  uintptr_t q;
+  memcpy(&q, &p, sizeof(q));
+
+  return q;
+}
+
+static uintptr_t double_ptr_extract2(double_ptr_t p) {
+
+  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t), "double_ptr_t is not big "
+    "enough to fit two pointers");
+
+  uintptr_t q;
+  memcpy (&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+
+  return q;
+}
+
+static double_ptr_t double_ptr_make(uintptr_t q1, uintptr_t q2) {
+
+  double_ptr_t p = 0;
+
+  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t), "double_ptr_t is not big "
+    "enough to fit two pointers");
+
+  memcpy(&p, &q1, sizeof(q1));
+  memcpy((unsigned char*)&p + sizeof(q1), &q2, sizeof(q2));
+
+  return p;
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
  * State queue                                                                 *
  *                                                                             *
  * The following implements a per-thread queue for pending states. The only    *
@@ -1361,59 +1888,162 @@ static __attribute__((unused)) void sort(
  * invariants.                                                                 *
  ******************************************************************************/
 
-struct queue_node {
-  struct state *s;
-  struct queue_node *next;
-};
-
 static struct {
-  pthread_mutex_t lock;
-  struct queue_node *head;
-  struct queue_node *tail;
+  double_ptr_t ends;
   size_t count;
 } q[THREADS];
 
-static void queue_init(void) {
-  for (size_t i = 0; i < sizeof(q) / sizeof(q[0]); i++) {
-    int r = pthread_mutex_init(&q[i].lock, NULL);
-    if (r < 0) {
-      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-      exit(EXIT_FAILURE);
-    }
-  }
-}
-
-size_t queue_enqueue(struct state *s, size_t queue_id) {
+static size_t queue_enqueue(struct state *NONNULL s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
 
-  struct queue_node *n = xmalloc(sizeof(*n));
-  n->s = s;
-  n->next = NULL;
+  /* Look up the tail of the queue. */
 
-  int r __attribute__((unused)) = pthread_mutex_lock(&q[queue_id].lock);
-  ASSERT(r == 0);
+  double_ptr_t ends = atomic_read(&q[queue_id].ends);
 
-  if (q[queue_id].tail == NULL) {
-    q[queue_id].head = q[queue_id].tail = n;
+retry:;
+  queue_handle_t tail = double_ptr_extract2(ends);
+
+  if (tail == 0) {
+    /* There's nothing currently in the queue. */
+
+    assert(double_ptr_extract1(ends) == 0 && "tail of queue 0 while head is "
+      "non-0");
+
+    struct queue_node *n = queue_node_new();
+    n->s[0] = s;
+
+    double_ptr_t new = double_ptr_make(queue_handle_from_node_ptr(n),
+                                       queue_handle_from_node_ptr(n));
+
+    double_ptr_t old = atomic_cas_val(&q[queue_id].ends, ends, new);
+    if (old != ends) {
+      /* Failed. */
+      queue_node_free(n);
+      ends = old;
+      goto retry;
+    }
+
   } else {
-    q[queue_id].tail->next = n;
-    q[queue_id].tail = n;
+    /* The queue is non-empty, so we'll need to access the last element. */
+
+    /* Try to protect our upcoming access to the tail. */
+    hazard(tail);
+    {
+      double_ptr_t ends_check = atomic_read(&q[queue_id].ends);
+      if (ends != ends_check) {
+        /* Failed. Someone else modified the queue in the meantime. */
+        unhazard(tail);
+        ends = ends_check;
+        goto retry;
+      }
+    }
+
+    /* We've now notified other threads that we're going to be accessing the
+     * tail, so we can safely dereference its pointer.
+     */
+
+    struct queue_node *new_node = NULL;
+    queue_handle_t next_tail = queue_handle_next(tail);
+
+    if (queue_handle_is_state_pptr(next_tail)) {
+      /* There's an available slot in this queue node; no need to create a new
+       * one.
+       */
+
+      {
+        struct state **target = queue_handle_to_state_pptr(next_tail);
+        struct state *null = NULL;
+        if (!__atomic_compare_exchange_n(target, &null, s, false,
+            __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+          /* Failed. Someone else enqueued before we could. */
+          unhazard(tail);
+          goto retry;
+        }
+      }
+
+    } else {
+      /* There's no remaining slot in this queue node. We'll need to create a
+       * new (empty) queue node, add our state to this one and then append this
+       * node to the queue.
+       */
+
+      /* Create the new node. */
+      new_node = queue_node_new();
+      new_node->s[0] = s;
+
+      /* Try to update the chained pointer of the current tail to point to this
+       * new node.
+       */
+      struct queue_node **target = queue_handle_to_node_pptr(next_tail);
+      struct queue_node *null = NULL;
+      if (!__atomic_compare_exchange_n(target, &null, new_node, false,
+          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        /* Failed. Someone else enqueued before we could. */
+        queue_node_free(new_node);
+        unhazard(tail);
+        goto retry;
+      }
+
+      /* We now need the tail to point at our new node. */
+      next_tail = queue_handle_from_node_ptr(new_node);
+    }
+
+    queue_handle_t head = double_ptr_extract1(ends);
+    double_ptr_t new = double_ptr_make(head, next_tail);
+
+    /* Try to update the queue. */
+    {
+      double_ptr_t old = atomic_cas_val(&q[queue_id].ends, ends, new);
+      if (old != ends) {
+        /* Failed. Someone else dequeued before we could finish. We know the
+         * operation that beat us was a dequeue and not an enqueue, because by
+         * writing to next_tail we have prevented any other enqueue from
+         * succeeding.
+         */
+
+        /* Undo the update of next_tail. We know this is safe (non-racy) because
+         * no other enqueue can proceed and a dequeue will never look into
+         * next_tail due to the way it handles the case when head == tail.
+         */
+        next_tail = queue_handle_next(tail);
+        if (queue_handle_is_state_pptr(next_tail)) {
+          /* We previously wrote into an existing queue node. */
+          struct state **target = queue_handle_to_state_pptr(next_tail);
+          struct state *temp = s;
+          bool r __attribute__((unused)) = __atomic_compare_exchange_n(target,
+            &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+          assert(r && "undo of write to next_tail failed");
+        } else {
+          /* We previously wrote into a new queue node. */
+          struct queue_node **target = queue_handle_to_node_pptr(next_tail);
+          struct queue_node *temp = new_node;
+          bool r __attribute__((unused)) = __atomic_compare_exchange_n(target,
+            &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+          assert(r && "undo of write to next_tail failed");
+
+          queue_node_free(new_node);
+        }
+
+        unhazard(tail);
+        ends = old;
+        goto retry;
+      }
+    }
+
+    /* Success! */
+
+    unhazard(tail);
   }
 
-  q[queue_id].count++;
+  size_t count = __atomic_add_fetch(&q[queue_id].count, 1, __ATOMIC_SEQ_CST);
 
-  trace(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
-    s, queue_id, q[queue_id].count);
-
-  size_t count = q[queue_id].count;
-
-  r = pthread_mutex_unlock(&q[queue_id].lock);
-  ASSERT(r == 0);
+  TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
+    s, queue_id, count);
 
   return count;
 }
 
-const struct state *queue_dequeue(size_t *queue_id) {
+static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
   assert(queue_id != NULL && *queue_id < sizeof(q) / sizeof(q[0]) &&
     "out of bounds queue access");
 
@@ -1421,27 +2051,103 @@ const struct state *queue_dequeue(size_t *queue_id) {
 
   for (size_t attempts = 0; attempts < sizeof(q) / sizeof(q[0]); attempts++) {
 
-    int r __attribute__((unused)) = pthread_mutex_lock(&q[*queue_id].lock);
-    ASSERT(r == 0);
+    double_ptr_t ends = atomic_read(&q[*queue_id].ends);
 
-    struct queue_node *n = q[*queue_id].head;
-    if (n != NULL) {
-      q[*queue_id].head = n->next;
-      if (n == q[*queue_id].tail) {
-        q[*queue_id].tail = NULL;
+retry:;
+    queue_handle_t head = double_ptr_extract1(ends);
+
+    if (head != 0) {
+      /* This queue is non-empty. */
+
+      /* Try to protect our upcoming accesses to the head. */
+      hazard(head);
+      {
+        double_ptr_t ends_check = atomic_read(&q[*queue_id].ends);
+        if (ends != ends_check) {
+          /* Failed. Someone else updated the queue. */
+          unhazard(head);
+          ends = ends_check;
+          goto retry;
+        }
       }
-      q[*queue_id].count--;
-      trace(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
-        "%zu", n->s, *queue_id, q[*queue_id].count);
-    }
 
-    r = pthread_mutex_unlock(&q[*queue_id].lock);
-    ASSERT(r == 0);
+      queue_handle_t tail = double_ptr_extract2(ends);
 
-    if (n != NULL) {
-      s = n->s;
-      free(n);
-      break;
+      double_ptr_t new;
+      if (head == tail) {
+        /* There is only a single element in the queue. We will need to update
+         * both head and tail.
+         */
+        new = double_ptr_make(0, 0);
+      } else if (queue_handle_is_state_pptr(head)) {
+        /* There are multiple elements in the queue; we can deal only with the
+         * head.
+         */
+        new = double_ptr_make(queue_handle_next(head), tail);
+      } else {
+        /* The head of the queue is the end of a queue node. I.e. the only thing
+         * remaining in this queue node is the chained pointer to the next queue
+         * node.
+         */
+
+        /* Load the next queue node. */
+        struct queue_node **n = queue_handle_to_node_pptr(head);
+        struct queue_node *new_head = __atomic_load_n(n, __ATOMIC_SEQ_CST);
+        new = double_ptr_make(queue_handle_from_node_ptr(new_head), tail);
+
+        /* Try to replace the current head with the next node. */
+        double_ptr_t old = atomic_cas_val(&q[*queue_id].ends, ends, new);
+        /* Either way, now we'll need to retry, but if we succeeded we also need
+         * to free the queue node we just removed.
+         */
+        unhazard(head);
+        if (old == ends) {
+          /* Succeeded. */
+          reclaim(head);
+        }
+        ends = old;
+        goto retry;
+      }
+
+      /* Try to remove the head. */
+      {
+        double_ptr_t old = atomic_cas_val(&q[*queue_id].ends, ends, new);
+        if (old != ends) {
+          /* Failed. Someone else either enqueued or dequeued. */
+          unhazard(head);
+          ends = old;
+          goto retry;
+        }
+      }
+
+      /* We now have either a pointer to a state or we've just removed an empty
+       * queue node that was the last in the queue.
+       */
+
+      if (queue_handle_is_state_pptr(head)) {
+        struct state **st = queue_handle_to_state_pptr(head);
+        s = *st;
+      }
+
+      unhazard(head);
+
+      if (head == tail || !queue_handle_is_state_pptr(head)) {
+        reclaim(head);
+      }
+
+      if (s == NULL) {
+        /* Move to the next queue to try. */
+        *queue_id = (*queue_id + 1) % (sizeof(q) / sizeof(q[0]));
+        continue;
+      }
+
+      size_t count = __atomic_sub_fetch(&q[*queue_id].count, 1,
+        __ATOMIC_SEQ_CST);
+
+      TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
+        "%zu", s, *queue_id, count);
+
+      return s;
     }
 
     /* Move to the next queue to try. */
@@ -1463,13 +2169,14 @@ const struct state *queue_dequeue(size_t *queue_id) {
  * Of these functions, only the following are thread safe:                     *
  *                                                                             *
  *   * refcounted_ptr_get                                                      *
+ *   * refcounted_ptr_peek                                                     *
  *   * refcounted_ptr_put                                                      *
+ *   * refcounted_ptr_set                                                      *
  *                                                                             *
  * The caller is expected to coordinate with other threads to exclude them     *
  * operating on the relevant refcounted_ptr_t when using one of the other      *
  * functions:                                                                  *
  *                                                                             *
- *   * refcounted_ptr_set                                                      *
  *   * refcounted_ptr_shift                                                    *
  *                                                                             *
  ******************************************************************************/
@@ -1491,53 +2198,29 @@ _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
   "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
   "on it atomically");
 
-static refcounted_ptr_t refcounted_ptr_read(refcounted_ptr_t *p) {
-#ifdef __x86_64__
-  /* It seems MOV on x86-64 is not guaranteed to be atomic on 128-bit naturally
-   * aligned memory. The way to work around this is apparently the following
-   * degenerate CMPXCHG.
-   */
-  return __sync_val_compare_and_swap(p, 0, 0);
-#else
-  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
-#endif
-}
+static void refcounted_ptr_set(refcounted_ptr_t *NONNULL p, void *ptr) {
 
-static bool refcounted_ptr_cas(refcounted_ptr_t *p, refcounted_ptr_t expected,
-    refcounted_ptr_t new) {
-#ifdef __x86_64__
-  /* Make GCC >= 7.1 emit cmpxchg on x86-64. See
-   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
-   */
-  return __sync_bool_compare_and_swap(p, expected, new);
-#else
-  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
-#endif
-}
-
-static void refcounted_ptr_set(refcounted_ptr_t *p, void *ptr) {
-
-  /* Read the current state of the pointer. Note, we don't bother doing this
-   * atomically as it's only for debugging and no one else should be using the
-   * pointer source right now.
-   */
+#ifndef NDEBUG
+  /* Read the current state of the pointer. */
+  refcounted_ptr_t old = atomic_read(p);
   struct refcounted_ptr p2;
-  memcpy(&p2, p, sizeof(*p));
-  ASSERT(p2.count == 0 && "overwriting a pointer source while someone still "
+  memcpy(&p2, &old, sizeof(old));
+  assert(p2.count == 0 && "overwriting a pointer source while someone still "
     "has a reference to this pointer");
+#endif
 
   /* Set the current source pointer with no outstanding references. */
-  p2.ptr = ptr;
-  p2.count = 0;
+  struct refcounted_ptr p3;
+  p3.ptr = ptr;
+  p3.count = 0;
 
-  /* Commit the result. Again, we do not operate atomically because no one else
-   * should be using the pointer source.
-   */
-  memcpy(p, &p2, sizeof(*p));
+  /* Commit the result. */
+  refcounted_ptr_t new;
+  memcpy(&new, &p3, sizeof(p3));
+  atomic_write(p, new);
 }
 
-static void *refcounted_ptr_get(refcounted_ptr_t *p) {
+static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
 
   refcounted_ptr_t old, new;
   void *ret;
@@ -1546,7 +2229,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
   do {
 
     /* Read the current state of the pointer. */
-    old = refcounted_ptr_read(p);
+    old = atomic_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1556,23 +2239,22 @@ static void *refcounted_ptr_get(refcounted_ptr_t *p) {
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-    r = refcounted_ptr_cas(p, old, new);
+    r = atomic_cas(p, old, new);
   } while (!r);
 
   return ret;
 }
 
-static size_t refcounted_ptr_put(refcounted_ptr_t *p,
+static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
   void *ptr __attribute__((unused))) {
 
   refcounted_ptr_t old, new;
-  size_t ret;
   bool r;
 
   do {
 
     /* Read the current state of the pointer. */
-    old = refcounted_ptr_read(p);
+    old = atomic_read(p);
     struct refcounted_ptr p2;
     memcpy(&p2, &old, sizeof(old));
 
@@ -1582,17 +2264,29 @@ static size_t refcounted_ptr_put(refcounted_ptr_t *p,
     ASSERT(p2.count > 0 && "releasing a reference to a pointer when it had no "
       "outstanding references");
     p2.count--;
-    ret = p2.count;
 
     /* Try to commit our results. */
     memcpy(&new, &p2, sizeof(new));
-    r = refcounted_ptr_cas(p, old, new);
+    r = atomic_cas(p, old, new);
   } while (!r);
-
-  return ret;
 }
 
-static void refcounted_ptr_shift(refcounted_ptr_t *current, refcounted_ptr_t *next) {
+static void *refcounted_ptr_peek(refcounted_ptr_t *NONNULL p) {
+
+  /* Read out the state of the pointer. This rather unpleasant expression is
+   * designed to emit an atomic load at a smaller granularity than the entire
+   * refcounted_ptr structure. Because we only need the pointer -- and not the
+   * count -- we can afford to just atomically read the first word.
+   */
+  void *ptr = __atomic_load_n(
+    (void**)((void*)p + __builtin_offsetof(struct refcounted_ptr, ptr)),
+    __ATOMIC_SEQ_CST);
+
+  return ptr;
+}
+
+static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
+    refcounted_ptr_t *NONNULL next) {
 
   /* None of the operations in this function are performed atomically because we
    * assume the caller has synchronised with other threads via other means.
@@ -1624,13 +2318,13 @@ static size_t rendezvous_pending = 1;   /* how many threads are opted in and not
 
 static void rendezvous_init(void) {
   int r = pthread_mutex_init(&rendezvous_lock, NULL);
-  if (r != 0) {
+  if (__builtin_expect(r != 0, 0)) {
     fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
     exit(EXIT_FAILURE);
   }
 
   r = pthread_cond_init(&rendezvous_cond, NULL);
-  if (r != 0) {
+  if (__builtin_expect(r != 0, 0)) {
     fprintf(stderr, "pthread_cond_init failed: %s\n", strerror(r));
     exit(EXIT_FAILURE);
   }
@@ -1665,11 +2359,16 @@ static bool rendezvous_arrive(void) {
  *
  * @param leader Whether the caller is the 'leader'. If you call this when you
  *   are the 'leader' it will unblock all 'followers' at the rendezvous point.
+ * @param action Optional code for the leader to run.
  */
-static void rendezvous_depart(bool leader) {
+static void rendezvous_depart(bool leader, void (*action)(void)) {
   int r __attribute((unused));
 
   if (leader) {
+    if (action != NULL) {
+      action();
+    }
+
     /* Reset the counter for the next rendezvous. */
     assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
       "while some participating threads have yet to arrive");
@@ -1691,15 +2390,18 @@ static void rendezvous_depart(bool leader) {
 }
 
 /* Exposed friendly function for performing a rendezvous. */
-static void rendezvous(void) {
+static void rendezvous(void (*action)(void)) {
   bool leader = rendezvous_arrive();
-  rendezvous_depart(leader);
+  if (leader) {
+    TRACE(TC_SET, "arrived at rendezvous point as leader");
+  }
+  rendezvous_depart(leader, action);
 }
 
 /* Remove the caller from the pool of threads who participate in this
  * rendezvous.
  */
-static void rendezvous_opt_out(void) {
+static void rendezvous_opt_out(void (*action)(void)) {
 
 retry:;
 
@@ -1712,7 +2414,7 @@ retry:;
      * were arriving at one and we were the last to arrive. Let's pretend we are
      * participating in the rendezvous and unblock them.
      */
-    rendezvous_depart(true);
+    rendezvous_depart(true, action);
 
     /* Re-attempt opting-out. */
     goto retry;
@@ -1779,16 +2481,15 @@ enum { INITIAL_SET_SIZE_EXPONENT = sizeof(unsigned long long) * 8 - 1 -
 struct set {
   slot_t *bucket;
   size_t size_exponent;
-  size_t count;
 };
 
 /* Some utility functions for dealing with exponents. */
 
-static size_t set_size(const struct set *set) {
+static size_t set_size(const struct set *NONNULL set) {
   return ((size_t)1) << set->size_exponent;
 }
 
-static size_t set_index(const struct set *set, size_t index) {
+static size_t set_index(const struct set *NONNULL set, size_t index) {
   return index & (set_size(set) - 1);
 }
 
@@ -1798,6 +2499,9 @@ static size_t set_index(const struct set *set, size_t index) {
  */
 static refcounted_ptr_t global_seen;
 static _Thread_local struct set *local_seen;
+
+/* Number of elements in the global set (i.e. occupancy). */
+static size_t seen_count;
 
 /* The "next" 'global_seen' value. See below for an explanation. */
 static refcounted_ptr_t next_global_seen;
@@ -1821,22 +2525,28 @@ static size_t next_migration;
 static pthread_mutex_t set_expand_mutex;
 
 static void set_expand_lock(void) {
-  int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
-  ASSERT(r == 0);
+  if (THREADS > 1) {
+    int r __attribute__((unused)) = pthread_mutex_lock(&set_expand_mutex);
+    ASSERT(r == 0);
+  }
 }
 
 static void set_expand_unlock(void) {
-  int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
-  ASSERT(r == 0);
+  if (THREADS > 1) {
+    int r __attribute__((unused)) = pthread_mutex_unlock(&set_expand_mutex);
+    ASSERT(r == 0);
+  }
 }
 
 
 static void set_init(void) {
 
-  int r = pthread_mutex_init(&set_expand_mutex, NULL);
-  if (r < 0) {
-    fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
-    exit(EXIT_FAILURE);
+  if (THREADS > 1) {
+    int r = pthread_mutex_init(&set_expand_mutex, NULL);
+    if (__builtin_expect(r < 0, 0)) {
+      fprintf(stderr, "pthread_mutex_init failed: %s\n", strerror(r));
+      exit(EXIT_FAILURE);
+    }
   }
 
   /* Allocate the set we'll store seen states in at some conservative initial
@@ -1845,7 +2555,6 @@ static void set_init(void) {
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = INITIAL_SET_SIZE_EXPONENT;
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
-  set->count = 0;
 
   /* Stash this somewhere for threads to later retrieve it from. Note that we
    * initialize its reference count to zero as we (the setup logic) are not
@@ -1859,9 +2568,32 @@ static void set_thread_init(void) {
   local_seen = refcounted_ptr_get(&global_seen);
 }
 
+static void set_update(void) {
+  /* Guard against the case where we've been called from exit_with() and we're
+   * not finishing a migration, but just opting out of the rendezvous protocol.
+   */
+  if (refcounted_ptr_peek(&next_global_seen) != NULL) {
+
+    /* Clean up the old set. Note that we are using a pointer we have already
+     * given up our reference count to here, but we rely on the caller to ensure
+     * this access is safe.
+     */
+    free(local_seen->bucket);
+    free(local_seen);
+
+    /* Reset migration state for the next time we expand the set. */
+    next_migration = 0;
+
+    /* Update the global pointer to the new set. We know all the above
+     * migrations have completed and no one needs the old set.
+     */
+    refcounted_ptr_shift(&global_seen, &next_global_seen);
+  }
+}
+
 static void set_migrate(void) {
 
-  trace(TC_SET, "assisting in set migration...");
+  TRACE(TC_SET, "assisting in set migration...");
 
   /* Size of a migration chunk. Threads in this function grab a chunk at a time
    * to migrate.
@@ -1918,29 +2650,7 @@ retry:;
   }
 
   /* Release our reference to the old set now we're done with it. */
-  size_t count = refcounted_ptr_put(&global_seen, local_seen);
-
-  if (count == 0) {
-
-    trace(TC_SET, "arrived at rendezvous point as leader");
-
-    /* At this point, we know no one is still updating the old set's count, so
-     * we can migrate its value to the next set.
-     */
-    next->count = local_seen->count;
-
-    /* We were the last thread to release our reference to the old set. Clean it
-     * up now. Note that we're using the pointer we just gave up our reference
-     * count to, but we know no one else will be invalidating it.
-     */
-    free(local_seen->bucket);
-    free(local_seen);
-
-    /* Update the global pointer to the new set. We know all the above
-     * migrations have completed and no one needs the old set.
-     */
-    refcounted_ptr_shift(&global_seen, &next_global_seen);
-  }
+  refcounted_ptr_put(&global_seen, local_seen);
 
   /* Now we need to make sure all the threads get to this point before any one
    * thread leaves. The purpose of this is to guarantee we only ever have at
@@ -1949,7 +2659,7 @@ retry:;
    * are still working on the old set. It's possible to make such a scheme work
    * but the synchronisation requirements just seem too complicated.
    */
-  rendezvous();
+  rendezvous(set_update);
 
   /* We're now ready to resume model checking. Note that we already have a
    * (reference counted) pointer to the now-current global seen set, so we don't
@@ -1960,21 +2670,33 @@ retry:;
 
 static void set_expand(void) {
 
-  set_expand_lock();
-
-  /* Check if another thread beat us to expanding the set. */
-  struct set *s = refcounted_ptr_get(&next_global_seen);
-  (void)refcounted_ptr_put(&next_global_seen, s);
-  if (s != NULL) {
+  /* Using double-checked locking, we look to see if someone else has already
+   * started expanding the set. We do this by first checking before acquiring
+   * the set mutex, and then later again checking after we've acquired the
+   * mutex. The idea here is that, with multiple threads, you'll frequently find
+   * someone else beat you to expansion and you can jump straight to helping
+   * them with migration without having the expense of acquiring the set mutex.
+   */
+  if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
     /* Someone else already expanded it. Join them in the migration effort. */
-    set_expand_unlock();
-    trace(TC_SET, "attempted expansion failed because another thread got there "
+    TRACE(TC_SET, "attempted expansion failed because another thread got there "
       "first");
     set_migrate();
     return;
   }
 
-  trace(TC_SET, "expanding set from %zu slots to %zu slots...",
+  set_expand_lock();
+
+  /* Check again, as described above. */
+  if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
+    set_expand_unlock();
+    TRACE(TC_SET, "attempted expansion failed because another thread got there "
+      "first");
+    set_migrate();
+    return;
+  }
+
+  TRACE(TC_SET, "expanding set from %zu slots to %zu slots...",
     (((size_t)1) << local_seen->size_exponent) / sizeof(slot_t),
     (((size_t)1) << (local_seen->size_exponent + 1)) / sizeof(slot_t));
 
@@ -1982,7 +2704,6 @@ static void set_expand(void) {
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = local_seen->size_exponent + 1;
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
-  set->count = 0; /* will be updated in set_migrate(). */
 
   /* Advertise this as the newly expanded global set. */
   refcounted_ptr_set(&next_global_seen, set);
@@ -1990,16 +2711,16 @@ static void set_expand(void) {
   /* We now need to migrate all slots from the old set to the new one, but we
    * can do this multithreaded.
    */
-  next_migration = 0; /* initialise migration state */
   set_expand_unlock();
   set_migrate();
 }
 
-static bool set_insert(struct state *s, size_t *count) {
+static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
-  if (local_seen->count * 100 / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
+  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100
+      / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
     set_expand();
 
   size_t index = set_index(local_seen, state_hash(s));
@@ -2012,15 +2733,15 @@ restart:;
     if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
         state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
       /* Success */
-      *count = __atomic_add_fetch(&local_seen->count, 1, __ATOMIC_SEQ_CST);
-      trace(TC_SET, "added state %p, set size is now %zu", s, *count);
+      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
+      TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
        * by the number of possible states based on how many bits we are using to
        * represent the state data.
        */
       if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= SIZE_C(1) << STATE_SIZE_BITS && "seen set size "
+        assert(*count <= ((size_t)1) << STATE_SIZE_BITS && "seen set size "
           "exceeds total possible number of states");
       }
 
@@ -2037,7 +2758,7 @@ restart:;
 
     /* If we find this already in the set, we're done. */
     if (state_eq(s, slot_to_state(c))) {
-      trace(TC_SET, "skipped adding state %p that was already in set", s);
+      TRACE(TC_SET, "skipped adding state %p that was already in set", s);
       return false;
     }
 
@@ -2049,6 +2770,52 @@ restart:;
   return set_insert(s, count);
 }
 
+/* Find an existing element in the set.
+ *
+ * Why would you ever want to do this? If you already have the state, why do you
+ * want to find a copy of it? The answer is for liveness information. When
+ * checking liveness properties, a duplicate of your current state that is
+ * already contained in the state set might know some of the liveness properties
+ * are satisfied that your current state considers unknown.
+ */
+static const struct state *set_find(const struct state *NONNULL s) {
+
+  assert(s != NULL);
+
+  size_t index = set_index(local_seen, state_hash(s));
+
+  size_t attempts = 0;
+  for (size_t i = index; attempts < set_size(local_seen); i = set_index(local_seen, i + 1)) {
+
+    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+
+    /* This function is only expected to be called during the final liveness
+     * scan, in which all threads participate. So we should never encounter a
+     * set undergoing migration.
+     */
+    ASSERT(!slot_is_tombstone(slot)
+      && "tombstone encountered during final phase");
+
+    if (slot_is_empty(slot)) {
+      /* reached the end of the linear block in which this state could lie */
+      break;
+    }
+
+    const struct state *n = slot_to_state(slot);
+    ASSERT(n != NULL && "null pointer stored in state set");
+
+    if (state_eq(s, n)) {
+      /* found */
+      return n;
+    }
+
+    attempts++;
+  }
+
+  /* not found */
+  return NULL;
+}
+
 /******************************************************************************/
 
 static time_t START_TIME;
@@ -2057,14 +2824,197 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(NULL) - START_TIME);
 }
 
+/* Set one of the liveness bits (i.e. mark the matching property as 'hit') in a
+ * state and all its predecessors.
+ */
+static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
+    size_t index, bool shared) {
+
+  assert(s != NULL);
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  ASSERT(index < sizeof(s->liveness) * CHAR_BIT
+    && "out of range liveness write");
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);
+  size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);
+
+  uintptr_t previous_value;
+  uintptr_t *target = &s->liveness[word_index];
+  uintptr_t mask = ((uintptr_t)1) << bit_index;
+
+  if (shared) {
+    /* If this state is shared (accessible by other threads) we need to operate
+     * on its liveness data atomically.
+     */
+    previous_value = __atomic_fetch_or(target, mask, __ATOMIC_SEQ_CST);
+  } else {
+    /* Otherwise we can use a cheaper ordinary OR. */
+    previous_value = *target;
+    *target |= mask;
+  }
+
+  /* The following looks a little odd. Why do we only initialise this pointer
+   * properly when we have liveness properties? The answer is that the
+   * `previous` pointer in the state struct only exists when we have liveness
+   * properties, so the access would cause a compile error if we did it
+   * unconditionally. We leave the rest of this function visible to the compiler
+   * even when we have no liveness properties to confirm it is syntactically
+   * valid.
+   */
+  struct state *previous = NULL;
+#if LIVENESS_COUNT > 0
+  /* Cheat a little and cast away the constness of the previous state for which
+   * we may need to update liveness data.
+   */
+  previous = (struct state*)s->previous;
+#endif
+
+  /* If the given bit was already set, we know all the predecessors of this
+   * state have already had their corresponding bit marked. However, if it was
+   * not we now need to recurse to mark them. Note that we assume any
+   * predecessors of this state are globally visible and hence shared. The
+   * recursion depth here can be indeterminately deep, but we assume the
+   * compiler can tail-optimise this call.
+   */
+  if ((previous_value & mask) != mask && previous != NULL) {
+    mark_liveness(previous, index, true);
+  }
+}
+
+/* Whether we know all liveness properties are satisfied for a given state. */
+static bool known_liveness(const struct state *NONNULL s) {
+
+  assert(s != NULL);
+
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+    uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+        break;
+      }
+
+      if (!((word >> j) & 0x1)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/* Learn new liveness information about the state `s` from its successor. Note
+ * that typically `successor->previous != s` because `successor` is actually one
+ * of the de-duped aliases of the original successor to `s`.
+ *
+ * @param s State to learn information about
+ * @param successor Successor to s
+ * @return Number of new liveness information facts learnt
+ */
+static unsigned long learn_liveness(struct state *NONNULL s,
+    const struct state *NONNULL successor) {
+
+  assert(s != NULL);
+  assert(successor != NULL);
+
+  unsigned long new_info = 0;
+
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+    uintptr_t word_src = __atomic_load_n(&successor->liveness[i],
+      __ATOMIC_SEQ_CST);
+    uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+
+    for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+      if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+        break;
+      }
+
+      bool live_src = !!((word_src >> j) & 0x1);
+      bool live_dst = !!((word_dst >> j) & 0x1);
+
+      if (!live_dst && live_src) {
+        mark_liveness(s, i * sizeof(s->liveness[0]) * CHAR_BIT + j, true);
+        new_info++;
+      }
+    }
+  }
+
+  return new_info;
+}
+
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
+static void check_liveness_final(void);
+static unsigned long check_liveness_summarise(void);
 
 static int exit_with(int status) {
 
   /* Opt out of the thread-wide rendezvous protocol. */
-  rendezvous_opt_out();
+  refcounted_ptr_put(&global_seen, local_seen);
+  rendezvous_opt_out(set_update);
+  local_seen = NULL;
 
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
@@ -2087,7 +3037,7 @@ static int exit_with(int status) {
 #endif
       void *ret;
       int r = pthread_join(threads[i], &ret);
-      if (r != 0) {
+      if (__builtin_expect(r != 0, 0)) {
         print_lock();
         fprintf(stderr, "failed to join thread: %s\n", strerror(r));
         print_unlock();
@@ -2097,6 +3047,59 @@ static int exit_with(int status) {
     }
 
     /* We're now single-threaded again. */
+
+    /* Reacquire a pointer to the seen set. Note that this may not be the same
+     * value as what we previously had in local_seen because the other threads
+     * may have expanded and migrated the seen set in the meantime.
+     */
+    local_seen = refcounted_ptr_get(&global_seen);
+
+    if (error_count == 0) {
+      /* If we didn't see any other errors, print cover information. */
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+      for (size_t i = 0; i < sizeof(covers) / sizeof(covers[0]); i++) {
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+        if (MACHINE_READABLE_OUTPUT) {
+          printf("<cover_result message=\"");
+          xml_printf(COVER_MESSAGES[i]);
+          printf("\" count=\"%" PRIuMAX "\"/>\n", covers[i]);
+        }
+        if (covers[i] == 0) {
+          if (!MACHINE_READABLE_OUTPUT) {
+            printf("\t%s%scover \"%s\" not hit%s\n", red(), bold(),
+              COVER_MESSAGES[i], reset());
+          }
+          error_count++;
+          status = EXIT_FAILURE;
+        } else if (!MACHINE_READABLE_OUTPUT) {
+          printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
+            bold(), COVER_MESSAGES[i], covers[i], reset());
+        }
+      }
+    }
+
+    /* If we have liveness properties to assess and have seen no previous
+     * errors, do a final check of them now.
+     */
+    if (LIVENESS_COUNT > 0 && error_count == 0) {
+      check_liveness_final();
+
+      unsigned long failed = check_liveness_summarise();
+      if (failed > 0) {
+        error_count += failed;
+        status = EXIT_FAILURE;
+      }
+    }
 
     if (!MACHINE_READABLE_OUTPUT) {
       printf("\n"
@@ -2120,25 +3123,26 @@ static int exit_with(int status) {
 
     /* Paranoid check that we didn't miscount during set insertions/expansions.
      */
+#ifndef NDEBUG
     size_t count = 0;
     for (size_t i = 0; i < set_size(local_seen); i++) {
       if (!slot_is_empty(local_seen->bucket[i])) {
         count++;
       }
     }
-    assert(count == local_seen->count && "seen set count is inconsistent at "
-      "exit");
+#endif
+    assert(count == seen_count && "seen set count is inconsistent at exit");
 
     if (MACHINE_READABLE_OUTPUT) {
       printf("<summary states=\"%zu\" rules_fired=\"%" PRIuMAX "\" errors=\"%lu\" "
-        "duration_seconds=\"%llu\"/>\n", local_seen->count, fire_count, error_count,
+        "duration_seconds=\"%llu\"/>\n", seen_count, fire_count, error_count,
         gettime());
       printf("</rumur_run>\n");
     } else {
       printf("State Space Explored:\n"
              "\n"
              "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
-             local_seen->count, fire_count, gettime());
+             seen_count, fire_count, gettime());
     }
 
     exit(status);
@@ -2187,7 +3191,7 @@ static void start_secondary_threads(void) {
 #endif
     int r = pthread_create(&threads[i], NULL, thread_main,
       (void*)(uintptr_t)(i + 1));
-    if (r != 0) {
+    if (__builtin_expect(r != 0, 0)) {
       fprintf(stderr, "pthread_create failed: %s\n", strerror(r));
       exit(EXIT_FAILURE);
     }
@@ -2198,6 +3202,9 @@ int main(void) {
 
   if (COLOR == AUTO)
     istty = isatty(STDOUT_FILENO) != 0;
+
+  /* We don't need to read anything from stdin, so discard it. */
+  (void)fclose(stdin);
 
   sandbox();
 
@@ -2226,7 +3233,6 @@ int main(void) {
   rendezvous_init();
 
   set_init();
-  queue_init();
 
   set_thread_init();
 

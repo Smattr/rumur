@@ -16,7 +16,7 @@ namespace rumur {
 
 struct Stmt : public Node {
 
-  using Node::Node;
+  Stmt(const location &loc_);
 
   virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
@@ -47,6 +47,7 @@ struct PropertyStmt : public Stmt {
   virtual ~PropertyStmt() = default;
 
   bool operator==(const Node &other) const final;
+  void validate() const final;
 };
 
 struct Assignment : public Stmt {

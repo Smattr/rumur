@@ -1,18 +1,21 @@
 # Define resources.
 add_custom_command(
   OUTPUT resources_manpage.cc
-  COMMAND xxd -include doc/rumur.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  COMMAND python ../misc/xxd.py doc/rumur.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   MAIN_DEPENDENCY doc/rumur.1
+  DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT resources_includes.cc
-  COMMAND xxd -include resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
+  COMMAND python ../misc/xxd.py resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   MAIN_DEPENDENCY resources/includes.c
+  DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT resources_header.cc
-  COMMAND xxd -include resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  COMMAND python ../misc/xxd.py resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   MAIN_DEPENDENCY resources/header.c
+  DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 add_custom_command(
   OUTPUT version.cc
@@ -31,7 +34,11 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ${CMAKE_CURRENT_BINARY_DIR}/version.cc
+  ../common/help.cc
+  src/assume-statements-count.cc
+  src/environ.cc
   src/generate-allocations.cc
+  src/generate-cover-array.cc
   src/generate-decl.cc
   src/generate-expr.cc
   src/generate-function.cc
@@ -40,13 +47,23 @@ add_executable(rumur
   src/generate-property.cc
   src/generate-quantifier.cc
   src/generate-stmt.cc
-  src/help.cc
+  src/has-start-state.cc
   src/log.cc
   src/main.cc
   src/max-simple-width.cc
   src/options.cc
   src/output.cc
-  src/symmetry-reduction.cc)
+  src/process.cc
+  src/smt/define-enum-members.cc
+  src/smt/define-records.cc
+  src/smt/logic.cc
+  src/smt/simplify.cc
+  src/smt/solver.cc
+  src/smt/translate.cc
+  src/smt/typeexpr-to-smt.cc
+  src/symmetry-reduction.cc
+  src/utils.cc
+  src/ValueType.cc)
 
 target_include_directories(rumur
   PRIVATE

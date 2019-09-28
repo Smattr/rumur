@@ -13,6 +13,14 @@
    */
 %define api.value.type variant
 
+  /* Enable more explanatory error messages. Without this, Bison just says
+   * "syntax error" for any problem. The extra information can sometimes be
+   * inaccurate unless you define "parse.lac full" which is not available for
+   * C++, but even a slightly inaccurate message is typically more useful to the
+   * user than "syntax error".
+   */
+%define parse.error verbose
+
   /* Turn on some safety checks for construction and destruction of variant
    * types. This is only relevant if we enable them (api.value.type variant).
    */
@@ -102,6 +110,7 @@
 %token CLEAR
 %token COLON_EQ
 %token CONST
+%token COVER
 %token DEQ
 %token DO
 %token DOTDOT
@@ -134,11 +143,11 @@
 %token INVARIANT
 %token ISUNDEFINED
 %token LEQ
+%token LIVENESS
 %token NEQ
 %token <std::string> NUMBER
 %token OF
 %token PROCEDURE
-%token PROPERTY
 %token PUT
 %token RECORD
 %token RETURN
@@ -226,10 +235,12 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
 } | ASSUME {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSUMPTION);
+} | COVER {
+  $$ = std::make_shared<rumur::Property::Category>(rumur::Property::COVER);
 } | INVARIANT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::ASSERTION);
-} | PROPERTY {
-  $$ = std::make_shared<rumur::Property::Category>(rumur::Property::DISABLED);
+} | LIVENESS {
+  $$ = std::make_shared<rumur::Property::Category>(rumur::Property::LIVENESS);
 };
 
 comma_opt: ',' | %empty;
@@ -432,7 +443,7 @@ quantifier: ID ':' typeexpr {
   $$ = std::make_shared<rumur::Quantifier>($1, $3, $5, @$);
 };
 
-quantifiers: quantifiers ';' quantifier {
+quantifiers: quantifiers semis quantifier {
   $$ = $1;
   $$.push_back(*$3);
 } | quantifier {
@@ -467,7 +478,9 @@ ruleset: RULESET quantifiers DO rules endruleset {
   $$ = rumur::Ptr<rumur::Ruleset>::make($2, $4, @$);
 };
 
-semi_opt: ';' | %empty;
+semi_opt: semi_opt ';' | %empty;
+
+semis: semi_opt ';';
 
 simplerule: RULE string_opt guard_opt decls_header stmts endrule {
   $$ = rumur::Ptr<rumur::SimpleRule>::make($2, $3, $4, $5, @$);
@@ -529,10 +542,10 @@ stmts: stmts_cont stmt semi_opt {
 } | %empty {
 };
 
-stmts_cont: stmts_cont stmt ';' {
+stmts_cont: stmts_cont stmt semis {
   $$ = $1;
   $$.push_back($2);
-} | stmt ';' {
+} | stmt semis {
   $$.push_back($1);
 };
 

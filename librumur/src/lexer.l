@@ -62,6 +62,7 @@ by            { return rumur::parser::token::BY;            }
 case          { return rumur::parser::token::CASE;          }
 clear         { return rumur::parser::token::CLEAR;         }
 const         { return rumur::parser::token::CONST;         }
+cover         { return rumur::parser::token::COVER;         }
 do            { return rumur::parser::token::DO;            }
 else          { return rumur::parser::token::ELSE;          }
 elsif         { return rumur::parser::token::ELSIF;         }
@@ -88,9 +89,9 @@ function      { return rumur::parser::token::FUNCTION;      }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
 isundefined   { return rumur::parser::token::ISUNDEFINED;   }
+liveness      { return rumur::parser::token::LIVENESS;      }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
-property      { return rumur::parser::token::PROPERTY;      }
 put           { return rumur::parser::token::PUT;           }
 real          { throw rumur::Error("real types are not supported", *loc); }
 record        { return rumur::parser::token::RECORD;        }
@@ -158,9 +159,25 @@ true {
   return YYText()[0];
 }
 
-\"(\\.|[^\\\"])*\" {
+(\"|“)(\\.|[^\\\"]|\\”)*(\"|”) {
   std::string s(YYText());
-  lval->build<std::string>(s.substr(1, s.length() - 2).c_str());
+
+  /* figure out which quote character this string starts with */
+  const std::string opener = s.find("“") == 0 ? "“" : "\"";
+  assert(s.find(opener) == 0 && "logic bug in string lexing rule");
+
+  /* figure out which quote character this string ends with */
+  static const std::string squote = "”";
+  size_t offset = s.size() - squote.size();
+  const std::string closer
+    = s.size() > squote.size() && s.find(squote, offset) == offset
+    ? squote
+    : "\"";
+
+  /* build a string, stripping the quote delimiters */
+  lval->build<std::string>(s.substr(opener.size(),
+    s.size() - opener.size() - closer.size()).c_str());
+
   return rumur::parser::token::STRING;
 }
 

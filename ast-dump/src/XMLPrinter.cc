@@ -58,11 +58,11 @@ XMLPrinter::XMLPrinter(const std::string &in_filename, std::ostream &o_):
   }
 }
 
-void XMLPrinter::visit(const Add &n) {
+void XMLPrinter::visit_add(const Add &n) {
   visit_bexpr("add", n);
 }
 
-void XMLPrinter::visit(const AliasDecl &n) {
+void XMLPrinter::visit_aliasdecl(const AliasDecl &n) {
   sync_to(n);
   *o << "<aliasdecl name=\"" << n.name << "\" ";
   add_location(n);
@@ -75,7 +75,7 @@ void XMLPrinter::visit(const AliasDecl &n) {
   *o << "</aliasdecl>";
 }
 
-void XMLPrinter::visit(const AliasRule &n) {
+void XMLPrinter::visit_aliasrule(const AliasRule &n) {
   sync_to(n);
   *o << "<aliasrule name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
@@ -102,7 +102,7 @@ void XMLPrinter::visit(const AliasRule &n) {
   *o << "</aliasrule>";
 }
 
-void XMLPrinter::visit(const AliasStmt &n) {
+void XMLPrinter::visit_aliasstmt(const AliasStmt &n) {
   sync_to(n);
   *o << "<aliasstmt ";
   add_location(n);
@@ -129,11 +129,11 @@ void XMLPrinter::visit(const AliasStmt &n) {
   *o << "</aliasstmt>";
 }
 
-void XMLPrinter::visit(const And &n) {
+void XMLPrinter::visit_and(const And &n) {
   visit_bexpr("and", n);
 }
 
-void XMLPrinter::visit(const Array &n) {
+void XMLPrinter::visit_array(const Array &n) {
   sync_to(n);
   *o << "<array ";
   add_location(n);
@@ -150,7 +150,7 @@ void XMLPrinter::visit(const Array &n) {
   *o << "</array>";
 }
 
-void XMLPrinter::visit(const Assignment &n) {
+void XMLPrinter::visit_assignment(const Assignment &n) {
   sync_to(n);
   *o << "<assignment ";
   add_location(n);
@@ -165,7 +165,7 @@ void XMLPrinter::visit(const Assignment &n) {
   *o << "</assignment>";
 }
 
-void XMLPrinter::visit(const Clear &n) {
+void XMLPrinter::visit_clear(const Clear &n) {
   sync_to(n);
   *o << "<clear ";
   add_location(n);
@@ -176,7 +176,7 @@ void XMLPrinter::visit(const Clear &n) {
   *o << "</clear>";
 }
 
-void XMLPrinter::visit(const ConstDecl &n) {
+void XMLPrinter::visit_constdecl(const ConstDecl &n) {
   sync_to(n);
   *o << "<constdecl name=\"" << n.name << "\" ";
   add_location(n);
@@ -189,11 +189,11 @@ void XMLPrinter::visit(const ConstDecl &n) {
   *o << "</constdecl>";
 }
 
-void XMLPrinter::visit(const Div &n) {
+void XMLPrinter::visit_div(const Div &n) {
   visit_bexpr("div", n);
 }
 
-void XMLPrinter::visit(const Element &n) {
+void XMLPrinter::visit_element(const Element &n) {
   sync_to(n);
   *o << "<element ";
   add_location(n);
@@ -210,7 +210,7 @@ void XMLPrinter::visit(const Element &n) {
   *o << "</element>";
 }
 
-void XMLPrinter::visit(const Enum &n) {
+void XMLPrinter::visit_enum(const Enum &n) {
   sync_to(n);
   *o << "<enum ";
   add_location(n);
@@ -229,11 +229,11 @@ void XMLPrinter::visit(const Enum &n) {
   *o << "</enum>";
 }
 
-void XMLPrinter::visit(const Eq &n) {
+void XMLPrinter::visit_eq(const Eq &n) {
   visit_bexpr("eq", n);
 }
 
-void XMLPrinter::visit(const ErrorStmt &n) {
+void XMLPrinter::visit_errorstmt(const ErrorStmt &n) {
   sync_to(n);
   *o << "<errorstmt message=\"" << xml_escape(n.message) << "\" ";
   add_location(n);
@@ -242,7 +242,7 @@ void XMLPrinter::visit(const ErrorStmt &n) {
   *o << "</errorstmt>";
 }
 
-void XMLPrinter::visit(const Exists &n) {
+void XMLPrinter::visit_exists(const Exists &n) {
   sync_to(n);
   *o << "<exists ";
   add_location(n);
@@ -259,7 +259,7 @@ void XMLPrinter::visit(const Exists &n) {
   *o << "</exists>";
 }
 
-void XMLPrinter::visit(const ExprID &n) {
+void XMLPrinter::visit_exprid(const ExprID &n) {
   sync_to(n);
   *o << "<exprid id=\"" << n.id << "\" ";
   add_location(n);
@@ -272,7 +272,7 @@ void XMLPrinter::visit(const ExprID &n) {
   *o << "</exprid>";
 }
 
-void XMLPrinter::visit(const Field &n) {
+void XMLPrinter::visit_field(const Field &n) {
   sync_to(n);
   *o << "<field ";
   add_location(n);
@@ -289,7 +289,7 @@ void XMLPrinter::visit(const Field &n) {
   *o << "</string></rhs></field>";
 }
 
-void XMLPrinter::visit(const For &n) {
+void XMLPrinter::visit_for(const For &n) {
   sync_to(n);
   *o << "<forstmt ";
   add_location(n);
@@ -309,7 +309,7 @@ void XMLPrinter::visit(const For &n) {
   *o << "</forstmt>";
 }
 
-void XMLPrinter::visit(const Forall &n) {
+void XMLPrinter::visit_forall(const Forall &n) {
   sync_to(n);
   *o << "<forall ";
   add_location(n);
@@ -326,7 +326,7 @@ void XMLPrinter::visit(const Forall &n) {
   *o << "</forall>";
 }
 
-void XMLPrinter::visit(const Function &n) {
+void XMLPrinter::visit_function(const Function &n) {
   sync_to(n);
   *o << "<function name=\"" << n.name << "\" ";
   add_location(n);
@@ -368,7 +368,7 @@ void XMLPrinter::visit(const Function &n) {
   *o << "</function>";
 }
 
-void XMLPrinter::visit(const FunctionCall &n) {
+void XMLPrinter::visit_functioncall(const FunctionCall &n) {
   sync_to(n);
   /* We deliberately list the called function by name as an attribute, rather
    * than emitting the function itself as a child of this node because morally
@@ -387,15 +387,15 @@ void XMLPrinter::visit(const FunctionCall &n) {
   *o << "</functioncall>";
 }
 
-void XMLPrinter::visit(const Geq &n) {
+void XMLPrinter::visit_geq(const Geq &n) {
   visit_bexpr("geq", n);
 }
 
-void XMLPrinter::visit(const Gt &n) {
+void XMLPrinter::visit_gt(const Gt &n) {
   visit_bexpr("gt", n);
 }
 
-void XMLPrinter::visit(const If &n) {
+void XMLPrinter::visit_if(const If &n) {
   sync_to(n);
   *o << "<if ";
   add_location(n);
@@ -408,7 +408,7 @@ void XMLPrinter::visit(const If &n) {
   *o << "</if>";
 }
 
-void XMLPrinter::visit(const IfClause &n) {
+void XMLPrinter::visit_ifclause(const IfClause &n) {
   sync_to(n);
   *o << "<ifclause ";
   add_location(n);
@@ -432,11 +432,11 @@ void XMLPrinter::visit(const IfClause &n) {
   *o << "</ifclause>";
 }
 
-void XMLPrinter::visit(const Implication &n) {
+void XMLPrinter::visit_implication(const Implication &n) {
   visit_bexpr("implication", n);
 }
 
-void XMLPrinter::visit(const IsUndefined &n) {
+void XMLPrinter::visit_isundefined(const IsUndefined &n) {
   sync_to(n);
   *o << "<isundefined ";
   add_location(n);
@@ -447,19 +447,19 @@ void XMLPrinter::visit(const IsUndefined &n) {
   *o << "</isundefined>";
 }
 
-void XMLPrinter::visit(const Leq &n) {
+void XMLPrinter::visit_leq(const Leq &n) {
   visit_bexpr("leq", n);
 }
 
-void XMLPrinter::visit(const Lt &n) {
+void XMLPrinter::visit_lt(const Lt &n) {
   visit_bexpr("lt", n);
 }
 
-void XMLPrinter::visit(const Mod &n) {
+void XMLPrinter::visit_mod(const Mod &n) {
   visit_bexpr("mod", n);
 }
 
-void XMLPrinter::visit(const Model &n) {
+void XMLPrinter::visit_model(const Model &n) {
   *o << "<model ";
   add_location(n);
   *o << ">";
@@ -494,23 +494,23 @@ void XMLPrinter::visit(const Model &n) {
   *o << "</model>";
 }
 
-void XMLPrinter::visit(const Mul &n) {
+void XMLPrinter::visit_mul(const Mul &n) {
   visit_bexpr("mul", n);
 }
 
-void XMLPrinter::visit(const Negative &n) {
+void XMLPrinter::visit_negative(const Negative &n) {
   visit_uexpr("negative", n);
 }
 
-void XMLPrinter::visit(const Neq &n) {
+void XMLPrinter::visit_neq(const Neq &n) {
   visit_bexpr("neq", n);
 }
 
-void XMLPrinter::visit(const Not &n) {
+void XMLPrinter::visit_not(const Not &n) {
   visit_uexpr("not", n);
 }
 
-void XMLPrinter::visit(const Number &n) {
+void XMLPrinter::visit_number(const Number &n) {
   sync_to(n);
   *o << "<number value=\"" << n.value << "\" ";
   add_location(n);
@@ -519,11 +519,11 @@ void XMLPrinter::visit(const Number &n) {
   *o << "</number>";
 }
 
-void XMLPrinter::visit(const Or &n) {
+void XMLPrinter::visit_or(const Or &n) {
   visit_bexpr("or", n);
 }
 
-void XMLPrinter::visit(const ProcedureCall &n) {
+void XMLPrinter::visit_procedurecall(const ProcedureCall &n) {
   sync_to(n);
   *o << "<procedurecall ";
   add_location(n);
@@ -534,13 +534,14 @@ void XMLPrinter::visit(const ProcedureCall &n) {
   *o << "</procedurecall>";
 }
 
-void XMLPrinter::visit(const Property &n) {
+void XMLPrinter::visit_property(const Property &n) {
   sync_to(n);
   *o << "<property category=\"";
   switch (n.category) {
-    case Property::DISABLED:   *o << "disabled";   break;
     case Property::ASSERTION:  *o << "assertion";  break;
     case Property::ASSUMPTION: *o << "assumption"; break;
+    case Property::COVER:      *o << "cover";      break;
+    case Property::LIVENESS:   *o << "liveness";   break;
   }
   *o << "\" ";
   add_location(n);
@@ -553,7 +554,7 @@ void XMLPrinter::visit(const Property &n) {
   *o << "</property>";
 }
 
-void XMLPrinter::visit(const PropertyRule &n) {
+void XMLPrinter::visit_propertyrule(const PropertyRule &n) {
   sync_to(n);
   *o << "<propertyrule name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
@@ -573,7 +574,7 @@ void XMLPrinter::visit(const PropertyRule &n) {
   *o << "</propertyrule>";
 }
 
-void XMLPrinter::visit(const PropertyStmt &n) {
+void XMLPrinter::visit_propertystmt(const PropertyStmt &n) {
   sync_to(n);
   *o << "<propertystmt message=\"" << xml_escape(n.message) << "\" ";
   add_location(n);
@@ -584,7 +585,7 @@ void XMLPrinter::visit(const PropertyStmt &n) {
   *o << "</propertystmt>";
 }
 
-void XMLPrinter::visit(const Put &n) {
+void XMLPrinter::visit_put(const Put &n) {
   sync_to(n);
   *o << "<put ";
   if (n.expr == nullptr) {
@@ -600,9 +601,9 @@ void XMLPrinter::visit(const Put &n) {
   *o << "</put>";
 }
 
-void XMLPrinter::visit(const Quantifier &n) {
+void XMLPrinter::visit_quantifier(const Quantifier &n) {
   sync_to(n);
-  *o << "<quantifier ";
+  *o << "<quantifier name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
   *o << ">";
   if (n.type != nullptr) {
@@ -633,7 +634,7 @@ void XMLPrinter::visit(const Quantifier &n) {
   *o << "</quantifier>";
 }
 
-void XMLPrinter::visit(const Range &n) {
+void XMLPrinter::visit_range(const Range &n) {
   sync_to(n);
   *o << "<range ";
   add_location(n);
@@ -650,7 +651,7 @@ void XMLPrinter::visit(const Range &n) {
   *o << "</range>";
 }
 
-void XMLPrinter::visit(const Record &n) {
+void XMLPrinter::visit_record(const Record &n) {
   sync_to(n);
   *o << "<record ";
   add_location(n);
@@ -663,7 +664,7 @@ void XMLPrinter::visit(const Record &n) {
   *o << "</record>";
 }
 
-void XMLPrinter::visit(const Return &n) {
+void XMLPrinter::visit_return(const Return &n) {
   sync_to(n);
   *o << "<return ";
   add_location(n);
@@ -676,7 +677,7 @@ void XMLPrinter::visit(const Return &n) {
   *o << "</return>";
 }
 
-void XMLPrinter::visit(const Ruleset &n) {
+void XMLPrinter::visit_ruleset(const Ruleset &n) {
   sync_to(n);
   *o << "<ruleset name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
@@ -703,7 +704,7 @@ void XMLPrinter::visit(const Ruleset &n) {
   *o << "</ruleset>";
 }
 
-void XMLPrinter::visit(const Scalarset &n) {
+void XMLPrinter::visit_scalarset(const Scalarset &n) {
   sync_to(n);
   *o << "<scalarset ";
   add_location(n);
@@ -716,7 +717,7 @@ void XMLPrinter::visit(const Scalarset &n) {
   *o << "</scalarset>";
 }
 
-void XMLPrinter::visit(const SimpleRule &n) {
+void XMLPrinter::visit_simplerule(const SimpleRule &n) {
   sync_to(n);
   *o << "<simplerule name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
@@ -758,7 +759,7 @@ void XMLPrinter::visit(const SimpleRule &n) {
   *o << "</simplerule>";
 }
 
-void XMLPrinter::visit(const StartState &n) {
+void XMLPrinter::visit_startstate(const StartState &n) {
   sync_to(n);
   *o << "<startstate name=\"" << xml_escape(n.name) << "\" ";
   add_location(n);
@@ -794,11 +795,11 @@ void XMLPrinter::visit(const StartState &n) {
   *o << "</startstate>";
 }
 
-void XMLPrinter::visit(const Sub &n) {
+void XMLPrinter::visit_sub(const Sub &n) {
   visit_bexpr("sub", n);
 }
 
-void XMLPrinter::visit(const Switch &n) {
+void XMLPrinter::visit_switch(const Switch &n) {
   sync_to(n);
   *o << "<switch ";
   add_location(n);
@@ -820,7 +821,7 @@ void XMLPrinter::visit(const Switch &n) {
   *o << "</switch>";
 }
 
-void XMLPrinter::visit(const SwitchCase &n) {
+void XMLPrinter::visit_switchcase(const SwitchCase &n) {
   sync_to(n);
   *o << "<case>";
   if (!n.matches.empty()) {
@@ -845,7 +846,7 @@ void XMLPrinter::visit(const SwitchCase &n) {
   *o << "</case>";
 }
 
-void XMLPrinter::visit(const Ternary &n) {
+void XMLPrinter::visit_ternary(const Ternary &n) {
   sync_to(n);
   *o << "<ternary ";
   add_location(n);
@@ -866,7 +867,7 @@ void XMLPrinter::visit(const Ternary &n) {
   *o << "</ternary>";
 }
 
-void XMLPrinter::visit(const TypeDecl &n) {
+void XMLPrinter::visit_typedecl(const TypeDecl &n) {
   sync_to(n);
   *o << "<typedecl name=\"" << n.name << "\" ";
   add_location(n);
@@ -879,7 +880,7 @@ void XMLPrinter::visit(const TypeDecl &n) {
   *o << "</typedecl>";
 }
 
-void XMLPrinter::visit(const TypeExprID &n) {
+void XMLPrinter::visit_typeexprid(const TypeExprID &n) {
   sync_to(n);
   *o << "<typeexprid name=\"" << n.name << "\" ";
   add_location(n);
@@ -891,7 +892,7 @@ void XMLPrinter::visit(const TypeExprID &n) {
   *o << "</typeexprid>";
 }
 
-void XMLPrinter::visit(const Undefine &n) {
+void XMLPrinter::visit_undefine(const Undefine &n) {
   sync_to(n);
   *o << "<undefine ";
   add_location(n);
@@ -902,7 +903,7 @@ void XMLPrinter::visit(const Undefine &n) {
   *o << "</undefine>";
 }
 
-void XMLPrinter::visit(const VarDecl &n) {
+void XMLPrinter::visit_vardecl(const VarDecl &n) {
   sync_to(n);
   *o << "<vardecl name=\"" << n.name << "\" readonly=\"" << n.readonly << "\" ";
   add_location(n);
@@ -915,7 +916,7 @@ void XMLPrinter::visit(const VarDecl &n) {
   *o << "</vardecl>";
 }
 
-void XMLPrinter::visit(const While &n) {
+void XMLPrinter::visit_while(const While &n) {
   sync_to(n);
   *o << "<while ";
   add_location(n);

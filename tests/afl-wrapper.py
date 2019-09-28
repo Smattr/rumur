@@ -1,84 +1,63 @@
 #!/usr/bin/env python
 
 '''
-Wrapper for compiling Rumur with instrumentation for American Fuzzy Lop (AFL)
-and then fuzzing using the existing test suite.
+Wrapper for fuzzing Rumur with AFL using the existing test suite.
 '''
 
-import os, platform, re, shutil, subprocess, sys, tempfile
-
-def which(cmd):
-  try:
-    with open(os.devnull, 'wt') as null:
-      return subprocess.check_output(['which', cmd], stderr=null).strip()
-  except:
-    return None
-
-# Allow environment variables to override any of the tools we need
-
-AFL_FUZZ = which(os.environ.get('AFL_FUZZ', 'afl-fuzz'))
-CMAKE    = which(os.environ.get('CMAKE', 'cmake'))
-CXX      = which(os.environ.get('CXX',
-  'afl-clang++' if platform.system() == 'Darwin' else 'afl-g++'))
-MAKE     = which(os.environ.get('MAKE', 'make'))
-RUMUR_ROOT = os.path.abspath(os.environ.get('RUMUR_ROOT',
-  os.path.join(os.path.dirname(__file__), '..')))
+import os
+import subprocess
+import sys
+import time
 
 def main(argv):
 
-  tmp = tempfile.mkdtemp()
-  sys.stdout.write('Working in {}...\n'.format(tmp))
+  timeout = None
+  if len(argv) > 1:
+    timeout = int(argv[1])
 
-  if CMAKE is None:
-    sys.stderr.write('cmake not found\n')
-    return -1
-
-  if CXX is None:
-    sys.stderr.write('AFL c++ wrapper not found\n')
-    return -1
-
-  sys.stdout.write(' Configuring...\n')
   env = os.environ.copy()
-  env['CXX'] = CXX
-  p = subprocess.Popen([CMAKE, '-G', 'Unix Makefiles', RUMUR_ROOT], cwd=tmp,
-    env=env)
-  p.communicate()
-  if p.returncode != 0:
-    return p.returncode
+  env['PATH'] = '{}:{}'.format(env['PATH'], os.path.abspath('rumur'))
 
-  if MAKE is None:
-    sys.stderr.write('make not found\n')
-    return -1
+  model_c = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'model.c')
 
-  sys.stdout.write(' Building...\n')
-  p = subprocess.Popen([MAKE, 'rumur'], cwd=tmp)
-  p.communicate()
-  if p.returncode != 0:
-    return p.returncode
-
-  # Copy into the test case directory all tests that are not expected to fail
-  sys.stdout.write(' Populating {}/testcase_dir...\n'.format(tmp))
-  test_root = os.path.dirname(__file__)
-  testcase_dir = os.path.join(tmp, 'testcase_dir')
-  os.mkdir(testcase_dir)
-  for i in os.listdir(test_root):
-
-    if os.path.splitext(i)[-1].lower() != '.m':
-      continue
-
-    src = os.path.join(test_root, i)
-    dst = os.path.join(testcase_dir, i)
-
-    shutil.copyfile(src, dst)
-
-  if AFL_FUZZ is None:
-    sys.stderr.write('afl-fuzz not found\n')
-    return -1
-
+  # note we need to up AFL's default memory limit (50MB) to support running CC
   sys.stdout.write(' Running AFL...\n')
-  os.chdir(tmp)
-  os.execl(AFL_FUZZ, AFL_FUZZ, '-i', 'testcase_dir', '-o', 'findings_dir',
-    './rumur/rumur', '--output', os.devnull, '@@')
+  testdir = os.path.abspath(os.path.dirname(__file__))
+  p = subprocess.Popen(['afl-fuzz', '-m', '8192', '-i', testdir, '-o', 'findings_dir',
+    'rumur', '--output', model_c, '@@'], env=env)
+
+  start = time.time()
+  counter = 0
+  while timeout is None or time.time() - start < timeout:
+
+    if p.poll() is not None:
+      # AFL has finished
+      break
+
+    # periodically output something to pacify Travis CI's timeout monitor
+    if counter % 60 == 0:
+      sys.stdout.write('\x00')
+      sys.stdout.flush()
+
+    time.sleep(1)
+    counter += 1
+
+  if p.poll() is None:
+    # AFL is still running
+    p.terminate()
+    p.wait()
+
+  found = False
+  crashes = 'findings_dir/crashes'
+  if os.path.exists(crashes):
+    for i in os.listdir(crashes):
+      found = True
+      path = os.path.join(crashes, i)
+      sys.stdout.write('crash in {}:\n'.format(path))
+      subprocess.call(['cat', path])
+      sys.stdout.write('\n{}\n'.format('-' * 80))
+
+  return -1 if found else 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

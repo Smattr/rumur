@@ -14,6 +14,7 @@
 #include <rumur/Symtab.h>
 #include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/validate.h>
 #include <string>
 #include <utility>
 
@@ -21,7 +22,7 @@ namespace rumur {
 
 namespace {
 
-class Resolver : public BaseTraversal {
+class Resolver : public Traversal {
 
  private:
   Symtab symtab;
@@ -43,15 +44,7 @@ class Resolver : public BaseTraversal {
     }
   }
 
-  void visit(Add &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(AliasDecl &n) final {
-    dispatch(*n.value);
-  }
-
-  void visit(AliasRule &n) final {
+  void visit_aliasrule(AliasRule &n) final {
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
@@ -62,7 +55,7 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(AliasStmt &n) final {
+  void visit_aliasstmt(AliasStmt &n) final {
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
@@ -73,64 +66,33 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(And &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Array &n) final {
-    dispatch(*n.index_type);
-    dispatch(*n.element_type);
-  }
-
-  void visit(Assignment &n) final {
-    dispatch(*n.lhs);
-    dispatch(*n.rhs);
-  }
-
-  void visit(Clear &n) final {
-    dispatch(*n.rhs);
-  }
-
-  void visit(ConstDecl &n) final {
-    dispatch(*n.value);
-  }
-
-  void visit(Div &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Element &n) final {
-    dispatch(*n.array);
-    dispatch(*n.index);
-  }
-
-  void visit(Enum &n) final {
+  void visit_enum(Enum &n) final {
     auto e = Ptr<Enum>::make(n);
 
-    //* Register all the enum members so they can be referenced later.
+    // register all the enum members so they can be referenced later
     mpz_class index = 0;
+    size_t id = e->unique_id + 1;
     for (const std::pair<std::string, location> &m : n.members) {
       auto cd = Ptr<ConstDecl>::make(m.first,
         Ptr<Number>::make(index, m.second), e, m.second);
+      // assign this member a unique id so that referrers can use it if need be
+      assert(id < e->unique_id_limit && "number of enum members exceeds what "
+        "was expected");
+      cd->unique_id = id;
       symtab.declare(m.first, cd);
       index++;
+      id++;
     }
   }
 
-  void visit(Eq &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(ErrorStmt&) final { }
-
-  void visit(Exists &n) final {
+  void visit_exists(Exists &n) final {
     symtab.open_scope();
     dispatch(n.quantifier);
     dispatch(*n.expr);
     symtab.close_scope();
   }
 
-  void visit(ExprID &n) final {
+  void visit_exprid(ExprID &n) final {
     if (n.value == nullptr) {
       // This reference is unresolved
 
@@ -142,11 +104,7 @@ class Resolver : public BaseTraversal {
     }
   }
 
-  void visit(Field &n) final {
-    dispatch(*n.record);
-  }
-
-  void visit(For &n) final {
+  void visit_for(For &n) final {
     symtab.open_scope();
     dispatch(n.quantifier);
     for (auto &s : n.body)
@@ -154,21 +112,28 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(Forall &n) final {
+  void visit_forall(Forall &n) final {
     symtab.open_scope();
     dispatch(n.quantifier);
     dispatch(*n.expr);
     symtab.close_scope();
   }
 
-  void visit(Function &n) final {
+  void visit_function(Function &n) final {
     symtab.open_scope();
-    for (auto &p : n.parameters) {
+    for (auto &p : n.parameters)
       dispatch(*p);
-      symtab.declare(p->name, p);
-    }
     if (n.return_type != nullptr)
       dispatch(*n.return_type);
+    // register the function itself, even though its body has not yet been
+    // resolved, in order to allow contained function calls to resolve to the
+    // containing function, supporting recursion
+    symtab.declare(n.name, Ptr<Function>::make(n));
+    // only register the function parameters now, to avoid their names shadowing
+    // anything that needs to be resolved during symbol resolution of another
+    // parameter or the return type
+    for (auto &p : n.parameters)
+      symtab.declare(p->name, p);
     for (auto &d : n.decls) {
       dispatch(*d);
       symtab.declare(d->name, d);
@@ -178,7 +143,7 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(FunctionCall &n) final {
+  void visit_functioncall(FunctionCall &n) final {
     if (n.function == nullptr) {
       // This reference is unresolved
 
@@ -192,49 +157,45 @@ class Resolver : public BaseTraversal {
       dispatch(*a);
   }
 
-  void visit(Geq &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
+  void visit_model(Model &n) final {
 
-  void visit(Gt &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
+    // running marker of offset in the global state data
+    mpz_class offset = 0;
 
-  void visit(If &n) final {
-    for (IfClause &c : n.clauses)
-      dispatch(c);
-  }
+    /* whether we have not yet hit any problems that make offset calculation
+     * impossible
+     */
+    bool ok = true;
 
-  void visit(IfClause &n) final {
-    if (n.condition != nullptr)
-      dispatch(*n.condition);
-    for (auto &s : n.body)
-      dispatch(*s);
-  }
-
-  void visit(Implication &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(IsUndefined &n) final {
-    dispatch(*n.expr);
-  }
-
-  void visit(Leq &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Lt &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Mod &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Model &n) final {
     for (auto &d : n.decls) {
       dispatch(*d);
+
+      /* if this was a variable declaration, we now know enough to determine its
+       * offset in the global state data
+       */
+      if (ok) {
+        if (auto v = dynamic_cast<VarDecl*>(d.get())) {
+
+          /* If the declaration or one of its children does not validate, it is
+           * unsafe to call width().
+           */
+          try {
+            validate(*v);
+          } catch (Error&) {
+            /* Skip this and future offset calculations and assume our caller
+             * will eventually discover the underlying reason when they call
+             * validate_model.
+             */
+            ok = false;
+          }
+
+          if (ok) {
+            v->offset = offset;
+            offset += v->type->width();
+          }
+        }
+      }
+
       symtab.declare(d->name, d);
     }
     for (auto &f : n.functions) {
@@ -245,52 +206,7 @@ class Resolver : public BaseTraversal {
       dispatch(*r);
   }
 
-  void visit(Mul &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Negative &n) final {
-    visit(static_cast<UnaryExpr&>(n));
-  }
-
-  void visit(Neq &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Not &n) final {
-    visit(static_cast<UnaryExpr&>(n));
-  }
-
-  void visit(Number&) final { }
-
-  void visit(Or &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(ProcedureCall &n) final {
-    dispatch(n.call);
-  }
-
-  void visit(Property &n) final {
-    dispatch(*n.expr);
-  }
-
-  void visit(PropertyRule &n) final {
-    for (Quantifier &q : n.quantifiers)
-      dispatch(q);
-    dispatch(n.property);
-  }
-
-  void visit(PropertyStmt &n) final {
-    dispatch(n.property);
-  }
-
-  void visit(Put &n) final {
-    if (n.expr != nullptr)
-      dispatch(*n.expr);
-  }
-
-  void visit(Quantifier &n) final {
+  void visit_quantifier(Quantifier &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);
     if (n.from != nullptr)
@@ -313,22 +229,7 @@ class Resolver : public BaseTraversal {
     symtab.declare(n.name, Ptr<VarDecl>::make(n.name, t, n.loc));
   }
 
-  void visit(Range &n) final {
-    dispatch(*n.min);
-    dispatch(*n.max);
-  }
-
-  void visit(Record &n) final {
-    for (auto &f : n.fields)
-      dispatch(*f);
-  }
-
-  void visit(Return &n) final {
-    if (n.expr != nullptr)
-      dispatch(*n.expr);
-  }
-
-  void visit(Ruleset &n) final {
+  void visit_ruleset(Ruleset &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -337,11 +238,7 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(Scalarset &n) final {
-    dispatch(*n.bound);
-  }
-
-  void visit(SimpleRule &n) final {
+  void visit_simplerule(SimpleRule &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -356,7 +253,7 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(StartState &n) final {
+  void visit_startstate(StartState &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -369,34 +266,7 @@ class Resolver : public BaseTraversal {
     symtab.close_scope();
   }
 
-  void visit(Sub &n) final {
-    visit(static_cast<BinaryExpr&>(n));
-  }
-
-  void visit(Switch &n) final {
-    dispatch(*n.expr);
-    for (SwitchCase &c : n.cases)
-      dispatch(c);
-  }
-
-  void visit(SwitchCase &n) final {
-    for (auto &m : n.matches)
-      dispatch(*m);
-    for (auto &s : n.body)
-      dispatch(*s);
-  }
-
-  void visit(Ternary &n) final {
-    dispatch(*n.cond);
-    dispatch(*n.lhs);
-    dispatch(*n.rhs);
-  }
-
-  void visit(TypeDecl &n) final {
-    dispatch(*n.value);
-  }
-
-  void visit(TypeExprID &n) final {
+  void visit_typeexprid(TypeExprID &n) final {
     if (n.referent == nullptr) {
       // This reference is unresolved
 
@@ -404,36 +274,11 @@ class Resolver : public BaseTraversal {
       if (t == nullptr)
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
-      n.referent = t->value;
+      n.referent = t;
     }
   }
 
-  void visit(Undefine &n) final {
-    dispatch(*n.rhs);
-  }
-
-  void visit(VarDecl &n) final {
-    if (n.type != nullptr)
-      dispatch(*n.type);
-  }
-
-  void visit(While &n) final {
-    dispatch(*n.condition);
-    for (auto &s : n.body)
-      dispatch(*s);
-  }
-
   virtual ~Resolver() = default;
-
- private:
-  void visit(BinaryExpr &n) {
-    dispatch(*n.lhs);
-    dispatch(*n.rhs);
-  }
-
-  void visit(UnaryExpr &n) {
-    dispatch(*n.rhs);
-  }
 };
 
 }

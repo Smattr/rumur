@@ -22,29 +22,29 @@ std::ostream *debug = &null;
 std::ostream *info = &null;
 std::ostream *warn = &std::cerr;
 
-void set_log_level(log_level_t level) {
+void set_log_level(LogLevel level) {
 
   switch (level) {
 
-    case SILENT:
+    case LogLevel::SILENT:
       debug = &null;
       info = &null;
       warn = &null;
       break;
 
-    case WARNINGS:
+    case LogLevel::WARNINGS:
       debug = &null;
       info = &null;
       warn = &std::cerr;
       break;
 
-    case INFO:
+    case LogLevel::INFO:
       debug = &null;
       info = &std::cerr;
       warn = &std::cerr;
       break;
 
-    case DEBUG:
+    case LogLevel::DEBUG:
       debug = &std::cerr;
       info = &std::cerr;
       warn = &std::cerr;

@@ -21,7 +21,7 @@ struct VarDecl;
 
 struct Expr : public Node {
 
-  using Node::Node;
+  Expr(const location &loc_);
   virtual ~Expr() = default;
 
   virtual Expr *clone() const = 0;
@@ -32,7 +32,7 @@ struct Expr : public Node {
   /* The type of this expression. A nullptr indicates the type is equivalent
    * to a numeric literal; that is, an unbounded range.
    */
-  virtual const TypeExpr *type() const = 0;
+  virtual Ptr<TypeExpr> type() const = 0;
 
   // If this expression is of boolean type.
   bool is_boolean() const;
@@ -64,7 +64,7 @@ struct Ternary : public Expr {
 
   Ternary *clone() const final;
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -90,7 +90,8 @@ struct BinaryExpr : public Expr {
 
 struct BooleanBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  BooleanBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
   BooleanBinaryExpr() = delete;
 
   void validate() const final;
@@ -98,11 +99,12 @@ struct BooleanBinaryExpr : public BinaryExpr {
 
 struct Implication : public BooleanBinaryExpr {
 
-  using BooleanBinaryExpr::BooleanBinaryExpr;
+  Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
   Implication *clone() const final;
   virtual ~Implication() = default;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -110,11 +112,11 @@ struct Implication : public BooleanBinaryExpr {
 
 struct Or : public BooleanBinaryExpr {
 
-  using BooleanBinaryExpr::BooleanBinaryExpr;
+  Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Or() = default;
   Or *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -122,11 +124,11 @@ struct Or : public BooleanBinaryExpr {
 
 struct And : public BooleanBinaryExpr {
 
-  using BooleanBinaryExpr::BooleanBinaryExpr;
+  And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~And() = default;
   And *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -145,11 +147,11 @@ struct UnaryExpr : public Expr {
 
 struct Not : public UnaryExpr {
 
-  using UnaryExpr::UnaryExpr;
+  Not(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Not() = default;
   Not *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -158,18 +160,19 @@ struct Not : public UnaryExpr {
 
 struct ComparisonBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  ComparisonBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
 
 struct Lt : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Lt() = default;
   Lt *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -177,11 +180,11 @@ struct Lt : public ComparisonBinaryExpr {
 
 struct Leq : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Leq() = default;
   Leq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -189,11 +192,11 @@ struct Leq : public ComparisonBinaryExpr {
 
 struct Gt : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Gt() = default;
   Gt *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -201,11 +204,11 @@ struct Gt : public ComparisonBinaryExpr {
 
 struct Geq : public ComparisonBinaryExpr {
 
-  using ComparisonBinaryExpr::ComparisonBinaryExpr;
+  Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Geq() = default;
   Geq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -213,18 +216,19 @@ struct Geq : public ComparisonBinaryExpr {
 
 struct EquatableBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  EquatableBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
 
 struct Eq : public EquatableBinaryExpr {
 
-  using EquatableBinaryExpr::EquatableBinaryExpr;
+  Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Eq() = default;
   Eq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -232,11 +236,11 @@ struct Eq : public EquatableBinaryExpr {
 
 struct Neq : public EquatableBinaryExpr {
 
-  using EquatableBinaryExpr::EquatableBinaryExpr;
+  Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Neq() = default;
   Neq *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -244,18 +248,19 @@ struct Neq : public EquatableBinaryExpr {
 
 struct ArithmeticBinaryExpr : public BinaryExpr {
 
-  using BinaryExpr::BinaryExpr;
+  ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
 
   void validate() const final;
 };
 
 struct Add : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Add() = default;
   Add *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -263,11 +268,11 @@ struct Add : public ArithmeticBinaryExpr {
 
 struct Sub : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Sub() = default;
   Sub *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -275,11 +280,11 @@ struct Sub : public ArithmeticBinaryExpr {
 
 struct Negative : public UnaryExpr {
 
-  using UnaryExpr::UnaryExpr;
+  Negative(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Negative() = default;
   Negative *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -288,11 +293,11 @@ struct Negative : public UnaryExpr {
 
 struct Mul : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mul() = default;
   Mul *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -300,11 +305,11 @@ struct Mul : public ArithmeticBinaryExpr {
 
 struct Div : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Div() = default;
   Div *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -312,11 +317,11 @@ struct Div : public ArithmeticBinaryExpr {
 
 struct Mod : public ArithmeticBinaryExpr {
 
-  using ArithmeticBinaryExpr::ArithmeticBinaryExpr;
+  Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mod() = default;
   Mod *clone() const final;
 
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
@@ -333,7 +338,7 @@ struct ExprID : public Expr {
   ExprID *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -353,7 +358,7 @@ struct Field : public Expr {
   Field *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -373,7 +378,7 @@ struct Element : public Expr {
   Element *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -388,13 +393,16 @@ struct FunctionCall : public Expr {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
+  // Whether this is a child of a ProcedureCall
+  bool within_procedure_call = false;
+
   FunctionCall(const std::string &name_,
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~FunctionCall() = default;
   FunctionCall *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -447,7 +455,7 @@ struct Exists : public Expr {
   Exists *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -465,7 +473,7 @@ struct Forall : public Expr {
   Forall *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
@@ -481,7 +489,7 @@ struct IsUndefined : public Expr {
   IsUndefined *clone() const final;
 
   bool constant() const final;
-  const TypeExpr *type() const final;
+  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;

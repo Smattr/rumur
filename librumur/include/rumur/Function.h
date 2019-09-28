@@ -30,6 +30,12 @@ struct Function : public Node {
   Function *clone() const final;
   bool operator==(const Node &other) const final;
   void validate() const final;
+
+  // is this function side effect free?
+  bool is_pure() const;
+
+  // does this function contain calls to itself?
+  bool is_recursive() const;
 };
 
 }

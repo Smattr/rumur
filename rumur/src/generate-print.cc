@@ -29,11 +29,11 @@ class Generator : public ConstTypeTraversal {
     out(caller.out), prefix(p), handle(h), support_diff(caller.support_diff),
     support_xml(caller.support_xml) { }
 
-  void visit(const Array &n) final {
+  void visit_array(const Array &n) final {
 
-    const TypeExpr *t = n.index_type->resolve();
+    const Ptr<TypeExpr> t = n.index_type->resolve();
 
-    if (auto r = dynamic_cast<const Range*>(t)) {
+    if (auto r = dynamic_cast<const Range*>(t.get())) {
 
       mpz_class lb = r->min->constant_fold();
       mpz_class ub = r->max->constant_fold();
@@ -53,7 +53,7 @@ class Generator : public ConstTypeTraversal {
       return;
     }
 
-    if (auto s = dynamic_cast<const Scalarset*>(t)) {
+    if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
 
       mpz_class b = s->bound->constant_fold();
 
@@ -69,7 +69,7 @@ class Generator : public ConstTypeTraversal {
       return;
     }
 
-    if (auto e = dynamic_cast<const Enum*>(t)) {
+    if (auto e = dynamic_cast<const Enum*>(t.get())) {
 
       mpz_class preceding_offset = 0;
       mpz_class w = n.element_type->width();
@@ -86,13 +86,13 @@ class Generator : public ConstTypeTraversal {
     assert(!"non-range, non-enum used as array index");
   }
 
-  void visit(const Enum &n) final {
+  void visit_enum(const Enum &n) final {
     const std::string previous_handle = to_previous();
 
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw(" << handle << ");\n"
-      << "  value_t v_previous = VALUE_C(0);\n";
+      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
@@ -101,10 +101,10 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"" << prefix << "\\\" "
-        << "value=\\\"\");\n"
+      << "      printf(\"<state_component name=\\\"%s\\\" value=\\\"\", \""
+        << prefix << "\");\n"
       << "    } else {\n"
-      << "      printf(\"" << prefix << ":\");\n"
+      << "      printf(\"%s:\", \"" << prefix << "\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
       << "      printf(\"Undefined\");\n";
@@ -127,7 +127,7 @@ class Generator : public ConstTypeTraversal {
       << "}\n";
   }
 
-  void visit(const Range &n) final {
+  void visit_range(const Range &n) final {
 
     const std::string lb = n.lower_bound();
     const std::string ub = n.upper_bound();
@@ -136,8 +136,8 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw(" << handle << ");\n"
-      << "  value_t v_previous = VALUE_C(0);\n";
+      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
@@ -146,16 +146,16 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"" << prefix << "\\\" "
-        << "value=\\\"\");\n"
+      << "      printf(\"<state_component name=\\\"%s\\\" value=\\\"\", \""
+        << prefix << "\");\n"
       << "    } else {\n"
-      << "      printf(\"" << prefix << ":\");\n"
+      << "      printf(\"%s:\", \"" << prefix << "\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
       << "      printf(\"Undefined\");\n"
       << "    } else {\n"
-      << "      printf(\"%s\", value_to_string(decode_value(" << lb << ", "
-        << ub << ", v)).data);\n"
+      << "      printf(\"%\" PRIVAL, value_to_string(decode_value(" << lb << ", "
+        << ub << ", v)));\n"
       << "    }\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
@@ -165,7 +165,7 @@ class Generator : public ConstTypeTraversal {
       << "}\n";
   }
 
-  void visit(const Record &n) final {
+  void visit_record(const Record &n) final {
     mpz_class preceding_offset = 0;
     for (auto &f : n.fields) {
       mpz_class w = f->width();
@@ -176,13 +176,13 @@ class Generator : public ConstTypeTraversal {
     }
   }
 
-  void visit(const Scalarset&) final {
+  void visit_scalarset(const Scalarset&) final {
     const std::string previous_handle = to_previous();
 
     *out
       << "{\n"
-      << "  value_t v = handle_read_raw(" << handle << ");\n"
-      << "  value_t v_previous = VALUE_C(0);\n";
+      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
@@ -191,15 +191,15 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"" << prefix << "\\\" "
-        << "value=\\\"\");\n"
+      << "      printf(\"<state_component name=\\\"%s\\\" value=\\\"\", \""
+        << prefix << "\");\n"
       << "    } else {\n"
-      << "      printf(\"" << prefix << ":\");\n"
+      << "      printf(\"%s:\", \"" << prefix << "\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
       << "      printf(\"Undefined\");\n"
       << "    } else {\n"
-      << "      printf(\"%s\", value_to_string(v - 1).data);\n"
+      << "      printf(\"%\" PRIVAL, value_to_string(v - 1));\n"
       << "    }\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
@@ -209,30 +209,32 @@ class Generator : public ConstTypeTraversal {
       << "}\n";
   }
 
-  void visit(const TypeExprID &n) final {
+  void visit_typeexprid(const TypeExprID &n) final {
     if (n.referent == nullptr)
       throw Error("unresolved type symbol \"" + n.name + "\"", n.loc);
-    dispatch(*n.referent);
+    dispatch(*n.referent->value);
   }
 
   virtual ~Generator() = default;
 
  private:
   std::string derive_handle(mpz_class offset, mpz_class width) const {
-    return "((struct handle){ .base = " + handle + ".base, .offset = " + handle
-      + ".offset + SIZE_C(" + offset.get_str() + "), .width = SIZE_C("
-      + width.get_str() + ") })";
+    return "((struct handle){ .base = " + handle + ".base + (" + handle
+      + ".offset + ((size_t)" + offset.get_str() + ")) / CHAR_BIT, .offset = ("
+      + handle + ".offset + ((size_t)" + offset.get_str() + ")) % CHAR_BIT, "
+      + ".width = " + width.get_str() + "ull })";
   }
 
   std::string to_previous() const {
-    return "((struct handle){ .base = (uint8_t*)previous->data, .offset = "
+    return "((struct handle){ .base = (uint8_t*)previous->data + (" + handle
+      + ".base - (const uint8_t*)s->data), .offset = "
       + handle + ".offset, .width = " + handle + ".width })";
   }
 };
 
 }
 
-void generate_print(std::ostream &out, const rumur::TypeExpr &e,
+void generate_print(std::ostream &out, const TypeExpr &e,
   const std::string &prefix, const std::string &handle, bool support_diff,
   bool support_xml) {
 

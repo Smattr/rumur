@@ -601,7 +601,7 @@
       <ref name="location"/>
       <attribute name="category">
         <data type="string">
-          <param name="pattern">(assertion|assumption|disabled)</param>
+          <param name="pattern">(assertion|assumption|cover|liveness)</param>
         </data>
       </attribute>
       <ref name="content"/>
@@ -671,6 +671,9 @@
   <define name="quantifier">
     <element name="quantifier">
       <ref name="location"/>
+      <attribute name="name">
+        <ref name="identifier"/>
+      </attribute>
       <ref name="content"/>
       <optional>
         <element name="type">
@@ -786,6 +789,9 @@
             <choice>
               <element name="quantifier">
                 <ref name="location"/>
+                <attribute name="name">
+                  <ref name="identifier"/>
+                </attribute>
                 <ref name="content"/>
                 <element name="type">
                   <ref name="typeexpr"/>
@@ -832,6 +838,9 @@
             <choice>
               <element name="quantifier">
                 <ref name="location"/>
+                <attribute name="name">
+                  <ref name="identifier"/>
+                </attribute>
                 <ref name="content"/>
                 <element name="type">
                   <ref name="typeexpr"/>
@@ -877,6 +886,9 @@
             <choice>
               <element name="quantifier">
                 <ref name="location"/>
+                <attribute name="name">
+                  <ref name="identifier"/>
+                </attribute>
                 <ref name="content"/>
                 <element name="type">
                   <ref name="typeexpr"/>

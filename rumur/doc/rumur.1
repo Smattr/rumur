@@ -7,6 +7,14 @@ rumur \- Yet another explicit state model checker
 Rumur is a reimplementation of the model checker CMurphi with improved
 performance and a slightly different feature set.
 .SH OPTIONS
+\fB--bound\fR \fISTEPS\fR
+.RS
+Set a limit for state space exploration. The verifier will stop checking beyond
+this depth. A bound of \fB0\fR, the default, indicates unlimited exploration.
+That is, the verifier will not stop checking until it has expanded all seen
+states.
+.RE
+.PP
 \fB--colour\fR [\fBauto\fR | \fBoff\fR | \fBon\fR]
 .RS
 Enable or disable the use of ANSI colour codes in the verifier's output. The
@@ -116,12 +124,12 @@ value for this 8MB.
 \fB--set-expand-threshold\fR \fIPERCENT\fR or \fB-e\fR \fIPERCENT\fR
 .RS
 Expand the state set when its occupancy exceeds this percentage. Default is
-\fI65\fR, valid values are \fI1\fR - \fI100\fR. Setting a value of 100 will
+\fI75\fR, valid values are \fI1\fR - \fI100\fR. Setting a value of 100 will
 result in the set only expanding when completely full. This may sound ideal, but
 will actually result in a much longer runtime.
 .RE
 .PP
-\fB--symmetry-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR ]
+\fB--symmetry-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR]
 .RS
 Enable or disable symmetry reduction. Symmetry reduction is an optimisation that
 decreases the state space that must be searched by deriving a canonical
@@ -180,6 +188,20 @@ argument multiple times. Note that enabling tracing will significantly slow the
 verifier and is only intended for debugging purposes.
 .RE
 .PP
+\fB--value-type\fR \fITYPE\fR
+.RS
+Change the C type used to represent scalar values in the generated verifier.
+Valid values are \fIauto\fR and the C fixed-width types, \fIint8_t\fR,
+\fIuint8_t\fR, \fIint16_t\fR, \fIuint16_t\fR, \fIint32_t\fR, \fIuint32_t\fR,
+\fIint64_t\fR, and \fIuint64_t\fR. The type you select is mapped to its fast
+equivalent (e.g. \fIint_fast8_t\fR) and then used in the verifier. The default
+is \fIauto\fR that selects the narrowest type that can contain all the scalar
+types in use in your model. It is possible that your model does some arithmetic
+that temporarily exceeds the bound of any declared type in your model, in which
+case you will need to use this option to select a wider type. However, this is
+not a common case.
+.RE
+.PP
 \fB--verbose\fR or \fB-v\fR
 .RS
 Output informational messages while generating the verifier.
@@ -188,6 +210,69 @@ Output informational messages while generating the verifier.
 \fB--version\fR
 .RS
 Display version information and exit.
+.RE
+.SH SMT OPTIONS
+If you have a Satisfiability Modulo Theories (SMT) solver installed, Rumur can
+use it to optimise your model while generating a verifier. This functionality is
+not enabled by default, but you can use the following options to configure Rumur
+to find and use your SMT solver. Some examples of solver configuration:
+.PP
+.RS
+# for Z3 with a 5 second timeout
+.br
+\fBrumur --smt-simplification on --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
+.PP
+# for CVC4 with a 5 second timeout
+.br
+\fBrumur --smt-simplification on --smt-path cvc4 --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
+.RE
+.PP
+For other solvers, consult their manpages or documentation to determine what
+command line parameters they accept. Then use the options described below to
+instruct Rumur how to use them. Note that Rumur can only use a single SMT
+solver and specifying the \fB--smt-path\fR option multiple times will only
+retain the last path given.
+.PP
+\fB--smt-arg\fR \fBARG\fI
+.RS
+A command line argument to pass to the SMT solver. This option can be given
+multiple times and arguments are passed in the order listed. E.g. if you specify
+\fB--smt-arg=--tlimit\fR \fB--smt-arg=5000\fR the solver will be called with the
+command line arguments \fB--tlimit\fR \fB5000\fR.
+.RE
+.PP
+\fB--smt-budget\fR \fIMILLISECONDS\fR
+.RS
+Total time allotted for running the SMT solver. That is, the time the solver
+will be allowed to run for over multiple executions. This defaults to
+\fI30000\fR, 30 seconds. So if the solver runs for 10 seconds the first time it
+is called, then 5 seconds the second time it is called, then 20 seconds the
+third time it is called, it will not be called again. Note that Rumur trusts the
+SMT solver to limit itself to a reasonable timeout per run, so its final run can
+exceed the budget. You may want to use the \fB--smt-arg\fR option to pass the
+SMT solver a timeout limit if it supports one.
+.RE
+.PP
+\fB--smt-logic\fR \fILOGIC\fR
+.RS
+Set the target logic used for communication with the SMT solver. By default,
+this is \fBQF_ALIA\fR. Supported logics are those supporting integer arithmetic
+or bitvector arithmetic.
+.RE
+.PP
+\fB--smt-path\fR \fIPATH\fR
+.RS
+Command or path to the SMT solver. This will use your environment's \fBPATH\fR
+variable, so if the solver is in one of your system directories you can simply
+provide the name of its binary. Note that this option has no effect unless you
+also pass \fB--smt-simplification\fR \fBon\fR.
+.RE
+.PP
+\fB--smt-simplification\fR [\fBoff\fR | \fBon\fR]
+.RS
+Disable or enable using the SMT solver to simplify the input model. By default,
+this is \fBoff\fR. Note that this option has no effect unless you also configure
+a path to the SMT solver with \fB--smt-path\fR.
 .RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez

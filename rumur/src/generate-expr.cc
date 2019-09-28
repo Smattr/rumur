@@ -33,33 +33,35 @@ class Generator : public ConstExprTraversal {
     return *this;
   }
 
-  void visit(const Add &n) final {
+  void visit_add(const Add &n) final {
     if (lvalue)
       invalid(n);
-    *this << "add(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "add(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const And &n) final {
+  void visit_and(const And &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
 
-  void visit(const Div &n) final {
+  void visit_div(const Div &n) final {
     if (lvalue)
       invalid(n);
-    *this << "divide(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "divide(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Element &n) final {
+  void visit_element(const Element &n) final {
     if (lvalue && !n.is_lvalue())
       invalid(n);
 
     // First, determine the width of the array's elements
 
-    const TypeExpr *t1 = n.array->type();
+    const Ptr<TypeExpr> t1 = n.array->type();
     assert(t1 != nullptr && "array with invalid type");
-    const TypeExpr *t2 = t1->resolve();
+    const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
     auto a = dynamic_cast<const Array&>(*t2);
@@ -67,17 +69,17 @@ class Generator : public ConstExprTraversal {
 
     // Second, determine the minimum and maximum values of the array's index type
 
-    const TypeExpr *t3 = a.index_type->resolve();
+    const Ptr<TypeExpr> t3 = a.index_type->resolve();
     assert(t3 != nullptr && "array with invalid index type");
 
     mpz_class min, max;
-    if (auto r = dynamic_cast<const Range*>(t3)) {
+    if (auto r = dynamic_cast<const Range*>(t3.get())) {
       min = r->min->constant_fold();
       max = r->max->constant_fold();
-    } else if (auto e = dynamic_cast<const Enum*>(t3)) {
+    } else if (auto e = dynamic_cast<const Enum*>(t3.get())) {
       min = 0;
       max = e->count() - 1;
-    } else if (auto s = dynamic_cast<const Scalarset*>(t3)) {
+    } else if (auto s = dynamic_cast<const Scalarset*>(t3.get())) {
       min = 0;
       max = s->bound->constant_fold() - 1;
     } else {
@@ -87,11 +89,13 @@ class Generator : public ConstExprTraversal {
     if (!lvalue && a.element_type->is_simple()) {
       const std::string lb = a.element_type->lower_bound();
       const std::string ub = a.element_type->upper_bound();
-      *out << "handle_read(s, " << lb << ", " << ub << ", ";
+      *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
+        << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
     }
 
-    *out << "handle_index(s, SIZE_C(" << element_width << "), VALUE_C(" << min
-      << "), VALUE_C(" << max << "), ";
+    *out << "handle_index(" << to_C_string(n.loc) << ", rule_name, "
+      << to_C_string(n) << ", s, " << element_width << "ull, VALUE_C("
+      << min << "), VALUE_C(" << max << "), ";
     if (lvalue) {
       generate_lvalue(*out, *n.array);
     } else {
@@ -103,12 +107,12 @@ class Generator : public ConstExprTraversal {
       *out << ")";
   }
 
-  void visit(const Eq &n) final {
+  void visit_eq(const Eq &n) final {
     if (lvalue)
       invalid(n);
 
-    if (n.lhs->type() != nullptr && !n.lhs->type()->is_simple()) {
-      assert(n.rhs->type() != nullptr && !n.rhs->type()->is_simple() &&
+    if (!n.lhs->type()->is_simple()) {
+      assert(!n.rhs->type()->is_simple() &&
         "comparison between simple and complex type");
 
       *this << "handle_eq(" << *n.lhs << ", " << *n.rhs << ")";
@@ -118,7 +122,7 @@ class Generator : public ConstExprTraversal {
     }
   }
 
-  void visit(const Exists &n) final {
+  void visit_exists(const Exists &n) final {
     if (lvalue)
       invalid(n);
 
@@ -129,7 +133,7 @@ class Generator : public ConstExprTraversal {
     *out << " result; })";
   }
 
-  void visit(const ExprID &n) final {
+  void visit_exprid(const ExprID &n) final {
     if (n.value == nullptr)
       throw Error("symbol \"" + n.id + "\" in expression is unresolved", n.loc);
 
@@ -148,13 +152,14 @@ class Generator : public ConstExprTraversal {
     // This is either a state variable, a local variable or an alias.
     if (isa<AliasDecl>(n.value) || isa<VarDecl>(n.value)) {
 
-      const TypeExpr *t = n.type();
+      const Ptr<TypeExpr> t = n.type();
       assert((!n.is_lvalue() || t != nullptr) && "lvalue without a type");
 
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
         const std::string lb = t->lower_bound();
         const std::string ub = t->upper_bound();
-        *out << "handle_read(s, " << lb << ", " << ub << ", ";
+        *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
+          << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
       }
 
       *out << "ru_" << n.id;
@@ -168,22 +173,23 @@ class Generator : public ConstExprTraversal {
     // variable. I suspect we should just handle that the same way as a local.
   }
 
-  void visit(const Field &n) final {
+  void visit_field(const Field &n) final {
     if (lvalue && !n.is_lvalue())
       invalid(n);
 
-    const TypeExpr *root = n.record->type();
+    const Ptr<TypeExpr> root = n.record->type();
     assert(root != nullptr);
-    const TypeExpr *resolved = root->resolve();
+    const Ptr<TypeExpr> resolved = root->resolve();
     assert(resolved != nullptr);
-    if (auto r = dynamic_cast<const Record*>(resolved)) {
+    if (auto r = dynamic_cast<const Record*>(resolved.get())) {
       mpz_class offset = 0;
       for (const Ptr<VarDecl> &f : r->fields) {
         if (f->name == n.field) {
           if (!lvalue && f->type->is_simple()) {
             const std::string lb = f->type->lower_bound();
             const std::string ub = f->type->upper_bound();
-            *out << "handle_read(s, " << lb << ", " << ub << ", ";
+            *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
+              << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
@@ -203,7 +209,7 @@ class Generator : public ConstExprTraversal {
     throw Error("left hand side of field expression is not a record", n.loc);
   }
 
-  void visit(const Forall &n) final {
+  void visit_forall(const Forall &n) final {
     if (lvalue)
       invalid(n);
 
@@ -214,7 +220,7 @@ class Generator : public ConstExprTraversal {
     *out << " result; })";
   }
 
-  void visit(const FunctionCall &n) final {
+  void visit_functioncall(const FunctionCall &n) final {
     if (lvalue)
       invalid(n);
 
@@ -319,15 +325,15 @@ class Generator : public ConstExprTraversal {
             << "uint8_t " << storage << "[BITS_TO_BYTES(" << p->width()
               << ")] = { 0 }; "
             << "struct handle " << handle << " = { .base = " << storage
-              << ", .offset = 0, .width = SIZE_C(" << p->width() << ") }; ";
+              << ", .offset = 0, .width = " << p->width() << "ull }; ";
 
         if (method == 1) {
           const std::string lb = p->get_type()->lower_bound();
           const std::string ub = p->get_type()->upper_bound();
 
-          *out
-            << "handle_write(state_drop_const(s), " << lb << ", " << ub << ", "
-              << handle << ", ";
+          *out << "handle_write(" << to_C_string(n.loc) << ", rule_name, "
+            << "\"<temporary>\", state_drop_const(s), " << lb << ", " << ub
+            << ", " << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
 
@@ -339,17 +345,21 @@ class Generator : public ConstExprTraversal {
 
           *out
             << "{ "
-            << "value_t v = handle_read_raw(";
+            << "raw_value_t v = handle_read_raw(";
           generate_lvalue(*out, *a);
           *out << "); "
-            << "if (v != 0 && (v + " << lba << " - 1 < " << lb << " || v + "
-              << lba << " - 1 > " << ub << ")) { "
-            << "error(s, false, \"call to function %s passed an out-of-range "
-              << "value %s to parameter " << (index + 1) << "\", \""
-              << n.name << "\", value_to_string(v + " << lba << " - 1).data); "
+            << "raw_value_t v2; "
+            << "value_t v3; "
+            << "static const value_t lb = " << lb << "; "
+            << "static const value_t ub = " << ub << "; "
+            << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, " << lba << ", &v3) "
+              << "|| v3 < lb || v3 > ub)) { "
+            << "error(s, \"call to function %s passed an out-of-range value "
+              << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
+              << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
             << "} "
-            << "handle_write_raw(" << handle << ", v == 0 ? v : (v + " << lba
-              << " - " << lb << ")); "
+            << "handle_write_raw(" << handle << ", v == 0 ? v : "
+              << "((raw_value_t)(v3 - " << lb << ") + 1)); "
             << "} ";
 
         } else if (method == 3) {
@@ -368,12 +378,12 @@ class Generator : public ConstExprTraversal {
       }
     }
 
-    *out << "ru_" << n.name << "(state_drop_const(s)";
+    *out << "ru_" << n.name << "(rule_name, state_drop_const(s)";
 
     // Pass the return type output parameter if required.
     if (return_type != nullptr && !return_type->is_simple())
       *out << ", (struct handle){ .base = ret" << n.unique_id
-        << ", .offset = 0ul, .width = SIZE_C(" << return_type->width() << ") }";
+        << ", .offset = 0ul, .width = " << return_type->width() << "ull }";
 
     // Now emit the arguments to the function.
     {
@@ -417,66 +427,69 @@ class Generator : public ConstExprTraversal {
     *out << " })";
   }
 
-  void visit(const Geq &n) final {
+  void visit_geq(const Geq &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " >= " << *n.rhs << ")";
   }
 
-  void visit(const Gt &n) final {
+  void visit_gt(const Gt &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " > " << *n.rhs << ")";
   }
 
-  void visit(const Implication &n) final {
+  void visit_implication(const Implication &n) final {
     if (lvalue)
       invalid(n);
     *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
   }
 
-  void visit(const IsUndefined &n) final {
+  void visit_isundefined(const IsUndefined &n) final {
     *this << "handle_isundefined(";
     generate_lvalue(*out, *n.expr);
     *this << ")";
   }
 
-  void visit(const Leq &n) final {
+  void visit_leq(const Leq &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
   }
 
-  void visit(const Lt &n) final {
+  void visit_lt(const Lt &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " < " << *n.rhs << ")";
   }
 
-  void visit(const Mod &n) final {
+  void visit_mod(const Mod &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mod(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "mod(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Mul &n) final {
+  void visit_mul(const Mul &n) final {
     if (lvalue)
       invalid(n);
-    *this << "mul(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "mul(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Negative &n) final {
+  void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
-    *this << "negate(s, " << *n.rhs << ")";
+    *this << "negate(" << to_C_string(n.loc) << ", rule_name, "
+      << to_C_string(n) << ", s, " << *n.rhs << ")";
   }
 
-  void visit(const Neq &n) final {
+  void visit_neq(const Neq &n) final {
     if (lvalue)
       invalid(n);
 
-    if (n.lhs->type() != nullptr && !n.lhs->type()->is_simple()) {
-      assert(n.rhs->type() != nullptr && !n.rhs->type()->is_simple() &&
+    if (!n.lhs->type()->is_simple()) {
+      assert(!n.rhs->type()->is_simple() &&
         "comparison between simple and complex type");
 
       *this << "(!handle_eq(" << *n.lhs << ", " << *n.rhs << "))";
@@ -486,29 +499,30 @@ class Generator : public ConstExprTraversal {
     }
   }
 
-  void visit(const Not &n) final {
+  void visit_not(const Not &n) final {
     if (lvalue)
       invalid(n);
     *this << "(!" << *n.rhs << ")";
   }
 
-  void visit(const Number &n) final {
+  void visit_number(const Number &n) final {
     *out << "VALUE_C(" << n.value << ")";
   }
 
-  void visit(const Or &n) final {
+  void visit_or(const Or &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.lhs << " || " << *n.rhs << ")";
   }
    
-  void visit(const Sub &n) final {
+  void visit_sub(const Sub &n) final {
     if (lvalue)
       invalid(n);
-    *this << "sub(s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "sub(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
+      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
-  void visit(const Ternary &n) final {
+  void visit_ternary(const Ternary &n) final {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";

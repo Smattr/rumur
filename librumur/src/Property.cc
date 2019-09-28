@@ -1,6 +1,4 @@
 #include <cstddef>
-#include <iostream>
-#include <memory>
 #include <rumur/Property.h>
 #include <rumur/Ptr.h>
 

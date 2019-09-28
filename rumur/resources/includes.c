@@ -1,10 +1,16 @@
+/* Setting a POSIX version on FreeBSD causes other functions to become hidden.
+ */
+#ifndef __FreeBSD__
+  #define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <assert.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <pthread.h>
 #include <setjmp.h>
 #include <stdarg.h>
-#include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -19,6 +25,8 @@
 
 #ifdef __APPLE__
   #include <sandbox.h>
+#elif defined(__FreeBSD__)
+  #include <sys/capsicum.h>
 #elif defined(__linux__)
   #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
     #include <linux/audit.h>

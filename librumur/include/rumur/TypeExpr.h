@@ -1,5 +1,6 @@
 #pragma once
 
+#include <climits>
 #include <cstddef>
 #include <gmpxx.h>
 #include <iostream>
@@ -7,7 +8,6 @@
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
-#include <rumur/Number.h>
 #include <rumur/Ptr.h>
 #include <string>
 #include <utility>
@@ -16,11 +16,12 @@
 namespace rumur {
 
 // Forward declare to avoid circular #include
+struct TypeDecl;
 struct VarDecl;
 
 struct TypeExpr : public Node {
 
-  using Node::Node;
+  TypeExpr(const location &loc_);
   virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
@@ -29,7 +30,7 @@ struct TypeExpr : public Node {
   TypeExpr *clone() const override = 0;
   virtual mpz_class width() const;
   virtual mpz_class count() const = 0;
-  virtual const TypeExpr *resolve() const;
+  virtual Ptr<TypeExpr> resolve() const;
 
   /* Numeric bounds of this type as valid C code. These are only valid to use on
    * TypeExprs for which is_simple() returns true.
@@ -44,6 +45,11 @@ struct TypeExpr : public Node {
    * is_simple() returns true.
    */
   virtual bool constant() const;
+
+  /* Whether an expression of this type can be compared to an expression of the
+   * other given type.
+   */
+  bool equatable_with(const TypeExpr &other) const;
 };
 
 struct Range : public TypeExpr {
@@ -89,6 +95,11 @@ struct Enum : public TypeExpr {
 
   std::vector<std::pair<std::string, location>> members;
 
+  // The range [unique_id, unique_id_limit) is usable by this node as
+  // identifiers. Enum types need this specialisation due to the way references
+  // to their members are resolved (see resolve_symbols()).
+  size_t unique_id_limit = SIZE_MAX;
+
   Enum(const std::vector<std::pair<std::string, location>> &members_,
     const location &loc_);
   Enum *clone() const final;
@@ -97,6 +108,7 @@ struct Enum : public TypeExpr {
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
+  void validate() const final;
 
   std::string lower_bound() const final;
   std::string upper_bound() const final;
@@ -138,9 +150,9 @@ struct Array : public TypeExpr {
 struct TypeExprID : public TypeExpr {
 
   std::string name;
-  Ptr<TypeExpr> referent;
+  Ptr<TypeDecl> referent;
 
-  TypeExprID(const std::string &name_, const Ptr<TypeExpr> &referent_,
+  TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
     const location &loc_);
   TypeExprID *clone() const final;
   virtual ~TypeExprID() = default;
@@ -149,7 +161,7 @@ struct TypeExprID : public TypeExpr {
   mpz_class count() const final;
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
-  const TypeExpr *resolve() const final;
+  Ptr<TypeExpr> resolve() const final;
   void validate() const final;
 
   std::string lower_bound() const final;
@@ -157,7 +169,5 @@ struct TypeExprID : public TypeExpr {
   std::string to_string() const final;
   bool constant() const final;
 };
-
-bool types_equatable(const TypeExpr *t1, const TypeExpr *t2);
 
 }

@@ -23,11 +23,12 @@ Then:
 
     # Download Rumur
     git clone https://github.com/Smattr/rumur
+    cd rumur
 
     # Configure and compile
     mkdir build
     cd build
-    cmake ../rumur
+    cmake ..
     make
     make install
 

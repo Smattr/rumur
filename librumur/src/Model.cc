@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <gmpxx.h>
@@ -66,17 +67,6 @@ void Model::validate() const {
       }
     }
   }
-
-  // Check all rule names are distinct.
-  {
-    std::unordered_set<std::string> names;
-    for (const Ptr<Rule> &r : rules) {
-      if (r->name != "") {
-        if (!names.insert(r->name).second)
-          throw Error("duplicate rule name " + r->name, r->loc);
-      }
-    }
-  }
 }
 
 unsigned long Model::assumption_count() const {
@@ -87,7 +77,7 @@ unsigned long Model::assumption_count() const {
    public:
     unsigned long assumptions = 0;
 
-    void visit(const Property &n) final {
+    void visit_property(const Property &n) final {
       if (n.category == Property::ASSUMPTION)
         assumptions++;
       dispatch(*n.expr);
@@ -103,15 +93,58 @@ unsigned long Model::assumption_count() const {
   return ac.assumptions;
 }
 
-void Model::reindex() {
-  mpz_class offset = 0;
-  for (Ptr<Decl> &d : decls) {
-    if (auto v = dynamic_cast<VarDecl*>(d.get())) {
-      v->offset = offset;
-      offset += v->type->width();
-    }
-  }
+mpz_class Model::liveness_count() const {
 
+  // Define a traversal for counting liveness properties.
+  class LivenessCounter : public ConstTraversal {
+
+   public:
+    mpz_class count = 0;
+    mpz_class multiplier = 1;
+
+    void visit_ruleset(const Ruleset &n) final {
+      /* Adjust the multiplier for the number of copies of the contained rules
+       * we will eventually generate.
+       */
+      for (const Quantifier &q : n.quantifiers) {
+        assert (q.constant() && "non-constant quantifier in ruleset");
+
+        multiplier *= q.count();
+      }
+
+      // Descend into our children; we can ignore the quantifiers themselves.
+      for (const Ptr<Rule> &r : n.rules)
+        dispatch(*r);
+
+      /* Reduce the multiplier, removing our effect. This juggling is necessary
+       * because we ourselves may be within a ruleset or contain further
+       * rulesets.
+       */
+      for (const Quantifier &q : n.quantifiers) {
+        assert(multiplier % q.count() == 0 && "logic error in handling "
+          "LivenessCounter::multiplier");
+
+        multiplier /= q.count();
+      }
+    }
+
+    void visit_propertyrule(const PropertyRule &n) final {
+      if (n.property.category == Property::LIVENESS)
+        count += multiplier;
+      // No need to descend into child nodes.
+    }
+
+    virtual ~LivenessCounter() = default;
+  };
+
+  // Use the traversal to count liveness rules.
+  LivenessCounter lc;
+  lc.dispatch(*this);
+
+  return lc.count;
+}
+
+void Model::reindex() {
   // Re-number our and our children's 'unique_id' members
   Indexer i;
   i.dispatch(*this);

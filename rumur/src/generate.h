@@ -5,9 +5,12 @@
 #include <memory>
 #include <rumur/rumur.h>
 #include <string>
+#include <utility>
+#include "ValueType.h"
 #include <vector>
 
-int output_checker(const std::string &path, const rumur::Model &model);
+int output_checker(const std::string &path, const rumur::Model &model,
+  const std::pair<ValueType, ValueType> &value_types);
 
 // Generate prelude definitions to allocate memory for function returns
 void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);
@@ -38,3 +41,5 @@ void generate_quantifier_header(std::ostream &out, const rumur::Quantifier &q);
 void generate_quantifier_footer(std::ostream &out, const rumur::Quantifier &q);
 
 void generate_stmt(std::ostream &out, const rumur::Stmt &s);
+
+void generate_cover_array(std::ostream &out, const rumur::Model &model);

@@ -17,6 +17,8 @@
 
 namespace rumur {
 
+Stmt::Stmt(const location &loc_): Node(loc_) { }
+
 AliasStmt::AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
   Stmt(loc_), aliases(aliases_), body(body_) { }
@@ -49,6 +51,12 @@ bool PropertyStmt::operator==(const Node &other) const {
   return o != nullptr && property == o->property && message == o->message;
 }
 
+void PropertyStmt::validate() const {
+  if (property.category == Property::LIVENESS)
+    throw Error("liveness property appearing as a statement instead of a top "
+      "level property", loc);
+}
+
 Assignment::Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Stmt(loc_), lhs(lhs_), rhs(rhs_) { }
@@ -67,22 +75,17 @@ void Assignment::validate() const {
   if (!lhs->is_lvalue())
     throw Error("non-lvalue expression cannot be assigned to", loc);
 
-  const TypeExpr *lhs_type = lhs->type();
-  assert(lhs_type != nullptr && "left hand side of assignment has numeric "
-    "literal type");
-  lhs_type = lhs_type->resolve();
+  const Ptr<TypeExpr> lhs_type = lhs->type()->resolve();
 
   if (lhs->is_readonly())
     throw Error("read-only expression cannot be assigned to", loc);
 
-  const TypeExpr *rhs_type = rhs->type();
-  if (rhs_type != nullptr)
-    rhs_type = rhs_type->resolve();
+  const Ptr<TypeExpr> rhs_type = rhs->type()->resolve();
 
-  if (isa<Range>(lhs_type) && (rhs_type == nullptr || isa<Range>(rhs_type)))
+  if (isa<Range>(lhs_type) && isa<Range>(rhs_type))
     return;
 
-  if (rhs_type != nullptr && *lhs_type == *rhs_type)
+  if (*lhs_type == *rhs_type)
     return;
 
   throw Error("invalid assignment from incompatible type", loc);
@@ -198,7 +201,10 @@ bool If::operator==(const Node &other) const {
 
 ProcedureCall::ProcedureCall(const std::string &name,
   const std::vector<Ptr<Expr>> &arguments, const location &loc_):
-  Stmt(loc_), call(name, arguments, loc_) { }
+  Stmt(loc_), call(name, arguments, loc_) {
+
+  call.within_procedure_call = true;
+}
 
 ProcedureCall *ProcedureCall::clone() const {
   return new ProcedureCall(*this);
@@ -241,8 +247,7 @@ bool Put::operator==(const Node &other) const {
 }
 
 void Put::validate() const {
-  if (expr != nullptr && expr->type() != nullptr && !expr->is_lvalue()
-      && !expr->type()->is_simple())
+  if (expr != nullptr && !expr->is_lvalue() && !expr->type()->is_simple())
     throw Error("printing a complex non-lvalue is not supported", loc);
 }
 
@@ -308,13 +313,13 @@ bool Switch::operator==(const Node &other) const {
 
 void Switch::validate() const {
 
-  const TypeExpr *t = expr->type();
-  if (t != nullptr && !t->is_simple())
+  const Ptr<TypeExpr> t = expr->type();
+  if (!t->is_simple())
     throw Error("switch expression has complex type", expr->loc);
 
   for (const SwitchCase &c : cases) {
     for (const Ptr<Expr> &e : c.matches) {
-      if (!types_equatable(t, e->type()))
+      if (!t->equatable_with(*e->type()))
         throw Error("expression in case cannot be compared to switch "
           "expression", e->loc);
     }

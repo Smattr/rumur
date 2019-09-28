@@ -2,8 +2,10 @@
 #include <cstdlib>
 #include <fstream>
 #include <getopt.h>
+#include "../../common/help.h"
 #include <iostream>
 #include <memory>
+#include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
 #include <sys/stat.h>
@@ -13,14 +15,6 @@
 static std::string in_filename;
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::ostream> out;
-
-static void help(const char *arg0) {
-  std::cout
-    << arg0 << " [--output FILE | -o FILE] INPUT_FILE\n"
-    << "\n"
-    << "Print the abstract syntax tree of a parsed Murphi model.\n";
-  exit(EXIT_SUCCESS);
-}
 
 static void parse_args(int argc, char **argv) {
 
@@ -40,8 +34,8 @@ static void parse_args(int argc, char **argv) {
     switch (c) {
 
       case '?':
-        help(argv[0]);
-        __builtin_unreachable();
+        help(doc_rumur_ast_dump_1, doc_rumur_ast_dump_1_len);
+        exit(EXIT_SUCCESS);
 
       case 'o': {
         auto o = std::make_shared<std::ofstream>(optarg);
@@ -92,8 +86,7 @@ int main(int argc, char **argv) {
   try {
     m = rumur::parse(in == nullptr ? &std::cin : in.get());
     resolve_symbols(*m);
-    m->reindex();
-    validate_model(*m);
+    validate(*m);
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;

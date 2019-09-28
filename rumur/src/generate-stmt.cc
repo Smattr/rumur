@@ -3,6 +3,7 @@
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>
+#include "options.h"
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
@@ -10,28 +11,31 @@
 
 using namespace rumur;
 
-static void clear(std::ostream &out, const rumur::TypeExpr &t,
-    const std::string &offset = "SIZE_C(0)", size_t depth = 0) {
+static void clear(std::ostream &out, const TypeExpr &t,
+    const std::string &offset = "((size_t)0)", size_t depth = 0) {
 
   const std::string indent = std::string(2 * (depth + 1), ' ');
 
   if (t.is_simple()) {
-    out << indent << "handle_write_raw((struct handle){ .base = root.base, "
-      << ".offset = root.offset + " << offset << ", .width = SIZE_C("
-      << t.width() << ") }, 1);\n";
+    out << indent << "handle_write_raw((struct handle){ .base = root.base + "
+      << "(root.offset + " << offset << ") / CHAR_BIT, .offset = "
+      << "(root.offset + " << offset << ") % CHAR_BIT, .width = "
+      << t.width() << "ull }, 1);\n";
 
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+  const Ptr<TypeExpr> type = t.resolve();
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
 
     // The number of elements in this array as a C code string
     mpz_class ic = a->index_type->count() - 1;
-    const std::string ub = "SIZE_C(" + ic.get_str() + ")";
+    const std::string ub = "((size_t)" + ic.get_str() + "ull)";
 
     // The bit size of each array element as a C code string
-    const std::string width = "SIZE_C(" +
-      a->element_type->width().get_str() + ")";
+    const std::string width = "((size_t)" +
+      a->element_type->width().get_str() + "ull)";
 
     // Generate a loop to iterate over all the elements
     const std::string var = "i" + std::to_string(depth);
@@ -48,7 +52,7 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
 
     std::string off = offset;
 
@@ -58,7 +62,8 @@ static void clear(std::ostream &out, const rumur::TypeExpr &t,
       clear(out, *f->type, off, depth);
 
       // Jump over this field to get the offset of the next field
-      const std::string width = "SIZE_C(" + f->type->width().get_str() + ")";
+      const std::string width = "((size_t)" + f->type->width().get_str()
+        + "ull)";
       off += " + " + width;
     }
 
@@ -78,7 +83,7 @@ class Generator : public ConstStmtTraversal {
  public:
   Generator(std::ostream &o): out(&o) { }
 
-  void visit(const AliasStmt &s) final {
+  void visit_aliasstmt(const AliasStmt &s) final {
     *out << "  {\n";
 
     for (auto &a : s.aliases) {
@@ -96,13 +101,14 @@ class Generator : public ConstStmtTraversal {
     *out << "  }\n";
   }
     
-  void visit(const Assignment &s) final {
+  void visit_assignment(const Assignment &s) final {
 
     if (s.lhs->type()->is_simple()) {
       const std::string lb = s.lhs->type()->lower_bound();
       const std::string ub = s.lhs->type()->upper_bound();
 
-      *out << "handle_write(s, " << lb << ", " << ub << ", ";
+      *out << "handle_write(" << to_C_string(s.loc) << ", rule_name, "
+        << to_C_string(*s.lhs) << ", s, " << lb << ", " << ub << ", ";
       generate_lvalue(*out, *s.lhs);
       *out << ", ";
       generate_rvalue(*out, *s.rhs);
@@ -117,26 +123,23 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Clear &s) final {
+  void visit_clear(const Clear &s) final {
     *out
       << "do {\n"
       << "  struct handle root = ";
     generate_lvalue(*out, *s.rhs);
     *out << ";\n";
 
-    assert(s.rhs->type() != nullptr && "clearing an expression without a type "
-      "(non-lvalue?)");
-
     clear(*out, *s.rhs->type());
 
     *out << "} while (0)";
   }
 
-  void visit(const ErrorStmt &s) final {
-    *out << "error(s, false, \"" << s.message << "\")";
+  void visit_errorstmt(const ErrorStmt &s) final {
+    *out << "error(s, \"%s\", \"" << escape(s.message) << "\")";
   }
 
-  void visit(const For &s) final {
+  void visit_for(const For &s) final {
     generate_quantifier_header(*out, s.quantifier);
     for (auto &st : s.body) {
       *out << "  ";
@@ -146,7 +149,7 @@ class Generator : public ConstStmtTraversal {
     generate_quantifier_footer(*out, s.quantifier);
   }
 
-  void visit(const If &s) final {
+  void visit_if(const If &s) final {
     bool first = true;
     for (const IfClause &c : s.clauses) {
 
@@ -164,11 +167,11 @@ class Generator : public ConstStmtTraversal {
       // equality comparison with complex types does not cause double bracketing
       if (c.condition != nullptr) {
         if (auto e = dynamic_cast<const Eq*>(&*c.condition)) {
-          if (e->lhs->type() != nullptr && !e->lhs->type()->is_simple())
+          if (!e->lhs->type()->is_simple())
             needs_bracketing = true;
         }
         if (auto e = dynamic_cast<const Neq*>(&*c.condition)) {
-          if (e->lhs->type() != nullptr && !e->lhs->type()->is_simple())
+          if (!e->lhs->type()->is_simple())
             needs_bracketing = true;
         }
       }
@@ -193,30 +196,27 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const ProcedureCall &s) final {
+  void visit_procedurecall(const ProcedureCall &s) final {
     generate_rvalue(*out, s.call);
   }
 
-  void visit(const PropertyStmt &s) final {
+  void visit_propertystmt(const PropertyStmt &s) final {
     switch (s.property.category) {
-
-      case Property::DISABLED:
-        *out << "do { } while (0)";
-        break;
 
       case Property::ASSERTION:
         *out << "if (__builtin_expect(!";
         generate_property(*out, s.property);
-        *out << ", 0)) {\nerror(s, false, \"Assertion failed: %s\", \"";
+        *out << ", 0)) {\nerror(s, \"Assertion failed: %s:" << s.loc
+          << ": %s\", \"" << escape(input_filename) << "\", ";
         if (s.message == "") {
           /* Assertion has no associated text. Use the expression itself
            * instead.
            */
-          *out << s.property.expr->to_string();
+          *out << to_C_string(*s.property.expr);
         } else {
-          *out << s.message;
+          *out << "\"" << escape(s.message) << "\"";
         }
-        *out << "\");\n}";
+        *out << ");\n}";
         break;
 
       case Property::ASSUMPTION:
@@ -225,14 +225,29 @@ class Generator : public ConstStmtTraversal {
         *out
           << ", 0)) {\n"
           << "  assert(JMP_BUF_NEEDED && \"longjmping without a setup jmp_buf\");\n"
-          << "  longjmp(checkpoint, 1);\n"
+          << "  siglongjmp(checkpoint, 1);\n"
           << "}";
+        break;
+
+      case Property::COVER:
+        *out << "if (";
+        generate_property(*out, s.property);
+        *out
+          << ") {\n"
+          << "  (void)__atomic_fetch_add(&covers[COVER_" << s.property.unique_id
+            << "], 1, __ATOMIC_SEQ_CST);\n"
+          << "}";
+        break;
+
+      case Property::LIVENESS:
+        assert(s.property.category != Property::LIVENESS && "liveness property "
+          "illegally appearing in statement instead of at the top level");
         break;
 
     }
   }
 
-  void visit(const Put &s) final {
+  void visit_put(const Put &s) final {
 
     if (s.expr == nullptr) {
       *out << "printf(\"%s\", \"" << s.value << "\")";
@@ -240,62 +255,58 @@ class Generator : public ConstStmtTraversal {
     }
 
     if (s.expr->is_lvalue()) {
-      assert(s.expr->type() != nullptr && "lvalue expression has numeric "
-        "literal type");
 
       // Construct a string containing a handle to this expression
       std::ostringstream buffer;
       generate_lvalue(buffer, *s.expr);
 
-      generate_print(*out, *s.expr->type(), s.expr->to_string(), buffer.str(),
+      generate_print(*out, *s.expr->type(), escape(s.expr->to_string()), buffer.str(),
         false, false);
 
       return;
     }
 
-    assert((s.expr->type() == nullptr || s.expr->type()->is_simple())
-      && "complex non-lvalue in put statement");
+    assert(s.expr->type()->is_simple() && "complex non-lvalue in put statement");
 
-    if (s.expr->type() != nullptr) {
-      if (auto e = dynamic_cast<const Enum*>(s.expr->type()->resolve())) {
-        *out
-          << "{\n"
-          << "  value_t v = ";
-        generate_rvalue(*out, *s.expr);
-        *out << ";\n";
-        size_t i = 0;
-        for (const std::pair<std::string, location> &m : e->members) {
-          *out << "  ";
-          if (i != 0)
-            *out << "else ";
-          *out << "if (v == " << i << ") {\n"
-            << "    printf(\"%s\", \"" << m.first << "\");\n"
-            << "  }\n";
-          i++;
-        }
-        if (!e->members.empty())
-          *out
-            << "else {\n"
-            << "  assert(\"illegal value read from enum expression\");\n"
-            << "}\n";
-
-        *out << "}";
-        return;
+    const Ptr<TypeExpr> type = s.expr->type()->resolve();
+    if (auto e = dynamic_cast<const Enum*>(type.get())) {
+      *out
+        << "{\n"
+        << "  value_t v = ";
+      generate_rvalue(*out, *s.expr);
+      *out << ";\n";
+      size_t i = 0;
+      for (const std::pair<std::string, location> &m : e->members) {
+        *out << "  ";
+        if (i != 0)
+          *out << "else ";
+        *out << "if (v == " << i << ") {\n"
+          << "    printf(\"%s\", \"" << m.first << "\");\n"
+          << "  }\n";
+        i++;
       }
+      if (!e->members.empty())
+        *out
+          << "else {\n"
+          << "  assert(\"illegal value read from enum expression\");\n"
+          << "}\n";
+
+      *out << "}";
+      return;
     }
 
-    *out << "printf(\"%s\", value_to_string(";
+    *out << "printf(\"%\" PRIVAL, value_to_string(";
     generate_rvalue(*out, *s.expr);
-    *out << ").data)";
+    *out << "))";
   }
 
-  void visit(const Return &s) final {
+  void visit_return(const Return &s) final {
 
     if (s.expr == nullptr) {
-      *out << "return";
+      *out << "return true";
 
     } else {
-      if (s.expr->type() == nullptr || s.expr->type()->is_simple()) {
+      if (s.expr->type()->is_simple()) {
         *out << "return ";
         generate_rvalue(*out, *s.expr);
       } else {
@@ -313,7 +324,7 @@ class Generator : public ConstStmtTraversal {
     }
   }
 
-  void visit(const Switch &s) final {
+  void visit_switch(const Switch &s) final {
     *out
       << "do {\n"
       // Mark the following unused in case there are no cases
@@ -354,13 +365,13 @@ class Generator : public ConstStmtTraversal {
     *out << "} while (0)";
   }
 
-  void visit(const Undefine &s) final {
+  void visit_undefine(const Undefine &s) final {
     *out << "handle_zero(";
     generate_lvalue(*out, *s.rhs);
     *out << ")";
   }
 
-  void visit(const While &s) final {
+  void visit_while(const While &s) final {
     *out << "while (";
     generate_rvalue(*out, *s.condition);
     *out << ") {\n";
@@ -377,7 +388,7 @@ class Generator : public ConstStmtTraversal {
 
 }
 
-void generate_stmt(std::ostream &out, const rumur::Stmt &s) {
+void generate_stmt(std::ostream &out, const Stmt &s) {
   Generator g(out);
   g.dispatch(s);
 }

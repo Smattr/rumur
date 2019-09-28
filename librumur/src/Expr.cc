@@ -20,8 +20,10 @@
 
 namespace rumur {
 
+Expr::Expr(const location &loc_): Node(loc_) { }
+
 bool Expr::is_boolean() const {
-  return type() != nullptr && *type()->resolve() == *Boolean;
+  return *type()->resolve() == *Boolean;
 }
 
 bool Expr::is_lvalue() const {
@@ -49,13 +51,13 @@ bool Ternary::operator==(const Node &other) const {
   return o != nullptr && *cond == *o->cond && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
-const TypeExpr *Ternary::type() const {
+Ptr<TypeExpr> Ternary::type() const {
   // TODO: assert lhs and rhs are compatible types.
   return lhs->type();
 }
 
 mpz_class Ternary::constant_fold() const {
-  return (cond->constant_fold() != 0) ? lhs->constant_fold() : rhs->constant_fold();
+  return cond->constant_fold() != 0 ? lhs->constant_fold() : rhs->constant_fold();
 }
 
 void Ternary::validate() const {
@@ -76,6 +78,9 @@ bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
 }
 
+BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
 void BooleanBinaryExpr::validate() const {
   if (!lhs->is_boolean())
     throw Error("left hand side of expression is not a boolean", lhs->loc);
@@ -85,12 +90,15 @@ void BooleanBinaryExpr::validate() const {
       rhs->loc);
 }
 
+Implication::Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+  const location &loc_): BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+
 Implication *Implication::clone() const {
   return new Implication(*this);
 }
 
-const TypeExpr *Implication::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Implication::type() const {
+  return Boolean;
 }
 
 mpz_class Implication::constant_fold() const {
@@ -106,12 +114,15 @@ std::string Implication::to_string() const {
   return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
 }
 
+Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+
 Or *Or::clone() const {
   return new Or(*this);
 }
 
-const TypeExpr *Or::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Or::type() const {
+  return Boolean;
 }
 
 mpz_class Or::constant_fold() const {
@@ -127,12 +138,15 @@ std::string Or::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
+And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+
 And *And::clone() const {
   return new And(*this);
 }
 
-const TypeExpr *And::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> And::type() const {
+  return Boolean;
 }
 
 mpz_class And::constant_fold() const {
@@ -156,12 +170,14 @@ bool UnaryExpr::constant() const {
   return rhs->constant();
 }
 
+Not::Not(const Ptr<Expr> &rhs_, const location &loc_): UnaryExpr(rhs_, loc_) { }
+
 Not *Not::clone() const {
   return new Not(*this);
 }
 
-const TypeExpr *Not::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Not::type() const {
+  return Boolean;
 }
 
 mpz_class Not::constant_fold() const {
@@ -184,33 +200,8 @@ std::string Not::to_string() const {
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
 
-  if (lhs.type() == nullptr) {
-    // LHS is a numeric literal
-
-    if (rhs.type() == nullptr)
-      return true;
-
-    const TypeExpr *t = rhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-  
-  if (rhs.type() == nullptr) {
-    // RHS is a numeric literal
-
-    const TypeExpr *t = lhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-
-  const TypeExpr *t1 = lhs.type()->resolve();
-  const TypeExpr *t2 = rhs.type()->resolve();
+  const Ptr<TypeExpr> t1 = lhs.type()->resolve();
+  const Ptr<TypeExpr> t2 = rhs.type()->resolve();
 
   if (isa<Range>(t1)) {
     if (isa<Range>(t2))
@@ -220,17 +211,23 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
+ComparisonBinaryExpr::ComparisonBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
 void ComparisonBinaryExpr::validate() const {
   if (!comparable(*lhs, *rhs))
     throw Error("expressions are not comparable", loc);
 }
 
+Lt::Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+
 Lt *Lt::clone() const {
   return new Lt(*this);
 }
 
-const TypeExpr *Lt::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Lt::type() const {
+  return Boolean;
 }
 
 mpz_class Lt::constant_fold() const {
@@ -246,12 +243,15 @@ std::string Lt::to_string() const {
   return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
 }
 
+Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+
 Leq *Leq::clone() const {
   return new Leq(*this);
 }
 
-const TypeExpr *Leq::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Leq::type() const {
+  return Boolean;
 }
 
 mpz_class Leq::constant_fold() const {
@@ -267,12 +267,15 @@ std::string Leq::to_string() const {
   return "(" + lhs->to_string() + " <= " + rhs->to_string() + ")";
 }
 
+Gt::Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+
 Gt *Gt::clone() const {
   return new Gt(*this);
 }
 
-const TypeExpr *Gt::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Gt::type() const {
+  return Boolean;
 }
 
 mpz_class Gt::constant_fold() const {
@@ -288,12 +291,15 @@ std::string Gt::to_string() const {
   return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
 }
 
+Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+
 Geq *Geq::clone() const {
   return new Geq(*this);
 }
 
-const TypeExpr *Geq::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Geq::type() const {
+  return Boolean;
 }
 
 mpz_class Geq::constant_fold() const {
@@ -309,17 +315,23 @@ std::string Geq::to_string() const {
   return "(" + lhs->to_string() + " >= " + rhs->to_string() + ")";
 }
 
+EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
 void EquatableBinaryExpr::validate() const {
-  if (!types_equatable(lhs->type(), rhs->type()))
+  if (!lhs->type()->equatable_with(*rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
+
+Eq::Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  EquatableBinaryExpr(lhs_, rhs_, loc_) { }
 
 Eq *Eq::clone() const {
   return new Eq(*this);
 }
 
-const TypeExpr *Eq::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Eq::type() const {
+  return Boolean;
 }
 
 mpz_class Eq::constant_fold() const {
@@ -335,12 +347,15 @@ std::string Eq::to_string() const {
   return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
 }
 
+Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  EquatableBinaryExpr(lhs_, rhs_, loc_) { }
+
 Neq *Neq::clone() const {
   return new Neq(*this);
 }
 
-const TypeExpr *Neq::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Neq::type() const {
+  return Boolean;
 }
 
 mpz_class Neq::constant_fold() const {
@@ -358,33 +373,8 @@ std::string Neq::to_string() const {
 
 static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 
-  if (lhs.type() == nullptr) {
-    // LHS is a numeric literal
-
-    if (rhs.type() == nullptr)
-      return true;
-
-    const TypeExpr *t = rhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-  
-  if (rhs.type() == nullptr) {
-    // RHS is a numeric literal
-
-    const TypeExpr *t = lhs.type()->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    return false;
-  }
-
-  const TypeExpr *t1 = lhs.type()->resolve();
-  const TypeExpr *t2 = rhs.type()->resolve();
+  const Ptr<TypeExpr> t1 = lhs.type()->resolve();
+  const Ptr<TypeExpr> t2 = rhs.type()->resolve();
 
   if (isa<Range>(t1) && isa<Range>(t2))
     return true;
@@ -392,6 +382,8 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
   return false;
 }
 
+ArithmeticBinaryExpr::ArithmeticBinaryExpr(const Ptr<Expr> &lhs_,
+  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
 
 void ArithmeticBinaryExpr::validate() const {
   if (!arithmetic(*lhs, *rhs))
@@ -399,12 +391,15 @@ void ArithmeticBinaryExpr::validate() const {
       loc);
 }
 
+Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Add *Add::clone() const {
   return new Add(*this);
 }
 
-const TypeExpr *Add::type() const {
-  return nullptr;
+Ptr<TypeExpr> Add::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Add::constant_fold() const {
@@ -420,12 +415,15 @@ std::string Add::to_string() const {
   return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
 }
 
+Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Sub *Sub::clone() const {
   return new Sub(*this);
 }
 
-const TypeExpr *Sub::type() const {
-  return nullptr;
+Ptr<TypeExpr> Sub::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Sub::constant_fold() const {
@@ -441,8 +439,11 @@ std::string Sub::to_string() const {
   return "(" + lhs->to_string() + " - " + rhs->to_string() + ")";
 }
 
+Negative::Negative(const Ptr<Expr> &rhs_, const location &loc_):
+  UnaryExpr(rhs_, loc_) { }
+
 void Negative::validate() const {
-  if (rhs->type() != nullptr && isa<Range>(rhs->type()->resolve()))
+  if (!isa<Range>(rhs->type()->resolve()))
     throw Error("expression cannot be negated", rhs->loc);
 }
 
@@ -450,8 +451,8 @@ Negative *Negative::clone() const {
   return new Negative(*this);
 }
 
-const TypeExpr *Negative::type() const {
-  return rhs->type();
+Ptr<TypeExpr> Negative::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Negative::constant_fold() const {
@@ -467,12 +468,15 @@ std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
 
+Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Mul *Mul::clone() const {
   return new Mul(*this);
 }
 
-const TypeExpr *Mul::type() const {
-  return nullptr;
+Ptr<TypeExpr> Mul::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Mul::constant_fold() const {
@@ -488,12 +492,15 @@ std::string Mul::to_string() const {
   return "(" + lhs->to_string() + " * " + rhs->to_string() + ")";
 }
 
+Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Div *Div::clone() const {
   return new Div(*this);
 }
 
-const TypeExpr *Div::type() const {
-  return nullptr;
+Ptr<TypeExpr> Div::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Div::constant_fold() const {
@@ -513,12 +520,15 @@ std::string Div::to_string() const {
   return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
 }
 
+Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
 Mod *Mod::clone() const {
   return new Mod(*this);
 }
 
-const TypeExpr *Mod::type() const {
-  return nullptr;
+Ptr<TypeExpr> Mod::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Mod::constant_fold() const {
@@ -548,10 +558,17 @@ ExprID *ExprID::clone() const {
 }
 
 bool ExprID::constant() const {
-  return isa<ConstDecl>(value);
+
+  if (isa<ConstDecl>(value))
+    return true;
+
+  if (auto a = dynamic_cast<const AliasDecl*>(value.get()))
+    return a->value->constant();
+
+  return false;
 }
 
-const TypeExpr *ExprID::type() const {
+Ptr<TypeExpr> ExprID::type() const {
   if (value == nullptr)
     throw Error("symbol \"" + id + "\" in expression is unresolved", loc);
 
@@ -559,8 +576,13 @@ const TypeExpr *ExprID::type() const {
 }
 
 mpz_class ExprID::constant_fold() const {
+
   if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
     return c->value->constant_fold();
+
+  if (auto a = dynamic_cast<const AliasDecl*>(value.get()))
+    return a->value->constant_fold();
+
   throw Error("symbol \"" + id + "\" is not a constant", loc);
 }
 
@@ -614,19 +636,17 @@ bool Field::constant() const {
   return false;
 }
 
-const TypeExpr *Field::type() const {
+Ptr<TypeExpr> Field::type() const {
 
-  const TypeExpr *root = record->type();
-  assert(root != nullptr && "invalid left hand side of field expression");
-  const TypeExpr *resolved = root->resolve();
-  assert(resolved != nullptr && "invalid left hand side of field expression");
+  const Ptr<TypeExpr> root = record->type();
+  const Ptr<TypeExpr> resolved = root->resolve();
 
-  auto r = dynamic_cast<const Record*>(resolved);
+  auto r = dynamic_cast<const Record*>(resolved.get());
   assert(r != nullptr && "invalid left hand side of field expression");
 
   for (const Ptr<VarDecl> &f : r->fields) {
     if (f->name == field)
-      return f->type.get();
+      return f->type;
   }
 
   throw Error("no field named \"" + field + "\" in record", loc);
@@ -643,17 +663,14 @@ bool Field::operator==(const Node &other) const {
 
 void Field::validate() const {
 
-  const TypeExpr *root = record->type();
-  if (root != nullptr)
-    root = root->resolve();
+  const Ptr<TypeExpr> root = record->type()->resolve();
 
   if (!isa<Record>(root))
     throw Error("left hand side of field expression is not a record", loc);
 
-  auto r = dynamic_cast<const Record*>(root);
-  assert(r != nullptr && "logic error in Field::validate");
+  auto r = dynamic_cast<const Record&>(*root);
 
-  for (const Ptr<VarDecl> &f : r->fields) {
+  for (const Ptr<VarDecl> &f : r.fields) {
     if (f->name == field)
       return;
   }
@@ -686,12 +703,12 @@ bool Element::constant() const {
   return false;
 }
 
-const TypeExpr *Element::type() const {
-  const TypeExpr *t = array->type()->resolve();
-  const Array *a = dynamic_cast<const Array*>(t);
+Ptr<TypeExpr> Element::type() const {
+  const Ptr<TypeExpr> t = array->type()->resolve();
+  const Array *a = dynamic_cast<const Array*>(t.get());
   assert(a != nullptr &&
     "array reference based on something that is not an array");
-  return a->element_type.get();
+  return a->element_type;
 }
 
 mpz_class Element::constant_fold() const {
@@ -705,28 +722,23 @@ bool Element::operator==(const Node &other) const {
 
 void Element::validate() const {
 
-  const TypeExpr *t = array->type();
-  if (t != nullptr)
-    t = t->resolve();
+  const Ptr<TypeExpr> t = array->type()->resolve();;
 
   if (!isa<Array>(t))
     throw Error("array index on an expression that is not an array", loc);
 
-  auto a = dynamic_cast<const Array*>(t);
-  assert(a != nullptr && "logic error in Element::validate");
+  auto a = dynamic_cast<const Array&>(*t);
 
-  const TypeExpr *e = index->type();
-  if (e != nullptr)
-    e = e->resolve();
+  const Ptr<TypeExpr> e = index->type()->resolve();
 
-  const TypeExpr *index_type = a->index_type->resolve();
+  const Ptr<TypeExpr> index_type = a.index_type->resolve();
 
   if (isa<Range>(index_type)) {
-    if (e != nullptr && !isa<Range>(e))
+    if (!isa<Range>(e))
       throw Error("array indexed using an expression of incorrect type", loc);
 
   } else {
-    if (e == nullptr || *index_type != *e)
+    if (*index_type != *e)
       throw Error("array indexed using an expression of incorrect type", loc);
 
   }
@@ -760,10 +772,14 @@ bool FunctionCall::constant() const {
   return false;
 }
 
-const TypeExpr *FunctionCall::type() const {
+Ptr<TypeExpr> FunctionCall::type() const {
   if (function == nullptr)
     throw Error("unresolved function call \"" + name + "\"", loc);
-  return function->return_type.get();
+
+  if (function->return_type == nullptr)
+    throw Error("procedure calls have no type", loc);
+
+  return function->return_type;
 }
 
 mpz_class FunctionCall::constant_fold() const {
@@ -787,6 +803,8 @@ bool FunctionCall::operator==(const Node &other) const {
   }
   if (!vector_eq(arguments, o->arguments))
     return false;
+  if (within_procedure_call != o->within_procedure_call)
+    return false;
   return true;
 }
 
@@ -796,6 +814,10 @@ void FunctionCall::validate() const {
 
   if (arguments.size() != function->parameters.size())
     throw Error("incorrect number of parameters passed to function", loc);
+
+  if (!within_procedure_call && function->return_type == nullptr)
+    throw Error("procedure (function with no return value) called in "
+      "expression", loc);
 
   auto it = arguments.begin();
   for (const Ptr<VarDecl> &v : function->parameters) {
@@ -807,20 +829,11 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
         (*it)->loc);
 
-    const TypeExpr *arg_type = (*it)->type();
-    if (arg_type != nullptr)
-      arg_type = arg_type->resolve();
+    const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
 
-    const TypeExpr *param_type = v->get_type();
-    assert(param_type != nullptr && "function parameter has no type");
-    param_type = param_type->resolve();
+    const Ptr<TypeExpr> param_type = v->get_type()->resolve();
 
-    if (arg_type == nullptr) {
-      if (!isa<Range>(param_type))
-        throw Error("function call contains parameter of incorrect type",
-          (*it)->loc);
-
-    } else if (isa<Range>(arg_type)) {
+    if (isa<Range>(arg_type)) {
       if (!isa<Range>(param_type))
         throw Error("function call contains parameter of incorrect type",
           (*it)->loc);
@@ -989,8 +1002,8 @@ bool Exists::constant() const {
   return expr->constant();
 }
 
-const TypeExpr *Exists::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Exists::type() const {
+  return Boolean;
 }
 
 bool Exists::operator==(const Node &other) const {
@@ -1024,8 +1037,8 @@ bool Forall::constant() const {
   return expr->constant();
 }
 
-const TypeExpr *Forall::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> Forall::type() const {
+  return Boolean;
 }
 
 mpz_class Forall::constant_fold() const {
@@ -1058,8 +1071,8 @@ bool IsUndefined::constant() const {
   return false;
 }
 
-const TypeExpr *IsUndefined::type() const {
-  return Boolean.get();
+Ptr<TypeExpr> IsUndefined::type() const {
+  return Boolean;
 }
 
 mpz_class IsUndefined::constant_fold() const {
@@ -1081,8 +1094,8 @@ void IsUndefined::validate() const {
     throw Error("non-lvalue expression cannot be used in isundefined",
       expr->loc);
 
-  const TypeExpr *t = expr->type();
-  if (t != nullptr && !t->is_simple())
+  const Ptr<TypeExpr> t = expr->type();
+  if (!t->is_simple())
     throw Error("complex type used in isundefined", expr->loc);
 
 }

@@ -30,6 +30,9 @@ class Symtab {
 
   void declare(const std::string &name, const Ptr<Node> &value) {
     assert(!scope.empty());
+    if (scope.back().count(name) > 0)
+      throw Error("symbol \"" + name + "\" was previously declared",
+        value->loc);
     scope.back()[name] = value;
   }
 

@@ -1,0 +1,137 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <!-- RelaxNG schema for the output produced by the generated verifier in XML mode -->
+
+  <start>
+    <ref name="rumur_run"/>
+  </start>
+
+  <define name="cover_result">
+    <element name="cover_result">
+      <attribute name="message">
+        <text/>
+      </attribute>
+      <attribute name="count">
+        <data type="integer"/>
+      </attribute>
+    </element>
+  </define>
+
+  <define name="error">
+    <element name="error">
+      <attribute name="includes_trace">
+        <data type="boolean"/>
+      </attribute>
+      <element name="message">
+        <text/>
+      </element>
+      <zeroOrMore>
+        <ref name="transition"/>
+        <ref name="state"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="information">
+    <element name="information">
+      <attribute name="state_size_bits">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="state_size_bytes">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="hash_table_slots">
+        <data type="integer"/>
+      </attribute>
+    </element>
+  </define>
+
+  <define name="parameter">
+    <element name="parameter">
+      <attribute name="name">
+        <text/>
+      </attribute>
+      <text/>
+    </element>
+  </define>
+
+  <define name="progress">
+    <element name="progress">
+      <attribute name="states">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="duration_seconds">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="rules_fired">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="queue_size">
+        <data type="integer"/>
+      </attribute>
+      <optional>
+        <attribute name="thread_id">
+          <data type="integer"/>
+        </attribute>
+      </optional>
+    </element>
+  </define>
+
+  <define name="rumur_run">
+    <element name="rumur_run">
+      <ref name="information"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="error"/>
+          <ref name="progress"/>
+        </choice>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="cover_result"/>
+      </zeroOrMore>
+      <ref name="summary"/>
+    </element>
+  </define>
+
+  <define name="state">
+    <element name="state">
+      <zeroOrMore>
+        <element name="state_component">
+          <attribute name="name">
+            <text/>
+          </attribute>
+          <attribute name="value">
+            <text/>
+          </attribute>
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="summary">
+    <element name="summary">
+      <attribute name="states">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="rules_fired">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="errors">
+        <data type="integer"/>
+      </attribute>
+      <attribute name="duration_seconds">
+        <data type="integer"/>
+      </attribute>
+    </element>
+  </define>
+
+  <define name="transition">
+    <element name="transition">
+      <text/>
+      <zeroOrMore>
+        <ref name="parameter"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+</grammar>

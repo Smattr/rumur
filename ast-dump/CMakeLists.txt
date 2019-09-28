@@ -1,4 +1,13 @@
+add_custom_command(
+  OUTPUT manpage.cc
+  COMMAND python ../misc/xxd.py doc/rumur-ast-dump.1 ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
+  MAIN_DEPENDENCY doc/rumur-ast-dump.1
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_executable(rumur-ast-dump
+  ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
+  ../common/help.cc
   src/main.cc
   src/XMLPrinter.cc)
 

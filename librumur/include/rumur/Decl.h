@@ -26,8 +26,7 @@ struct Decl : public Node {
 
 struct ExprDecl : public Decl {
 
-  using Decl::Decl;
-
+  ExprDecl(const std::string &name_, const location &loc_);
   virtual ~ExprDecl() = default;
 
   // Return true if this declaration is usable as an lvalue
@@ -39,7 +38,7 @@ struct ExprDecl : public Decl {
    */
   virtual bool is_readonly() const = 0;
 
-  virtual const TypeExpr *get_type() const = 0;
+  virtual Ptr<TypeExpr> get_type() const = 0;
 
   ExprDecl *clone() const override = 0;
 };
@@ -56,7 +55,7 @@ struct AliasDecl : public ExprDecl {
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
-  const TypeExpr *get_type() const final;
+  Ptr<TypeExpr> get_type() const final;
 };
 
 struct ConstDecl : public ExprDecl {
@@ -79,7 +78,7 @@ struct ConstDecl : public ExprDecl {
   bool is_lvalue() const final;
   bool is_readonly() const final;
   void validate() const final;
-  const TypeExpr *get_type() const final;
+  Ptr<TypeExpr> get_type() const final;
 };
 
 struct TypeDecl : public Decl {
@@ -109,6 +108,11 @@ struct VarDecl : public ExprDecl {
    */
   bool readonly = false;
 
+  // DEPRECATED, DO NOT USE
+  // Commented out because it triggers warnings when the copy ctor is invoked:
+  // [[gnu::deprecated("state_variable has been replaced by is_in_state()")]]
+  bool state_variable = false;
+
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc_);
   VarDecl *clone() const final;
@@ -117,10 +121,15 @@ struct VarDecl : public ExprDecl {
   mpz_class count() const;
   mpz_class width() const;
 
+  /* Whether this variable declaration is a global; part of the state. That is,
+   * not a local declaration, function parameter, etc.
+   */
+  bool is_in_state() const;
+
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
-  const TypeExpr *get_type() const final;
+  Ptr<TypeExpr> get_type() const final;
 };
 
 }

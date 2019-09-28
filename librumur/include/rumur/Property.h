@@ -13,9 +13,10 @@ namespace rumur {
 struct Property : public Node {
 
   enum Category {
-    DISABLED,
     ASSERTION,
     ASSUMPTION,
+    COVER,
+    LIVENESS,
   };
 
   Category category;

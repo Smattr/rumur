@@ -28,7 +28,7 @@ static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
 static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
   const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
 
-  const TypeExpr *t = type.resolve();
+  const Ptr<TypeExpr> t = type.resolve();
 
   const std::string indent = std::string((depth + 1) * 2, ' ');
 
@@ -36,24 +36,24 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
 
     out
       << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
-      << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
-        << ", SIZE_C(" << t->width() << ")));\n"
-      << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
-        << ", SIZE_C(" << t->width() << ")));\n"
+      << indent << "  raw_value_t a = handle_read_raw(state_handle(s, "
+        << offset_a << ", " << t->width() << "ull));\n"
+      << indent << "  raw_value_t b = handle_read_raw(state_handle(s, "
+        << offset_b << ", " << t->width() << "ull));\n"
       << indent << "  handle_write_raw(state_handle(s, " << offset_b
-        << ", SIZE_C(" << t->width() << ")), a);\n"
+        << ", " << t->width() << "ull), a);\n"
       << indent << "  handle_write_raw(state_handle(s, " << offset_a
-        << ", SIZE_C(" << t->width() << ")), b);\n"
+        << ", " << t->width() << "ull), b);\n"
       << indent << "}\n";
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t)) {
+  if (auto a = dynamic_cast<const Array*>(t.get())) {
     const std::string var = "i" + std::to_string(depth);
     mpz_class ic = a->index_type->count() - 1;
-    const std::string len = "SIZE_C(" + ic.get_str() + ")";
-    const std::string width = "SIZE_C("
-      + a->element_type->width().get_str() + ")";
+    const std::string len = "((size_t)" + ic.get_str() + "ull)";
+    const std::string width = "((size_t)" + a->element_type->width().get_str()
+      + "ull)";
 
     out << indent << "for (size_t " << var << " = 0; " << var << " < " << len
       << "; " << var << "++) {\n";
@@ -67,15 +67,15 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t)) {
+  if (auto r = dynamic_cast<const Record*>(t.get())) {
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
     for (const Ptr<VarDecl> &f : r->fields) {
       generate_apply_swap(out, off_a, off_b, *f->type, depth);
 
-      off_a += " + SIZE_C(" + f->width().get_str() + ")";
-      off_b += " + SIZE_C(" + f->width().get_str() + ")";
+      off_a += " + ((size_t)" + f->width().get_str() + "ull)";
+      off_b += " + ((size_t)" + f->width().get_str() + "ull)";
     }
     return;
   }
@@ -96,16 +96,16 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
          * one of the pair we are swapping, we need to change it to the other.
          */
 
-        const std::string w = "SIZE_C(" + t.width().get_str() + ")";
+        const std::string w = "((size_t)" + t.width().get_str() + "ull)";
         const std::string h = "state_handle(s, " + offset + ", " + w + ")";
 
         out
           << indent << "if (x != y) {\n"
-          << indent << "  value_t v = handle_read_raw(" << h << ");\n"
+          << indent << "  raw_value_t v = handle_read_raw(" << h << ");\n"
           << indent << "  if (v != 0) {\n"
-          << indent << "    if (v - 1 == (value_t)x) {\n"
+          << indent << "    if (v - 1 == (raw_value_t)x) {\n"
           << indent << "      handle_write_raw(" << h << ", y + 1);\n"
-          << indent << "    } else if (v - 1 == (value_t)y) {\n"
+          << indent << "    } else if (v - 1 == (raw_value_t)y) {\n"
           << indent << "      handle_write_raw(" << h << ", x + 1);\n"
           << indent << "    }\n"
           << indent << "  }\n"
@@ -118,9 +118,12 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+  const Ptr<TypeExpr> type = t.resolve();
 
-    const std::string w = "SIZE_C(" + a->element_type->width().get_str() + ")";
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
+
+    const std::string w = "((size_t)" + a->element_type->width().get_str()
+      + "ull)";
 
     // If this array is indexed by our pivot type, swap the relevant elements
     auto s = dynamic_cast<const TypeExprID*>(a->index_type.get());
@@ -136,7 +139,7 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
 
     const std::string i = "i" + std::to_string(depth);
     mpz_class ic = a->index_type->count() - 1;
-    const std::string len = "SIZE_C(" + ic.get_str() + ")";
+    const std::string len = "((size_t)" + ic.get_str() + "ull)";
 
     out
       << indent << "for (size_t " << i << " = 0; " << i << " < " << len << "; "
@@ -151,14 +154,14 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
 
     std::string off = offset;
 
     for (const Ptr<VarDecl> &f : r->fields) {
       generate_swap_chunk(out, *f->type, off, pivot, depth);
 
-      off += " + SIZE_C(" + f->width().get_str() + ")";
+      off += " + ((size_t)" + f->width().get_str() + "ull)";
     }
     return;
   }
@@ -176,7 +179,7 @@ static void generate_swap(const Model &m, std::ostream &out,
 
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-      std::string offset = "SIZE_C(" + v->offset.get_str() + ")";
+      std::string offset = "((size_t)" + v->offset.get_str() + "ull)";
       generate_swap_chunk(out, *v->type, offset, pivot);
     }
   }
@@ -189,10 +192,12 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
 
   const std::string indent(level * 2, ' ');
 
-  auto s = dynamic_cast<const Scalarset*>(scalarset.value->resolve());
+  const Ptr<TypeExpr> type = scalarset.value->resolve();
+  auto s = dynamic_cast<const Scalarset*>(type.get());
   assert(s != nullptr);
 
-  const std::string  bound = "SIZE_C(" + s->bound->constant_fold().get_str() + ")";
+  const std::string bound = "((size_t)" + s->bound->constant_fold().get_str()
+    + "ull)";
   const std::string i = "i" + std::to_string(index);
 
   out
@@ -219,7 +224,7 @@ static void generate_loop_footer(const TypeDecl &scalarset, size_t index,
 
   const std::string indent(level * 2, ' ');
 
-  assert(dynamic_cast<const Scalarset*>(scalarset.value->resolve()) != nullptr);
+  assert(isa<Scalarset>(scalarset.value->resolve()));
 
   const std::string i = "i" + std::to_string(index);
 
@@ -300,7 +305,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     const std::string &offset_a,  const std::string &offset_b,
     const TypeDecl &pivot, size_t depth = 0, bool used_pivot = false) {
 
-  const TypeExpr *t = type.resolve();
+  const Ptr<TypeExpr> t = type.resolve();
 
   const std::string indent((depth + 1) * 2, ' ');
 
@@ -315,10 +320,10 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
 
       out
         << indent << "if (" << offset_a << " != " << offset_b << ") {\n"
-        << indent << "  value_t a = handle_read_raw(state_handle(s, " << offset_a
-          << ", SIZE_C(" << t->width() << ")));\n"
-        << indent << "  value_t b = handle_read_raw(state_handle(s, " << offset_b
-          << ", SIZE_C(" << t->width() << ")));\n"
+        << indent << "  raw_value_t a = handle_read_raw(state_handle(s, " << offset_a
+          << ", " << t->width() << "ull));\n"
+        << indent << "  raw_value_t b = handle_read_raw(state_handle(s, " << offset_b
+          << ", " << t->width() << "ull));\n"
         << indent << "  if (a < b) {\n"
         << indent << "    return -1;\n"
         << indent << "  } else if (a > b) {\n"
@@ -330,7 +335,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t)) {
+  if (auto a = dynamic_cast<const Array*>(t.get())) {
 
     if (!used_pivot || !is_pivot(pivot, a->index_type.get())) {
 
@@ -338,9 +343,9 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
 
       const std::string var = "i" + std::to_string(depth);
       mpz_class ic = a->index_type->count() - 1;
-      const std::string len = "SIZE_C(" + ic.get_str() + ")";
-      const std::string width = "SIZE_C("
-        + a->element_type->width().get_str() + ")";
+      const std::string len = "((size_t)" + ic.get_str() + "ull)";
+      const std::string width = "((size_t)" + a->element_type->width().get_str()
+        + "ull)";
 
       out << indent << "for (size_t " << var << " = 0; " << var << " < " << len
         << "; " << var << "++) {\n";
@@ -358,7 +363,7 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t)) {
+  if (auto r = dynamic_cast<const Record*>(t.get())) {
     std::string off_a = offset_a;
     std::string off_b = offset_b;
 
@@ -366,8 +371,8 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
       generate_apply_compare(out, *f->type, off_a, off_b, pivot, depth,
         used_pivot);
 
-      off_a += " + SIZE_C(" + f->width().get_str() + ")";
-      off_b += " + SIZE_C(" + f->width().get_str() + ")";
+      off_a += " + ((size_t)" + f->width().get_str() + "ull)";
+      off_b += " + ((size_t)" + f->width().get_str() + "ull)";
     }
     return;
   }
@@ -389,7 +394,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
      */
     if (is_pivot(pivot, &t) && !used_pivot) {
 
-      const std::string width = "SIZE_C(" + t.width().get_str() + ")";
+      const std::string width = "((size_t)" + t.width().get_str() + "ull)";
       out
 
         /* Open a scope so we don't need to think about redeclaring/shadowing
@@ -397,13 +402,13 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
          */
         << indent << "{\n"
 
-        << indent << "  value_t v = handle_read_raw(state_handle(s, " << offset
+        << indent << "  raw_value_t v = handle_read_raw(state_handle(s, " << offset
           << ", " << width << "));\n"
 
         << indent << "  if (v != 0) { /* ignored 'undefined' */\n"
-        << indent << "    if (v - 1 == (value_t)x) {\n"
+        << indent << "    if (v - 1 == (raw_value_t)x) {\n"
         << indent << "      return -1;\n"
-        << indent << "    } else if (v - 1 == (value_t)y) {\n"
+        << indent << "    } else if (v - 1 == (raw_value_t)y) {\n"
         << indent << "      return 1;\n"
         << indent << "    }\n"
         << indent << "  }\n"
@@ -417,11 +422,13 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(t.resolve())) {
+  const Ptr<TypeExpr> type = t.resolve();
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
 
     // The bit size of each array element as a C code string
-    const std::string width = "SIZE_C(" +
-      a->element_type->width().get_str() + ")";
+    const std::string width = "((size_t)" + a->element_type->width().get_str()
+      + "ull)";
 
     /* If this array is indexed by the pivot type, first compare the relevant
      * elements. Note, we'll only end up descending if the two elements happen
@@ -442,7 +449,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
 
     // The number of elements in this array as a C code string
     mpz_class ic = a->index_type->count() - 1;
-    const std::string ub = "SIZE_C(" + ic.get_str() + ")";
+    const std::string ub = "((size_t)" + ic.get_str() + "ull)";
 
     // Generate a loop to iterate over all the elements
     const std::string var = "i" + std::to_string(depth);
@@ -460,7 +467,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(t.resolve())) {
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
 
     std::string off = offset;
 
@@ -470,7 +477,7 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
       generate_compare_chunk(out, *f->type, off, pivot, depth, used_pivot);
 
       // Jump over this field to get the offset of the next field
-      const std::string width = "SIZE_C(" + f->width().get_str() + ")";
+      const std::string width = "((size_t)" + f->width().get_str() + "ull)";
       off += " + " + width;
     }
 
@@ -497,7 +504,7 @@ static void generate_compare(std::ostream &out, const TypeDecl &pivot,
 
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
-      const std::string offset = "SIZE_C(" + v->offset.get_str() + ")";
+      const std::string offset = "((size_t)" + v->offset.get_str() + "ull)";
       generate_compare_chunk(out, *v->type, offset, pivot);
     }
   }
@@ -510,7 +517,7 @@ static void generate_compare(std::ostream &out, const TypeDecl &pivot,
 
 static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
 
-  assert(dynamic_cast<const Scalarset*>(pivot.value->resolve()) != nullptr);
+  assert(isa<Scalarset>(pivot.value->resolve()));
 
   out
     << "static void sort_" << pivot.name << "(struct state *s, "
@@ -575,13 +582,14 @@ static void generate_canonicalise_heuristic(const Model &m,
 
   for (const TypeDecl *t : scalarsets) {
 
-    auto s = dynamic_cast<const Scalarset*>(t->value->resolve());
+    const Ptr<TypeExpr> type = t->value->resolve();
+    auto s = dynamic_cast<const Scalarset*>(type.get());
     assert(s != nullptr);
 
     mpz_class bound = s->count() - 1;
 
-    out << "  sort_" << t->name << "(s, 0, SIZE_C(" << bound.get_str()
-      << ") - 1);\n";
+    out << "  sort_" << t->name << "(s, 0, ((size_t)" << bound.get_str()
+      << "ull) - 1);\n";
   }
 
   out

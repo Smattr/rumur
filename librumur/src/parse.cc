@@ -3,6 +3,7 @@
 #include <iostream>
 #include "location.hh"
 #include "parser.yy.hh"
+#include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Model.h>
 #include <rumur/parse.h>
@@ -24,6 +25,13 @@ Ptr<Model> parse(std::istream *input) {
   int err = p.parse();
   if (err != 0)
     throw Error("parsing failed", location());
+
+  // mark the global declarations
+  for (Ptr<Decl> &d : m->decls) {
+    if (auto v = dynamic_cast<VarDecl*>(&*d)) {
+      v->state_variable = true;
+    }
+  }
 
   return m;
 }

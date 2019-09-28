@@ -18,12 +18,14 @@
 
 namespace rumur {
 
+TypeExpr::TypeExpr(const location &loc_): Node(loc_) { }
+
 bool TypeExpr::is_simple() const {
   return false;
 }
 
-const TypeExpr *TypeExpr::resolve() const {
-  return this;
+Ptr<TypeExpr> TypeExpr::resolve() const {
+  return Ptr<TypeExpr>(clone());
 }
 
 std::string TypeExpr::lower_bound() const {
@@ -58,6 +60,19 @@ bool TypeExpr::constant() const {
     "TypeExpr::constant override?");
 
   throw Error("complex types do not have bounds to query", loc);
+}
+
+bool TypeExpr::equatable_with(const TypeExpr &other) const {
+
+  const Ptr<TypeExpr> t1 = resolve();
+  const Ptr<TypeExpr> t2 = other.resolve();
+
+  if (isa<Range>(t1)) {
+    if (isa<Range>(t2))
+      return true;
+  }
+
+  return *t1 == *t2;
 }
 
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
@@ -219,8 +234,18 @@ bool Enum::is_simple() const {
   return true;
 }
 
+void Enum::validate() const {
+  std::unordered_set<std::string> ms;
+  for (const std::pair<std::string, location> &member : members) {
+    auto it = ms.insert(member.first);
+    if (!it.second)
+      throw Error("duplicate enum member \"" + member.first + "\"",
+        member.second);
+  }
+}
+
 std::string Enum::lower_bound() const {
-  return "0";
+  return "VALUE_C(0)";
 }
 
 std::string Enum::upper_bound() const {
@@ -235,7 +260,7 @@ std::string Enum::to_string() const {
   bool first = true;
   for (const std::pair<std::string, location> &m : members) {
     if (!first)
-      s + ", ";
+      s += ", ";
     s += m.first;
     first = false;
   }
@@ -354,7 +379,7 @@ std::string Array::to_string() const {
 }
 
 TypeExprID::TypeExprID(const std::string &name_,
-  const Ptr<TypeExpr> &referent_, const location &loc_):
+  const Ptr<TypeDecl> &referent_, const location &loc_):
   TypeExpr(loc_), name(name_), referent(referent_) { }
 
 TypeExprID *TypeExprID::clone() const {
@@ -364,18 +389,18 @@ TypeExprID *TypeExprID::clone() const {
 mpz_class TypeExprID::width() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->width();
+  return referent->value->width();
 }
 
 mpz_class TypeExprID::count() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->count();
+  return referent->value->count();
 }
 
 bool TypeExprID::operator==(const Node &other) const {
   if (referent != nullptr)
-    return *referent == other;
+    return *referent->value == other;
 
   auto o = dynamic_cast<const TypeExprID*>(&other);
   if (o == nullptr)
@@ -390,13 +415,13 @@ bool TypeExprID::operator==(const Node &other) const {
 bool TypeExprID::is_simple() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->is_simple();
+  return referent->value->is_simple();
 }
 
-const TypeExpr *TypeExprID::resolve() const {
+Ptr<TypeExpr> TypeExprID::resolve() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->resolve();
+  return referent->value->resolve();
 }
 
 void TypeExprID::validate() const {
@@ -407,13 +432,13 @@ void TypeExprID::validate() const {
 std::string TypeExprID::lower_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->lower_bound();
+  return referent->value->lower_bound();
 }
 
 std::string TypeExprID::upper_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->upper_bound();
+  return referent->value->upper_bound();
 }
 
 std::string TypeExprID::to_string() const {
@@ -423,51 +448,7 @@ std::string TypeExprID::to_string() const {
 bool TypeExprID::constant() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
-  return referent->constant();
-}
-
-bool types_equatable(const TypeExpr *t1, const TypeExpr *t2) {
-
-  if (t1 == nullptr) {
-    // t1 is a numeric literal type
-
-    if (t2 == nullptr)
-      return true;
-
-    const TypeExpr *t = t2->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    if (isa<Scalarset>(t))
-      return true;
-
-    return false;
-  }
-
-  if (t2 == nullptr) {
-    // t2 is a numeric literal type
-
-    const TypeExpr *t = t1->resolve();
-
-    if (isa<Range>(t))
-      return true;
-
-    if (isa<Scalarset>(t))
-      return true;
-
-    return false;
-  }
-
-  t1 = t1->resolve();
-  t2 = t2->resolve();
-
-  if (isa<Range>(t1)) {
-    if (isa<Range>(t2))
-      return true;
-  }
-
-  return *t1 == *t2;
+  return referent->value->constant();
 }
 
 }

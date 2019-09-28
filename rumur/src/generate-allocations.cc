@@ -17,7 +17,7 @@ class Generator : public ConstTraversal {
  public:
   Generator(std::ostream &o): out(&o) { }
 
-  void visit(const FunctionCall &n) final {
+  void visit_functioncall(const FunctionCall &n) final {
     if (n.function == nullptr)
       throw Error("function call to unresolved target " + n.name, n.loc);
 
