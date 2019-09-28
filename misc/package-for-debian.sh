@@ -36,11 +36,6 @@ if [ "$(lsb_release --id | cut -d "	" -f2)" != "Debian" ]; then
   exit 1
 fi
 
-if [ "$(lsb_release --release | cut -d "	" -f2)" != "unstable" ]; then
-  printf 'This script is only intended to run on Debian unstable\n' >&2
-  exit 1
-fi
-
 # Move to our parent directory
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/.."
 
