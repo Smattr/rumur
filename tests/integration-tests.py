@@ -14,8 +14,8 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-RUMUR_BIN = os.path.abspath(os.environ.get('RUMUR', 'rumur/rumur'))
-RUMUR_AST_DUMP_BIN = os.path.abspath(os.environ.get('RUMUR_AST_DUMP',
+RUMUR_BIN = os.environ.get('RUMUR', os.path.abspath('rumur/rumur'))
+RUMUR_AST_DUMP_BIN = os.environ.get('RUMUR_AST_DUMP', os.path.abspath(
   'ast-dump/rumur-ast-dump'))
 CC = os.environ.get('CC', subprocess.check_output(['which', 'cc'],
   universal_newlines=True).strip())
@@ -449,7 +449,10 @@ def main(argv):
   except:
     sys.stderr = codecs.getwriter('utf-8')(sys.stderr, 'replace')
 
-  if not os.path.isfile(RUMUR_BIN):
+  try:
+    with open(os.devnull, 'wt') as null:
+      subprocess.check_call(['which', RUMUR_BIN], stdout=null, stderr=null)
+  except subprocess.CalledProcessError:
     sys.stderr.write('{} not found\n'.format(RUMUR_BIN))
     return -1
 
