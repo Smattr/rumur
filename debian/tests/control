@@ -1,0 +1,3 @@
+Test-Command: env RUMUR=rumur RUMUR_AST_DUMP=rumur-ast-dump python tests/integration-tests.py --verbose
+Depends: python
+Restrictions: allow-stderr
