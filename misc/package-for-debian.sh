@@ -9,7 +9,7 @@
 #   * After successful packaging, sign the release with
 #     `debsign ../rumur_<version>_<arch>.changes`.
 #   * Upload the package to mentors.debian.net with
-#     `dput mentors ../rumur_<version>_<arch>.changes`.
+#     `dput mentors ../rumur_<version>_source.changes`.
 #   * Check consistency of ../debian/watch with
 #     `cd .. && uscan --report --verbose`.
 #   * For building with pbuilder, first
