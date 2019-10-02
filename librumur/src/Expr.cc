@@ -920,6 +920,32 @@ bool Quantifier::operator==(const Node &other) const {
   return true;
 }
 
+void Quantifier::validate() const {
+
+  bool from_const = from != nullptr && from->constant();
+  bool to_const   = to   != nullptr && to->constant();
+  bool step_const = step != nullptr && step->constant();
+
+  if (step_const && step->constant_fold() == 0)
+    throw Error("infinite loop due to 0 step", loc);
+
+  bool step_positive
+    = step == nullptr || (step_const && step->constant_fold() > 0);
+  bool step_negative = step != nullptr && step->constant_fold() < 0;
+
+  if (from_const && to_const) {
+
+    bool up_count   = from->constant_fold() < to->constant_fold();
+    bool down_count = from->constant_fold() > to->constant_fold();
+
+    if (up_count && step_negative)
+      throw Error("infinite loop due to inverted step", loc);
+
+    if (down_count && step_positive)
+      throw Error("infinite loop due to inverted step", loc);
+  }
+}
+
 std::string Quantifier::to_string() const {
   if (type == nullptr) {
     std::string s = name + " from " + from->to_string() + " to "

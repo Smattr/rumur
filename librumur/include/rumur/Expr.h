@@ -430,6 +430,7 @@ struct Quantifier : public Node {
   virtual ~Quantifier() = default;
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
   std::string to_string() const;
 
   // whether the quantifier's range can be constant folded
