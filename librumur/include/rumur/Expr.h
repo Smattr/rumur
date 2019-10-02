@@ -420,6 +420,8 @@ struct Quantifier : public Node {
   Ptr<Expr> to;
   Ptr<Expr> step;
 
+  Ptr<VarDecl> decl;
+
   Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc);
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,

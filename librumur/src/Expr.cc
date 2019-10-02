@@ -865,7 +865,8 @@ std::string FunctionCall::to_string() const {
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
   const location &loc_):
-  Node(loc_), name(name_), type(type_) { }
+  Node(loc_), name(name_), type(type_),
+  decl(Ptr<VarDecl>::make(name_, type_, loc_)) { }
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   const Ptr<Expr> &to_, const location &loc_):
@@ -873,7 +874,12 @@ Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   const Ptr<Expr> &to_, const Ptr<Expr> &step_, const location &loc_):
-  Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
+  Node(loc_), name(name_), from(from_), to(to_), step(step_),
+  // we construct an artificial unbounded range here because we do not know
+  // whether the bounds of this iteration are constant prior to symbol
+  // resolution
+  decl(Ptr<VarDecl>::make(name_, Ptr<Range>::make(nullptr, nullptr, loc_), loc_))
+  { }
 
 Quantifier *Quantifier::clone() const {
   return new Quantifier(*this);
