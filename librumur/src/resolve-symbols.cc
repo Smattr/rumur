@@ -223,17 +223,7 @@ class Resolver : public Traversal {
       dispatch(*n.step);
     dispatch(*n.decl);
 
-    /* We need to register the quantifier variable to be resolvable within this
-     * scope. However it may not have a proper type. To cope with this, we
-     * construct a type on the fly here if necessary.
-     */
-    Ptr<TypeExpr> t;
-    if (n.type == nullptr) {
-      t = Ptr<Range>::make(nullptr, nullptr, location());
-    } else {
-      t = n.type;
-    }
-    symtab.declare(n.name, Ptr<VarDecl>::make(n.name, t, n.loc));
+    symtab.declare(n.name, n.decl);
   }
 
   void visit_ruleset(Ruleset &n) final {
