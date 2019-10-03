@@ -13,7 +13,7 @@ available. You can tune how many threads are used with the ``--threads`` command
 line option when generating the verifier.
 
 CMurphi seems intended to run on Linux and older Unix-style platforms. Rumur
-should run on any POSIX operating system. However, the verifier's code does make
+should run on any POSIX operating system. However, the verifier’s code does make
 use of C extensions that may only be supported by GCC and Clang.
 
 Syntax Differences
@@ -52,7 +52,7 @@ CMurphi has a limitation that ``=`` and ``!=`` can only be used to compare
 simple values (enums, ranges or scalarsets). Rumur lets you compare any
 compatible values; that is, it also supports records and arrays. The semantics
 are equivalent to writing out a long form comparison of every one of the complex
-values' members.
+values’ members.
 
 Command-line Options
 --------------------
@@ -65,12 +65,12 @@ aggressively optimise during compilation.
 
 Deadlock
 --------
-The verifier can detect "deadlocks" in your state graph, where there are no
+The verifier can detect “deadlocks” in your state graph, where there are no
 transitions that make progress. CMurphi considers a deadlock to have occurred
 in any state that only has enabled transitions that lead back to itself. Rumur
 has two deadlock modes that can be selected with the ``--deadlock-detection``
-command line option: "stuttering" and "stuck". Stuttering, the default,  matches
-CMurphi's definition. Stuck uses a weaker definition that considers a deadlock
+command line option: “stuttering” and “stuck”. Stuttering, the default,  matches
+CMurphi’s definition. Stuck uses a weaker definition that considers a deadlock
 to have occurred only when a state has *no* enabled transitions.
 
 While Statement Termination
@@ -85,7 +85,7 @@ loop, your verifier will run forever. You have been warned.
 
 Colour Output
 -------------
-Rumur's generated verifier attempts to imitate CMurphi's verifier's output to
+Rumur’s generated verifier attempts to imitate CMurphi’s verifier’s output to
 smooth the transition for users, but by default Rumur colourises its output
 using ANSI terminal sequences. This behaviour is controllable via command-line
 options.
