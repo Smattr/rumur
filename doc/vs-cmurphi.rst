@@ -46,6 +46,14 @@ In addition to assertions and invariants that are supported by CMurphi, Rumur
 supports assumptions with the keyword ``assume``. Any state that fails an
 assumption is considered irrelevant and discarded.
 
+Comparisons
+-----------
+CMurphi has a limitation that ``=`` and ``!=`` can only be used to compare
+simple values (enums, ranges or scalarsets). Rumur lets you compare any
+compatible values; that is, it also supports records and arrays. The semantics
+are equivalent to writing out a long form comparison of every one of the complex
+values' members.
+
 Command-line Options
 --------------------
 CMurphi has a set of command-line options, and its generated verifier has
