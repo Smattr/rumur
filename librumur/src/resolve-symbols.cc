@@ -207,14 +207,21 @@ class Resolver : public Traversal {
   }
 
   void visit_quantifier(Quantifier &n) final {
-    if (n.type != nullptr)
+    if (n.type != nullptr) {
+      // wrap symbol resolution within the type in a dummy scope to suppress any
+      // declarations (primarily enum members) as these will be duplicated in
+      // when we descend into decl below
+      symtab.open_scope();
       dispatch(*n.type);
+      symtab.close_scope();
+    }
     if (n.from != nullptr)
       dispatch(*n.from);
     if (n.to != nullptr)
       dispatch(*n.to);
     if (n.step != nullptr)
       dispatch(*n.step);
+    dispatch(*n.decl);
 
     /* We need to register the quantifier variable to be resolvable within this
      * scope. However it may not have a proper type. To cope with this, we

@@ -256,6 +256,7 @@ void Indexer::visit_quantifier(Quantifier &n) {
     dispatch(*n.to);
   if (n.step != nullptr)
     dispatch(*n.step);
+  dispatch(*n.decl);
 }
 
 void Indexer::visit_range(Range &n) {
