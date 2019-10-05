@@ -41,6 +41,33 @@ startstate begin
 
   undefine a;
 
+  -- loop that crosses 0
+  for i := -1 to 1 do
+    a[i + 1] := 1 - i;
+  end;
+
+  assert a[0] = 2 & a[1] = 1 & a[2] = 0;
+
+  undefine a;
+
+  -- range that ends at 0
+  for i := -2 to 0 do
+    a[-i] := -i;
+  end;
+
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+
+  undefine a;
+
+  -- range that is fully negative
+  for i := -3 to -1 do
+    a[3 + i] := 3 + i;
+  end;
+
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+
+  undefine a;
+
   -- loop with a step
   for i := 0 to 2 by 1 do
     a[i] := i;
