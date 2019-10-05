@@ -221,6 +221,14 @@ class Resolver : public Traversal {
       dispatch(*n.to);
     if (n.step != nullptr)
       dispatch(*n.step);
+
+    // if the bounds for this iteration are now known to be constant, we can
+    // narrow its VarDecl
+    if (n.from != nullptr && n.from->constant())
+      dynamic_cast<Range&>(*n.decl->type).min = n.from;
+    if (n.to != nullptr && n.to->constant())
+      dynamic_cast<Range&>(*n.decl->type).max = n.to;
+
     dispatch(*n.decl);
 
     symtab.declare(n.name, n.decl);
