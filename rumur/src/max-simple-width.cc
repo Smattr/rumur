@@ -7,7 +7,7 @@
 using namespace rumur;
 
 // An AST traversal that learns the maximum simple type width.
-namespace { class Measurer : public ConstTypeTraversal {
+namespace { class Measurer : public ConstTraversal {
 
  public:
   mpz_class max = 0;
