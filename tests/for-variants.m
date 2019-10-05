@@ -86,38 +86,38 @@ startstate begin
 
   undefine a;
 
-  -- FIXME: the cases below currently fail
+  -- loop that has a variable lower bound
+  x := 0;
+  for i := x to 2 do
+    a[i] := i;
+  end;
 
-  -- -- loop that has a variable lower bound
-  -- x := 0;
-  -- for i := x to 2 do
-  --   a[i] := i;
-  -- end;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
-
-  -- undefine a;
+  undefine a;
 
   -- loop that has a variable upper bound
-  -- y := 2;
-  -- for i := 0 to y do
-  --   a[i] := i;
-  -- end;
+  y := 2;
+  for i := 0 to y do
+    a[i] := i;
+  end;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- undefine a;
+  undefine a;
 
   -- loop that has a variable lower and upper bound
-  -- x := 0;
-  -- y := 2;
-  -- for i := x to y do
-  --   a[i] := i
-  -- end;
+  x := 0;
+  y := 2;
+  for i := x to y do
+    a[i] := i
+  end;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- undefine a;
+  undefine a;
+
+  -- FIXME: the cases below currently fail
 
   -- loop with variable step
   -- z := 1;
