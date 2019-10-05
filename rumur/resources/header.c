@@ -1079,10 +1079,10 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
 
 static void handle_write_raw(struct handle h, raw_value_t value) {
 
-  assert(h.width <= sizeof(raw_value_t) * 8 && "write of a handle to a value "
+  assert(h.width <= sizeof(raw_value_t) * 8 && "write to a handle with a value "
     "that is larger than our raw value type");
 
-  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
+  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write to a handle that is larger than "
     "the maximum width of a simple type in this model");
 
   TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
