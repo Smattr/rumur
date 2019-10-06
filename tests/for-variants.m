@@ -147,47 +147,47 @@ startstate begin
   -- FIXME: the cases below currently fail
 
   -- loop with variable step
-  -- z := 1;
-  -- for i := 0 to 2 by z do
-  --   a[i] := i;
-  -- end;
+  z := 1;
+  for i := 0 to 2 by z do
+    a[i] := i;
+  end;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- undefine a;
+  undefine a;
 
   -- loop with variable lower bound and step
-  -- x := 0;
-  -- z := 1;
-  -- for i := x to 2 by z do
-  --   a[i] := i;
-  -- end;
+  x := 0;
+  z := 1;
+  for i := x to 2 by z do
+    a[i] := i;
+  end;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- undefine a;
+  undefine a;
 
   -- loop with variable upper bound and step
-  -- y := 2;
-  -- z := 1;
-  -- for i := 0 to y by z do
-  --   a[i] := i;
-  -- end;
+  y := 2;
+  z := 1;
+  for i := 0 to y by z do
+    a[i] := i;
+  end;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- undefine a;
+  undefine a;
 
   -- loop with variable bounds and step
-  -- x := 0;
-  -- y := 2;
-  -- z := 1;
-  -- for i := x to y by z do
-  --   a[i] := i;
-  -- end;
+  x := 0;
+  y := 2;
+  z := 1;
+  for i := x to y by z do
+    a[i] := i;
+  end;
 
-  -- assert a[0] = 0 & a[1] = 1 & a[2] = 2;
+  assert a[0] = 0 & a[1] = 1 & a[2] = 2;
 
-  -- undefine a;
+  undefine a;
 
 end;
