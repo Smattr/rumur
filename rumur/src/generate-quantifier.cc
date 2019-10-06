@@ -69,8 +69,15 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 
   // it is also possible we find the iteration goes the wrong way
   out
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic push\n"
+    << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+    << "#endif\n"
     << "  if ((ub > lb && (value_t)step < 0) ||\n"
     << "      (ub < lb && (value_t)step > 0)) {\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic pop\n"
+    << "#endif\n"
     << "    error(s, \"infinite loop due to step being in the wrong direction\");\n"
     << "  }\n";
 
@@ -82,10 +89,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   const std::string upper = q.decl->type->upper_bound();
 
   out
-    << "#ifdef __clang__\n"
-    << "  #pragma clang diagnostic push\n"
-    << "  #pragma clang diagnostic ignored \"-Wtautological-compare\"\n"
-    << "#elif defined(__GNUC__)\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
     << "  #pragma GCC diagnostic push\n"
     << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
     << "#endif\n"
@@ -93,9 +97,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
       "\"iteration lower bound exceeds type limits\");\n"
     << "  ASSERT(ub >= " << lower << " && ub <= " << upper << " && "
       "\"iteration upper bound exceeds type limits\");\n"
-    << "#ifdef __clang__\n"
-    << "  #pragma clang diagnostic pop\n"
-    << "#elif defined(__GNUC__)\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
     << "  #pragma GCC diagnostic pop\n"
     << "#endif\n";
 
@@ -126,7 +128,7 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
   const std::string counter = "_ru1_" + q.name;
 
   // is this a loop whose last iteration will result in a numeric overflow?
-  std::string will_overflow = RV_TO_V("RAW_VALUE_MAX - step") + " < ub";
+  std::string will_overflow = RV_TO_V("max_ - step") + " < ub";
 
   // are we on the last iteration?
   std::string last_iteration = counter + " > RAW_VALUE_MAX - step";
@@ -139,18 +141,37 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
     << "     * increment will overflow and fail to terminate, so we guard\n"
     << "     * against that here.\n"
     << "     */\n"
-    << "    if (" << up_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
-    << "      break;\n"
+    << "    {\n"
+    << "      /* GCC issues spurious -Wsign-compare warnings when doing\n"
+    << "       * subtraction on raw_value_t literals, so we suppress these\n"
+    << "       * by indirecting via this local constant. For more information:\n"
+    << "       * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=38341\n"
+    << "       */\n"
+    << "      const raw_value_t max_ = RAW_VALUE_MAX;\n"
+    << "      if (" << up_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
+    << "        break;\n"
+    << "      }\n"
     << "    }\n";
 
   // do the same for if it is a down-counting loop
-  will_overflow = RV_TO_V("RAW_VALUE_MIN - step") + " > lb";
+  will_overflow = RV_TO_V("min_ - step") + " > lb";
   last_iteration = counter + " > RAW_VALUE_MIN - step";
   const std::string down_count = "ub <= lb && (value_t)step < 0";
 
   out
-    << "    if (" << down_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
-    << "      break;\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic push\n"
+    << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+    << "#endif\n"
+    << "    {\n"
+    << "      /* see above explanation of why we use an extra constant here */\n"
+    << "      const raw_value_t min_ = RAW_VALUE_MIN;\n"
+    << "      if (" << down_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic pop\n"
+    << "#endif\n"
+    << "        break;\n"
+    << "      }\n"
     << "    }\n";
 
   out
