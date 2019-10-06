@@ -937,7 +937,8 @@ void Quantifier::validate() const {
 
   bool step_positive
     = step == nullptr || (step_const && step->constant_fold() > 0);
-  bool step_negative = step != nullptr && step->constant_fold() < 0;
+  bool step_negative
+    = step != nullptr && step_const && step->constant_fold() < 0;
 
   if (from_const && to_const) {
 
