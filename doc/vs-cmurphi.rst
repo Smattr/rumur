@@ -65,15 +65,29 @@ command line option: "stuttering" and "stuck". Stuttering, the default,  matches
 CMurphi's definition. Stuck uses a weaker definition that considers a deadlock
 to have occurred only when a state has *no* enabled transitions.
 
-While Statement Termination
----------------------------
+Loops
+-----
+CMurphi requires the step in a quantifier expression to be a generation-time
+constant. I.e. in the code:
+
+.. code-block:: murphi
+
+  for i := l to u by s do
+    ...
+  end;
+
+``s`` must have a known constant value when the verifier is being generated.
+Rumur has no such restrictions. However steps that are ``0`` at generation-time
+are rejected and steps that turn out to be ``0`` or incrementing in the wrong
+direction at runtime will be raised as a runtime error by the verifier.
+
 CMurphi considers an infinite loop to be a runtime error that the verifier
 should be capable of detecting and notifying the user about. It has an iteration
 bound (by default 1000), after which it will consider a loop to be
 non-terminating and will raise an error.
 
-Rumur trusts the user not to write an infinite loop. If you write an infinite
-loop, your verifier will run forever. You have been warned.
+Rumur trusts the user not to write an infinite ``while`` loop. If you write an
+infinite loop, your verifier will run forever. You have been warned.
 
 Colour Output
 -------------
