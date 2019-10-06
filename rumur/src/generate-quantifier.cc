@@ -38,6 +38,13 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   }
   out << ";\n";
 
+  // if the step was not a generation-time constant, it is possible that it
+  // could work out to be 0 at runtime resulting in an infinite loop
+  out
+    << "  if (step == 0) {\n"
+    << "    error(s, \"infinite loop due to step being 0\");\n"
+    << "  }\n";
+
   // Similar for the upper and lower bounds.
 
   out << "  const value_t lb = ";
