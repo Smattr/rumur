@@ -224,10 +224,18 @@ class Resolver : public Traversal {
 
     // if the bounds for this iteration are now known to be constant, we can
     // narrow its VarDecl
-    if (n.from != nullptr && n.from->constant())
-      dynamic_cast<Range&>(*n.decl->type).min = n.from;
-    if (n.to != nullptr && n.to->constant())
-      dynamic_cast<Range&>(*n.decl->type).max = n.to;
+    if (n.from != nullptr && n.from->constant() &&
+        n.to != nullptr && n.to->constant()) {
+      auto r = dynamic_cast<Range&>(*n.decl->type);
+      // the range may have been given as even an up count or down count
+      if (n.from->constant_fold() <= n.to->constant_fold()) {
+        r.min = n.from;
+        r.max = n.to;
+      } else {
+        r.min = n.to;
+        r.max = n.from;
+      }
+    }
 
     dispatch(*n.decl);
 
