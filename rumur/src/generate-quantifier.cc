@@ -24,28 +24,14 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   // references to this variable will be referring to.
   std::string width = "((size_t)" + q.decl->type->width().get_str() + "ull)";
 
-  /* Write out the step in advance. We generate this here, rather than inline so
-   * as to avoid evaluating it twice (once here and then once in the
-   * generate_quantifier_footer) as it may contain side effects.
-   */
-  out
-    << "{\n"
-    << "  const raw_value_t step = (raw_value_t)";
-  if (q.step == nullptr) {
-    out << "1";
-  } else {
-    generate_rvalue(out, *q.step);
-  }
-  out << ";\n";
+  // open a scope to allow us to use the names 'lb', 'ub', and 'step' without
+  // worrying about collisions
+  out << "{\n";
 
-  // if the step was not a generation-time constant, it is possible that it
-  // could work out to be 0 at runtime resulting in an infinite loop
-  out
-    << "  if (step == 0) {\n"
-    << "    error(s, \"infinite loop due to step being 0\");\n"
-    << "  }\n";
-
-  // Similar for the upper and lower bounds.
+  // Write out the upper bound, lower bound, and step in advance. We generate
+  // these here, rather than inline so as to avoid evaluating them twice (once
+  // here and then once in the generate_quantifier_footer) as they may contain
+  // side effects.
 
   out << "  const value_t lb = ";
   if (q.type == nullptr) {
@@ -65,6 +51,29 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   }
   out << ";\n";
 
+  out
+    << "  const raw_value_t step = (raw_value_t)";
+  if (q.step == nullptr) {
+    out << "(ub >= lb ? 1 : -1)";
+  } else {
+    generate_rvalue(out, *q.step);
+  }
+  out << ";\n";
+
+  // if the step was not a generation-time constant, it is possible that it
+  // could work out to be 0 at runtime resulting in an infinite loop
+  out
+    << "  if (step == 0) {\n"
+    << "    error(s, \"infinite loop due to step being 0\");\n"
+    << "  }\n";
+
+  // it is also possible we find the iteration goes the wrong way
+  out
+    << "  if ((ub > lb && (value_t)step < 0) ||\n"
+    << "      (ub < lb && (value_t)step > 0)) {\n"
+    << "    error(s, \"infinite loop due to step being in the wrong direction\");\n"
+    << "  }\n";
+
   // Type lower bound, as distinct from the iteration lower bound.
   // bounds. References to this quantified variable will use these when
   // unpacking its compressed representation, so we need to offset the values we
@@ -80,9 +89,9 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
     << "  #pragma GCC diagnostic push\n"
     << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
     << "#endif\n"
-    << "  ASSERT(lb >= " << lower << " && "
+    << "  ASSERT(lb >= " << lower << " && lb <= " << upper << " && "
       "\"iteration lower bound exceeds type limits\");\n"
-    << "  ASSERT(ub <= " << upper << " && "
+    << "  ASSERT(ub >= " << lower << " && ub <= " << upper << " && "
       "\"iteration upper bound exceeds type limits\");\n"
     << "#ifdef __clang__\n"
     << "  #pragma clang diagnostic pop\n"
@@ -99,7 +108,9 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 
   // construct the pieces of our for-loop header
   const std::string init = "raw_value_t " + counter + " = " + V_TO_RV("lb");
-  const std::string cond = RV_TO_V(counter) + " <= ub";
+  const std::string cond = counter + " == " + V_TO_RV("lb") + " || "
+                           "(lb < ub && " + RV_TO_V(counter) + " <= ub) || "
+                           "(lb > ub && " + RV_TO_V(counter) + " >= ub)";
   const std::string inc = counter + " += step";
 
   out
@@ -115,19 +126,34 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
   const std::string counter = "_ru1_" + q.name;
 
   // is this a loop whose last iteration will result in a numeric overflow?
-  const std::string will_overflow = RV_TO_V("RAW_VALUE_MAX - step") + " < ub";
+  std::string will_overflow = RV_TO_V("RAW_VALUE_MAX - step") + " < ub";
 
   // are we on the last iteration?
-  const std::string last_iteration = counter + " > RAW_VALUE_MAX - step";
+  std::string last_iteration = counter + " > RAW_VALUE_MAX - step";
+
+  // does this loop count up?
+  const std::string up_count = "ub >= lb && (value_t)step > 0";
 
   out
     << "    /* If this iteration runs right up to the type limits, the last\n"
     << "     * increment will overflow and fail to terminate, so we guard\n"
     << "     * against that here.\n"
     << "     */\n"
-    << "    if (" <<  will_overflow << " && " << last_iteration << ") {\n"
+    << "    if (" << up_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
     << "      break;\n"
-    << "    }\n"
+    << "    }\n";
+
+  // do the same for if it is a down-counting loop
+  will_overflow = RV_TO_V("RAW_VALUE_MIN - step") + " > lb";
+  last_iteration = counter + " > RAW_VALUE_MIN - step";
+  const std::string down_count = "ub <= lb && (value_t)step < 0";
+
+  out
+    << "    if (" << down_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
+    << "      break;\n"
+    << "    }\n";
+
+  out
     << "  }\n"
     << "}\n";
 }
