@@ -900,14 +900,16 @@ static __attribute__((unused)) struct handle state_handle(
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
-static raw_value_t handle_read_raw(
-    const struct state *NONNULL s __attribute__((unused)), struct handle h) {
+static raw_value_t handle_read_raw(const struct state *NONNULL s,
+    struct handle h) {
 
-  // FIXME: When we get a user-configurable value type, users will be able to
-  // cause this assertion to fail, so we should validate the necessary
-  // conditions at code generation time.
-  assert(h.width <= sizeof(raw_value_t) * 8 && "read of a handle to a value "
-    "that is larger than our raw value type");
+  /* Check if this read is larger than the variable we will store it in. This
+   * can only occur if the user has manually overridden value_t with the
+   * --value-type command line argument.
+   */
+  if (__builtin_expect(h.width > sizeof(raw_value_t) * 8, 0)) {
+    error(s, "read of a handle that is wider than the value type");
+  }
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
     "the maximum width of a simple type in this model");
@@ -1078,12 +1080,16 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
   return decode_value(lb, ub, dest);
 }
 
-static void handle_write_raw(
-    const struct state *NONNULL s __attribute__((unused)), struct handle h,
+static void handle_write_raw(const struct state *NONNULL s, struct handle h,
     raw_value_t value) {
 
-  assert(h.width <= sizeof(raw_value_t) * 8 && "write to a handle with a value "
-    "that is larger than our raw value type");
+  /* Check if this write is larger than the variable we will are reading from.
+   * This can only occur if the user has manually overridden value_t with the
+   * --value-type command line argument.
+   */
+  if (__builtin_expect(h.width > sizeof(raw_value_t) * 8, 0)) {
+    error(s, "write of a handle that is wider than the value type");
+  }
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write to a handle that is larger than "
     "the maximum width of a simple type in this model");
