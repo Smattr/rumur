@@ -7,7 +7,7 @@
 using namespace rumur;
 
 // An AST traversal that learns the maximum simple type width.
-namespace { class Measurer : public ConstTypeTraversal {
+namespace { class Measurer : public ConstTraversal {
 
  public:
   mpz_class max = 0;
@@ -15,35 +15,49 @@ namespace { class Measurer : public ConstTypeTraversal {
   /* Nothing required for complex types, but we do need to descend into their
    * children.
    */
-  void visit_array(const Array &n) {
+  void visit_array(const Array &n) final {
     dispatch(*n.index_type);
     dispatch(*n.element_type);
   }
 
-  void visit_enum(const Enum &n) {
+  void visit_enum(const Enum &n) final {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit_range(const Range &n) {
+  // we override visit_quantifier in order to also descend into the quantifier’s
+  // decl that the generic traversal logic assumes you do not want to do
+  void visit_quantifier(const Quantifier &n) final {
+    if (n.type != nullptr)
+      dispatch(*n.type);
+    if (n.from != nullptr)
+      dispatch(*n.from);
+    if (n.to != nullptr)
+      dispatch(*n.to);
+    if (n.step != nullptr)
+      dispatch(*n.step);
+    dispatch(*n.decl);
+  }
+
+  void visit_range(const Range &n) final {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit_record(const Record &n) {
+  void visit_record(const Record &n) final {
     for (auto &f : n.fields)
       dispatch(*f);
   }
 
-  void visit_scalarset(const Scalarset &n) {
+  void visit_scalarset(const Scalarset &n) final {
     mpz_class w = n.width();
     if (w > max)
       max = w;
   }
 
-  void visit_typeexprid(const TypeExprID &n) {
+  void visit_typeexprid(const TypeExprID &n) final {
     if (n.is_simple()) {
       mpz_class w = n.width();
       if (w > max)

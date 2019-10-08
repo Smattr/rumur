@@ -66,6 +66,20 @@ class BoundsFinder : public ConstTraversal {
       increase_max(n.value, n.to_string());
   }
 
+  // we override visit_quantifier in order to also descend into the quantifier’s
+  // decl that the generic traversal logic assumes you do not want to do
+  void visit_quantifier(const Quantifier &n) final {
+    if (n.type != nullptr)
+      dispatch(*n.type);
+    if (n.from != nullptr)
+      dispatch(*n.from);
+    if (n.to != nullptr)
+      dispatch(*n.to);
+    if (n.step != nullptr)
+      dispatch(*n.step);
+    dispatch(*n.decl);
+  }
+
   void visit_range(const Range &n) final {
     if (n.min->constant()) {
       mpz_class m = n.min->constant_fold();

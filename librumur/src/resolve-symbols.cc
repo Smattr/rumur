@@ -207,8 +207,14 @@ class Resolver : public Traversal {
   }
 
   void visit_quantifier(Quantifier &n) final {
-    if (n.type != nullptr)
+    if (n.type != nullptr) {
+      // wrap symbol resolution within the type in a dummy scope to suppress any
+      // declarations (primarily enum members) as these will be duplicated in
+      // when we descend into decl below
+      symtab.open_scope();
       dispatch(*n.type);
+      symtab.close_scope();
+    }
     if (n.from != nullptr)
       dispatch(*n.from);
     if (n.to != nullptr)
@@ -216,17 +222,24 @@ class Resolver : public Traversal {
     if (n.step != nullptr)
       dispatch(*n.step);
 
-    /* We need to register the quantifier variable to be resolvable within this
-     * scope. However it may not have a proper type. To cope with this, we
-     * construct a type on the fly here if necessary.
-     */
-    Ptr<TypeExpr> t;
-    if (n.type == nullptr) {
-      t = Ptr<Range>::make(nullptr, nullptr, location());
-    } else {
-      t = n.type;
+    // if the bounds for this iteration are now known to be constant, we can
+    // narrow its VarDecl
+    if (n.from != nullptr && n.from->constant() &&
+        n.to != nullptr && n.to->constant()) {
+      auto r = dynamic_cast<Range&>(*n.decl->type);
+      // the range may have been given as even an up count or down count
+      if (n.from->constant_fold() <= n.to->constant_fold()) {
+        r.min = n.from;
+        r.max = n.to;
+      } else {
+        r.min = n.to;
+        r.max = n.from;
+      }
     }
-    symtab.declare(n.name, Ptr<VarDecl>::make(n.name, t, n.loc));
+
+    dispatch(*n.decl);
+
+    symtab.declare(n.name, n.decl);
   }
 
   void visit_ruleset(Ruleset &n) final {
