@@ -332,7 +332,7 @@ class Generator : public ConstExprTraversal {
           const std::string ub = p->get_type()->upper_bound();
 
           *out << "handle_write(" << to_C_string(n.loc) << ", rule_name, "
-            << "\"<temporary>\", state_drop_const(s), " << lb << ", " << ub
+            << "\"<temporary>\", s, " << lb << ", " << ub
             << ", " << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
