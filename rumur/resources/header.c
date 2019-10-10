@@ -472,9 +472,8 @@ static void xml_printf(const char *NONNULL s) {
   }
 }
 
-/* Supporting for tracing specific operations. This can be enabled during
- * checker generation with '--trace ...' and is useful for debugging Rumur
- * itself.
+/* Support for tracing specific operations. This can be enabled during checker
+ * generation with '--trace ...' and is useful for debugging Rumur itself.
  */
 static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
     ...) {
@@ -2481,8 +2480,8 @@ static slot_t state_to_slot(const struct state *s) {
  * State set                                                                   *
  *                                                                             *
  * The following implementation provides a set for storing the seen states.    *
- * There is no support for testing whether something is in the set or for      *
- * removing elements, only thread-safe insertion of elements.                  *
+ * There is no support for removing elements, only thread-safe insertion of    *
+ * elements.                                                                   *
  ******************************************************************************/
 
 enum { INITIAL_SET_SIZE_EXPONENT = sizeof(unsigned long long) * 8 - 1 -
