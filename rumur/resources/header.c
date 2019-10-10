@@ -2886,7 +2886,7 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
-  previous = (struct state*)s->previous;
+  previous = state_drop_const(s->previous);
 #endif
 
   /* If the given bit was already set, we know all the predecessors of this
