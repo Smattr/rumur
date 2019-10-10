@@ -120,7 +120,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
     << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = " << width << " };\n"
-    << "    handle_write_raw(" << handle << ", " << counter << ");\n";
+    << "    handle_write_raw(s, " << handle << ", " << counter << ");\n";
 }
 
 void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {

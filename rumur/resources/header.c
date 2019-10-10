@@ -900,7 +900,8 @@ static __attribute__((unused)) struct handle state_handle(
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
-static raw_value_t handle_read_raw(struct handle h) {
+static raw_value_t handle_read_raw(
+    const struct state *NONNULL s __attribute__((unused)), struct handle h) {
 
   // FIXME: When we get a user-configurable value type, users will be able to
   // cause this assertion to fail, so we should validate the necessary
@@ -1067,7 +1068,7 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds read in handle_read()");
 
-  raw_value_t dest = handle_read_raw(h);
+  raw_value_t dest = handle_read_raw(s, h);
 
   if (__builtin_expect(dest == 0, 0)) {
     error(s, "%sread of undefined value in %s%s%s", context, name,
@@ -1077,7 +1078,9 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
   return decode_value(lb, ub, dest);
 }
 
-static void handle_write_raw(struct handle h, raw_value_t value) {
+static void handle_write_raw(
+    const struct state *NONNULL s __attribute__((unused)), struct handle h,
+    raw_value_t value) {
 
   assert(h.width <= sizeof(raw_value_t) * 8 && "write to a handle with a value "
     "that is larger than our raw value type");
@@ -1244,7 +1247,7 @@ static __attribute__((unused)) void handle_write(const char *NONNULL context,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  handle_write_raw(h, r);
+  handle_write_raw(s, h, r);
 }
 
 static __attribute__((unused)) void handle_zero(struct handle h) {
@@ -1376,8 +1379,9 @@ static __attribute__((unused)) struct handle handle_index(
   };
 }
 
-static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
-  raw_value_t v = handle_read_raw(h);
+static __attribute__((unused)) value_t handle_isundefined(
+    const struct state *NONNULL s, struct handle h) {
+  raw_value_t v = handle_read_raw(s, h);
 
   return v == 0;
 }

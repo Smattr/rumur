@@ -345,7 +345,7 @@ class Generator : public ConstExprTraversal {
 
           *out
             << "{ "
-            << "raw_value_t v = handle_read_raw(";
+            << "raw_value_t v = handle_read_raw(s, ";
           generate_lvalue(*out, *a);
           *out << "); "
             << "raw_value_t v2; "
@@ -358,7 +358,7 @@ class Generator : public ConstExprTraversal {
               << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
               << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
             << "} "
-            << "handle_write_raw(" << handle << ", v == 0 ? v : "
+            << "handle_write_raw(s, " << handle << ", v == 0 ? v : "
               << "((raw_value_t)(v3 - " << lb << ") + 1)); "
             << "} ";
 
@@ -446,7 +446,7 @@ class Generator : public ConstExprTraversal {
   }
 
   void visit_isundefined(const IsUndefined &n) final {
-    *this << "handle_isundefined(";
+    *this << "handle_isundefined(s, ";
     generate_lvalue(*out, *n.expr);
     *this << ")";
   }

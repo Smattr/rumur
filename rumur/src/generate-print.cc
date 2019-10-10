@@ -91,13 +91,13 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
       << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
+      << "    v_previous = handle_read_raw(previous, " << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
@@ -136,13 +136,13 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
       << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
+      << "    v_previous = handle_read_raw(previous, " << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
@@ -181,13 +181,13 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  raw_value_t v = handle_read_raw(" << handle << ");\n"
+      << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
       << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
     *out
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw(" << previous_handle << ");\n"
+      << "    v_previous = handle_read_raw(previous, " << previous_handle << ");\n"
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
