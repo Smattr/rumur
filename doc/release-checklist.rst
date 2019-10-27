@@ -3,9 +3,9 @@ Release Checklist
 The process of cutting a new Rumur release should follow these steps:
 
 1. Update ``LAST_RELEASE`` in ../rumur/src/make-version.py. For version numbers,
-   we use "vYYYY.MM.DD" with the date of the release.
+   we use “vYYYY.MM.DD” with the date of the release.
 2. Update ../CHANGELOG.rst with information about the changes in the new
-   release. Changes should be separated into "user-facing" and "internal,"
+   release. Changes should be separated into “user-facing” and “internal,”
    providing commit hash(es) as a reference where possible. The ordering in
    which changes are listed should firstly prioritise bug fixes (which should be
    explicitly marked as such) and then by the impact on users/developers a
@@ -21,12 +21,12 @@ The process of cutting a new Rumur release should follow these steps:
 6. Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
    release to work on FreeBSD because Rumur is in
    `FreeBSD’s package repository`_ and new releases are pulled in automatically.
-7. Tag the commit with the version number in "vYYYY.MM.DD" format.
+7. Tag the commit with the version number in “vYYYY.MM.DD” format.
 8. Push the new version tag upstream.
 9. Package Rumur for Debian (see below).
 
 Github’s automated release process should notice the version tag and show the
-new release as a downloadable zip/tarball on the "releases" tab of
+new release as a downloadable zip/tarball on the “releases” tab of
 https://github.com/Smattr/rumur.
 
 Packaging for Debian
@@ -39,7 +39,7 @@ package follow these steps.
 3. Update the Debian changelog (../debian/changelog). Debian provide guidance on
    the `changelog format`_.
 4. Update ../debian/rules to set ``RUMUR_VERSION`` to the new version. Note that
-   Debian version numbers are the standard ("native") Rumur version with "-1"
+   Debian version numbers are the standard (“native”) Rumur version with “-1”
    appended.
 5. Commit these changes.
 6. Run ../misc/package-for-debian.sh to prepare a new Debian package for upload.
