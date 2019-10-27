@@ -1,6 +1,61 @@
 Change log
 ==========
 
+v2019.10.27
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: several problems with code generation related to statements of the
+  form ``for x := i to j by k ...`` have been fixed. Rumur now supports
+  arbitrary expressions for any of ``i``, ``j``, and ``k``, including reverse
+  (down-counting) loops (commits
+  1186e622868c124b21637f7ddb5f35f818b18f3b,
+  8b73384edfceb8c6f55dffdb1ae8d9952b5c8adb,
+  245887647ac4bfbf08685f97c99c0c84b581e8f8,
+  b7078e9b17fb572ff7126aa42930d3dd50a4577b,
+  df4264e5f72d7e4528211e74444512d58dd32048).
+* Bug fix: quantified variables are taken into account when calculating range
+  limits for values of simple type (commits
+  e4746dc130d3f69bf623bed503b88b0ba109b176,
+  3e0ac51a379a2b5612b6d72e3e286955f143e525).
+* Bug fix: overriding the automatically chosen value type (using
+  ``--value-type ...``) can no longer cause an assertion failure in the
+  generated checker. Forcing a value type that is too small previously violated
+  an assumption in the generated code. This now causes a runtime error (commit
+  77729447d3cfbb523e3a4a79654eb0a1b5fbd8e8).
+* Bug fix: the initial pool size of the arena allocator in the generated code
+  was being miscalculated and has now been corrected to approximate 8MB (commit
+  381f08975e2a0a70cd0a2210a9af12b374580075).
+* Bug fix: the SMT bridge now correctly detects a failure to start the child
+  process. The check for this was previously incorrect and it would look as if
+  the SMT solver malfunctioned (commit
+  d1cbfd41d3051d548186acf1f17acd85df7f96d8).
+* Blank (``""``) and unknown logics are now supported by the SMT bridge. Solvers
+  such as Z3 function best when given no ``set-logic`` command (commit
+  6c92a15f33da3804aaaba628ecc8450ac2fde13d).
+* The default SMT logic is now ``AUFLIA`` (commit
+  03ab27d04eccc18c142db7364f7000bf67c12a7f).
+* Some GCC warnings when compiling generated code have been suppressed (commit
+  bae9b849a781f97e690c8e52196512150aeae4ab).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: Unresolved ``TypeExprIDs`` with differing names are now considered
+  unequal (commit 7fe656c7db5f2578db826ea1a39a200ece93f57f).
+* ``TypeExpr::equatable_with`` is deprecated, and replaced by
+  ``TypeExpr::coerces_to`` (commits aa1557bf044e62c8f3adaaca591fe272b30ca19a,
+  e45f214cd2097bbe710a2a3eed9ed196e9feace8,
+  befe6bb4a9b9c342ad3a7a8b96a8bff94c47319d).
+* ``Quantifier`` has a new member, ``decl``, that is a ``VarDecl`` for the
+  variable it represents (commits c079a460749b1b8e7ea9dd627d369fe3395aa204,
+  4aba73cb86885531a56228a145ad2529cf5fe2a0).
+* Quantifier expressions — the bounds of the quantifier — are now validated in
+  ``Quantifier::validate()`` (commit 1b7cd5aad63c8b3e55a266facb8100752946a59d).
+* The type of a ``TypeExprID`` that refers to a quantified variable is now a
+  persistent, valid ``VarDecl``. Previously it was a synthetic declaration with
+  an invalid ``unique_id`` (commit c567645c4778cbb33d9f696450e9c9c13f12896b).
+
 v2019.09.15
 -----------
 
