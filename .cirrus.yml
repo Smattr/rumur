@@ -3,7 +3,7 @@ task:
   # increase timeout to the maximum limit
   timeout_in: 120m
 
-  install_script: uname -sr && pkg upgrade -y && pkg install -y bison cmake gmp ninja
+  install_script: uname -sr && pkg upgrade -y && pkg install -y bison cmake gmp libxml2 ninja
   test_script: mkdir build && cd build && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=install .. && cmake --build . && python ../tests/integration-tests.py --verbose && cmake --build . -- install
 
   matrix:
