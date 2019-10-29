@@ -8,7 +8,7 @@
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
 # Override native version number with Debianized version number
-export RUMUR_VERSION=v2019.09.15-1
+export RUMUR_VERSION=v2019.10.27-1
 
 %:
 	dh $@
