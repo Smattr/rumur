@@ -2,6 +2,8 @@ rumur (2019.10.27-1) unstable; urgency=medium
 
   * Maintainer upload.
 
+  * Switch all Python references to Python 3. Closes: #943253.
+
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Mon, 28 Oct 2019 19:54:28 -0700
 
 rumur (2019.02.04-1) unstable; urgency=medium
