@@ -62,17 +62,19 @@ bool TypeExpr::constant() const {
   throw Error("complex types do not have bounds to query", loc);
 }
 
-bool TypeExpr::equatable_with(const TypeExpr &other) const {
+bool TypeExpr::coerces_to(const TypeExpr &other) const {
 
   const Ptr<TypeExpr> t1 = resolve();
   const Ptr<TypeExpr> t2 = other.resolve();
 
-  if (isa<Range>(t1)) {
-    if (isa<Range>(t2))
-      return true;
-  }
+  if (isa<Range>(t1) && isa<Range>(t2))
+    return true;
 
   return *t1 == *t2;
+}
+
+bool TypeExpr::equatable_with(const TypeExpr &other) const {
+  return coerces_to(other);
 }
 
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
@@ -407,6 +409,12 @@ bool TypeExprID::operator==(const Node &other) const {
     return false;
 
   if (o->referent != nullptr)
+    return false;
+
+  // Compare by name if we got to this point. Note that the name is irrelevant
+  // if either type was resolved, as we want to consider resolved types to be
+  // equal if they have equal referents.
+  if (name != o->name)
     return false;
 
   return true;

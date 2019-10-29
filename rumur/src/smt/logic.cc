@@ -9,8 +9,7 @@ namespace smt {
 
 static const size_t BITVECTOR_WIDTH = 64;
 
-Logic::Logic(bool a, bool bv, bool ia):
-    arrays(a),
+Logic::Logic(bool bv, bool ia):
     bitvectors(bv),
     integers(ia) { }
 
@@ -151,41 +150,38 @@ std::string Logic::sub(void) const {
   throw Unsupported();
 }
 
-bool Logic::supports_arrays() const {
-  return arrays;
-}
-
 static const std::unordered_map<std::string, Logic> LOGICS = {
-                 //    A      BV     IA  
-  { "ALIA",      Logic(true,  false, true ) },
-  { "AUFLIA",    Logic(true,  false, true ) },
-  { "AUFLIRA",   Logic(true,  false, true ) },
-  { "AUFNIRA",   Logic(true,  false, true ) },
-  { "LIA",       Logic(false, false, true ) },
-  { "LRA",       Logic(false, false, false) },
-  { "NIA",       Logic(false, false, true ) },
-  { "NRA",       Logic(false, false, false) },
-  { "QF_ABV",    Logic(true,  true,  false) },
-  { "QF_ALIA",   Logic(true,  false, true ) },
-  { "QF_AUFBV",  Logic(true,  true,  false) },
-  { "QF_AUFLIA", Logic(true,  false, true ) },
-  { "QF_AX",     Logic(true,  false, false) },
-  { "QF_BV",     Logic(false, true,  false) },
-  { "QF_IDL",    Logic(false, false, false) },
-  { "QF_LIA",    Logic(false, false, true ) },
-  { "QF_LRA",    Logic(false, false, false) },
-  { "QF_NIA",    Logic(false, false, true ) },
-  { "QF_NRA",    Logic(false, false, false) },
-  { "QF_RDL",    Logic(false, false, false) },
-  { "QF_UF",     Logic(false, false, false) },
-  { "QF_UFBV",   Logic(false, true,  false) },
-  { "QF_UFIDL",  Logic(false, false, false) },
-  { "QF_UFLIA",  Logic(false, false, true ) },
-  { "QF_UFLRA",  Logic(false, false, false) },
-  { "QF_UFNIA",  Logic(false, false, true ) },
-  { "QF_UFNRA",  Logic(false, false, false) },
-  { "UFLRA",     Logic(false, false, false) },
-  { "UFNIA",     Logic(false, false, true ) },
+                 //    BV     IA
+  { "ALIA",      Logic(false, true ) },
+  { "AUFLIA",    Logic(false, true ) },
+  { "AUFLIRA",   Logic(false, true ) },
+  { "AUFNIRA",   Logic(false, true ) },
+  { "LIA",       Logic(false, true ) },
+  { "LRA",       Logic(false, false) },
+  { "NIA",       Logic(false, true ) },
+  { "NRA",       Logic(false, false) },
+  { "QF_ABV",    Logic(true,  false) },
+  { "QF_ALIA",   Logic(false, true ) },
+  { "QF_AUFBV",  Logic(true,  false) },
+  { "QF_AUFLIA", Logic(false, true ) },
+  { "QF_AX",     Logic(false, false) },
+  { "QF_BV",     Logic(true,  false) },
+  { "QF_IDL",    Logic(false, false) },
+  { "QF_LIA",    Logic(false, true ) },
+  { "QF_LRA",    Logic(false, false) },
+  { "QF_NIA",    Logic(false, true ) },
+  { "QF_NRA",    Logic(false, false) },
+  { "QF_RDL",    Logic(false, false) },
+  { "QF_UF",     Logic(false, false) },
+  { "QF_UFBV",   Logic(true,  false) },
+  { "QF_UFIDL",  Logic(false, false) },
+  { "QF_UFLIA",  Logic(false, true ) },
+  { "QF_UFLRA",  Logic(false, false) },
+  { "QF_UFNIA",  Logic(false, true ) },
+  { "QF_UFNRA",  Logic(false, false) },
+  { "UFLRA",     Logic(false, false) },
+  { "UFNIA",     Logic(false, true ) },
+  { "",          Logic(true,  true ) }, // unknown
 };
 
 const Logic &get_logic(const std::string &name) {
@@ -194,7 +190,8 @@ const Logic &get_logic(const std::string &name) {
   if (it != LOGICS.end())
     return it->second;
 
-  throw Unsupported("unknown logic " + name);
+  // unknown logic
+  return LOGICS.at("");
 }
 
 }

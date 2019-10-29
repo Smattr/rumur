@@ -9,7 +9,7 @@
 #   * After successful packaging, sign the release with
 #     `debsign ../rumur_<version>_<arch>.changes`.
 #   * Upload the package to mentors.debian.net with
-#     `dput mentors ../rumur_<version>_<arch>.changes`.
+#     `dput mentors ../rumur_<version>_source.changes`.
 #   * Check consistency of ../debian/watch with
 #     `cd .. && uscan --report --verbose`.
 #   * For building with pbuilder, first
@@ -39,6 +39,19 @@ fi
 # Move to our parent directory
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)/.."
 
+# check for artefacts from a prior build
+ls ../rumur_* &>/dev/null
+if [ $? -eq 0 ]; then
+  printf 'There are files leftover from the previous build (../rumur_*)\n' >&2
+  exit 1
+fi
+
+# check git tree
+if [[ ! -z "$(git status --short)" ]]; then
+  printf 'Working tree is not clean\n' >&2
+  exit 1
+fi
+
 # Exit on error
 set -e
 
@@ -50,3 +63,5 @@ gbp buildpackage --git-ignore-new --git-upstream-tag='v%(version)s' --git-debian
 
 # Check for consistency errors in the built package
 lintian -i -I --show-overrides
+
+printf 'Run pdebuild to test the package under pbuilder\n'

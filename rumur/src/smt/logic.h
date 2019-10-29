@@ -9,12 +9,11 @@ namespace smt {
 class Logic {
 
  private:
-  bool arrays;
   bool bitvectors;
   bool integers;
 
  public:
-  Logic(bool a, bool bv, bool ia);
+  Logic(bool bv, bool ia);
 
   std::string integer_type() const;
 
@@ -30,8 +29,6 @@ class Logic {
   std::string mul(void) const;
   std::string neg(void) const;
   std::string sub(void) const;
-
-  bool supports_arrays() const;
 };
 
 // find the version of the above API for a given SMT logic

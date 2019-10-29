@@ -38,8 +38,9 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
   // disable printing of "success" in response to commands
   query << "(set-option :print-success false)\n";
 
-  // select quantifier-free linear integer arithmetic logic
-  query << "(set-logic " << options.smt.logic << ")\n";
+  // set SMT logic
+  if (options.smt.logic != "")
+    query << "(set-logic " << options.smt.logic << ")\n";
 
   // append the declarations etc
   for (const std::shared_ptr<std::ostringstream> &scope : prelude)

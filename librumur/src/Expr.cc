@@ -319,7 +319,7 @@ EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
 
 void EquatableBinaryExpr::validate() const {
-  if (!lhs->type()->equatable_with(*rhs->type()))
+  if (!lhs->type()->coerces_to(*rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
 
@@ -865,7 +865,8 @@ std::string FunctionCall::to_string() const {
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
   const location &loc_):
-  Node(loc_), name(name_), type(type_) { }
+  Node(loc_), name(name_), type(type_),
+  decl(Ptr<VarDecl>::make(name_, type_, loc_)) { }
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   const Ptr<Expr> &to_, const location &loc_):
@@ -873,7 +874,12 @@ Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
   const Ptr<Expr> &to_, const Ptr<Expr> &step_, const location &loc_):
-  Node(loc_), name(name_), from(from_), to(to_), step(step_) { }
+  Node(loc_), name(name_), from(from_), to(to_), step(step_),
+  // we construct an artificial unbounded range here because we do not know
+  // whether the bounds of this iteration are constant prior to symbol
+  // resolution
+  decl(Ptr<VarDecl>::make(name_, Ptr<Range>::make(nullptr, nullptr, loc_), loc_))
+  { }
 
 Quantifier *Quantifier::clone() const {
   return new Quantifier(*this);
@@ -918,6 +924,33 @@ bool Quantifier::operator==(const Node &other) const {
     return false;
   }
   return true;
+}
+
+void Quantifier::validate() const {
+
+  bool from_const = from != nullptr && from->constant();
+  bool to_const   = to   != nullptr && to->constant();
+  bool step_const = step != nullptr && step->constant();
+
+  if (step_const && step->constant_fold() == 0)
+    throw Error("infinite loop due to 0 step", loc);
+
+  bool step_positive
+    = step == nullptr || (step_const && step->constant_fold() > 0);
+  bool step_negative
+    = step != nullptr && step_const && step->constant_fold() < 0;
+
+  if (from_const && to_const) {
+
+    bool up_count   = from->constant_fold() < to->constant_fold();
+    bool down_count = from->constant_fold() > to->constant_fold();
+
+    if (up_count && step_negative)
+      throw Error("infinite loop due to inverted step", loc);
+
+    if (down_count && step_positive)
+      throw Error("infinite loop due to inverted step", loc);
+  }
 }
 
 std::string Quantifier::to_string() const {

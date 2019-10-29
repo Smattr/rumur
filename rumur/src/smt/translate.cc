@@ -44,9 +44,6 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_element(const Element &n) {
-    if (!logic->supports_arrays())
-      throw Unsupported("model contains array types which are unsupported by "
-        "the given SMT logic");
     *this << "(select " << *n.array << " " << *n.index << ")";
   }
 

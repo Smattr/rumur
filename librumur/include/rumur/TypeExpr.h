@@ -46,9 +46,11 @@ struct TypeExpr : public Node {
    */
   virtual bool constant() const;
 
-  /* Whether an expression of this type can be compared to an expression of the
-   * other given type.
-   */
+  // can a value of this type can be assigned to or compared with a value of the
+  // given type?
+  bool coerces_to(const TypeExpr &other) const;
+
+  __attribute__((deprecated("equatable_with() has been replaced by coerces_to()")))
   bool equatable_with(const TypeExpr &other) const;
 };
 

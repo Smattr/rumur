@@ -472,9 +472,8 @@ static void xml_printf(const char *NONNULL s) {
   }
 }
 
-/* Supporting for tracing specific operations. This can be enabled during
- * checker generation with '--trace ...' and is useful for debugging Rumur
- * itself.
+/* Support for tracing specific operations. This can be enabled during checker
+ * generation with '--trace ...' and is useful for debugging Rumur itself.
  */
 static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
     ...) {
@@ -569,9 +568,9 @@ struct state {
 
 /* An initial size of thread-local allocator pools ~8MB. */
 static _Thread_local size_t arena_count =
-  (sizeof(struct state*) > 8 * 1024 * 1024)
+  (sizeof(struct state) > 8 * 1024 * 1024)
     ? 1
-    : (8 * 1024 * 1024 / sizeof(struct state*));
+    : (8 * 1024 * 1024 / sizeof(struct state));
 
 static _Thread_local struct state *arena_base;
 static _Thread_local struct state *arena_limit;
@@ -900,13 +899,16 @@ static __attribute__((unused)) struct handle state_handle(
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
-static raw_value_t handle_read_raw(struct handle h) {
+static raw_value_t handle_read_raw(const struct state *NONNULL s,
+    struct handle h) {
 
-  // FIXME: When we get a user-configurable value type, users will be able to
-  // cause this assertion to fail, so we should validate the necessary
-  // conditions at code generation time.
-  assert(h.width <= sizeof(raw_value_t) * 8 && "read of a handle to a value "
-    "that is larger than our raw value type");
+  /* Check if this read is larger than the variable we will store it in. This
+   * can only occur if the user has manually overridden value_t with the
+   * --value-type command line argument.
+   */
+  if (__builtin_expect(h.width > sizeof(raw_value_t) * 8, 0)) {
+    error(s, "read of a handle that is wider than the value type");
+  }
 
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
     "the maximum width of a simple type in this model");
@@ -1067,7 +1069,7 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
     || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
     && "out of bounds read in handle_read()");
 
-  raw_value_t dest = handle_read_raw(h);
+  raw_value_t dest = handle_read_raw(s, h);
 
   if (__builtin_expect(dest == 0, 0)) {
     error(s, "%sread of undefined value in %s%s%s", context, name,
@@ -1077,12 +1079,18 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
   return decode_value(lb, ub, dest);
 }
 
-static void handle_write_raw(struct handle h, raw_value_t value) {
+static void handle_write_raw(const struct state *NONNULL s, struct handle h,
+    raw_value_t value) {
 
-  assert(h.width <= sizeof(raw_value_t) * 8 && "write of a handle to a value "
-    "that is larger than our raw value type");
+  /* Check if this write is larger than the variable we will are reading from.
+   * This can only occur if the user has manually overridden value_t with the
+   * --value-type command line argument.
+   */
+  if (__builtin_expect(h.width > sizeof(raw_value_t) * 8, 0)) {
+    error(s, "write of a handle that is wider than the value type");
+  }
 
-  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write of a handle that is larger than "
+  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write to a handle that is larger than "
     "the maximum width of a simple type in this model");
 
   TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
@@ -1244,7 +1252,7 @@ static __attribute__((unused)) void handle_write(const char *NONNULL context,
       rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
   }
 
-  handle_write_raw(h, r);
+  handle_write_raw(s, h, r);
 }
 
 static __attribute__((unused)) void handle_zero(struct handle h) {
@@ -1376,8 +1384,9 @@ static __attribute__((unused)) struct handle handle_index(
   };
 }
 
-static __attribute__((unused)) value_t handle_isundefined(struct handle h) {
-  raw_value_t v = handle_read_raw(h);
+static __attribute__((unused)) value_t handle_isundefined(
+    const struct state *NONNULL s, struct handle h) {
+  raw_value_t v = handle_read_raw(s, h);
 
   return v == 0;
 }
@@ -2471,8 +2480,8 @@ static slot_t state_to_slot(const struct state *s) {
  * State set                                                                   *
  *                                                                             *
  * The following implementation provides a set for storing the seen states.    *
- * There is no support for testing whether something is in the set or for      *
- * removing elements, only thread-safe insertion of elements.                  *
+ * There is no support for removing elements, only thread-safe insertion of    *
+ * elements.                                                                   *
  ******************************************************************************/
 
 enum { INITIAL_SET_SIZE_EXPONENT = sizeof(unsigned long long) * 8 - 1 -
@@ -2877,7 +2886,7 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
-  previous = (struct state*)s->previous;
+  previous = state_drop_const(s->previous);
 #endif
 
   /* If the given bit was already set, we know all the predecessors of this

@@ -420,6 +420,8 @@ struct Quantifier : public Node {
   Ptr<Expr> to;
   Ptr<Expr> step;
 
+  Ptr<VarDecl> decl;
+
   Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc);
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
@@ -430,6 +432,7 @@ struct Quantifier : public Node {
   virtual ~Quantifier() = default;
   Quantifier *clone() const final;
   bool operator==(const Node &other) const final;
+  void validate() const final;
   std::string to_string() const;
 
   // whether the quantifier's range can be constant folded

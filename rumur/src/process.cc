@@ -106,10 +106,12 @@ int run(const std::vector<std::string> &args, const std::string &input,
   int ret = -1;
   std::ostringstream buffered_output;
   off_t input_offset = 0;
+  int err = 0;
 
 
-  if (posix_spawn_file_actions_init(&fa) < 0) {
-    *debug << "failed file_actions_init: " << strerror(errno) << "\n";
+  err = posix_spawn_file_actions_init(&fa);
+  if (err != 0) {
+    *debug << "failed file_actions_init: " << strerror(err) << "\n";
     return -1;
   }
 
@@ -127,24 +129,30 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // have the child close the ends it won't need
-  if (posix_spawn_file_actions_addclose(&fa, in[WRITE_FD]) < 0 ||
-      posix_spawn_file_actions_addclose(&fa, out[READ_FD]) < 0) {
-    *debug << "failed file_actions_addclose: " << strerror(errno) << "\n";
+  err = posix_spawn_file_actions_addclose(&fa, in[WRITE_FD]);
+  if (err == 0)
+    err = posix_spawn_file_actions_addclose(&fa, out[READ_FD]);
+  if (err != 0) {
+    *debug << "failed file_actions_addclose: " << strerror(err) << "\n";
     goto done;
   }
 
   // replace the child's stdin, stdout and stderr with the pipes
-  if (posix_spawn_file_actions_adddup2(&fa, in[READ_FD], STDIN_FILENO) < 0 ||
-      posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDOUT_FILENO) < 0 ||
-      posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDERR_FILENO) < 0) {
-    *debug << "failed file_actions_adddup2: " << strerror(errno) << "\n";
+  err = posix_spawn_file_actions_adddup2(&fa, in[READ_FD], STDIN_FILENO);
+  if (err == 0)
+    err = posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDOUT_FILENO);
+  if (err == 0)
+    err = posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDERR_FILENO);
+  if (err != 0) {
+    *debug << "failed file_actions_adddup2: " << strerror(err) << "\n";
     goto done;
   }
 
   // spawn the child
   pid_t pid;
-  if (posix_spawnp(&pid, argv[0], &fa, nullptr, argv.data(), get_environ()) != 0) {
-    *debug << "failed posix_spawnp: " << strerror(errno) << "\n";
+  err = posix_spawnp(&pid, argv[0], &fa, nullptr, argv.data(), get_environ());
+  if (err != 0) {
+    *debug << "failed posix_spawnp: " << strerror(err) << "\n";
     goto done;
   }
 

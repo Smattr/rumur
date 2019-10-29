@@ -17,7 +17,7 @@ static void clear(std::ostream &out, const TypeExpr &t,
   const std::string indent = std::string(2 * (depth + 1), ' ');
 
   if (t.is_simple()) {
-    out << indent << "handle_write_raw((struct handle){ .base = root.base + "
+    out << indent << "handle_write_raw(s, (struct handle){ .base = root.base + "
       << "(root.offset + " << offset << ") / CHAR_BIT, .offset = "
       << "(root.offset + " << offset << ") % CHAR_BIT, .width = "
       << t.width() << "ull }, 1);\n";

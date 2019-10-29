@@ -20,33 +20,20 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   const std::string block = "_ru2_" + q.name;
   const std::string handle = "ru_" + q.name;
 
-  /* Calculate the width of the loop counter type. If we don't have a proper
-   * type, we just default to a width that covers the full value_t for now.
-   */
-  std::string width;
-  if (q.type == nullptr) {
-    width = "(sizeof(value_t) * 8 + 1)";
-  } else {
-    width = "((size_t)" + q.type->width().get_str() + "ull)";
-  }
+  // Calculate the width of the loop counter type. Use the VarDecl that
+  // references to this variable will be referring to.
+  std::string width = "((size_t)" + q.decl->type->width().get_str() + "ull)";
 
-  /* Write out the step in advance. We generate this here, rather than inline so
-   * as to avoid evaluating it twice (once here and then once in the
-   * generate_quantifier_footer) as it may contain side effects.
-   */
-  out
-    << "{\n"
-    << "  const raw_value_t step = (raw_value_t)";
-  if (q.step == nullptr) {
-    out << "1";
-  } else {
-    generate_rvalue(out, *q.step);
-  }
-  out << ";\n";
+  // open a scope to allow us to use the names 'lb', 'ub', and 'step' without
+  // worrying about collisions
+  out << "{\n";
 
-  // Similar for the upper and lower bounds.
+  // Write out the upper bound, lower bound, and step in advance. We generate
+  // these here, rather than inline so as to avoid evaluating them twice (once
+  // here and then once in the generate_quantifier_footer) as they may contain
+  // side effects.
 
-  out << "  const raw_value_t lb = (raw_value_t)";
+  out << "  const value_t lb = ";
   if (q.type == nullptr) {
     assert(q.from != nullptr);
     generate_rvalue(out, *q.from);
@@ -55,7 +42,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   }
   out << ";\n";
 
-  out << "  const raw_value_t ub = (raw_value_t)";
+  out << "  const value_t ub = ";
   if (q.type == nullptr) {
     assert(q.to != nullptr);
     generate_rvalue(out, *q.to);
@@ -65,23 +52,132 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   out << ";\n";
 
   out
-    << "  for (raw_value_t " << counter << " = 1; (value_t)" << counter
-      << " <= (value_t)(ub - lb + 1); " << counter << " += step) {\n"
+    << "  const raw_value_t step = (raw_value_t)";
+  if (q.step == nullptr) {
+    out << "(ub >= lb ? 1 : -1)";
+  } else {
+    generate_rvalue(out, *q.step);
+  }
+  out << ";\n";
+
+  // if the step was not a generation-time constant, it is possible that it
+  // could work out to be 0 at runtime resulting in an infinite loop
+  out
+    << "  if (step == 0) {\n"
+    << "    error(s, \"infinite loop due to step being 0\");\n"
+    << "  }\n";
+
+  // it is also possible we find the iteration goes the wrong way
+  out
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic push\n"
+    << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+    << "#endif\n"
+    << "  if ((ub > lb && (value_t)step < 0) ||\n"
+    << "      (ub < lb && (value_t)step > 0)) {\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic pop\n"
+    << "#endif\n"
+    << "    error(s, \"infinite loop due to step being in the wrong direction\");\n"
+    << "  }\n";
+
+  // Type lower bound, as distinct from the iteration lower bound.
+  // bounds. References to this quantified variable will use these when
+  // unpacking its compressed representation, so we need to offset the values we
+  // store from it.
+  const std::string lower = q.decl->type->lower_bound();
+  const std::string upper = q.decl->type->upper_bound();
+
+  out
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic push\n"
+    << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+    << "#endif\n"
+    << "  ASSERT(lb >= " << lower << " && lb <= " << upper << " && "
+      "\"iteration lower bound exceeds type limits\");\n"
+    << "  ASSERT(ub >= " << lower << " && ub <= " << upper << " && "
+      "\"iteration upper bound exceeds type limits\");\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic pop\n"
+    << "#endif\n";
+
+// shorthands for converting between value_t and raw_value_t when we know the
+// value we have is in range
+#define V_TO_RV(x) ("(((raw_value_t)" + std::string(x) + \
+  ") + (raw_value_t)1 - (raw_value_t)(" + q.decl->type->lower_bound() + "))")
+#define RV_TO_V(x) ("((value_t)(" + std::string(x) + \
+  " - (raw_value_t)1 + (raw_value_t)(" + q.decl->type->lower_bound() + ")))")
+
+  // construct the pieces of our for-loop header
+  const std::string init = "raw_value_t " + counter + " = " + V_TO_RV("lb");
+  const std::string cond = counter + " == " + V_TO_RV("lb") + " || "
+                           "(lb < ub && " + RV_TO_V(counter) + " <= ub) || "
+                           "(lb > ub && " + RV_TO_V(counter) + " >= ub)";
+  const std::string inc = counter + " += step";
+
+  out
+    << "  for (" << init << "; " << cond << "; " << inc << ") {\n"
     << "    uint8_t " << block << "[BITS_TO_BYTES(" << width << ")] = { 0 };\n"
     << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = " << width << " };\n"
-    << "    handle_write_raw(" << handle << ", " << counter << ");\n";
+    << "    handle_write_raw(s, " << handle << ", " << counter << ");\n";
 }
 
 void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
 
   const std::string counter = "_ru1_" + q.name;
 
+  // is this a loop whose last iteration will result in a numeric overflow?
+  std::string will_overflow = RV_TO_V("max_ - step") + " < ub";
+
+  // are we on the last iteration?
+  std::string last_iteration = counter + " > RAW_VALUE_MAX - step";
+
+  // does this loop count up?
+  const std::string up_count = "ub >= lb && (value_t)step > 0";
+
   out
-    << "    if (RAW_VALUE_MAX - step < ub - lb + 1 && " << counter
-      << " > RAW_VALUE_MAX - step) {\n"
-    << "      break;\n"
-    << "    }\n"
+    << "    /* If this iteration runs right up to the type limits, the last\n"
+    << "     * increment will overflow and fail to terminate, so we guard\n"
+    << "     * against that here.\n"
+    << "     */\n"
+    << "    {\n"
+    << "      /* GCC issues spurious -Wsign-compare warnings when doing\n"
+    << "       * subtraction on raw_value_t literals, so we suppress these\n"
+    << "       * by indirecting via this local constant. For more information:\n"
+    << "       * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=38341\n"
+    << "       */\n"
+    << "      const raw_value_t max_ = RAW_VALUE_MAX;\n"
+    << "      if (" << up_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
+    << "        break;\n"
+    << "      }\n"
+    << "    }\n";
+
+  // do the same for if it is a down-counting loop
+  will_overflow = RV_TO_V("min_ - step") + " > lb";
+  last_iteration = counter + " > RAW_VALUE_MIN - step";
+  const std::string down_count = "ub <= lb && (value_t)step < 0";
+
+  out
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic push\n"
+    << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+    << "#endif\n"
+    << "    {\n"
+    << "      /* see above explanation of why we use an extra constant here */\n"
+    << "      const raw_value_t min_ = RAW_VALUE_MIN;\n"
+    << "      if (" << down_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
+    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "  #pragma GCC diagnostic pop\n"
+    << "#endif\n"
+    << "        break;\n"
+    << "      }\n"
+    << "    }\n";
+
+  out
     << "  }\n"
     << "}\n";
 }
+
+#undef V_TO_RV
+#undef RV_TO_V

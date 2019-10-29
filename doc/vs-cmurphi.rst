@@ -13,7 +13,7 @@ available. You can tune how many threads are used with the ``--threads`` command
 line option when generating the verifier.
 
 CMurphi seems intended to run on Linux and older Unix-style platforms. Rumur
-should run on any POSIX operating system. However, the verifier's code does make
+should run on any POSIX operating system. However, the verifier’s code does make
 use of C extensions that may only be supported by GCC and Clang.
 
 Syntax Differences
@@ -46,6 +46,14 @@ In addition to assertions and invariants that are supported by CMurphi, Rumur
 supports assumptions with the keyword ``assume``. Any state that fails an
 assumption is considered irrelevant and discarded.
 
+Comparisons
+-----------
+CMurphi has a limitation that ``=`` and ``!=`` can only be used to compare
+simple values (enums, ranges or scalarsets). Rumur lets you compare any
+compatible values; that is, it also supports records and arrays. The semantics
+are equivalent to writing out a long form comparison of every one of the complex
+values’ members.
+
 Command-line Options
 --------------------
 CMurphi has a set of command-line options, and its generated verifier has
@@ -57,27 +65,41 @@ aggressively optimise during compilation.
 
 Deadlock
 --------
-The verifier can detect "deadlocks" in your state graph, where there are no
+The verifier can detect “deadlocks” in your state graph, where there are no
 transitions that make progress. CMurphi considers a deadlock to have occurred
 in any state that only has enabled transitions that lead back to itself. Rumur
 has two deadlock modes that can be selected with the ``--deadlock-detection``
-command line option: "stuttering" and "stuck". Stuttering, the default,  matches
-CMurphi's definition. Stuck uses a weaker definition that considers a deadlock
+command line option: “stuttering” and “stuck”. Stuttering, the default,  matches
+CMurphi’s definition. Stuck uses a weaker definition that considers a deadlock
 to have occurred only when a state has *no* enabled transitions.
 
-While Statement Termination
----------------------------
+Loops
+-----
+CMurphi requires the step in a quantifier expression to be a generation-time
+constant. I.e. in the code:
+
+.. code-block:: murphi
+
+  for i := l to u by s do
+    ...
+  end;
+
+``s`` must have a known constant value when the verifier is being generated.
+Rumur has no such restrictions. However steps that are ``0`` at generation-time
+are rejected and steps that turn out to be ``0`` or incrementing in the wrong
+direction at runtime will be raised as a runtime error by the verifier.
+
 CMurphi considers an infinite loop to be a runtime error that the verifier
 should be capable of detecting and notifying the user about. It has an iteration
 bound (by default 1000), after which it will consider a loop to be
 non-terminating and will raise an error.
 
-Rumur trusts the user not to write an infinite loop. If you write an infinite
-loop, your verifier will run forever. You have been warned.
+Rumur trusts the user not to write an infinite ``while`` loop. If you write an
+infinite loop, your verifier will run forever. You have been warned.
 
 Colour Output
 -------------
-Rumur's generated verifier attempts to imitate CMurphi's verifier's output to
+Rumur’s generated verifier attempts to imitate CMurphi’s verifier’s output to
 smooth the transition for users, but by default Rumur colourises its output
 using ANSI terminal sequences. This behaviour is controllable via command-line
 options.
