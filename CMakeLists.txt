@@ -34,6 +34,7 @@ endif()
 
 add_subdirectory(ast-dump)
 add_subdirectory(librumur)
+add_subdirectory(pp)
 add_subdirectory(rumur)
 
 enable_testing()
