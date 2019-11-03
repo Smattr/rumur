@@ -1,4 +1,7 @@
+#include <cassert>
+#include <ctype.h>
 #include <iostream>
+#include "options.h"
 #include "Printer.h"
 #include <rumur/rumur.h>
 #include <string>
@@ -15,6 +18,10 @@ void Printer::visit_aliasdecl(const AliasDecl &n) {
   sync_to(n);
   dispatch(*n.value);
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_aliasrule(const AliasRule &n) {
@@ -34,6 +41,10 @@ void Printer::visit_aliasrule(const AliasRule &n) {
     }
   }
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_aliasstmt(const AliasStmt &n) {
@@ -88,6 +99,10 @@ void Printer::visit_constdecl(const ConstDecl &n) {
   sync_to(*n.value);
   dispatch(*n.value);
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_div(const Div &n) {
@@ -193,6 +208,10 @@ void Printer::visit_function(const Function &n) {
     }
   }
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_functioncall(const FunctionCall &n) {
@@ -336,6 +355,10 @@ void Printer::visit_propertyrule(const PropertyRule &n) {
   sync_to(n.property);
   dispatch(n.property);
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_propertystmt(const PropertyStmt &n) {
@@ -419,6 +442,10 @@ void Printer::visit_ruleset(const Ruleset &n) {
     }
   }
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_scalarset(const Scalarset &n) {
@@ -456,6 +483,10 @@ void Printer::visit_simplerule(const SimpleRule &n) {
     }
   }
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_startstate(const StartState &n) {
@@ -482,6 +513,10 @@ void Printer::visit_startstate(const StartState &n) {
     }
   }
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_sub(const Sub &n) {
@@ -537,6 +572,10 @@ void Printer::visit_typedecl(const TypeDecl &n) {
   sync_to(*n.value);
   dispatch(*n.value);
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_typeexprid(const TypeExprID &n) {
@@ -556,6 +595,10 @@ void Printer::visit_vardecl(const VarDecl &n) {
   sync_to(*n.type);
   dispatch(*n.type);
   sync_to(n.loc.end);
+
+  if (options.explicit_semicolons) {
+    pending_semi = true;
+  }
 }
 
 void Printer::visit_while(const While &n) {
@@ -574,6 +617,19 @@ void Printer::visit_while(const While &n) {
 
 Printer::~Printer() {
   sync_to();
+
+  if (pending_semi) {
+    out << ";";
+    pending_semi = false;
+
+    // flush anything we have buffered
+    out << pending.str();
+    pending.str("");
+  }
+
+  assert(pending.str() == ""
+    && "remaining buffered data on Printer destruction");
+
   out.flush();
 }
 
@@ -591,7 +647,32 @@ void Printer::sync_to(const position &pos) {
       break;
     }
 
-    out << static_cast<char>(c);
+    if (pending_semi) {
+      if (c == ';') {
+        // there was an explicit semi-colon in the input, so we do not need the
+        // inferred semi-colon
+        out << pending.str() << static_cast<char>(c);
+        pending.str("");
+        pending_semi = false;
+      } else if (isspace(c)) {
+        // assume that there may still be a semi-colon coming up in the input
+        // and we should not yet insert a synthetic semi-colon
+        pending << static_cast<char>(c);
+      } else {
+        // We now know we should insert an implied semi-colon here. Note that
+        // the non-whitespace character we are seeing here might be the start of
+        // a comment which is then following by an explicit semi-colon, but
+        // assume this situation is rare enough to not be a problem.
+        out << ";" << pending.str() << static_cast<char>(c);
+        pending.str("");
+        pending_semi = false;
+      }
+    } else {
+      assert(pending.str() == ""
+        && "bypassing existed buffered data during output");
+
+      out << static_cast<char>(c);
+    }
 
     if (c == '\n') {
       line++;

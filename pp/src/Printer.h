@@ -4,6 +4,7 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
+#include <sstream>
 
 class Printer : public rumur::ConstBaseTraversal {
 
@@ -18,6 +19,10 @@ class Printer : public rumur::ConstBaseTraversal {
   // does the next semantically relevant output character need to be a
   // semicolon?
   bool pending_semi = false;
+
+  // buffered content that we have notionally written but may need to add
+  // characters before it in the output
+  std::ostringstream pending;
 
  public:
   Printer(std::istream &in_, std::ostream &out_);
