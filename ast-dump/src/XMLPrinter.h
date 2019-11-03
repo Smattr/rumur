@@ -8,13 +8,14 @@
 class XMLPrinter : public rumur::ConstBaseTraversal {
 
  private:
+  std::istream &in;
   std::ostream *o;
-  std::istream *in = nullptr;
   unsigned long line = 1;
   unsigned long column = 1;
 
  public:
-  XMLPrinter(const std::string &in_filename, std::ostream &o_);
+  XMLPrinter(const std::string &in_filename, std::istream &in_,
+    std::ostream &o_);
 
   void visit_add(const rumur::Add &n) final;
   void visit_aliasdecl(const rumur::AliasDecl &n) final;

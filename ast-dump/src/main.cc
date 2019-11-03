@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
   assert(m != nullptr);
 
   {
-    XMLPrinter p(in_filename, out == nullptr ? std::cout : *out);
+    XMLPrinter p(in_filename, *in_replay, out == nullptr ? std::cout : *out);
     p.dispatch(*m);
   }
 

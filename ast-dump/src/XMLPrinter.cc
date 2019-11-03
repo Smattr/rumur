@@ -35,27 +35,17 @@ static std::string xml_escape(const std::string &s) {
   return escaped;
 }
 
-XMLPrinter::XMLPrinter(const std::string &in_filename, std::ostream &o_):
-  o(&o_) {
+XMLPrinter::XMLPrinter(const std::string &in_filename, std::istream &in_,
+    std::ostream &o_): in(in_), o(&o_) {
 
   // Write out XML version header
   *o << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 
+  *o << "<unit";
   if (in_filename != "") {
-    *o << "<unit filename=\"" << in_filename << "\">";
-
-    auto i = new std::ifstream(in_filename);
-    if (!i->is_open()) {
-      /* Ignore errors as this just means we'll get degraded information in the
-       * AST dump.
-       */
-      delete i;
-    } else {
-      in = i;
-    }
-  } else {
-    *o << "<unit>";
+    *o << " filename=\"" << in_filename << "\"";
   }
+  *o << ">";
 }
 
 void XMLPrinter::visit_add(const Add &n) {
@@ -942,7 +932,6 @@ XMLPrinter::~XMLPrinter() {
   sync_to();
   *o << "</unit>\n";
   o->flush();
-  delete in;
 }
 
 void XMLPrinter::sync_to(const Node &n) {
@@ -951,13 +940,11 @@ void XMLPrinter::sync_to(const Node &n) {
 
 void XMLPrinter::sync_to(const position &pos) {
 
-  while (in != nullptr && (line < pos.line ||
+  while (in.good() && (line < pos.line ||
          (line == pos.line && column < pos.column))) {
 
-    int c = in->get();
+    int c = in.get();
     if (c == EOF) {
-      delete in;
-      in = nullptr;
       break;
     }
 
