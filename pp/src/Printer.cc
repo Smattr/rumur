@@ -359,7 +359,10 @@ void Printer::visit_propertyrule(const PropertyRule &n) {
   dispatch(n.property);
   sync_to(n.loc.end);
 
-  if (options.explicit_semicolons) {
+  if (options.remove_liveness && n.property.category == Property::LIVENESS) {
+    // this node will have been deleted, so we want to suppress its semi-colon
+    swallow_semi = true;
+  } else if (options.explicit_semicolons) {
     pending_semi = true;
   }
 }
@@ -369,6 +372,11 @@ void Printer::visit_propertystmt(const PropertyStmt &n) {
   sync_to(n.property);
   dispatch(n.property);
   sync_to(n.loc.end);
+
+  if (options.remove_liveness && n.property.category == Property::LIVENESS) {
+    // this node will have been deleted, so we want to suppress its semi-colon
+    swallow_semi = true;
+  }
 }
 
 void Printer::visit_put(const Put &n) {
@@ -658,7 +666,21 @@ void Printer::sync_to(const position &pos) {
       skip = true;
     }
 
+    if (!skip && swallow_semi) {
+      assert(!pending_semi && "pending_semi and swallow_semi set at once");
+
+      if (c == ';') {
+        skip = true;
+        swallow_semi = false;
+      } else if (!isspace(c)) {
+        // encountered a non-semi meaningful character
+        swallow_semi = false;
+      }
+    }
+
     if (!skip && pending_semi) {
+      assert(!swallow_semi && "pending_semi and swallow_semi set at once");
+
       if (c == ';') {
         // there was an explicit semi-colon in the input, so we do not need the
         // inferred semi-colon

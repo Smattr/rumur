@@ -21,6 +21,10 @@ class Printer : public rumur::ConstBaseTraversal {
   // semicolon?
   bool pending_semi = false;
 
+  // Omit semi-colon if it is the next encountered character? This should never
+  // be set at the same time as pending semi.
+  bool swallow_semi = false;
+
   // buffered content that we have notionally written but may need to add
   // characters before it in the output
   std::ostringstream pending;
