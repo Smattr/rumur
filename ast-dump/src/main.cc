@@ -15,9 +15,10 @@
 
 static std::string in_filename;
 static std::shared_ptr<std::istream> in;
+static std::shared_ptr<std::istream> in_replay;
 static std::shared_ptr<std::ostream> out;
 
-// buffer the contents of stdin into a buffer we can seek on
+// buffer the contents of stdin so we can read it twice
 static void buffer_stdin(void) {
 
   // read in all of stdin
@@ -25,8 +26,9 @@ static void buffer_stdin(void) {
   buf << std::cin.rdbuf();
   buf.flush();
 
-  // put this into a buffer we can read from and seek
+  // put this into two buffers we can read from
   in = std::make_shared<std::istringstream>(buf.str());
+  in_replay = std::make_shared<std::istringstream>(buf.str());
 }
 
 static void parse_args(int argc, char **argv) {
@@ -79,13 +81,22 @@ static void parse_args(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
 
-    auto i = std::make_shared<std::ifstream>(argv[optind]);
+    in_filename = argv[optind];
+
+    auto i = std::make_shared<std::ifstream>(in_filename);
     if (!i->is_open()) {
-      std::cerr << "failed to open " << argv[optind] << "\n";
+      std::cerr << "failed to open " << in_filename << "\n";
       exit(EXIT_FAILURE);
     }
-    in_filename = argv[optind];
     in = i;
+
+    // open the input again that we need for replay during XML output
+    auto i2 = std::make_shared<std::ifstream>(in_filename);
+    if (!i2->is_open()) {
+      std::cerr << "failed to open " << in_filename << "\n";
+      exit(EXIT_FAILURE);
+    }
+    in_replay = i2;
   } else {
     // we are going to read data from stdin
     buffer_stdin();
