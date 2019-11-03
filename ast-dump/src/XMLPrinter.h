@@ -9,7 +9,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
 
  private:
   std::istream &in;
-  std::ostream *o;
+  std::ostream &o;
   unsigned long line = 1;
   unsigned long column = 1;
 
