@@ -2,13 +2,16 @@
 #include <ctype.h>
 #include <iostream>
 #include "options.h"
+#include "position-ops.h"
 #include "Printer.h"
 #include <rumur/rumur.h>
 #include <string>
 
 using namespace rumur;
 
-Printer::Printer(std::istream &in_, std::ostream &out_): in(in_), out(out_) { }
+Printer::Printer(std::istream &in_, std::ostream &out_,
+  const std::vector<location> &deletions_): in(in_), out(out_),
+  deletions(deletions_) { }
 
 void Printer::visit_add(const Add &n) {
   visit_bexpr("add", n);
@@ -647,7 +650,15 @@ void Printer::sync_to(const position &pos) {
       break;
     }
 
-    if (pending_semi) {
+    bool skip = false;
+
+    // if this character is part of a range that we are to delete, then skip it
+    position here(nullptr, line, column);
+    if (deleted(here)) {
+      skip = true;
+    }
+
+    if (!skip && pending_semi) {
       if (c == ';') {
         // there was an explicit semi-colon in the input, so we do not need the
         // inferred semi-colon
@@ -667,7 +678,7 @@ void Printer::sync_to(const position &pos) {
         pending.str("");
         pending_semi = false;
       }
-    } else {
+    } else if (!skip) {
       assert(pending.str() == ""
         && "bypassing existed buffered data during output");
 
@@ -697,4 +708,13 @@ void Printer::visit_uexpr(const std::string &, const UnaryExpr &n) {
   sync_to(*n.rhs);
   dispatch(*n.rhs);
   sync_to(n.loc.end);
+}
+
+bool Printer::deleted(const position &pos) const {
+  for (const location &loc : deletions) {
+    if (loc.begin <= pos && loc.end > pos) {
+      return true;
+    }
+  }
+  return false;
 }

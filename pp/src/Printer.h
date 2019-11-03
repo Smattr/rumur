@@ -5,6 +5,7 @@
 #include <rumur/rumur.h>
 #include <string>
 #include <sstream>
+#include <vector>
 
 class Printer : public rumur::ConstBaseTraversal {
 
@@ -24,8 +25,12 @@ class Printer : public rumur::ConstBaseTraversal {
   // characters before it in the output
   std::ostringstream pending;
 
+  // ranges from the source file that should be dropped in the output file
+  std::vector<rumur::location> deletions;
+
  public:
-  Printer(std::istream &in_, std::ostream &out_);
+  Printer(std::istream &in_, std::ostream &out_,
+    const std::vector<rumur::location> &deletions_);
 
   void visit_add(const rumur::Add &n) final;
   void visit_aliasdecl(const rumur::AliasDecl &n) final;
@@ -95,4 +100,7 @@ class Printer : public rumur::ConstBaseTraversal {
   void sync_to(const rumur::Node &n);
   void sync_to(const rumur::position &pos
     = rumur::position(nullptr, UINT_MAX, UINT_MAX));
+
+  // should this character from the input be dropped in the output?
+  bool deleted(const rumur::position &pos) const;
 };

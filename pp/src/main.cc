@@ -10,6 +10,7 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <sys/stat.h>
+#include <vector>
 
 using namespace rumur;
 
@@ -132,7 +133,7 @@ int main(int argc, char **argv) {
   assert(m != nullptr);
 
   {
-    Printer p(*in_replay, out == nullptr ? std::cout : *out);
+    Printer p(*in_replay, out == nullptr ? std::cout : *out, {});
     p.dispatch(*m);
   }
 
