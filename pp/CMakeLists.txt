@@ -1,5 +1,7 @@
 add_executable(rumur-pp
-  src/main.cc)
+  src/main.cc
+  src/options.cc
+  src/Printer.cc)
 
 target_include_directories(rumur-pp
   PRIVATE
