@@ -1,4 +1,5 @@
 add_executable(rumur-pp
+  src/find-liveness.cc
   src/main.cc
   src/options.cc
   src/Printer.cc)

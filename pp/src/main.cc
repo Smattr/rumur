@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include "find-liveness.h"
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -39,7 +40,9 @@ static void parse_args(int argc, char **argv) {
       { "explicit-semicolons",    no_argument,       0, 128 },
       { "help",                   no_argument,       0, '?' },
       { "no-explicit-semicolons", no_argument,       0, 129 },
+      { "no-remove-liveness",     no_argument,       0, 130 },
       { "output",                 required_argument, 0, 'o' },
+      { "remove-liveness",        no_argument,       0, 131 },
       { 0, 0, 0, 0 },
     };
 
@@ -64,6 +67,10 @@ static void parse_args(int argc, char **argv) {
         options.explicit_semicolons = false;
         break;
 
+      case 130: // --no-remove-liveness
+        options.remove_liveness = false;
+        break;
+
       case 'o': { // --output
         auto o = std::make_shared<std::ofstream>(optarg);
         if (!o->is_open()) {
@@ -73,6 +80,10 @@ static void parse_args(int argc, char **argv) {
         out = o;
         break;
       }
+
+      case 131: // --remove-liveness
+        options.remove_liveness = true;
+        break;
 
       default:
         std::cerr << "unexpected error\n";
@@ -132,8 +143,14 @@ int main(int argc, char **argv) {
 
   assert(m != nullptr);
 
+  // optionally remove liveness properties
+  std::vector<location> liveness_ranges;
+  if (options.remove_liveness) {
+    liveness_ranges = find_liveness(*m);
+  }
+
   {
-    Printer p(*in_replay, out == nullptr ? std::cout : *out, {});
+    Printer p(*in_replay, out == nullptr ? std::cout : *out, liveness_ranges);
     p.dispatch(*m);
   }
 
