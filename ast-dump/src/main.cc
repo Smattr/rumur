@@ -7,6 +7,7 @@
 #include <memory>
 #include "resources.h"
 #include <rumur/rumur.h>
+#include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -15,6 +16,18 @@
 static std::string in_filename;
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::ostream> out;
+
+// buffer the contents of stdin into a buffer we can seek on
+static void buffer_stdin(void) {
+
+  // read in all of stdin
+  std::ostringstream buf;
+  buf << std::cin.rdbuf();
+  buf.flush();
+
+  // put this into a buffer we can read from and seek
+  in = std::make_shared<std::istringstream>(buf.str());
+}
 
 static void parse_args(int argc, char **argv) {
 
@@ -73,6 +86,9 @@ static void parse_args(int argc, char **argv) {
     }
     in_filename = argv[optind];
     in = i;
+  } else {
+    // we are going to read data from stdin
+    buffer_stdin();
   }
 }
 
@@ -81,10 +97,12 @@ int main(int argc, char **argv) {
   // Parse command line options
   parse_args(argc, argv);
 
+  assert(in != nullptr);
+
   // Parse input model
   rumur::Ptr<rumur::Model> m;
   try {
-    m = rumur::parse(in == nullptr ? &std::cin : in.get());
+    m = rumur::parse(in.get());
     resolve_symbols(*m);
     validate(*m);
   } catch (rumur::Error &e) {
