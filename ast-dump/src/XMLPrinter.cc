@@ -41,11 +41,7 @@ XMLPrinter::XMLPrinter(const std::string &in_filename, std::istream &in_,
   // Write out XML version header
   *o << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 
-  *o << "<unit";
-  if (in_filename != "") {
-    *o << " filename=\"" << in_filename << "\"";
-  }
-  *o << ">";
+  *o << "<unit filename=\"" << in_filename << "\">";
 }
 
 void XMLPrinter::visit_add(const Add &n) {

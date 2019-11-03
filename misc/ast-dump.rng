@@ -1064,11 +1064,9 @@
 
   <define name="unit">
     <element name="unit">
-      <optional>
-        <attribute name="filename">
-          <text/>
-        </attribute>
-      </optional>
+      <attribute name="filename">
+        <text/>
+      </attribute>
       <ref name="location"/>
       <ref name="content"/>
       <ref name="model"/>

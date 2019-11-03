@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include "XMLPrinter.h"
 
-static std::string in_filename;
+static std::string in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::istream> in_replay;
 static std::shared_ptr<std::ostream> out;
