@@ -437,7 +437,7 @@ def test_ast_dumper_cmurphi_example_template(self, model):
       sys.stderr.write(stderr)
     self.assertEqual(ret, 0)
 
-def main(argv):
+def main():
 
   # setup stdout/stderr to make encoding errors non-fatal
   try:
@@ -581,4 +581,4 @@ def main(argv):
   unittest.main()
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
