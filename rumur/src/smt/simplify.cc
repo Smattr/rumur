@@ -23,7 +23,7 @@ namespace smt {
  * code. We assume the C compiler building the generated verifier is clever
  * enough to make these transformations itself, so we leave them for it.
  */
-namespace { class Simplifier : public BaseTraversal {
+namespace { class Simplifier : public BaseTraversal<> {
 
  private:
   Solver *solver;

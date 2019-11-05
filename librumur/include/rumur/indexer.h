@@ -12,7 +12,7 @@
 
 namespace rumur {
 
-class Indexer : public BaseTraversal {
+class Indexer : public BaseTraversal<> {
 
  private:
   size_t next = 0;

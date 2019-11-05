@@ -17,7 +17,7 @@ namespace rumur {
 
 namespace {
 
-class Validator : public ConstBaseTraversal {
+class Validator : public ConstBaseTraversal<> {
 
  public:
   void visit_add(const Add &n) final {

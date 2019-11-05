@@ -5,7 +5,7 @@
 #include <rumur/rumur.h>
 #include <string>
 
-class XMLPrinter : public rumur::ConstBaseTraversal {
+class XMLPrinter : public rumur::ConstBaseTraversal<> {
 
  private:
   std::istream &in;
