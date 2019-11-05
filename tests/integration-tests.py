@@ -122,7 +122,11 @@ class TemporaryDirectory(object):
     if self.tmp is not None:
       shutil.rmtree(self.tmp)
 
-class Tests(unittest.TestCase):
+class RumurTests(unittest.TestCase):
+  '''
+  Test cases for the rumur binary. Many more than those below are added
+  dynamically.
+  '''
 
   def _test_lock_freedom(self, args):
     '''
@@ -193,6 +197,12 @@ class Tests(unittest.TestCase):
   @unittest.skipIf(X86_64 or MAX_TEST is not None, 'not relevant on x86-64')
   def test_lock_freedom(self):
     self._test_lock_freedom([])
+
+class ASTDumpTests(unittest.TestCase):
+  '''
+  Test cases for the rumur-ast-binary. They are all added dynamically.
+  '''
+  pass
 
 def parse_test_options(model, xml):
   option = {}
@@ -491,11 +501,11 @@ def main():
                 'multithreaded_' if multithreaded else 'singlethreaded_',
                 m_name))
 
-              if hasattr(Tests, test_name):
+              if hasattr(RumurTests, test_name):
                 raise Exception('{} collides with an existing test name'.format(m))
 
               if in_range(index):
-                setattr(Tests, test_name,
+                setattr(RumurTests, test_name,
                   lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml,
                     m=multithreaded:
                       test_template(self, model, o, d, v, x, m))
@@ -514,14 +524,14 @@ def main():
       if not valgrind and option['rumur_exit_code'] != 0:
         continue
 
-      test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_{}{}'.format(
+      test_name = re.sub(r'[^\w]', '_', 'test_{}{}'.format(
         'valgrind_' if valgrind else '', m_name))
 
-      if hasattr(Tests, test_name):
+      if hasattr(ASTDumpTests, test_name):
         raise Exception('{} collides with an existing test name'.format(m))
 
       if in_range(index):
-        setattr(Tests, test_name,
+        setattr(ASTDumpTests, test_name,
           lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
       index += 1
 
@@ -557,23 +567,20 @@ def main():
 
       test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
 
-      if hasattr(Tests, test_name):
+      if hasattr(RumurTests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
       if in_range(index):
-        setattr(Tests, test_name,
+        setattr(RumurTests, test_name,
           lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
             test_cmurphi_example_template(self, model, outcome, rules, states))
       index += 1
 
-      test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_cmurphi_example_{}'
-        .format(path))
-
-      if hasattr(Tests, test_name):
+      if hasattr(ASTDumpTests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
       if in_range(index):
-        setattr(Tests, test_name,
+        setattr(ASTDumpTests, test_name,
           lambda self, model=fullpath:
             test_ast_dumper_cmurphi_example_template(self, model))
       index += 1
