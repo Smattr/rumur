@@ -734,7 +734,7 @@ void Printer::visit_uexpr(const std::string &, const UnaryExpr &n) {
 
 bool Printer::deleted(const position &pos) const {
   for (const location &loc : deletions) {
-    if (loc.begin <= pos && loc.end > pos) {
+    if (is_leq(loc.begin, pos) && !is_leq(loc.end, pos)) {
       return true;
     }
   }
