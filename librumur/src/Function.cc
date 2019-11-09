@@ -74,7 +74,7 @@ void Function::validate() const {
         if (n.expr == nullptr)
           throw Error("empty return statement in a function", n.loc);
 
-        if (isa<Range>(n.expr->type())) {
+        if (isa<Range>(n.expr->type()->resolve())) {
           if (!isa<Range>(return_type->resolve()))
             throw Error("returning a number from a function that does not "
               "return a range", n.loc);
