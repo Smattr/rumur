@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   // Parse input model
   rumur::Ptr<rumur::Model> m;
   try {
-    m = rumur::parse(in.get());
+    m = rumur::parse(*in);
     resolve_symbols(*m);
     validate(*m);
   } catch (rumur::Error &e) {

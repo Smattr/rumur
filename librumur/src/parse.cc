@@ -12,12 +12,10 @@
 
 namespace rumur {
 
-Ptr<Model> parse(std::istream *input) {
-
-  assert(input != nullptr);
+Ptr<Model> parse(std::istream &input) {
 
   // Setup the parser
-  scanner s(input);
+  scanner s(&input);
   Ptr<Model> m;
   parser p(s, m);
 
@@ -34,6 +32,12 @@ Ptr<Model> parse(std::istream *input) {
   }
 
   return m;
+}
+
+Ptr<Model> parse(std::istream *input) {
+  assert(input != nullptr);
+
+  return parse(*input);
 }
 
 }
