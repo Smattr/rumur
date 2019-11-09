@@ -341,43 +341,41 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
 
 def test_ast_dumper_template(self, model, valgrind):
 
-  with TemporaryDirectory() as tmp:
-
-    model_xml = os.path.join(tmp, 'model.xml')
-    ad_flags = ['--output', model_xml, model]
-    args = [RUMUR_AST_DUMP_BIN] + ad_flags
-    if valgrind:
-      args = valgrind_wrap(args)
-    ret, stdout, stderr = run(args)
-    if valgrind:
-      if ret == 42:
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
-      self.assertNotEqual(ret, 42)
-      # Remainder of the test is unnecessary, because we will already test this
-      # in the version of this test when valgrind=False.
-      return
-    if ret != 0:
+  args = [RUMUR_AST_DUMP_BIN, model]
+  if valgrind:
+    args = valgrind_wrap(args)
+  ret, stdout, stderr = run(args)
+  if valgrind:
+    if ret == 42:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+    self.assertNotEqual(ret, 42)
+    # Remainder of the test is unnecessary, because we will already test this
+    # in the version of this test when valgrind=False.
+    return
+  if ret != 0:
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
-    # See if we have xmllint
-    ret, _, _ = run(['which', 'xmllint'])
-    if ret != 0:
-      self.skipTest('xmllint not available for validation')
+  # ast-dump will have written XML to its stdout
+  xmlcontent = stdout
 
-    # Validate the XML
-    rng = os.path.abspath(os.path.join(os.path.dirname(__file__),
-      '..', 'misc', 'ast-dump.rng'))
-    ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout',
-      model_xml])
-    if ret != 0:
-      with open(model_xml, 'rt') as f:
-        sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+  # See if we have xmllint
+  ret, _, _ = run(['which', 'xmllint'])
+  if ret != 0:
+    self.skipTest('xmllint not available for validation')
+
+  # Validate the XML
+  rng = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
+    'ast-dump.rng'))
+  ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout', '-'],
+    xmlcontent)
+  if ret != 0:
+    sys.stderr.write('Failed to validate:\n{}\n'.format(xmlcontent))
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
 def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
     states=None):
@@ -425,30 +423,27 @@ def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
 
 def test_ast_dumper_cmurphi_example_template(self, model):
 
-  with TemporaryDirectory() as tmp:
+  args = [RUMUR_AST_DUMP_BIN, model]
+  ret, stdout, stderr = run(args)
+  if ret != 0:
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
-    model_xml = os.path.join(tmp, 'model.xml')
-    ad_flags = ['--output', model_xml, model]
-    args = [RUMUR_AST_DUMP_BIN] + ad_flags
-    ret, stdout, stderr = run(args)
-    if ret != 0:
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+  # See if we have xmllint
+  ret, _, _ = run(['which', 'xmllint'])
+  if ret != 0:
+    self.skipTest('xmllint not available for validation')
 
-    # See if we have xmllint
-    ret, _, _ = run(['which', 'xmllint'])
-    if ret != 0:
-      self.skipTest('xmllint not available for validation')
+  xmlcontent = stdout
 
-    # Validate the XML
-    ret, stdout, stderr = run(['xmllint', '--noout', model_xml])
-    if ret != 0:
-      with open(model_xml, 'rt') as f:
-        sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+  # Validate the XML
+  ret, stdout, stderr = run(['xmllint', '--noout', '-'], xmlcontent)
+  if ret != 0:
+    sys.stderr.write('Failed to validate:\n{}\n'.format(xmlcontent))
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
 def main():
 
