@@ -104,9 +104,12 @@ def has_sandbox():
 
   return False
 
-def run(args):
-  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  stdout, stderr = p.communicate()
+def run(args, stdin=None):
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    stdin=subprocess.PIPE)
+  if stdin is not None:
+    stdin = stdin.encode('utf-8')
+  stdout, stderr = p.communicate(stdin)
   return p.returncode, stdout.decode('utf-8', 'replace'), stderr.decode('utf-8', 'replace')
 
 class TemporaryDirectory(object):
