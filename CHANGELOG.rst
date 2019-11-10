@@ -1,6 +1,35 @@
 Change log
 ==========
 
+v2019.11.09
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: returning an expression of range type within a function with a return
+  type of a differing range is now accepted. This pattern was previously
+  rejected by ``rumur`` claiming the types were incompatible (commit
+  2279e30e74983c8288d097979f31ffecd25b9b4f).
+* Bug fix: the filename in the AST dump produced by ``rumur-ast-dump`` is now
+  XML-escaped. Previously characters like ``<`` were incorrectly printed as-is
+  (commit cec7f83ac781554a99e9018cef6a0285f67c8955).
+* ``rumur-ast-dump`` now shows source content in its output even when the input
+  model was supplied on stdin. Previously source content was only included if
+  the input came from an on-disk file (commits
+  ff36e8fec7750a921d4bdc57c509ca7d12fde8cb,
+  6fbc34e9a6cbee0e8c9f09c9b8dc5796fd3d2aaa,
+  8fc052d0c3d034ed057ec69aa3ebab95b60234b7).
+* ``rumur-ast-dump`` now gives the filename in its output as “<stdin>” when the
+  input model is supplied on stdin instead of omitting it. The ``filename``
+  attribute of the head ``unit`` tag in the dump has now become mandatory
+  (commit f20463f3e00f5ae2de9871b6b24f83f7799ff4d2).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``rumur::parse()`` now takes its argument as a reference instead of a pointer.
+  The old implementation remains for backwards compatibility but it is
+  deprecated (commit 947ae70c647a955ea6e24b651a6feead64bac787).
+
 v2019.10.27
 -----------
 

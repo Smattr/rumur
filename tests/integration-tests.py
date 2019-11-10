@@ -104,9 +104,12 @@ def has_sandbox():
 
   return False
 
-def run(args):
-  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  stdout, stderr = p.communicate()
+def run(args, stdin=None):
+  p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    stdin=subprocess.PIPE)
+  if stdin is not None:
+    stdin = stdin.encode('utf-8')
+  stdout, stderr = p.communicate(stdin)
   return p.returncode, stdout.decode('utf-8', 'replace'), stderr.decode('utf-8', 'replace')
 
 class TemporaryDirectory(object):
@@ -122,7 +125,11 @@ class TemporaryDirectory(object):
     if self.tmp is not None:
       shutil.rmtree(self.tmp)
 
-class Tests(unittest.TestCase):
+class RumurTests(unittest.TestCase):
+  '''
+  Test cases for the rumur binary. Many more than those below are added
+  dynamically.
+  '''
 
   def _test_lock_freedom(self, args):
     '''
@@ -193,6 +200,12 @@ class Tests(unittest.TestCase):
   @unittest.skipIf(X86_64 or MAX_TEST is not None, 'not relevant on x86-64')
   def test_lock_freedom(self):
     self._test_lock_freedom([])
+
+class ASTDumpTests(unittest.TestCase):
+  '''
+  Test cases for the rumur-ast-binary. They are all added dynamically.
+  '''
+  pass
 
 def parse_test_options(model, xml):
   option = {}
@@ -328,43 +341,41 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
 
 def test_ast_dumper_template(self, model, valgrind):
 
-  with TemporaryDirectory() as tmp:
-
-    model_xml = os.path.join(tmp, 'model.xml')
-    ad_flags = ['--output', model_xml, model]
-    args = [RUMUR_AST_DUMP_BIN] + ad_flags
-    if valgrind:
-      args = valgrind_wrap(args)
-    ret, stdout, stderr = run(args)
-    if valgrind:
-      if ret == 42:
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
-      self.assertNotEqual(ret, 42)
-      # Remainder of the test is unnecessary, because we will already test this
-      # in the version of this test when valgrind=False.
-      return
-    if ret != 0:
+  args = [RUMUR_AST_DUMP_BIN, model]
+  if valgrind:
+    args = valgrind_wrap(args)
+  ret, stdout, stderr = run(args)
+  if valgrind:
+    if ret == 42:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+    self.assertNotEqual(ret, 42)
+    # Remainder of the test is unnecessary, because we will already test this
+    # in the version of this test when valgrind=False.
+    return
+  if ret != 0:
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
-    # See if we have xmllint
-    ret, _, _ = run(['which', 'xmllint'])
-    if ret != 0:
-      self.skipTest('xmllint not available for validation')
+  # ast-dump will have written XML to its stdout
+  xmlcontent = stdout
 
-    # Validate the XML
-    rng = os.path.abspath(os.path.join(os.path.dirname(__file__),
-      '..', 'misc', 'ast-dump.rng'))
-    ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout',
-      model_xml])
-    if ret != 0:
-      with open(model_xml, 'rt') as f:
-        sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+  # See if we have xmllint
+  ret, _, _ = run(['which', 'xmllint'])
+  if ret != 0:
+    self.skipTest('xmllint not available for validation')
+
+  # Validate the XML
+  rng = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
+    'ast-dump.rng'))
+  ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout', '-'],
+    xmlcontent)
+  if ret != 0:
+    sys.stderr.write('Failed to validate:\n{}\n'.format(xmlcontent))
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
 def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
     states=None):
@@ -412,32 +423,29 @@ def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
 
 def test_ast_dumper_cmurphi_example_template(self, model):
 
-  with TemporaryDirectory() as tmp:
+  args = [RUMUR_AST_DUMP_BIN, model]
+  ret, stdout, stderr = run(args)
+  if ret != 0:
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
-    model_xml = os.path.join(tmp, 'model.xml')
-    ad_flags = ['--output', model_xml, model]
-    args = [RUMUR_AST_DUMP_BIN] + ad_flags
-    ret, stdout, stderr = run(args)
-    if ret != 0:
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+  # See if we have xmllint
+  ret, _, _ = run(['which', 'xmllint'])
+  if ret != 0:
+    self.skipTest('xmllint not available for validation')
 
-    # See if we have xmllint
-    ret, _, _ = run(['which', 'xmllint'])
-    if ret != 0:
-      self.skipTest('xmllint not available for validation')
+  xmlcontent = stdout
 
-    # Validate the XML
-    ret, stdout, stderr = run(['xmllint', '--noout', model_xml])
-    if ret != 0:
-      with open(model_xml, 'rt') as f:
-        sys.stderr.write('Failed to validate:\n{}\n'.format(f.read()))
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
+  # Validate the XML
+  ret, stdout, stderr = run(['xmllint', '--noout', '-'], xmlcontent)
+  if ret != 0:
+    sys.stderr.write('Failed to validate:\n{}\n'.format(xmlcontent))
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, 0)
 
-def main(argv):
+def main():
 
   # setup stdout/stderr to make encoding errors non-fatal
   try:
@@ -491,11 +499,11 @@ def main(argv):
                 'multithreaded_' if multithreaded else 'singlethreaded_',
                 m_name))
 
-              if hasattr(Tests, test_name):
+              if hasattr(RumurTests, test_name):
                 raise Exception('{} collides with an existing test name'.format(m))
 
               if in_range(index):
-                setattr(Tests, test_name,
+                setattr(RumurTests, test_name,
                   lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml,
                     m=multithreaded:
                       test_template(self, model, o, d, v, x, m))
@@ -514,14 +522,14 @@ def main(argv):
       if not valgrind and option['rumur_exit_code'] != 0:
         continue
 
-      test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_{}{}'.format(
+      test_name = re.sub(r'[^\w]', '_', 'test_{}{}'.format(
         'valgrind_' if valgrind else '', m_name))
 
-      if hasattr(Tests, test_name):
+      if hasattr(ASTDumpTests, test_name):
         raise Exception('{} collides with an existing test name'.format(m))
 
       if in_range(index):
-        setattr(Tests, test_name,
+        setattr(ASTDumpTests, test_name,
           lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
       index += 1
 
@@ -557,23 +565,20 @@ def main(argv):
 
       test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
 
-      if hasattr(Tests, test_name):
+      if hasattr(RumurTests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
       if in_range(index):
-        setattr(Tests, test_name,
+        setattr(RumurTests, test_name,
           lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
             test_cmurphi_example_template(self, model, outcome, rules, states))
       index += 1
 
-      test_name = re.sub(r'[^\w]', '_', 'test_ast_dumper_cmurphi_example_{}'
-        .format(path))
-
-      if hasattr(Tests, test_name):
+      if hasattr(ASTDumpTests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
       if in_range(index):
-        setattr(Tests, test_name,
+        setattr(ASTDumpTests, test_name,
           lambda self, model=fullpath:
             test_ast_dumper_cmurphi_example_template(self, model))
       index += 1
@@ -581,4 +586,4 @@ def main(argv):
   unittest.main()
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
