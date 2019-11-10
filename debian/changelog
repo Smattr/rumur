@@ -1,10 +1,23 @@
-rumur (2019.10.27-1) unstable; urgency=medium
+rumur (2019.11.09-1) unstable; urgency=medium
 
-  * Maintainer upload.
+  * New upstream release.
 
   * Switch all Python references to Python 3. Closes: #943253.
 
- -- Matthew Fernandez <matthew.fernandez@gmail.com>  Mon, 28 Oct 2019 19:54:28 -0700
+  * Update Standards-Version from 4.3.0 to 4.4.1.
+
+  * Remove xxd dependency. Upstream changed to no longer rely on xxd.
+
+  * Correct Vcs-Git URL typo.
+
+  * Remove manpages file. Upstream already installed man pages at the correct
+    path, so this file was doing unnecessary duplicate work.
+
+  * Integrate upstream test suite into Debian packaging steps as a Test-Command.
+
+  * Update RUMUR_VERSION variable in rules from 2019.02.04-1 to 2019.11.09-1.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 10 Nov 2019 10:31:56 -0800
 
 rumur (2019.02.04-1) unstable; urgency=medium
 
