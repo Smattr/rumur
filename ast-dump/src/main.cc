@@ -37,6 +37,7 @@ static void parse_args(int argc, char **argv) {
     static struct option options[] = {
       { "help", no_argument, 0, '?' },
       { "output", required_argument, 0, 'o' },
+      { "version", no_argument, 0, 128 },
       { 0, 0, 0, 0 },
     };
 
@@ -61,6 +62,10 @@ static void parse_args(int argc, char **argv) {
         out = o;
         break;
       }
+
+      case 128: // --version
+        std::cout << "Rumur version " << rumur::get_version() << "\n";
+        exit(EXIT_SUCCESS);
 
       default:
         std::cerr << "unexpected error\n";
