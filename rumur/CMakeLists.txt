@@ -17,23 +17,11 @@ add_custom_command(
   MAIN_DEPENDENCY resources/header.c
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_custom_command(
-  OUTPUT version.cc
-  COMMAND python src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/version.cc
-  MAIN_DEPENDENCY src/make-version.py
-  DEPENDS always_run
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Dummy output to make sure we always re-evaluate the version step above.
-add_custom_command(
-  OUTPUT always_run
-  COMMAND /usr/bin/env true)
 
 add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
-  ${CMAKE_CURRENT_BINARY_DIR}/version.cc
   ../common/help.cc
   src/assume-statements-count.cc
   src/environ.cc

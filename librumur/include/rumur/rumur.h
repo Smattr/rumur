@@ -10,6 +10,7 @@
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
+#include <rumur/get-version.h>
 #include <rumur/indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>

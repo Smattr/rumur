@@ -111,7 +111,7 @@ def main(args):
   if version is None:
     version = LAST_RELEASE
 
-  new = 'const char *VERSION = "{}";\n'.format(version)
+  new = 'const char *RUMUR_VERSION = "{}";\n'.format(version)
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.

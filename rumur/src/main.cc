@@ -27,7 +27,6 @@
 #include <utility>
 #include "utils.h"
 #include "ValueType.h"
-#include "version.h"
 
 using namespace rumur;
 
@@ -333,7 +332,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case OPT_VERSION: // --version
-        std::cout << "Rumur version " << VERSION << "\n";
+        std::cout << "Rumur version " << get_version() << "\n";
         exit(EXIT_SUCCESS);
 
       case OPT_BOUND: { // --bound ...

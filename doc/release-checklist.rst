@@ -2,7 +2,7 @@ Release Checklist
 =================
 The process of cutting a new Rumur release should follow these steps:
 
-1. Update ``LAST_RELEASE`` in ../rumur/src/make-version.py. For version numbers,
+1. Update ``LAST_RELEASE`` in ../librumur/src/make-version.py. For version numbers,
    we use “vYYYY.MM.DD” with the date of the release.
 2. Update ../CHANGELOG.rst with information about the changes in the new
    release. Changes should be separated into “user-facing” and “internal,”
