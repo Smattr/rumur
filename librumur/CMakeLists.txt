@@ -39,8 +39,8 @@ if(HAS_WARNING_REGISTER)
 endif()
 
 add_custom_command(
-  OUTPUT version.cc
-  COMMAND python src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/version.cc
+  OUTPUT rumur-get-version.h
+  COMMAND python src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -51,13 +51,12 @@ add_custom_command(
   COMMAND /usr/bin/env true)
 
 add_library(librumur
-  ${CMAKE_CURRENT_BINARY_DIR}/version.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   src/Boolean.cc
   src/Decl.cc
   src/except.cc
   src/Expr.cc
   src/Function.cc
-  src/get-version.cc
   src/indexer.cc
   src/Model.cc
   src/Node.cc

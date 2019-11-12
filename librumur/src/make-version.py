@@ -111,7 +111,15 @@ def main(args):
   if version is None:
     version = LAST_RELEASE
 
-  new = 'const char *RUMUR_VERSION = "{}";\n'.format(version)
+  new = '#pragma once\n' \
+        '\n' \
+        'namespace rumur {{\n' \
+        '\n' \
+        'static constexpr const char *get_version() {{\n' \
+        '  return "{}";\n' \
+        '}}\n' \
+        '\n' \
+        '}}'.format(version)
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.
