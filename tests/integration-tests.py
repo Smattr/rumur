@@ -331,22 +331,24 @@ class RumurCMurphiExamplesTests(unittest.TestCase):
 
   def _test_template(self, model, outcome, rules_fired=None, states=None):
 
+    ret, stdout, stderr = run([RUMUR_BIN, '--output-format', 'machine-readable',
+      '--output', '/dev/stdout', model])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
+    model_c = stdout
+
     with TemporaryDirectory() as tmp:
 
-      model_c = os.path.join(tmp, 'model.c')
-      ret, stdout, stderr = run([RUMUR_BIN, '--output-format',
-        'machine-readable', '--output', model_c, model])
-      if ret != 0:
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
-      self.assertEqual(ret, 0)
-
-      cflags = ['-std=c11', '-O3', '-fwhole-program', '-Werror=format']
+      cflags = ['-x', 'c', '-std=c11', '-O3', '-fwhole-program',
+        '-Werror=format']
       if X86_64:
         cflags.append('-mcx16')
       model_bin = os.path.join(tmp, 'model.bin')
-      ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c,
-        '-lpthread'])
+      ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, '-',
+        '-lpthread'], model_c)
       if ret != 0:
         sys.stdout.write(stdout)
         sys.stderr.write(stderr)
