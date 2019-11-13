@@ -48,7 +48,7 @@ def valgrind_wrap(args):
     '--error-exitcode=42'] + args
 
 # function used by test cases for SMT detection
-def smt_args():
+def smt_args(bv = False):
 
   # preference 1: Z3
   has_z3 = True
@@ -59,10 +59,12 @@ def smt_args():
     has_z3 = False
 
   if has_z3:
-    # We set a blank logic here, as Z3 performs best when not given a logic. The
-    # BV test cases will still override this.
-    return ['--smt-logic', '', '--smt-path', 'z3', '--smt-arg=-smt2',
+    # we leave a blank logic here, as Z3 performs best when not given a logic
+    args = ['--smt-simplification', 'on', '--smt-path', 'z3', '--smt-arg=-smt2',
       '--smt-arg=-in']
+    if bv:
+      args += ['--smt-bitvectors', 'on']
+    return args
 
   # preference 2: CVC4
   has_cvc4 = True
@@ -73,7 +75,12 @@ def smt_args():
     has_cvc4 = False
 
   if has_cvc4:
-    return ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2', '--smt-arg=--rewrite-divk']
+    args = ['--smt-simplification', 'on', '--smt-path', 'cvc4',
+      '--smt-arg=--lang=smt2', '--smt-arg=--rewrite-divk']
+    if bv:
+      args += ['--smt-prelude', '(set-logic AUFBV)', '--smt-bitvectors', 'on']
+    else:
+      args += ['--smt-prelude', '(set-logic AUFLIA)']
 
   # otherwise, give up
   return []
