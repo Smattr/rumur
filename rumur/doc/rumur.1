@@ -224,7 +224,7 @@ to find and use your SMT solver. Some examples of solver configuration:
 .PP
 # for CVC4 with a 5 second timeout
 .br
-\fBrumur --smt-simplification on --smt-path cvc4 --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
+\fBrumur --smt-simplification on --smt-path cvc4 --smt-prelude "(set-logic AUFLIA)" --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
 .RE
 .PP
 For other solvers, consult their manpages or documentation to determine what
@@ -263,14 +263,6 @@ exceed the budget. You may want to use the \fB--smt-arg\fR option to pass the
 SMT solver a timeout limit if it supports one.
 .RE
 .PP
-\fB--smt-logic\fR \fILOGIC\fR
-.RS
-Set the target logic used for communication with the SMT solver. By default,
-this is \fBAUFLIA\fR. Note that if you select a logic that supports bitvectors
-but not unbounded integers, you will probably want to use
-\fB--smt-bitvectors on\fR as well.
-.RE
-.PP
 \fB--smt-path\fR \fIPATH\fR
 .RS
 Command or path to the SMT solver. This will use your environment's \fBPATH\fR
@@ -279,11 +271,29 @@ provide the name of its binary. Note that this option has no effect unless you
 also pass \fB--smt-simplification\fR \fBon\fR.
 .RE
 .PP
+\fB--smt-prelude\fR \fITEXT\fR
+.RS
+Text to emit when communicating with the solver prior to sending the actual
+problem itself. You can use this to set a solver logic or other options. This
+option can be given multiple times and each argument will be passed to the
+solver on a separate line.
+.RE
+.PP
 \fB--smt-simplification\fR [\fBoff\fR | \fBon\fR]
 .RS
 Disable or enable using the SMT solver to simplify the input model. By default,
 this is \fBoff\fR. Note that this option has no effect unless you also configure
 a path to the SMT solver with \fB--smt-path\fR.
+.RE
+.SH LEGACY OPTIONS
+The following options should no longer be used but are documented here for
+completeness.
+.PP
+\fB--smt-logic\fR \fILOGIC\fR
+.RS
+Set the target logic used for communication with the SMT solver. This option is
+deprecated and you should use \fB--smt-prelude\fR instead. For example,
+\fB--smt-prelude AUFLIA\fR.
 .RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez

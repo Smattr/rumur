@@ -101,7 +101,10 @@ struct Options {
     bool simplification = false;
 
     // SMTLIB logic to use when building problems
-    std::string logic = "AUFLIA";
+    std::string logic;
+
+    // text to emit to the solver prior to a SAT problem
+    std::vector<std::string> prelude;
 
     // use BitVecs instead of Ints?
     bool use_bitvectors = false;

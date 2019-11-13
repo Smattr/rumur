@@ -62,6 +62,7 @@ static void parse_args(int argc, char **argv) {
       OPT_SMT_BUDGET,
       OPT_SMT_LOGIC,
       OPT_SMT_PATH,
+      OPT_SMT_PRELUDE,
       OPT_SMT_SIMPLIFICATION,
       OPT_SYMMETRY_REDUCTION,
       OPT_TRACE,
@@ -91,6 +92,7 @@ static void parse_args(int argc, char **argv) {
       { "smt-budget", required_argument, 0, OPT_SMT_BUDGET },
       { "smt-logic", required_argument, 0, OPT_SMT_LOGIC },
       { "smt-path", required_argument, 0, OPT_SMT_PATH },
+      { "smt-prelude", required_argument, 0, OPT_SMT_PRELUDE },
       { "smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION },
       { "symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION },
       { "threads", required_argument, 0, 't' },
@@ -391,10 +393,15 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_SMT_LOGIC: // --smt-logic ...
         options.smt.logic = optarg;
+        *warn << "the option --smt-logic is deprecated\n";
         break;
 
       case OPT_SMT_PATH: // --smt-path ...
         options.smt.path = optarg;
+        break;
+
+      case OPT_SMT_PRELUDE: // --smt-prelude ...
+        options.smt.prelude.emplace_back(optarg);
         break;
 
       case OPT_SMT_SIMPLIFICATION: // --smt-simplification ...
