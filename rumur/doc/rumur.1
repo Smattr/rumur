@@ -241,6 +241,16 @@ multiple times and arguments are passed in the order listed. E.g. if you specify
 command line arguments \fB--tlimit\fR \fB5000\fR.
 .RE
 .PP
+\fB--smt-bitvectors\fR [\fBoff\fR | \fBon\fR]
+.RS
+Select whether simple types (enums, ranges, and scalarsets) are translated to
+bitvectors or unbounded integers when passed to the solver. By default,
+unbounded integers are used (\fB--smt-bitvectors off\fR). If you turn this
+option on, 64-bit vectors are used instead. Whether integers, bitvectors, or
+both are supported will depend on your solver as well as the SMT logic you are
+using.
+.RE
+.PP
 \fB--smt-budget\fR \fIMILLISECONDS\fR
 .RS
 Total time allotted for running the SMT solver. That is, the time the solver
@@ -256,8 +266,7 @@ SMT solver a timeout limit if it supports one.
 \fB--smt-logic\fR \fILOGIC\fR
 .RS
 Set the target logic used for communication with the SMT solver. By default,
-this is \fBAUFLIA\fR. Supported logics are those supporting integer
-arithmetic or bitvector arithmetic.
+this is \fBAUFLIA\fR.
 .RE
 .PP
 \fB--smt-path\fR \fIPATH\fR

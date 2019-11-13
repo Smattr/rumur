@@ -103,6 +103,9 @@ struct Options {
     // SMTLIB logic to use when building problems
     std::string logic = "AUFLIA";
 
+    // use BitVecs instead of Ints?
+    bool use_bitvectors = false;
+
   } smt;
 };
 

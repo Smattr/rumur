@@ -58,6 +58,7 @@ static void parse_args(int argc, char **argv) {
       OPT_OUTPUT_FORMAT,
       OPT_SANDBOX,
       OPT_SMT_ARG,
+      OPT_SMT_BITVECTORS,
       OPT_SMT_BUDGET,
       OPT_SMT_LOGIC,
       OPT_SMT_PATH,
@@ -86,6 +87,7 @@ static void parse_args(int argc, char **argv) {
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "smt-arg", required_argument, 0, OPT_SMT_ARG },
+      { "smt-bitvectors", required_argument, 0, OPT_SMT_BITVECTORS },
       { "smt-budget", required_argument, 0, OPT_SMT_BUDGET },
       { "smt-logic", required_argument, 0, OPT_SMT_LOGIC },
       { "smt-path", required_argument, 0, OPT_SMT_PATH },
@@ -357,6 +359,18 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_SMT_ARG: // --smt-arg ...
         options.smt.args.emplace_back(optarg);
+        break;
+
+      case OPT_SMT_BITVECTORS: // --smt-bitvectors ...
+        if (strcmp(optarg, "on") == 0) {
+          options.smt.use_bitvectors = true;
+        } else if (strcmp(optarg, "off") == 0) {
+          options.smt.use_bitvectors = false;
+        } else {
+          std::cerr << "invalid argument to --smt-bitvectors, \"" << optarg
+            << "\"\n";
+          exit(EXIT_FAILURE);
+        }
         break;
 
       case OPT_SMT_BUDGET: { // --smt-budget ...
