@@ -1,4 +1,4 @@
--- rumur_flags: ['--smt-simplification', 'on'] + smt_args() + ['--smt-logic', 'QF_BV']
+-- rumur_flags: ['--smt-simplification', 'on'] + smt_args() + ['--smt-logic', 'AUFBV', '--smt-bitvectors', 'on']
 -- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
 
 -- test that the SMT bridge can cope with > when using a bitvector logic
