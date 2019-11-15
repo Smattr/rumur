@@ -60,8 +60,7 @@ def smt_args(bv = False):
 
   if has_z3:
     # we leave a blank logic here, as Z3 performs best when not given a logic
-    args = ['--smt-simplification', 'on', '--smt-path', 'z3', '--smt-arg=-smt2',
-      '--smt-arg=-in']
+    args = ['--smt-path', 'z3', '--smt-arg=-smt2', '--smt-arg=-in']
     if bv:
       args += ['--smt-bitvectors', 'on']
     return args
@@ -75,8 +74,8 @@ def smt_args(bv = False):
     has_cvc4 = False
 
   if has_cvc4:
-    args = ['--smt-simplification', 'on', '--smt-path', 'cvc4',
-      '--smt-arg=--lang=smt2', '--smt-arg=--rewrite-divk']
+    args = ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2',
+      '--smt-arg=--rewrite-divk']
     if bv:
       args += ['--smt-prelude', '(set-logic AUFBV)', '--smt-bitvectors', 'on']
     else:
