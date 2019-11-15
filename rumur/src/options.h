@@ -45,6 +45,12 @@ enum struct SymmetryReduction {
   EXHAUSTIVE,
 };
 
+enum struct SmtSimplification {
+  OFF,
+  ON,
+  AUTO,
+};
+
 struct Options {
   mpz_class threads = 0;
   LogLevel log_level = LogLevel::WARNINGS;
@@ -98,7 +104,7 @@ struct Options {
     mpz_class budget = 30000;
 
     // use SMT solver for expression simplification?
-    bool simplification = false;
+    SmtSimplification simplification = SmtSimplification::AUTO;
 
     // SMTLIB logic to use when building problems
     std::string logic;

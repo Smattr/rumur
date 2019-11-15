@@ -361,6 +361,9 @@ static void parse_args(int argc, char **argv) {
 
       case OPT_SMT_ARG: // --smt-arg ...
         options.smt.args.emplace_back(optarg);
+        if (options.smt.simplification == SmtSimplification::AUTO) {
+          options.smt.simplification = SmtSimplification::ON;
+        }
         break;
 
       case OPT_SMT_BITVECTORS: // --smt-bitvectors ...
@@ -372,6 +375,9 @@ static void parse_args(int argc, char **argv) {
           std::cerr << "invalid argument to --smt-bitvectors, \"" << optarg
             << "\"\n";
           exit(EXIT_FAILURE);
+        }
+        if (options.smt.simplification == SmtSimplification::AUTO) {
+          options.smt.simplification = SmtSimplification::ON;
         }
         break;
 
@@ -388,27 +394,39 @@ static void parse_args(int argc, char **argv) {
           std::cerr << "invalid --smt-budget, \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
+        if (options.smt.simplification == SmtSimplification::AUTO) {
+          options.smt.simplification = SmtSimplification::ON;
+        }
         break;
       }
 
       case OPT_SMT_LOGIC: // --smt-logic ...
         options.smt.logic = optarg;
+        if (options.smt.simplification == SmtSimplification::AUTO) {
+          options.smt.simplification = SmtSimplification::ON;
+        }
         *warn << "the option --smt-logic is deprecated\n";
         break;
 
       case OPT_SMT_PATH: // --smt-path ...
         options.smt.path = optarg;
+        if (options.smt.simplification == SmtSimplification::AUTO) {
+          options.smt.simplification = SmtSimplification::ON;
+        }
         break;
 
       case OPT_SMT_PRELUDE: // --smt-prelude ...
         options.smt.prelude.emplace_back(optarg);
+        if (options.smt.simplification == SmtSimplification::AUTO) {
+          options.smt.simplification = SmtSimplification::ON;
+        }
         break;
 
       case OPT_SMT_SIMPLIFICATION: // --smt-simplification ...
         if (strcmp(optarg, "on") == 0) {
-          options.smt.simplification = true;
+          options.smt.simplification = SmtSimplification::ON;
         } else if (strcmp(optarg, "off") == 0) {
-          options.smt.simplification = false;
+          options.smt.simplification = SmtSimplification::OFF;
         } else {
           std::cerr << "invalid argument to --smt-simplification, \"" << optarg
             << "\"\n";
@@ -459,18 +477,11 @@ static void parse_args(int argc, char **argv) {
     }
   }
 
-  if (!options.smt.simplification) {
-    if (options.smt.path != "" || !options.smt.args.empty()) {
-      *warn << "a path and/or arguments to an SMT solver were provided but SMT "
-        "simplification was not enabled (--smt-simplification on) so the "
-        "solver will not be used\n";
-    }
-  }
-
-  if (options.smt.simplification && options.smt.path == "") {
+  if (options.smt.simplification == SmtSimplification::ON &&
+      options.smt.path == "") {
     *warn << "SMT simplification was enabled but no path was provided to the "
       << "solver (--smt-path ...), so it will be disabled\n";
-    options.smt.simplification = false;
+    options.smt.simplification = SmtSimplification::OFF;
   }
 }
 
@@ -591,7 +602,7 @@ int main(int argc, char **argv) {
     *warn << "warning: model has no start state\n";
 
   // run SMT simplification if the user enabled it
-  if (options.smt.simplification) {
+  if (options.smt.simplification == SmtSimplification::ON) {
     try {
       smt::simplify(*m);
     } catch (smt::BudgetExhausted&) {

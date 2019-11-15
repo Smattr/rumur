@@ -220,11 +220,11 @@ to find and use your SMT solver. Some examples of solver configuration:
 .RS
 # for Z3 with a 5 second timeout
 .br
-\fBrumur --smt-simplification on --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
+\fBrumur --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
 .PP
 # for CVC4 with a 5 second timeout
 .br
-\fBrumur --smt-simplification on --smt-path cvc4 --smt-prelude "(set-logic AUFLIA)" --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
+\fBrumur --smt-path cvc4 --smt-prelude "(set-logic AUFLIA)" --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
 .RE
 .PP
 For other solvers, consult their manpages or documentation to determine what
@@ -282,8 +282,8 @@ solver on a separate line.
 \fB--smt-simplification\fR [\fBoff\fR | \fBon\fR]
 .RS
 Disable or enable using the SMT solver to simplify the input model. By default,
-this is \fBoff\fR. Note that this option has no effect unless you also configure
-a path to the SMT solver with \fB--smt-path\fR.
+this is automatic, in that it is turned \fBon\fR if you use any of the other SMT
+options or \fBoff\fR if you do not use them.
 .RE
 .SH LEGACY OPTIONS
 The following options should no longer be used but are documented here for
