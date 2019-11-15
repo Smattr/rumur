@@ -424,55 +424,57 @@ def test_template(self, model):
   if self.valgrind and VALGRIND is None:
     self.skipTest('valgrind unavailable')
 
-  with TemporaryDirectory() as tmp:
-
-    model_c = os.path.join(tmp, 'model.c')
-    rumur_flags = ['--output', model_c, model]
-    if self.debug:
-      rumur_flags.append('--debug')
-    if self.xml:
-      rumur_flags.extend(['--output-format', 'machine-readable'])
-    if self.multithreaded and multiprocessing.cpu_count() == 1:
-      # we need to force multiple threads, or Rumur will autodetect --threads 1
-      rumur_flags.extend(['--threads', '2'])
-    elif not self.multithreaded:
-      rumur_flags.extend(['--threads', '1'])
-    args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
-    if self.valgrind:
-      args = valgrind_wrap(args)
-    ret, stdout, stderr = run(args)
-    if self.valgrind:
-      if ret == 42:
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
-      self.assertNotEqual(ret, 42)
-      return
-    if ret != option['rumur_exit_code']:
+  rumur_flags = ['--output', '/dev/stdout', model]
+  if self.debug:
+    rumur_flags.append('--debug')
+  if self.xml:
+    rumur_flags.extend(['--output-format', 'machine-readable'])
+  if self.multithreaded and multiprocessing.cpu_count() == 1:
+    # we need to force multiple threads, or Rumur will autodetect --threads 1
+    rumur_flags.extend(['--threads', '2'])
+  elif not self.multithreaded:
+    rumur_flags.extend(['--threads', '1'])
+  args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
+  if self.valgrind:
+    args = valgrind_wrap(args)
+  ret, stdout, stderr = run(args)
+  if self.valgrind:
+    if ret == 42:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, option['rumur_exit_code'])
+    self.assertNotEqual(ret, 42)
+    return
+  if ret != option['rumur_exit_code']:
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, option['rumur_exit_code'])
 
-    # If model generation was supposed to fail, we're done.
-    if option['rumur_exit_code'] != 0:
-      return
+  # If model generation was supposed to fail, we're done.
+  if option['rumur_exit_code'] != 0:
+    return
 
-    if option['c_flags'] is None:
-      cflags = ['-std=c11', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
-      if X86_64:
-        cflags.append('-mcx16')
-      if self.optimised:
-        cflags.extend(['-O3', '-fwhole-program'])
-    else:
-      cflags = option['c_flags']
+  model_c = stdout
 
-    if option['ld_flags'] is None:
-      ldflags = ['-lpthread']
-    else:
-      ldflags = []
+  if option['c_flags'] is None:
+    cflags = ['-std=c11', '-Werror=format', '-Werror=sign-compare',
+      '-Werror=type-limits']
+    if X86_64:
+      cflags.append('-mcx16')
+    if self.optimised:
+      cflags.extend(['-O3', '-fwhole-program'])
+  else:
+    cflags = option['c_flags']
+
+  if option['ld_flags'] is None:
+    ldflags = ['-lpthread']
+  else:
+    ldflags = []
+
+  with TemporaryDirectory() as tmp:
 
     model_bin = os.path.join(tmp, 'model.bin')
-    args = [CC] + cflags + ['-o', model_bin, model_c] + ldflags
-    ret, stdout, stderr = run(args)
+    args = [CC] + cflags + ['-o', model_bin, '-x', 'c', '-'] + ldflags
+    ret, stdout, stderr = run(args, model_c)
     if ret != option['c_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
