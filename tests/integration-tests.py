@@ -349,7 +349,7 @@ class RumurCMurphiExamplesTests(unittest.TestCase):
     with TemporaryDirectory() as tmp:
 
       cflags = ['-x', 'c', '-std=c11', '-O3', '-fwhole-program',
-        '-Werror=format']
+        '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
       if X86_64:
         cflags.append('-mcx16')
       model_bin = os.path.join(tmp, 'model.bin')
