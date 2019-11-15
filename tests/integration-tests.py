@@ -409,7 +409,6 @@ def test_template(self, model):
     'rumur_flags':[], # Flags to pass to rumur when generating the checker.
     'rumur_exit_code':0, # Expected exit status of rumur.
     'c_flags':None, # Flags to pass to cc when compiling.
-    'ld_flags':None, # Flags to pass to cc last.
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
     'checker_output':None, # Regex to search checker's stdout against.
@@ -465,10 +464,7 @@ def test_template(self, model):
   else:
     cflags = option['c_flags']
 
-  if option['ld_flags'] is None:
-    ldflags = ['-lpthread']
-  else:
-    ldflags = []
+  ldflags = ['-lpthread']
 
   with TemporaryDirectory() as tmp:
 
