@@ -86,6 +86,10 @@ def smt_args(bv = False):
 
 X86_64 = platform.machine() in ('amd64', 'x86_64')
 
+# initial flags to pass to our C compiler
+C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
+  '-Werror=type-limits'] + (['-mcx16'] if X86_64 else [])
+
 # whether the current platform has sandboxing support for the verifier
 def has_sandbox():
 
@@ -348,10 +352,7 @@ class RumurCMurphiExamplesTests(unittest.TestCase):
 
     with TemporaryDirectory() as tmp:
 
-      cflags = ['-x', 'c', '-std=c11', '-O3', '-fwhole-program',
-        '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
-      if X86_64:
-        cflags.append('-mcx16')
+      cflags = C_FLAGS + ['-O3', '-fwhole-program']
       model_bin = os.path.join(tmp, 'model.bin')
       ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, '-',
         '-lpthread'], model_c)
@@ -408,7 +409,6 @@ def test_template(self, model):
   option = {
     'rumur_flags':[], # Flags to pass to rumur when generating the checker.
     'rumur_exit_code':0, # Expected exit status of rumur.
-    'c_flags':None, # Flags to pass to cc when compiling.
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
     'checker_output':None, # Regex to search checker's stdout against.
@@ -454,22 +454,16 @@ def test_template(self, model):
 
   model_c = stdout
 
-  if option['c_flags'] is None:
-    cflags = ['-std=c11', '-Werror=format', '-Werror=sign-compare',
-      '-Werror=type-limits']
-    if X86_64:
-      cflags.append('-mcx16')
-    if self.optimised:
-      cflags.extend(['-O3', '-fwhole-program'])
-  else:
-    cflags = option['c_flags']
+  cflags = C_FLAGS
+  if self.optimised:
+    cflags.extend(['-O3', '-fwhole-program'])
 
   ldflags = ['-lpthread']
 
   with TemporaryDirectory() as tmp:
 
     model_bin = os.path.join(tmp, 'model.bin')
-    args = [CC] + cflags + ['-o', model_bin, '-x', 'c', '-'] + ldflags
+    args = [CC] + cflags + ['-o', model_bin, '-'] + ldflags
     ret, stdout, stderr = run(args, model_c)
     if ret != option['c_exit_code']:
       sys.stdout.write(stdout)
