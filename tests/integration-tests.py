@@ -352,7 +352,7 @@ class RumurCMurphiExamplesTests(unittest.TestCase):
 
     with TemporaryDirectory() as tmp:
 
-      cflags = C_FLAGS + ['-O3', '-fwhole-program']
+      cflags = C_FLAGS + ['-O3']
       model_bin = os.path.join(tmp, 'model.bin')
       ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, '-',
         '-lpthread'], model_c)
@@ -456,7 +456,7 @@ def test_template(self, model):
 
   cflags = C_FLAGS
   if self.optimised:
-    cflags.extend(['-O3', '-fwhole-program'])
+    cflags.extend(['-O3'])
 
   ldflags = ['-lpthread']
 
