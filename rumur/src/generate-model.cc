@@ -676,6 +676,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "#ifdef __clang__\n"
       << "  #pragma clang diagnostic push\n"
       << "  #pragma clang diagnostic ignored \"-Wtautological-compare\"\n"
+      << "  #pragma clang diagnostic ignored \"-Wtautological-unsigned-zero-compare\"\n"
       << "#elif defined(__GNUC__)\n"
       << "  #pragma GCC diagnostic push\n"
       << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
