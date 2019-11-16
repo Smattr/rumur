@@ -701,6 +701,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
@@ -2909,6 +2910,7 @@ static bool known_liveness(const struct state *NONNULL s) {
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
@@ -2967,6 +2969,7 @@ static unsigned long learn_liveness(struct state *NONNULL s,
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
@@ -3033,6 +3036,7 @@ static int exit_with(int status) {
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
@@ -3068,6 +3072,7 @@ static int exit_with(int status) {
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
@@ -3188,6 +3193,7 @@ static void start_secondary_threads(void) {
 #ifdef __clang__
   #pragma clang diagnostic push
   #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
