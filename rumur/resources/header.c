@@ -616,6 +616,68 @@ static void state_free(struct state *s) {
   arena_base--;
 }
 
+/*******************************************************************************
+ * statistics for memory usage                                                 *
+ *                                                                             *
+ * This functionality is only used when `--trace memory_usage` is given on the *
+ * command line.                                                               *
+ ******************************************************************************/
+
+/* number of allocated state structs per depth of expansion */
+static size_t allocated[BOUND == 0 ? 1 : (BOUND + 1)];
+
+/* note a new allocation of a state struct at the given depth */
+static void register_allocation(size_t depth) {
+
+  /* if we are not tracing memory usage, make this a no-op */
+  if (!(TC_MEMORY_USAGE & TRACES_ENABLED)) {
+    return;
+  }
+
+  ASSERT(depth < sizeof(allocated) / sizeof(allocated[0]) &&
+    "out of range access to allocated array");
+
+  /* increment the number of known allocated states, avoiding an expensive
+   * atomic if we are single-threaded
+   */
+  if (THREADS == 1) {
+    allocated[depth]++;
+  } else {
+    (void)__sync_add_and_fetch(&allocated[depth], 1);
+  }
+}
+
+/* print a summary of the allocation results we have accrued */
+static void print_allocation_summary(void) {
+
+  /* it is assumed we are running single-threaded here and do not need atomic
+   * accesses
+   */
+
+  if (BOUND == 0) {
+    TRACE(TC_MEMORY_USAGE, "allocated %zu state structure(s), totaling %zu "
+      "bytes", allocated[0], allocated[0] * sizeof(struct state));
+  } else {
+    for (size_t i = 0; i < sizeof(allocated) / sizeof(allocated[0]); i++) {
+
+      if (allocated[i] == 0) {
+        /* no state at this depth was reached, therefore no states at deeper
+         * depths were reached either and we are done
+         */
+        for (size_t j = i + 1; j < sizeof(allocated) / sizeof(allocated[0]); j++) {
+          assert(allocated[j] == 0 &&
+            "state allocated at a deeper depth than an empty level");
+        }
+        break;
+      }
+
+      TRACE(TC_MEMORY_USAGE, "depth %zu: allocated %zu state structure(s), "
+        "totaling %zu bytes", i, allocated[i],
+        allocated[i] * sizeof(struct state));
+    }
+  }
+}
+
 /******************************************************************************/
 
 /* Print a counterexample trace terminating at the given state. This function
@@ -2755,6 +2817,18 @@ restart:;
           "exceeds total possible number of states");
       }
 
+      /* Update statistics if `--trace memory_usage` is in effect. Note that we
+       * do this here (when a state is being added to the seen set) rather than
+       * when the state was originally allocated to ensure that the final
+       * allocation figures do not include transient states that we allocated
+       * and then discarded as duplicates.
+       */
+       size_t depth = 0;
+#if BOUND > 0
+       depth = s->bound;
+#endif
+       register_allocation(depth);
+
       return true;
     }
 
@@ -3158,6 +3232,9 @@ static int exit_with(int status) {
              "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
              seen_count, fire_count, gettime());
     }
+
+    /* print memory usage statistics if `--trace memory_usage` is in effect */
+    print_allocation_summary();
 
     exit(status);
   } else {

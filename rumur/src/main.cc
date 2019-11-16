@@ -209,6 +209,8 @@ static void parse_args(int argc, char **argv) {
           options.traces |= TC_HANDLE_READS;
         } else if (strcmp(optarg, "handle_writes") == 0) {
           options.traces |= TC_HANDLE_WRITES;
+        } else if (strcmp(optarg, "memory_usage") == 0) {
+          options.traces |= TC_MEMORY_USAGE;
         } else if (strcmp(optarg, "queue") == 0) {
           options.traces |= TC_QUEUE;
         } else if (strcmp(optarg, "set") == 0) {
@@ -221,7 +223,8 @@ static void parse_args(int argc, char **argv) {
           std::cerr
             << "invalid --trace argument \"" << optarg << "\"\n"
             << "valid arguments are \"handle_reads\", \"handle_writes\", "
-              "\"queue\", \"set\", and \"symmetry_reduction\"\n";
+              "\"memory_usage\", \"queue\", \"set\", and "
+              "\"symmetry_reduction\"\n";
           exit(EXIT_FAILURE);
         }
         break;

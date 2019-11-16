@@ -116,6 +116,7 @@ int output_checker(const std::string &path, const Model &model,
     << "enum trace_category_t {\n"
     << "  TC_HANDLE_READS       = " << TC_HANDLE_READS << ",\n"
     << "  TC_HANDLE_WRITES      = " << TC_HANDLE_WRITES << ",\n"
+    << "  TC_MEMORY_USAGE       = " << TC_MEMORY_USAGE << ",\n"
     << "  TC_QUEUE              = " << TC_QUEUE << ",\n"
     << "  TC_SET                = " << TC_SET << ",\n"
     << "  TC_SYMMETRY_REDUCTION = " << TC_SYMMETRY_REDUCTION << ",\n"
