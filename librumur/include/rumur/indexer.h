@@ -84,7 +84,7 @@ class Indexer : public BaseTraversal<> {
  private:
   void visit_bexpr(BinaryExpr &n);
   void visit_uexpr(UnaryExpr &n);
-};
+} __attribute__((deprecated("Indexer has been replaced by index()")));
 
 // index (update the unique_id member) of the given node and all its children
 // using IDs starting from the given number
