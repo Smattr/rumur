@@ -95,26 +95,27 @@ def main(args):
     return -1
   cc_vendor = categorise(cc)
 
-  # Setup a temporary directory in which to generate the checker
-  tmp = tempfile.mkdtemp()
-  atexit.register(shutil.rmtree, tmp)
+  # Generate the checker
+  print('Generating the checker...')
+  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', '/dev/stdout'],
+    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  checker_c, _ = rumur_proc.communicate()
+  checker_c = checker_c.decode('utf-8', 'replace')
+  if rumur_proc.returncode != 0:
+    return rumur_proc.returncode
 
   ok = True
 
-  # Generate the checker
-  print('Generating the checker...')
-  checker_c = os.path.join(tmp, 'checker.c')
-  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c],
-    stdin=subprocess.PIPE)
-  rumur_proc.communicate()
-  ok &= rumur_proc.returncode == 0
+  # Setup a temporary directory in which to generate the checker
+  tmp = tempfile.mkdtemp()
+  atexit.register(shutil.rmtree, tmp)
 
   # Compile the checker
   if ok:
     print('Compiling the checker...')
     aout = os.path.join(tmp, 'a.out')
     cc_flags = ['-std=c11', '-O3', '-march=native', '-mtune=native', '-o', aout,
-      checker_c]
+      '-x', 'c', '-']
     if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
       # GCC needs a personal invitation to use cmpxchg16b
       cc_flags += ['-mcx16']
@@ -122,8 +123,8 @@ def main(args):
       # Allow GCC to perform more advanced interprocedural optimisations
       cc_flags += ['-fwhole-program']
     cc_flags += ['-lpthread']
-    cc_proc = subprocess.Popen([cc] + cc_flags)
-    cc_proc.communicate()
+    cc_proc = subprocess.Popen([cc] + cc_flags, stdin=subprocess.PIPE)
+    cc_proc.communicate(checker_c)
     ok &= cc_proc.returncode == 0
 
   # Run the checker
