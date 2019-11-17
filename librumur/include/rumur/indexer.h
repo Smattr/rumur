@@ -4,6 +4,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Expr.h>
 #include <rumur/Model.h>
+#include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
@@ -84,5 +85,9 @@ class Indexer : public BaseTraversal<> {
   void visit_bexpr(BinaryExpr &n);
   void visit_uexpr(UnaryExpr &n);
 };
+
+// index (update the unique_id member) of the given node and all its children
+// using IDs starting from the given number
+void index(Node &n, size_t start = 0);
 
 }

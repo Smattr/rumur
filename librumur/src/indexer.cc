@@ -4,6 +4,7 @@
 #include <rumur/Expr.h>
 #include <rumur/indexer.h>
 #include <rumur/Model.h>
+#include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
@@ -367,6 +368,27 @@ void Indexer::visit_while(While &n) {
   dispatch(*n.condition);
   for (auto &s : n.body)
     dispatch(*s);
+}
+
+void index(Node &n, size_t start) {
+
+  size_t next = start;
+
+  // index the root
+  n.unique_id = next++;
+
+  // index each of its children
+  for (Node *child : n) {
+    assert(child != nullptr && "null pointer present in AST iteration");
+    child->unique_id = next++;
+
+    // we need to handle enums slightly differently because they need IDs for
+    // each of their members as well (see resolve_symbols())
+    if (auto e = dynamic_cast<Enum*>(child)) {
+      e->unique_id_limit = next + e->members.size();
+      next = e->unique_id_limit;
+    }
+  }
 }
 
 }
