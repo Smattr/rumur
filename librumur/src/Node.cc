@@ -489,4 +489,465 @@ Node::Iterator Node::end() {
   return it;
 }
 
+// replicate the above for a const iterator
+
+static void expand(const Node &n, std::vector<const Node*> &to) {
+
+  class Expander : public ConstBaseTraversal<> {
+
+   private:
+    std::vector<const Node*> &target;
+
+   public:
+    explicit Expander(std::vector<const Node*> &target_): target(target_) { }
+
+    void visit_add(const Add &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_aliasdecl(const AliasDecl &n) final {
+      target.insert(target.begin(), n.value.get());
+    }
+
+    void visit_aliasrule(const AliasRule &n) final {
+      auto it = target.begin();
+      for (const Ptr<AliasDecl> &a : n.aliases) {
+        it = target.insert(it, a.get());
+        ++it;
+      }
+      for (const Ptr<Rule> &r : n.rules) {
+        it = target.insert(it, r.get());
+        ++it;
+      }
+    }
+
+    void visit_aliasstmt(const AliasStmt &n) final {
+      auto it = target.begin();
+      for (const Ptr<AliasDecl> &a : n.aliases) {
+        it = target.insert(it, a.get());
+        ++it;
+      }
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_and(const And &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_array(const Array &n) final {
+      target.insert(target.begin(),
+        { n.index_type.get(), n.element_type.get() });
+    }
+
+    void visit_assignment(const Assignment &n) final {
+      target.insert(target.begin(), { n.lhs.get(), n.rhs.get() });
+    }
+
+    void visit_clear(const Clear &n) final {
+      target.insert(target.begin(), n.rhs.get());
+    }
+
+    void visit_constdecl(const ConstDecl &n) final {
+      target.insert(target.begin(), n.value.get());
+    }
+
+    void visit_div(const Div &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_element(const Element &n) final {
+      target.insert(target.begin(), { n.array.get(), n.index.get() });
+    }
+
+    void visit_enum(const Enum&) final { }
+
+    void visit_eq(const Eq &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_errorstmt(const ErrorStmt&) final { }
+
+    void visit_exists(const Exists &n) final {
+      target.insert(target.begin(), { &n.quantifier, n.expr.get() });
+    }
+
+    void visit_exprid(const ExprID&) final { }
+
+    void visit_field(const Field &n) final {
+      target.insert(target.begin(), n.record.get());
+    }
+
+    void visit_for(const For &n) final {
+      auto it = target.begin();
+      it = target.insert(it, &n.quantifier);
+      ++it;
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_forall(const Forall &n) final {
+      target.insert(target.begin(), { &n.quantifier, n.expr.get() });
+    }
+
+    void visit_function(const Function &n) final {
+      auto it = target.begin();
+      for (const Ptr<VarDecl> &p : n.parameters) {
+        it = target.insert(it, p.get());
+        ++it;
+      }
+      if (n.return_type != nullptr) {
+        it = target.insert(it, n.return_type.get());
+        ++it;
+      }
+      for (const Ptr<Decl> &d : n.decls) {
+        it = target.insert(it, d.get());
+        ++it;
+      }
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_functioncall(const FunctionCall &n) final {
+      auto it = target.begin();
+      for (const Ptr<Expr> &a : n.arguments) {
+        it = target.insert(it, a.get());
+        ++it;
+      }
+    }
+
+    void visit_geq(const Geq &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_gt(const Gt &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_if(const If &n) final {
+      auto it = target.begin();
+      for (const IfClause &c : n.clauses) {
+        it = target.insert(it, &c);
+        ++it;
+      }
+    }
+
+    void visit_ifclause(const IfClause &n) final {
+      auto it = target.begin();
+      if (n.condition != nullptr) {
+        it = target.insert(it, n.condition.get());
+        ++it;
+      }
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_implication(const Implication &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_isundefined(const IsUndefined &n) final {
+      target.insert(target.begin(), n.expr.get());
+    }
+
+    void visit_leq(const Leq &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_lt(const Lt &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_mod(const Mod &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_model(const Model &n) final {
+      auto it = target.begin();
+      for (const Ptr<Decl> &d : n.decls) {
+        it = target.insert(it, d.get());
+        ++it;
+      }
+      for (const Ptr<Function> &f : n.functions) {
+        it = target.insert(it, f.get());
+        ++it;
+      }
+      for (const Ptr<Rule> &r : n.rules) {
+        it = target.insert(it, r.get());
+        ++it;
+      }
+    }
+
+    void visit_mul(const Mul &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_negative(const Negative &n) final {
+      visit_uexpr(n);
+    }
+
+    void visit_neq(const Neq &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_not(const Not &n) final {
+      visit_uexpr(n);
+    }
+
+    void visit_number(const Number&) final { }
+
+    void visit_or(const Or &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_procedurecall(const ProcedureCall &n) final {
+      target.insert(target.begin(), &n.call);
+    }
+
+    void visit_property(const Property &n) final {
+      target.insert(target.begin(), n.expr.get());
+    }
+
+    void visit_propertyrule(const PropertyRule &n) final {
+      auto it = target.begin();
+      for (const Quantifier &q : n.quantifiers) {
+        it = target.insert(it, &q);
+        ++it;
+      }
+      target.insert(it, &n.property);
+    }
+
+    void visit_propertystmt(const PropertyStmt &n) final {
+      target.insert(target.begin(), &n.property);
+    }
+
+    void visit_put(const Put &n) final {
+      if (n.expr != nullptr) {
+        target.insert(target.begin(), n.expr.get());
+      }
+    }
+
+    void visit_quantifier(const Quantifier &n) final {
+      auto it = target.begin();
+      if (n.type != nullptr) {
+        it = target.insert(it, n.type.get());
+        ++it;
+      }
+      if (n.from != nullptr) {
+        it = target.insert(it, n.from.get());
+        ++it;
+      }
+      if (n.to != nullptr) {
+        it = target.insert(it, n.to.get());
+        ++it;
+      }
+      if (n.step != nullptr) {
+        it = target.insert(it, n.step.get());
+        ++it;
+      }
+    }
+
+    void visit_range(const Range &n) final {
+      target.insert(target.begin(), { n.min.get(), n.max.get() });
+    }
+
+    void visit_record(const Record &n) final {
+      auto it = target.begin();
+      for (const Ptr<VarDecl> &f : n.fields) {
+        it = target.insert(it, f.get());
+        ++it;
+      }
+    }
+
+    void visit_return(const Return &n) final {
+      if (n.expr != nullptr) {
+        target.insert(target.begin(), n.expr.get());
+      }
+    }
+
+    void visit_ruleset(const Ruleset &n) final {
+      auto it = target.begin();
+      for (const Quantifier &q : n.quantifiers) {
+        it = target.insert(it, &q);
+        ++it;
+      }
+      for (const Ptr<Rule> &r : n.rules) {
+        it = target.insert(it, r.get());
+        ++it;
+      }
+    }
+
+    void visit_scalarset(const Scalarset &n) final {
+      target.insert(target.begin(), n.bound.get());
+    }
+
+    void visit_simplerule(const SimpleRule &n) final {
+      auto it = target.begin();
+      for (const Quantifier &q : n.quantifiers) {
+        it = target.insert(it, &q);
+        ++it;
+      }
+      if (n.guard != nullptr) {
+        it = target.insert(it, n.guard.get());
+        ++it;
+      }
+      for (const Ptr<Decl> &d : n.decls) {
+        it = target.insert(it, d.get());
+        ++it;
+      }
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_startstate(const StartState &n) final {
+      auto it = target.begin();
+      for (const Quantifier &q : n.quantifiers) {
+        it = target.insert(it, &q);
+        ++it;
+      }
+      for (const Ptr<Decl> &d : n.decls) {
+        it = target.insert(it, d.get());
+        ++it;
+      }
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_sub(const Sub &n) final {
+      visit_bexpr(n);
+    }
+
+    void visit_switch(const Switch &n) final {
+      auto it = target.begin();
+      it = target.insert(it, n.expr.get());
+      ++it;
+      for (const SwitchCase &c : n.cases) {
+        it = target.insert(it, &c);
+        ++it;
+      }
+    }
+
+    void visit_switchcase(const SwitchCase &n) final {
+      auto it = target.begin();
+      for (const Ptr<Expr> &m : n.matches) {
+        it = target.insert(it, m.get());
+        ++it;
+      }
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    void visit_ternary(const Ternary &n) final {
+      target.insert(target.begin(), { n.cond.get(), n.lhs.get(), n.rhs.get() });
+    }
+
+    void visit_typedecl(const TypeDecl &n) final {
+      target.insert(target.begin(), n.value.get());
+    }
+
+    void visit_typeexprid(const TypeExprID&) final { }
+
+    void visit_undefine(const Undefine &n) final {
+      target.insert(target.begin(), n.rhs.get());
+    }
+
+    void visit_vardecl(const VarDecl &n) final {
+      if (n.type != nullptr) {
+        target.insert(target.begin(), n.type.get());
+      }
+    }
+
+    void visit_while(const While &n) final {
+      auto it = target.begin();
+      it = target.insert(it, n.condition.get());
+      ++it;
+      for (const Ptr<Stmt> &s : n.body) {
+        it = target.insert(it, s.get());
+        ++it;
+      }
+    }
+
+    virtual ~Expander() = default;
+
+   private:
+    void visit_bexpr(const BinaryExpr &n) {
+      target.insert(target.begin(), { n.lhs.get(), n.rhs.get() });
+    }
+
+    void visit_uexpr(const UnaryExpr &n) {
+      target.insert(target.begin(), n.rhs.get());
+    }
+  };
+
+  Expander e(to);
+  e.dispatch(n);
+}
+
+Node::ConstIterator::ConstIterator() { }
+
+Node::ConstIterator::ConstIterator(const Node &base) {
+  expand(base, remaining);
+}
+
+Node::ConstIterator &Node::ConstIterator::operator++() {
+
+  assert(!remaining.empty() && "advancing an empty iterator");
+
+  // the implementation here does a pre-order traversal, but the API is
+  // documented in Node.h to traverse in an unspecified order to leave us the
+  // freedom to change this in future
+
+  // remove the current node we are at
+  const Node *next = pop(remaining);
+
+  // add its children to the pending list
+  expand(*next, remaining);
+
+  return *this;
+}
+
+Node::ConstIterator Node::ConstIterator::operator++(int) {
+  ConstIterator it = *this;
+  ++*this;
+  return it;
+}
+
+const Node *Node::ConstIterator::operator*() {
+
+  assert(!remaining.empty() && "dereferencing empty iterator");
+  return remaining[0];
+}
+
+bool Node::ConstIterator::operator==(const ConstIterator &other) const {
+  return remaining == other.remaining;
+}
+
+bool Node::ConstIterator::operator!=(const ConstIterator &other) const {
+  return !(*this == other);
+}
+
+Node::ConstIterator Node::begin() const {
+  ConstIterator it(*this);
+  return it;
+}
+
+Node::ConstIterator Node::end() const {
+  ConstIterator it;
+  return it;
+}
+
 }

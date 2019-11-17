@@ -58,6 +58,24 @@ struct Node {
   Iterator begin();
   Iterator end();
 
+  class ConstIterator {
+
+   private:
+    std::vector<const Node*> remaining;
+
+   public:
+    explicit ConstIterator();
+    explicit ConstIterator(const Node &base);
+    ConstIterator &operator++();
+    ConstIterator operator++(int);
+    const Node *operator*();
+    bool operator==(const ConstIterator &other) const;
+    bool operator!=(const ConstIterator &other) const;
+  };
+
+  ConstIterator begin() const;
+  ConstIterator end() const;
+
 };
 
 }
