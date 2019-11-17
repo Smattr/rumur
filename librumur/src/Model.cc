@@ -146,8 +146,7 @@ mpz_class Model::liveness_count() const {
 
 void Model::reindex() {
   // Re-number our and our children's 'unique_id' members
-  Indexer i;
-  i.dispatch(*this);
+  index(*this);
 }
 
 }
