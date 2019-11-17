@@ -83,6 +83,11 @@ def main(args):
     sys.stderr.write('rumur binary not found\n')
     return -1
 
+  # if the user asked for help or version information, run Rumur directly
+  for arg in args[1:]:
+    if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
+      os.execv(rumur_bin, [rumur_bin] + args[1:])
+
   # Find and categorise the C compiler
   cc = which(os.environ.get('CC', 'cc'))
   if cc is None:
@@ -103,12 +108,6 @@ def main(args):
     stdin=subprocess.PIPE)
   rumur_proc.communicate()
   ok &= rumur_proc.returncode == 0
-
-  # if the user asked for help or version information, Rumur will have exited
-  # without generating a checker
-  for arg in args[1:]:
-    if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
-      return 0 if ok else -1
 
   # Compile the checker
   if ok:
