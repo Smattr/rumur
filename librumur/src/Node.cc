@@ -436,13 +436,13 @@ static void expand(Node &n, std::vector<Node*> &to) {
   e.dispatch(n);
 }
 
-Node::Iterator::Iterator() { }
+Node::PreorderIterator::PreorderIterator() { }
 
-Node::Iterator::Iterator(Node &base) {
+Node::PreorderIterator::PreorderIterator(Node &base) {
   expand(base, remaining);
 }
 
-Node::Iterator &Node::Iterator::operator++() {
+Node::PreorderIterator &Node::PreorderIterator::operator++() {
 
   assert(!remaining.empty() && "advancing an empty iterator");
 
@@ -459,23 +459,23 @@ Node::Iterator &Node::Iterator::operator++() {
   return *this;
 }
 
-Node::Iterator Node::Iterator::operator++(int) {
+Node::PreorderIterator Node::PreorderIterator::operator++(int) {
   Iterator it = *this;
   ++*this;
   return it;
 }
 
-Node *Node::Iterator::operator*() {
+Node *Node::PreorderIterator::operator*() {
 
   assert(!remaining.empty() && "dereferencing empty iterator");
   return remaining[0];
 }
 
-bool Node::Iterator::operator==(const Iterator &other) const {
+bool Node::PreorderIterator::operator==(const PreorderIterator &other) const {
   return remaining == other.remaining;
 }
 
-bool Node::Iterator::operator!=(const Iterator &other) const {
+bool Node::PreorderIterator::operator!=(const PreorderIterator &other) const {
   return !(*this == other);
 }
 
@@ -897,13 +897,13 @@ static void expand(const Node &n, std::vector<const Node*> &to) {
   e.dispatch(n);
 }
 
-Node::ConstIterator::ConstIterator() { }
+Node::ConstPreorderIterator::ConstPreorderIterator() { }
 
-Node::ConstIterator::ConstIterator(const Node &base) {
+Node::ConstPreorderIterator::ConstPreorderIterator(const Node &base) {
   expand(base, remaining);
 }
 
-Node::ConstIterator &Node::ConstIterator::operator++() {
+Node::ConstPreorderIterator &Node::ConstPreorderIterator::operator++() {
 
   assert(!remaining.empty() && "advancing an empty iterator");
 
@@ -920,23 +920,23 @@ Node::ConstIterator &Node::ConstIterator::operator++() {
   return *this;
 }
 
-Node::ConstIterator Node::ConstIterator::operator++(int) {
-  ConstIterator it = *this;
+Node::ConstPreorderIterator Node::ConstPreorderIterator::operator++(int) {
+  ConstPreorderIterator it = *this;
   ++*this;
   return it;
 }
 
-const Node *Node::ConstIterator::operator*() {
+const Node *Node::ConstPreorderIterator::operator*() {
 
   assert(!remaining.empty() && "dereferencing empty iterator");
   return remaining[0];
 }
 
-bool Node::ConstIterator::operator==(const ConstIterator &other) const {
+bool Node::ConstPreorderIterator::operator==(const ConstPreorderIterator &other) const {
   return remaining == other.remaining;
 }
 
-bool Node::ConstIterator::operator!=(const ConstIterator &other) const {
+bool Node::ConstPreorderIterator::operator!=(const ConstPreorderIterator &other) const {
   return !(*this == other);
 }
 
@@ -948,6 +948,27 @@ Node::ConstIterator Node::begin() const {
 Node::ConstIterator Node::end() const {
   ConstIterator it;
   return it;
+}
+
+Node::PreorderWrapper::PreorderWrapper(Node &root_): root(root_) { }
+
+Node::PreorderIterator Node::PreorderWrapper::begin() {
+  return PreorderIterator(root);
+}
+
+Node::PreorderIterator Node::PreorderWrapper::end() {
+  return PreorderIterator();
+}
+
+Node::ConstPreorderWrapper::ConstPreorderWrapper(const Node &root_): root(root_)
+  { }
+
+Node::ConstPreorderIterator Node::ConstPreorderWrapper::begin() {
+  return ConstPreorderIterator(root);
+}
+
+Node::ConstPreorderIterator Node::ConstPreorderWrapper::end() {
+  return ConstPreorderIterator();
 }
 
 }

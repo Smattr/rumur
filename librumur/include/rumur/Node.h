@@ -40,42 +40,77 @@ struct Node {
   // The traversal order is not guaranteed, so do not use this API if you
   // specifically require pre-order or post-order.
 
-  class Iterator {
+  class PreorderIterator {
 
    private:
     std::vector<Node*> remaining;
 
    public:
-    explicit Iterator();
-    explicit Iterator(Node &base);
-    Iterator &operator++();
-    Iterator operator++(int);
+    explicit PreorderIterator();
+    explicit PreorderIterator(Node &base);
+    PreorderIterator &operator++();
+    PreorderIterator operator++(int);
     Node *operator*();
-    bool operator==(const Iterator &other) const;
-    bool operator!=(const Iterator &other) const;
+    bool operator==(const PreorderIterator &other) const;
+    bool operator!=(const PreorderIterator &other) const;
   };
+
+  using Iterator = PreorderIterator;
 
   Iterator begin();
   Iterator end();
 
-  class ConstIterator {
+  class ConstPreorderIterator {
 
    private:
     std::vector<const Node*> remaining;
 
    public:
-    explicit ConstIterator();
-    explicit ConstIterator(const Node &base);
-    ConstIterator &operator++();
-    ConstIterator operator++(int);
+    explicit ConstPreorderIterator();
+    explicit ConstPreorderIterator(const Node &base);
+    ConstPreorderIterator &operator++();
+    ConstPreorderIterator operator++(int);
     const Node *operator*();
-    bool operator==(const ConstIterator &other) const;
-    bool operator!=(const ConstIterator &other) const;
+    bool operator==(const ConstPreorderIterator &other) const;
+    bool operator!=(const ConstPreorderIterator &other) const;
   };
+
+  using ConstIterator = ConstPreorderIterator;
 
   ConstIterator begin() const;
   ConstIterator end() const;
 
+  class PreorderWrapper {
+
+   private:
+    Node &root;
+
+   public:
+    explicit PreorderWrapper(Node &root_);
+    PreorderIterator begin();
+    PreorderIterator end();
+  };
+
+  // API for explicit pre-order traversal. Use as:
+  //
+  //   for (Node *n : myAST.preorder()) {
+  //     ...
+  //   }
+  PreorderWrapper preorder();
+
+  class ConstPreorderWrapper {
+
+   private:
+    const Node &root;
+
+   public:
+    explicit ConstPreorderWrapper(const Node &root_);
+    ConstPreorderIterator begin();
+    ConstPreorderIterator end();
+  };
+
+  // API for explicit pre-order traversal on a const Node
+  ConstPreorderWrapper preorder() const;
 };
 
 }
