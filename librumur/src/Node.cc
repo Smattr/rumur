@@ -1031,4 +1031,66 @@ bool Node::PostorderIterator::operator!=(const PostorderIterator &other) const {
   return !(*this == other);
 }
 
+// duplicate the above for a const post-order
+
+Node::ConstPostorderIterator::ConstPostorderIterator() { }
+
+Node::ConstPostorderIterator::ConstPostorderIterator(const Node &root) {
+  remaining.push_back(std::make_pair(&root, false));
+  expand_head();
+}
+
+Node::ConstPostorderIterator &Node::ConstPostorderIterator::operator++() {
+
+  assert(!remaining.empty() && "incrementing an empty iterator");
+
+  // discard the current node
+  assert(remaining[0].second && "current node has not been expanded");
+  remaining.erase(remaining.begin());
+
+  // expand the next pending until we have an expanded node at the head of our
+  // queue
+  expand_head();
+
+  return *this;
+}
+
+void Node::ConstPostorderIterator::expand_head() {
+
+  while (!remaining.empty() && !remaining[0].second) {
+
+    // take the current node and expand it
+    const Node *current = remaining[0].first;
+    std::vector<const Node*> vs;
+    expand(*current, vs);
+    remaining[0].second = true;
+
+    // we insert new nodes as unexpanded first
+    auto it = remaining.begin();
+    for (const Node *n : vs) {
+      it = remaining.insert(it, std::make_pair(n, false));
+      it++;
+    }
+  }
+}
+
+Node::ConstPostorderIterator Node::ConstPostorderIterator::operator++(int) {
+  ConstPostorderIterator it = *this;
+  ++*this;
+  return it;
+}
+
+const Node *Node::ConstPostorderIterator::operator*() {
+  assert(!remaining.empty() && "dereferencing an empty iterator");
+  return remaining[0].first;
+}
+
+bool Node::ConstPostorderIterator::operator==(const ConstPostorderIterator &other) const {
+  return remaining == other.remaining;
+}
+
+bool Node::ConstPostorderIterator::operator!=(const ConstPostorderIterator &other) const {
+  return !(*this == other);
+}
+
 }

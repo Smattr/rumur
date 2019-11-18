@@ -144,6 +144,36 @@ struct Node {
 
   // API for explicit post-order traversal
   PostorderWrapper postorder() { return PostorderWrapper(*this); }
+
+  class ConstPostorderIterator {
+
+   private:
+    std::vector<std::pair<const Node*, bool>> remaining;
+
+    void expand_head();
+
+   public:
+    explicit ConstPostorderIterator();
+    explicit ConstPostorderIterator(const Node &root);
+    ConstPostorderIterator &operator++();
+    ConstPostorderIterator operator++(int);
+    const Node *operator*();
+    bool operator==(const ConstPostorderIterator &other) const;
+    bool operator!=(const ConstPostorderIterator &other) const;
+  };
+
+  class ConstPostorderWrapper {
+
+   private:
+    const Node &root;
+
+   public:
+    explicit ConstPostorderWrapper(const Node &root_): root(root_) { }
+    ConstPostorderIterator begin() { return ConstPostorderIterator(root); }
+    ConstPostorderIterator end() { return ConstPostorderIterator(); }
+  };
+
+  ConstPostorderWrapper postorder() const { return ConstPostorderWrapper(*this); }
 };
 
 }
