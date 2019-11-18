@@ -406,8 +406,10 @@ void validate_model(const Model &m) {
 }
 
 void validate(const Node &n) {
-  Validator v;
-  v.dispatch(n);
+  for (const Node *child : n.postorder()) {
+    child->validate();
+  }
+  n.validate();
 }
 
 }
