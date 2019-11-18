@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <iostream>
 #include "location.hh"
+#include <utility>
 #include <vector>
 
 namespace rumur {
@@ -111,6 +112,38 @@ struct Node {
 
   // API for explicit pre-order traversal on a const Node
   ConstPreorderWrapper preorder() const;
+
+  class PostorderIterator {
+
+   private:
+    // pending nodes and whether they have been expanded or not
+    std::vector<std::pair<Node*, bool>> remaining;
+
+    void expand_head();
+
+   public:
+    explicit PostorderIterator();
+    explicit PostorderIterator(Node &root);
+    PostorderIterator &operator++();
+    PostorderIterator operator++(int);
+    Node *operator*();
+    bool operator==(const PostorderIterator &other) const;
+    bool operator!=(const PostorderIterator &other) const;
+  };
+
+  class PostorderWrapper {
+
+   private:
+    Node &root;
+
+   public:
+    explicit PostorderWrapper(Node &root_): root(root_) { }
+    PostorderIterator begin() { return PostorderIterator(root); }
+    PostorderIterator end() { return PostorderIterator(); }
+  };
+
+  // API for explicit post-order traversal
+  PostorderWrapper postorder() { return PostorderWrapper(*this); }
 };
 
 }
