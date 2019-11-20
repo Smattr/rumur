@@ -39,6 +39,22 @@ class CGenerator : public ConstTraversal {
     *this << "(" << *n.lhs << " + " << *n.rhs << ")";
   }
 
+  void visit_aliasdecl(const AliasDecl &n) final {
+    *this << "#define " << n.name << " " << *n.value << "\n";
+  }
+
+  void visit_aliasstmt(const AliasStmt &n) final {
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << *a;
+    }
+    for (const Ptr<Stmt> &s : n.body) {
+      *this << *s;
+    }
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << "#undef " << a->name << "\n";
+    }
+  }
+
   void visit_and(const And &n) final {
     *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
@@ -295,6 +311,12 @@ class CGenerator : public ConstTraversal {
     for (const Ptr<Stmt> &s : n.body) {
       *this << *s;
     }
+    // clean up any aliases we defined
+    for (const Ptr<Decl> &d : n.decls) {
+      if (auto a = dynamic_cast<const AliasDecl*>(d.get())) {
+        *this << "#undef " << a->name << "\n";
+      }
+    }
     dedent();
     *this << indentation() << "}\n";
   }
@@ -308,6 +330,12 @@ class CGenerator : public ConstTraversal {
     }
     for (const Ptr<Stmt> &s : n.body) {
       *this << *s;
+    }
+    // clean up any aliases we defined
+    for (const Ptr<Decl> &d : n.decls) {
+      if (auto a = dynamic_cast<const AliasDecl*>(d.get())) {
+        *this << "#undef " << a->name << "\n";
+      }
     }
     dedent();
     *this << indentation() << "}\n\n";
