@@ -119,13 +119,19 @@ class CGenerator : public ConstTraversal {
 
   void visit_functioncall(const FunctionCall &n) final {
     *this << n.name << "(";
+    assert(n.function != nullptr && "unresolved function call in AST");
+    auto it = n.function->parameters.begin();
     bool first = true;
     for (const Ptr<Expr> &a : n.arguments) {
       if (!first) {
         *this << ", ";
       }
+      if (!(*it)->readonly) {
+        *this << "&";
+      }
       *this << *a;
       first = false;
+      it++;
     }
     *this << ")";
   }
