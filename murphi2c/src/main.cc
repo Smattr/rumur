@@ -1,6 +1,8 @@
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 #include <fstream>
+#include "generate_c.h"
 #include <getopt.h>
 #include <iostream>
 #include <memory>
@@ -97,6 +99,9 @@ int main(int argc, char **argv) {
   }
 
   assert(m != nullptr);
+
+  // output code
+  generate_c(*m, out == nullptr ? std::cout : *out);
 
   return EXIT_SUCCESS;
 }

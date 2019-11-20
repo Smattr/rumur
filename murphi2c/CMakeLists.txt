@@ -1,4 +1,5 @@
 add_executable(murphi2c
+  src/generate_c.cc
   src/main.cc)
 
 target_include_directories(murphi2c
