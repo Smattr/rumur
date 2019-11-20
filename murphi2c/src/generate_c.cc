@@ -102,16 +102,34 @@ class CGenerator : public ConstTraversal {
       if (!first) {
         *this << ", ";
       }
-      *this << *p;
+      *this << *p->type << " ";
+      // if this is a var parameter, it needs to be a pointer
+      if (!p->readonly) {
+        *this << "*" << p->name << "_";
+      } else {
+        *this << p->name;
+      }
       first = false;
     }
     *this << ") {\n";
     indent();
+    // provide aliases of var parameters under their original name
+    for (const Ptr<VarDecl> &p : n.parameters) {
+      if (!p->readonly) {
+        *this << "#define " << p->name << " (*" << p->name << "_)\n";
+      }
+    }
     for (const Ptr<Decl> &d : n.decls) {
       *this << *d;
     }
     for (const Ptr<Stmt> &s : n.body) {
       *this << *s;
+    }
+    // clean up var aliases
+    for (const Ptr<VarDecl> &p : n.parameters) {
+      if (!p->readonly) {
+        *this << "#undef " << p->name << "\n";
+      }
     }
     dedent();
     *this << "}\n";
