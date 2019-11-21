@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include "generate_c.h"
+#include <gmpxx.h>
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
@@ -60,6 +61,18 @@ class CGenerator : public ConstTraversal {
     *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
 
+  void visit_array(const Array &n) final {
+    mpz_class count = n.index_type->count();
+
+    assert(count > 0 && "index type of array does not include undefined");
+    count--;
+
+    // wrap the array in a struct so that we do not have the awkwardness of
+    // having to emit its type and size on either size of another node
+    *this << "struct { " << *n.element_type << " data[" << count.get_str()
+      << "]; }";
+  }
+
   void visit_assignment(const Assignment &n) final {
     *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
   }
@@ -84,7 +97,7 @@ class CGenerator : public ConstTraversal {
   }
 
   void visit_element(const Element &n) final {
-    *this << "(" << *n.array << "[" << *n.index << "])";
+    *this << "(" << *n.array << ".data[" << *n.index << "])";
   }
 
   void visit_enum(const Enum &n) final {
