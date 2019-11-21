@@ -116,6 +116,11 @@ class CGenerator : public ConstTraversal {
     *this << "error(\"" << escape(n.message) << "\")";
   }
 
+  void visit_exists(const Exists &n) final {
+    *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= "
+      << *n.expr << "; } res_; })";
+  }
+
   void visit_exprid(const ExprID &n) final {
     *this << "(" << n.id << ")";
   }
@@ -132,6 +137,11 @@ class CGenerator : public ConstTraversal {
     }
     dedent();
     *this << indentation() << "}\n";
+  }
+
+  void visit_forall(const Forall &n) final {
+    *this << "({ bool res_ = true; " << n.quantifier << " { res_ &= "
+      << *n.expr << "; } res_; })";
   }
 
   void visit_function(const Function &n) final {
@@ -559,7 +569,8 @@ class CGenerator : public ConstTraversal {
 void generate_c(const Node &n, std::ostream &out) {
 
   // standard support we will assume is available in the code emitted above
-  out << "#include <stddef.h>\n"
+  out << "#include <stdbool.h>\n"
+         "#include <stddef.h>\n"
          "#include <stdint.h>\n"
          "#include <stdlib.h>\n"
          "#include <string.h>\n";
