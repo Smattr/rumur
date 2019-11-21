@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include "generate_c.h"
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
