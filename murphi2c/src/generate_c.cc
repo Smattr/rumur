@@ -264,6 +264,69 @@ class CGenerator : public ConstTraversal {
     *this << indentation() << n.call << ";\n";
   }
 
+  void visit_propertystmt(const PropertyStmt &n) final {
+
+    switch (n.property.category) {
+
+      case Property::ASSERTION:
+        *this << indentation() << "if (!" << *n.property.expr << ") {\n";
+        indent();
+        *this << indentation() << "if (failed_assertion != NULL) {\n";
+        indent();
+        *this << indentation() << "failed_assertion(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+        dedent();
+        *this << indentation() << "}\n";
+        dedent();
+        *this << indentation() << "}\n";
+        break;
+
+      case Property::ASSUMPTION:
+        *this << indentation() << "if (!" << *n.property.expr << ") {\n";
+        indent();
+        *this << indentation() << "if (failed_assumption != NULL) {\n";
+        indent();
+        *this << indentation() << "failed_assumption(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+        dedent();
+        *this << indentation() << "}\n";
+        dedent();
+        *this << indentation() << "}\n";
+        break;
+
+      case Property::COVER:
+        *this << indentation() << "if " << *n.property.expr << " {\n";
+        indent();
+        *this << indentation() << "if (cover != NULL) {\n";
+        indent();
+        *this << indentation() << "cover(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+        dedent();
+        *this << indentation() << "}\n";
+        dedent();
+        *this << indentation() << "}\n";
+        break;
+
+      case Property::LIVENESS:
+        *this << indentation() << "if " << *n.property.expr << " {\n";
+        indent();
+        *this << indentation() << "if (liveness != NULL) {\n";
+        indent();
+        *this << indentation() << "liveness(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+        dedent();
+        *this << indentation() << "}\n";
+        dedent();
+        *this << indentation() << "}\n";
+        break;
+
+    }
+  }
+
   void visit_put(const Put &n) final {
     *this << indentation() << "printf(";
     if (n.expr == nullptr) {
@@ -471,6 +534,13 @@ class CGenerator : public ConstTraversal {
 }
 
 void generate_c(const Node &n, std::ostream &out) {
+
+  // emit prototypes for functions we anticipate the user might provide
+  out << "void failed_assertion(const char *message) __attribute__((weak));\n"
+         "void failed_assumption(const char *message) __attribute__((weak));\n"
+         "void cover(const char *message) __attribute__((weak));\n"
+         "void liveness(const char *message) __attribute__((weak));\n";
+
   CGenerator gen(out);
   gen.dispatch(n);
 }
