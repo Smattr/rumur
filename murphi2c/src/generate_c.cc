@@ -567,6 +567,7 @@ void generate_c(const Node &n, std::ostream &out) {
   // emit prototypes for functions we anticipate the user might provide
   out << "void failed_assertion(const char *message) __attribute__((weak));\n"
          "void failed_assumption(const char *message) __attribute__((weak));\n"
+         "void error(const char *message) __attribute__((weak));\n"
          "void cover(const char *message) __attribute__((weak));\n"
          "void liveness(const char *message) __attribute__((weak));\n";
 
