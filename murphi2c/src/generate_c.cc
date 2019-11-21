@@ -64,6 +64,11 @@ class CGenerator : public ConstTraversal {
     *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
   }
 
+  void visit_clear(const Clear &n) final {
+    *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
+      << "));\n";
+  }
+
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
     if (n.type == nullptr) {
