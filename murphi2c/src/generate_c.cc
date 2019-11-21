@@ -500,6 +500,11 @@ class CGenerator : public ConstTraversal {
     *this << n.name;
   }
 
+  void visit_undefine(const Undefine &n) final {
+    *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
+      << "));\n";
+  }
+
   void visit_vardecl(const VarDecl &n) final {
     *this << indentation() << *n.type << " " << n.name << ";\n";
   }
@@ -534,6 +539,12 @@ class CGenerator : public ConstTraversal {
 }
 
 void generate_c(const Node &n, std::ostream &out) {
+
+  // standard support we will assume is available in the code emitted above
+  out << "#include <stddef.h>\n"
+         "#include <stdint.h>\n"
+         "#include <stdlib.h>\n"
+         "#include <string.h>\n";
 
   // emit prototypes for functions we anticipate the user might provide
   out << "void failed_assertion(const char *message) __attribute__((weak));\n"
