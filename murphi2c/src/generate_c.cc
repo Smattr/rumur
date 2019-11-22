@@ -453,7 +453,8 @@ class CGenerator : public ConstBaseTraversal {
       bool down_count = n.from->constant() && n.to->constant()
         && n.to->constant_fold() < n.from->constant_fold();
       *this << "for (int64_t " << n.name << " = " << *n.from << "; " << n.name
-        << " " << (down_count ? ">=" : "<=") << "; " << n.name << " += ";
+        << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; " << n.name
+        << " += ";
       if (n.step == nullptr) {
         *this << "1";
       } else {
