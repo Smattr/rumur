@@ -121,7 +121,7 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_errorstmt(const ErrorStmt &n) final {
-    *this << "error(\"" << escape(n.message) << "\")";
+    *this << indentation() << "error(\"" << escape(n.message) << "\");\n";
   }
 
   void visit_exists(const Exists &n) final {
