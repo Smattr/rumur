@@ -22,6 +22,9 @@ class RuleNamer : public Traversal {
  public:
   void visit_aliasrule(AliasRule &n) final {
     name(n);
+    for (Ptr<Rule> &r : n.rules) {
+      dispatch(*r);
+    }
   }
 
   void visit_propertyrule(PropertyRule &n) final {
@@ -30,6 +33,9 @@ class RuleNamer : public Traversal {
 
   void visit_ruleset(Ruleset &n) final {
     name(n);
+    for (Ptr<Rule> &r : n.rules) {
+      dispatch(*r);
+    }
   }
 
   void visit_simplerule(SimpleRule &n) final {
