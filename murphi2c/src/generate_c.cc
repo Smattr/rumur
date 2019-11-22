@@ -524,7 +524,24 @@ class CGenerator : public ConstBaseTraversal {
 
   void visit_simplerule(const SimpleRule &n) final {
     // TODO: rules with non-symbol names
-    *this << indentation() << "bool guard_" << n.name << "() {\n";
+    *this << indentation() << "bool guard_" << n.name << "(";
+
+    // parameters
+    bool first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ") {\n";
     indent();
 
     // any aliases that are defined in an outer scope
@@ -548,7 +565,24 @@ class CGenerator : public ConstBaseTraversal {
     dedent();
     *this << indentation() << "}\n\n";
 
-    *this << indentation() << "void rule_" << n.name << "() {\n";
+    *this << indentation() << "void rule_" << n.name << "(";
+
+    // parameters
+    first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ") {\n";
     indent();
 
     // aliases, variables, local types, etc.
@@ -579,7 +613,24 @@ class CGenerator : public ConstBaseTraversal {
 
   void visit_startstate(const StartState &n) final {
     // TODO: startstates with non-symbol names
-    *this << indentation() << "void startstate_" << n.name << "() {\n";
+    *this << indentation() << "void startstate_" << n.name << "(";
+
+    // parameters
+    bool first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ") {\n";
     indent();
 
     // aliases, variables, local types, etc.
