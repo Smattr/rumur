@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include "check.h"
 #include <cstdlib>
 #include <fstream>
 #include "generate_c.h"
@@ -100,6 +101,9 @@ int main(int argc, char **argv) {
   }
 
   assert(m != nullptr);
+
+  // validate that this model is OK to translate
+  check(*m);
 
   // name any rules that are unnamed, so they get valid C symbols
   name_rules(*m);

@@ -1,4 +1,5 @@
 add_executable(murphi2c
+  src/check.cc
   src/generate_c.cc
   src/main.cc
   src/name_rules.cc)
