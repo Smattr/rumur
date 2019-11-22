@@ -463,26 +463,26 @@ class CGenerator : public ConstBaseTraversal {
       return;
     }
 
+    *this << "for (" << *n.type << " " << n.name << " = ";
+
     const Ptr<TypeExpr> resolved = n.type->resolve();
 
     if (auto e = dynamic_cast<const Enum*>(resolved.get())) {
       if (!e->members.empty()) {
-        *this << "for (__auto_type " << n.name << " = " << e->members[0].first
-          << "; " << n.name << " <= " << e->members[e->members.size() - 1].first
-          << "; " << n.name << "++)";
+        *this << e->members[0].first << "; " << n.name << " <= "
+          << e->members[e->members.size() - 1].first << "; " << n.name << "++)";
       }
       return;
     }
 
     if (auto r = dynamic_cast<const Range*>(resolved.get())) {
-      *this << "for (int64_t " << n.name << " = " << *r->min << "; " << n.name
-        << " <= " << *r->max << "; " << n.name << "++)";
+      *this << *r->min << "; " << n.name << " <= " << *r->max << "; " << n.name
+        << "++)";
       return;
     }
 
     if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
-      *this << "for (int64_t " << n.name << " = 0; " << n.name << " <= "
-        << *s->bound << "; " << n.name << "++)";
+      *this << "0; " << n.name << " <= " << *s->bound << "; " << n.name << "++)";
       return;
     }
 
