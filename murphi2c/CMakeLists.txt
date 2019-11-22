@@ -1,6 +1,7 @@
 add_executable(murphi2c
   src/generate_c.cc
-  src/main.cc)
+  src/main.cc
+  src/name_rules.cc)
 
 target_include_directories(murphi2c
   PRIVATE

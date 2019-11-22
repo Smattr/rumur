@@ -6,6 +6,7 @@
 #include <getopt.h>
 #include <iostream>
 #include <memory>
+#include "name_rules.h"
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
@@ -99,6 +100,9 @@ int main(int argc, char **argv) {
   }
 
   assert(m != nullptr);
+
+  // name any rules that are unnamed, so they get valid C symbols
+  name_rules(*m);
 
   // output code
   generate_c(*m, out == nullptr ? std::cout : *out);
