@@ -747,7 +747,11 @@ void generate_c(const Node &n, std::ostream &out) {
          "#include <stddef.h>\n"
          "#include <stdint.h>\n"
          "#include <stdlib.h>\n"
-         "#include <string.h>\n";
+         "#include <string.h>\n"
+         "\n"
+         "/* built-in boolean type */\n"
+         "typedef bool boolean;\n"
+         "\n";
 
   // emit prototypes for functions we anticipate the user might provide
   out << "void failed_assertion(const char *message) __attribute__((weak));\n"
