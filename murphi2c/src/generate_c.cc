@@ -505,6 +505,12 @@ class CGenerator : public ConstTraversal {
     // TODO: rules with non-symbol names
     *this << indentation() << "bool guard_" << n.name << "() {\n";
     indent();
+
+    // any aliases that are defined in an outer scope
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << *a;
+    }
+
     *this << indentation() << "return ";
     if (n.guard == nullptr) {
       *this << "true";
@@ -512,23 +518,40 @@ class CGenerator : public ConstTraversal {
       *this << *n.guard;
     }
     *this << ";\n";
+
+    // clean up aliases
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << "#undef " << a->name << "\n";
+    }
+
     dedent();
     *this << indentation() << "}\n\n";
 
     *this << indentation() << "void rule_" << n.name << "() {\n";
     indent();
+
+    // aliases, variables, local types, etc.
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << *a;
+    }
     for (const Ptr<Decl> &d : n.decls) {
       *this << *d;
     }
+
     for (const Ptr<Stmt> &s : n.body) {
       *this << *s;
     }
+
     // clean up any aliases we defined
     for (const Ptr<Decl> &d : n.decls) {
       if (auto a = dynamic_cast<const AliasDecl*>(d.get())) {
         *this << "#undef " << a->name << "\n";
       }
     }
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << "#undef " << a->name << "\n";
+    }
+
     dedent();
     *this << indentation() << "}\n";
   }
