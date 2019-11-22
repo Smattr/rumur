@@ -12,11 +12,11 @@ class RuleNamer : public Traversal {
  private:
   size_t index = 0;
 
-  void name(Rule &n) {
+  void name(Rule &n, const std::string &prefix) {
 
     // name by index if there is no name
     if (n.name == "") {
-      n.name = std::to_string(index);
+      n.name = prefix + std::to_string(index);
       index++;
       return;
     }
@@ -32,25 +32,25 @@ class RuleNamer : public Traversal {
 
  public:
   void visit_aliasrule(AliasRule &n) final {
-    name(n);
+    name(n, "alias");
     for (Ptr<Rule> &r : n.rules) {
       dispatch(*r);
     }
   }
 
   void visit_propertyrule(PropertyRule &n) final {
-    name(n);
+    name(n, "property");
   }
 
   void visit_ruleset(Ruleset &n) final {
-    name(n);
+    name(n, "ruleset");
     for (Ptr<Rule> &r : n.rules) {
       dispatch(*r);
     }
   }
 
   void visit_simplerule(SimpleRule &n) final {
-    name(n);
+    name(n, "rule");
   }
 };
 
