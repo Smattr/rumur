@@ -746,6 +746,7 @@ void generate_c(const Node &n, std::ostream &out) {
   out << "#include <stdbool.h>\n"
          "#include <stddef.h>\n"
          "#include <stdint.h>\n"
+         "#include <stdio.h>\n"
          "#include <stdlib.h>\n"
          "#include <string.h>\n"
          "\n"
