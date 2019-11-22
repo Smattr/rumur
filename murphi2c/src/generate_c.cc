@@ -321,6 +321,45 @@ class CGenerator : public ConstTraversal {
     *this << indentation() << n.call << ";\n";
   }
 
+  void visit_propertyrule(const PropertyRule &n) final {
+
+    // function prototype
+    *this << indentation() << "bool " << n.name << "(";
+
+    // parameters
+    bool first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ") {\n";
+    indent();
+
+    // any aliases this property uses
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << *a;
+    }
+
+    *this << indentation() << "return " << *n.property.expr << ";\n";
+
+    // clean up any aliases we defined
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << "#undef " << a->name << "\n";
+    }
+
+    dedent();
+    *this << "}\n";
+  }
+
   void visit_propertystmt(const PropertyStmt &n) final {
 
     switch (n.property.category) {
