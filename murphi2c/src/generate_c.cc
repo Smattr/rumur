@@ -17,7 +17,7 @@ static std::string escape(const std::string &s) {
 
 namespace {
 
-class CGenerator : public ConstTraversal {
+class CGenerator : public ConstBaseTraversal {
 
  private:
   std::ostream &out;
