@@ -13,9 +13,20 @@ class RuleNamer : public Traversal {
   size_t index = 0;
 
   void name(Rule &n) {
+
+    // name by index if there is no name
     if (n.name == "") {
       n.name = std::to_string(index);
       index++;
+      return;
+    }
+
+    // otherwise remove non-symbol characters
+    for (char &c : n.name) {
+      if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') &&
+          !(c >= '0' && c <= '9')) {
+        c = '_';
+      }
     }
   }
 
