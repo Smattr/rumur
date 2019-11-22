@@ -328,6 +328,13 @@ class CGenerator : public ConstTraversal {
     *this << indentation() << n.call << ";\n";
   }
 
+  void visit_property(const Property&) final {
+    // this is unreachable because generate_c is only ever called with a Model
+    // and nothing that contains a Property descends into it
+    assert(!"unreachable");
+    __builtin_unreachable();
+  }
+
   void visit_propertyrule(const PropertyRule &n) final {
 
     // function prototype
