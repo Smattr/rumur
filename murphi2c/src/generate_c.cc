@@ -497,6 +497,13 @@ class CGenerator : public ConstTraversal {
     *this << ";\n";
   }
 
+  void visit_ruleset(const Ruleset&) final {
+    // this is unreachable because generate_c is only ever called with a Model
+    // and all rule are flattened during visit_model
+    assert(!"unreachable");
+    __builtin_unreachable();
+  }
+
   void visit_scalarset(const Scalarset&) final {
     *this << "int64_t";
   }
