@@ -537,18 +537,29 @@ class CGenerator : public ConstTraversal {
     // TODO: startstates with non-symbol names
     *this << indentation() << "void startstate_" << n.name << "() {\n";
     indent();
+
+    // aliases, variables, local types, etc.
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << *a;
+    }
     for (const Ptr<Decl> &d : n.decls) {
       *this << *d;
     }
+
     for (const Ptr<Stmt> &s : n.body) {
       *this << *s;
     }
+
     // clean up any aliases we defined
     for (const Ptr<Decl> &d : n.decls) {
       if (auto a = dynamic_cast<const AliasDecl*>(d.get())) {
         *this << "#undef " << a->name << "\n";
       }
     }
+    for (const Ptr<AliasDecl> &a : n.aliases) {
+      *this << "#undef " << a->name << "\n";
+    }
+
     dedent();
     *this << indentation() << "}\n\n";
   }
