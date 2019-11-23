@@ -444,13 +444,9 @@ class CGenerator : public ConstBaseTraversal {
       case Property::ASSERTION:
         *this << indentation() << "if (!" << *n.property.expr << ") {\n";
         indent();
-        *this << indentation() << "if (failed_assertion != NULL) {\n";
-        indent();
         *this << indentation() << "failed_assertion(\""
           << escape(n.message == "" ? n.property.expr->to_string() : n.message)
           << "\");\n";
-        dedent();
-        *this << indentation() << "}\n";
         dedent();
         *this << indentation() << "}\n";
         break;
@@ -458,13 +454,9 @@ class CGenerator : public ConstBaseTraversal {
       case Property::ASSUMPTION:
         *this << indentation() << "if (!" << *n.property.expr << ") {\n";
         indent();
-        *this << indentation() << "if (failed_assumption != NULL) {\n";
-        indent();
         *this << indentation() << "failed_assumption(\""
           << escape(n.message == "" ? n.property.expr->to_string() : n.message)
           << "\");\n";
-        dedent();
-        *this << indentation() << "}\n";
         dedent();
         *this << indentation() << "}\n";
         break;
@@ -472,13 +464,9 @@ class CGenerator : public ConstBaseTraversal {
       case Property::COVER:
         *this << indentation() << "if " << *n.property.expr << " {\n";
         indent();
-        *this << indentation() << "if (cover != NULL) {\n";
-        indent();
         *this << indentation() << "cover(\""
           << escape(n.message == "" ? n.property.expr->to_string() : n.message)
           << "\");\n";
-        dedent();
-        *this << indentation() << "}\n";
         dedent();
         *this << indentation() << "}\n";
         break;
@@ -486,13 +474,9 @@ class CGenerator : public ConstBaseTraversal {
       case Property::LIVENESS:
         *this << indentation() << "if " << *n.property.expr << " {\n";
         indent();
-        *this << indentation() << "if (liveness != NULL) {\n";
-        indent();
         *this << indentation() << "liveness(\""
           << escape(n.message == "" ? n.property.expr->to_string() : n.message)
           << "\");\n";
-        dedent();
-        *this << indentation() << "}\n";
         dedent();
         *this << indentation() << "}\n";
         break;
@@ -886,12 +870,38 @@ void generate_c(const Node &n, bool pack, std::ostream &out) {
          "typedef bool boolean;\n"
          "\n";
 
-  // emit prototypes for functions we anticipate the user might provide
-  out << "void failed_assertion(const char *message) __attribute__((weak));\n"
-         "void failed_assumption(const char *message) __attribute__((weak));\n"
-         "void error(const char *message) __attribute__((weak));\n"
-         "void cover(const char *message) __attribute__((weak));\n"
-         "void liveness(const char *message) __attribute__((weak));\n";
+  // emit functions that the user might override
+  out << "static void failed_assertion_(const char *message) {\n"
+         "  fprintf(stderr, \"failed assertion: %s\\n\", message);\n"
+         "  exit(EXIT_FAILURE);\n"
+         "}\n"
+         "\n"
+         "void (*failed_assertion)(const char*) = failed_assertion_;\n"
+         "\n"
+         "static void failed_assumption_(const char *message) {\n"
+         "  fprintf(stderr, \"failed assumption: %s\\n\", message);\n"
+         "  exit(EXIT_FAILURE);\n"
+         "}\n"
+         "\n"
+         "void (*failed_assumption)(const char*) = failed_assumption_;\n"
+         "\n"
+         "static void error_(const char *message) {\n"
+         "  fprintf(stderr, \"error: %s\\n\", message);\n"
+         "  exit(EXIT_FAILURE);\n"
+         "}\n"
+         "\n"
+         "void (*error)(const char*) = error_;\n"
+         "\n"
+         "static void cover_(const char *message __attribute__((unused))) {\n"
+         "}\n"
+         "\n"
+         "void (*cover)(const char*) = cover_;\n"
+         "\n"
+         "static void liveness_(const char *message __attribute__((unused))) {\n"
+         "}\n"
+         "\n"
+         "void (*liveness)(const char*) = liveness_;\n"
+         "\n";
 
   CGenerator gen(out, pack);
   gen.dispatch(n);
