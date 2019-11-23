@@ -2,6 +2,7 @@
 #include "name_rules.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <unordered_set>
 
 using namespace rumur;
 
@@ -11,23 +12,33 @@ class RuleNamer : public Traversal {
 
  private:
   size_t index = 0;
+  std::unordered_set<std::string> used; // names already taken
 
   void name(Rule &n, const std::string &prefix) {
 
+    std::string replacement = n.name;
+
     // name by index if there is no name
-    if (n.name == "") {
-      n.name = prefix + std::to_string(index);
+    if (replacement == "") {
+      replacement = prefix + std::to_string(index);
       index++;
-      return;
     }
 
-    // otherwise remove non-symbol characters
-    for (char &c : n.name) {
+    // remove non-symbol characters
+    for (char &c : replacement) {
       if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') &&
           !(c >= '0' && c <= '9')) {
         c = '_';
       }
     }
+
+    std::string candidate = replacement;
+    while (!used.insert(candidate).second) {
+      candidate = replacement + std::to_string(index);
+      index++;
+    }
+
+    n.name = candidate;
   }
 
  public:
