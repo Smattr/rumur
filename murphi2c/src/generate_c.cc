@@ -678,7 +678,69 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_switch(const Switch &n) final {
-    // TODO: handle cases where expression or cases are not primitives
+
+    // Rumur permits switch statements with non-constant case expressions, while
+    // C’s switch statements do not support this. If we have such a scenario, we
+    // need to emit this as an if statement rather than a switch. We only do
+    // this conditionally — in preference to transforming every switch statement
+    // into an if statement — to preserve the switch statement the user is
+    // expecting where possible.
+
+    bool cases_const = true;
+
+    for (const SwitchCase &c : n.cases) {
+      for (const Ptr<Expr> &m : c.matches) {
+        cases_const &= m == nullptr || m->constant();
+      }
+    }
+
+    if (!cases_const) {
+      // this switch needs to become an if
+
+      // make the variable declaration and if-then-else block appear as a single
+      // statement to any enclosing code
+      *this << indentation() << "do {\n";
+      indent();
+
+      // we need to declare a temporary for the expression here because it may
+      // not be pure, so we cannot necessarily safely emit it repeatedly in the
+      // if-then-else conditions
+      *this << indentation() << *n.expr->type() << " res_ = " << *n.expr
+        << ";\n";
+
+      bool first = true;
+      for (const SwitchCase &c : n.cases) {
+        if (first) {
+          *this << indentation();
+        } else {
+          *this << " else ";
+        }
+        if (!c.matches.empty()) {
+          std::string sep = "";
+          *this << "if (";
+          for (const Ptr<Expr> &m : c.matches) {
+            *this << sep << "res_ == " << *m;
+            sep = " && ";
+          }
+          *this << ") ";
+        }
+        *this << "{\n";
+        indent();
+        for (const Ptr<Stmt> &s : c.body) {
+          *this << *s;
+        }
+        dedent();
+        *this << indentation() << "}";
+        first = false;
+      }
+      *this << "\n";
+
+      dedent();
+      *this << indentation() << "} while (0);\n";
+
+      return;
+    }
+
     *this << indentation() << "switch " << *n.expr << " {\n\n";
     indent();
     for (const SwitchCase &c : n.cases) {
