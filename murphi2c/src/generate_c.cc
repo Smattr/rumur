@@ -498,7 +498,7 @@ class CGenerator : public ConstBaseTraversal {
     *this << "struct {\n";
     indent();
     for (const Ptr<VarDecl> &f : n.fields) {
-      *this << indentation() << *f << ";\n";
+      *this << *f;
     }
     dedent();
     *this << indentation() << "}";
