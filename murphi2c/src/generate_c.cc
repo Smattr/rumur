@@ -579,7 +579,6 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_simplerule(const SimpleRule &n) final {
-    // TODO: rules with non-symbol names
     *this << indentation() << "bool guard_" << n.name << "(";
 
     // parameters
@@ -668,7 +667,6 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_startstate(const StartState &n) final {
-    // TODO: startstates with non-symbol names
     *this << indentation() << "void startstate_" << n.name << "(";
 
     // parameters
