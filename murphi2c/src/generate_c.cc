@@ -309,7 +309,10 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_isundefined(const IsUndefined&) final {
-    // TODO: check and prevent instances of this from appearing at this point
+    // check() prevents a model with isundefined expressions from making it
+    // through to here
+    assert(!"unreachable");
+    __builtin_unreachable();
   }
 
   void visit_leq(const Leq &n) final {
