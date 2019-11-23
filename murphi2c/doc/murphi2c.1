@@ -18,7 +18,18 @@ so models that use aliases or rely on type equivalence may cause Murphi2C to
 produce C code that does not compile. For such models, Murphi2C is only intended
 to generate an initial skeleton for a C translation. You should always inspect
 the output C code to confirm it matches your expectations.
+.SH OPTIONS
+\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+.RS
+Set path to write the generated C code to. Without this option, code is written
+to stdout.
+.RE
 .PP
+\fB--version\fR
+.RS
+Display version information and exit.
+.RE
+.SH NOTES
 The generated C code exposes a set of function pointers that can be overwritten
 by other code to control the behaviour of certain events:
 .PP
@@ -58,17 +69,6 @@ member layout. An exception to this is if the input model performs aggregate
 comparisons of record or array expressions (using \fB==\fR or \fB!=\fR). If this
 is the case, the produced structs will be packed (using
 \fB__attribute__((packed))\fR) to ensure they can be compared with \fBmemcmp\fR.
-.SH OPTIONS
-\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
-.RS
-Set path to write the generated C code to. Without this option, code is written
-to stdout.
-.RE
-.PP
-\fB--version\fR
-.RS
-Display version information and exit.
-.RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez
 <matthew.fernandez@gmail.com>.
