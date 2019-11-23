@@ -17,6 +17,7 @@ import xml.etree.ElementTree as ET
 RUMUR_BIN = os.environ.get('RUMUR', os.path.abspath('rumur/rumur'))
 RUMUR_AST_DUMP_BIN = os.environ.get('RUMUR_AST_DUMP', os.path.abspath(
   'ast-dump/rumur-ast-dump'))
+MURPHI2C = os.environ.get('MURPHI2C', os.path.abspath('murphi2c/murphi2c'))
 CC = os.environ.get('CC', subprocess.check_output(['which', 'cc'],
   universal_newlines=True).strip())
 
@@ -575,6 +576,46 @@ def test_ast_dumper_cmurphi_example_template(self, model):
     sys.stderr.write(stderr)
   self.assertEqual(ret, 0)
 
+class Murphi2CTests(unittest.TestCase):
+  '''
+  Test cases for the murphi2c binary. These are all added dynamically.
+  '''
+
+  def _test_model(self, model):
+    'test template that is called from other (dynamically added) methods'
+
+    # first we need to determine if the test case has any features that should
+    # cause us to reject translation
+
+    should_fail = False
+
+    # read in the entire model
+    with open(model, 'rt') as f:
+      data = f.read()
+
+    # there is no C equivalent of isundefined, because an implicit assumption in
+    # the C representation is that you do not rely on undefined values
+    should_fail |= re.search(r'\bisundefined\b', data) is not None
+
+    # generate C code from the input model
+    ret, stdout, stderr = run([MURPHI2C, model])
+    if (should_fail and ret == 0) or (not should_fail and ret != 0):
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    if should_fail:
+      self.assertNotEqual(ret, 0)
+      return
+    else:
+      self.assertEqual(ret, 0)
+
+    # ask the C compiler if this is valid
+    ret, stdout, stderr = run([CC, '-std=c11', '-c', '-o', os.devnull, '-x',
+      'c', '-'], stdout)
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
 def main():
 
   # setup stdout/stderr to make encoding errors non-fatal
@@ -637,6 +678,11 @@ def main():
         setattr(cl, test_name, lambda self, model=m: test_template(self, model))
       index += 1
 
+    # check if the model is expected to fail
+    option = { 'rumur_exit_code':0 }
+    option.update(parse_test_options(m, False)) # <- False used as dummy arg
+    should_fail = option['rumur_exit_code'] != 0
+
     for valgrind in (False, True):
 
       if valgrind and VALGRIND is None:
@@ -645,9 +691,7 @@ def main():
 
       # Now we want to add an AST dumper test, but skip this if the input model is
       # expected to fail.
-      option = { 'rumur_exit_code':0 }
-      option.update(parse_test_options(m, False)) # <- False used as dummy arg
-      if not valgrind and option['rumur_exit_code'] != 0:
+      if not valgrind and should_fail:
         continue
 
       test_name = re.sub(r'[^\w]', '_', 'test_{}{}'.format(
@@ -659,6 +703,18 @@ def main():
       if in_range(index):
         setattr(ASTDumpTests, test_name,
           lambda self, model=m, v=valgrind: test_ast_dumper_template(self, model, v))
+      index += 1
+
+    # add a murphi2c test if this is expected to pass
+    if not should_fail:
+      test_name = re.sub(r'[^\w]', '_', 'test_{}'.format(m_name))
+
+      if hasattr(Murphi2CTests, test_name):
+        raise Exception('{} collides with an existing test name'.format(m))
+
+      if in_range(index):
+        setattr(Murphi2CTests, test_name,
+          lambda self, model=m: self._test_model(model))
       index += 1
 
   # If the user has told us where a copy of the CMurphi source is, test some of
@@ -711,6 +767,14 @@ def main():
         setattr(ASTDumpTests, test_name,
           lambda self, model=fullpath:
             test_ast_dumper_cmurphi_example_template(self, model))
+      index += 1
+
+      if hasattr(Murphi2CTests, test_name):
+        raise Exception('{} collides with an existing test name'.format(path))
+
+      if in_range(index):
+        setattr(Murphi2CTests, test_name,
+          lambda self, model=fullpath: self._test_model(model))
       index += 1
 
   unittest.main()
