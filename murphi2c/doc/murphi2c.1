@@ -1,0 +1,50 @@
+.TH MURPHI2C 1
+.SH NAME
+murphi2c \- translate a Murphi model to C for simulation
+.SH SYNOPSIS
+.B \fBmurphi2c\fR \fBoptions\fR [\fB--output\fR \fIFILE\fR] [\fIFILE\fR]
+.SH DESCRIPTION
+Murphi2C is a utility bundled with the Rumur model checker. It can be used to
+translate a Murphi model into C source code for integration into a simulator.
+The translation is intended to match the user's intuition of the C equivalent of
+their Murphi model. That is, the produced code is more readable and less
+micro-optimised than the model checking code produced by Rumur itself.
+.SH OPTIONS
+\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+.RS
+Set path to write the generated C code to. Without this option, code is written
+to stdout.
+.RE
+.PP
+\fB--version\fR
+.RS
+Display version information and exit.
+.RE
+.SH AUTHOR
+All comments, questions and complaints should be directed to Matthew Fernandez
+<matthew.fernandez@gmail.com>.
+.SH LICENSE
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>

@@ -6,9 +6,11 @@
 #include <fstream>
 #include "generate_c.h"
 #include <getopt.h>
+#include "../../common/help.h"
 #include <iostream>
 #include <memory>
 #include "name_rules.h"
+#include "resources.h"
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
@@ -23,14 +25,14 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
-      { "help", no_argument, 0, '?' },
+      { "help", no_argument, 0, 'h' },
       { "output", required_argument, 0, 'o' },
       { "version", no_argument, 0, 128 },
       { 0, 0, 0, 0 },
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "o:", options, &option_index);
+    int c = getopt_long(argc, argv, "ho:", options, &option_index);
 
     if (c == -1)
       break;
@@ -38,7 +40,11 @@ static void parse_args(int argc, char **argv) {
     switch (c) {
 
       case '?':
-        std::cout << "TODO\n";
+        std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+        exit(EXIT_SUCCESS);
+
+      case 'h': // --help
+        help(doc_murphi2c_1, doc_murphi2c_1_len);
         exit(EXIT_SUCCESS);
 
       case 'o': {
