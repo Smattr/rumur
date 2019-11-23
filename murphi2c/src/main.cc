@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include "check.h"
+#include "compares_complex_values.h"
 #include <cstdlib>
 #include <fstream>
 #include "generate_c.h"
@@ -108,8 +109,12 @@ int main(int argc, char **argv) {
   // name any rules that are unnamed, so they get valid C symbols
   name_rules(*m);
 
+  // Determine if we have any == or != involving records or arrays, in which
+  // case we will need to pack structs. See generate_c() for why.
+  bool pack = compares_complex_values(*m);
+
   // output code
-  generate_c(*m, out == nullptr ? std::cout : *out);
+  generate_c(*m, pack, out == nullptr ? std::cout : *out);
 
   return EXIT_SUCCESS;
 }

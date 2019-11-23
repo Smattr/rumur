@@ -4,5 +4,6 @@
 #include <iostream>
 #include <rumur/rumur.h>
 
-// output C code equivalent of the given node
-void generate_c(const rumur::Node &n, std::ostream &out);
+// Output C code equivalent of the given node. The `pack` parameter determines
+// whether all structs are packed.
+void generate_c(const rumur::Node &n, bool pack, std::ostream &out);

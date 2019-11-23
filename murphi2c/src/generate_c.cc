@@ -22,9 +22,10 @@ class CGenerator : public ConstBaseTraversal {
  private:
   std::ostream &out;
   size_t indent_level = 0;
+  bool pack;
 
  public:
-  explicit CGenerator(std::ostream &out_): out(out_) { }
+  CGenerator(std::ostream &out_, bool pack_): out(out_), pack(pack_) { }
 
   // helpers to make output below more natural
 
@@ -77,8 +78,8 @@ class CGenerator : public ConstBaseTraversal {
 
     // wrap the array in a struct so that we do not have the awkwardness of
     // having to emit its type and size on either size of another node
-    *this << "struct { " << *n.element_type << " data[" << count.get_str()
-      << "];";
+    *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
+      << *n.element_type << " data[" << count.get_str() << "];";
 
     // The index for this array may be an enum declared inline:
     //
@@ -130,6 +131,19 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_eq(const Eq &n) final {
+
+    if (!n.lhs->type()->is_simple()) {
+      // This is a comparison of an array or struct. We cannot use the built-in
+      // == operator, so we use memcmp. This only works if all members are
+      // packed, hence why `__attribute__((pack))` is emitted in other places.
+      assert(pack && "comparison of complex types is present but structures "
+        "are not packed");
+      *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
+        << ") == 0)";
+
+      return;
+    }
+
     *this << "(" << *n.lhs << " == " << *n.rhs << ")";
   }
 
@@ -347,6 +361,17 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_neq(const Neq &n) final {
+
+    if (!n.lhs->type()->is_simple()) {
+      // see explanation in visit_eq()
+      assert(pack && "comparison of complex types is present but structures "
+        "are not packed");
+      *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
+        << ") != 0)";
+
+      return;
+    }
+
     *this << "(" << *n.lhs << " != " << *n.rhs << ")";
   }
 
@@ -538,7 +563,7 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_record(const Record &n) final {
-    *this << "struct {\n";
+    *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{\n";
     indent();
     for (const Ptr<VarDecl> &f : n.fields) {
       *this << *f;
@@ -846,7 +871,7 @@ class CGenerator : public ConstBaseTraversal {
 
 }
 
-void generate_c(const Node &n, std::ostream &out) {
+void generate_c(const Node &n, bool pack, std::ostream &out) {
 
   // standard support we will assume is available in the code emitted above
   out << "#include <inttypes.h>\n"
@@ -868,6 +893,6 @@ void generate_c(const Node &n, std::ostream &out) {
          "void cover(const char *message) __attribute__((weak));\n"
          "void liveness(const char *message) __attribute__((weak));\n";
 
-  CGenerator gen(out);
+  CGenerator gen(out, pack);
   gen.dispatch(n);
 }
