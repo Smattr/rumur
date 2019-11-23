@@ -1,3 +1,5 @@
+#include <cstddef>
+#include "../../common/escape.h"
 #include "generate.h"
 #include <iostream>
 #include <rumur/rumur.h>
