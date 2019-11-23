@@ -151,6 +151,19 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_for(const For &n) final {
+
+    // open a scope to make all of this appear as a single statement to any
+    // enclosing code
+    *this << indentation() << "do {\n";
+    indent();
+
+    // if the type of the quantifier is an enum defined inline, we need to
+    // define this in advance because C does not permit this to be defined
+    // within the for loop initialiser
+    if (auto e = dynamic_cast<const Enum*>(n.quantifier.type.get())) {
+      *this << indentation() << *e << ";\n";
+    }
+
     *this << indentation() << n.quantifier << " {\n";
     indent();
     for (const Ptr<Stmt> &s : n.body) {
@@ -158,10 +171,22 @@ class CGenerator : public ConstBaseTraversal {
     }
     dedent();
     *this << indentation() << "}\n";
+
+    dedent();
+    *this << indentation() << "} while (0);\n";
   }
 
   void visit_forall(const Forall &n) final {
-    *this << "({ bool res_ = true; " << n.quantifier << " { res_ &= "
+
+    // open a GNU statement expression
+    *this << "({ ";
+
+    // see corresponding logic in visit_for() for an explanation
+    if (auto e = dynamic_cast<const Enum*>(n.quantifier.type.get())) {
+      *this << *e << "; ";
+    }
+
+    *this << "bool res_ = true; " << n.quantifier << " { res_ &= "
       << *n.expr << "; } res_; })";
   }
 
@@ -477,26 +502,31 @@ class CGenerator : public ConstBaseTraversal {
       return;
     }
 
-    *this << "for (" << *n.type << " " << n.name << " = ";
-
     const Ptr<TypeExpr> resolved = n.type->resolve();
 
     if (auto e = dynamic_cast<const Enum*>(resolved.get())) {
-      if (!e->members.empty()) {
-        *this << e->members[0].first << "; " << n.name << " <= "
-          << e->members[e->members.size() - 1].first << "; " << n.name << "++)";
+      if (e->members.empty()) {
+        // degenerate loop
+        *this << "for (int " << n.name << " = 0; " << n.name << " < 0; "
+          << n.name << "++)";
+      } else {
+        // common case
+        *this << "for (__auto_type " << n.name << " = " << e->members[0].first
+          << "; " << n.name << " <= " << e->members[e->members.size() - 1].first
+          << "; " << n.name << "++)";
       }
       return;
     }
 
     if (auto r = dynamic_cast<const Range*>(resolved.get())) {
-      *this << *r->min << "; " << n.name << " <= " << *r->max << "; " << n.name
-        << "++)";
+      *this << "for (int64_t " << n.name << " = " << *r->min << "; " << n.name
+        << " <= " << *r->max << "; " << n.name << "++)";
       return;
     }
 
     if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
-      *this << "0; " << n.name << " <= " << *s->bound << "; " << n.name << "++)";
+      *this << "for (int64_t " << n.name << " = 0; " << n.name << " <= "
+        << *s->bound << "; " << n.name << "++)";
       return;
     }
 
