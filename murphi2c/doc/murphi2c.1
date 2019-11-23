@@ -9,7 +9,41 @@ translate a Murphi model into C source code for integration into a simulator.
 The translation is intended to match the user's intuition of the C equivalent of
 their Murphi model. That is, the produced code is more readable and less
 micro-optimised than the model checking code produced by Rumur itself.
-
+.PP
+The generated C code exposes a set of function pointers that can be overwritten
+by other code to control the behaviour of certain events:
+.PP
+.RS
+// Called when a model assertion is violated. The default implementation prints
+.br
+// the message and then calls exit().
+.br
+void (*failed_assertion)(const char *message);
+.PP
+// Called when a model assumption is violated. The default implementation prints
+.br
+// the message and then calls exit().
+.br
+void (*failed_assumption)(const char *message);
+.PP
+// Called when an error statement is reached. The default implementation prints
+.br
+// the message and then calls exit().
+.br
+void (*error)(const char *message);
+.PP
+// Called when a cover condition is hit. The default implementation does
+.br
+// nothing.
+void (*cover)(const char *message);
+.PP
+// Called when a liveness condition is hit. The default implementation does
+.br
+// nothing.
+.br
+void (*liveness)(const char *message);
+.PP
+.RE
 Murphi records are translated into C structs that use native, platform-dependent
 member layout. An exception to this is if the input model performs aggregate
 comparisons of record or array expressions (using \fB==\fR or \fB!=\fR). If this
