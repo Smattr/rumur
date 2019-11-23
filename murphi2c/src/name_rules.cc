@@ -52,6 +52,10 @@ class RuleNamer : public Traversal {
   void visit_simplerule(SimpleRule &n) final {
     name(n, "rule");
   }
+
+  void visit_startstate(StartState &n) final {
+    name(n, "startstate");
+  }
 };
 
 }
