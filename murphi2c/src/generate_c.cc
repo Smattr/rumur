@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include "../../common/escape.h"
 #include "generate_c.h"
 #include <gmpxx.h>
 #include <iostream>
@@ -9,11 +10,6 @@
 #include <vector>
 
 using namespace rumur;
-
-static std::string escape(const std::string &s) {
-  // TODO: use ../../rumur/src/utils.cc:escape()
-  return s;
-}
 
 namespace {
 

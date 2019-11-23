@@ -8,6 +8,7 @@ add_custom_command(
 
 add_executable(murphi2c
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  ../common/escape.cc
   ../common/help.cc
   src/check.cc
   src/compares_complex_values.cc
