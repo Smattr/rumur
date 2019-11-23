@@ -78,7 +78,20 @@ class CGenerator : public ConstBaseTraversal {
     // wrap the array in a struct so that we do not have the awkwardness of
     // having to emit its type and size on either size of another node
     *this << "struct { " << *n.element_type << " data[" << count.get_str()
-      << "]; }";
+      << "];";
+
+    // The index for this array may be an enum declared inline:
+    //
+    //   array [enum {A, B}] of foo
+    //
+    // If so, we need to emit it somehow so that the enum’s members can be
+    // referenced later. We define it within this struct to avoid any awkward
+    // lexical issues.
+    if (auto e = dynamic_cast<const Enum*>(n.index_type.get())) {
+      *this << " " << *e << ";";
+    }
+
+     *this <<" }";
   }
 
   void visit_assignment(const Assignment &n) final {
