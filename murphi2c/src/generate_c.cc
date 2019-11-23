@@ -744,7 +744,8 @@ class CGenerator : public ConstBaseTraversal {
 void generate_c(const Node &n, std::ostream &out) {
 
   // standard support we will assume is available in the code emitted above
-  out << "#include <stdbool.h>\n"
+  out << "#include <inttypes.h>\n"
+         "#include <stdbool.h>\n"
          "#include <stddef.h>\n"
          "#include <stdint.h>\n"
          "#include <stdio.h>\n"
