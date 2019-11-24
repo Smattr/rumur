@@ -742,7 +742,7 @@ class CGenerator : public ConstBaseTraversal {
         *this << "if (";
         for (const Ptr<Expr> &m : c.matches) {
           *this << sep << "res_ == " << *m;
-          sep = " && ";
+          sep = " || ";
         }
         *this << ") ";
       }
