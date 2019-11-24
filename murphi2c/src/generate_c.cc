@@ -379,7 +379,7 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   void visit_number(const Number &n) final {
-    *this << "(" << n.value.get_str() << ")";
+    *this << "(INT64_C(" << n.value.get_str() << "))";
   }
 
   void visit_or(const Or &n) final {
