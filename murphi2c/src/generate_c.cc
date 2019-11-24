@@ -103,7 +103,7 @@ class CGenerator : public ConstBaseTraversal {
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
     if (n.type == nullptr) {
-      *this << "__auto_type";
+      *this << "int64_t";
     } else {
       *this << *n.type;
     }
@@ -519,9 +519,9 @@ class CGenerator : public ConstBaseTraversal {
           << n.name << "++)";
       } else {
         // common case
-        *this << "for (__auto_type " << n.name << " = " << e->members[0].first
-          << "; " << n.name << " <= " << e->members[e->members.size() - 1].first
-          << "; " << n.name << "++)";
+        *this << "for (__typeof__(" << e->members[0].first << ") " << n.name
+          << " = " << e->members[0].first << "; " << n.name << " <= "
+          << e->members[e->members.size() - 1].first << "; " << n.name << "++)";
       }
       return;
     }
