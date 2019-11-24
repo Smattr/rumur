@@ -40,7 +40,7 @@ endif()
 
 add_custom_command(
   OUTPUT rumur-get-version.h
-  COMMAND python src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
