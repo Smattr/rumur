@@ -80,6 +80,7 @@ def smt_args(bv = False):
       args += ['--smt-prelude', '(set-logic AUFBV)', '--smt-bitvectors', 'on']
     else:
       args += ['--smt-prelude', '(set-logic AUFLIA)']
+    return args
 
   # otherwise, give up
   return []
