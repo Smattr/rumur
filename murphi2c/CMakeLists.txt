@@ -5,8 +5,15 @@ add_custom_command(
   MAIN_DEPENDENCY doc/murphi2c.1
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(
+  OUTPUT resources_c_prefix.cc
+  COMMAND python ../misc/xxd.py resources/c_prefix.c ${CMAKE_CURRENT_BINARY_DIR}/resources_c_prefix.cc
+  MAIN_DEPENDENCY resources/c_prefix.c
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(murphi2c
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_c_prefix.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ../common/escape.cc
   ../common/help.cc
