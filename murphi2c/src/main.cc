@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <fstream>
 #include "generate_c.h"
+#include "generate_h.h"
 #include <getopt.h>
 #include "../../common/help.h"
 #include <iostream>
@@ -21,13 +22,18 @@ static std::string in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::ostream> out;
 
+// output C source? (as opposed to C header)
+static bool source = true;
+
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
-      { "help", no_argument, 0, 'h' },
-      { "output", required_argument, 0, 'o' },
-      { "version", no_argument, 0, 128 },
+      { "header",  no_argument,       0, 128 },
+      { "help",    no_argument,       0, 'h' },
+      { "output",  required_argument, 0, 'o' },
+      { "source",  no_argument,       0, 129 },
+      { "version", no_argument,       0, 130 },
       { 0, 0, 0, 0 },
     };
 
@@ -43,6 +49,10 @@ static void parse_args(int argc, char **argv) {
         std::cerr << "run `" << argv[0] << " --help` to see available options\n";
         exit(EXIT_SUCCESS);
 
+      case 128: // --header
+        source = false;
+        break;
+
       case 'h': // --help
         help(doc_murphi2c_1, doc_murphi2c_1_len);
         exit(EXIT_SUCCESS);
@@ -57,7 +67,11 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 128: // --version
+      case 129: // --source
+        source = true;
+        break;
+
+      case 130: // --version
         std::cout << "Rumur version " << rumur::get_version() << "\n";
         exit(EXIT_SUCCESS);
 
@@ -120,7 +134,11 @@ int main(int argc, char **argv) {
   bool pack = compares_complex_values(*m);
 
   // output code
-  generate_c(*m, pack, out == nullptr ? std::cout : *out);
+  if (source) {
+    generate_c(*m, pack, out == nullptr ? std::cout : *out);
+  } else {
+    generate_h(*m, pack, out == nullptr ? std::cout : *out);
+  }
 
   return EXIT_SUCCESS;
 }

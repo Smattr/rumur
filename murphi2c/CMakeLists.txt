@@ -11,9 +11,16 @@ add_custom_command(
   MAIN_DEPENDENCY resources/c_prefix.c
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(
+  OUTPUT resources_h_prefix.cc
+  COMMAND python ../misc/xxd.py resources/h_prefix.h ${CMAKE_CURRENT_BINARY_DIR}/resources_h_prefix.cc
+  MAIN_DEPENDENCY resources/h_prefix.h
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(murphi2c
   ${CMAKE_CURRENT_BINARY_DIR}/resources_c_prefix.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_h_prefix.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ../common/escape.cc
   ../common/help.cc
@@ -21,6 +28,7 @@ add_executable(murphi2c
   src/CodeGenerator.cc
   src/compares_complex_values.cc
   src/generate_c.cc
+  src/generate_h.cc
   src/main.cc
   src/name_rules.cc)
 

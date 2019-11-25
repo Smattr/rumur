@@ -11,3 +11,7 @@ extern const size_t doc_murphi2c_1_len;
 // ../resources/c_prefix.c
 extern const unsigned char resources_c_prefix_c[];
 extern const size_t resources_c_prefix_c_len;
+
+// ../resources/h_prefix.h
+extern const unsigned char resources_h_prefix_h[];
+extern const size_t resources_h_prefix_h_len;
