@@ -18,6 +18,7 @@ add_executable(murphi2c
   ../common/escape.cc
   ../common/help.cc
   src/check.cc
+  src/CodeGenerator.cc
   src/compares_complex_values.cc
   src/generate_c.cc
   src/main.cc

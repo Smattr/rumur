@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstddef>
+#include "CodeGenerator.h"
 #include "../../common/escape.h"
 #include "generate_c.h"
 #include <gmpxx.h>
@@ -14,11 +15,10 @@ using namespace rumur;
 
 namespace {
 
-class CGenerator : public ConstBaseTraversal {
+class CGenerator : public CodeGenerator, public ConstBaseTraversal {
 
  private:
   std::ostream &out;
-  size_t indent_level = 0;
   bool pack;
 
  public:
@@ -810,20 +810,6 @@ class CGenerator : public ConstBaseTraversal {
   }
 
   virtual ~CGenerator() = default;
-
- private:
-  std::string indentation() const {
-    return std::string(indent_level * 2, ' ');
-  }
-
-  void indent() {
-    indent_level++;
-  }
-
-  void dedent() {
-    assert(indent_level > 0 && "attempted negative indentation");
-    indent_level--;
-  }
 };
 
 }
