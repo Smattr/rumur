@@ -1,5 +1,3 @@
--- c_flags: ['-std=c11', '-Werror=format'] + (['-mcx16'] if X86_64 else [])
-
 /* A more generalised version of error-string-injection.m, where we try printf
  * format codes in several potentially vulnerable locations.
  */

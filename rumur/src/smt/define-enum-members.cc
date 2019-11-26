@@ -18,11 +18,9 @@ namespace { class Definer : public ConstTypeTraversal {
 
  private:
   Solver *solver;
-  const Logic *logic;
 
  public:
-  explicit Definer(Solver &solver_): solver(&solver_),
-    logic(&get_logic(options.smt.logic)) { }
+  explicit Definer(Solver &solver_): solver(&solver_) { }
 
   void visit_array(const Array &n) final {
     // define any enum members that occur in the index or element types
@@ -41,8 +39,8 @@ namespace { class Definer : public ConstTypeTraversal {
     for (const std::pair<std::string, location> &member : n.members) {
       assert(id < n.unique_id_limit && "unexpected number of enum members");
       const std::string name = mangle(member.first, id);
-      const std::string type = logic->integer_type();
-      const std::string value = logic->numeric_literal(index);
+      const std::string type = integer_type();
+      const std::string value = numeric_literal(index);
       *solver
         << "(declare-fun " << name << " () " << type << ")\n"
         << "(assert (= " << name << " " << value << "))\n";

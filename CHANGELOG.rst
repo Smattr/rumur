@@ -1,6 +1,38 @@
 Change log
 ==========
 
+v2019.11.24
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* ``rumur`` has a new command line option ``--smt-bitvectors`` for controlling
+  whether bitvectors are used in preference to integers when interacting with
+  SMT solvers. See the man page for more information (commits
+  37c84bbe255d3a7aa6d234a8334379edbb24ec3c,
+  9821bedfa4cdadda8cf1b9f065c07813854ea7d1).
+* ``rumur`` has a new command line option ``--smt-prelude`` for prepending text
+  to problems sent to SMT solvers. The ``--smt-logic`` command line option is
+  now deprecated and ``--smt-prelude`` should be used to set the logic instead.
+  See the man page for more information (commit
+  ad022eb0767250734562ec1ec932ef4d99ec1f5d).
+* The ``rumur`` option ``--smt-simplification`` is now automatically enabled if
+  you pass any of the other SMT related command line options (commit
+  39482d62009232477f18c7e5e295c633004e7b82).
+* A new tracing feature for memory usage in the generated checker has been
+  added, ``--trace memory_usage``. See the man page for how to use this (commit
+  4f9195707ae261ed4f6f94d1411579751deff618).
+* ``rumur-ast-dump`` now has a ``--version`` option to print out its version
+  (commit 76716edc76fbe608a013b0178b6e4d2d72614d08).
+* Some warnings when compiling generated code with recent versions of Clang have
+  been suppressed (commit 3e9efb2855be52c20023ef3cd03e02b183e22ff5).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A new ``version()`` function has been added to librumur for retrieving its
+  version as a string (commits 77ee1c40884627e5418e3c25f902c6d7d73f5f4f,
+  7f95b7491859548b27ec7d9226d7c28cdec380c0).
+
 v2019.11.09
 -----------
 

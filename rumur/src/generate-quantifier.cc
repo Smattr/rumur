@@ -69,13 +69,18 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 
   // it is also possible we find the iteration goes the wrong way
   out
-    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "#ifdef __clang__\n"
+    << "  #pragma clang diagnostic push\n"
+    << "  #pragma clang diagnostic ignored \"-Wtautological-unsigned-zero-compare\"\n"
+    << "#elif defined(__GNUC__)\n"
     << "  #pragma GCC diagnostic push\n"
     << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
     << "#endif\n"
     << "  if ((ub > lb && (value_t)step < 0) ||\n"
     << "      (ub < lb && (value_t)step > 0)) {\n"
-    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "#ifdef __clang__\n"
+    << "  #pragma clang diagnostic pop\n"
+    << "#elif defined(__GNUC__)\n"
     << "  #pragma GCC diagnostic pop\n"
     << "#endif\n"
     << "    error(s, \"infinite loop due to step being in the wrong direction\");\n"
@@ -159,7 +164,10 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
   const std::string down_count = "ub <= lb && (value_t)step < 0";
 
   out
-    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "#ifdef __clang__\n"
+    << "  #pragma clang diagnostic push\n"
+    << "  #pragma clang diagnostic ignored \"-Wtautological-unsigned-zero-compare\"\n"
+    << "#elif defined(__GNUC__)\n"
     << "  #pragma GCC diagnostic push\n"
     << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
     << "#endif\n"
@@ -167,7 +175,9 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
     << "      /* see above explanation of why we use an extra constant here */\n"
     << "      const raw_value_t min_ = RAW_VALUE_MIN;\n"
     << "      if (" << down_count << " && " <<  will_overflow << " && " << last_iteration << ") {\n"
-    << "#if !defined(__clang__) && defined(__GNUC__)\n"
+    << "#ifdef __clang__\n"
+    << "  #pragma clang diagnostic pop\n"
+    << "#elif defined(__GNUC__)\n"
     << "  #pragma GCC diagnostic pop\n"
     << "#endif\n"
     << "        break;\n"

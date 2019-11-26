@@ -38,7 +38,20 @@ if(HAS_WARNING_REGISTER)
   set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-register")
 endif()
 
+add_custom_command(
+  OUTPUT rumur-get-version.h
+  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  MAIN_DEPENDENCY src/make-version.py
+  DEPENDS always_run
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Dummy output to make sure we always re-evaluate the version step above.
+add_custom_command(
+  OUTPUT always_run
+  COMMAND /usr/bin/env true)
+
 add_library(librumur
+  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   src/Boolean.cc
   src/Decl.cc
   src/except.cc

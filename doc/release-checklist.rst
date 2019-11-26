@@ -2,7 +2,7 @@ Release Checklist
 =================
 The process of cutting a new Rumur release should follow these steps:
 
-1. Update ``LAST_RELEASE`` in ../rumur/src/make-version.py. For version numbers,
+1. Update ``LAST_RELEASE`` in ../librumur/src/make-version.py. For version numbers,
    we use “vYYYY.MM.DD” with the date of the release.
 2. Update ../CHANGELOG.rst with information about the changes in the new
    release. Changes should be separated into “user-facing” and “internal,”
@@ -21,6 +21,8 @@ The process of cutting a new Rumur release should follow these steps:
 6. Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
    release to work on FreeBSD because Rumur is in
    `FreeBSD’s package repository`_ and new releases are pulled in automatically.
+   If one of these tests fail, you may need to look at the raw log because the
+   summary output hides some stderr lines.
 7. Tag the commit with the version number in “vYYYY.MM.DD” format.
 8. Push the new version tag upstream.
 9. Package Rumur for Debian (see below).

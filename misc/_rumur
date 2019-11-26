@@ -18,9 +18,10 @@ _arguments \
   {--set-capacity,-s}'[initial memory (in bytes) to allocate for the seen set]:SIZE' \
   {--set-expand-threshold,-e}'[limit at which to expand the seen set]:occupancy percentage' \
   '--smt-arg[argument to pass to SMT solver]:ARG' \
+  '--smt-bitvectors[disable or enable using bitvectors instead of unbounded integers in SMT translation]: :(off on)' \
   '--smt-budget[time allotment for SMT solver]:MILLISECONDS' \
-  '--smt-logic[logic to use for communication with SMT solver]:LOGIC' \
   '--smt-path[path to SMT solver]:path:_cmdstring' \
+  '--smt-prelude[text to pass to SMT solver preceding problems]:TEXT' \
   '--smt-simplification[disable or enable using SMT solver for simplification]: :(off on)' \
   '--symmetry-reduction[symmetry reduction optimisation]: :(off heuristic exhaustive)' \
   {--threads,-t}'[number of threads to use in the verifier]:count' \

@@ -1,4 +1,4 @@
--- rumur_flags: ['--smt-simplification', 'on'] + smt_args()
+-- rumur_flags: smt_args()
 -- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
 
 -- test whether the SMT bridge can simplify expressions involving arrays

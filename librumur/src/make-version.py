@@ -8,7 +8,7 @@ import os, re, subprocess, sys
 
 # The version of the last tagged release of Rumur. This will be used as the
 # version number if no Git information is available.
-LAST_RELEASE = 'v2019.11.09'
+LAST_RELEASE = 'v2019.11.24'
 
 def has_git():
   '''
@@ -111,7 +111,15 @@ def main(args):
   if version is None:
     version = LAST_RELEASE
 
-  new = 'const char *VERSION = "{}";\n'.format(version)
+  new = '#pragma once\n' \
+        '\n' \
+        'namespace rumur {{\n' \
+        '\n' \
+        'static constexpr const char *get_version() {{\n' \
+        '  return "{}";\n' \
+        '}}\n' \
+        '\n' \
+        '}}'.format(version)
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.

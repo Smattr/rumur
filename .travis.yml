@@ -1327,7 +1327,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - MAX_TEST=1250
+      - MAX_TEST=2000
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       # We don't enable any sanitizers for this build because the Clang and LLVM
       # packages seem conflicting in Travis' Ubuntu image. More information:
@@ -1348,8 +1348,8 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - MIN_TEST=1251
-      - MAX_TEST=1750
+      - MIN_TEST=2001
+      - MAX_TEST=4000
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -1367,7 +1367,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - MIN_TEST=1751
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 

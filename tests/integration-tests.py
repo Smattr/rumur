@@ -48,7 +48,7 @@ def valgrind_wrap(args):
     '--error-exitcode=42'] + args
 
 # function used by test cases for SMT detection
-def smt_args():
+def smt_args(bv = False):
 
   # preference 1: Z3
   has_z3 = True
@@ -59,10 +59,11 @@ def smt_args():
     has_z3 = False
 
   if has_z3:
-    # We set a blank logic here, as Z3 performs best when not given a logic. The
-    # BV test cases will still override this.
-    return ['--smt-logic', '', '--smt-path', 'z3', '--smt-arg=-smt2',
-      '--smt-arg=-in']
+    # we leave a blank logic here, as Z3 performs best when not given a logic
+    args = ['--smt-path', 'z3', '--smt-arg=-smt2', '--smt-arg=-in']
+    if bv:
+      args += ['--smt-bitvectors', 'on']
+    return args
 
   # preference 2: CVC4
   has_cvc4 = True
@@ -73,12 +74,22 @@ def smt_args():
     has_cvc4 = False
 
   if has_cvc4:
-    return ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2', '--smt-arg=--rewrite-divk']
+    args = ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2',
+      '--smt-arg=--rewrite-divk']
+    if bv:
+      args += ['--smt-prelude', '(set-logic AUFBV)', '--smt-bitvectors', 'on']
+    else:
+      args += ['--smt-prelude', '(set-logic AUFLIA)']
+    return args
 
   # otherwise, give up
   return []
 
 X86_64 = platform.machine() in ('amd64', 'x86_64')
+
+# initial flags to pass to our C compiler
+C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
+  '-Werror=type-limits'] + (['-mcx16'] if X86_64 else [])
 
 # whether the current platform has sandboxing support for the verifier
 def has_sandbox():
@@ -125,10 +136,9 @@ class TemporaryDirectory(object):
     if self.tmp is not None:
       shutil.rmtree(self.tmp)
 
-class RumurTests(unittest.TestCase):
+class StaticRumurTests(unittest.TestCase):
   '''
-  Test cases for the rumur binary. Many more than those below are added
-  dynamically.
+  Hand written test cases for the rumur binary.
   '''
 
   def _test_lock_freedom(self, args):
@@ -201,6 +211,177 @@ class RumurTests(unittest.TestCase):
   def test_lock_freedom(self):
     self._test_lock_freedom([])
 
+# Various configurations under which to run Rumur tests. All the test cases for
+# these classes are dynamically added during main().
+class RumurUnoptimisedSingleThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = False
+  optimised = False
+  valgrind = False
+  xml = False
+class RumurUnoptimisedMultiThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = True
+  optimised = False
+  valgrind = False
+  xml = False
+class RumurUnoptimisedXMLSingleThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = False
+  optimised = False
+  valgrind = False
+  xml = True
+class RumurUnoptimisedXMLMultiThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = True
+  optimised = False
+  valgrind = False
+  xml = True
+class RumurUnoptimisedValgrindSingleThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = False
+  optimised = False
+  valgrind = True
+  xml = False
+class RumurUnoptimisedValgrindMultiThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = True
+  optimised = False
+  valgrind = True
+  xml = False
+class RumurUnoptimisedDebugSingleThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = False
+  optimised = False
+  valgrind = False
+  xml = False
+class RumurUnoptimisedDebugMultiThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = True
+  optimised = False
+  valgrind = False
+  xml = False
+class RumurUnoptimisedDebugValgrindSingleThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = False
+  optimised = False
+  valgrind = True
+  xml = False
+class RumurUnoptimisedDebugValgrindMultiThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = True
+  optimised = False
+  valgrind = True
+  xml = False
+class RumurOptimisedSingleThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = False
+  optimised = True
+  valgrind = False
+  xml = False
+class RumurOptimisedMultiThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = True
+  optimised = True
+  valgrind = False
+  xml = False
+class RumurOptimisedXMLSingleThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = False
+  optimised = True
+  valgrind = False
+  xml = True
+class RumurOptimisedXMLMultiThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = True
+  optimised = True
+  valgrind = False
+  xml = True
+class RumurOptimisedValgrindSingleThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = False
+  optimised = True
+  valgrind = True
+  xml = False
+class RumurOptimisedValgrindMultiThreadedTests(unittest.TestCase):
+  debug = False
+  multithreaded = True
+  optimised = True
+  valgrind = True
+  xml = False
+class RumurOptimisedDebugSingleThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = False
+  optimised = True
+  valgrind = False
+  xml = False
+class RumurOptimisedDebugMultiThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = True
+  optimised = True
+  valgrind = False
+  xml = False
+class RumurOptimisedDebugValgrindSingleThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = False
+  optimised = True
+  valgrind = True
+  xml = False
+class RumurOptimisedDebugValgrindMultiThreadedTests(unittest.TestCase):
+  debug = True
+  multithreaded = True
+  optimised = True
+  valgrind = True
+  xml = False
+
+class RumurCMurphiExamplesTests(unittest.TestCase):
+  '''
+  Test cases taken from the examples that ship with CMurphi. These are all
+  dynamically discovered and added.
+  '''
+
+  def _test_template(self, model, outcome, rules_fired=None, states=None):
+
+    ret, stdout, stderr = run([RUMUR_BIN, '--output-format', 'machine-readable',
+      '--output', '/dev/stdout', model])
+    if ret != 0:
+      sys.stdout.write(stdout)
+      sys.stderr.write(stderr)
+    self.assertEqual(ret, 0)
+
+    model_c = stdout
+
+    with TemporaryDirectory() as tmp:
+
+      cflags = C_FLAGS + ['-O3']
+      model_bin = os.path.join(tmp, 'model.bin')
+      ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, '-',
+        '-lpthread'], model_c)
+      if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertEqual(ret, 0)
+
+      ret, stdout, stderr = run([model_bin])
+      if (ret == 0) != outcome:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+      self.assertEqual(ret == 0, outcome)
+
+      # parse the XML output if we're expecting a particular result
+      if rules_fired is not None or states is not None:
+        xml = ET.fromstring(stdout)
+
+        # check we got the expected number of rules fired
+        if rules_fired is not None:
+          r = int(xml.find('./summary').get('rules_fired'))
+          self.assertEqual(r, rules_fired)
+
+        # check we got the expected number of states explored
+        if states is not None:
+          s = int(xml.find('./summary').get('states'))
+          self.assertEqual(s, states)
+
 class ASTDumpTests(unittest.TestCase):
   '''
   Test cases for the rumur-ast-binary. They are all added dynamically.
@@ -223,74 +404,68 @@ def parse_test_options(model, xml):
 
   return option
 
-def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
+def test_template(self, model):
 
   # Default options to use for this test.
   option = {
     'rumur_flags':[], # Flags to pass to rumur when generating the checker.
     'rumur_exit_code':0, # Expected exit status of rumur.
-    'c_flags':None, # Flags to pass to cc when compiling.
-    'ld_flags':None, # Flags to pass to cc last.
     'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
     'checker_output':None, # Regex to search checker's stdout against.
     'skip_reason':None, # a reason to skip this test
   }
 
-  option.update(parse_test_options(model, xml))
+  option.update(parse_test_options(model, self.xml))
 
   if option['skip_reason'] is not None:
     self.skipTest(option['skip_reason'])
 
-  with TemporaryDirectory() as tmp:
+  if self.valgrind and VALGRIND is None:
+    self.skipTest('valgrind unavailable')
 
-    model_c = os.path.join(tmp, 'model.c')
-    rumur_flags = ['--output', model_c, model]
-    if debug:
-      rumur_flags.append('--debug')
-    if xml:
-      rumur_flags.extend(['--output-format', 'machine-readable'])
-    if multithreaded and multiprocessing.cpu_count() == 1:
-      # we need to force multiple threads, or Rumur will autodetect --threads 1
-      rumur_flags.extend(['--threads', '2'])
-    elif not multithreaded:
-      rumur_flags.extend(['--threads', '1'])
-    args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
-    if valgrind:
-      args = valgrind_wrap(args)
-    ret, stdout, stderr = run(args)
-    if valgrind:
-      if ret == 42:
-        sys.stdout.write(stdout)
-        sys.stderr.write(stderr)
-      self.assertNotEqual(ret, 42)
-      return
-    if ret != option['rumur_exit_code']:
+  rumur_flags = ['--output', '/dev/stdout', model]
+  if self.debug:
+    rumur_flags.append('--debug')
+  if self.xml:
+    rumur_flags.extend(['--output-format', 'machine-readable'])
+  if self.multithreaded and multiprocessing.cpu_count() == 1:
+    # we need to force multiple threads, or Rumur will autodetect --threads 1
+    rumur_flags.extend(['--threads', '2'])
+  elif not self.multithreaded:
+    rumur_flags.extend(['--threads', '1'])
+  args = [RUMUR_BIN] + rumur_flags + option['rumur_flags']
+  if self.valgrind:
+    args = valgrind_wrap(args)
+  ret, stdout, stderr = run(args)
+  if self.valgrind:
+    if ret == 42:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, option['rumur_exit_code'])
+    self.assertNotEqual(ret, 42)
+    return
+  if ret != option['rumur_exit_code']:
+    sys.stdout.write(stdout)
+    sys.stderr.write(stderr)
+  self.assertEqual(ret, option['rumur_exit_code'])
 
-    # If model generation was supposed to fail, we're done.
-    if option['rumur_exit_code'] != 0:
-      return
+  # If model generation was supposed to fail, we're done.
+  if option['rumur_exit_code'] != 0:
+    return
 
-    if option['c_flags'] is None:
-      cflags = ['-std=c11', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
-      if X86_64:
-        cflags.append('-mcx16')
-      if optimised:
-        cflags.extend(['-O3', '-fwhole-program'])
-    else:
-      cflags = option['c_flags']
+  model_c = stdout
 
-    if option['ld_flags'] is None:
-      ldflags = ['-lpthread']
-    else:
-      ldflags = []
+  cflags = C_FLAGS
+  if self.optimised:
+    cflags.extend(['-O3'])
+
+  ldflags = ['-lpthread']
+
+  with TemporaryDirectory() as tmp:
 
     model_bin = os.path.join(tmp, 'model.bin')
-    args = [CC] + cflags + ['-o', model_bin, model_c] + ldflags
-    ret, stdout, stderr = run(args)
+    args = [CC] + cflags + ['-o', model_bin, '-'] + ldflags
+    ret, stdout, stderr = run(args, model_c)
     if ret != option['c_exit_code']:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
@@ -318,7 +493,7 @@ def test_template(self, model, optimised, debug, valgrind, xml, multithreaded):
     with io.open(model, 'rt', encoding='utf-8') as f:
       has_put = re.search(r'\bput\b', f.read()) is not None
 
-    if xml and not has_put:
+    if self.xml and not has_put:
       # See if we have xmllint
       ret, _, _ = run(['which', 'xmllint'])
       if ret != 0:
@@ -377,50 +552,6 @@ def test_ast_dumper_template(self, model, valgrind):
     sys.stderr.write(stderr)
   self.assertEqual(ret, 0)
 
-def test_cmurphi_example_template(self, model, outcome, rules_fired=None,
-    states=None):
-
-  with TemporaryDirectory() as tmp:
-
-    model_c = os.path.join(tmp, 'model.c')
-    ret, stdout, stderr = run([RUMUR_BIN, '--output-format', 'machine-readable',
-      '--output', model_c, model])
-    if ret != 0:
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
-
-    cflags = ['-std=c11', '-O3', '-fwhole-program', '-Werror=format']
-    if X86_64:
-      cflags.append('-mcx16')
-    model_bin = os.path.join(tmp, 'model.bin')
-    ret, stdout, stderr = run([CC] + cflags + ['-o', model_bin, model_c,
-      '-lpthread'])
-    if ret != 0:
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret, 0)
-
-    ret, stdout, stderr = run([model_bin])
-    if (ret == 0) != outcome:
-      sys.stdout.write(stdout)
-      sys.stderr.write(stderr)
-    self.assertEqual(ret == 0, outcome)
-
-    # parse the XML output if we're expecting a particular result
-    if rules_fired is not None or states is not None:
-      xml = ET.fromstring(stdout)
-
-      # check we got the expected number of rules fired
-      if rules_fired is not None:
-        r = int(xml.find('./summary').get('rules_fired'))
-        self.assertEqual(r, rules_fired)
-
-      # check we got the expected number of states explored
-      if states is not None:
-        s = int(xml.find('./summary').get('states'))
-        self.assertEqual(s, states)
-
 def test_ast_dumper_cmurphi_example_template(self, model):
 
   args = [RUMUR_AST_DUMP_BIN, model]
@@ -476,38 +607,36 @@ def main():
 
     m_name = os.path.basename(m)
 
-    for optimised in (False, True):
-      for debug in (False, True):
-        for valgrind in (False, True):
-          for xml in (False, True):
-            for multithreaded in (False, True):
+    test_name = re.sub(r'[^\w]', '_', 'test_{}'.format(m_name))
 
-              # Don't test machine-readable output for a debug or Valgrind run,
-              # as this messes up XML.
-              if xml and (debug or valgrind):
-                continue
+    # add a test case for this model to each of our test configurations
+    for cl in (RumurUnoptimisedSingleThreadedTests,
+               RumurUnoptimisedMultiThreadedTests,
+               RumurUnoptimisedXMLSingleThreadedTests,
+               RumurUnoptimisedXMLMultiThreadedTests,
+               RumurUnoptimisedValgrindSingleThreadedTests,
+               RumurUnoptimisedValgrindMultiThreadedTests,
+               RumurUnoptimisedDebugSingleThreadedTests,
+               RumurUnoptimisedDebugMultiThreadedTests,
+               RumurUnoptimisedDebugValgrindSingleThreadedTests,
+               RumurUnoptimisedDebugValgrindMultiThreadedTests,
+               RumurOptimisedSingleThreadedTests,
+               RumurOptimisedMultiThreadedTests,
+               RumurOptimisedXMLSingleThreadedTests,
+               RumurOptimisedXMLMultiThreadedTests,
+               RumurOptimisedValgrindSingleThreadedTests,
+               RumurOptimisedValgrindMultiThreadedTests,
+               RumurOptimisedDebugSingleThreadedTests,
+               RumurOptimisedDebugMultiThreadedTests,
+               RumurOptimisedDebugValgrindSingleThreadedTests,
+               RumurOptimisedDebugValgrindMultiThreadedTests):
 
-              if valgrind and VALGRIND is None:
-                # Valgrind unavailable
-                continue
+      if hasattr(cl, test_name):
+        raise Exception('{} collides with an existing test name'.format(m))
 
-              test_name = re.sub(r'[^\w]', '_', 'test_{}{}{}{}{}{}'.format(
-                'debug_' if debug else '',
-                'optimised_' if optimised else 'unoptimised_',
-                'valgrind_' if valgrind else '',
-                'xml_' if xml else '',
-                'multithreaded_' if multithreaded else 'singlethreaded_',
-                m_name))
-
-              if hasattr(RumurTests, test_name):
-                raise Exception('{} collides with an existing test name'.format(m))
-
-              if in_range(index):
-                setattr(RumurTests, test_name,
-                  lambda self, model=m, o=optimised, d=debug, v=valgrind, x=xml,
-                    m=multithreaded:
-                      test_template(self, model, o, d, v, x, m))
-              index += 1
+      if in_range(index):
+        setattr(cl, test_name, lambda self, model=m: test_template(self, model))
+      index += 1
 
     for valgrind in (False, True):
 
@@ -563,16 +692,18 @@ def main():
     for path, outcome, rules, states in models:
       fullpath = os.path.abspath(os.path.join(CMURPHI_DIR, path))
 
-      test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
+      test_name = re.sub(r'[^\w]', '_', 'test_{}'.format(path))
 
-      if hasattr(RumurTests, test_name):
+      if hasattr(RumurCMurphiExamplesTests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))
 
       if in_range(index):
-        setattr(RumurTests, test_name,
+        setattr(RumurCMurphiExamplesTests, test_name,
           lambda self, model=fullpath, outcome=outcome, rules=rules, states=states:
-            test_cmurphi_example_template(self, model, outcome, rules, states))
+            self._test_template(model, outcome, rules, states))
       index += 1
+
+      test_name = re.sub(r'[^\w]', '_', 'test_cmurphi_example_{}'.format(path))
 
       if hasattr(ASTDumpTests, test_name):
         raise Exception('{} collides with an existing test name'.format(path))

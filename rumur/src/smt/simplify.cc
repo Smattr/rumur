@@ -27,11 +27,9 @@ namespace { class Simplifier : public BaseTraversal {
 
  private:
   Solver *solver;
-  const Logic *logic;
 
  public:
-  Simplifier(Solver &solver_, const Logic &logic_):
-    solver(&solver_), logic(&logic_) { }
+  explicit Simplifier(Solver &solver_): solver(&solver_) { }
 
   /* if you are editing the visitation logic, note that the calls to
    * open_scope/close_scope are intended to match the pattern in
@@ -274,17 +272,14 @@ namespace { class Simplifier : public BaseTraversal {
         simplify(n.step);
 
       const std::string name = mangle(n.name, n.unique_id);
-      *solver << "(declare-fun " << name << " () " << logic->integer_type()
-        << ")\n";
+      *solver << "(declare-fun " << name << " () " << integer_type() << ")\n";
       if (n.from->constant()) {
-        const std::string lb = logic->numeric_literal(n.from->constant_fold());
-        const std::string geq = logic->geq();
-        *solver << "(assert (" << geq << " " << name << " " << lb << "))\n";
+        const std::string lb = numeric_literal(n.from->constant_fold());
+        *solver << "(assert (" << geq() << " " << name << " " << lb << "))\n";
       }
       if (n.to->constant()) {
-        const std::string ub = logic->numeric_literal(n.to->constant_fold());
-        const std::string leq = logic->leq();
-        *solver << "(assert (" << leq << " " << name << " " << ub << "))\n";
+        const std::string ub = numeric_literal(n.to->constant_fold());
+        *solver << "(assert (" << leq() << " " << name << " " << ub << "))\n";
       }
     }
   }
@@ -484,13 +479,12 @@ namespace { class Simplifier : public BaseTraversal {
         assert(c->value->constant()
           && "non-constant value declared as constant");
 
-        const std::string value =
-          logic->numeric_literal(c->value->constant_fold());
+        const std::string value = numeric_literal(c->value->constant_fold());
 
         const std::string name = mangle(c->name, c->unique_id);
 
         *solver
-          << "(declare-fun " << name << " () " << logic->integer_type() << ")\n"
+          << "(declare-fun " << name << " () " << integer_type() << ")\n"
           << "(assert (= " << name << " " << value << "))\n";
 
         return;
@@ -558,11 +552,10 @@ namespace { class Simplifier : public BaseTraversal {
      private:
       Solver *solver;
       const std::string name;
-      const Logic *logic;
 
      public:
       ConstraintEmitter(Solver &solver_, const std::string &name_):
-        solver(&solver_), name(name_), logic(&get_logic(options.smt.logic)) { }
+        solver(&solver_), name(name_) { }
 
       void visit_array(const Array&) final {
         // no constraints required
@@ -571,25 +564,21 @@ namespace { class Simplifier : public BaseTraversal {
       void visit_enum(const Enum &n) final {
 
         // constrain its values based on the number of enum members
-        const std::string geq = logic->geq();
-        const std::string zero = logic->numeric_literal(0);
-        *solver << "(assert (" << geq << " " << name << " " << zero << "))\n";
-        const std::string lt = logic->lt();
-        const std::string size = logic->numeric_literal(n.members.size());
-        *solver << "(assert (" << lt << " " << name << " " << size << "))\n";
+        const std::string zero = numeric_literal(0);
+        *solver << "(assert (" << geq() << " " << name << " " << zero << "))\n";
+        const std::string size = numeric_literal(n.members.size());
+        *solver << "(assert (" << lt() << " " << name << " " << size << "))\n";
       }
 
       void visit_range(const Range &n) final {
 
         // if this range's bounds are static, make them known to the solver
         if (n.constant()) {
-          const std::string lb = logic->numeric_literal(n.min->constant_fold());
-          const std::string geq = logic->geq();
-          const std::string ub = logic->numeric_literal(n.max->constant_fold());
-          const std::string leq = logic->leq();
+          const std::string lb = numeric_literal(n.min->constant_fold());
+          const std::string ub = numeric_literal(n.max->constant_fold());
           *solver
-            << "(assert (" << geq << " " << name << " " << lb << "))\n"
-            << "(assert (" << leq << " " << name << " " << ub << "))\n";
+            << "(assert (" << geq() << " " << name << " " << lb << "))\n"
+            << "(assert (" << leq() << " " << name << " " << ub << "))\n";
         }
       }
 
@@ -600,15 +589,13 @@ namespace { class Simplifier : public BaseTraversal {
       void visit_scalarset(const Scalarset &n) final {
 
         // scalarset values are at least 0
-        const std::string geq = logic->geq();
-        const std::string zero = logic->numeric_literal(0);
-        *solver << "(assert (" << geq << " " << name << " " << zero << "))\n";
+        const std::string zero = numeric_literal(0);
+        *solver << "(assert (" << geq() << " " << name << " " << zero << "))\n";
 
         // if this scalarset's bounds are static, make them known to the solver
         if (n.constant()) {
-          const std::string b = logic->numeric_literal(n.bound->constant_fold());
-          const std::string lt = logic->lt();
-          *solver << "(assert (" << lt << " " << name << " " << b << "))\n";
+          const std::string b = numeric_literal(n.bound->constant_fold());
+          *solver << "(assert (" << lt() << " " << name << " " << b << "))\n";
         }
       }
 
@@ -631,11 +618,8 @@ void simplify(Model &m) {
   // establish our connection to the solver
   Solver solver;
 
-  // find the logic we're using
-  const Logic &logic = get_logic(options.smt.logic);
-
   // recursively traverse the model, simplifying as we go
-  Simplifier simplifier(solver, logic);
+  Simplifier simplifier(solver);
   simplifier.dispatch(m);
 }
 
