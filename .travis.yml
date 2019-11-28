@@ -2534,7 +2534,7 @@ matrix:
       # suppress normal animated UI and use periodic text output
       - AFL_NO_UI=1
 
-      - CUSTOM_COMMAND="python ../tests/afl-wrapper.py 1800"
+      - CUSTOM_COMMAND="../tests/afl-wrapper.py 1800"
 
 # This file initially contained entries to test GCC on macOS as well, but I
 # could not figure out how to get these working. One show stopper seems to be
