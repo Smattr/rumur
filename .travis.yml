@@ -2315,7 +2315,7 @@ matrix:
       # suppress normal animated UI and use periodic text output
       - AFL_NO_UI=1
 
-      - CUSTOM_COMMAND="../tests/afl-wrapper.py 1800"
+      - CUSTOM_COMMAND="travis_wait 60 ../misc/afl-wrapper.sh"
 
 # This file initially contained entries to test GCC on macOS as well, but I
 # could not figure out how to get these working. One show stopper seems to be
