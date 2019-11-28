@@ -1,5 +1,5 @@
--- rumur_flags: smt_args()
--- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
+-- rumur_flags: SMT_ARGS
+-- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
 
 /* test whether the SMT bridge can simplify expressions involving arrays with
  * enum values and indicies

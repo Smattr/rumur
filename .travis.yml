@@ -2479,4 +2479,4 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
-  - uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo env "PATH=$PATH" cmake --build . -- install && if [ -z "${CUSTOM_COMMAND}" ]; then travis_wait 60 ../tests/integration-tests.py --verbose; else eval "${CUSTOM_COMMAND}"; fi
+  - uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo env "PATH=$PATH" cmake --build . -- install && if [ -z "${CUSTOM_COMMAND}" ]; then env PATH=./rumur:./ast-dump:${PATH} ../tests/run-tests.py; else eval "${CUSTOM_COMMAND}"; fi
