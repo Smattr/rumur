@@ -3,8 +3,8 @@ task:
   # increase timeout to the maximum limit
   timeout_in: 120m
 
-  install_script: uname -sr && pkg upgrade -y && pkg install -y bison cmake gmp libxml2 ninja z3
-  test_script: mkdir build && cd build && cmake -G Ninja .. && cmake --build . && sudo cmake --build . -- install && ../tests/integration-tests.py --verbose
+  install_script: pkg upgrade -y && pkg install -y bison cmake gmp libxml2 ninja z3
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake -G Ninja .. && cmake --build . && sudo cmake --build . -- install && ../tests/integration-tests.py --verbose
 
   matrix:
     - name: FreeBSD 13.0
