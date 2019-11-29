@@ -410,7 +410,6 @@ def test_template(self, model):
   option = {
     'rumur_flags':[], # Flags to pass to rumur when generating the checker.
     'rumur_exit_code':0, # Expected exit status of rumur.
-    'c_exit_code':0, # Expected exit status of cc.
     'checker_exit_code':0, # Expected exit status of the checker.
     'checker_output':None, # Regex to search checker's stdout against.
     'skip_reason':None, # a reason to skip this test
@@ -466,14 +465,10 @@ def test_template(self, model):
     model_bin = os.path.join(tmp, 'model.bin')
     args = [CC] + cflags + ['-o', model_bin, '-'] + ldflags
     ret, stdout, stderr = run(args, model_c)
-    if ret != option['c_exit_code']:
+    if ret != 0:
       sys.stdout.write(stdout)
       sys.stderr.write(stderr)
-    self.assertEqual(ret, option['c_exit_code'])
-
-    # If compilation was supposed to fail, we're done.
-    if option['c_exit_code'] != 0:
-      return
+    self.assertEqual(ret, 0)
 
     ret, stdout, stderr = run([model_bin])
     if ret != option['checker_exit_code']:
