@@ -280,15 +280,14 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 5 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (1/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-5
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -298,15 +297,14 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 5 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (2/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-5
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -317,15 +315,14 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 5 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (3/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-5
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -336,15 +333,14 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 5 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (4/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-5
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -424,15 +420,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 6 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (1/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -442,15 +437,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 6 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (2/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -461,15 +455,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 6 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (3/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -480,15 +473,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 6 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (4/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -582,15 +574,14 @@ matrix:
       - UBSAN_OPTIONS=print_stacktrace=1
       - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
-  - name: Ubuntu Linux 16.04, GCC 7 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (1/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -600,15 +591,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 7 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (2/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -619,15 +609,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 7 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (3/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -638,15 +627,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 7 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (4/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -734,15 +722,14 @@ matrix:
       - UBSAN_OPTIONS=print_stacktrace=1
       - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
-  - name: Ubuntu Linux 16.04, GCC 8 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (1/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -752,15 +739,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 8 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (2/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -771,15 +757,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 8 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (3/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -790,15 +775,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 8 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (4/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
         packages:
           - g++-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -886,15 +870,18 @@ matrix:
       - UBSAN_OPTIONS=print_stacktrace=1
       - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
-  - name: Ubuntu Linux 16.04, GCC 9 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (1/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
-          - ubuntu-toolchain-r-test
+          # XXX: this PPA is not currently whitelisted on 18.04
+          # (https://github.com/travis-ci/apt-source-safelist/issues/410)
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -904,15 +891,16 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 9 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (2/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
-          - ubuntu-toolchain-r-test
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -923,15 +911,16 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 9 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (3/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
-          - ubuntu-toolchain-r-test
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -942,15 +931,16 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC 9 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (4/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
-          - ubuntu-toolchain-r-test
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -960,14 +950,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC multilib (1/4)
+  - name: Ubuntu Linux 18.04, GCC multilib (1/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - g++-multilib
           - libc6-dev-i386
+          - libfl-dev
           - libxml2-utils
           - valgrind
     env:
@@ -976,14 +967,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC multilib (2/4)
+  - name: Ubuntu Linux 18.04, GCC multilib (2/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - g++-multilib
           - libc6-dev-i386
+          - libfl-dev
           - libxml2-utils
           - valgrind
     env:
@@ -993,14 +985,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC multilib (3/4)
+  - name: Ubuntu Linux 18.04, GCC multilib (3/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - g++-multilib
           - libc6-dev-i386
+          - libfl-dev
           - libxml2-utils
           - valgrind
     env:
@@ -1010,14 +1003,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, GCC multilib (4/4)
+  - name: Ubuntu Linux 18.04, GCC multilib (4/4)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - g++-multilib
           - libc6-dev-i386
+          - libfl-dev
           - libxml2-utils
           - valgrind
     env:
@@ -1280,17 +1274,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 4.0 (1/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (1/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-xenial-4.0
         packages:
           - clang-4.0
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1300,17 +1292,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 4.0 (2/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (2/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-xenial-4.0
         packages:
           - clang-4.0
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1321,17 +1311,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 4.0 (3/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (3/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-xenial-4.0
         packages:
           - clang-4.0
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1342,17 +1330,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 4.0 (4/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (4/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-xenial-4.0
         packages:
           - clang-4.0
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1363,17 +1349,15 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 4.0 (5/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (5/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-xenial-4.0
         packages:
           - clang-4.0
           - g++-6
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1481,13 +1465,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 5.0 (1/5)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (1/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-5.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1497,13 +1482,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 5.0 (2/5)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (2/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-5.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1514,13 +1500,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 5.0 (3/5)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (3/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-5.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1531,13 +1518,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 5.0 (4/5)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (4/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-5.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1548,13 +1536,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 5.0 (5/5)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (5/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-5.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1662,13 +1651,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 6.0 (1/5)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (1/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-6.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1678,13 +1668,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 6.0 (2/5)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (2/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-6.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1695,13 +1686,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 6.0 (3/5)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (3/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-6.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1712,13 +1704,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 6.0 (4/5)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (4/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-6.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1729,13 +1722,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 6.0 (5/5)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (5/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         packages:
           - clang-6.0
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1843,15 +1837,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 7 (1/5)
+  - name: Ubuntu Linux 18.04, Clang 7 (1/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-7
         packages:
           - clang-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1861,15 +1854,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 7 (2/5)
+  - name: Ubuntu Linux 18.04, Clang 7 (2/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-7
         packages:
           - clang-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1880,15 +1872,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 7 (3/5)
+  - name: Ubuntu Linux 18.04, Clang 7 (3/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-7
         packages:
           - clang-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1899,15 +1890,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 7 (4/5)
+  - name: Ubuntu Linux 18.04, Clang 7 (4/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-7
         packages:
           - clang-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1918,15 +1908,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 7 (5/5)
+  - name: Ubuntu Linux 18.04, Clang 7 (5/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-7
         packages:
           - clang-7
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -2034,15 +2023,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 8 (1/5)
+  - name: Ubuntu Linux 18.04, Clang 8 (1/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-8
         packages:
           - clang-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -2052,15 +2040,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 8 (2/5)
+  - name: Ubuntu Linux 18.04, Clang 8 (2/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-8
         packages:
           - clang-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -2071,15 +2058,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 8 (3/5)
+  - name: Ubuntu Linux 18.04, Clang 8 (3/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-8
         packages:
           - clang-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -2090,15 +2076,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 8 (4/5)
+  - name: Ubuntu Linux 18.04, Clang 8 (4/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-8
         packages:
           - clang-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -2109,15 +2094,14 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 16.04, Clang 8 (5/5)
+  - name: Ubuntu Linux 18.04, Clang 8 (5/5)
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
-        sources:
-          - llvm-toolchain-xenial-8
         packages:
           - clang-8
+          - libfl-dev
           - libxml2-utils
           - valgrind
           - z3
