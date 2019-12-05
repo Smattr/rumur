@@ -4,7 +4,7 @@ task:
   timeout_in: 120m
 
   install_script: uname -sr && pkg upgrade -y && pkg install -y bison cmake gmp libxml2 ninja z3
-  test_script: mkdir build && cd build && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=install .. && cmake --build . && ../tests/integration-tests.py --verbose && cmake --build . -- install
+  test_script: mkdir build && cd build && cmake -G Ninja .. && cmake --build . && ../tests/integration-tests.py --verbose && sudo cmake --build . -- install
 
   matrix:
     - name: FreeBSD 13.0
