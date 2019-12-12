@@ -16,6 +16,3 @@ task:
     - name: FreeBSD 11.3
       freebsd_instance:
         image_family: freebsd-11-3-snap
-    - name: FreeBSD 11.2
-      freebsd_instance:
-        image_family: freebsd-11-2
