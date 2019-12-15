@@ -535,9 +535,14 @@ static void print_location(const std::string &file, const location &location) {
     return;
   }
 
+  // the type of position.line and position.column changes across Bison
+  // releases, so avoid some -Wsign-compare warnings by casting them in advance
+  auto loc_line = static_cast<unsigned long>(location.begin.line);
+  auto loc_col = static_cast<unsigned long>(location.begin.column);
+
   std::string line;
   unsigned long lineno = 0;
-  while (lineno < location.begin.line) {
+  while (lineno < loc_line) {
     if (!std::getline(f, line))
       return;
     lineno++;
@@ -547,9 +552,9 @@ static void print_location(const std::string &file, const location &location) {
   std::ostringstream buf;
   unsigned long col = 1;
   for (const char &c : line) {
-    if (col == location.begin.column) {
+    if (col == loc_col) {
       buf << green() << bold() << "^" << reset();
-    } else if (col < location.begin.column) {
+    } else if (col < loc_col) {
       if (c == '\t') {
         buf << '\t';
       } else {
