@@ -100,7 +100,6 @@ def main(args):
   rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', '/dev/stdout'],
     stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   checker_c, _ = rumur_proc.communicate()
-  checker_c = checker_c.decode('utf-8', 'replace')
   if rumur_proc.returncode != 0:
     return rumur_proc.returncode
 
