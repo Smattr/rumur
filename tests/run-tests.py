@@ -176,28 +176,26 @@ class Tweakable(Test):
 
 class Model(Tweakable):
   def __init__(self, model: str, debug: bool, optimised: bool, \
-      multithreaded: bool, xml: bool, valgrind: bool):
+      multithreaded: bool, xml: bool):
     super().__init__()
     self.model = model
     self.debug = debug
     self.optimised = optimised
     self.multithreaded = multithreaded
     self.xml = xml
-    self.valgrind = valgrind
+    self.valgrind = HAS_VALGRIND
   def description(self) -> str:
     return f'{"D" if self.debug         else " "}' \
            f'{"O" if self.optimised     else " "}' \
            f'{"M" if self.multithreaded else " "}' \
            f'{"X" if self.xml           else " "}' \
-           f'{"V" if self.valgrind      else " "}' \
+           f'{"V" if HAS_VALGRIND       else " "}' \
            f' {os.path.basename(self.model)}'
   def run(self) -> Result:
 
     self.apply_options(self.model)
 
     if self.skip_reason is not None: return Skip(self.skip_reason)
-
-    if self.valgrind and not HAS_VALGRIND: return Skip('valgrind unavailable')
 
     # build up arguments to call rumur
     args = ['rumur', '--output', '/dev/stdout', self.model]              \
@@ -207,13 +205,13 @@ class Model(Tweakable):
       + (['--threads', '1'] if not self.multithreaded else [])           \
       + self.rumur_flags
 
-    if self.valgrind:
+    if HAS_VALGRIND:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
 
     # call rumur
     ret, stdout, stderr = run(args)
-    if self.valgrind:
+    if HAS_VALGRIND:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
     if ret != self.rumur_exit_code:
@@ -276,31 +274,25 @@ class Executable(Test):
            Fail(output)
 
 class ASTDumpTest(Tweakable):
-  def __init__(self, model: str, valgrind: bool):
+  def __init__(self, model: str):
     super().__init__()
     self.model = model
-    self.valgrind = valgrind
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if self.valgrind else " "} ' \
+    return f'----{"V" if HAS_VALGRIND else " "} ' \
            f'rumur-ast-dump {os.path.basename(self.model)}'
   def run(self) -> Result:
 
     self.apply_options(self.model)
 
-    if self.valgrind and not HAS_VALGRIND: return Skip('valgrind unavailable')
-
     args = ['rumur-ast-dump', self.model]
-    if self.valgrind:
+    if HAS_VALGRIND:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
     ret, stdout, stderr = run(args)
-    if self.valgrind:
+    if HAS_VALGRIND:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
-      # Remainder of the test is unnecessary, because we will already test this
-      # in the version of this test when valgrind=False.
-      return None
 
     # if rumur was expected to reject this model, we allow ast-dump to fail
     if self.rumur_exit_code == 0 and ret != 0:
@@ -381,23 +373,19 @@ def main(args: [str]) -> int:
     # if this is not a model, skip the remaining generic logic
     if os.path.splitext(path)[-1] != '.m': continue
 
-    for debug, optimised, multithreaded, xml, valgrind \
-        in itertools.product((False, True), repeat=5):
+    for debug, optimised, multithreaded, xml \
+        in itertools.product((False, True), repeat=4):
 
       # debug output causes invalid XML, so skip
       if debug and xml: continue
 
-      # Valgrind output causes invalid XML, so skip
-      if xml and valgrind: continue
-
       if in_range(index):
-        tests.append(Model(path, debug, optimised, multithreaded, xml, valgrind))
+        tests.append(Model(path, debug, optimised, multithreaded, xml))
       index += 1
 
-    for valgrind in (False, True):
-      if in_range(index):
-        tests.append(ASTDumpTest(path, valgrind))
-      index += 1
+    if in_range(index):
+      tests.append(ASTDumpTest(path))
+    index += 1
 
   pr(f'Running {len(tests)} tests using {options.jobs} threads...\n'
       '     +------ debug\n'
