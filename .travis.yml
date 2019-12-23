@@ -540,13 +540,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          # Ubuntu 14.04 ships with binutils 2.24 which is too old to understand
-          # some newer vector instructions GCC ≥ 7 can generate when given
-          # -march=native -mtune=native. The binutils-2.26 package contains an
-          # updated version of binutils but namespaced to allow it to be
-          # installed alongside 2.24. Below we stick its directory of unsuffixed
-          # symlinks in $PATH to cause it to take precedence over 2.24.
-          - binutils-2.26
           - g++-7
           - libxml2-utils
           - python3.6
@@ -556,7 +549,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 7 (2/4)
     os: linux
@@ -567,7 +559,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-7
           - libxml2-utils
           - python3.6
@@ -578,7 +569,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 7 (3/4)
     os: linux
@@ -589,7 +579,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-7
           - libxml2-utils
           - python3.6
@@ -600,7 +589,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 7 (4/4)
     os: linux
@@ -611,7 +599,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-7
           - libxml2-utils
           - python3.6
@@ -621,7 +608,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 18.04, GCC 7 (1/4)
     os: linux
@@ -702,7 +688,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-8
           - libxml2-utils
           - python3.6
@@ -712,7 +697,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 8 (2/4)
     os: linux
@@ -723,7 +707,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-8
           - libxml2-utils
           - python3.6
@@ -734,7 +717,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 8 (3/4)
     os: linux
@@ -745,7 +727,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-8
           - libxml2-utils
           - python3.6
@@ -756,7 +737,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 8 (4/4)
     os: linux
@@ -767,7 +747,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-8
           - libxml2-utils
           - python3.6
@@ -777,7 +756,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 18.04, GCC 8 (1/4)
     os: linux
@@ -858,7 +836,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-9
           - libxml2-utils
           - python3.6
@@ -868,7 +845,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 9 (2/4)
     os: linux
@@ -879,7 +855,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-9
           - libxml2-utils
           - python3.6
@@ -890,7 +865,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 9 (3/4)
     os: linux
@@ -901,7 +875,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-9
           - libxml2-utils
           - python3.6
@@ -912,7 +885,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 14.04, GCC 9 (4/4)
     os: linux
@@ -923,7 +895,6 @@ matrix:
           - deadsnakes
           - ubuntu-toolchain-r-test
         packages:
-          - binutils-2.26
           - g++-9
           - libxml2-utils
           - python3.6
@@ -933,7 +904,6 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
-      - PATH=/usr/lib/binutils-2.26/bin:${PATH}
 
   - name: Ubuntu Linux 18.04, GCC 9 (1/4)
     os: linux
