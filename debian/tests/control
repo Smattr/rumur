@@ -1,3 +1,3 @@
-Test-Command: env RUMUR=rumur RUMUR_AST_DUMP=rumur-ast-dump python3 tests/integration-tests.py --verbose
+Test-Command: ./tests/run-tests.py --jobs 1
 Depends: python3 (>= 3.6)
 Restrictions: allow-stderr
