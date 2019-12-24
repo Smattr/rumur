@@ -1,5 +1,5 @@
--- rumur_flags: smt_args()
--- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
+-- rumur_flags: SMT_ARGS
+-- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
 
 /* This is an example that contains a tautology. The SMT bridge should be able
  * to simplify this to `true`, but it currently cannot. The cause is that we

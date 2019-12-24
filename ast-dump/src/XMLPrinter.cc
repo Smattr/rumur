@@ -936,8 +936,13 @@ void XMLPrinter::sync_to(const Node &n) {
 
 void XMLPrinter::sync_to(const position &pos) {
 
-  while (in.good() && (line < pos.line ||
-         (line == pos.line && column < pos.column))) {
+  // the type of position.line and position.column changes across Bison
+  // releases, so avoid some -Wsign-compare warnings by casting them in advance
+  auto pos_line = static_cast<unsigned long>(pos.line);
+  auto pos_col = static_cast<unsigned long>(pos.column);
+
+  while (in.good() && (line < pos_line ||
+         (line == pos_line && column < pos_col))) {
 
     int c = in.get();
     if (c == EOF) {

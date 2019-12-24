@@ -2976,10 +2976,12 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
   }
 }
 
-/* Whether we know all liveness properties are satisfied for a given state. */
-static bool known_liveness(const struct state *NONNULL s) {
+/* number of unknown liveness properties for a given state */
+static unsigned long unknown_liveness(const struct state *NONNULL s) {
 
   assert(s != NULL);
+
+  unsigned long unknown = 0;
 
 #ifdef __clang__
   #pragma clang diagnostic push
@@ -3016,12 +3018,12 @@ static bool known_liveness(const struct state *NONNULL s) {
       }
 
       if (!((word >> j) & 0x1)) {
-        return false;
+        unknown++;
       }
     }
   }
 
-  return true;
+  return unknown;
 }
 
 /* Learn new liveness information about the state `s` from its successor. Note

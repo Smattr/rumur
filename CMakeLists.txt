@@ -37,4 +37,4 @@ add_subdirectory(librumur)
 add_subdirectory(rumur)
 
 enable_testing()
-add_test(integration ${CMAKE_CURRENT_SOURCE_DIR}/tests/integration-tests.py)
+add_test(tests env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/ast-dump:$ENV{PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py)

@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if xml else re.compile(r'liveness property "x is 10" violated')
+-- checker_output: None if self.xml else re.compile(r'liveness property "x is 10" violated')
 
 -- test of a liveness property that is not hit
 

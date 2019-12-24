@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if xml else re.compile(r'^Startstate\s+1, y:\s*[AB] fired.$', re.MULTILINE)
+-- checker_output: None if self.xml else re.compile(r'^Startstate\s+1, y:\s*[AB] fired.$', re.MULTILINE)
 
 -- Similar to cex-enum.m, but with the enum parameter in a startstate.
 

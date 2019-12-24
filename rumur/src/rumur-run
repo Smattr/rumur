@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 Wrapper script for running the Rumur model checker.
@@ -13,22 +13,22 @@ import atexit
 import os
 import platform
 import shutil
-import subprocess
+import subprocess as sp
 import sys
 import tempfile
+from typing import Optional
 
-def which(cmd):
+def which(cmd: str) -> Optional[str]:
   '''
   Equivalent of shell `which`
   '''
   try:
-    with open(os.devnull, 'wt') as f:
-      return subprocess.check_output(['which', cmd], stderr=f,
-        universal_newlines=True).strip()
-  except subprocess.CalledProcessError:
+    return sp.check_output(['which', cmd], stderr=sp.DEVNULL,
+      universal_newlines=True).strip()
+  except sp.CalledProcessError:
     return None
 
-def categorise(cc):
+def categorise(cc: str) -> str:
   '''
   Determine the vendor of a given C compiler
   '''
@@ -56,16 +56,14 @@ def categorise(cc):
 
   # Compile it
   aout = os.path.join(tmp, 'a.out')
-  cc_proc = subprocess.Popen([cc, '-o', aout, src], universal_newlines=True,
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  stdout, stderr = cc_proc.communicate()
+  cc_proc = sp.run([cc, '-o', aout, src], universal_newlines=True,
+    stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
   # Run it
   if cc_proc.returncode == 0:
     try:
-      categorisation = subprocess.check_output([aout],
-        universal_newlines=True).strip()
-    except subprocess.CalledProcessError:
+      categorisation = sp.check_output([aout], universal_newlines=True).strip()
+    except sp.CalledProcessError:
       pass
 
   # Clean up
@@ -73,7 +71,7 @@ def categorise(cc):
 
   return categorisation
 
-def main(args):
+def main(args: [str]) -> int:
 
   # Find the Rumur binary
   rumur_bin = which('rumur')
@@ -97,12 +95,11 @@ def main(args):
 
   # Generate the checker
   print('Generating the checker...')
-  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', '/dev/stdout'],
-    stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  checker_c, _ = rumur_proc.communicate()
-  checker_c = checker_c.decode('utf-8', 'replace')
+  rumur_proc = sp.run([rumur_bin] + args[1:] + ['--output', '/dev/stdout'],
+    stdin=sp.PIPE, stdout=sp.PIPE)
   if rumur_proc.returncode != 0:
     return rumur_proc.returncode
+  checker_c = rumur_proc.stdout
 
   ok = True
 
@@ -123,15 +120,13 @@ def main(args):
       # Allow GCC to perform more advanced interprocedural optimisations
       cc_flags += ['-fwhole-program']
     cc_flags += ['-lpthread']
-    cc_proc = subprocess.Popen([cc] + cc_flags, stdin=subprocess.PIPE)
-    cc_proc.communicate(checker_c)
+    cc_proc = sp.run([cc] + cc_flags, input=checker_c)
     ok &= cc_proc.returncode == 0
 
   # Run the checker
   if ok:
     print('Running the checker...')
-    checker_proc = subprocess.Popen([aout])
-    checker_proc.communicate()
+    checker_proc = sp.run([aout])
     ok &= checker_proc.returncode == 0
 
   return 0 if ok else -1

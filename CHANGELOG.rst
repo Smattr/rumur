@@ -1,6 +1,32 @@
 Change log
 ==========
 
+v2019.12.22
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: ``rumur-run`` no longer crashes during UTF-8 decoding in generated C
+  code (commit 7bbd50f6a7241475826e8d380b6a60bb3c6dfd18).
+* Support for Python 2 in ``rumur-run`` has been dropped. To use this script you
+  will now need at least Python 3.6 (commits
+  0c4d5f05ebcc937921edd924465827e50d345842,
+  ded15a4d8f23f1f1584566bd6e251679ba8f915c).
+* The final check of liveness properties now prints regular progress updates
+  (commits ce162be56035e726e1077bb6b6ecc89999e8607e,
+  2635dae9a4f27962f4ed951a54b3d6c54b9d62c6,
+  44e80dc6142205904dca188d2a0277b49ed0fb7f,
+  048a4b54fa7a1c2a7f48fdb8a7e470d396529200,
+  eef60ad5cf61d1a8cac2d1dbcf63581da2590e24).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Support for Python 2 in all scripts has been dropped. These now require at
+  least Python 3.6 (commits 5ad77dc6de53de9a78639faba5b65668e43c3ad8,
+  729a7f8a096369115bde345890bc14e03c5bd428,
+  6e0d248eae25a8a68b04bb5e99a3172e1e2ab453,
+  244b41225d36309f9e5985dbe594957782bef7fb).
+
 v2019.11.24
 -----------
 
