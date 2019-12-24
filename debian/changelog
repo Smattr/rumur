@@ -1,4 +1,4 @@
-rumur (2019.11.24-1) unstable; urgency=medium
+rumur (2019.12.22-1) unstable; urgency=medium
 
   * New upstream release.
 
@@ -15,9 +15,9 @@ rumur (2019.11.24-1) unstable; urgency=medium
 
   * Integrate upstream test suite into Debian packaging steps as a Test-Command.
 
-  * Update RUMUR_VERSION variable in rules from 2019.02.04-1 to 2019.11.24-1.
+  * Update RUMUR_VERSION variable in rules from 2019.02.04-1 to 2019.12.22-1.
 
- -- Matthew Fernandez <matthew.fernandez@gmail.com>  Mon, 25 Nov 2019 21:30:02 -0800
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Mon, 23 Dec 2019 18:52:50 -0800
 
 rumur (2019.02.04-1) unstable; urgency=medium
 
