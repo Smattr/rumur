@@ -2061,7 +2061,7 @@ matrix:
       # some of the flags/features we use. To install newer versions and make
       # them available to CMake we need to link them into the system
       # directories.
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0b1 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0b1 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address"
 
   - name: macOS, XCode 8.0 Clang, Homebrew
@@ -2071,7 +2071,7 @@ matrix:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
       # somehow the xcode8 image does not have pyenv, despite earlier and later
       # xcode images having it
-      - MATRIX_EVAL="brew update && brew install bison pyenv && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja pyenv && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 8.3.3 Clang, Homebrew
@@ -2079,7 +2079,7 @@ matrix:
     osx_image: xcode8.3
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.0 Clang, Homebrew
@@ -2087,7 +2087,7 @@ matrix:
     osx_image: xcode9
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.1 Clang, Homebrew
@@ -2095,7 +2095,7 @@ matrix:
     osx_image: xcode9.1
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.2 Clang, Homebrew
@@ -2103,7 +2103,7 @@ matrix:
     osx_image: xcode9.2
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.3 Clang, Homebrew
@@ -2111,7 +2111,7 @@ matrix:
     osx_image: xcode9.3
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.4 Clang, Homebrew
@@ -2119,7 +2119,7 @@ matrix:
     osx_image: xcode9.4
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.0 Clang, Homebrew
@@ -2127,7 +2127,7 @@ matrix:
     osx_image: xcode10
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.1 Clang, Homebrew
@@ -2135,7 +2135,7 @@ matrix:
     osx_image: xcode10.1
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.2 Clang, Homebrew
@@ -2143,7 +2143,7 @@ matrix:
     osx_image: xcode10.2
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 7.3.1 Clang, Macports
@@ -2155,7 +2155,7 @@ matrix:
       - COLUMNS=80
 
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address"
 
   - name: macOS, XCode 8.0 Clang, Macports
@@ -2164,7 +2164,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 8.3.3 Clang, Macports
@@ -2173,7 +2173,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.0 Clang, Macports
@@ -2182,7 +2182,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.1 Clang, Macports
@@ -2191,7 +2191,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.2 Clang, Macports
@@ -2200,7 +2200,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.3 Clang, Macports
@@ -2209,7 +2209,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.4 Clang, Macports
@@ -2218,7 +2218,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.0 Clang, Macports
@@ -2227,7 +2227,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.1 Clang, Macports
@@ -2236,7 +2236,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.2 Clang, Macports
@@ -2245,7 +2245,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: Ubuntu Linux 16.04, GCC 9, AFL
