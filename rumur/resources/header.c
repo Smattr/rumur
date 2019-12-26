@@ -190,46 +190,77 @@ static void sandbox(void) {
       BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, nr)),
 
       /* Enable exiting. */
+#ifdef __NR_exit_group
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit_group, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
       /* Enable syscalls used by printf. */
+#ifdef __NR_fstat
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_write
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_write, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
       /* Enable syscalls used by malloc. */
+#ifdef __NR_brk
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_brk, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_mmap
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_munmap
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_munmap, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
-      /* If we're running multithreaded, enable syscalls that used by pthreads.
-       */
+      /* If we're running multithreaded, enable syscalls used by pthreads. */
+#ifdef __NR_clone
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clone, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_close
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_close, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_exit
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_futex
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_futex, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_get_robust_list
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_get_robust_list, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_madvise
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_madvise, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_mprotect
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mprotect, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_open
       // XXX: it would be nice to avoid open() but pthreads seems to open libgcc.
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_open, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_read
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_read, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_set_robust_list
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_set_robust_list, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
 
       /* Deny everything else. On a disallowed syscall, we trap instead of
        * killing to allow the user to debug the failure. If you are debugging
