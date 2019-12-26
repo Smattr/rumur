@@ -649,7 +649,8 @@ int main(int argc, char **argv) {
 
     // setup an argument vector for calling the C compiler
     const char *args[] = { cc, "-std=c11", "-x", "c", "-o",
-      "/dev/null", "-Werror=format", "-Werror=sign-compare", out->c_str(),
+      "/dev/null", "-Werror=format", "-Werror=sign-compare",
+      "-Werror=type-limits", out->c_str(),
 #ifdef __x86_64__
       "-mcx16",
 #endif
