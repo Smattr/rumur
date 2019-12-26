@@ -151,6 +151,11 @@ def main(args: [str]) -> int:
     aout = os.path.join(tmp, 'a.out')
     argv = [CC, '-std=c11'] + optimisation_flags() + ['-o', aout, '-x', 'c',
       '-', '-lpthread']
+    # XXX: these architectures do not have a double-word CAS, so need libatomic
+    # support
+    if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x',
+        'riscv', 'riscv32', 'riscv64'):
+      argv.append('-latomic')
     cc_proc = sp.run(argv, input=checker_c)
     ok &= cc_proc.returncode == 0
 

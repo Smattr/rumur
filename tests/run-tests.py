@@ -228,6 +228,12 @@ class Model(Tweakable):
       model_bin = os.path.join(tmp, 'model.exe')
       args = [CC] + C_FLAGS + ['-o', model_bin, '-', '-lpthread']
 
+      # XXX: these architectures do not have a double-word CAS, so need
+      # libatomic support
+      if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x',
+          'riscv', 'riscv32', 'riscv64'):
+        args.append('-latomic')
+
       # call the C compiler
       ret, stdout, stderr = run(args, model_c)
       if ret != 0:

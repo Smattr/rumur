@@ -22,6 +22,13 @@ if len(sys.argv) == 1 and platform.machine() in ('amd64', 'x86_64'):
   print('not relevant for x86-64 machines')
   sys.exit(125)
 
+# these architectures do not have a double-word compare-and-swap, so cannot
+# generate lock-free code
+if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x', 'riscv',
+    'riscv32', 'riscv64'):
+  print('no double-word compare-and-swap available for this platform')
+  sys.exit(125)
+
 # generate a checker for a simple model
 model = 'var x: boolean; startstate begin x := false; end; rule begin x := !x; end;'
 argv = ['rumur', '--output', '/dev/stdout']
