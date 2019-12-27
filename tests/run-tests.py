@@ -393,6 +393,10 @@ def main(args: [str]) -> int:
       tests.append(ASTDumpTest(path))
     index += 1
 
+  if len(tests) == 0:
+    pr(f'no tests found\n')
+    return -1
+
   pr(f'Running {len(tests)} tests using {options.jobs} threads...\n'
       '     +------ debug\n'
       '     |+----- optimised\n'
