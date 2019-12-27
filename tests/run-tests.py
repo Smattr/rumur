@@ -19,10 +19,10 @@ CPUS = multiprocessing.cpu_count()
 
 STDOUT_ISATTY = os.isatty(sys.stdout.fileno())
 
-def green():  return '\033[32m' if STDOUT_ISATTY else ''
-def red():    return '\033[31m' if STDOUT_ISATTY else ''
-def yellow(): return '\033[33m' if STDOUT_ISATTY else ''
-def reset():  return '\033[0m'  if STDOUT_ISATTY else ''
+GREEN  = '\033[32m' if STDOUT_ISATTY else ''
+RED    = '\033[31m' if STDOUT_ISATTY else ''
+YELLOW = '\033[33m' if STDOUT_ISATTY else ''
+RESET  = '\033[0m'  if STDOUT_ISATTY else ''
 
 def enc(s): return s.encode('utf-8', 'replace')
 def dec(s): return s.decode('utf-8', 'replace')
@@ -329,14 +329,14 @@ def check(test: Test) -> int:
   result = test.run()
 
   if result is None:
-    pr(f'{green()}PASS{reset()} {test.description()}\n')
+    pr(f'{GREEN}PASS{RESET} {test.description()}\n')
     return 1, 0, 0
   elif isinstance(result, Skip):
-    pr(f'{yellow()}SKIP{reset()} {test.description()} [{result.reason}]\n')
+    pr(f'{YELLOW}SKIP{RESET} {test.description()} [{result.reason}]\n')
     return 0, 1, 0
   else:
     assert isinstance(result, Fail)
-    pr(f'{red()}FAIL{reset()} {test.description()}\n{result.output}')
+    pr(f'{RED}FAIL{RESET} {test.description()}\n{result.output}')
     return 0, 0, 1
 
 def main(args: [str]) -> int:
