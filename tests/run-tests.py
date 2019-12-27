@@ -69,6 +69,8 @@ C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
 
 VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
+AST_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
+      'ast-dump.rng'))
 
 def has_sandbox() -> bool:
   'whether the current platform has sandboxing support for the verifier'
@@ -316,9 +318,7 @@ class ASTDumpTest(Tweakable):
       return Skip('xmllint not available for validation')
 
     # Validate the XML
-    rng = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
-      'ast-dump.rng'))
-    ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout', '-'],
+    ret, stdout, stderr = run(['xmllint', '--relaxng', AST_RNG, '--noout', '-'],
       xmlcontent)
     if ret != 0:
       return Fail(f'Failed to validate:\n{stdout}{stderr}')
