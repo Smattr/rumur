@@ -156,6 +156,9 @@ class Test(abc.ABC):
   @abc.abstractmethod
   def run(self) -> Optional[Result]: raise NotImplementedError
 
+# recogniser for a '-- rumur_flags: ...' etc line
+TWEAK_LINE = re.compile(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$')
+
 class Tweakable(Test):
   'a test case that can take extra customisation via comment lines'
   def __init__(self):
@@ -169,7 +172,7 @@ class Tweakable(Test):
     'check for special lines at the start of current model overriding defaults'
     with open(model, 'rt', encoding='utf-8') as f:
       for line in f:
-        m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
+        m = TWEAK_LINE.match(line)
         if m is None:
           break
         key = m.group('key')
