@@ -74,16 +74,9 @@ void Function::validate() const {
         if (n.expr == nullptr)
           throw Error("empty return statement in a function", n.loc);
 
-        if (isa<Range>(n.expr->type()->resolve())) {
-          if (!isa<Range>(return_type->resolve()))
-            throw Error("returning a number from a function that does not "
-              "return a range", n.loc);
-
-        } else {
-          if (*n.expr->type() != *return_type)
-            throw Error("returning incompatible typed value from a function",
-              n.loc);
-        }
+        if (!n.expr->type()->coerces_to(*return_type))
+          throw Error("returning incompatible typed value from a function",
+            n.loc);
       }
     }
 
