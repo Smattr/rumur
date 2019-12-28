@@ -50,6 +50,12 @@ struct Expr : public Node {
 
   // Get a string representation of this expression
   virtual std::string to_string() const = 0;
+
+  // is this expression the boolean literal “true”?
+  virtual bool is_literal_true() const;
+
+  // is this expression the boolean literal “false”?
+  virtual bool is_literal_false() const;
 };
 
 struct Ternary : public Expr {
@@ -345,6 +351,8 @@ struct ExprID : public Expr {
   bool is_lvalue() const final;
   bool is_readonly() const final;
   std::string to_string() const final;
+  bool is_literal_true() const final;
+  bool is_literal_false() const final;
 };
 
 struct Field : public Expr {

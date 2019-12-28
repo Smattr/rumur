@@ -34,6 +34,14 @@ bool Expr::is_readonly() const {
   return !is_lvalue();
 }
 
+bool Expr::is_literal_true() const {
+  return false;
+}
+
+bool Expr::is_literal_false() const {
+  return false;
+}
+
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) { }
@@ -621,6 +629,17 @@ bool ExprID::is_readonly() const {
 
 std::string ExprID::to_string() const {
   return id;
+}
+
+bool ExprID::is_literal_true() const {
+  // It is not possible to shadow “true,” so we simply need to check the text of
+  // this expression. Boolean literals are normalised to lower case during
+  // lexing (see lexer.l) so we do not need to worry about case.
+  return id == "true";
+}
+
+bool ExprID::is_literal_false() const {
+  return id == "false";
 }
 
 Field::Field(const Ptr<Expr> &record_, const std::string &field_,
