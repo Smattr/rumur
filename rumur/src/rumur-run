@@ -92,19 +92,19 @@ def optimisation_flags() -> [str]:
 
   flags = ['-O3']
 
-  # add -march=native if supported
-  if supports('-march=native'):
-    flags.append('-march=native')
+  # optimise code for the current host architecture
+  if supports('-march=native'): flags.append('-march=native')
 
-  # add -mtune=native if supported
-  if supports('-mtune=native'):
-    flags.append('-mtune=native')
+  # optimise code for the current host CPU
+  if supports('-mtune=native'): flags.append('-mtune=native')
+
+  # enable link-time optimisation
+  if supports('-flto'): flags.append('-flto')
 
   cc_vendor = categorise(CC)
 
-  if cc_vendor == 'gcc':
-    # Allow GCC to perform more advanced interprocedural optimisations
-    flags.append('-fwhole-program')
+  # allow GCC to perform more advanced interprocedural optimisations
+  if cc_vendor == 'gcc': flags.append('-fwhole-program')
 
   if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
     # GCC needs a personal invitation to use cmpxchg16b
