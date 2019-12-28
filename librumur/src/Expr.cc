@@ -23,7 +23,7 @@ namespace rumur {
 Expr::Expr(const location &loc_): Node(loc_) { }
 
 bool Expr::is_boolean() const {
-  return *type()->resolve() == *Boolean;
+  return type()->resolve()->is_boolean();
 }
 
 bool Expr::is_lvalue() const {

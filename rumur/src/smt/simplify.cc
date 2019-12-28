@@ -544,7 +544,7 @@ namespace { class Simplifier : public BaseTraversal {
     const Ptr<TypeExpr> t = type.resolve();
 
     // the solver already knows boolean, so we're done
-    if (*t == *Boolean)
+    if (t->is_boolean())
       return;
 
     class ConstraintEmitter : public ConstTypeTraversal {
