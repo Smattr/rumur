@@ -748,19 +748,8 @@ void Element::validate() const {
 
   auto a = dynamic_cast<const Array&>(*t);
 
-  const Ptr<TypeExpr> e = index->type()->resolve();
-
-  const Ptr<TypeExpr> index_type = a.index_type->resolve();
-
-  if (isa<Range>(index_type)) {
-    if (!isa<Range>(e))
-      throw Error("array indexed using an expression of incorrect type", loc);
-
-  } else {
-    if (*index_type != *e)
-      throw Error("array indexed using an expression of incorrect type", loc);
-
-  }
+  if (!index->type()->coerces_to(*a.index_type))
+    throw Error("array indexed using an expression of incorrect type", loc);
 }
 
 bool Element::is_lvalue() const {
