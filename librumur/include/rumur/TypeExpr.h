@@ -50,6 +50,10 @@ struct TypeExpr : public Node {
   // given type?
   bool coerces_to(const TypeExpr &other) const;
 
+  // Is this the type Boolean? Note that this only returns true for the actual
+  // type Boolean, and not for TypeExprIDs that point at Boolean.
+  virtual bool is_boolean() const;
+
   __attribute__((deprecated("equatable_with() has been replaced by coerces_to()")))
   bool equatable_with(const TypeExpr &other) const;
 };
@@ -116,6 +120,7 @@ struct Enum : public TypeExpr {
   std::string upper_bound() const final;
   std::string to_string() const final;
   bool constant() const final;
+  bool is_boolean() const final;
 };
 
 struct Record : public TypeExpr {

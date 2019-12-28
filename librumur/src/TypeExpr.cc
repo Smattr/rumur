@@ -73,6 +73,10 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
   return *t1 == *t2;
 }
 
+bool TypeExpr::is_boolean() const {
+  return false;
+}
+
 bool TypeExpr::equatable_with(const TypeExpr &other) const {
   return coerces_to(other);
 }
@@ -272,6 +276,13 @@ std::string Enum::to_string() const {
 bool Enum::constant() const {
   // enums always have a known constant bound
   return true;
+}
+
+bool Enum::is_boolean() const {
+  // the boolean literals cannot be shadowed, so we simply need to check if our
+  // members are “false” and “true”
+  return members.size() == 2 && members[0].first == "false"
+    && members[1].first == "true";
 }
 
 Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
