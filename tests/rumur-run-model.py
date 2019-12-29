@@ -7,7 +7,7 @@ import platform
 import subprocess as sp
 import sys
 
-if platform.system() == 'Linux' and os.environ.get('TRAVIS') is not None:
+if platform.system() == 'Linux' and 'TRAVIS' in os.environ:
   release = sp.check_output(['lsb_release', '--release', '--short'],
     universal_newlines=True).strip()
   if release == '14.04':
