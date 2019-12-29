@@ -37,7 +37,7 @@ struct AliasRule : public Rule {
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   virtual ~AliasRule() = default;
   AliasRule *clone() const final;
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 
   std::vector<Ptr<Rule>> flatten() const final;
@@ -54,7 +54,7 @@ struct SimpleRule : public Rule {
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~SimpleRule() = default;
   SimpleRule *clone() const override;
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const override;
   void validate() const final;
 };
@@ -69,7 +69,7 @@ struct StartState : public Rule {
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~StartState() = default;
   StartState *clone() const final;
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -82,7 +82,7 @@ struct PropertyRule : public Rule {
     const location &loc_);
   virtual ~PropertyRule() = default;
   PropertyRule *clone() const final;
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -94,7 +94,7 @@ struct Ruleset : public Rule {
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   virtual ~Ruleset() = default;
   Ruleset *clone() const final;
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 

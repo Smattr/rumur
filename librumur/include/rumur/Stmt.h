@@ -33,7 +33,7 @@ struct AliasStmt : public Stmt {
   AliasStmt *clone() const final;
   virtual ~AliasStmt() = default;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -47,7 +47,7 @@ struct PropertyStmt : public Stmt {
   PropertyStmt *clone() const final;
   virtual ~PropertyStmt() = default;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -62,7 +62,7 @@ struct Assignment : public Stmt {
   Assignment *clone() const final;
   virtual ~Assignment() = default;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -75,7 +75,7 @@ struct Clear : public Stmt {
   virtual ~Clear() = default;
   Clear *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -88,7 +88,7 @@ struct ErrorStmt : public Stmt {
    ErrorStmt *clone() const final;
    virtual ~ErrorStmt() = default;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
    bool operator==(const Node &other) const final;
 };
 
@@ -102,7 +102,7 @@ struct For : public Stmt {
   virtual ~For() = default;
   For *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -116,7 +116,7 @@ struct IfClause : public Node {
   virtual ~IfClause() = default;
   IfClause *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -129,7 +129,7 @@ struct If : public Stmt {
   virtual ~If() = default;
   If *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -142,7 +142,7 @@ struct ProcedureCall : public Stmt {
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -156,7 +156,7 @@ struct Put : public Stmt {
   virtual ~Put() = default;
   Put *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -169,7 +169,7 @@ struct Return : public Stmt {
   virtual ~Return() = default;
   Return *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -183,7 +183,7 @@ struct SwitchCase : public Node {
   virtual ~SwitchCase() = default;
   SwitchCase *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -197,7 +197,7 @@ struct Switch : public Stmt {
   virtual ~Switch() = default;
   Switch *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -210,7 +210,7 @@ struct Undefine : public Stmt {
   virtual ~Undefine() = default;
   Undefine *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
@@ -225,7 +225,7 @@ struct While : public Stmt {
   virtual ~While() = default;
   While *clone() const final;
 
-  __attribute__((deprecated("operator== will be removed in a future release")))
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
 };
