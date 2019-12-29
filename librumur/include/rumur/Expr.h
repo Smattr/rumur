@@ -72,6 +72,7 @@ struct Ternary : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -112,6 +113,7 @@ struct Implication : public BooleanBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -124,6 +126,7 @@ struct Or : public BooleanBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -136,6 +139,7 @@ struct And : public BooleanBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -159,6 +163,7 @@ struct Not : public UnaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -180,6 +185,7 @@ struct Lt : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -192,6 +198,7 @@ struct Leq : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -204,6 +211,7 @@ struct Gt : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -216,6 +224,7 @@ struct Geq : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -236,6 +245,7 @@ struct Eq : public EquatableBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -248,6 +258,7 @@ struct Neq : public EquatableBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -268,6 +279,7 @@ struct Add : public ArithmeticBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -280,6 +292,7 @@ struct Sub : public ArithmeticBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -292,6 +305,7 @@ struct Negative : public UnaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -305,6 +319,7 @@ struct Mul : public ArithmeticBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -317,6 +332,7 @@ struct Div : public ArithmeticBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -329,6 +345,7 @@ struct Mod : public ArithmeticBinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -346,6 +363,7 @@ struct ExprID : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   bool is_lvalue() const final;
@@ -368,6 +386,7 @@ struct Field : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   bool is_lvalue() const final;
@@ -388,6 +407,7 @@ struct Element : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   bool is_lvalue() const final;
@@ -412,6 +432,7 @@ struct FunctionCall : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -439,6 +460,7 @@ struct Quantifier : public Node {
     const location &loc_);
   virtual ~Quantifier() = default;
   Quantifier *clone() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const;
@@ -468,6 +490,7 @@ struct Exists : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -486,6 +509,7 @@ struct Forall : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -502,6 +526,7 @@ struct IsUndefined : public Expr {
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;

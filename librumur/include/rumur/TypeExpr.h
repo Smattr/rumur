@@ -68,6 +68,7 @@ struct Range : public TypeExpr {
   virtual ~Range() = default;
 
   mpz_class count() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -87,6 +88,7 @@ struct Scalarset : public TypeExpr {
   virtual ~Scalarset() = default;
 
   mpz_class count() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -112,6 +114,7 @@ struct Enum : public TypeExpr {
   virtual ~Enum() = default;
 
   mpz_class count() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -133,6 +136,7 @@ struct Record : public TypeExpr {
 
   mpz_class width() const final;
   mpz_class count() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -149,6 +153,7 @@ struct Array : public TypeExpr {
 
   mpz_class width() const final;
   mpz_class count() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -166,6 +171,7 @@ struct TypeExprID : public TypeExpr {
 
   mpz_class width() const final;
   mpz_class count() const final;
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   Ptr<TypeExpr> resolve() const final;

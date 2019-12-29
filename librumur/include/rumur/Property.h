@@ -27,6 +27,7 @@ struct Property : public Node {
   Property *clone() const final;
   virtual ~Property() = default;
 
+  __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
