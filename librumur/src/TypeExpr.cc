@@ -9,6 +9,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
+#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <unordered_set>
@@ -62,6 +63,94 @@ bool TypeExpr::constant() const {
   throw Error("complex types do not have bounds to query", loc);
 }
 
+// Compare two types for equality. This is implemented here rather than
+// operator== because its semantics are not exactly what you would expect from
+// operator== and we do not want to expose it to other files.
+static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
+
+  class Equater : public ConstTypeTraversal {
+
+   private:
+    const Ptr<TypeExpr> t;
+
+   public:
+    bool result = true;
+
+    explicit Equater(const TypeExpr &type): t(type.resolve()) { }
+
+    void visit_array(const Array &n) final {
+      if (auto a = dynamic_cast<const Array*>(t.get())) {
+        result &= equal(*a->index_type, *n.index_type);
+        result &= equal(*a->element_type, *n.element_type);
+      } else {
+        result = false;
+      }
+    }
+
+    void visit_enum(const Enum &n) final {
+      if (auto e = dynamic_cast<const Enum*>(t.get())) {
+        for (auto it = e->members.begin(), it2 = n.members.begin(); ; it++, it2++) {
+          if (it == e->members.end()) {
+            result &= it2 == n.members.end();
+            break;
+          }
+          if (it2 == n.members.end()) {
+            result = false;
+            break;
+          }
+          result &= it->first == it2->first;
+        }
+      } else {
+        result = false;
+      }
+    }
+
+    void visit_range(const Range &n) final {
+      if (auto r = dynamic_cast<const Range*>(t.get())) {
+        result = r->min->constant_fold() == n.min->constant_fold()
+              && r->max->constant_fold() == n.max->constant_fold();
+      } else {
+        result = false;
+      }
+    }
+
+    void visit_record(const Record &n) final {
+      if (auto r = dynamic_cast<const Record*>(t.get())) {
+        for (auto it = r->fields.begin(), it2 = n.fields.begin(); ; it++, it2++) {
+          if (it == r->fields.end()) {
+            result &= it2 == n.fields.end();
+            break;
+          }
+          if (it2 == n.fields.end()) {
+            result = false;
+            break;
+          }
+          result &= (*it)->name == (*it2)->name
+                 && equal(*(*it)->get_type(), *(*it2)->get_type());
+        }
+      } else {
+        result = false;
+      }
+    }
+
+    void visit_scalarset(const Scalarset &n) final {
+      if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
+        result = s->bound->constant_fold() == n.bound->constant_fold();
+      } else {
+        result = false;
+      }
+    }
+
+    void visit_typeexprid(const TypeExprID &n) final {
+      dispatch(*n.referent);
+    }
+  };
+
+  Equater eq(t1);
+  eq.dispatch(t2);
+  return eq.result;
+}
+
 bool TypeExpr::coerces_to(const TypeExpr &other) const {
 
   const Ptr<TypeExpr> t1 = resolve();
@@ -70,7 +159,7 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
   if (isa<Range>(t1) && isa<Range>(t2))
     return true;
 
-  return *t1 == *t2;
+  return equal(*t1, *t2);
 }
 
 bool TypeExpr::is_boolean() const {
