@@ -837,22 +837,27 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
         (*it)->loc);
 
-    const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
+    if (!(*it)->type()->coerces_to(*v->get_type()))
+      throw Error("function call contains parameter of incorrect type",
+        (*it)->loc);
 
     const Ptr<TypeExpr> param_type = v->get_type()->resolve();
 
-    if (isa<Range>(arg_type)) {
-      if (!isa<Range>(param_type))
-        throw Error("function call contains parameter of incorrect type",
-          (*it)->loc);
+    // if this is a writable range-typed parameter, we additionally require it
+    // to be of exactly the same type in order to guarantee the caller’s and
+    // callee’s handles are compatible
+    if (!v->is_readonly() && isa<Range>(param_type)) {
+      const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
+      assert(isa<Range>(arg_type)
+        && "non-range considered type-compatible with range");
 
-      if (*arg_type != *param_type && !v->is_readonly())
+      auto p = dynamic_cast<const Range&>(*param_type);
+      auto a = dynamic_cast<const Range&>(*arg_type);
+
+      if (p.min->constant_fold() != a.min->constant_fold() ||
+          p.max->constant_fold() != a.max->constant_fold())
         throw Error("range types of function call argument and var parameter "
           "differ", (*it)->loc);
-
-    } else if (*arg_type != *param_type) {
-      throw Error("function call contains parameter of incorrect type",
-        (*it)->loc);
     }
 
     it++;
