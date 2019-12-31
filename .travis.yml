@@ -2062,7 +2062,7 @@ matrix:
       # them available to CMake we need to link them into the system
       # directories.
       - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0b1 && CC=clang && CXX=clang++"
-      - CXXFLAGS="-fsanitize=address"
+      - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 8.0 Clang, Homebrew
     os: osx
@@ -2196,7 +2196,7 @@ matrix:
 
       - PATH=/opt/local/bin:${PATH}
       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
-      - CXXFLAGS="-fsanitize=address"
+      - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 8.0 Clang, Macports
     os: osx
