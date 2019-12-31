@@ -1738,7 +1738,7 @@ static queue_handle_t queue_handle_next(queue_handle_t h) {
 static const struct queue_node *hazarded[THREADS];
 
 /* Protect a pointer that we wish to dereference. */
-static __attribute__((unused)) void hazard(queue_handle_t h) {
+static void hazard(queue_handle_t h) {
 
   /* Find the queue node this handle lies within. */
   const struct queue_node *p = queue_handle_base(h);
@@ -1755,7 +1755,7 @@ static __attribute__((unused)) void hazard(queue_handle_t h) {
 }
 
 /* Drop protection on a pointer whose target we are done accessing. */
-static __attribute__((unused)) void unhazard(queue_handle_t h) {
+static void unhazard(queue_handle_t h) {
 
   /* Find the queue node this handle lies within. */
   const struct queue_node *p __attribute__((unused)) = queue_handle_base(h);
@@ -1772,7 +1772,7 @@ static __attribute__((unused)) void unhazard(queue_handle_t h) {
 }
 
 /* Free a pointer or, if not possible, defer this to later. */
-static __attribute__((unused)) void reclaim(queue_handle_t h) {
+static void reclaim(queue_handle_t h) {
 
   /* Find the queue node this handle lies within. */
   struct queue_node *p = queue_handle_base(h);
