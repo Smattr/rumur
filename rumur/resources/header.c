@@ -564,7 +564,9 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
 struct state {
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
   const struct state *previous;
+#endif
 
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
   /* Index of the rule we took to reach this state. */
   uint64_t rule_taken;
 #endif
