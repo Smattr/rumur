@@ -608,6 +608,9 @@ struct state {
    *
    *  * uint64_t bound;
    *  * const struct state *previous;
+   *
+   * They are bit-packed, so may take up less space. E.g. if the maximum value
+   * of `bound` is known to be 5, it will be stored in 3 bits instead of 64.
    */
   uint8_t other[STATE_OTHER_BYTES];
 
