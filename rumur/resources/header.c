@@ -2670,12 +2670,25 @@ static __attribute__((const)) bool slot_is_empty(slot_t s) {
 }
 
 static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
+#if defined(__linux__) && defined(__x86_64__)
+  /* by assuming 5-level paging, implying the top 2 bytes of a pointer are 0, we
+   * can store the tombstone marker in the top bit, avoiding any assumptions
+   * about the alignment of state pointers
+   */
+  return (s >> 63) == 0x1;
+#else
   return (s & 0x1) == 0x1;
+#endif
 }
 
 static slot_t slot_bury(slot_t s) {
   ASSERT(!slot_is_tombstone(s));
+#if defined(__linux__) && defined(__x86_64__)
+  /* see explanation in slot_is_tombstone() */
+  return s | ((slot_t)1 << 63);
+#else
   return s | 0x1;
+#endif
 }
 
 static struct state *slot_to_state(slot_t s) {
