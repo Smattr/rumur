@@ -43,7 +43,13 @@
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
 /* the size of auxliary members of the state struct */
-enum { STATE_OTHER_BYTES = BITS_TO_BYTES(BITS_FOR(BOUND)) };
+enum { BOUND_BITS = BITS_FOR(BOUND) };
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
+  enum { PREVIOUS_BITS = sizeof(void*) * 8 };
+#else
+  enum { PREVIOUS_BITS = 0 };
+#endif
+enum { STATE_OTHER_BYTES = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS) };
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
@@ -577,10 +583,6 @@ struct state {
     int16_t force_alignment;
     struct {
 
-#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  const struct state *previous;
-#endif
-
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   /* Index of the rule we took to reach this state. */
   uint64_t rule_taken;
@@ -592,9 +594,10 @@ struct state {
 
   uint8_t data[STATE_SIZE_BYTES];
 
-  /* the following fields are packed into here:
+  /* the following effective fields are packed into here:
    *
-   *  * bound
+   *  * uint64_t bound;
+   *  * const struct state *previous;
    */
   uint8_t other[STATE_OTHER_BYTES];
 
@@ -918,13 +921,28 @@ static void state_bound_set(struct state *NONNULL s, uint64_t bound) {
 #endif
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
+static struct handle state_previous_handle(const struct state *NONNULL s) {
+
+  size_t offset = BOUND_BITS;
+
+  struct handle h = (struct handle) {
+    .base = (uint8_t*)s->other + offset / 8,
+    .offset = offset % 8,
+    .width = PREVIOUS_BITS,
+  };
+
+  return h;
+}
+
 static const struct state *state_previous_get(const struct state *NONNULL s) {
-  return s->previous;
+  struct handle h = state_previous_handle(s);
+  return (const struct state*)read_raw(h);
 }
 
 static void state_previous_set(struct state *NONNULL s,
     const struct state *previous) {
-  s->previous = previous;
+  struct handle h = state_previous_handle(s);
+  write_raw(h, (uint64_t)previous);
 }
 #endif
 
