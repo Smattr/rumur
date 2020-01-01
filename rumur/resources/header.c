@@ -983,6 +983,18 @@ static void state_previous_set(struct state *NONNULL s,
 }
 #endif
 
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
+static uint64_t state_rule_taken_get(const struct state *NONNULL s) {
+  assert(s != NULL);
+  return s->rule_taken;
+}
+
+static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
+  assert(s != NULL);
+  s->rule_taken = rule_taken;
+}
+#endif
+
 /*******************************************************************************
  * State allocator.                                                            *
  *                                                                             *

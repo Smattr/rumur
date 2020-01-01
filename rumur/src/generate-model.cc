@@ -775,7 +775,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      s = state_new();\n"
           << "      memset(s, 0, sizeof(*s));\n"
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-          << "      s->rule_taken = rule_taken;\n"
+          << "      state_rule_taken_set(s, rule_taken);\n"
           << "#endif\n"
           << "      if (!startstate" << index << "(s";
         for (const Quantifier &q : r->quantifiers)
@@ -870,7 +870,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      do {\n"
           << "        struct state *n = state_dup(s);\n"
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-          << "        n->rule_taken = rule_taken;\n"
+          << "        state_rule_taken_set(n, rule_taken);\n"
           << "#endif\n"
           << "        int g = guard" << index << "(n";
         for (const Quantifier &q : r->quantifiers)
@@ -1011,9 +1011,9 @@ void generate_model(std::ostream &out, const Model &m) {
     << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
     << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
     << "\n"
-    << "  if (s->rule_taken == 0) {\n"
+    << "  if (state_rule_taken_get(s) == 0) {\n"
     << "    fprintf(stderr, \"unknown state transition\\n\");\n"
-    << "    ASSERT(s->rule_taken != 0 && \"unknown state transition\");\n"
+    << "    ASSERT(state_rule_taken_get(s) != 0 && \"unknown state transition\");\n"
     << "    return;\n"
     << "  }\n"
     << "\n";
@@ -1035,7 +1035,7 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_quantifier_header(out, q);
 
         out
-          << "  if (s->rule_taken == rule_taken) {\n"
+          << "  if (state_rule_taken_get(s) == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
           << "      xml_printf(\"Startstate "
@@ -1145,7 +1145,7 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_quantifier_header(out, q);
 
         out
-          << "  if (s->rule_taken == rule_taken) {\n"
+          << "  if (state_rule_taken_get(s) == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
           << "      xml_printf(\"Rule " << rule_name_string(*r, index)
