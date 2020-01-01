@@ -1419,7 +1419,19 @@ static void handle_write_raw(const struct state *NONNULL s, struct handle h,
   TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
     raw_value_to_string(value), h.base, h.offset, h.width);
 
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
   ASSERT((uintmax_t)value <= UINT64_MAX && "truncating value during handle_write_raw");
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
 
   write_raw(h, (uint64_t)value);
 }
