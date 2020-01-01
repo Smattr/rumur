@@ -1247,7 +1247,10 @@ void generate_model(std::ostream &out, const Model &m) {
     << "}\n\n";
 
   // Generate a function used during debugging
-  out << "static void state_print_field_offsets(void) {\n";
+  out
+    << "static void state_print_field_offsets(void) {\n"
+    << "  printf(\"\t* state struct is %zu-byte aligned\\n\", "
+      "__alignof__(struct state));\n";
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get()))
       out << "  printf(\"\t* field %s is located at state offset " << v->offset
