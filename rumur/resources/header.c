@@ -45,7 +45,15 @@ enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 /* the size of auxliary members of the state struct */
 enum { BOUND_BITS = BITS_FOR(BOUND) };
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  enum { PREVIOUS_BITS = sizeof(void*) * 8 };
+  #if defined(__linux__) && defined(__x86_64__)
+    /* assume 5-level paging, and hence the top 2 bytes of any user pointer are
+     * always 0 and not required.
+     * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
+     */
+    enum { PREVIOUS_BITS = 56 };
+  #else
+    enum { PREVIOUS_BITS = sizeof(void*) * 8 };
+  #endif
 #else
   enum { PREVIOUS_BITS = 0 };
 #endif
@@ -941,6 +949,10 @@ static const struct state *state_previous_get(const struct state *NONNULL s) {
 
 static void state_previous_set(struct state *NONNULL s,
     const struct state *previous) {
+#if defined(__linux__) && defined(__x86_64__)
+  ASSERT(((uintptr_t)previous >> PREVIOUS_BITS) == 0
+    && "upper 2 bytes of pointer are non-zero (not using 5-level paging?)");
+#endif
   struct handle h = state_previous_handle(s);
   write_raw(h, (uint64_t)previous);
 }
