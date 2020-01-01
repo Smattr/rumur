@@ -917,6 +917,17 @@ static void state_bound_set(struct state *NONNULL s, uint64_t bound) {
 }
 #endif
 
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
+static const struct state *state_previous_get(const struct state *NONNULL s) {
+  return s->previous;
+}
+
+static void state_previous_set(struct state *NONNULL s,
+    const struct state *previous) {
+  s->previous = previous;
+}
+#endif
+
 /*******************************************************************************
  * State allocator.                                                            *
  *                                                                             *
@@ -1165,7 +1176,7 @@ static struct state *state_dup(const struct state *NONNULL s) {
   struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  n->previous = s;
+  state_previous_set(n, s);
 #endif
 #if BOUND > 0
   assert(state_bound_get(s) < BOUND && "exceeding bounded exploration depth");
@@ -1190,7 +1201,7 @@ static __attribute__((unused)) size_t state_depth(
   size_t d = 0;
   while (s != NULL) {
     d++;
-    s = s->previous;
+    s = state_previous_get(s);
   }
   return d;
 #endif
@@ -1256,7 +1267,7 @@ static void print_counterexample(
 
   {
     size_t i = trace_length - 1;
-    for (const struct state *p = s; p != NULL; p = p->previous) {
+    for (const struct state *p = s; p != NULL; p = state_previous_get(p)) {
       assert(i < trace_length && "error in counterexample trace traversal "
         "logic");
       cex[i] = p;
@@ -3071,7 +3082,7 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
-  previous = state_drop_const(s->previous);
+  previous = state_drop_const(state_previous_get(s));
 #endif
 
   /* If the given bit was already set, we know all the predecessors of this
@@ -3137,8 +3148,8 @@ static unsigned long unknown_liveness(const struct state *NONNULL s) {
 }
 
 /* Learn new liveness information about the state `s` from its successor. Note
- * that typically `successor->previous != s` because `successor` is actually one
- * of the de-duped aliases of the original successor to `s`.
+ * that typically `state_previous_get(successor) != s` because `successor` is
+ * actually one of the de-duped aliases of the original successor to `s`.
  *
  * @param s State to learn information about
  * @param successor Successor to s

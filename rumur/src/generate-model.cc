@@ -1020,7 +1020,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
   {
     out
-      << "  if (s->previous == NULL) {\n"
+      << "  if (state_previous_get(s) == NULL) {\n"
       << "    uint64_t rule_taken = 1;\n";
 
     mpz_class base = 1;
