@@ -567,6 +567,16 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
 
 /* The state of the current model. */
 struct state {
+
+  /* Force this struct to have >= 2 byte alignment. By doing so, we can rely on
+   * the bottom bit of a pointer to one of these to be 0, which we take
+   * advantage of for indicating slot tombstones (see slot_is_tombstone() and
+   * friends).
+   */
+  union {
+    int16_t force_alignment;
+    struct {
+
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
   const struct state *previous;
 #endif
@@ -587,6 +597,9 @@ struct state {
    *  * bound
    */
   uint8_t other[STATE_OTHER_BYTES];
+
+    };
+  };
 };
 
 struct handle {
