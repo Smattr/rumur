@@ -57,7 +57,13 @@ enum { BOUND_BITS = BITS_FOR(BOUND) };
 #else
   enum { PREVIOUS_BITS = 0 };
 #endif
-enum { STATE_OTHER_BYTES = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS) };
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
+  enum { RULE_TAKEN_BITS = BITS_FOR(RULE_TAKEN_LIMIT) };
+#else
+  enum { RULE_TAKEN_BITS = 0 };
+#endif
+enum { STATE_OTHER_BYTES
+  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS) };
 
 /* Bit of struct state pointers used to indicate data that has been migrated to
  * a new set structure (see set_migrate() and friends). This must be a bit that
@@ -611,11 +617,6 @@ struct state {
     struct {
 #endif
 
-#if COUNTEREXAMPLE_TRACE != CEX_OFF
-  /* Index of the rule we took to reach this state. */
-  uint64_t rule_taken;
-#endif
-
   uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
     (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
      LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
@@ -626,6 +627,7 @@ struct state {
    *
    *  * uint64_t bound;
    *  * const struct state *previous;
+   *  * uint64_t rule_taken;
    *
    * They are bit-packed, so may take up less space. E.g. if the maximum value
    * of `bound` is known to be 5, it will be stored in 3 bits instead of 64.
@@ -958,7 +960,7 @@ static struct handle state_previous_handle(const struct state *NONNULL s) {
 
   size_t offset = BOUND_BITS;
 
-  struct handle h = (struct handle) {
+  struct handle h = (struct handle){
     .base = (uint8_t*)s->other + offset / 8,
     .offset = offset % 8,
     .width = PREVIOUS_BITS,
@@ -984,14 +986,29 @@ static void state_previous_set(struct state *NONNULL s,
 #endif
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
+static struct handle state_rule_taken_handle(const struct state *NONNULL s) {
+
+  size_t offset = BOUND_BITS + PREVIOUS_BITS;
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)s->other + offset / 8,
+    .offset = offset % 8,
+    .width = RULE_TAKEN_BITS,
+  };
+
+  return h;
+}
+
 static uint64_t state_rule_taken_get(const struct state *NONNULL s) {
   assert(s != NULL);
-  return s->rule_taken;
+  struct handle h = state_rule_taken_handle(s);
+  return read_raw(h);
 }
 
 static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
   assert(s != NULL);
-  s->rule_taken = rule_taken;
+  struct handle h = state_rule_taken_handle(s);
+  write_raw(h, rule_taken);
 }
 #endif
 
