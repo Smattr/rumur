@@ -35,10 +35,15 @@
     } while (0)
 #endif
 
-#define BITS_TO_BYTES(size) (size / 8 + (size % 8 == 0 ? 0 : 1))
+#define BITS_TO_BYTES(size) ((size) / 8 + ((size) % 8 == 0 ? 0 : 1))
+#define BITS_FOR(value) \
+  ((value) == 0 ? 0 : (sizeof(unsigned long long) * 8 - __builtin_clzll(value)))
 
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
+
+/* the size of auxliary members of the state struct */
+enum { STATE_OTHER_BYTES = BITS_TO_BYTES(BITS_FOR(BOUND)) };
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
@@ -575,19 +580,13 @@ struct state {
     (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
      LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
 
-#if BOUND > UINT64_MAX
-  #error "no type large enough for state.bound"
-#elif BOUND > UINT32_MAX
-  uint64_t bound;
-#elif BOUND > UINT16_MAX
-  uint32_t bound;
-#elif BOUND > UINT8_MAX
-  uint16_t bound;
-#elif BOUND > 0
-  uint8_t bound;
-#endif
-
   uint8_t data[STATE_SIZE_BYTES];
+
+  /* the following fields are packed into here:
+   *
+   *  * bound
+   */
+  uint8_t other[STATE_OTHER_BYTES];
 };
 
 struct handle {
@@ -876,14 +875,32 @@ static void write_raw(struct handle h, uint64_t v) {
 }
 
 #if BOUND > 0
-static size_t state_bound_get(const struct state *NONNULL s) {
-  assert(s != NULL);
-  return s->bound;
+static struct handle state_bound_handle(const struct state *NONNULL s) {
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)s->other,
+    .offset = 0,
+    .width = BITS_FOR(BOUND),
+  };
+
+  return h;
 }
 
-static void state_bound_set(struct state *NONNULL s, size_t bound) {
+_Static_assert((uintmax_t)BOUND <= UINT64_MAX,
+  "bound limit does not fit in a uint64_t");
+
+static uint64_t state_bound_get(const struct state *NONNULL s) {
   assert(s != NULL);
-  s->bound = bound;
+
+  struct handle h = state_bound_handle(s);
+  return read_raw(h);
+}
+
+static void state_bound_set(struct state *NONNULL s, uint64_t bound) {
+  assert(s != NULL);
+
+  struct handle h = state_bound_handle(s);
+  write_raw(h, bound);
 }
 #endif
 
@@ -1153,7 +1170,9 @@ static size_t state_hash(const struct state *NONNULL s) {
 static __attribute__((unused)) size_t state_depth(
     const struct state *NONNULL s) {
 #if BOUND > 0
-  return state_bound_get(s) + 1;
+  uint64_t bound = state_bound_get(s);
+  ASSERT(bound <= BOUND && "claimed state bound exceeds limit");
+  return (size_t)bound + 1;
 #else
   size_t d = 0;
   while (s != NULL) {
@@ -2903,7 +2922,7 @@ restart:;
        */
        size_t depth = 0;
 #if BOUND > 0
-       depth = state_bound_get(s);
+       depth = (size_t)state_bound_get(s);
 #endif
        register_allocation(depth);
 
