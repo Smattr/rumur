@@ -59,6 +59,24 @@ enum { BOUND_BITS = BITS_FOR(BOUND) };
 #endif
 enum { STATE_OTHER_BYTES = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS) };
 
+/* Bit of struct state pointers used to indicate data that has been migrated to
+ * a new set structure (see set_migrate() and friends). This must be a bit that
+ * is otherwise guaranteed to be 0, so that we can set it to unambiguously
+ * indicate migration.
+ */
+#if defined(__linux__) && defined(__x86_64__)
+  /* take advantage of the address space layout on x86-64 Linux, where the upper
+   * half is reserved for kernel mappings
+   */
+  #define TOMBSTONE_BIT 63
+#else
+  /* Otherwise use the LSB and we will require state structs to be 2-bytes
+   * aligned. In future we may also optimise for other platforms with additional
+   * special cases beyond x86-64 Linux.
+   */
+  #define TOMBSTONE_BIT 0
+#endif
+
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
   #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
@@ -582,7 +600,7 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
 /* The state of the current model. */
 struct state {
 
-#if !defined(__linux__) || !defined(__x86_64__)
+#if TOMBSTONE_BIT == 0
   /* Force this struct to have >= 2 byte alignment. By doing so, we can rely on
    * the bottom bit of a pointer to one of these to be 0, which we take
    * advantage of for indicating slot tombstones (see slot_is_tombstone() and
@@ -614,7 +632,7 @@ struct state {
    */
   uint8_t other[STATE_OTHER_BYTES];
 
-#if !defined(__linux__) || !defined(__x86_64__)
+#if TOMBSTONE_BIT == 0
     };
   };
 #endif
@@ -2689,25 +2707,12 @@ static __attribute__((const)) bool slot_is_empty(slot_t s) {
 }
 
 static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
-#if defined(__linux__) && defined(__x86_64__)
-  /* by assuming 5-level paging, implying the top 2 bytes of a pointer are 0, we
-   * can store the tombstone marker in the top bit, avoiding any assumptions
-   * about the alignment of state pointers
-   */
-  return (s >> 63) == 0x1;
-#else
-  return (s & 0x1) == 0x1;
-#endif
+  return ((s >> TOMBSTONE_BIT) & 0x1) == 0x1;
 }
 
 static slot_t slot_bury(slot_t s) {
   ASSERT(!slot_is_tombstone(s));
-#if defined(__linux__) && defined(__x86_64__)
-  /* see explanation in slot_is_tombstone() */
-  return s | ((slot_t)1 << 63);
-#else
-  return s | 0x1;
-#endif
+  return s | ((slot_t)1 << TOMBSTONE_BIT);
 }
 
 static struct state *slot_to_state(slot_t s) {
