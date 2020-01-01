@@ -582,6 +582,7 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
 /* The state of the current model. */
 struct state {
 
+#if !defined(__linux__) || !defined(__x86_64__)
   /* Force this struct to have >= 2 byte alignment. By doing so, we can rely on
    * the bottom bit of a pointer to one of these to be 0, which we take
    * advantage of for indicating slot tombstones (see slot_is_tombstone() and
@@ -590,6 +591,7 @@ struct state {
   union {
     int16_t force_alignment;
     struct {
+#endif
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
   /* Index of the rule we took to reach this state. */
@@ -609,8 +611,10 @@ struct state {
    */
   uint8_t other[STATE_OTHER_BYTES];
 
+#if !defined(__linux__) || !defined(__x86_64__)
     };
   };
+#endif
 };
 
 struct handle {
