@@ -590,6 +590,18 @@ struct state {
   uint8_t data[STATE_SIZE_BYTES];
 };
 
+#if BOUND > 0
+static size_t state_bound_get(const struct state *NONNULL s) {
+  assert(s != NULL);
+  return s->bound;
+}
+
+static void state_bound_set(struct state *NONNULL s, size_t bound) {
+  assert(s != NULL);
+  s->bound = bound;
+}
+#endif
+
 /*******************************************************************************
  * State allocator.                                                            *
  *                                                                             *
@@ -841,8 +853,8 @@ static struct state *state_dup(const struct state *NONNULL s) {
   n->previous = s;
 #endif
 #if BOUND > 0
-  assert(s->bound < BOUND && "exceeding bounded exploration depth");
-  n->bound = s->bound + 1;
+  assert(state_bound_get(s) < BOUND && "exceeding bounded exploration depth");
+  state_bound_set(n, state_bound_get(s) + 1);
 #endif
   memset(n->liveness, 0, sizeof(n->liveness));
   return n;
@@ -856,7 +868,7 @@ static size_t state_hash(const struct state *NONNULL s) {
 static __attribute__((unused)) size_t state_depth(
     const struct state *NONNULL s) {
 #if BOUND > 0
-  return (size_t)s->bound + 1;
+  return state_bound_get(s) + 1;
 #else
   size_t d = 0;
   while (s != NULL) {
@@ -2882,7 +2894,7 @@ restart:;
        */
        size_t depth = 0;
 #if BOUND > 0
-       depth = s->bound;
+       depth = state_bound_get(s);
 #endif
        register_allocation(depth);
 
