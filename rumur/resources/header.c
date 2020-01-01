@@ -617,9 +617,11 @@ struct state {
     struct {
 #endif
 
+#if LIVENESS_COUNT > 0
   uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
     (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
      LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
+#endif
 
   uint8_t data[STATE_SIZE_BYTES];
 
@@ -1266,7 +1268,9 @@ static struct state *state_dup(const struct state *NONNULL s) {
   assert(state_bound_get(s) < BOUND && "exceeding bounded exploration depth");
   state_bound_set(n, state_bound_get(s) + 1);
 #endif
+#if LIVENESS_COUNT > 0
   memset(n->liveness, 0, sizeof(n->liveness));
+#endif
   return n;
 }
 
@@ -3079,7 +3083,8 @@ restart:;
  * already contained in the state set might know some of the liveness properties
  * are satisfied that your current state considers unknown.
  */
-static const struct state *set_find(const struct state *NONNULL s) {
+static __attribute__((unused)) const struct state *set_find(
+    const struct state *NONNULL s) {
 
   assert(s != NULL);
 
@@ -3125,6 +3130,7 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(NULL) - START_TIME);
 }
 
+#if LIVENESS_COUNT > 0
 /* Set one of the liveness bits (i.e. mark the matching property as 'hit') in a
  * state and all its predecessors.
  */
@@ -3132,20 +3138,8 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
     size_t index, bool shared) {
 
   assert(s != NULL);
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
   ASSERT(index < sizeof(s->liveness) * CHAR_BIT
     && "out of range liveness write");
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
 
   size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);
   size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);
@@ -3174,12 +3168,10 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
    * valid.
    */
   struct state *previous = NULL;
-#if LIVENESS_COUNT > 0
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
   previous = state_drop_const(state_previous_get(s));
-#endif
 
   /* If the given bit was already set, we know all the predecessors of this
    * state have already had their corresponding bit marked. However, if it was
@@ -3200,37 +3192,12 @@ static unsigned long unknown_liveness(const struct state *NONNULL s) {
 
   unsigned long unknown = 0;
 
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
 
     uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
       if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
         break;
       }
 
@@ -3259,39 +3226,14 @@ static unsigned long learn_liveness(struct state *NONNULL s,
 
   unsigned long new_info = 0;
 
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
 
     uintptr_t word_src = __atomic_load_n(&successor->liveness[i],
       __ATOMIC_SEQ_CST);
     uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
       if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
         break;
       }
 
@@ -3307,12 +3249,15 @@ static unsigned long learn_liveness(struct state *NONNULL s,
 
   return new_info;
 }
+#endif
 
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
+#if LIVENESS_COUNT > 0
 static void check_liveness_final(void);
 static unsigned long check_liveness_summarise(void);
+#endif
 
 static int exit_with(int status) {
 
@@ -3395,10 +3340,11 @@ static int exit_with(int status) {
       }
     }
 
+#if LIVENESS_COUNT > 0
     /* If we have liveness properties to assess and have seen no previous
      * errors, do a final check of them now.
      */
-    if (LIVENESS_COUNT > 0 && error_count == 0) {
+    if (error_count == 0) {
       check_liveness_final();
 
       unsigned long failed = check_liveness_summarise();
@@ -3407,6 +3353,7 @@ static int exit_with(int status) {
         status = EXIT_FAILURE;
       }
     }
+#endif
 
     if (!MACHINE_READABLE_OUTPUT) {
       printf("\n"
