@@ -739,6 +739,142 @@ static uint64_t read_raw(struct handle h) {
   return low;
 }
 
+static void write_raw(struct handle h, uint64_t v) {
+
+  if (h.width == 0) {
+    return;
+  }
+
+  /* Generate a offset- and width-aligned handle on byte boundaries. */
+  struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+
+  /* If a byte-unaligned value_t cannot be fully written within a single
+   * byte-aligned uint64_t...
+   */
+  if (aligned.width > (sizeof(uint64_t) - 1) * 8) {
+
+    /* Read the low double-word of this region. */
+    unsigned __int128 low = 0;
+    size_t low_size = aligned.width / 8;
+    ASSERT(low_size <= sizeof(low) || aligned.width > (sizeof(low) - 1) * 8);
+    if (low_size > sizeof(low)) {
+      low_size = sizeof(low);
+    }
+    {
+      const uint8_t *src = aligned.base;
+      memcpy(&low, src, low_size);
+    }
+
+    {
+      unsigned __int128 or_mask = ((unsigned __int128)v) << h.offset;
+      if (low_size < sizeof(low)) {
+        or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
+      }
+      unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
+      if (low_size < sizeof(low)) {
+        size_t high_bits = aligned.width - h.offset - h.width;
+        and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
+      }
+
+      low = (low & and_mask) | or_mask;
+    }
+
+    {
+      uint8_t *dest = aligned.base;
+      memcpy(dest, &low, low_size);
+    }
+
+    /* Now do the second double-word if necessary. */
+
+    size_t high_size = aligned.width / 8 - low_size;
+
+    ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
+    if (high_size != 0) {
+      unsigned __int128 high = 0;
+      {
+        const uint8_t *src = aligned.base + sizeof(low);
+        memcpy(&high, src, high_size);
+      }
+
+      {
+        unsigned __int128 or_mask
+          = ((unsigned __int128)v) >> (sizeof(low) * 8 - h.offset);
+        unsigned __int128 and_mask
+          = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (aligned.width - h.width)) - 1);
+
+        high = (high & and_mask) | or_mask;
+      }
+
+      {
+        uint8_t *dest = aligned.base + sizeof(low);
+        memcpy(dest, &high, high_size);
+      }
+    }
+
+    return;
+  }
+#endif
+
+  /* Replicate the above logic for uint64_t. */
+
+  uint64_t low = 0;
+  size_t low_size = aligned.width / 8;
+  ASSERT(low_size <= sizeof(low) || aligned.width > (sizeof(low) - 1) * 8);
+  if (low_size > sizeof(low)) {
+    low_size = sizeof(low);
+  }
+  {
+    const uint8_t *src = aligned.base;
+    memcpy(&low, src, low_size);
+  }
+
+  {
+    uint64_t or_mask = ((uint64_t)v) << h.offset;
+    if (low_size < sizeof(low)) {
+      or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
+    }
+    uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
+    if (low_size < sizeof(low)) {
+      size_t high_bits = aligned.width - h.offset - h.width;
+      and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
+    }
+
+    low = (low & and_mask) | or_mask;
+  }
+
+  {
+    uint8_t *dest = aligned.base;
+    memcpy(dest, &low, low_size);
+  }
+
+  size_t high_size = aligned.width / 8 - low_size;
+
+  ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
+  if (high_size != 0) {
+    uint64_t high = 0;
+    {
+      const uint8_t *src = aligned.base + sizeof(low);
+      memcpy(&high, src, high_size);
+    }
+
+    {
+      uint64_t or_mask = ((uint64_t)v) >> (sizeof(low) * 8 - h.offset);
+      uint64_t and_mask
+        = (~UINT64_C(0)) & ~((UINT64_C(1) << (aligned.width - h.width)) - 1);
+
+      high = (high & and_mask) | or_mask;
+    }
+
+    {
+      uint8_t *dest = aligned.base + sizeof(low);
+      memcpy(dest, &high, high_size);
+    }
+  }
+}
+
 #if BOUND > 0
 static size_t state_bound_get(const struct state *NONNULL s) {
   assert(s != NULL);
@@ -1206,138 +1342,9 @@ static void handle_write_raw(const struct state *NONNULL s, struct handle h,
   TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
     raw_value_to_string(value), h.base, h.offset, h.width);
 
-  if (h.width == 0) {
-    return;
-  }
+  ASSERT((uintmax_t)value <= UINT64_MAX && "truncating value during handle_write_raw");
 
-  /* Generate a offset- and width-aligned handle on byte boundaries. */
-  struct handle aligned = handle_align(h);
-  ASSERT(aligned.offset == 0);
-
-#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
-
-  /* If a byte-unaligned value_t cannot be fully written within a single
-   * byte-aligned uint64_t...
-   */
-  if (MAX_SIMPLE_WIDTH > (sizeof(uint64_t) - 1) * 8) {
-
-    /* Read the low double-word of this region. */
-    unsigned __int128 low = 0;
-    size_t low_size = aligned.width / 8;
-    ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-    if (low_size > sizeof(low)) {
-      low_size = sizeof(low);
-    }
-    {
-      const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
-    }
-
-    {
-      unsigned __int128 or_mask = ((unsigned __int128)value) << h.offset;
-      if (low_size < sizeof(low)) {
-        or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
-      }
-      unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
-      if (low_size < sizeof(low)) {
-        size_t high_bits = aligned.width - h.offset - h.width;
-        and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
-      }
-
-      low = (low & and_mask) | or_mask;
-    }
-
-    {
-      uint8_t *dest = aligned.base;
-      memcpy(dest, &low, low_size);
-    }
-
-    /* Now do the second double-word if necessary. */
-
-    size_t high_size = aligned.width / 8 - low_size;
-
-    ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-    if (high_size != 0) {
-      unsigned __int128 high = 0;
-      {
-        const uint8_t *src = aligned.base + sizeof(low);
-        memcpy(&high, src, high_size);
-      }
-
-      {
-        unsigned __int128 or_mask
-          = ((unsigned __int128)value) >> (sizeof(low) * 8 - h.offset);
-        unsigned __int128 and_mask
-          = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (aligned.width - h.width)) - 1);
-
-        high = (high & and_mask) | or_mask;
-      }
-
-      {
-        uint8_t *dest = aligned.base + sizeof(low);
-        memcpy(dest, &high, high_size);
-      }
-    }
-
-    return;
-  }
-#endif
-
-  /* Replicate the above logic for uint64_t. */
-
-  uint64_t low = 0;
-  size_t low_size = aligned.width / 8;
-  ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-  if (low_size > sizeof(low)) {
-    low_size = sizeof(low);
-  }
-  {
-    const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
-  }
-
-  {
-    uint64_t or_mask = ((uint64_t)value) << h.offset;
-    if (low_size < sizeof(low)) {
-      or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
-    }
-    uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
-    if (low_size < sizeof(low)) {
-      size_t high_bits = aligned.width - h.offset - h.width;
-      and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
-    }
-
-    low = (low & and_mask) | or_mask;
-  }
-
-  {
-    uint8_t *dest = aligned.base;
-    memcpy(dest, &low, low_size);
-  }
-
-  size_t high_size = aligned.width / 8 - low_size;
-
-  ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-  if (high_size != 0) {
-    uint64_t high = 0;
-    {
-      const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
-    }
-
-    {
-      uint64_t or_mask = ((uint64_t)value) >> (sizeof(low) * 8 - h.offset);
-      uint64_t and_mask
-        = (~UINT64_C(0)) & ~((UINT64_C(1) << (aligned.width - h.width)) - 1);
-
-      high = (high & and_mask) | or_mask;
-    }
-
-    {
-      uint8_t *dest = aligned.base + sizeof(low);
-      memcpy(dest, &high, high_size);
-    }
-  }
+  write_raw(h, (uint64_t)value);
 }
 
 static __attribute__((unused)) void handle_write(const char *NONNULL context,
