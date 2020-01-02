@@ -243,6 +243,10 @@ static void sandbox(void) {
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
 #endif
+#ifdef __NR_fstat64
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat64, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 #ifdef __NR_write
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_write, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
@@ -255,6 +259,10 @@ static void sandbox(void) {
 #endif
 #ifdef __NR_mmap
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_mmap2
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap2, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_munmap
