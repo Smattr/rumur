@@ -2747,13 +2747,13 @@ static __attribute__((const)) bool slot_is_empty(slot_t s) {
   return s == slot_empty();
 }
 
-static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
-  return ((s >> TOMBSTONE_BIT) & 0x1) == 0x1;
+static __attribute__((const)) slot_t slot_tombstone(void) {
+  static const slot_t TOMBSTONE = ~(slot_t)0;
+  return TOMBSTONE;
 }
 
-static slot_t slot_bury(slot_t s) {
-  ASSERT(!slot_is_tombstone(s));
-  return s | ((slot_t)1 << TOMBSTONE_BIT);
+static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
+  return s == slot_tombstone();
 }
 
 static struct state *slot_to_state(slot_t s) {
@@ -2926,7 +2926,7 @@ retry:;
       /* Retrieve the slot element and try to mark it as migrated. */
       slot_t s = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
       ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
-      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &s, slot_bury(s),
+      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &s, slot_tombstone(),
           false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
         goto retry;
       }
