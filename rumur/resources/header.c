@@ -2887,15 +2887,11 @@ static void set_migrate(void) {
     // Maier design this would not be required.
 
     for (size_t i = start; i < end; i++) {
-retry:;
 
-      /* Retrieve the slot element and try to mark it as migrated. */
-      slot_t s = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+      /* retrieve the slot element and mark it as migrated */
+      slot_t s = __atomic_exchange_n(&local_seen->bucket[i], slot_tombstone(),
+        __ATOMIC_SEQ_CST);
       ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
-      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &s, slot_tombstone(),
-          false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
-        goto retry;
-      }
 
       /* If the current slot contained a state, rehash it and insert it into the
        * new set. Note we don't need to do any state comparisons because we know
