@@ -2899,13 +2899,9 @@ static void set_migrate(void) {
        */
       if (!slot_is_empty(s)) {
         size_t index = set_index(next, state_hash(slot_to_state(s)));
-        for (size_t j = index; ; j = set_index(next, j + 1)) {
-          slot_t expected = slot_empty();
-          if (__atomic_compare_exchange_n(&next->bucket[j], &expected, s, false,
-              __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
-            /* Found an empty slot and inserted successfully. */
-            break;
-          }
+        /* insert and shuffle any colliding entries one along */
+        for (size_t j = index; !slot_is_empty(s); j = set_index(next, j + 1)) {
+          s = __atomic_exchange_n(&next->bucket[j], s, __ATOMIC_SEQ_CST);
         }
       }
     }
