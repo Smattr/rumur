@@ -18,7 +18,7 @@ assembly is essentially a non-starter. It is non-portable and awkward. Of the
 remaining three, they do not offer the equivalent functionality as seen from the
 table below.
 
-+==================================+=================================+====================================+
++----------------------------------+---------------------------------+------------------------------------+
 | __sync built-ins                 | __atomic built-ins              | C11 atomics                        |
 +==================================+=================================+====================================+
 |                                  | ``__atomic_load_n``             | ``atomic_load``                    |
