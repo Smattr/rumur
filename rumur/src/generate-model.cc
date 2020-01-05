@@ -1005,11 +1005,7 @@ void generate_model(std::ostream &out, const Model &m) {
     << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
     << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
     << "\n"
-    << "  if (state_rule_taken_get(s) == 0) {\n"
-    << "    fprintf(stderr, \"unknown state transition\\n\");\n"
-    << "    ASSERT(state_rule_taken_get(s) != 0 && \"unknown state transition\");\n"
-    << "    return;\n"
-    << "  }\n"
+    << "  ASSERT(state_rule_taken_get(s) != 0 && \"unknown state transition\");\n"
     << "\n";
 
   {
