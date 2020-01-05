@@ -641,7 +641,7 @@ static struct handle handle_align(struct handle h) {
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
-static uint64_t read_raw(struct handle h) {
+static __attribute__((pure)) uint64_t read_raw(struct handle h) {
 
   /* a uint64_t is the maximum value we support reading */
   ASSERT(h.width <= 64 && "read of too wide value");
@@ -916,7 +916,8 @@ static struct handle state_bound_handle(const struct state *NONNULL s) {
 _Static_assert((uintmax_t)BOUND <= UINT64_MAX,
   "bound limit does not fit in a uint64_t");
 
-static uint64_t state_bound_get(const struct state *NONNULL s) {
+static __attribute__((pure)) uint64_t state_bound_get(
+    const struct state *NONNULL s) {
   assert(s != NULL);
 
   struct handle h = state_bound_handle(s);
@@ -945,7 +946,8 @@ static struct handle state_previous_handle(const struct state *NONNULL s) {
   return h;
 }
 
-static const struct state *state_previous_get(const struct state *NONNULL s) {
+static __attribute__((pure)) const struct state *state_previous_get(
+    const struct state *NONNULL s) {
   struct handle h = state_previous_handle(s);
   return (const struct state*)read_raw(h);
 }
@@ -975,7 +977,8 @@ static struct handle state_rule_taken_handle(const struct state *NONNULL s) {
   return h;
 }
 
-static uint64_t state_rule_taken_get(const struct state *NONNULL s) {
+static __attribute__((pure)) uint64_t state_rule_taken_get(
+    const struct state *NONNULL s) {
   assert(s != NULL);
   struct handle h = state_rule_taken_handle(s);
   return read_raw(h);
