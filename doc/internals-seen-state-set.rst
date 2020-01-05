@@ -22,8 +22,8 @@ The main point of deviation from Maier et al's design is that we do not
 implement the optimisation that allows their set expansion to use non-atomic
 writes. In the Rumur design, each thread has a unique "chunk" (a 4KB block of
 state pointers) that it is migrating, but the destinations for these elements
-may collide with the writes of another thread. Naturally we use atomic writes
-(a compare-exchange) to guard against this interference.
+may collide with the writes of another thread. We use atomic exchanges to guard
+against this interference.
 
 The main reason we don't implement this optimisation is that I was initially
 anticipating a configuration where you fully fill the seen set before expansion,
