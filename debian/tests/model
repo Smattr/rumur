@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# test that we can generate and run a basic model
+
+if [ -z "${AUTOPKGTEST_TMP}" ]; then
+  printf 'AUTOPKGTEST_TMP not set; not running in autopkgtest?\n' >&2
+  exit 1
+fi
+
+set -e
+set -x
+
+# move to temporary directory
+cd ${AUTOPKGTEST_TMP}
+
+# construct a simple model
+cat - >model.m <<EOT
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end;
+EOT
+
+# generate the checker for this model
+rumur --output checker.c model.m
+
+# compile it to an executable
+# FIXME: mcx16 is only relevant for x86-64
+cc -std=c11 -mcx16 checker.c -lpthread
+
+# run the model to completion
+./a.out

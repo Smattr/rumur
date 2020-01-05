@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# test that we can simply run the Rumur binary
+
+set -e
+set -x
+
+rumur --version

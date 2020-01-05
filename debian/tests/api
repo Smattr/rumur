@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# test that we can compile a simple program using Rumur's API
+
+if [ -z "${AUTOPKGTEST_TMP}" ]; then
+  printf 'AUTOPKGTEST_TMP not set; not running in autopkgtest?\n' >&2
+  exit 1
+fi
+
+set -e
+set -x
+
+# move to temporary directory
+cd ${AUTOPKGTEST_TMP}
+
+# construct a C++11 program using Rumur's API
+cat - >main.c <<EOT
+#include <cstdlib>
+#include <iostream>
+#include <rumur/rumur.h>
+
+int main(void) {
+
+  // confirm we can find and access Rumur's symbols
+  std::cout << "rumur::parse is at address " << (void*)rumur::parse << "\n";
+
+  return EXIT_SUCCESS;
+}
+EOT
+
+# compile the program
+c++ -std=c++11 main.c -lrumur
+
+# in case it was dynamically linked, also confirm we can run it
+./a.out
