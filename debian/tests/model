@@ -31,8 +31,7 @@ EOT
 rumur --output checker.c model.m
 
 # compile it to an executable
-# FIXME: mcx16 is only relevant for x86-64
-cc -std=c11 -mcx16 checker.c -lpthread
+cc -std=c11 checker.c -latomic -lpthread
 
 # run the model to completion
 ./a.out
