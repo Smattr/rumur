@@ -214,7 +214,8 @@ int output_checker(const std::string &path, const Model &model,
     << "#define RAW_VALUE_MIN " << value_types.second.int_min << "\n"
     << "#define RAW_VALUE_MAX " << value_types.second.int_max << "\n"
     << "#define PRIRAWVAL " << value_types.second.pri << "\n\n"
-    << "#define RULE_TAKEN_LIMIT " << rule_taken_limit(model) << "\n";
+    << "#define RULE_TAKEN_LIMIT " << rule_taken_limit(model) << "\n"
+    << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n";
 
   generate_cover_array(out, model);
 

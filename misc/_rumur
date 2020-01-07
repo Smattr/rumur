@@ -13,6 +13,7 @@ _arguments \
   '--monopolise[use all machine resources]' \
   {--output,-o}'[path to write C verifier to]:filename:_files' \
   '--output-format[how verifier should print output]: :(machine-readable human-readable)' \
+  '--pack-state[compress verifier auxiliary state]: :(on off)' \
   {--quiet,-q}'[suppress output while generating verifier]' \
   '--sandbox[verifier privilege restriction]: :(on off)' \
   {--set-capacity,-s}'[initial memory (in bytes) to allocate for the seen set]:SIZE' \

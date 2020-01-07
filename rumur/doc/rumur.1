@@ -96,6 +96,15 @@ of the result. Using \fBmachine-readable\fR generates output in an XML format
 suitable for consumption by a following tool in an I/O pipeline.
 .RE
 .PP
+\fB--pack-state\fR [\fBon\fR | \fBoff\fR]
+.RS
+Set whether auxiliary state data is compressed in the generated verifier.
+Compression (\fBon\fR, the default) saves memory at the expense of runtime. That
+is, by default the verifier will try to minimise memory usage. If your model is
+small enough to comfortably fit in available memory, you may want to set this to
+\fBoff\fR to accelerate the checking process.
+.RE
+.PP
 \fB--quiet\fR or \fB-q\fR
 .RS
 Don't output any messages while generating the verifier.

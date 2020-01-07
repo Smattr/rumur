@@ -604,6 +604,7 @@ struct state {
 
   uint8_t data[STATE_SIZE_BYTES];
 
+#if PACK_STATE
   /* the following effective fields are packed into here:
    *
    *  * uint64_t bound;
@@ -614,6 +615,11 @@ struct state {
    * of `bound` is known to be 5, it will be stored in 3 bits instead of 64.
    */
   uint8_t other[STATE_OTHER_BYTES];
+#else
+  uint64_t bound;
+  const struct state *previous;
+  uint64_t rule_taken;
+#endif
 };
 
 struct handle {
@@ -902,6 +908,7 @@ static void write_raw(struct handle h, uint64_t v) {
 }
 
 #if BOUND > 0
+#if PACK_STATE
 static struct handle state_bound_handle(const struct state *NONNULL s) {
 
   struct handle h = (struct handle){
@@ -912,6 +919,7 @@ static struct handle state_bound_handle(const struct state *NONNULL s) {
 
   return h;
 }
+#endif
 
 _Static_assert((uintmax_t)BOUND <= UINT64_MAX,
   "bound limit does not fit in a uint64_t");
@@ -920,19 +928,28 @@ static __attribute__((pure)) uint64_t state_bound_get(
     const struct state *NONNULL s) {
   assert(s != NULL);
 
+#if PACK_STATE
   struct handle h = state_bound_handle(s);
   return read_raw(h);
+#else
+  return s->bound;
+#endif
 }
 
 static void state_bound_set(struct state *NONNULL s, uint64_t bound) {
   assert(s != NULL);
 
+#if PACK_STATE
   struct handle h = state_bound_handle(s);
   write_raw(h, bound);
+#else
+  s->bound = bound;
+#endif
 }
 #endif
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
+#if PACK_STATE
 static struct handle state_previous_handle(const struct state *NONNULL s) {
 
   size_t offset = BOUND_BITS;
@@ -945,25 +962,35 @@ static struct handle state_previous_handle(const struct state *NONNULL s) {
 
   return h;
 }
+#endif
 
 static __attribute__((pure)) const struct state *state_previous_get(
     const struct state *NONNULL s) {
+#if PACK_STATE
   struct handle h = state_previous_handle(s);
   return (const struct state*)read_raw(h);
+#else
+  return s->previous;
+#endif
 }
 
 static void state_previous_set(struct state *NONNULL s,
     const struct state *previous) {
+#if PACK_STATE
 #if defined(__linux__) && defined(__x86_64__)
   ASSERT(((uintptr_t)previous >> PREVIOUS_BITS) == 0
     && "upper 2 bytes of pointer are non-zero (not using 5-level paging?)");
 #endif
   struct handle h = state_previous_handle(s);
   write_raw(h, (uint64_t)previous);
+#else
+  s->previous = previous;
+#endif
 }
 #endif
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
+#if PACK_STATE
 static struct handle state_rule_taken_handle(const struct state *NONNULL s) {
 
   size_t offset = BOUND_BITS + PREVIOUS_BITS;
@@ -976,18 +1003,27 @@ static struct handle state_rule_taken_handle(const struct state *NONNULL s) {
 
   return h;
 }
+#endif
 
 static __attribute__((pure)) uint64_t state_rule_taken_get(
     const struct state *NONNULL s) {
   assert(s != NULL);
+#if PACK_STATE
   struct handle h = state_rule_taken_handle(s);
   return read_raw(h);
+#else
+  return s->rule_taken;
+#endif
 }
 
 static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
   assert(s != NULL);
+#if PACK_STATE
   struct handle h = state_rule_taken_handle(s);
   write_raw(h, rule_taken);
+#else
+  s->rule_taken = rule_taken;
+#endif
 }
 #endif
 
