@@ -12,7 +12,7 @@ from typing import Optional
 
 # The version of the last tagged release of Rumur. This will be used as the
 # version number if no Git information is available.
-LAST_RELEASE = 'v2019.12.22'
+LAST_RELEASE = 'v2020.01.07'
 
 def has_git() -> bool:
   '''
