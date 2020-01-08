@@ -23,7 +23,9 @@ Installation on FreeBSD
 
   pkg install rumur
 
-Thanks to yuri@FreeBSD for packaging.
+Thanks to `yuri@FreeBSD`_ for packaging.
+
+.. _`yuri@FreeBSD`: https://github.com/yurivict
 
 Building from Source
 ~~~~~~~~~~~~~~~~~~~~
