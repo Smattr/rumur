@@ -14,6 +14,42 @@ set -x
 mkdir -p ${AUTOPKGTEST_TMP}/rumur-model
 cd ${AUTOPKGTEST_TMP}/rumur-model
 
+# temporarily allow failure so we can test some things
+set +e
+
+# check if the compiler supports -mcx16
+cat - >mcx16-check.c <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+cc -std=c11 -mcx16 mcx16-check.c -o /dev/null
+if [ $? -eq 0 ];
+  MCX16=-mcx16
+else
+  MCX16=
+fi
+
+# check if we need libatomic support
+cat - >libatomic-check.c <<EOT
+#include <stdint.h>
+
+static uint64_t x;
+
+int main(void) {
+  return (int)__atomic_load_n(&x, __ATOMIC_SEQ_CST);
+}
+EOT
+cc -std=c11 libatomic-check.c -o /dev/null
+if [ $? -eq 0 ];
+  LIBATOMIC=
+else
+  LIBATOMIC=-latomic
+fi
+
+# now disallow failure again
+set -e
+
 # construct a simple model
 cat - >model.m <<EOT
 var
@@ -32,7 +68,7 @@ EOT
 rumur --output checker.c model.m
 
 # compile it to an executable
-cc -std=c11 checker.c -latomic -lpthread
+cc -std=c11 ${MCX16} checker.c ${LIBATOMIC} -lpthread
 
 # run the model to completion
 ./a.out
