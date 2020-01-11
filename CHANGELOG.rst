@@ -1,6 +1,19 @@
 Change log
 ==========
 
+v2020.01.11
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: negative literals no longer cause malformed problems to be sent to
+  the SMT bridge (commit 47f0207dcaee6909d59ddc5577f92b3bf97571b2).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: a missing header is now shipped (commit
+  8cf196c3548962b15488abe293b4891740da4da0).
+
 v2020.01.07
 -----------
 
