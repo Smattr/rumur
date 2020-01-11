@@ -28,6 +28,9 @@ def which(cmd: str) -> Optional[str]:
   except sp.CalledProcessError:
     return None
 
+# C compiler
+CC = which(os.environ.get('CC', 'cc'))
+
 def categorise(cc: str) -> str:
   '''
   Determine the vendor of a given C compiler
@@ -71,6 +74,44 @@ def categorise(cc: str) -> str:
 
   return categorisation
 
+def supports(flag: str) -> bool:
+  '''check whether the compiler supports a given command line flag'''
+
+  # a trivial program to ask it to compile
+  program = 'int main(void) { return 0; }'
+
+  # compile it
+  p = sp.run([CC, '-o', os.devnull, '-x', 'c', '-', flag], stderr=sp.DEVNULL,
+    input=program.encode('utf-8', 'replace'))
+
+  # check whether compilation succeeded
+  return p.returncode == 0
+
+def optimisation_flags() -> [str]:
+  '''C compiler optimisation command line options for this platform'''
+
+  flags = ['-O3']
+
+  # optimise code for the current host architecture
+  if supports('-march=native'): flags.append('-march=native')
+
+  # optimise code for the current host CPU
+  if supports('-mtune=native'): flags.append('-mtune=native')
+
+  # enable link-time optimisation
+  if supports('-flto'): flags.append('-flto')
+
+  cc_vendor = categorise(CC)
+
+  # allow GCC to perform more advanced interprocedural optimisations
+  if cc_vendor == 'gcc': flags.append('-fwhole-program')
+
+  if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
+    # GCC needs a personal invitation to use cmpxchg16b
+    flags.append('-mcx16')
+
+  return flags
+
 def main(args: [str]) -> int:
 
   # Find the Rumur binary
@@ -86,12 +127,9 @@ def main(args: [str]) -> int:
     if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
       os.execv(rumur_bin, [rumur_bin] + args[1:])
 
-  # Find and categorise the C compiler
-  cc = which(os.environ.get('CC', 'cc'))
-  if cc is None:
+  if CC is None:
     sys.stderr.write('no C compiler found\n')
     return -1
-  cc_vendor = categorise(cc)
 
   # Generate the checker
   print('Generating the checker...')
@@ -111,16 +149,14 @@ def main(args: [str]) -> int:
   if ok:
     print('Compiling the checker...')
     aout = os.path.join(tmp, 'a.out')
-    cc_flags = ['-std=c11', '-O3', '-march=native', '-mtune=native', '-o', aout,
-      '-x', 'c', '-']
-    if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
-      # GCC needs a personal invitation to use cmpxchg16b
-      cc_flags += ['-mcx16']
-    if cc_vendor == 'gcc':
-      # Allow GCC to perform more advanced interprocedural optimisations
-      cc_flags += ['-fwhole-program']
-    cc_flags += ['-lpthread']
-    cc_proc = sp.run([cc] + cc_flags, input=checker_c)
+    argv = [CC, '-std=c11'] + optimisation_flags() + ['-o', aout, '-x', 'c',
+      '-', '-lpthread']
+    # XXX: these architectures do not have a double-word CAS, so need libatomic
+    # support
+    if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x',
+        'riscv', 'riscv32', 'riscv64'):
+      argv.append('-latomic')
+    cc_proc = sp.run(argv, input=checker_c)
     ok &= cc_proc.returncode == 0
 
   # Run the checker

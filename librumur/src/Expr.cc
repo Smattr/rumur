@@ -23,7 +23,7 @@ namespace rumur {
 Expr::Expr(const location &loc_): Node(loc_) { }
 
 bool Expr::is_boolean() const {
-  return *type()->resolve() == *Boolean;
+  return type()->resolve()->is_boolean();
 }
 
 bool Expr::is_lvalue() const {
@@ -32,6 +32,14 @@ bool Expr::is_lvalue() const {
 
 bool Expr::is_readonly() const {
   return !is_lvalue();
+}
+
+bool Expr::is_literal_true() const {
+  return false;
+}
+
+bool Expr::is_literal_false() const {
+  return false;
 }
 
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
@@ -623,6 +631,17 @@ std::string ExprID::to_string() const {
   return id;
 }
 
+bool ExprID::is_literal_true() const {
+  // It is not possible to shadow “true,” so we simply need to check the text of
+  // this expression. Boolean literals are normalised to lower case during
+  // lexing (see lexer.l) so we do not need to worry about case.
+  return id == "true";
+}
+
+bool ExprID::is_literal_false() const {
+  return id == "false";
+}
+
 Field::Field(const Ptr<Expr> &record_, const std::string &field_,
   const location &loc_):
   Expr(loc_), record(record_), field(field_) {
@@ -729,19 +748,8 @@ void Element::validate() const {
 
   auto a = dynamic_cast<const Array&>(*t);
 
-  const Ptr<TypeExpr> e = index->type()->resolve();
-
-  const Ptr<TypeExpr> index_type = a.index_type->resolve();
-
-  if (isa<Range>(index_type)) {
-    if (!isa<Range>(e))
-      throw Error("array indexed using an expression of incorrect type", loc);
-
-  } else {
-    if (*index_type != *e)
-      throw Error("array indexed using an expression of incorrect type", loc);
-
-  }
+  if (!index->type()->coerces_to(*a.index_type))
+    throw Error("array indexed using an expression of incorrect type", loc);
 }
 
 bool Element::is_lvalue() const {
@@ -829,22 +837,27 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
         (*it)->loc);
 
-    const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
+    if (!(*it)->type()->coerces_to(*v->get_type()))
+      throw Error("function call contains parameter of incorrect type",
+        (*it)->loc);
 
     const Ptr<TypeExpr> param_type = v->get_type()->resolve();
 
-    if (isa<Range>(arg_type)) {
-      if (!isa<Range>(param_type))
-        throw Error("function call contains parameter of incorrect type",
-          (*it)->loc);
+    // if this is a writable range-typed parameter, we additionally require it
+    // to be of exactly the same type in order to guarantee the caller’s and
+    // callee’s handles are compatible
+    if (!v->is_readonly() && isa<Range>(param_type)) {
+      const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
+      assert(isa<Range>(arg_type)
+        && "non-range considered type-compatible with range");
 
-      if (*arg_type != *param_type && !v->is_readonly())
+      auto p = dynamic_cast<const Range&>(*param_type);
+      auto a = dynamic_cast<const Range&>(*arg_type);
+
+      if (p.min->constant_fold() != a.min->constant_fold() ||
+          p.max->constant_fold() != a.max->constant_fold())
         throw Error("range types of function call argument and var parameter "
           "differ", (*it)->loc);
-
-    } else if (*arg_type != *param_type) {
-      throw Error("function call contains parameter of incorrect type",
-        (*it)->loc);
     }
 
     it++;

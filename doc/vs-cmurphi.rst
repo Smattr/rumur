@@ -44,7 +44,17 @@ Assumptions
 -----------
 In addition to assertions and invariants that are supported by CMurphi, Rumur
 supports assumptions with the keyword ``assume``. Any state that fails an
-assumption is considered irrelevant and discarded.
+assumption is considered irrelevant and discarded. You can read more about this
+in properties.rst_.
+
+.. _properties.rst: properties.rst
+
+Liveness
+--------
+Another addition to the properties supported by CMurphi, is the Rumur-specific
+``liveness``. From every state that is reached during checking, there must be a
+state reachable from it that satisfies the liveness property. You can read more
+about this in properties.rst_.
 
 Comparisons
 -----------

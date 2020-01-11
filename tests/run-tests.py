@@ -19,10 +19,10 @@ CPUS = multiprocessing.cpu_count()
 
 STDOUT_ISATTY = os.isatty(sys.stdout.fileno())
 
-def green():  return '\033[32m' if STDOUT_ISATTY else ''
-def red():    return '\033[31m' if STDOUT_ISATTY else ''
-def yellow(): return '\033[33m' if STDOUT_ISATTY else ''
-def reset():  return '\033[0m'  if STDOUT_ISATTY else ''
+GREEN  = '\033[32m' if STDOUT_ISATTY else ''
+RED    = '\033[31m' if STDOUT_ISATTY else ''
+YELLOW = '\033[33m' if STDOUT_ISATTY else ''
+RESET  = '\033[0m'  if STDOUT_ISATTY else ''
 
 def enc(s): return s.encode('utf-8', 'replace')
 def dec(s): return s.decode('utf-8', 'replace')
@@ -69,6 +69,8 @@ C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
 
 VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
+AST_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
+      'ast-dump.rng'))
 
 def has_sandbox() -> bool:
   'whether the current platform has sandboxing support for the verifier'
@@ -154,6 +156,9 @@ class Test(abc.ABC):
   @abc.abstractmethod
   def run(self) -> Optional[Result]: raise NotImplementedError
 
+# recogniser for a '-- rumur_flags: ...' etc line
+TWEAK_LINE = re.compile(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$')
+
 class Tweakable(Test):
   'a test case that can take extra customisation via comment lines'
   def __init__(self):
@@ -167,7 +172,7 @@ class Tweakable(Test):
     'check for special lines at the start of current model overriding defaults'
     with open(model, 'rt', encoding='utf-8') as f:
       for line in f:
-        m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
+        m = TWEAK_LINE.match(line)
         if m is None:
           break
         key = m.group('key')
@@ -227,6 +232,12 @@ class Model(Tweakable):
       # build up arguments to call the C compiler
       model_bin = os.path.join(tmp, 'model.exe')
       args = [CC] + C_FLAGS + ['-o', model_bin, '-', '-lpthread']
+
+      # XXX: these architectures do not have a double-word CAS, so need
+      # libatomic support
+      if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x',
+          'riscv', 'riscv32', 'riscv64'):
+        args.append('-latomic')
 
       # call the C compiler
       ret, stdout, stderr = run(args, model_c)
@@ -310,9 +321,7 @@ class ASTDumpTest(Tweakable):
       return Skip('xmllint not available for validation')
 
     # Validate the XML
-    rng = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
-      'ast-dump.rng'))
-    ret, stdout, stderr = run(['xmllint', '--relaxng', rng, '--noout', '-'],
+    ret, stdout, stderr = run(['xmllint', '--relaxng', AST_RNG, '--noout', '-'],
       xmlcontent)
     if ret != 0:
       return Fail(f'Failed to validate:\n{stdout}{stderr}')
@@ -323,14 +332,14 @@ def check(test: Test) -> int:
   result = test.run()
 
   if result is None:
-    pr(f'{green()}PASS{reset()} {test.description()}\n')
+    pr(f'{GREEN}PASS{RESET} {test.description()}\n')
     return 1, 0, 0
   elif isinstance(result, Skip):
-    pr(f'{yellow()}SKIP{reset()} {test.description()} [{result.reason}]\n')
+    pr(f'{YELLOW}SKIP{RESET} {test.description()} [{result.reason}]\n')
     return 0, 1, 0
   else:
     assert isinstance(result, Fail)
-    pr(f'{red()}FAIL{reset()} {test.description()}\n{result.output}')
+    pr(f'{RED}FAIL{RESET} {test.description()}\n{result.output}')
     return 0, 0, 1
 
 def main(args: [str]) -> int:
@@ -386,6 +395,10 @@ def main(args: [str]) -> int:
     if in_range(index):
       tests.append(ASTDumpTest(path))
     index += 1
+
+  if len(tests) == 0:
+    pr(f'no tests found\n')
+    return -1
 
   pr(f'Running {len(tests)} tests using {options.jobs} threads...\n'
       '     +------ debug\n'

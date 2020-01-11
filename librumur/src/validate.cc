@@ -401,10 +401,6 @@ class Validator : public ConstBaseTraversal {
 
 }
 
-void validate_model(const Model &m) {
-  validate(m);
-}
-
 void validate(const Node &n) {
   Validator v;
   v.dispatch(n);

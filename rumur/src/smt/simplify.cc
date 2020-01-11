@@ -433,7 +433,7 @@ namespace { class Simplifier : public BaseTraversal {
       return;
 
     // there's no point trying to simplify a literal we will replace with itself
-    if (*e == *True || *e == *False)
+    if (e->is_literal_true() || e->is_literal_false())
       return;
 
     std::string claim;
@@ -544,7 +544,7 @@ namespace { class Simplifier : public BaseTraversal {
     const Ptr<TypeExpr> t = type.resolve();
 
     // the solver already knows boolean, so we're done
-    if (*t == *Boolean)
+    if (t->is_boolean())
       return;
 
     class ConstraintEmitter : public ConstTypeTraversal {

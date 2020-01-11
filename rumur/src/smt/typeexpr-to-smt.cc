@@ -39,7 +39,7 @@ namespace { class Translator : public ConstTypeTraversal {
 
   void visit_enum(const Enum &n) final {
     // the SMT solver already knows the type of booleans
-    if (n == *Boolean) {
+    if (n.is_boolean()) {
       *this << "Bool";
       return;
     }

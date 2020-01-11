@@ -8,6 +8,27 @@ with some extensions and generates a C program that implements a verifier.
 
 Quickstart
 ----------
+
+Installation on Debian Unstable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: sh
+
+  apt install rumur
+
+Installation on FreeBSD
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: sh
+
+  pkg install rumur
+
+Thanks to `yuri@FreeBSD`_ for packaging.
+
+.. _`yuri@FreeBSD`: https://github.com/yurivict
+
+Building from Source
+~~~~~~~~~~~~~~~~~~~~
 First you will need to have the following dependencies installed:
 
 * Either GCC_ or Clang_
@@ -21,25 +42,25 @@ Then:
 
 .. code-block:: sh
 
-    # Download Rumur
-    git clone https://github.com/Smattr/rumur
-    cd rumur
+  # Download Rumur
+  git clone https://github.com/Smattr/rumur
+  cd rumur
 
-    # Configure and compile
-    mkdir build
-    cd build
-    cmake ..
-    make
-    make install
+  # Configure and compile
+  mkdir build
+  cd build
+  cmake ..
+  make
+  make install
 
-    # Generate a checker
-    rumur my-model.m --output my-model.c
+  # Generate a checker
+  rumur my-model.m --output my-model.c
 
-    # Compile the checker (also pass -mcx16 if using GCC on x86-64)
-    cc -std=c11 -O3 my-model.c -lpthread
+  # Compile the checker (also pass -mcx16 if using GCC on x86-64)
+  cc -std=c11 -O3 my-model.c -lpthread
 
-    # Run the checker
-    ./a.out
+  # Run the checker
+  ./a.out
 
 Compilation produces several artefacts including the `rumur` binary itself:
 

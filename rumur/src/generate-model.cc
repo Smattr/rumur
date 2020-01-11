@@ -437,6 +437,7 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write liveness checker
   {
     out
+      << "#if LIVENESS_COUNT > 0\n"
       << "static bool check_liveness(struct state *NONNULL s "
         << "__attribute__((unused))) {\n"
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
@@ -550,8 +551,8 @@ void generate_model(std::ostream &out, const Model &m) {
       << "      /* If we're doing bounded checking and this state is at the bound limit,\n"
       << "       * it's not valid to expand beyond this.\n"
       << "       */\n"
-      << "      ASSERT(s->bound <= BOUND && \"a state that exceeded the bound depth was explored\");\n"
-      << "      if (s->bound == BOUND) {\n"
+      << "      ASSERT(state_bound_get(s) <= BOUND && \"a state that exceeded the bound depth was explored\");\n"
+      << "      if (state_bound_get(s) == BOUND) {\n"
       << "        continue;\n"
       << "      }\n"
       << "#endif\n"
@@ -717,27 +718,16 @@ void generate_model(std::ostream &out, const Model &m) {
       << "\n"
       << "  /* total up how many misses we saw */\n"
       << "  unsigned long total = 0;\n"
-      << "#ifdef __clang__\n"
-      << "  #pragma clang diagnostic push\n"
-      << "  #pragma clang diagnostic ignored \"-Wtautological-compare\"\n"
-      << "  #pragma clang diagnostic ignored \"-Wtautological-unsigned-zero-compare\"\n"
-      << "#elif defined(__GNUC__)\n"
-      << "  #pragma GCC diagnostic push\n"
-      << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
-      << "#endif\n"
       << "  for (size_t i = 0; i < sizeof(missed) / sizeof(missed[0]); i++) {\n"
-      << "#ifdef __clang__\n"
-      << "  #pragma clang diagnostic pop\n"
-      << "#elif defined(__GNUC__)\n"
-      << "  #pragma GCC diagnostic pop\n"
-      << "#endif\n"
       << "    if (missed[i]) {\n"
       << "      total++;\n"
       << "    }\n"
       << "  }\n"
       << "\n"
       << "  return total;\n"
-      << "}\n\n";
+      << "}\n"
+      << "#endif\n"
+      << "\n";
   }
 
   // Write out the symmetry reduction canonicalisation function
@@ -775,7 +765,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      s = state_new();\n"
           << "      memset(s, 0, sizeof(*s));\n"
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-          << "      s->rule_taken = rule_taken;\n"
+          << "      state_rule_taken_set(s, rule_taken);\n"
           << "#endif\n"
           << "      if (!startstate" << index << "(s";
         for (const Quantifier &q : r->quantifiers)
@@ -802,10 +792,12 @@ void generate_model(std::ostream &out, const Model &m) {
           << "          /* one of the cover properties triggered an error */\n"
           << "          break;\n"
           << "        }\n"
+          << "#if LIVENESS_COUNT > 0\n"
           << "        if (!check_liveness(s)) {\n"
           << "          /* one of the liveness properties triggered an error */\n"
           << "          break;\n"
           << "        }\n"
+          << "#endif\n"
           << "        (void)queue_enqueue(s, queue_id);\n"
           << "        queue_id = (queue_id + 1) % (sizeof(q) / sizeof(q[0]));\n"
           << "      } else {\n"
@@ -870,7 +862,7 @@ void generate_model(std::ostream &out, const Model &m) {
           << "      do {\n"
           << "        struct state *n = state_dup(s);\n"
           << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-          << "        n->rule_taken = rule_taken;\n"
+          << "        state_rule_taken_set(n, rule_taken);\n"
           << "#endif\n"
           << "        int g = guard" << index << "(n";
         for (const Quantifier &q : r->quantifiers)
@@ -911,13 +903,15 @@ void generate_model(std::ostream &out, const Model &m) {
           << "              /* one of the cover properties triggered an error */\n"
           << "              break;\n"
           << "            }\n"
+          << "#if LIVENESS_COUNT > 0\n"
           << "            if (!check_liveness(n)) {\n"
           << "              /* one of the liveness properties triggered an error */\n"
           << "              break;\n"
           << "            }\n"
+          << "#endif\n"
           << "\n"
           << "#if BOUND > 0\n"
-          << "            if (n->bound < BOUND) {\n"
+          << "            if (state_bound_get(n) < BOUND) {\n"
           << "#endif\n"
           << "            size_t queue_size = queue_enqueue(n, thread_id);\n"
           << "            queue_id = thread_id;\n"
@@ -1011,16 +1005,12 @@ void generate_model(std::ostream &out, const Model &m) {
     << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
     << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
     << "\n"
-    << "  if (s->rule_taken == 0) {\n"
-    << "    fprintf(stderr, \"unknown state transition\\n\");\n"
-    << "    ASSERT(s->rule_taken != 0 && \"unknown state transition\");\n"
-    << "    return;\n"
-    << "  }\n"
+    << "  ASSERT(state_rule_taken_get(s) != 0 && \"unknown state transition\");\n"
     << "\n";
 
   {
     out
-      << "  if (s->previous == NULL) {\n"
+      << "  if (state_previous_get(s) == NULL) {\n"
       << "    uint64_t rule_taken = 1;\n";
 
     mpz_class base = 1;
@@ -1035,7 +1025,7 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_quantifier_header(out, q);
 
         out
-          << "  if (s->rule_taken == rule_taken) {\n"
+          << "  if (state_rule_taken_get(s) == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
           << "      xml_printf(\"Startstate "
@@ -1145,7 +1135,7 @@ void generate_model(std::ostream &out, const Model &m) {
           generate_quantifier_header(out, q);
 
         out
-          << "  if (s->rule_taken == rule_taken) {\n"
+          << "  if (state_rule_taken_get(s) == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
           << "      printf(\"<transition>\");\n"
           << "      xml_printf(\"Rule " << rule_name_string(*r, index)
@@ -1247,7 +1237,10 @@ void generate_model(std::ostream &out, const Model &m) {
     << "}\n\n";
 
   // Generate a function used during debugging
-  out << "static void state_print_field_offsets(void) {\n";
+  out
+    << "static void state_print_field_offsets(void) {\n"
+    << "  printf(\"\t* state struct is %zu-byte aligned\\n\", "
+      "__alignof__(struct state));\n";
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get()))
       out << "  printf(\"\t* field %s is located at state offset " << v->offset

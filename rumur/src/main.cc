@@ -56,6 +56,7 @@ static void parse_args(int argc, char **argv) {
       OPT_MAX_ERRORS,
       OPT_MONOPOLISE,
       OPT_OUTPUT_FORMAT,
+      OPT_PACK_STATE,
       OPT_SANDBOX,
       OPT_SMT_ARG,
       OPT_SMT_BITVECTORS,
@@ -83,6 +84,7 @@ static void parse_args(int argc, char **argv) {
       { "monopolize", no_argument, 0, OPT_MONOPOLISE },
       { "output", required_argument, 0, 'o' },
       { "output-format", required_argument, 0, OPT_OUTPUT_FORMAT },
+      { "pack-state", required_argument, 0, OPT_PACK_STATE },
       { "quiet", no_argument, 0, 'q' },
       { "sandbox", required_argument, 0, OPT_SANDBOX },
       { "set-capacity", required_argument, 0, 's' },
@@ -268,6 +270,17 @@ static void parse_args(int argc, char **argv) {
 
         break;
       }
+
+      case OPT_PACK_STATE: // --pack-state ...
+        if (strcmp(optarg, "on") == 0) {
+          options.pack_state = true;
+        } else if (strcmp(optarg, "off") == 0) {
+          options.pack_state = false;
+        } else {
+          std::cerr << "invalid argument to --pack_state, \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
 
       case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
         if (strcmp(optarg, "off") == 0) {
@@ -649,7 +662,8 @@ int main(int argc, char **argv) {
 
     // setup an argument vector for calling the C compiler
     const char *args[] = { cc, "-std=c11", "-x", "c", "-o",
-      "/dev/null", "-Werror=format", "-Werror=sign-compare", out->c_str(),
+      "/dev/null", "-Werror=format", "-Werror=sign-compare",
+      "-Werror=type-limits", out->c_str(),
 #ifdef __x86_64__
       "-mcx16",
 #endif

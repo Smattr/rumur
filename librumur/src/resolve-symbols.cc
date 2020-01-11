@@ -184,7 +184,7 @@ class Resolver : public Traversal {
           } catch (Error&) {
             /* Skip this and future offset calculations and assume our caller
              * will eventually discover the underlying reason when they call
-             * validate_model.
+             * n.validate().
              */
             ok = false;
           }
