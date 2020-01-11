@@ -24,7 +24,7 @@ int main(void) {
 }
 EOT
 cc -std=c11 -mcx16 mcx16-check.c -o /dev/null
-if [ $? -eq 0 ];
+if [ $? -eq 0 ]; then
   MCX16=-mcx16
 else
   MCX16=
@@ -41,7 +41,7 @@ int main(void) {
 }
 EOT
 cc -std=c11 libatomic-check.c -o /dev/null
-if [ $? -eq 0 ];
+if [ $? -eq 0 ]; then
   LIBATOMIC=
 else
   LIBATOMIC=-latomic
