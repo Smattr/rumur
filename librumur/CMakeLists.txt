@@ -100,6 +100,7 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/location.hh
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.hh
   ${CMAKE_CURRENT_BINARY_DIR}/position.hh
+  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   ${CMAKE_CURRENT_BINARY_DIR}/stack.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rumur)
 
