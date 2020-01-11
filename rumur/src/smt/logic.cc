@@ -19,6 +19,9 @@ std::string integer_type() {
 
 std::string numeric_literal(const mpz_class &value) {
 
+  if (value < 0)
+    return "(" + neg() + " " + numeric_literal(-value) + ")";
+
   if (options.smt.use_bitvectors) {
     return "(_ bv" + value.get_str() + " " + std::to_string(BITVECTOR_WIDTH)
       + ")";
