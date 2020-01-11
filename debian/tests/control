@@ -1,3 +1,3 @@
-Tests: api model rumur-run-model version
+Tests: librumur-api rumur-model rumur-run-model rumur-version
 Depends: build-essential, libfl2, libgmp, python3 (>= 3.6), rumur
 Restrictions: allow-stderr
