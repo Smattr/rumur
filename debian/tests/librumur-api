@@ -14,7 +14,7 @@ set -x
 cd ${AUTOPKGTEST_TMP}
 
 # construct a C++11 program using Rumur's API
-cat - >main.c <<EOT
+cat - >main.cc <<EOT
 #include <cstdlib>
 #include <iostream>
 #include <rumur/rumur.h>
@@ -29,7 +29,7 @@ int main(void) {
 EOT
 
 # compile the program
-c++ -std=c++11 main.c -lrumur
+c++ -std=c++11 main.cc -lrumur
 
 # in case it was dynamically linked, also confirm we can run it
 ./a.out
