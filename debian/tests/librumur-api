@@ -13,16 +13,43 @@ set -x
 # move to temporary directory
 cd ${AUTOPKGTEST_TMP}
 
+# construct a simple model
+cat - >model.m <<EOT
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end;
+EOT
+
 # construct a C++11 program using Rumur's API
 cat - >main.cc <<EOT
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <rumur/rumur.h>
 
 int main(void) {
 
-  // confirm we can find and access Rumur's symbols
-  std::cout << "rumur::parse is at address " << (void*)rumur::parse << "\n";
+  // open the input model
+  std::ifstream input("model.m");
+  if (!input.is_open()) {
+    std::cerr << "failed to open model.m\n";
+    return EXIT_FAILURE;
+  }
+
+  // parse it into an AST
+  try {
+    rumur::Ptr<rumur::Model> ast = rumur::parse(input);
+  } catch (rumur::Error &e) {
+    std::cerr << "failed to parse model.m: " << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }
