@@ -9,7 +9,7 @@ def main(args: [str]) -> int:
   # parse command line arguments
   parser = argparse.ArgumentParser(
     description='convert file contents to a C++ string')
-  parser.add_argument('input', type=argparse.FileType('rt'), help='input file')
+  parser.add_argument('input', type=argparse.FileType('rb'), help='input file')
   parser.add_argument('output', type=argparse.FileType('wt'),
     help='output file')
   options = parser.parse_args(args[1:])
@@ -23,15 +23,18 @@ def main(args: [str]) -> int:
     f'extern const unsigned char {array}[] = {{')
 
   index = 0
-  for line in options.input:
-    for c in line:
+  while True:
 
-      if index % 12 == 0:
-        options.output.write('\n ')
+    c = options.input.read(1)
+    if c == b'':
+      break
 
-      options.output.write(f' 0x{ord(c):02x},')
+    if index % 12 == 0:
+      options.output.write('\n ')
 
-      index += 1
+    options.output.write(f' 0x{int.from_bytes(c, byteorder="little"):02x},')
+
+    index += 1
 
   options.output.write(
      '\n'
