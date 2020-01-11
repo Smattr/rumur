@@ -11,7 +11,8 @@ set -e
 set -x
 
 # move to temporary directory
-cd ${AUTOPKGTEST_TMP}
+mkdir -p ${AUTOPKGTEST_TMP}/rumur-run-model
+cd ${AUTOPKGTEST_TMP}/rumur-run-model
 
 # construct a simple model
 cat - >model.m <<EOT
