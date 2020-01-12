@@ -1,3 +1,14 @@
+rumur (2020.01.11-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * Update autopkgtest tests to test the installed binaries and library.
+    Previously this incorrectly ran the upstream test suite.
+
+  * Update RUMUR_VERSION variable in rules from 2019.12.22-1 to 2020.01.11-1.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 12 Jan 2020 10:00:20 -0800
+
 rumur (2019.12.22-1) unstable; urgency=medium
 
   * New upstream release.
