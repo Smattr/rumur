@@ -57,7 +57,7 @@ int main(void) {
 EOT
 
 # compile the program
-c++ -std=c++11 main.cc -lgmp -lgmpxx -lrumur
+c++ -std=c++11 main.cc -lrumur -lgmpxx -lgmp
 
 # in case it was dynamically linked, also confirm we can run it
 ./a.out
