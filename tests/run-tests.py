@@ -239,6 +239,12 @@ class Model(Tweakable):
           'riscv', 'riscv32', 'riscv64'):
         args.append('-latomic')
 
+      # XXX: these architectures have a double-word CAS, but no compiler support
+      # so also need libatomic
+      if platform.machine() in ('aarch32', 'aarch64', 'aarch64_be', 'arm',
+          'arm32', 'arm64', 'armhf'):
+        args.append('-latomic')
+
       # call the C compiler
       ret, stdout, stderr = run(args, model_c)
       if ret != 0:

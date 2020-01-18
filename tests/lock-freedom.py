@@ -29,6 +29,13 @@ if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x', 'riscv',
   print('no double-word compare-and-swap available for this platform')
   sys.exit(125)
 
+# these architectures have a double-word compare-and-swap but no compiler
+# support
+if platform.machine() in ('aarch32', 'aarch64', 'aarch64_be', 'arm', 'arm32',
+    'arm64', 'armhf'):
+  print('no double-word compare-and-swap available for this platform')
+  sys.exit(125)
+
 # generate a checker for a simple model
 model = 'var x: boolean; startstate begin x := false; end; rule begin x := !x; end;'
 argv = ['rumur', '--output', '/dev/stdout']
