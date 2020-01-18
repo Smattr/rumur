@@ -17,7 +17,7 @@ end;
 rule begin
   -- if the SMT bridge is working correctly, it should simplify the condition as
   -- a tautology into true, avoiding the read of an undefined variable
-  if forall z: t do z = 1 | z = 2 end | y then
+  if y | forall z: t do z = 1 | z = 2 end then
     x := !x;
   end;
 end;
