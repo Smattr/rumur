@@ -256,7 +256,7 @@ namespace { class Simplifier : public BaseTraversal {
     if (n.type != nullptr) {
       dispatch(*n.type);
 
-      declare_var(n.name, n.unique_id, *n.type);
+      declare_decl(*n.decl);
     } else {
       assert(n.from != nullptr);
       assert(n.to != nullptr);
@@ -271,8 +271,9 @@ namespace { class Simplifier : public BaseTraversal {
       if (n.step != nullptr)
         simplify(n.step);
 
-      const std::string name = mangle(n.name, n.unique_id);
-      *solver << "(declare-fun " << name << " () " << integer_type() << ")\n";
+      declare_decl(*n.decl);
+
+      const std::string name = mangle(n.decl->name, n.decl->unique_id);
       if (n.from->constant()) {
         const std::string lb = numeric_literal(n.from->constant_fold());
         *solver << "(assert (" << geq() << " " << name << " " << lb << "))\n";
