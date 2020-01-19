@@ -200,17 +200,6 @@ static void sandbox(void) {
     /* A BPF program that traps on any syscall we want to disallow. */
     static struct sock_filter filter[] = {
 
-#if 0
-      // TODO: The following will require some pesky ifdef mess because the
-      // Linux headers don't seem to define a "current architecture" constant.
-      /* Validate that we're running on the same architecture we were compiled
-       * for. If not, the syscall numbers we're using may be wrong.
-       */
-      BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, arch)),
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, ARCH_NR, 1, 0),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_TRAP),
-#endif
-
       /* Load syscall number. */
       BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, nr)),
 
