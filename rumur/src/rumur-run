@@ -106,9 +106,8 @@ def optimisation_flags() -> [str]:
   # allow GCC to perform more advanced interprocedural optimisations
   if cc_vendor == 'gcc': flags.append('-fwhole-program')
 
-  if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
-    # GCC needs a personal invitation to use cmpxchg16b
-    flags.append('-mcx16')
+  # on platforms that need it made explicit, enable CMPXCHG16B
+  if supports('-mcx16'): flags.append('-mcx16')
 
   return flags
 
