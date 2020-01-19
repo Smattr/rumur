@@ -957,7 +957,7 @@ static __attribute__((pure)) const struct state *state_previous_get(
     const struct state *NONNULL s) {
 #if PACK_STATE
   struct handle h = state_previous_handle(s);
-  return (const struct state*)read_raw(h);
+  return (const struct state*)(uintptr_t)read_raw(h);
 #else
   return s->previous;
 #endif
@@ -971,7 +971,7 @@ static void state_previous_set(struct state *NONNULL s,
     && "upper 2 bytes of pointer are non-zero (not using 5-level paging?)");
 #endif
   struct handle h = state_previous_handle(s);
-  write_raw(h, (uint64_t)previous);
+  write_raw(h, (uint64_t)(uintptr_t)previous);
 #else
   s->previous = previous;
 #endif
