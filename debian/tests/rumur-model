@@ -34,13 +34,16 @@ fi
 cat - >libatomic-check.c <<EOT
 #include <stdint.h>
 
-static uint64_t x;
-
 int main(void) {
-  return (int)__atomic_load_n(&x, __ATOMIC_SEQ_CST);
+#if __SIZEOF_POINTER__ <= 4
+  uint64_t target = 0;
+#elif __SIZEOF_POINTER__ <= 8
+  unsigned __int128 target = 0;
+#endif
+  return (int)__sync_val_compare_and_swap(&target, 0, 1);
 }
 EOT
-cc -std=c11 libatomic-check.c -o /dev/null
+cc -std=c11 ${MCX16} libatomic-check.c -o /dev/null
 if [ $? -eq 0 ]; then
   LIBATOMIC=
 else
