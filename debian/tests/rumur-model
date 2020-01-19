@@ -23,7 +23,7 @@ int main(void) {
   return 0;
 }
 EOT
-cc -std=c11 -mcx16 mcx16-check.c -o /dev/null
+${CC:-cc} -std=c11 -mcx16 mcx16-check.c -o /dev/null
 if [ $? -eq 0 ]; then
   MCX16=-mcx16
 else
@@ -43,7 +43,7 @@ int main(void) {
   return (int)__sync_val_compare_and_swap(&target, 0, 1);
 }
 EOT
-cc -std=c11 ${MCX16} libatomic-check.c -o /dev/null
+${CC:-cc} -std=c11 ${MCX16} libatomic-check.c -o /dev/null
 if [ $? -eq 0 ]; then
   LIBATOMIC=
 else
@@ -71,7 +71,7 @@ EOT
 rumur --output checker.c model.m
 
 # compile it to an executable
-cc -std=c11 ${MCX16} checker.c ${LIBATOMIC} -lpthread
+${CC:-cc} -std=c11 ${MCX16} checker.c ${LIBATOMIC} -lpthread
 
 # run the model to completion
 ./a.out
