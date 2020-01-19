@@ -58,14 +58,31 @@ def which(cmd: str) -> Optional[str]:
   except sp.CalledProcessError:
     return None
 
+def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
+  if stdin is not None:
+    stdin = enc(stdin)
+  p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin)
+  return p.returncode, dec(p.stdout), dec(p.stderr)
+
 # C compiler
 CC = os.environ.get('CC', which('cc'))
 
-X86_64 = platform.machine() in ('amd64', 'x86_64')
+def has_mcx16() -> bool:
+  'does the compiler support -mcx16?'
+
+  code = 'int main(void) {\n' \
+         '  return 0;\n' \
+         '}\n'
+
+  args = [CC, '-x', 'c', '-std=c11', '-mcx16', '-', '-o', os.devnull]
+  ret, _, _ = run(args, code)
+  return ret == 0
+
+HAS_MCX16 = has_mcx16()
 
 # initial flags to pass to our C compiler
 C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
-  '-Werror=type-limits'] + (['-mcx16'] if X86_64 else [])
+  '-Werror=type-limits'] + (['-mcx16'] if HAS_MCX16 else [])
 
 VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
@@ -135,12 +152,6 @@ class TemporaryDirectory(object):
   def __exit__(self, *_):
     if self.tmp is not None:
       shutil.rmtree(self.tmp)
-
-def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
-  if stdin is not None:
-    stdin = enc(stdin)
-  p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin)
-  return p.returncode, dec(p.stdout), dec(p.stderr)
 
 HAS_VALGRIND = which('valgrind') is not None
 
