@@ -87,13 +87,15 @@ C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
 def needs_libatomic() -> bool:
   'does the toolchain need -latomic to support dword CAS?'
 
-  code = 'int main(void) {\n' \
+  code = '#include <stdint.h>\n' \
+         '\n' \
+         'int main(void) {\n' \
          '#if __SIZEOF_POINTER__ <= 4\n' \
          '  uint64_t target = 0;\n' \
          '#elif __SIZEOF_POINTER__ <= 8\n' \
          '  unsigned __int128 target = 0;\n' \
          '#endif\n' \
-         '  return __sync_val_compare_and_swap(&target, 0, 1);\n' \
+         '  return (int)__sync_val_compare_and_swap(&target, 0, 1);\n' \
          '}\n'
 
   args = [CC, '-x', 'c', '-std=c11', '-', '-o', os.devnull]
