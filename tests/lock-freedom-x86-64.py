@@ -16,4 +16,4 @@ if platform.machine() not in ('amd64', 'x86_64'):
 
 # call the generic lock-freedom.py with some customisation
 lock_freedom_py = os.path.join(os.path.dirname(__file__), 'lock-freedom.py')
-sys.exit(subprocess.call([lock_freedom_py, '-mcx16']))
+sys.exit(subprocess.call(['python3', lock_freedom_py, '-mcx16']))

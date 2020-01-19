@@ -30,4 +30,4 @@ if p.returncode != 0:
 
 # call the generic lock-freedom.py with some customisation
 lock_freedom_py = os.path.join(os.path.dirname(__file__), 'lock-freedom.py')
-sys.exit(subprocess.call([lock_freedom_py, '-m32']))
+sys.exit(subprocess.call(['python3', lock_freedom_py, '-m32']))
