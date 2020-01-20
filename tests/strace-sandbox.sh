@@ -63,7 +63,7 @@ int main(void) {
   uint64_t target = 0;
 #elif __SIZEOF_POINTER__ <= 8
   unsigned __int128 target = 0;
-#else
+#endif
   return (int)__sync_val_compare_and_swap(&target, 0, 1);
 }
 EOT
