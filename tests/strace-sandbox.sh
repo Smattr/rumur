@@ -74,7 +74,7 @@ else
 fi
 
 # compile the sandboxed checker
-${CC:-cc} -stc=c11 ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
+${CC:-cc} -std=c11 ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
 
 # run the model under strace
 strace ./model.exe
