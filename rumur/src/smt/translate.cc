@@ -83,9 +83,10 @@ namespace { class Translator : public ConstExprTraversal {
       = mangle(n.quantifier.decl->name, n.quantifier.decl->unique_id);
     const std::string qtype = integer_type();
 
+    // “∀q.”
     *this << "(forall ((" << qname << " " << qtype << ")) (or";
 
-    // emit a constraint for the lower bound of the quantified variable
+    // “q < lb”
     *this << " (" << lt() << " " << qname << " ";
     if (n.quantifier.type != nullptr) {
       const Ptr<TypeExpr> t = n.quantifier.type->resolve();
@@ -106,7 +107,7 @@ namespace { class Translator : public ConstExprTraversal {
     }
     *this << ")";
 
-    // emit a constraint for the upper bound of the quantified variable
+    // or “q > ub”
     *this << " (";
     if (n.quantifier.type != nullptr) {
       const Ptr<TypeExpr> t = n.quantifier.type->resolve();
@@ -133,7 +134,7 @@ namespace { class Translator : public ConstExprTraversal {
     }
     *this << ")";
 
-    // emit a constraint for the step of the form “!∃i. q = lb + i * step”
+    // or “!∃i. q = lb + i * step”
     const std::string iname = qname + "_iteration";
     *this << " (not (exists ((" << iname << " " << qtype << ")) (= " << qname
       << " (" << add() << " ";
