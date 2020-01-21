@@ -78,12 +78,6 @@ namespace { class Translator : public ConstExprTraversal {
 
   void visit_forall(const Forall &n) {
 
-    // TODO: we cannot yet handle forall expressions with a non-1 step
-    if (n.quantifier.type == nullptr && n.quantifier.step != nullptr
-        && (!n.quantifier.step->constant()
-        || n.quantifier.step->constant_fold() != 1))
-      throw Unsupported(n);
-
     // find a name for the quantified variable
     const std::string qname
       = mangle(n.quantifier.decl->name, n.quantifier.decl->unique_id);
@@ -138,6 +132,33 @@ namespace { class Translator : public ConstExprTraversal {
       *this << gt() << " " << qname << " " << *n.quantifier.to;
     }
     *this << ")";
+
+    // emit a constraint for the step of the form “!∃i. q = lb + i * step”
+    const std::string iname = qname + "_iteration";
+    *this << " (not (exists ((" << iname << " " << qtype << ")) (= " << qname
+      << " (" << add() << " ";
+    if (n.quantifier.type != nullptr) {
+      const Ptr<TypeExpr> t = n.quantifier.type->resolve();
+
+      if (isa<Enum>(t) || isa<Scalarset>(t)) {
+        *this << numeric_literal(0);
+      } else {
+        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
+          "forall quantifier");
+        const Range &r = dynamic_cast<const Range&>(*t);
+        assert(r.min != nullptr && "unbounded range type");
+        *this << *r.min;
+      }
+    } else {
+      *this << *n.quantifier.from;
+    }
+    *this << " (" << mul() << " " << iname << " ";
+    if (n.quantifier.step == nullptr) {
+      *this << numeric_literal(1);
+    } else {
+      *this << *n.quantifier.step;
+    }
+    *this << ")))))";
 
     // finally the enclosed expression itself
     *this << " " << *n.expr << "))";
