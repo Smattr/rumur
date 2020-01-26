@@ -54,7 +54,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_exists(const Exists &n) {
-    throw Unsupported(n);
+    translate_quantified(n.quantifier, *n.expr, false);
   }
 
   void visit_div(const Div &n) {
