@@ -77,92 +77,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_forall(const Forall &n) {
-
-    // find a name for the quantified variable
-    const std::string qname
-      = mangle(n.quantifier.decl->name, n.quantifier.decl->unique_id);
-    const std::string qtype = integer_type();
-
-    // “∀q.”
-    *this << "(forall ((" << qname << " " << qtype << ")) (or";
-
-    // “q < lb”
-    *this << " (" << lt() << " " << qname << " ";
-    if (n.quantifier.type != nullptr) {
-      const Ptr<TypeExpr> t = n.quantifier.type->resolve();
-
-      if (isa<Enum>(t) || isa<Scalarset>(t)) {
-        *this << numeric_literal(0);
-      } else {
-        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
-          "forall quantifier");
-        const Range &r = dynamic_cast<const Range&>(*t);
-        assert(r.min != nullptr && "unbounded range type");
-        *this << *r.min;
-      }
-    } else {
-      assert(n.quantifier.from != nullptr && "forall-quantified variable has "
-        "no type and also no lower bound");
-      *this << *n.quantifier.from;
-    }
-    *this << ")";
-
-    // or “q > ub”
-    *this << " (";
-    if (n.quantifier.type != nullptr) {
-      const Ptr<TypeExpr> t = n.quantifier.type->resolve();
-
-      assert ((isa<Enum>(t) || isa<Range>(t) || isa<Scalarset>(t)) &&
-        "non-(range|enum|scalarset) variable in forall quantifier");
-
-      if (auto e = dynamic_cast<const Enum*>(t.get())) {
-        *this << geq() << " " << qname << " "
-          << numeric_literal(e->members.size());
-
-      } else if (auto r = dynamic_cast<const Range*>(t.get())) {
-        assert (r->max != nullptr && "unbounded range type");
-        *this << gt() << " " << qname << " " << *r->max;
-
-      } else {
-        auto s = dynamic_cast<const Scalarset&>(*t);
-        *this << geq() << " " << qname << " " << *s.bound;
-      }
-    } else {
-      assert(n.quantifier.to != nullptr && "forall-quantified variable has "
-        "no type and also no upper bound");
-      *this << gt() << " " << qname << " " << *n.quantifier.to;
-    }
-    *this << ")";
-
-    // or “!∃i. q = lb + i * step”
-    const std::string iname = qname + "_iteration";
-    *this << " (not (exists ((" << iname << " " << qtype << ")) (= " << qname
-      << " (" << add() << " ";
-    if (n.quantifier.type != nullptr) {
-      const Ptr<TypeExpr> t = n.quantifier.type->resolve();
-
-      if (isa<Enum>(t) || isa<Scalarset>(t)) {
-        *this << numeric_literal(0);
-      } else {
-        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
-          "forall quantifier");
-        const Range &r = dynamic_cast<const Range&>(*t);
-        assert(r.min != nullptr && "unbounded range type");
-        *this << *r.min;
-      }
-    } else {
-      *this << *n.quantifier.from;
-    }
-    *this << " (" << mul() << " " << iname << " ";
-    if (n.quantifier.step == nullptr) {
-      *this << numeric_literal(1);
-    } else {
-      *this << *n.quantifier.step;
-    }
-    *this << ")))))";
-
-    // finally the enclosed expression itself
-    *this << " " << *n.expr << "))";
+    translate_quantified(n.quantifier, *n.expr, true);
   }
 
   void visit_functioncall(const FunctionCall &n) {
@@ -228,6 +143,106 @@ namespace { class Translator : public ConstExprTraversal {
   void visit_ternary(const Ternary &n) {
     *this << "(ite " << *n.cond << " " << *n.lhs << " " << *n.rhs << ")";
   }
+
+ private:
+  void translate_quantified(const Quantifier &q, const Expr &e, bool forall) {
+
+    // find a name for the quantified variable
+    const std::string qname = mangle(q.decl->name, q.decl->unique_id);
+    const std::string qtype = integer_type();
+
+    // determine the parts of the expression we will construct that depend on
+    // forall
+    const std::string binder  = forall ? "forall" : "exists";
+    const std::string op      = forall ? "or"     : "and";
+    const std::string lb_rel  = forall ? lt()     : geq();
+    const std::string ub_rel1 = forall ? gt()     : leq();
+    const std::string ub_rel2 = forall ? geq()    : lt();
+    const std::string step_o  = forall ? "(not "  : "";
+    const std::string step_c  = forall ? ")"      : "";
+
+    // “∀q.”/“∃q.”
+    *this << "(" << binder << " ((" << qname << " " << qtype << ")) (" << op;
+
+    // “q < lb”/“q ≥ lb”
+    *this << " (" << lb_rel << " " << qname << " ";
+    if (q.type != nullptr) {
+      const Ptr<TypeExpr> t = q.type->resolve();
+
+      if (isa<Enum>(t) || isa<Scalarset>(t)) {
+        *this << numeric_literal(0);
+      } else {
+        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
+          "quantifier");
+        const Range &r = dynamic_cast<const Range&>(*t);
+        assert(r.min != nullptr && "unbounded range type");
+        *this << *r.min;
+      }
+    } else {
+      assert(q.from != nullptr && "quantified variable has no type and also no "
+        "lower bound");
+      *this << *q.from;
+    }
+    *this << ")";
+
+    // or/and “q > ub”/“q ≤ ub”
+    *this << " (";
+    if (q.type != nullptr) {
+      const Ptr<TypeExpr> t = q.type->resolve();
+
+      assert ((isa<Enum>(t) || isa<Range>(t) || isa<Scalarset>(t)) &&
+        "non-(range|enum|scalarset) variable in quantifier");
+
+      if (auto n = dynamic_cast<const Enum*>(t.get())) {
+        size_t s = n->members.size();
+        *this << ub_rel2 << " " << qname << " " << numeric_literal(s);
+
+      } else if (auto r = dynamic_cast<const Range*>(t.get())) {
+        assert (r->max != nullptr && "unbounded range type");
+        *this << ub_rel1 << " " << qname << " " << *r->max;
+
+      } else {
+        auto s = dynamic_cast<const Scalarset&>(*t);
+        *this << ub_rel2 << " " << qname << " " << *s.bound;
+      }
+    } else {
+      assert(q.to != nullptr && "quantified variable has no type and also no "
+        "upper bound");
+      *this << ub_rel1 << " " << qname << " " << *q.to;
+    }
+    *this << ")";
+
+    // or/and “!∃i. q = lb + i * step”/“∃i. q = lb + i * step”
+    const std::string iname = qname + "_iteration";
+    *this << " " << step_o << "(exists ((" << iname << " " << qtype << ")) (= "
+      << qname << " (" << add() << " ";
+    if (q.type != nullptr) {
+      const Ptr<TypeExpr> t = q.type->resolve();
+
+      if (isa<Enum>(t) || isa<Scalarset>(t)) {
+        *this << numeric_literal(0);
+      } else {
+        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
+          "quantifier");
+        const Range &r = dynamic_cast<const Range&>(*t);
+        assert(r.min != nullptr && "unbounded range type");
+        *this << *r.min;
+      }
+    } else {
+      *this << *q.from;
+    }
+    *this << " (" << mul() << " " << iname << " ";
+    if (q.step == nullptr) {
+      *this << numeric_literal(1);
+    } else {
+      *this << *q.step;
+    }
+    *this << "))))" << step_c;
+
+    // finally the enclosed expression itself
+    *this << " " << e << "))";
+  }
+
 }; }
 
 std::string translate(const Expr &expr) {
