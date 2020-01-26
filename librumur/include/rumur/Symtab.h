@@ -52,6 +52,7 @@ class Symtab {
   }
 
   // Whether we are in the top-level scope.
+  __attribute__((deprecated("this will be removed in a future release")))
   bool is_global_scope() const {
     return scope.size() == 1;
   }
