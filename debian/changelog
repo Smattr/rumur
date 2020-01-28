@@ -2,7 +2,11 @@ rumur (2020.01.27-1) unstable; urgency=medium
 
   * New upstream release.
 
-  * Added strace as an autopkgtests dependency.
+  * Add strace as an autopkgtests dependency.
+
+  * Update Standards-Version from 4.4.1 to 4.5.0.
+
+  * Some robustness improvements to the autopkgtests.
 
   * RUMUR_VERSION variable in rules is now set automatically from the changelog
     using pkg-info.mk support.
