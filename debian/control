@@ -8,7 +8,8 @@ Build-Depends: debhelper-compat (= 12),
  flex (>= 2.5.35),
  libfl-dev,
  libgmp-dev,
- python3 (>= 3.6)
+ python3 (>= 3.6),
+ strace
 Standards-Version: 4.5.0
 Homepage: https://github.com/Smattr/rumur
 Vcs-Git: https://github.com/Smattr/rumur.git -b packaging/debian

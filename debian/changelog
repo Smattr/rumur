@@ -2,7 +2,7 @@ rumur (2020.01.27-1) unstable; urgency=medium
 
   * New upstream release.
 
-  * Add strace as an autopkgtests dependency.
+  * Add strace as a build dependency.
 
   * Update Standards-Version from 4.4.1 to 4.5.0.
 
