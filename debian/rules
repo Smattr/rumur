@@ -7,9 +7,8 @@
 # Enable all hardening compiler flags (-D_FORTIFY_SOURCE=2 -Wl,-z,now ...)
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all
 
-# borrowed from /usr/share/dpkg/pkg-info.mk
-dpkg_late_eval ?= $(or $(value DPKG_CACHE_$(1)),$(eval DPKG_CACHE_$(1) := $(shell $(2)))$(value DPKG_CACHE_$(1)))
-DEB_VERSION = $(call dpkg_late_eval,DEB_VERSION,dpkg-parsechangelog -SVersion)
+# for DEB_VERSION
+include /usr/share/dpkg/pkg-info.mk
 
 # Override native version number with Debianized version number
 export RUMUR_VERSION=v${DEB_VERSION}
