@@ -87,6 +87,29 @@ def supports(flag: str) -> bool:
   # check whether compilation succeeded
   return p.returncode == 0
 
+def needs_libatomic() -> bool:
+  '''check whether the compiler needs -latomic for a double-word
+  compare-and-swap'''
+
+  # CAS program to ask it to compile
+  program = 'int main(void) {\n' \
+            '#if __SIZEOF_POINTER__ <= 4\n' \
+            '  uint64_t target = 0;\n' \
+            '#elif __SIZEOF_POINTER__ <= 8\n' \
+            '  unsigned __int128 target = 0;\n' \
+            '#endif\n' \
+            '  return __sync_val_compare_and_swap(&target, 0, 1);\n' \
+            '}\n'
+
+  # compile it
+  args = [CC, '-x', 'c', '-std=c11', '-', '-o', os.devnull]
+  if supports('-mcx16'):
+    args.append('-mcx16')
+  p = sp.run(args, stderr=sp.DEVNULL, input=program.encode('utf-8', 'replace'))
+
+  # check whether compilation succeeded
+  return p.returncode != 0
+
 def optimisation_flags() -> [str]:
   '''C compiler optimisation command line options for this platform'''
 
@@ -106,9 +129,8 @@ def optimisation_flags() -> [str]:
   # allow GCC to perform more advanced interprocedural optimisations
   if cc_vendor == 'gcc': flags.append('-fwhole-program')
 
-  if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
-    # GCC needs a personal invitation to use cmpxchg16b
-    flags.append('-mcx16')
+  # on platforms that need it made explicit, enable CMPXCHG16B
+  if supports('-mcx16'): flags.append('-mcx16')
 
   return flags
 
@@ -151,10 +173,7 @@ def main(args: [str]) -> int:
     aout = os.path.join(tmp, 'a.out')
     argv = [CC, '-std=c11'] + optimisation_flags() + ['-o', aout, '-x', 'c',
       '-', '-lpthread']
-    # XXX: these architectures do not have a double-word CAS, so need libatomic
-    # support
-    if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x',
-        'riscv', 'riscv32', 'riscv64'):
+    if needs_libatomic():
       argv.append('-latomic')
     cc_proc = sp.run(argv, input=checker_c)
     ok &= cc_proc.returncode == 0

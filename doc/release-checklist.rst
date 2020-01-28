@@ -44,13 +44,58 @@ package follow these steps.
    Debian version numbers are the standard (“native”) Rumur version with “-1”
    appended.
 5. Commit these changes.
-6. Run ../misc/package-for-debian.sh to prepare a new Debian package for upload.
-7. Follow further instructions in ../misc/package-for-debian.sh for testing,
-   signing, and uploading the resulting package.
+6. Push this upstream to packaging/debian.
+
+Then on a `Debian Unstable installation`_:
+
+.. code-block:: sh
+
+  # 7. Upgrade all packages.
+  sudo apt update
+  sudo apt upgrade
+
+  # 8. Clone the packaging/debian branch.
+  git clone https://github.com/Smattr/rumur -b packaging/debian
+  cd rumur
+
+  # 9. Run packaging script.
+  ./misc/package-for-debian.sh
+
+  # If any lintian errors or warnings were output, you will need to address
+  # these and then return to step 5.
+
+  # 10. Update pbuilder environment. You will need to already have a pbuilder
+  # environment created, as described in misc/package-for-debian.sh.
+  sudo pbuilder update
+
+  # 11. Test the package under pbuilder
+  pdebuild
+
+  # 12. Sign the source package that pbuilder created. You will need GPG key(s)
+  # configured.
+  debsign ../rumur_*_source.changes
+
+  # 13. Upload to the mentors inbox. You will need dput configured, as described
+  # in misc/package-for-debian.sh.
+  dput mentors ../rumur_*_source.changes
+
+In a few minutes you should get a confirmation email that the upload succeeded.
+Then:
+
+14. Follow the instructions included in the confirmation email to send a
+    `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
+    get a reply from an interested party.
+
+Note that there could still be problems with the package that a sponsor may
+request you fix. For example, there is currently no easy way to smoke test the
+autopkgtests and these could fail, preventing migration of the package to the
+main repositories.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
 .. _`Cirrus CI FreeBSD tests`: https://cirrus-ci.com/github/Smattr/rumur
+.. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
 .. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
 .. _`packaged in Debian unstable`: https://packages.debian.org/sid/rumur
+.. _`Request For Sponsorship`: https://mentors.debian.net/sponsor/rfs-howto
 .. _`upstream on Github`: https://github.com/Smattr/rumur
 .. _`Travis CI regression tests`: https://travis-ci.org/Smattr/rumur/builds/

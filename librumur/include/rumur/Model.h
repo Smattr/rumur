@@ -34,10 +34,6 @@ struct Model : public Node {
   bool operator==(const Node &other) const final;
   void validate() const final;
 
-  // DEPRECATED, DO NOT USE
-  __attribute__((deprecated("Model::assumption_count() will be removed in a future release")))
-  unsigned long assumption_count() const;
-
   /* Get the number of global liveness properties in the model. Unlike
    * assumption_count, this considers the "flat" model. That is, a
    * ruleset-contained liveness property may count for more than one.

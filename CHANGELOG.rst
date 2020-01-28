@@ -1,6 +1,38 @@
 Change log
 ==========
 
+v2020.01.27
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: quantified expressions no longer result in malformed SMT problems in
+  the SMT simplification bridge. This previously prevented some optimisation
+  that could have otherwise occurred (commit
+  2a1b724d25817b1bf9f95932ed8a4f9bb65a2af9).
+* Bug fix: pointer compression is no longer incorrectly enabled when targeting
+  the x32 ABI on Linux. This would cause assertion failures or invalid memory
+  references on this platform (commit 37cfa28ad640757eb42d4e394974ad2630987089).
+* ``forall`` and ``exists`` expressions are now supported by the SMT bridge. The
+  only remaining unsupported expressions are function calls and ``isundefined``
+  (commits 49a0d0df8d5ea67b1c26b549929f6eea361b879e,
+  5bb6144f684a905df44aa5955a8d04b37739e65c,
+  5b4e5e52e4bba0fb7ea03cb63d210701c5f3bc65,
+  5d4038c3933592b060203bda3e94b259a9ba9f43).
+* ``rumur-run`` now automatically detects whether your C compiler supports the
+  ``-mcx16`` flag and whether the checker needs to link against libatomic
+  (commits 6547e8b5022522732421ff337ab5113a19afb44a,
+  f7958a3fdad6a280360903108de5f05837fa1e5f).
+* Some compiler warnings on Linux on ARMEL have been suppressed (commit
+  b56cd94c6af0153dbdb983b8fd4177fc041526c8).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Model::assumption_count()`` which was previously deprecated has been removed
+  (commit ce2fe9d30db11dbce337355924986af48ee8878d).
+* ``Symtab::is_global_scope()`` has been deprecated and will be removed in a
+  future release (commit 7943b55ab80e0ecf3563158a2ff7b8100d60ca78).
+
 v2020.01.11
 -----------
 

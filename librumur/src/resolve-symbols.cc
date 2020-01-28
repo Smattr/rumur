@@ -227,7 +227,7 @@ class Resolver : public Traversal {
     if (n.from != nullptr && n.from->constant() &&
         n.to != nullptr && n.to->constant()) {
       auto r = dynamic_cast<Range&>(*n.decl->type);
-      // the range may have been given as even an up count or down count
+      // the range may have been given as either an up count or down count
       if (n.from->constant_fold() <= n.to->constant_fold()) {
         r.min = n.from;
         r.max = n.to;

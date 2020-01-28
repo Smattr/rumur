@@ -58,14 +58,53 @@ def which(cmd: str) -> Optional[str]:
   except sp.CalledProcessError:
     return None
 
+def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
+  if stdin is not None:
+    stdin = enc(stdin)
+  p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin)
+  return p.returncode, dec(p.stdout), dec(p.stderr)
+
 # C compiler
 CC = os.environ.get('CC', which('cc'))
 
-X86_64 = platform.machine() in ('amd64', 'x86_64')
+def has_mcx16() -> bool:
+  'does the compiler support -mcx16?'
+
+  code = 'int main(void) {\n' \
+         '  return 0;\n' \
+         '}\n'
+
+  args = [CC, '-x', 'c', '-std=c11', '-mcx16', '-', '-o', os.devnull]
+  ret, _, _ = run(args, code)
+  return ret == 0
+
+HAS_MCX16 = has_mcx16()
 
 # initial flags to pass to our C compiler
 C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
-  '-Werror=type-limits'] + (['-mcx16'] if X86_64 else [])
+  '-Werror=type-limits'] + (['-mcx16'] if HAS_MCX16 else [])
+
+def needs_libatomic() -> bool:
+  'does the toolchain need -latomic to support dword CAS?'
+
+  code = '#include <stdint.h>\n' \
+         '\n' \
+         'int main(void) {\n' \
+         '#if __SIZEOF_POINTER__ <= 4\n' \
+         '  uint64_t target = 0;\n' \
+         '#elif __SIZEOF_POINTER__ <= 8\n' \
+         '  unsigned __int128 target = 0;\n' \
+         '#endif\n' \
+         '  return (int)__sync_val_compare_and_swap(&target, 0, 1);\n' \
+         '}\n'
+
+  args = [CC, '-x', 'c', '-std=c11', '-', '-o', os.devnull]
+  if HAS_MCX16:
+    args.append('-mcx16')
+  ret, _, _ = run(args, code)
+  return ret != 0
+
+NEEDS_LIBATOMIC = needs_libatomic()
 
 VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
@@ -135,12 +174,6 @@ class TemporaryDirectory(object):
   def __exit__(self, *_):
     if self.tmp is not None:
       shutil.rmtree(self.tmp)
-
-def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
-  if stdin is not None:
-    stdin = enc(stdin)
-  p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin)
-  return p.returncode, dec(p.stdout), dec(p.stderr)
 
 HAS_VALGRIND = which('valgrind') is not None
 
@@ -233,10 +266,7 @@ class Model(Tweakable):
       model_bin = os.path.join(tmp, 'model.exe')
       args = [CC] + C_FLAGS + ['-o', model_bin, '-', '-lpthread']
 
-      # XXX: these architectures do not have a double-word CAS, so need
-      # libatomic support
-      if platform.machine() in ('mips', 'mips64', 'ppc', 'ppc64', 's390x',
-          'riscv', 'riscv32', 'riscv64'):
+      if NEEDS_LIBATOMIC:
         args.append('-latomic')
 
       # call the C compiler

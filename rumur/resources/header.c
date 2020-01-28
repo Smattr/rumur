@@ -45,7 +45,7 @@ enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 /* the size of auxliary members of the state struct */
 enum { BOUND_BITS = BITS_FOR(BOUND) };
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  #if defined(__linux__) && defined(__x86_64__)
+  #if defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
     /* assume 5-level paging, and hence the top 2 bytes of any user pointer are
      * always 0 and not required.
      * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
@@ -199,17 +199,6 @@ static void sandbox(void) {
 
     /* A BPF program that traps on any syscall we want to disallow. */
     static struct sock_filter filter[] = {
-
-#if 0
-      // TODO: The following will require some pesky ifdef mess because the
-      // Linux headers don't seem to define a "current architecture" constant.
-      /* Validate that we're running on the same architecture we were compiled
-       * for. If not, the syscall numbers we're using may be wrong.
-       */
-      BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, arch)),
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, ARCH_NR, 1, 0),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_TRAP),
-#endif
 
       /* Load syscall number. */
       BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, nr)),
@@ -968,7 +957,7 @@ static __attribute__((pure)) const struct state *state_previous_get(
     const struct state *NONNULL s) {
 #if PACK_STATE
   struct handle h = state_previous_handle(s);
-  return (const struct state*)read_raw(h);
+  return (const struct state*)(uintptr_t)read_raw(h);
 #else
   return s->previous;
 #endif
@@ -977,12 +966,12 @@ static __attribute__((pure)) const struct state *state_previous_get(
 static void state_previous_set(struct state *NONNULL s,
     const struct state *previous) {
 #if PACK_STATE
-#if defined(__linux__) && defined(__x86_64__)
+#if defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
   ASSERT(((uintptr_t)previous >> PREVIOUS_BITS) == 0
     && "upper 2 bytes of pointer are non-zero (not using 5-level paging?)");
 #endif
   struct handle h = state_previous_handle(s);
-  write_raw(h, (uint64_t)previous);
+  write_raw(h, (uint64_t)(uintptr_t)previous);
 #else
   s->previous = previous;
 #endif
