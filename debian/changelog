@@ -1,3 +1,14 @@
+rumur (2020.01.27-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * Added strace as an autopkgtests dependency.
+
+  * RUMUR_VERSION variable in rules is now set automatically from the changelog
+    using pkg-info.mk support.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Mon, 27 Jan 2020 18:26:29 -0800
+
 rumur (2020.01.11-1) unstable; urgency=medium
 
   * New upstream release.
