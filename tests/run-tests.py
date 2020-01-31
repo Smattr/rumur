@@ -111,8 +111,8 @@ VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
 AST_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
       'ast-dump.rng'))
 
-SANDBOX_SUPPORTED = os.path.abspath(os.path.join(os.path.dirname(__file__),
-  '../misc/sandbox-supported.sh'))
+SECCOMP_SUPPORTED = os.path.abspath(os.path.join(os.path.dirname(__file__),
+  '../misc/seccomp-supported.sh'))
 
 def has_sandbox() -> bool:
   'whether the current platform has sandboxing support for the verifier'
@@ -124,7 +124,7 @@ def has_sandbox() -> bool:
     return True
 
   if platform.system() == 'Linux':
-    ret, _, _ = run([SANDBOX_SUPPORTED])
+    ret, _, _ = run([SECCOMP_SUPPORTED])
     return ret == 0
 
   if platform.system() == 'OpenBSD':

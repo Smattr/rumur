@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# check whether sandboxing is supported on this platform
+# check whether seccomp sandboxing is supported on this platform
 #
 # This is useful for discriminating platforms where seccomp is unavailable or
 # configured out.
 
 
-# assume sandboxing is available on non-Linux platforms
+# assume seccomp is unavailable on non-Linux platforms
 if [ "$(uname -s)" != "Linux" ]; then
-  exit 0
+  exit 1
 fi
 
 # create a temporary space to work in
