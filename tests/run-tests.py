@@ -111,6 +111,9 @@ VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
 AST_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
       'ast-dump.rng'))
 
+SANDBOX_SUPPORTED = os.path.abspath(os.path.join(os.path.dirname(__file__),
+  '../misc/sandbox-supported.sh'))
+
 def has_sandbox() -> bool:
   'whether the current platform has sandboxing support for the verifier'
 
@@ -121,14 +124,8 @@ def has_sandbox() -> bool:
     return True
 
   if platform.system() == 'Linux':
-    release = platform.release()
-    m = re.match(r'(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)', release)
-
-    assert m is not None, 'unrecognised platform.release() string'
-
-    version = tuple(int(m.group(f)) for f in ('major', 'minor', 'patch'))
-
-    return version >= (3, 5, 0)
+    ret, _, _ = run([SANDBOX_SUPPORTED])
+    return ret == 0
 
   if platform.system() == 'OpenBSD':
     return True
