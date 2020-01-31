@@ -40,49 +40,46 @@ package follow these steps.
 2. Merge from master.
 3. Update the Debian changelog (../debian/changelog). Debian provide guidance on
    the `changelog format`_.
-4. Update ../debian/rules to set ``RUMUR_VERSION`` to the new version. Note that
-   Debian version numbers are the standard (“native”) Rumur version with “-1”
-   appended.
-5. Commit these changes.
-6. Push this upstream to packaging/debian.
+4. Commit these changes.
+5. Push this upstream to packaging/debian.
 
 Then on a `Debian Unstable installation`_:
 
 .. code-block:: sh
 
-  # 7. Upgrade all packages.
+  # 6. Upgrade all packages.
   sudo apt update
   sudo apt upgrade
 
-  # 8. Clone the packaging/debian branch.
+  # 7. Clone the packaging/debian branch.
   git clone https://github.com/Smattr/rumur -b packaging/debian
   cd rumur
 
-  # 9. Run packaging script.
+  # 8. Run packaging script.
   ./misc/package-for-debian.sh
 
   # If any lintian errors or warnings were output, you will need to address
-  # these and then return to step 5.
+  # these and then return to step 4.
 
-  # 10. Update pbuilder environment. You will need to already have a pbuilder
+  # 9. Update pbuilder environment. You will need to already have a pbuilder
   # environment created, as described in misc/package-for-debian.sh.
   sudo pbuilder update
 
-  # 11. Test the package under pbuilder
+  # 10. Test the package under pbuilder
   pdebuild
 
-  # 12. Sign the source package that pbuilder created. You will need GPG key(s)
+  # 11. Sign the source package that pbuilder created. You will need GPG key(s)
   # configured.
   debsign ../rumur_*_source.changes
 
-  # 13. Upload to the mentors inbox. You will need dput configured, as described
+  # 12. Upload to the mentors inbox. You will need dput configured, as described
   # in misc/package-for-debian.sh.
   dput mentors ../rumur_*_source.changes
 
 In a few minutes you should get a confirmation email that the upload succeeded.
 Then:
 
-14. Follow the instructions included in the confirmation email to send a
+13. Follow the instructions included in the confirmation email to send a
     `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
     get a reply from an interested party.
 
