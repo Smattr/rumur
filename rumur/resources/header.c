@@ -645,6 +645,21 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
+static bool is_big_endian(void) {
+
+  union {
+    uint32_t x;
+    uint8_t y[sizeof(uint32_t)];
+  } z;
+
+  z.y[0] = 1;
+  z.y[1] = 2;
+  z.y[2] = 3;
+  z.y[3] = 4;
+
+  return z.x == 0x01020304;
+}
+
 static uint64_t copy_out64(const uint8_t *p, size_t extent) {
 
   ASSERT(extent <= sizeof(uint64_t));
@@ -652,16 +667,38 @@ static uint64_t copy_out64(const uint8_t *p, size_t extent) {
   uint64_t x = 0;
   memcpy(&x, p, extent);
 
+  if (is_big_endian()) {
+    x = __builtin_bswap64(x);
+  }
+
   return x;
 }
 
 #ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static unsigned __int128 byte_swap128(unsigned __int128 x) {
+
+  union {
+    unsigned __int128 a;
+    uint64_t b[2];
+  } in, out;
+
+  in.a = x;
+  out.b[0] = __builtin_bswap64(in.b[1]);
+  out.b[1] = __builtin_bswap64(in.b[0]);
+
+  return out.a;
+}
+
 static unsigned __int128 copy_out128(const uint8_t *p, size_t extent) {
 
   ASSERT(extent <= sizeof(unsigned __int128));
 
   unsigned __int128 x = 0;
   memcpy(&x, p, extent);
+
+  if (is_big_endian()) {
+    x = byte_swap128(x);
+  }
 
   return x;
 }
@@ -795,12 +832,22 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
 
 static void copy_in64(uint8_t *p, uint64_t v, size_t extent) {
   ASSERT(extent <= sizeof(v));
+
+  if (is_big_endian()) {
+    v = __builtin_bswap64(v);
+  }
+
   memcpy(p, &v, extent);
 }
 
 #ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
 static void copy_in128(uint8_t *p, unsigned __int128 v, size_t extent) {
   ASSERT(extent <= sizeof(v));
+
+  if (is_big_endian()) {
+    v = byte_swap128(v);
+  }
+
   memcpy(p, &v, extent);
 }
 #endif
