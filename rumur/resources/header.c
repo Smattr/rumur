@@ -645,6 +645,28 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
+static uint64_t copy_out64(const uint8_t *p, size_t extent) {
+
+  ASSERT(extent <= sizeof(uint64_t));
+
+  uint64_t x = 0;
+  memcpy(&x, p, extent);
+
+  return x;
+}
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static unsigned __int128 copy_out128(const uint8_t *p, size_t extent) {
+
+  ASSERT(extent <= sizeof(unsigned __int128));
+
+  unsigned __int128 x = 0;
+  memcpy(&x, p, extent);
+
+  return x;
+}
+#endif
+
 // TODO: The logic in this function is complex and fiddly. It would be desirable
 // to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
 // the correct result.
@@ -701,7 +723,7 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
     }
     {
       const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
+      low = copy_out128(src, low_size);
     }
 
     low >>= h.offset;
@@ -713,7 +735,7 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
     if (high_size != 0) {
       unsigned __int128 high = 0;
       const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
+      high = copy_out128(src, high_size);
 
       high <<= sizeof(low) * 8 - h.offset;
 
@@ -742,7 +764,7 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
   }
   {
     const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
+    low = copy_out64(src, low_size);
   }
 
   low >>= h.offset;
@@ -752,9 +774,8 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
   /* If the value could not be read into a single word... */
   ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
   if (high_size != 0) {
-    uint64_t high = 0;
     const uint8_t *src = aligned.base + sizeof(low);
-    memcpy(&high, src, high_size);
+    uint64_t high = copy_out64(src, high_size);
 
     high <<= sizeof(low) * 8 - h.offset;
 
@@ -771,6 +792,18 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
 
   return low;
 }
+
+static void copy_in64(uint8_t *p, uint64_t v, size_t extent) {
+  ASSERT(extent <= sizeof(v));
+  memcpy(p, &v, extent);
+}
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static void copy_in128(uint8_t *p, unsigned __int128 v, size_t extent) {
+  ASSERT(extent <= sizeof(v));
+  memcpy(p, &v, extent);
+}
+#endif
 
 static void write_raw(struct handle h, uint64_t v) {
 
@@ -798,7 +831,7 @@ static void write_raw(struct handle h, uint64_t v) {
     }
     {
       const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
+      low = copy_out128(src, low_size);
     }
 
     {
@@ -817,7 +850,7 @@ static void write_raw(struct handle h, uint64_t v) {
 
     {
       uint8_t *dest = aligned.base;
-      memcpy(dest, &low, low_size);
+      copy_in128(dest, low, low_size);
     }
 
     /* Now do the second double-word if necessary. */
@@ -829,7 +862,7 @@ static void write_raw(struct handle h, uint64_t v) {
       unsigned __int128 high = 0;
       {
         const uint8_t *src = aligned.base + sizeof(low);
-        memcpy(&high, src, high_size);
+        high = copy_out128(src, high_size);
       }
 
       {
@@ -843,7 +876,7 @@ static void write_raw(struct handle h, uint64_t v) {
 
       {
         uint8_t *dest = aligned.base + sizeof(low);
-        memcpy(dest, &high, high_size);
+        copy_in128(dest, high, high_size);
       }
     }
 
@@ -861,7 +894,7 @@ static void write_raw(struct handle h, uint64_t v) {
   }
   {
     const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
+    low = copy_out64(src, low_size);
   }
 
   {
@@ -880,7 +913,7 @@ static void write_raw(struct handle h, uint64_t v) {
 
   {
     uint8_t *dest = aligned.base;
-    memcpy(dest, &low, low_size);
+    copy_in64(dest, low, low_size);
   }
 
   size_t high_size = aligned.width / 8 - low_size;
@@ -890,7 +923,7 @@ static void write_raw(struct handle h, uint64_t v) {
     uint64_t high = 0;
     {
       const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
+      high = copy_out64(src, high_size);
     }
 
     {
@@ -903,7 +936,7 @@ static void write_raw(struct handle h, uint64_t v) {
 
     {
       uint8_t *dest = aligned.base + sizeof(low);
-      memcpy(dest, &high, high_size);
+      copy_in64(dest, high, high_size);
     }
   }
 }
