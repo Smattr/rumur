@@ -2246,7 +2246,7 @@ static uintptr_t double_ptr_extract2(double_ptr_t p) {
     "enough to fit two pointers");
 
   uintptr_t q;
-  memcpy (&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+  memcpy(&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
 
   return q;
 }
