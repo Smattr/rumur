@@ -704,9 +704,9 @@ static unsigned __int128 copy_out128(const uint8_t *p, size_t extent) {
 }
 #endif
 
-// TODO: The logic in this function is complex and fiddly. It would be desirable
-// to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
-// the correct result.
+/* If you are in the Rumur repository modifying the following function, remember
+ * to also update ../../misc/read-raw.smt2.
+ */
 static __attribute__((pure)) uint64_t read_raw(struct handle h) {
 
   /* a uint64_t is the maximum value we support reading */
