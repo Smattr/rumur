@@ -250,7 +250,7 @@
 ; memcpy(&low5, h_base, low_size4);
 (declare-fun low5 () (_ BitVec 64))
 (assert (= low5 (bvor
-  (ite (bvugt low_size4 (_ bv0 64)) ((_ zero_extend 56) ((_ extract 7 0) h_base)) (_ bv0 64))
+  (ite (bvugt low_size4 (_ bv0 64))        ((_ zero_extend 56) ((_ extract  7  0) h_base)) (_  bv0 64))
   (ite (bvugt low_size4 (_ bv1 64)) (bvshl ((_ zero_extend 56) ((_ extract 15  8) h_base)) (_  bv8 64)) (_ bv0 64))
   (ite (bvugt low_size4 (_ bv2 64)) (bvshl ((_ zero_extend 56) ((_ extract 23 16) h_base)) (_ bv16 64)) (_ bv0 64))
   (ite (bvugt low_size4 (_ bv3 64)) (bvshl ((_ zero_extend 56) ((_ extract 31 24) h_base)) (_ bv24 64)) (_ bv0 64))
