@@ -35,7 +35,7 @@
 ;
 ;   uint128_t low2 = u128_branch ? low >> h_offset : 0;
 ;
-;   size_t high_size = u128_branch ? aligned_width / 8 - low_size : 0;
+;   size_t high_size = u128_branch ? aligned_width / 8 - low_size2 : 0;
 ;
 ;   // inline copy_out128()
 ;   uint128_t high = 0;
@@ -167,11 +167,11 @@
     (bvlshr low ((_ zero_extend 64) h_offset))
     (_ bv0 128))))
 
-; size_t high_size = u128_branch ? aligned_width / 8 - low_size : 0;
+; size_t high_size = u128_branch ? aligned_width / 8 - low_size2 : 0;
 (declare-fun high_size () (_ BitVec 64))
 (assert (= high_size
   (ite u128_branch
-    (bvsub (bvudiv aligned_width (_ bv8 64)) low_size)
+    (bvsub (bvudiv aligned_width (_ bv8 64)) low_size2)
     (_ bv0 64))))
 
 ; u128_branch ? high_size != 0 ? memcpy(&high, h_base + sizeof(low2), high_size) : (void) : (void);
