@@ -32,7 +32,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
 endif()
 
-add_subdirectory(ast-dump)
+add_subdirectory(murphi2xml)
 add_subdirectory(librumur)
 add_subdirectory(rumur)
 

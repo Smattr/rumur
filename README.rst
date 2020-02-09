@@ -64,11 +64,11 @@ Then:
 
 Compilation produces several artefacts including the `rumur` binary itself:
 
-* bin/rumur: Tool for translating a Murphi model into a program that implements
+* rumur: Tool for translating a Murphi model into a program that implements
   a checker;
-* bin/rumur-ast-dump: Tool for emitting an XML representation of a Murphi
-  model's Abstract Syntax Tree;
-* lib/librumur.a: A library for building your own Murphi model tools; and
+* murphi2xml: Tool for emitting an XML representation of a Murphi model’s
+  Abstract Syntax Tree;
+* librumur.a: A library for building your own Murphi model tools; and
 * include/rumur/: The API for the above library.
 
 Comparison with CMurphi
