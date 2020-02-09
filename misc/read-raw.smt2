@@ -203,7 +203,7 @@
 (assert (= high2
   (ite u128_branch
     (ite (not (= high_size (_ bv0 64)))
-      (bvlshr high (bvsub (bvmul (_ bv16 128) (_ bv8 128)) ((_ zero_extend 64) h_offset)))
+      (bvshl high (bvsub (bvmul (_ bv16 128) (_ bv8 128)) ((_ zero_extend 64) h_offset)))
       (_ bv0 128))
     (_ bv0 128))))
 
