@@ -75,7 +75,7 @@
 ;   u128_branch ? (void) : high_size2 != 0 ? memcpy(&high3, h_base4 + sizeof(low4), high_size2) : (void);
 ;
 ;   uint64_t or_mask6 = u128_branch ? 0 : high_size2 != 0 ? ((uint64_t)v) >> (sizeof(low4) * 8 - h_offset) : 0;
-;   uint64_t and_mask6 = u128_branch ? 0 : high_size2 != 0 ? (~UINT64_C(0)) & ~((UINT64_C(1) << (h_width + h_offset - sizeof(low4) * 8)) - 1) : 0;
+;   uint64_t and_mask6 = u128_branch ? 0 : high_size2 != 0 ? ~((UINT64_C(1) << (h_width + h_offset - sizeof(low4) * 8)) - 1) : 0;
 ;
 ;   uint64_t high4 = u128_branch ? 0 : high_size2 != 0 ? (high3 & and_mask6) | or_mask6 : 0;
 ;
@@ -459,14 +459,14 @@
       (bvlshr ((_ extract 63 0) v) (bvsub (bvmul (_ bv8 64) (_ bv8 64)) h_offset))
       (_ bv0 64)))))
 
-; uint64_t and_mask6 = u128_branch ? 0 : high_size2 != 0 ? (~UINT64_C(0)) & ~((UINT64_C(1) << (h_width + h_offset - sizeof(low4) * 8)) - 1) : 0;
+; uint64_t and_mask6 = u128_branch ? 0 : high_size2 != 0 ? ~((UINT64_C(1) << (h_width + h_offset - sizeof(low4) * 8)) - 1) : 0;
 (declare-fun and_mask6 () (_ BitVec 64))
 (assert (= and_mask6 (ite
   u128_branch
     (_ bv0 64)
     (ite
       (not (= high_size2 (_ bv0 64)))
-      (bvand (bvnot (_ bv0 64)) (bvnot (bvsub (bvshl (_ bv1 64) (bvsub (bvadd h_width h_offset) (_ bv64 64))) (_ bv1 64))))
+      (bvnot (bvsub (bvshl (_ bv1 64) (bvsub (bvadd h_width h_offset) (_ bv64 64))) (_ bv1 64)))
       (_ bv0 64)))))
 
 ; uint64_t high4 = u128_branch ? 0 : high_size2 != 0 ? (high3 & and_mask6) | or_mask6 : 0;
