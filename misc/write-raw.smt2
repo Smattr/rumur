@@ -483,7 +483,8 @@
             (ite (bvugt high_size2 (_ bv4 64)) (bvshl ((_ zero_extend 128) ((_ extract 39 32) high4)) (_  bv96 136)) (bvshl ((_ zero_extend 128) ((_ extract 103  96) h_base4)) (_  bv96 136)))
             (ite (bvugt high_size2 (_ bv5 64)) (bvshl ((_ zero_extend 128) ((_ extract 47 40) high4)) (_ bv104 136)) (bvshl ((_ zero_extend 128) ((_ extract 111 104) h_base4)) (_ bv104 136)))
             (ite (bvugt high_size2 (_ bv6 64)) (bvshl ((_ zero_extend 128) ((_ extract 55 48) high4)) (_ bv112 136)) (bvshl ((_ zero_extend 128) ((_ extract 119 112) h_base4)) (_ bv112 136)))
-            (ite (bvugt high_size2 (_ bv7 64)) (bvshl ((_ zero_extend 128) ((_ extract 63 56) high4)) (_ bv120 136)) (bvshl ((_ zero_extend 128) ((_ extract 127 120) h_base4)) (_ bv120 136))))
+            (ite (bvugt high_size2 (_ bv7 64)) (bvshl ((_ zero_extend 128) ((_ extract 63 56) high4)) (_ bv120 136)) (bvshl ((_ zero_extend 128) ((_ extract 127 120) h_base4)) (_ bv120 136)))
+            (bvshl ((_ zero_extend 128) ((_ extract 135 128) h_base4)) (_ bv128 136)))
       h_base4))))
 
 
