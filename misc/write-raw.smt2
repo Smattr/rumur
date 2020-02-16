@@ -114,7 +114,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; transliterate the implementation
+; translate this
+;
+;  /* sanitise input value */
+;  if (h.width < sizeof(v) * 8) {
+;    v &= (UINT64_C(1) << h.width) - 1;
+;  }
+;
+; into an assumption on the input
+(assert (bvult v (bvshl (_ bv1 128) ((_ zero_extend 64) h_width))))
+
+; now transliterate the implementation
 
 ; size_t width = h_width + h_offset;
 (declare-fun width () (_ BitVec 64))

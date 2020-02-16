@@ -858,6 +858,11 @@ static void write_raw(struct handle h, uint64_t v) {
     return;
   }
 
+  /* sanitise input value */
+  if (h.width < sizeof(v) * 8) {
+    v &= (UINT64_C(1) << h.width) - 1;
+  }
+
   /* Generate a offset- and width-aligned handle on byte boundaries. */
   struct handle aligned = handle_align(h);
   ASSERT(aligned.offset == 0);
