@@ -59,8 +59,8 @@
 ;   uint64_t or_mask5 = u128_branch ? 0 : low_size4 < sizeof(low3) ? or_mask4 & ((UINT64_C(1) << (low_size4 * 8)) - 1) : or_mask4;
 ;
 ;   uint64_t and_mask4 = u128_branch ? 0 : (UINT64_C(1) << h_offset) - 1;
-;   size_t high_bits2 = u128_branch ? 0 : low_size4 < sizeof(low3) ? aligned_width - h_offset - h_width : 0;
-;   uint64_t and_mask5 = u128_branch ? 0 : low_size4 < sizeof(low3) ? and_mask4 | (((UINT64_C(1) << high_bits2) - 1) << (low_size4 * 8 - high_bits2)) : and_mask4;
+;   size_t high_bits2 = u128_branch ? 0 : h_width + h_offset < sizeof(low3) * 8 ? aligned_width - h_offset - h_width : 0;
+;   uint64_t and_mask5 = u128_branch ? 0 : h_wdith + h_offset < sizeof(low3) * 8 ? and_mask4 | (((UINT64_C(1) << high_bits2) - 1) << (low_size4 * 8 - high_bits2)) : and_mask4;
 ;
 ;   uint64_t low4 = u128_branch ? 0 : (low3 & and_mask5) | or_mask5;
 ;
@@ -382,23 +382,23 @@
     (_ bv0 64)
     (bvsub (bvshl (_ bv1 64) h_offset) (_ bv1 64)))))
 
-; size_t high_bits2 = u128_branch ? 0 : low_size4 < sizeof(low3) ? aligned_width - h_offset - h_width : 0;
+; size_t high_bits2 = u128_branch ? 0 : h_wdith + h_offset < sizeof(low3) * 8 ? aligned_width - h_offset - h_width : 0;
 (declare-fun high_bits2 () (_ BitVec 64))
 (assert (= high_bits2 (ite
   u128_branch
     (_ bv0 64)
     (ite
-      (bvult low_size4 (_ bv8 64))
+      (bvult (bvadd h_width h_offset) (bvmul (_ bv8 64) (_ bv8 64)))
       (bvsub (bvsub aligned_width h_offset) h_width)
       (_ bv0 64)))))
 
-; uint64_t and_mask5 = u128_branch ? 0 : low_size4 < sizeof(low3) ? and_mask4 | (((UINT64_C(1) << high_bits2) - 1) << (low_size4 * 8 - high_bits2)) : and_mask4;
+; uint64_t and_mask5 = u128_branch ? 0 : h_width + h_offset < sizeof(low3) * 8 ? and_mask4 | (((UINT64_C(1) << high_bits2) - 1) << (low_size4 * 8 - high_bits2)) : and_mask4;
 (declare-fun and_mask5 () (_ BitVec 64))
 (assert (= and_mask5 (ite
   u128_branch
     (_ bv0 64)
     (ite
-      (bvult low_size4 (_ bv8 64))
+      (bvult (bvadd h_width h_offset) (bvmul (_ bv8 64) (_ bv8 64)))
       (bvor and_mask4 (bvshl (bvsub (bvshl (_ bv1 64) high_bits2) (_ bv1 64)) (bvsub (bvmul low_size4 (_ bv8 64)) high_bits2)))
       and_mask4))))
 

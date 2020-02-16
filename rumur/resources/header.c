@@ -955,7 +955,7 @@ static void write_raw(struct handle h, uint64_t v) {
       or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
     }
     uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
-    if (low_size < sizeof(low)) {
+    if (h.width + h.offset < sizeof(low) * 8) {
       size_t high_bits = aligned.width - h.offset - h.width;
       and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
     }
