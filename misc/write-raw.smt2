@@ -36,7 +36,7 @@
 ;   u128_branch ? high_size != 0 ? memcpy(&high, h_base + sizeof(low2), high_size) : (void) : (void);
 ;
 ;   uint128_t or_mask3 = u128_branch ? high_size != 0 ? ((uint128_t)v) >> (sizeof(low2) * 8 - h_offset) : 0 : 0;
-;   uint128_t and_mask3 = u128_branch ? high_size != 0 ? (~((uint128_t)0)) & ~((((uint128_t)1) << (aligned_width - h_width)) - 1) : 0 : 0;
+;   uint128_t and_mask3 = u128_branch ? high_size != 0 ? (~((uint128_t)0)) & ~((((uint128_t)1) << (aligned_width - h_width - h_offset)) - 1) : 0 : 0;
 ;
 ;   uint128_t high2 = u128_branch ? high_size != 0 ? (high & and_mask3) | or_mask3 : 0 : 0;
 ;
@@ -286,13 +286,13 @@
       (_ bv0 128))
     (_ bv0 128))))
 
-; uint128_t and_mask3 = u128_branch ? high_size != 0 ? (~((uint128_t)0)) & ~((((uint128_t)1) << (aligned_width - h_width)) - 1) : 0 : 0;
+; uint128_t and_mask3 = u128_branch ? high_size != 0 ? (~((uint128_t)0)) & ~((((uint128_t)1) << (aligned_width - h_width - h_offset)) - 1) : 0 : 0;
 (declare-fun and_mask3 () (_ BitVec 128))
 (assert (= and_mask3 (ite
   u128_branch
     (ite
       (not (= high_size (_ bv0 64)))
-      (bvand (bvnot (_ bv0 128)) (bvnot (bvsub (bvshl (_ bv1 128) ((_ zero_extend 64) (bvsub aligned_width h_width))) (_ bv1 128))))
+      (bvand (bvnot (_ bv0 128)) (bvnot (bvsub (bvshl (_ bv1 128) ((_ zero_extend 64) (bvsub (bvsub aligned_width h_width) h_offset))) (_ bv1 128))))
       (_ bv0 128))
     (_ bv0 128))))
 
