@@ -20,8 +20,8 @@
 ;   uint128_t or_mask2 = u128_branch ? low_size2 < sizeof(low) ? or_mask & ((((uint128_t)1) << (low_size2 * 8)) - 1) : or_mask : 0;
 ;
 ;   uint128_t and_mask = u128_branch ? (((uint128_t)1) << h_offset) - 1 : 0;
-;   size_t high_bits = u128_branch ? low_size2 < sizeof(low) ? aligned_width - h_offset - h_width : 0 : 0;
-;   uint128_t and_mask2 = u128_branch ? low_size2 < sizeof(low) ? and_mask | (((((uint128_t)1) << high_bits) - 1) << (low_size2 * 8 - high_bits)) : and_mask : 0;
+;   size_t high_bits = u128_branch ? h_width + h_offset < sizeof(low) * 8 ? aligned_width - h_offset - h_width : 0 : 0;
+;   uint128_t and_mask2 = u128_branch ? h_width + h_offset < sizeof(low) * 8 ? and_mask | (((((uint128_t)1) << high_bits) - 1) << (low_size2 * 8 - high_bits)) : and_mask : 0;
 ;
 ;   uint128_t low2 = u128_branch ? (low & and_mask2) | or_mask2 : 0;
 ;
@@ -204,22 +204,22 @@
     (bvsub (bvshl (_ bv1 128) ((_ zero_extend 64) h_offset)) (_ bv1 128))
     (_ bv0 128))))
 
-; size_t high_bits = u128_branch ? low_size2 < sizeof(low) ? aligned_width - h_offset - h_width : 0 : 0;
+; size_t high_bits = u128_branch ? h_width + h_offset < sizeof(low) * 8 ? aligned_width - h_offset - h_width : 0 : 0;
 (declare-fun high_bits () (_ BitVec 64))
 (assert (= high_bits (ite
   u128_branch
     (ite
-      (bvult low_size2 (_ bv16 64))
+      (bvult (bvadd h_width h_offset) (bvmul (_ bv16 64) (_ bv8 64)))
       (bvsub (bvsub aligned_width h_offset) h_width)
       (_ bv0 64))
     (_ bv0 64))))
 
-; uint128_t and_mask2 = u128_branch ? low_size2 < sizeof(low) ? and_mask | (((((uint128_t)1) << high_bits) - 1) << (low_size2 * 8 - high_bits)) : and_mask : 0;
+; uint128_t and_mask2 = u128_branch ? h_width + h_offset < sizeof(low) * 8 ? and_mask | (((((uint128_t)1) << high_bits) - 1) << (low_size2 * 8 - high_bits)) : and_mask : 0;
 (declare-fun and_mask2 () (_ BitVec 128))
 (assert (= and_mask2 (ite
   u128_branch
     (ite
-      (bvult low_size2 (_ bv16 64))
+      (bvult (bvadd h_width h_offset) (bvmul (_ bv16 64) (_ bv8 64)))
       (bvor and_mask (bvshl (bvsub (bvshl (_ bv1 128) ((_ zero_extend 64) high_bits)) (_ bv1 128)) (bvsub (bvmul ((_ zero_extend 64) low_size2) (_ bv8 128)) ((_ zero_extend 64) high_bits))))
       and_mask)
     (_ bv0 128))))
