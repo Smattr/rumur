@@ -1,6 +1,38 @@
 Change log
 ==========
 
+v2020.02.17
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: several latent bugs in the verifier’s state writing code have been
+  fixed. These only affected large scalar types (> 49-bit) which were not known
+  to be used in any existing real world models (commits
+  2d27f8b97aa2d24caf217a97a6df7de11e70b1b4,
+  7bbf8498c42ca8f19a059acc8169be2559b81427,
+  fa87b0a361b1f7dd9fc436c063ffa5a1d4529ee6,
+  5b4d7154902d8474f6d0233e5af9f3bd85b0a628,
+  410fdbe533c3597bc2029f63e0426f56250c52bf).
+* The ``rumur-ast-dump`` utility has been renamed to ``murphi2xml`` to more
+  obviously indicate its purpose (commit
+  d5cb6a6f88498e9d8c999540f66cc838ffe1707a).
+* When generating a sandboxed verifier (``--sandbox on``), some further
+  time-related system calls are now allowed. This allows the verifier to run
+  correctly on platforms that do not have these system calls implemented in
+  vDSO_ (commits 3ee7d3d3c2f4f35d86b59b6de7139feae8763b4c,
+  498853681c25272e23cf480c6c8d7269f23a974c).
+* The verifier’s state reading and writing functions now anticipate that the
+  host platform may be big endian. Full big endian support will require further
+  changes, but this is a first step (commit
+  8f7bb60c1bc82638dd4ed5f2248c44cd47436461).
+
+.. _vDSO: https://en.wikipedia.org/wiki/VDSO
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2020.01.27
 -----------
 
