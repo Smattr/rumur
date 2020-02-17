@@ -498,38 +498,44 @@
             (bvshl ((_ zero_extend 128) ((_ extract 135 128) h_base4)) (_ bv128 136)))
       h_base4))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; now we can prove a number of interesting things
+(assert (not (and
 
   ; on the 128-bit branch, the input value is correctly written to the store
-;(assert (not (or (not u128_branch)
-;  (= (bvlshr (bvand h_base3 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) (bvadd h_width h_offset))) (_ bv1 136))) ((_ zero_extend 72) h_offset))
-;     (bvand ((_ zero_extend 8) v) (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_width)) (_ bv1 136)))))))
+	(or (not u128_branch)
+	  (= (bvlshr (bvand h_base3 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) (bvadd h_width h_offset))) (_ bv1 136))) ((_ zero_extend 72) h_offset))
+	     (bvand ((_ zero_extend 8) v) (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_width)) (_ bv1 136)))))
+
+  ; on the 128-bit branch, all bits below the store range are unaffected
+	(or (not u128_branch) (= h_offset (_ bv0 64))
+	  (= (bvand h_base  (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))
+	     (bvand h_base3 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))))
+
+  ; on the 128-bit branch, all bits above the store range are unaffected
+	(or (not u128_branch)
+	  (= (bvlshr h_base  ((_ zero_extend 72) (bvadd h_width h_offset)))
+	     (bvlshr h_base3 ((_ zero_extend 72) (bvadd h_width h_offset)))))
 
   ; on the 64-bit branch with a width ≤ 64, the input value is correctly
   ; written to the store
-;(assert (not (or u128_branch (bvugt h_width (_ bv64 64))
-;  (= (bvlshr (bvand h_base5 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) (bvadd h_width h_offset))) (_ bv1 136))) ((_ zero_extend 72) h_offset))
-;     (bvand ((_ zero_extend 8) v) (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_width)) (_ bv1 136)))))))
-
-  ; on the 128-bit branch, all bits below the store range are unaffected
-;(assert (not (or (not u128_branch) (= h_offset (_ bv0 64))
-;  (= (bvand h_base  (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))
-;     (bvand h_base3 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))))))
-
-  ; on the 128-bit branch, all bits above the store range are unaffected
-;(assert (not (or (not u128_branch)
-;  (= (bvlshr h_base  ((_ zero_extend 72) (bvadd h_width h_offset)))
-;     (bvlshr h_base3 ((_ zero_extend 72) (bvadd h_width h_offset)))))))
+	(or u128_branch (bvugt h_width (_ bv64 64))
+	  (= (bvlshr (bvand h_base5 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) (bvadd h_width h_offset))) (_ bv1 136))) ((_ zero_extend 72) h_offset))
+	     (bvand ((_ zero_extend 8) v) (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_width)) (_ bv1 136)))))
 
   ; on the 64-bit branch with a width ≤ 64, all bits below the store range are
   ; unaffected
-;(assert (not (or u128_branch (= h_offset (_ bv0 64)) (bvugt h_width (_ bv64 64))
-;  (= (bvand h_base  (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))
-;     (bvand h_base5 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))))))
+	(or u128_branch (= h_offset (_ bv0 64)) (bvugt h_width (_ bv64 64))
+	  (= (bvand h_base  (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))
+	     (bvand h_base5 (bvsub (bvshl (_ bv1 136) ((_ zero_extend 72) h_offset)) (_ bv1 136)))))
 
   ; on the 64-bit branch with a width ≤ 64, all bits above the store range are
   ; unaffected
-;(assert (not (or u128_branch (bvugt h_width (_ bv64 64))
-;  (= (bvlshr h_base  ((_ zero_extend 72) (bvadd h_width h_offset)))
-;     (bvlshr h_base5 ((_ zero_extend 72) (bvadd h_width h_offset)))))))
+	(or u128_branch (bvugt h_width (_ bv64 64))
+	  (= (bvlshr h_base  ((_ zero_extend 72) (bvadd h_width h_offset)))
+	     (bvlshr h_base5 ((_ zero_extend 72) (bvadd h_width h_offset)))))
+
+	)))
 
 (check-sat)
