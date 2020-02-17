@@ -1,8 +1,15 @@
 ; proof of correctness of write_raw()
 
-; TODO: introductory explanation of how this is similar to the read_raw() proof
-
-; TODO: explanation of the following SSA
+; Similar to read-raw.smt2, the following proves that write_raw() does what it
+; is intended to do. Unlike the read_raw() proof, we cannot write a simple
+; equivalence to describe write_raw()’s correctness because we want to prove
+; multiple things. Namely, (1) it writes the given value to the target byte
+; buffer and (2) it does not overwrite any unrelated bits.
+;
+; The implementation of write_raw() can be viewed in
+; ../rumur/resources/header.c. To begin with, we transform it into a branchless
+; Static Single Assignment (SSA) form:
+;
 ;   // inline handle_align()
 ;   size_t width = h_width + h_offset;
 ;   size_t aligned_width = width % 8 != 0 ? width + 8 - width % 8 : width;
@@ -82,6 +89,8 @@
 ;   // inline copy_in64()
 ;   void *h_base5 = h_base4;
 ;   u128_branch ? (void) : high_size2 != 0 ? memcpy(h_base5 + sizeof(low4), &high4, high_size2) : (void);
+;
+; Now we can start translating to SMT.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -124,7 +133,7 @@
 ; into an assumption on the input
 (assert (bvult v (bvshl (_ bv1 128) ((_ zero_extend 64) h_width))))
 
-; now transliterate the implementation
+; now transliterate the rest of the implementation
 
 ; size_t width = h_width + h_offset;
 (declare-fun width () (_ BitVec 64))
@@ -500,7 +509,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; now we can prove a number of interesting things
+; We can now prove the specification we described at the top of this file.
+
 (assert (not (and
 
   ; on the 128-bit branch, the input value is correctly written to the store

@@ -852,6 +852,9 @@ static void copy_in128(uint8_t *p, unsigned __int128 v, size_t extent) {
 }
 #endif
 
+/* If you are in the Rumur repository modifying the following function, remember
+ * to also update ../../misc/write-raw.smt2.
+ */
 static void write_raw(struct handle h, uint64_t v) {
 
   if (h.width == 0) {
