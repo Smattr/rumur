@@ -921,7 +921,7 @@ static void write_raw(struct handle h, uint64_t v) {
         unsigned __int128 or_mask
           = ((unsigned __int128)v) >> (sizeof(low) * 8 - h.offset);
         unsigned __int128 and_mask
-          = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
+          = ~((((unsigned __int128)1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
 
         high = (high & and_mask) | or_mask;
       }
