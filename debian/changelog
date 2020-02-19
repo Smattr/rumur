@@ -1,3 +1,21 @@
+rumur (2020.02.17-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * The installed binary that was previously called rumur-ast-dump is now called
+    murphi2xml, due to an upstream change.
+
+  * Update autopkgtest tests to now reference murphi2xml instead of
+    rumur-ast-dump.
+
+  * The build test suite now runs single threaded, due to an upstream change,
+    partially addressing #951497.
+
+  * Correct watch file to only scan for upstream releases, instead of also
+    matching Debian tags.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Tue, 18 Feb 2020 18:15:52 -0800
+
 rumur (2020.01.27-1) unstable; urgency=medium
 
   * New upstream release.
