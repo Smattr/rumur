@@ -108,8 +108,11 @@ NEEDS_LIBATOMIC = needs_libatomic()
 
 VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
-AST_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
-      'ast-dump.rng'))
+MURPHI2XML_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
+      'murphi2xml.rng'))
+
+SECCOMP_SUPPORTED = os.path.abspath(os.path.join(os.path.dirname(__file__),
+  '../misc/seccomp-supported.sh'))
 
 def has_sandbox() -> bool:
   'whether the current platform has sandboxing support for the verifier'
@@ -121,14 +124,8 @@ def has_sandbox() -> bool:
     return True
 
   if platform.system() == 'Linux':
-    release = platform.release()
-    m = re.match(r'(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)', release)
-
-    assert m is not None, 'unrecognised platform.release() string'
-
-    version = tuple(int(m.group(f)) for f in ('major', 'minor', 'patch'))
-
-    return version >= (3, 5, 0)
+    ret, _, _ = run([SECCOMP_SUPPORTED])
+    return ret == 0
 
   if platform.system() == 'OpenBSD':
     return True
@@ -314,19 +311,19 @@ class Executable(Test):
            Skip(output.strip()) if ret == 125 else \
            Fail(output)
 
-class ASTDumpTest(Tweakable):
+class Murphi2XMLTest(Tweakable):
   def __init__(self, model: str):
     super().__init__()
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
     return f'----{"V" if HAS_VALGRIND else " "} ' \
-           f'rumur-ast-dump {os.path.basename(self.model)}'
+           f'murphi2xml {os.path.basename(self.model)}'
   def run(self) -> Result:
 
     self.apply_options(self.model)
 
-    args = ['rumur-ast-dump', self.model]
+    args = ['murphi2xml', self.model]
     if HAS_VALGRIND:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
@@ -335,15 +332,14 @@ class ASTDumpTest(Tweakable):
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
-    # if rumur was expected to reject this model, we allow ast-dump to fail
+    # if rumur was expected to reject this model, we allow murphi2xml to fail
     if self.rumur_exit_code == 0 and ret != 0:
-      return Fail(
-        f'Unexpected rumur-ast-dump exit status {ret}:\n{stdout}{stderr}')
+      return Fail(f'Unexpected murphi2xml exit status {ret}:\n{stdout}{stderr}')
 
     if ret != 0:
       return None
 
-    # ast-dump will have written XML to its stdout
+    # murphi2xml will have written XML to its stdout
     xmlcontent = stdout
 
     # See if we have xmllint
@@ -351,8 +347,8 @@ class ASTDumpTest(Tweakable):
       return Skip('xmllint not available for validation')
 
     # Validate the XML
-    ret, stdout, stderr = run(['xmllint', '--relaxng', AST_RNG, '--noout', '-'],
-      xmlcontent)
+    ret, stdout, stderr = run(['xmllint', '--relaxng', MURPHI2XML_RNG,
+      '--noout', '-'], xmlcontent)
     if ret != 0:
       return Fail(f'Failed to validate:\n{stdout}{stderr}')
 
@@ -423,7 +419,7 @@ def main(args: [str]) -> int:
       index += 1
 
     if in_range(index):
-      tests.append(ASTDumpTest(path))
+      tests.append(Murphi2XMLTest(path))
     index += 1
 
   if len(tests) == 0:

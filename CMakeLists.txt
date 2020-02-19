@@ -32,9 +32,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
 endif()
 
-add_subdirectory(ast-dump)
+add_subdirectory(murphi2xml)
 add_subdirectory(librumur)
 add_subdirectory(rumur)
 
 enable_testing()
-add_test(tests env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/ast-dump:$ENV{PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py)
+add_test(tests env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:$ENV{PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --jobs 1)

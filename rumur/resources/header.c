@@ -284,6 +284,18 @@ static void sandbox(void) {
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 
+      /* on platforms without vDSO support, time() makes an actual syscall, so
+       * we need to allow them
+       */
+#ifdef __NR_gettimeofday
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_gettimeofday, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_time
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_time, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+
       /* Deny everything else. On a disallowed syscall, we trap instead of
        * killing to allow the user to debug the failure. If you are debugging
        * seccomp denials, strace the checker and find the number of the denied
@@ -633,9 +645,68 @@ static struct handle handle_align(struct handle h) {
   };
 }
 
-// TODO: The logic in this function is complex and fiddly. It would be desirable
-// to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
-// the correct result.
+static bool is_big_endian(void) {
+
+  union {
+    uint32_t x;
+    uint8_t y[sizeof(uint32_t)];
+  } z;
+
+  z.y[0] = 1;
+  z.y[1] = 2;
+  z.y[2] = 3;
+  z.y[3] = 4;
+
+  return z.x == 0x01020304;
+}
+
+static uint64_t copy_out64(const uint8_t *p, size_t extent) {
+
+  ASSERT(extent <= sizeof(uint64_t));
+
+  uint64_t x = 0;
+  memcpy(&x, p, extent);
+
+  if (is_big_endian()) {
+    x = __builtin_bswap64(x);
+  }
+
+  return x;
+}
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static unsigned __int128 byte_swap128(unsigned __int128 x) {
+
+  union {
+    unsigned __int128 a;
+    uint64_t b[2];
+  } in, out;
+
+  in.a = x;
+  out.b[0] = __builtin_bswap64(in.b[1]);
+  out.b[1] = __builtin_bswap64(in.b[0]);
+
+  return out.a;
+}
+
+static unsigned __int128 copy_out128(const uint8_t *p, size_t extent) {
+
+  ASSERT(extent <= sizeof(unsigned __int128));
+
+  unsigned __int128 x = 0;
+  memcpy(&x, p, extent);
+
+  if (is_big_endian()) {
+    x = byte_swap128(x);
+  }
+
+  return x;
+}
+#endif
+
+/* If you are in the Rumur repository modifying the following function, remember
+ * to also update ../../misc/read-raw.smt2.
+ */
 static __attribute__((pure)) uint64_t read_raw(struct handle h) {
 
   /* a uint64_t is the maximum value we support reading */
@@ -689,7 +760,7 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
     }
     {
       const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
+      low = copy_out128(src, low_size);
     }
 
     low >>= h.offset;
@@ -701,7 +772,7 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
     if (high_size != 0) {
       unsigned __int128 high = 0;
       const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
+      high = copy_out128(src, high_size);
 
       high <<= sizeof(low) * 8 - h.offset;
 
@@ -730,7 +801,7 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
   }
   {
     const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
+    low = copy_out64(src, low_size);
   }
 
   low >>= h.offset;
@@ -740,9 +811,8 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
   /* If the value could not be read into a single word... */
   ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
   if (high_size != 0) {
-    uint64_t high = 0;
     const uint8_t *src = aligned.base + sizeof(low);
-    memcpy(&high, src, high_size);
+    uint64_t high = copy_out64(src, high_size);
 
     high <<= sizeof(low) * 8 - h.offset;
 
@@ -760,10 +830,40 @@ static __attribute__((pure)) uint64_t read_raw(struct handle h) {
   return low;
 }
 
+static void copy_in64(uint8_t *p, uint64_t v, size_t extent) {
+  ASSERT(extent <= sizeof(v));
+
+  if (is_big_endian()) {
+    v = __builtin_bswap64(v);
+  }
+
+  memcpy(p, &v, extent);
+}
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static void copy_in128(uint8_t *p, unsigned __int128 v, size_t extent) {
+  ASSERT(extent <= sizeof(v));
+
+  if (is_big_endian()) {
+    v = byte_swap128(v);
+  }
+
+  memcpy(p, &v, extent);
+}
+#endif
+
+/* If you are in the Rumur repository modifying the following function, remember
+ * to also update ../../misc/write-raw.smt2.
+ */
 static void write_raw(struct handle h, uint64_t v) {
 
   if (h.width == 0) {
     return;
+  }
+
+  /* sanitise input value */
+  if (h.width < sizeof(v) * 8) {
+    v &= (UINT64_C(1) << h.width) - 1;
   }
 
   /* Generate a offset- and width-aligned handle on byte boundaries. */
@@ -786,7 +886,7 @@ static void write_raw(struct handle h, uint64_t v) {
     }
     {
       const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
+      low = copy_out128(src, low_size);
     }
 
     {
@@ -795,7 +895,7 @@ static void write_raw(struct handle h, uint64_t v) {
         or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
       }
       unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
-      if (low_size < sizeof(low)) {
+      if (h.width + h.offset < sizeof(low) * 8) {
         size_t high_bits = aligned.width - h.offset - h.width;
         and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
       }
@@ -805,7 +905,7 @@ static void write_raw(struct handle h, uint64_t v) {
 
     {
       uint8_t *dest = aligned.base;
-      memcpy(dest, &low, low_size);
+      copy_in128(dest, low, low_size);
     }
 
     /* Now do the second double-word if necessary. */
@@ -817,21 +917,21 @@ static void write_raw(struct handle h, uint64_t v) {
       unsigned __int128 high = 0;
       {
         const uint8_t *src = aligned.base + sizeof(low);
-        memcpy(&high, src, high_size);
+        high = copy_out128(src, high_size);
       }
 
       {
         unsigned __int128 or_mask
           = ((unsigned __int128)v) >> (sizeof(low) * 8 - h.offset);
         unsigned __int128 and_mask
-          = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (aligned.width - h.width)) - 1);
+          = ~((((unsigned __int128)1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
 
         high = (high & and_mask) | or_mask;
       }
 
       {
         uint8_t *dest = aligned.base + sizeof(low);
-        memcpy(dest, &high, high_size);
+        copy_in128(dest, high, high_size);
       }
     }
 
@@ -849,7 +949,7 @@ static void write_raw(struct handle h, uint64_t v) {
   }
   {
     const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
+    low = copy_out64(src, low_size);
   }
 
   {
@@ -858,7 +958,7 @@ static void write_raw(struct handle h, uint64_t v) {
       or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
     }
     uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
-    if (low_size < sizeof(low)) {
+    if (h.width + h.offset < sizeof(low) * 8) {
       size_t high_bits = aligned.width - h.offset - h.width;
       and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
     }
@@ -868,7 +968,7 @@ static void write_raw(struct handle h, uint64_t v) {
 
   {
     uint8_t *dest = aligned.base;
-    memcpy(dest, &low, low_size);
+    copy_in64(dest, low, low_size);
   }
 
   size_t high_size = aligned.width / 8 - low_size;
@@ -878,20 +978,20 @@ static void write_raw(struct handle h, uint64_t v) {
     uint64_t high = 0;
     {
       const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
+      high = copy_out64(src, high_size);
     }
 
     {
       uint64_t or_mask = ((uint64_t)v) >> (sizeof(low) * 8 - h.offset);
       uint64_t and_mask
-        = (~UINT64_C(0)) & ~((UINT64_C(1) << (aligned.width - h.width)) - 1);
+        = ~((UINT64_C(1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
 
       high = (high & and_mask) | or_mask;
     }
 
     {
       uint8_t *dest = aligned.base + sizeof(low);
-      memcpy(dest, &high, high_size);
+      copy_in64(dest, high, high_size);
     }
   }
 }
@@ -2154,7 +2254,7 @@ static uintptr_t double_ptr_extract2(double_ptr_t p) {
     "enough to fit two pointers");
 
   uintptr_t q;
-  memcpy (&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+  memcpy(&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
 
   return q;
 }

@@ -262,20 +262,20 @@ std::string mangle(const std::string &s, size_t id) {
 
   // if you're debugging a bad translation to SMT, you can change this to `true`
   // to get the Murphi name of a symbol output as a comment in the SMT problem
-  const std::string suffix = false ? "; " + s + "\n" : "";
+  const std::string prefix = false ? "; " + s + ":\n" : "";
 
   const std::string l = lower(s);
 
   // if this is a boolean literal, the solver already knows of it
   if (l == "true" || l == "false")
-    return l + suffix;
+    return prefix + l;
 
   // if this is the boolean type, the solver already knows of it
   if (l == "boolean")
-    return "Bool" + suffix;
+    return prefix + "Bool";
 
   // otherwise synthesise a node-unique name for this
-  return "s" + std::to_string(id) + suffix;
+  return prefix + "s" + std::to_string(id);
 }
 
 }

@@ -50,7 +50,7 @@ static void parse_args(int argc, char **argv) {
     switch (c) {
 
       case '?':
-        help(doc_rumur_ast_dump_1, doc_rumur_ast_dump_1_len);
+        help(doc_murphi2xml_1, doc_murphi2xml_1_len);
         exit(EXIT_SUCCESS);
 
       case 'o': {

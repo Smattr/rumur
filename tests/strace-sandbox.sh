@@ -18,6 +18,16 @@ if ! which strace &>/dev/null; then
   exit 125
 fi
 
+if [ "$(uname -s)" = "Linux" ]; then
+  MY_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
+
+  # check whether seccomp is available
+  if ! ${MY_DIR}/../misc/seccomp-supported.sh; then
+    print 'seccomp sandboxing not supported\n'
+    exit 125
+  fi
+fi
+
 # echo commands
 set -x
 
