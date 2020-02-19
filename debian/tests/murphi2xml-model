@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# test that rumur-ast-dump can parse a basic model
+# test that murphi2xml can parse a basic model
 
 if [ -z "${AUTOPKGTEST_TMP}" ]; then
   printf 'AUTOPKGTEST_TMP not set; not running in autopkgtest?\n' >&2
@@ -11,8 +11,8 @@ set -e
 set -x
 
 # move to temporary directory
-mkdir -p ${AUTOPKGTEST_TMP}/rumur-ast-dump-model
-cd ${AUTOPKGTEST_TMP}/rumur-ast-dump-model
+mkdir -p ${AUTOPKGTEST_TMP}/murphi2xml-model
+cd ${AUTOPKGTEST_TMP}/murphi2xml-model
 
 # construct a simple model
 cat - >model.m <<EOT
@@ -29,4 +29,4 @@ end;
 EOT
 
 # parse the model
-rumur-ast-dump --output /dev/null model.m
+murphi2xml --output /dev/null model.m

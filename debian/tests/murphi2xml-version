@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# test that we can simply run the murphi2xml binary
+
+set -e
+set -x
+
+murphi2xml --version
