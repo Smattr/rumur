@@ -1,3 +1,12 @@
+rumur (2020.01.27-2) unstable; urgency=medium
+
+  * The build test suite now runs single threaded. Closes: #951497.
+
+  * Correct watch file to only scan for upstream releases, instead of also
+    matching Debian tags.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Thu, 20 Feb 2020 19:22:22 -0800
+
 rumur (2020.01.27-1) unstable; urgency=medium
 
   * New upstream release.
