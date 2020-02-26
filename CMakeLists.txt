@@ -38,4 +38,4 @@ add_subdirectory(murphi2c)
 add_subdirectory(rumur)
 
 enable_testing()
-add_test(tests env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:$ENV{PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --jobs 1)
+add_test(tests env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:$ENV{PATH} ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --jobs 1)
