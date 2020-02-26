@@ -1,43 +1,45 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import re
 import sys
 
-def main(args):
+def main(args: [str]) -> int:
 
   # parse command line arguments
   parser = argparse.ArgumentParser(
     description='convert file contents to a C++ string')
-  parser.add_argument('input', type=argparse.FileType('rt'), help='input file')
+  parser.add_argument('input', type=argparse.FileType('rb'), help='input file')
   parser.add_argument('output', type=argparse.FileType('wt'),
     help='output file')
   options = parser.parse_args(args[1:])
 
   array = re.sub(r'[^\w\d]', '_', options.input.name)
-  size = '{}_len'.format(array)
+  size = f'{array}_len'
 
   options.output.write(
-    '#include <cstddef>\n'
-    '\n'
-    'extern const unsigned char {}[] = {{'.format(array))
+     '#include <cstddef>\n'
+     '\n'
+    f'extern const unsigned char {array}[] = {{')
 
   index = 0
-  for line in options.input:
-    for c in line:
+  while True:
 
-      if index % 12 == 0:
-        options.output.write('\n ')
+    c = options.input.read(1)
+    if c == b'':
+      break
 
-      options.output.write(' 0x{:02x},'.format(ord(c)))
+    if index % 12 == 0:
+      options.output.write('\n ')
 
-      index += 1
+    options.output.write(f' 0x{int.from_bytes(c, byteorder="little"):02x},')
+
+    index += 1
 
   options.output.write(
-    '\n'
-    '}};\n'
-    'extern const size_t {} = sizeof({}) / sizeof({}[0]);\n'
-    .format(size, array, array))
+     '\n'
+     '};\n'
+    f'extern const size_t {size} = sizeof({array}) / sizeof({array}[0]);\n')
 
   return 0
 

@@ -30,7 +30,7 @@ namespace { class Definer : public ConstTypeTraversal {
 
   void visit_enum(const Enum &n) final {
     // ignore the built-in bool type that the solver already knows
-    if (n == *Boolean)
+    if (n.is_boolean())
       return;
 
     // emit the members of the enum as integer constants

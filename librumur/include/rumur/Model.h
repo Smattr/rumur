@@ -30,12 +30,9 @@ struct Model : public Node {
   // Get the size of the state data in bits.
   mpz_class size_bits() const;
 
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
-
-  // DEPRECATED, DO NOT USE
-  __attribute__((deprecated("Model::assumption_count() will be removed in a future release")))
-  unsigned long assumption_count() const;
 
   /* Get the number of global liveness properties in the model. Unlike
    * assumption_count, this considers the "flat" model. That is, a

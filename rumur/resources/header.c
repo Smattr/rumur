@@ -35,10 +35,35 @@
     } while (0)
 #endif
 
-#define BITS_TO_BYTES(size) (size / 8 + (size % 8 == 0 ? 0 : 1))
+#define BITS_TO_BYTES(size) ((size) / 8 + ((size) % 8 == 0 ? 0 : 1))
+#define BITS_FOR(value) \
+  ((value) == 0 ? 0 : (sizeof(unsigned long long) * 8 - __builtin_clzll(value)))
 
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
+
+/* the size of auxliary members of the state struct */
+enum { BOUND_BITS = BITS_FOR(BOUND) };
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
+  #if defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
+    /* assume 5-level paging, and hence the top 2 bytes of any user pointer are
+     * always 0 and not required.
+     * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
+     */
+    enum { PREVIOUS_BITS = 56 };
+  #else
+    enum { PREVIOUS_BITS = sizeof(void*) * 8 };
+  #endif
+#else
+  enum { PREVIOUS_BITS = 0 };
+#endif
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
+  enum { RULE_TAKEN_BITS = BITS_FOR(RULE_TAKEN_LIMIT) };
+#else
+  enum { RULE_TAKEN_BITS = 0 };
+#endif
+enum { STATE_OTHER_BYTES
+  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS) };
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
@@ -175,61 +200,101 @@ static void sandbox(void) {
     /* A BPF program that traps on any syscall we want to disallow. */
     static struct sock_filter filter[] = {
 
-#if 0
-      // TODO: The following will require some pesky ifdef mess because the
-      // Linux headers don't seem to define a "current architecture" constant.
-      /* Validate that we're running on the same architecture we were compiled
-       * for. If not, the syscall numbers we're using may be wrong.
-       */
-      BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, arch)),
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, ARCH_NR, 1, 0),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_TRAP),
-#endif
-
       /* Load syscall number. */
       BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, nr)),
 
       /* Enable exiting. */
+#ifdef __NR_exit_group
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit_group, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
       /* Enable syscalls used by printf. */
+#ifdef __NR_fstat
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_fstat64
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat64, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_write
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_write, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
       /* Enable syscalls used by malloc. */
+#ifdef __NR_brk
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_brk, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_mmap
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_mmap2
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap2, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_munmap
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_munmap, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
-      /* If we're running multithreaded, enable syscalls that used by pthreads.
-       */
+      /* If we're running multithreaded, enable syscalls used by pthreads. */
+#ifdef __NR_clone
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clone, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_close
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_close, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_exit
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_futex
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_futex, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_get_robust_list
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_get_robust_list, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_madvise
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_madvise, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_mprotect
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mprotect, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_open
       // XXX: it would be nice to avoid open() but pthreads seems to open libgcc.
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_open, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_read
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_read, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_set_robust_list
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_set_robust_list, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+
+      /* on platforms without vDSO support, time() makes an actual syscall, so
+       * we need to allow them
+       */
+#ifdef __NR_gettimeofday
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_gettimeofday, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
+#ifdef __NR_time
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_time, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+#endif
 
       /* Deny everything else. On a disallowed syscall, we trap instead of
        * killing to allow the user to debug the failure. If you are debugging
@@ -531,31 +596,525 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
 
 /* The state of the current model. */
 struct state {
-#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  const struct state *previous;
 
-  /* Index of the rule we took to reach this state. */
-  uint64_t rule_taken;
-#endif
-
+#if LIVENESS_COUNT > 0
   uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
     (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
      LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
-
-#if BOUND > UINT64_MAX
-  #error "no type large enough for state.bound"
-#elif BOUND > UINT32_MAX
-  uint64_t bound;
-#elif BOUND > UINT16_MAX
-  uint32_t bound;
-#elif BOUND > UINT8_MAX
-  uint16_t bound;
-#elif BOUND > 0
-  uint8_t bound;
 #endif
 
   uint8_t data[STATE_SIZE_BYTES];
+
+#if PACK_STATE
+  /* the following effective fields are packed into here:
+   *
+   *  * uint64_t bound;
+   *  * const struct state *previous;
+   *  * uint64_t rule_taken;
+   *
+   * They are bit-packed, so may take up less space. E.g. if the maximum value
+   * of `bound` is known to be 5, it will be stored in 3 bits instead of 64.
+   */
+  uint8_t other[STATE_OTHER_BYTES];
+#else
+  uint64_t bound;
+  const struct state *previous;
+  uint64_t rule_taken;
+#endif
 };
+
+struct handle {
+  uint8_t *base;
+  size_t offset;
+  size_t width;
+};
+
+static struct handle handle_align(struct handle h) {
+
+  ASSERT(h.offset < CHAR_BIT && "handle has an offset outside the base byte");
+
+  size_t width = h.width + h.offset;
+  if (width % 8 != 0) {
+    width += 8 - width % 8;
+  }
+
+  return (struct handle){
+    .base = h.base,
+    .offset = 0,
+    .width = width,
+  };
+}
+
+static bool is_big_endian(void) {
+
+  union {
+    uint32_t x;
+    uint8_t y[sizeof(uint32_t)];
+  } z;
+
+  z.y[0] = 1;
+  z.y[1] = 2;
+  z.y[2] = 3;
+  z.y[3] = 4;
+
+  return z.x == 0x01020304;
+}
+
+static uint64_t copy_out64(const uint8_t *p, size_t extent) {
+
+  ASSERT(extent <= sizeof(uint64_t));
+
+  uint64_t x = 0;
+  memcpy(&x, p, extent);
+
+  if (is_big_endian()) {
+    x = __builtin_bswap64(x);
+  }
+
+  return x;
+}
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static unsigned __int128 byte_swap128(unsigned __int128 x) {
+
+  union {
+    unsigned __int128 a;
+    uint64_t b[2];
+  } in, out;
+
+  in.a = x;
+  out.b[0] = __builtin_bswap64(in.b[1]);
+  out.b[1] = __builtin_bswap64(in.b[0]);
+
+  return out.a;
+}
+
+static unsigned __int128 copy_out128(const uint8_t *p, size_t extent) {
+
+  ASSERT(extent <= sizeof(unsigned __int128));
+
+  unsigned __int128 x = 0;
+  memcpy(&x, p, extent);
+
+  if (is_big_endian()) {
+    x = byte_swap128(x);
+  }
+
+  return x;
+}
+#endif
+
+/* If you are in the Rumur repository modifying the following function, remember
+ * to also update ../../misc/read-raw.smt2.
+ */
+static __attribute__((pure)) uint64_t read_raw(struct handle h) {
+
+  /* a uint64_t is the maximum value we support reading */
+  ASSERT(h.width <= 64 && "read of too wide value");
+
+  if (h.width == 0) {
+    return 0;
+  }
+
+  /* Generate a handle that is offset- and width-aligned on byte boundaries.
+   * Essentially, we widen the handle to align it. The motivation for this is
+   * that we can only do byte-granularity reads, so we need to "over-read" if we
+   * have an unaligned handle.
+   */
+  struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
+
+  /* The code below attempts to provide four alternatives for reading out the
+   * bits corresponding to a value of simple type referenced by a handle, and to
+   * give the compiler enough hints to steer it towards picking one of these and
+   * removing the other three as dead code:
+   *
+   *   1. Read into a single 64-bit variable. Enabled when the maximum width for
+   *      an unaligned handle spans 0 - 8 bytes.
+   *   2. Read into two 64-bit variables and then combine the result using
+   *      shifts and ORs. Enabled when the maximum width for an unaligned handle
+   *      spans 9 - 16 bytes and the compiler does not provide the `__int128`
+   *      type.
+   *   3. Read into a single 128-bit variable. Enabled when the compiler does
+   *      provide the `__int128` type and the maximum width for an unaligned
+   *      handle spans 9 - 16 bytes.
+   *   4. Read into two 128-bit chunks, and then combine the result using shifts
+   *      and ORs. Enabled when the compiler provides the `__int128` type and
+   *      the maximum width for an unaligned handle spans 17 - 32 bytes.
+   */
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+
+  /* If a byte-unaligned value_t cannot be fully read into a single uint64_t
+   * using byte-aligned reads...
+   */
+  if (aligned.width > (sizeof(uint64_t) - 1) * 8) {
+
+    /* Read the low double-word of this (possibly quad-word-sized) value. */
+    unsigned __int128 low = 0;
+    size_t low_size = aligned.width / 8;
+    /* optimisation hint: */
+    ASSERT(low_size <= sizeof(low) || aligned.width > (sizeof(low) - 1) * 8);
+    if (low_size > sizeof(low)) {
+      low_size = sizeof(low);
+    }
+    {
+      const uint8_t *src = aligned.base;
+      low = copy_out128(src, low_size);
+    }
+
+    low >>= h.offset;
+
+    size_t high_size = aligned.width / 8 - low_size;
+
+    /* If the value could not be read into a single double-word... */
+    ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
+    if (high_size != 0) {
+      unsigned __int128 high = 0;
+      const uint8_t *src = aligned.base + sizeof(low);
+      high = copy_out128(src, high_size);
+
+      high <<= sizeof(low) * 8 - h.offset;
+
+      /* Combine the two halves into a single double-word. */
+      low |= high;
+    }
+
+    if (h.width < sizeof(low) * 8) {
+      unsigned __int128 mask = (((unsigned __int128)1) << h.width) - 1;
+      low &= mask;
+    }
+
+    ASSERT(low <= UINT64_MAX && "read of value larger than a uint64_t");
+
+    return (uint64_t)low;
+  }
+#endif
+
+  /* Read the low word of this (possibly two-word-sized) value. */
+  uint64_t low = 0;
+  size_t low_size = aligned.width / 8;
+  /* optimisation hint: */
+  ASSERT(low_size <= sizeof(low) || aligned.width > (sizeof(low) - 1) * 8);
+  if (low_size > sizeof(low)) {
+    low_size = sizeof(low);
+  }
+  {
+    const uint8_t *src = aligned.base;
+    low = copy_out64(src, low_size);
+  }
+
+  low >>= h.offset;
+
+  size_t high_size = aligned.width / 8 - low_size;
+
+  /* If the value could not be read into a single word... */
+  ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
+  if (high_size != 0) {
+    const uint8_t *src = aligned.base + sizeof(low);
+    uint64_t high = copy_out64(src, high_size);
+
+    high <<= sizeof(low) * 8 - h.offset;
+
+    /* Combine the high and low words. Note that we know we can store the final
+     * result in a single word because the width is guaranteed to be <= 64.
+     */
+    low |= high;
+  }
+
+  if (h.width < sizeof(low) * 8) {
+    uint64_t mask = (UINT64_C(1) << h.width) - 1;
+    low &= mask;
+  }
+
+  return low;
+}
+
+static void copy_in64(uint8_t *p, uint64_t v, size_t extent) {
+  ASSERT(extent <= sizeof(v));
+
+  if (is_big_endian()) {
+    v = __builtin_bswap64(v);
+  }
+
+  memcpy(p, &v, extent);
+}
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+static void copy_in128(uint8_t *p, unsigned __int128 v, size_t extent) {
+  ASSERT(extent <= sizeof(v));
+
+  if (is_big_endian()) {
+    v = byte_swap128(v);
+  }
+
+  memcpy(p, &v, extent);
+}
+#endif
+
+/* If you are in the Rumur repository modifying the following function, remember
+ * to also update ../../misc/write-raw.smt2.
+ */
+static void write_raw(struct handle h, uint64_t v) {
+
+  if (h.width == 0) {
+    return;
+  }
+
+  /* sanitise input value */
+  if (h.width < sizeof(v) * 8) {
+    v &= (UINT64_C(1) << h.width) - 1;
+  }
+
+  /* Generate a offset- and width-aligned handle on byte boundaries. */
+  struct handle aligned = handle_align(h);
+  ASSERT(aligned.offset == 0);
+
+#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
+
+  /* If a byte-unaligned value_t cannot be fully written within a single
+   * byte-aligned uint64_t...
+   */
+  if (aligned.width > (sizeof(uint64_t) - 1) * 8) {
+
+    /* Read the low double-word of this region. */
+    unsigned __int128 low = 0;
+    size_t low_size = aligned.width / 8;
+    ASSERT(low_size <= sizeof(low) || aligned.width > (sizeof(low) - 1) * 8);
+    if (low_size > sizeof(low)) {
+      low_size = sizeof(low);
+    }
+    {
+      const uint8_t *src = aligned.base;
+      low = copy_out128(src, low_size);
+    }
+
+    {
+      unsigned __int128 or_mask = ((unsigned __int128)v) << h.offset;
+      if (low_size < sizeof(low)) {
+        or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
+      }
+      unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
+      if (h.width + h.offset < sizeof(low) * 8) {
+        size_t high_bits = aligned.width - h.offset - h.width;
+        and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
+      }
+
+      low = (low & and_mask) | or_mask;
+    }
+
+    {
+      uint8_t *dest = aligned.base;
+      copy_in128(dest, low, low_size);
+    }
+
+    /* Now do the second double-word if necessary. */
+
+    size_t high_size = aligned.width / 8 - low_size;
+
+    ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
+    if (high_size != 0) {
+      unsigned __int128 high = 0;
+      {
+        const uint8_t *src = aligned.base + sizeof(low);
+        high = copy_out128(src, high_size);
+      }
+
+      {
+        unsigned __int128 or_mask
+          = ((unsigned __int128)v) >> (sizeof(low) * 8 - h.offset);
+        unsigned __int128 and_mask
+          = ~((((unsigned __int128)1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
+
+        high = (high & and_mask) | or_mask;
+      }
+
+      {
+        uint8_t *dest = aligned.base + sizeof(low);
+        copy_in128(dest, high, high_size);
+      }
+    }
+
+    return;
+  }
+#endif
+
+  /* Replicate the above logic for uint64_t. */
+
+  uint64_t low = 0;
+  size_t low_size = aligned.width / 8;
+  ASSERT(low_size <= sizeof(low) || aligned.width > (sizeof(low) - 1) * 8);
+  if (low_size > sizeof(low)) {
+    low_size = sizeof(low);
+  }
+  {
+    const uint8_t *src = aligned.base;
+    low = copy_out64(src, low_size);
+  }
+
+  {
+    uint64_t or_mask = ((uint64_t)v) << h.offset;
+    if (low_size < sizeof(low)) {
+      or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
+    }
+    uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
+    if (h.width + h.offset < sizeof(low) * 8) {
+      size_t high_bits = aligned.width - h.offset - h.width;
+      and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
+    }
+
+    low = (low & and_mask) | or_mask;
+  }
+
+  {
+    uint8_t *dest = aligned.base;
+    copy_in64(dest, low, low_size);
+  }
+
+  size_t high_size = aligned.width / 8 - low_size;
+
+  ASSERT(high_size == 0 || aligned.width > (sizeof(low) - 1) * 8);
+  if (high_size != 0) {
+    uint64_t high = 0;
+    {
+      const uint8_t *src = aligned.base + sizeof(low);
+      high = copy_out64(src, high_size);
+    }
+
+    {
+      uint64_t or_mask = ((uint64_t)v) >> (sizeof(low) * 8 - h.offset);
+      uint64_t and_mask
+        = ~((UINT64_C(1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
+
+      high = (high & and_mask) | or_mask;
+    }
+
+    {
+      uint8_t *dest = aligned.base + sizeof(low);
+      copy_in64(dest, high, high_size);
+    }
+  }
+}
+
+#if BOUND > 0
+#if PACK_STATE
+static struct handle state_bound_handle(const struct state *NONNULL s) {
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)s->other,
+    .offset = 0,
+    .width = BITS_FOR(BOUND),
+  };
+
+  return h;
+}
+#endif
+
+_Static_assert((uintmax_t)BOUND <= UINT64_MAX,
+  "bound limit does not fit in a uint64_t");
+
+static __attribute__((pure)) uint64_t state_bound_get(
+    const struct state *NONNULL s) {
+  assert(s != NULL);
+
+#if PACK_STATE
+  struct handle h = state_bound_handle(s);
+  return read_raw(h);
+#else
+  return s->bound;
+#endif
+}
+
+static void state_bound_set(struct state *NONNULL s, uint64_t bound) {
+  assert(s != NULL);
+
+#if PACK_STATE
+  struct handle h = state_bound_handle(s);
+  write_raw(h, bound);
+#else
+  s->bound = bound;
+#endif
+}
+#endif
+
+#if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
+#if PACK_STATE
+static struct handle state_previous_handle(const struct state *NONNULL s) {
+
+  size_t offset = BOUND_BITS;
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)s->other + offset / 8,
+    .offset = offset % 8,
+    .width = PREVIOUS_BITS,
+  };
+
+  return h;
+}
+#endif
+
+static __attribute__((pure)) const struct state *state_previous_get(
+    const struct state *NONNULL s) {
+#if PACK_STATE
+  struct handle h = state_previous_handle(s);
+  return (const struct state*)(uintptr_t)read_raw(h);
+#else
+  return s->previous;
+#endif
+}
+
+static void state_previous_set(struct state *NONNULL s,
+    const struct state *previous) {
+#if PACK_STATE
+#if defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
+  ASSERT(((uintptr_t)previous >> PREVIOUS_BITS) == 0
+    && "upper 2 bytes of pointer are non-zero (not using 5-level paging?)");
+#endif
+  struct handle h = state_previous_handle(s);
+  write_raw(h, (uint64_t)(uintptr_t)previous);
+#else
+  s->previous = previous;
+#endif
+}
+#endif
+
+#if COUNTEREXAMPLE_TRACE != CEX_OFF
+#if PACK_STATE
+static struct handle state_rule_taken_handle(const struct state *NONNULL s) {
+
+  size_t offset = BOUND_BITS + PREVIOUS_BITS;
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)s->other + offset / 8,
+    .offset = offset % 8,
+    .width = RULE_TAKEN_BITS,
+  };
+
+  return h;
+}
+#endif
+
+static __attribute__((pure)) uint64_t state_rule_taken_get(
+    const struct state *NONNULL s) {
+  assert(s != NULL);
+#if PACK_STATE
+  struct handle h = state_rule_taken_handle(s);
+  return read_raw(h);
+#else
+  return s->rule_taken;
+#endif
+}
+
+static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
+  assert(s != NULL);
+#if PACK_STATE
+  struct handle h = state_rule_taken_handle(s);
+  write_raw(h, rule_taken);
+#else
+  s->rule_taken = rule_taken;
+#endif
+}
+#endif
 
 /*******************************************************************************
  * State allocator.                                                            *
@@ -805,13 +1364,15 @@ static struct state *state_dup(const struct state *NONNULL s) {
   struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  n->previous = s;
+  state_previous_set(n, s);
 #endif
 #if BOUND > 0
-  assert(s->bound < BOUND && "exceeding bounded exploration depth");
-  n->bound = s->bound + 1;
+  assert(state_bound_get(s) < BOUND && "exceeding bounded exploration depth");
+  state_bound_set(n, state_bound_get(s) + 1);
 #endif
+#if LIVENESS_COUNT > 0
   memset(n->liveness, 0, sizeof(n->liveness));
+#endif
   return n;
 }
 
@@ -823,12 +1384,14 @@ static size_t state_hash(const struct state *NONNULL s) {
 static __attribute__((unused)) size_t state_depth(
     const struct state *NONNULL s) {
 #if BOUND > 0
-  return (size_t)s->bound + 1;
+  uint64_t bound = state_bound_get(s);
+  ASSERT(bound <= BOUND && "claimed state bound exceeds limit");
+  return (size_t)bound + 1;
 #else
   size_t d = 0;
   while (s != NULL) {
     d++;
-    s = s->previous;
+    s = state_previous_get(s);
   }
   return d;
 #endif
@@ -894,7 +1457,7 @@ static void print_counterexample(
 
   {
     size_t i = trace_length - 1;
-    for (const struct state *p = s; p != NULL; p = p->previous) {
+    for (const struct state *p = s; p != NULL; p = state_previous_get(p)) {
       assert(i < trace_length && "error in counterexample trace traversal "
         "logic");
       cex[i] = p;
@@ -924,28 +1487,6 @@ static void print_counterexample(
 #endif
 }
 
-struct handle {
-  uint8_t *base;
-  size_t offset;
-  size_t width;
-};
-
-static struct handle handle_align(struct handle h) {
-
-  ASSERT(h.offset < CHAR_BIT && "handle has an offset outside the base byte");
-
-  size_t width = h.width + h.offset;
-  if (width % 8 != 0) {
-    width += 8 - width % 8;
-  }
-
-  return (struct handle){
-    .base = h.base,
-    .offset = 0,
-    .width = width,
-  };
-}
-
 static __attribute__((unused)) struct handle state_handle(
     const struct state *NONNULL s, size_t offset, size_t width) {
 
@@ -959,9 +1500,6 @@ static __attribute__((unused)) struct handle state_handle(
   };
 }
 
-// TODO: The logic in this function is complex and fiddly. It would be desirable
-// to have a proof in, e.g. Z3, that the manipulations it's doing actually yield
-// the correct result.
 static raw_value_t handle_read_raw(const struct state *NONNULL s,
     struct handle h) {
 
@@ -976,134 +1514,12 @@ static raw_value_t handle_read_raw(const struct state *NONNULL s,
   ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
     "the maximum width of a simple type in this model");
 
-  if (h.width == 0) {
-    TRACE(TC_HANDLE_READS, "read value 0 from handle { %p, %zu, %zu }",
-      h.base, h.offset, h.width);
-    return 0;
-  }
-
-  /* Generate a handle that is offset- and width-aligned on byte boundaries.
-   * Essentially, we widen the handle to align it. The motivation for this is
-   * that we can only do byte-granularity reads, so we need to "over-read" if we
-   * have an unaligned handle.
-   */
-  struct handle aligned = handle_align(h);
-  ASSERT(aligned.offset == 0);
-
-  /* The code below attempts to provide four alternatives for reading out the
-   * bits corresponding to a value of simple type referenced by a handle, and to
-   * give the compiler enough hints to steer it towards picking one of these and
-   * removing the other three as dead code:
-   *
-   *   1. Read into a single 64-bit variable. Enabled when the maximum width for
-   *      an unaligned handle spans 0 - 8 bytes.
-   *   2. Read into two 64-bit variables and then combine the result using
-   *      shifts and ORs. Enabled when the maximum width for an unaligned handle
-   *      spans 9 - 16 bytes and the compiler does not provide the `__int128`
-   *      type.
-   *   3. Read into a single 128-bit variable. Enabled when the compiler does
-   *      provide the `__int128` type and the maximum width for an unaligned
-   *      handle spans 9 - 16 bytes.
-   *   4. Read into two 128-bit chunks, and then combine the result using shifts
-   *      and ORs. Enabled when the compiler provides the `__int128` type and
-   *      the maximum width for an unaligned handle spans 17 - 32 bytes.
-   */
-
-#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
-
-  /* If a byte-unaligned value_t cannot be fully read into a single uint64_t
-   * using byte-aligned reads...
-   */
-  if (MAX_SIMPLE_WIDTH > (sizeof(uint64_t) - 1) * 8) {
-
-    /* Read the low double-word of this (possibly quad-word-sized) value. */
-    unsigned __int128 low = 0;
-    size_t low_size = aligned.width / 8;
-    /* optimisation hint: */
-    ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-    if (low_size > sizeof(low)) {
-      low_size = sizeof(low);
-    }
-    {
-      const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
-    }
-
-    low >>= h.offset;
-
-    size_t high_size = aligned.width / 8 - low_size;
-
-    /* If the value could not be read into a single double-word... */
-    ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-    if (high_size != 0) {
-      unsigned __int128 high = 0;
-      const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
-
-      high <<= sizeof(low) * 8 - h.offset;
-
-      /* Combine the two halves into a single double-word. */
-      low |= high;
-    }
-
-    if (h.width < sizeof(low) * 8) {
-      unsigned __int128 mask = (((unsigned __int128)1) << h.width) - 1;
-      low &= mask;
-    }
-
-    raw_value_t v = (raw_value_t)low;
-
-    TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
-      raw_value_to_string(v), h.base, h.offset, h.width);
-
-    return v;
-  }
-#endif
-
-  /* Read the low word of this (possibly two-word-sized) value. */
-  uint64_t low = 0;
-  size_t low_size = aligned.width / 8;
-  /* optimisation hint: */
-  ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-  if (low_size > sizeof(low)) {
-    low_size = sizeof(low);
-  }
-  {
-    const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
-  }
-
-  low >>= h.offset;
-
-  size_t high_size = aligned.width / 8 - low_size;
-
-  /* If the value could not be read into a single word... */
-  ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-  if (high_size != 0) {
-    uint64_t high = 0;
-    const uint8_t *src = aligned.base + sizeof(low);
-    memcpy(&high, src, high_size);
-
-    high <<= sizeof(low) * 8 - h.offset;
-
-    /* Combine the high and low words. Note that we know we can store the final
-     * result in a single word because, if we've reached this point,
-     * sizeof(value_t) <= sizeof(uint64_t).
-     */
-    low |= high;
-  }
-
-  if (h.width < sizeof(low) * 8) {
-    uint64_t mask = (UINT64_C(1) << h.width) - 1;
-    low &= mask;
-  }
-
-  raw_value_t v = (raw_value_t)low;
+  uint64_t raw = (raw_value_t)read_raw(h);
 
   TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
-    raw_value_to_string(v), h.base, h.offset, h.width);
+    raw_value_to_string(raw), h.base, h.offset, h.width);
 
-  return v;
+  return raw;
 }
 
 static value_t decode_value(value_t lb, value_t ub, raw_value_t v) {
@@ -1159,138 +1575,21 @@ static void handle_write_raw(const struct state *NONNULL s, struct handle h,
   TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
     raw_value_to_string(value), h.base, h.offset, h.width);
 
-  if (h.width == 0) {
-    return;
-  }
-
-  /* Generate a offset- and width-aligned handle on byte boundaries. */
-  struct handle aligned = handle_align(h);
-  ASSERT(aligned.offset == 0);
-
-#ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
-
-  /* If a byte-unaligned value_t cannot be fully written within a single
-   * byte-aligned uint64_t...
-   */
-  if (MAX_SIMPLE_WIDTH > (sizeof(uint64_t) - 1) * 8) {
-
-    /* Read the low double-word of this region. */
-    unsigned __int128 low = 0;
-    size_t low_size = aligned.width / 8;
-    ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-    if (low_size > sizeof(low)) {
-      low_size = sizeof(low);
-    }
-    {
-      const uint8_t *src = aligned.base;
-      memcpy(&low, src, low_size);
-    }
-
-    {
-      unsigned __int128 or_mask = ((unsigned __int128)value) << h.offset;
-      if (low_size < sizeof(low)) {
-        or_mask &= (((unsigned __int128)1) << (low_size * 8)) - 1;
-      }
-      unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
-      if (low_size < sizeof(low)) {
-        size_t high_bits = aligned.width - h.offset - h.width;
-        and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
-      }
-
-      low = (low & and_mask) | or_mask;
-    }
-
-    {
-      uint8_t *dest = aligned.base;
-      memcpy(dest, &low, low_size);
-    }
-
-    /* Now do the second double-word if necessary. */
-
-    size_t high_size = aligned.width / 8 - low_size;
-
-    ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-    if (high_size != 0) {
-      unsigned __int128 high = 0;
-      {
-        const uint8_t *src = aligned.base + sizeof(low);
-        memcpy(&high, src, high_size);
-      }
-
-      {
-        unsigned __int128 or_mask
-          = ((unsigned __int128)value) >> (sizeof(low) * 8 - h.offset);
-        unsigned __int128 and_mask
-          = (~(unsigned __int128)0) & ~((((unsigned __int128)1) << (aligned.width - h.width)) - 1);
-
-        high = (high & and_mask) | or_mask;
-      }
-
-      {
-        uint8_t *dest = aligned.base + sizeof(low);
-        memcpy(dest, &high, high_size);
-      }
-    }
-
-    return;
-  }
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  ASSERT((uintmax_t)value <= UINT64_MAX && "truncating value during handle_write_raw");
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
 #endif
 
-  /* Replicate the above logic for uint64_t. */
-
-  uint64_t low = 0;
-  size_t low_size = aligned.width / 8;
-  ASSERT(low_size <= sizeof(low) || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-  if (low_size > sizeof(low)) {
-    low_size = sizeof(low);
-  }
-  {
-    const uint8_t *src = aligned.base;
-    memcpy(&low, src, low_size);
-  }
-
-  {
-    uint64_t or_mask = ((uint64_t)value) << h.offset;
-    if (low_size < sizeof(low)) {
-      or_mask &= (UINT64_C(1) << (low_size * 8)) - 1;
-    }
-    uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
-    if (low_size < sizeof(low)) {
-      size_t high_bits = aligned.width - h.offset - h.width;
-      and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
-    }
-
-    low = (low & and_mask) | or_mask;
-  }
-
-  {
-    uint8_t *dest = aligned.base;
-    memcpy(dest, &low, low_size);
-  }
-
-  size_t high_size = aligned.width / 8 - low_size;
-
-  ASSERT(high_size == 0 || MAX_SIMPLE_WIDTH > (sizeof(low) - 1) * 8);
-  if (high_size != 0) {
-    uint64_t high = 0;
-    {
-      const uint8_t *src = aligned.base + sizeof(low);
-      memcpy(&high, src, high_size);
-    }
-
-    {
-      uint64_t or_mask = ((uint64_t)value) >> (sizeof(low) * 8 - h.offset);
-      uint64_t and_mask
-        = (~UINT64_C(0)) & ~((UINT64_C(1) << (aligned.width - h.width)) - 1);
-
-      high = (high & and_mask) | or_mask;
-    }
-
-    {
-      uint8_t *dest = aligned.base + sizeof(low);
-      memcpy(dest, &high, high_size);
-    }
-  }
+  write_raw(h, (uint64_t)value);
 }
 
 static __attribute__((unused)) void handle_write(const char *NONNULL context,
@@ -1705,7 +2004,7 @@ static queue_handle_t queue_handle_next(queue_handle_t h) {
 static const struct queue_node *hazarded[THREADS];
 
 /* Protect a pointer that we wish to dereference. */
-static __attribute__((unused)) void hazard(queue_handle_t h) {
+static void hazard(queue_handle_t h) {
 
   /* Find the queue node this handle lies within. */
   const struct queue_node *p = queue_handle_base(h);
@@ -1722,7 +2021,7 @@ static __attribute__((unused)) void hazard(queue_handle_t h) {
 }
 
 /* Drop protection on a pointer whose target we are done accessing. */
-static __attribute__((unused)) void unhazard(queue_handle_t h) {
+static void unhazard(queue_handle_t h) {
 
   /* Find the queue node this handle lies within. */
   const struct queue_node *p __attribute__((unused)) = queue_handle_base(h);
@@ -1739,7 +2038,7 @@ static __attribute__((unused)) void unhazard(queue_handle_t h) {
 }
 
 /* Free a pointer or, if not possible, defer this to later. */
-static __attribute__((unused)) void reclaim(queue_handle_t h) {
+static void reclaim(queue_handle_t h) {
 
   /* Find the queue node this handle lies within. */
   struct queue_node *p = queue_handle_base(h);
@@ -1838,7 +2137,9 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
  * Atomic operations on double word values                                     *
  ******************************************************************************/
 
-#if defined(__x86_64__) || defined(__i386__)
+#if THREADS == 1
+  #define atomic_read(p) (*(p))
+#elif defined(__x86_64__) || defined(__i386__)
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
    *   memory. The way to work around this is apparently the following
    *   degenerate CMPXCHG16B.
@@ -1851,7 +2152,9 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
 #endif
 
-#if defined(__x86_64__) || defined(__i386__)
+#if THREADS == 1
+  #define atomic_write(p, v) do { *(p) = (v); } while (0)
+#elif defined(__x86_64__) || defined(__i386__)
   /* As explained above, we need some extra gymnastics to avoid a call to
    * libatomic on x86-64 and i386.
    */
@@ -1870,7 +2173,17 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
   #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
 #endif
 
-#if defined(__x86_64__) || defined(__i386__)
+#if THREADS == 1
+  #define atomic_cas(p, expected, new) \
+    ({ \
+      __typeof__(p) _p = (p); \
+      bool _success = *_p == (expected); \
+      if (_success) { \
+        *_p = (new); \
+      } \
+      _success; \
+    })
+#elif defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
@@ -1882,7 +2195,17 @@ static __attribute__((unused)) void reclaim(queue_handle_t h) {
       __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #endif
 
-#if defined(__x86_64__) || defined(__i386__)
+#if THREADS == 1
+  #define atomic_cas_val(p, expected, new) \
+    ({ \
+      __typeof__(p) _p = (p); \
+      __typeof__(*(p)) _old = *_p; \
+      if (_old == (expected)) { \
+        *_p = (new); \
+      } \
+      _old; \
+    })
+#elif defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
@@ -1931,7 +2254,7 @@ static uintptr_t double_ptr_extract2(double_ptr_t p) {
     "enough to fit two pointers");
 
   uintptr_t q;
-  memcpy (&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+  memcpy(&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
 
   return q;
 }
@@ -2518,13 +2841,13 @@ static __attribute__((const)) bool slot_is_empty(slot_t s) {
   return s == slot_empty();
 }
 
-static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
-  return (s & 0x1) == 0x1;
+static __attribute__((const)) slot_t slot_tombstone(void) {
+  static const slot_t TOMBSTONE = ~(slot_t)0;
+  return TOMBSTONE;
 }
 
-static slot_t slot_bury(slot_t s) {
-  ASSERT(!slot_is_tombstone(s));
-  return s | 0x1;
+static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
+  return s == slot_tombstone();
 }
 
 static struct state *slot_to_state(slot_t s) {
@@ -2692,15 +3015,11 @@ static void set_migrate(void) {
     // Maier design this would not be required.
 
     for (size_t i = start; i < end; i++) {
-retry:;
 
-      /* Retrieve the slot element and try to mark it as migrated. */
-      slot_t s = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+      /* retrieve the slot element and mark it as migrated */
+      slot_t s = __atomic_exchange_n(&local_seen->bucket[i], slot_tombstone(),
+        __ATOMIC_SEQ_CST);
       ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
-      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &s, slot_bury(s),
-          false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
-        goto retry;
-      }
 
       /* If the current slot contained a state, rehash it and insert it into the
        * new set. Note we don't need to do any state comparisons because we know
@@ -2708,13 +3027,9 @@ retry:;
        */
       if (!slot_is_empty(s)) {
         size_t index = set_index(next, state_hash(slot_to_state(s)));
-        for (size_t j = index; ; j = set_index(next, j + 1)) {
-          slot_t expected = slot_empty();
-          if (__atomic_compare_exchange_n(&next->bucket[j], &expected, s, false,
-              __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
-            /* Found an empty slot and inserted successfully. */
-            break;
-          }
+        /* insert and shuffle any colliding entries one along */
+        for (size_t j = index; !slot_is_empty(s); j = set_index(next, j + 1)) {
+          s = __atomic_exchange_n(&next->bucket[j], s, __ATOMIC_SEQ_CST);
         }
       }
     }
@@ -2825,7 +3140,7 @@ restart:;
        */
        size_t depth = 0;
 #if BOUND > 0
-       depth = s->bound;
+       depth = (size_t)state_bound_get(s);
 #endif
        register_allocation(depth);
 
@@ -2862,7 +3177,8 @@ restart:;
  * already contained in the state set might know some of the liveness properties
  * are satisfied that your current state considers unknown.
  */
-static const struct state *set_find(const struct state *NONNULL s) {
+static __attribute__((unused)) const struct state *set_find(
+    const struct state *NONNULL s) {
 
   assert(s != NULL);
 
@@ -2908,6 +3224,7 @@ static unsigned long long gettime() {
   return (unsigned long long)(time(NULL) - START_TIME);
 }
 
+#if LIVENESS_COUNT > 0
 /* Set one of the liveness bits (i.e. mark the matching property as 'hit') in a
  * state and all its predecessors.
  */
@@ -2915,20 +3232,8 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
     size_t index, bool shared) {
 
   assert(s != NULL);
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
   ASSERT(index < sizeof(s->liveness) * CHAR_BIT
     && "out of range liveness write");
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
 
   size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);
   size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);
@@ -2957,12 +3262,10 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
    * valid.
    */
   struct state *previous = NULL;
-#if LIVENESS_COUNT > 0
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
-  previous = state_drop_const(s->previous);
-#endif
+  previous = state_drop_const(state_previous_get(s));
 
   /* If the given bit was already set, we know all the predecessors of this
    * state have already had their corresponding bit marked. However, if it was
@@ -2976,57 +3279,34 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
   }
 }
 
-/* Whether we know all liveness properties are satisfied for a given state. */
-static bool known_liveness(const struct state *NONNULL s) {
+/* number of unknown liveness properties for a given state */
+static unsigned long unknown_liveness(const struct state *NONNULL s) {
 
   assert(s != NULL);
 
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
+  unsigned long unknown = 0;
+
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
 
     uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
       if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
         break;
       }
 
       if (!((word >> j) & 0x1)) {
-        return false;
+        unknown++;
       }
     }
   }
 
-  return true;
+  return unknown;
 }
 
 /* Learn new liveness information about the state `s` from its successor. Note
- * that typically `successor->previous != s` because `successor` is actually one
- * of the de-duped aliases of the original successor to `s`.
+ * that typically `state_previous_get(successor) != s` because `successor` is
+ * actually one of the de-duped aliases of the original successor to `s`.
  *
  * @param s State to learn information about
  * @param successor Successor to s
@@ -3040,39 +3320,14 @@ static unsigned long learn_liveness(struct state *NONNULL s,
 
   unsigned long new_info = 0;
 
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
 
     uintptr_t word_src = __atomic_load_n(&successor->liveness[i],
       __ATOMIC_SEQ_CST);
     uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
-#ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
-#endif
       if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
-#ifdef __clang__
-  #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
-#endif
         break;
       }
 
@@ -3088,12 +3343,15 @@ static unsigned long learn_liveness(struct state *NONNULL s,
 
   return new_info;
 }
+#endif
 
 /* Prototypes for generated functions. */
 static void init(void);
 static _Noreturn void explore(void);
+#if LIVENESS_COUNT > 0
 static void check_liveness_final(void);
 static unsigned long check_liveness_summarise(void);
+#endif
 
 static int exit_with(int status) {
 
@@ -3176,10 +3434,11 @@ static int exit_with(int status) {
       }
     }
 
+#if LIVENESS_COUNT > 0
     /* If we have liveness properties to assess and have seen no previous
      * errors, do a final check of them now.
      */
-    if (LIVENESS_COUNT > 0 && error_count == 0) {
+    if (error_count == 0) {
       check_liveness_final();
 
       unsigned long failed = check_liveness_summarise();
@@ -3188,6 +3447,7 @@ static int exit_with(int status) {
         status = EXIT_FAILURE;
       }
     }
+#endif
 
     if (!MACHINE_READABLE_OUTPUT) {
       printf("\n"

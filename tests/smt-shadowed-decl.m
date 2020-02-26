@@ -1,5 +1,5 @@
--- rumur_flags: smt_args()
--- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
+-- rumur_flags: SMT_ARGS
+-- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
 
 -- This model tests a scenario where one declaration shadows another during
 -- translation across the SMT bridge. If everything works correctly, Rumur

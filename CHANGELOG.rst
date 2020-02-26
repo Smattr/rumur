@@ -1,6 +1,217 @@
 Change log
 ==========
 
+v2020.02.17
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: several latent bugs in the verifier’s state writing code have been
+  fixed. These only affected large scalar types (> 49-bit) which were not known
+  to be used in any existing real world models (commits
+  2d27f8b97aa2d24caf217a97a6df7de11e70b1b4,
+  7bbf8498c42ca8f19a059acc8169be2559b81427,
+  fa87b0a361b1f7dd9fc436c063ffa5a1d4529ee6,
+  5b4d7154902d8474f6d0233e5af9f3bd85b0a628,
+  410fdbe533c3597bc2029f63e0426f56250c52bf).
+* The ``rumur-ast-dump`` utility has been renamed to ``murphi2xml`` to more
+  obviously indicate its purpose (commit
+  d5cb6a6f88498e9d8c999540f66cc838ffe1707a).
+* When generating a sandboxed verifier (``--sandbox on``), some further
+  time-related system calls are now allowed. This allows the verifier to run
+  correctly on platforms that do not have these system calls implemented in
+  vDSO_ (commits 3ee7d3d3c2f4f35d86b59b6de7139feae8763b4c,
+  498853681c25272e23cf480c6c8d7269f23a974c).
+* The verifier’s state reading and writing functions now anticipate that the
+  host platform may be big endian. Full big endian support will require further
+  changes, but this is a first step (commit
+  8f7bb60c1bc82638dd4ed5f2248c44cd47436461).
+
+.. _vDSO: https://en.wikipedia.org/wiki/VDSO
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
+v2020.01.27
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: quantified expressions no longer result in malformed SMT problems in
+  the SMT simplification bridge. This previously prevented some optimisation
+  that could have otherwise occurred (commit
+  2a1b724d25817b1bf9f95932ed8a4f9bb65a2af9).
+* Bug fix: pointer compression is no longer incorrectly enabled when targeting
+  the x32 ABI on Linux. This would cause assertion failures or invalid memory
+  references on this platform (commit 37cfa28ad640757eb42d4e394974ad2630987089).
+* ``forall`` and ``exists`` expressions are now supported by the SMT bridge. The
+  only remaining unsupported expressions are function calls and ``isundefined``
+  (commits 49a0d0df8d5ea67b1c26b549929f6eea361b879e,
+  5bb6144f684a905df44aa5955a8d04b37739e65c,
+  5b4e5e52e4bba0fb7ea03cb63d210701c5f3bc65,
+  5d4038c3933592b060203bda3e94b259a9ba9f43).
+* ``rumur-run`` now automatically detects whether your C compiler supports the
+  ``-mcx16`` flag and whether the checker needs to link against libatomic
+  (commits 6547e8b5022522732421ff337ab5113a19afb44a,
+  f7958a3fdad6a280360903108de5f05837fa1e5f).
+* Some compiler warnings on Linux on ARMEL have been suppressed (commit
+  b56cd94c6af0153dbdb983b8fd4177fc041526c8).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Model::assumption_count()`` which was previously deprecated has been removed
+  (commit ce2fe9d30db11dbce337355924986af48ee8878d).
+* ``Symtab::is_global_scope()`` has been deprecated and will be removed in a
+  future release (commit 7943b55ab80e0ecf3563158a2ff7b8100d60ca78).
+
+v2020.01.11
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: negative literals no longer cause malformed problems to be sent to
+  the SMT bridge (commit 47f0207dcaee6909d59ddc5577f92b3bf97571b2).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: a missing header is now shipped (commit
+  8cf196c3548962b15488abe293b4891740da4da0).
+
+v2020.01.07
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: compile errors in the generated verifier on Linux on ARM and RISC-V
+  due to references to missing syscalls in the sandboxing code have been fixed
+  (commit f1af745c54346f74ec650b192e708234de603b58).
+* Bug fix: the syscalls ``fstat64()`` and ``mmap2()`` are allowed within the
+  verifier’s sandbox on Linux on i386, removing a spurious runtime error (commit
+  047f23b32e2510af15dd4021a3a63941a909d13f).
+* The state data structure in the generated verifier is now more aggressively
+  packed, leading to reduced memory usage during checking. The runtime speed of
+  the checker may be slightly degraded. However, see the next item (commits
+  c17f056efcb5d3ef0cbd2160df3762a29ee90530,
+  db0e25f04d9140242643f7c5ebf8b8e9fbc62d82,
+  3c8ba379e44085e772ada03c8607aac95be2ef30,
+  ae6d776609de0462601f9beb75a8c93ce718f658,
+  50cff5aef32fa02f096bb7fc161a93f10b829124,
+  299be2fab2588b3367e8dd3406c8c9c0f591ebc6,
+  46d495f31c202298aef9f9dcd6638295df3f3e88,
+  c423db32f4c34db11d671d4e9078a4211a237630,
+  c6a040344ef4415e1983bd67dec6bb146b020d5a,
+  f6df17322a787d268c5ba8e587070649533b82c5,
+  a30665fb0b71040c99a19201e37ff9946b77a628,
+  77b97767661d17bff8b70d42b03ac63ba28c1da6,
+  654156b1bde6cc8d9dd613053d20de70587827cc,
+  77c8a12a6d6293de89670d0cbc6c4dc05c6ca9f3,
+  1b3383e3d2064826f67d211890011d651bfae88d,
+  cff8c6c938cf9b491f136dcb31072d1fe8dcc00c).
+* ``rumur`` has a new command line option, ``--pack-state``, for controlling
+  the trade off between memory reduction and runtime speed in the generated
+  verifier. See the manpage for more information (commit
+  aca06ba25db9a6a8e6311c8eaec015750371b772).
+* ``rumur-run`` no longer uses the compiler flags ``-march=native`` and
+  ``-mtune=native`` if they are not supported. This is primarily relevant to
+  non-x86 platforms whose toolchains do not all have these options (commit
+  1dd341e29dd7033b1d7598af8af899c322880a50).
+* ``rumur-run`` passes toolchain flags to link against libatomic on
+  architectures that do not have a double-word compare-exchange instruction
+  (MIPS, PowerPC, s390, RISC-V). This causes queue operations that are lock-free
+  on other architectures to take a global mutex, but it seems not easily
+  avoidable (commit 4cd3ffef193e2a87d1dd58a642ebaf93541b70ab).
+* ``rumur-run`` now uses `Link-Time Optimisation`_ if it is supported (commit
+  0adcb633ec56b476505e22fa47126437f9665671).
+* Various minor performance improvements were made to the generated verifier
+  (commits 5af91bf0dfe0d8bef9f7045f5ae5692a179e9ca3,
+  dee407613c0b1fd0c7ab851c6f84cbcb184dbea4,
+  b517be6b83b5c17f97ab82bda448e62ecded9688,
+  fe49bea9af67f71763227e95009441438433522a,
+  fd04cb9c1b3f432cb35f66d6cfe0b0726ad84068).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``validate_model()`` which was previously deprecated has been removed (commit
+  ba3a70ce8902c9baecdc94505f7c71d7dba6dca3).
+* ``Node::operator==`` and ``Node::operator!=`` have been deprecated and should
+  no longer be called. There is not a consistent notion of AST node equality and
+  these functions only implemented an approximation. They will be removed in a
+  future release (commits 019dbe9c4b2fdf24f8cf16028e73e6105e3336fe,
+  489947c7e3a01ae256d467565688eded2564f34e).
+* New functions, ``Expr::is_literal_true()`` and ``Expr::is_literal_false()``
+  have been introduced for determining if an expression is the literal value
+  ``true`` or ``false``, respectively (commit
+  bd084b982b6f209ec2356bb56f69dc0622b9345b).
+* A new function, ``TypeExpr::is_boolean()`` has been introduced for determining
+  if a type is the built-in ``Boolean`` (commit
+  f4ad5d02161da0b6f2d5264b6a9db482c392e77e).
+* Some documentation on the use of C atomic APIs has been added in
+  doc/internals-atomics.rst (commits 85602619752cb8b173a0821bb7afe2a8c301f0e1,
+  7fb1f0266beafd58e7bf7f859204b0ce61f35b28).
+* Liveness is now documented as something beyond what is supported by CMurphi in
+  doc/vs-cmurphi.rst (commit 5c82890e2a11ccb5da5e155faba8c7b9c26544d5).
+
+.. _`Link-Time Optimisation`: https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO
+
+v2019.12.22
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: ``rumur-run`` no longer crashes during UTF-8 decoding in generated C
+  code (commit 7bbd50f6a7241475826e8d380b6a60bb3c6dfd18).
+* Support for Python 2 in ``rumur-run`` has been dropped. To use this script you
+  will now need at least Python 3.6 (commits
+  0c4d5f05ebcc937921edd924465827e50d345842,
+  ded15a4d8f23f1f1584566bd6e251679ba8f915c).
+* The final check of liveness properties now prints regular progress updates
+  (commits ce162be56035e726e1077bb6b6ecc89999e8607e,
+  2635dae9a4f27962f4ed951a54b3d6c54b9d62c6,
+  44e80dc6142205904dca188d2a0277b49ed0fb7f,
+  048a4b54fa7a1c2a7f48fdb8a7e470d396529200,
+  eef60ad5cf61d1a8cac2d1dbcf63581da2590e24).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Support for Python 2 in all scripts has been dropped. These now require at
+  least Python 3.6 (commits 5ad77dc6de53de9a78639faba5b65668e43c3ad8,
+  729a7f8a096369115bde345890bc14e03c5bd428,
+  6e0d248eae25a8a68b04bb5e99a3172e1e2ab453,
+  244b41225d36309f9e5985dbe594957782bef7fb).
+
+v2019.11.24
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* ``rumur`` has a new command line option ``--smt-bitvectors`` for controlling
+  whether bitvectors are used in preference to integers when interacting with
+  SMT solvers. See the man page for more information (commits
+  37c84bbe255d3a7aa6d234a8334379edbb24ec3c,
+  9821bedfa4cdadda8cf1b9f065c07813854ea7d1).
+* ``rumur`` has a new command line option ``--smt-prelude`` for prepending text
+  to problems sent to SMT solvers. The ``--smt-logic`` command line option is
+  now deprecated and ``--smt-prelude`` should be used to set the logic instead.
+  See the man page for more information (commit
+  ad022eb0767250734562ec1ec932ef4d99ec1f5d).
+* The ``rumur`` option ``--smt-simplification`` is now automatically enabled if
+  you pass any of the other SMT related command line options (commit
+  39482d62009232477f18c7e5e295c633004e7b82).
+* A new tracing feature for memory usage in the generated checker has been
+  added, ``--trace memory_usage``. See the man page for how to use this (commit
+  4f9195707ae261ed4f6f94d1411579751deff618).
+* ``rumur-ast-dump`` now has a ``--version`` option to print out its version
+  (commit 76716edc76fbe608a013b0178b6e4d2d72614d08).
+* Some warnings when compiling generated code with recent versions of Clang have
+  been suppressed (commit 3e9efb2855be52c20023ef3cd03e02b183e22ff5).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A new ``version()`` function has been added to librumur for retrieving its
+  version as a string (commits 77ee1c40884627e5418e3c25f902c6d7d73f5f4f,
+  7f95b7491859548b27ec7d9226d7c28cdec380c0).
+
 v2019.11.09
 -----------
 

@@ -92,6 +92,9 @@ struct Options {
   // Type used for value_t in the checker
   std::string value_type = "auto";
 
+  // whether to bit-pack members of the state struct
+  bool pack_state = true;
+
   // options related to SMT solver interaction
   struct {
 

@@ -7,7 +7,7 @@
 #   * Pass --date=rfc2822 to git-log to get the commit dates in the right format
 #     for Debian packaging.
 #   * After successful packaging, sign the release with
-#     `debsign ../rumur_<version>_<arch>.changes`.
+#     `debsign ../rumur_<version>_source.changes`.
 #   * Upload the package to mentors.debian.net with
 #     `dput mentors ../rumur_<version>_source.changes`.
 #   * Check consistency of ../debian/watch with
@@ -15,6 +15,7 @@
 #   * For building with pbuilder, first
 #     `sudo pbuilder create --debootstrapopts --variant=buildd` to setup a base
 #     chroot image, then `pdebuild` to test.
+#   * To update a pre-existing pbuilder environment, `sudo pbuilder update`.
 #
 # For uploading to mentors.debian.net, you will need ~/.dput.cf configured:
 #

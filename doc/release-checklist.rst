@@ -40,17 +40,59 @@ package follow these steps.
 2. Merge from master.
 3. Update the Debian changelog (../debian/changelog). Debian provide guidance on
    the `changelog format`_.
-4. Update ../debian/rules to set ``RUMUR_VERSION`` to the new version. Note that
-   Debian version numbers are the standard (“native”) Rumur version with “-1”
-   appended.
-5. Commit these changes.
-6. Run ../misc/package-for-debian.sh to prepare a new Debian package for upload.
-7. Follow further instructions in ../misc/package-for-debian.sh for testing,
-   signing, and uploading the resulting package.
+4. Commit these changes.
+5. Push this upstream to packaging/debian.
+
+Then on a `Debian Unstable installation`_:
+
+.. code-block:: sh
+
+  # 6. Upgrade all packages.
+  sudo apt update
+  sudo apt upgrade
+
+  # 7. Clone the packaging/debian branch.
+  git clone https://github.com/Smattr/rumur -b packaging/debian
+  cd rumur
+
+  # 8. Run packaging script.
+  ./misc/package-for-debian.sh
+
+  # If any lintian errors or warnings were output, you will need to address
+  # these and then return to step 4.
+
+  # 9. Update pbuilder environment. You will need to already have a pbuilder
+  # environment created, as described in misc/package-for-debian.sh.
+  sudo pbuilder update
+
+  # 10. Test the package under pbuilder
+  pdebuild
+
+  # 11. Sign the source package that pbuilder created. You will need GPG key(s)
+  # configured.
+  debsign ../rumur_*_source.changes
+
+  # 12. Upload to the mentors inbox. You will need dput configured, as described
+  # in misc/package-for-debian.sh.
+  dput mentors ../rumur_*_source.changes
+
+In a few minutes you should get a confirmation email that the upload succeeded.
+Then:
+
+13. Follow the instructions included in the confirmation email to send a
+    `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
+    get a reply from an interested party.
+
+Note that there could still be problems with the package that a sponsor may
+request you fix. For example, there is currently no easy way to smoke test the
+autopkgtests and these could fail, preventing migration of the package to the
+main repositories.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
 .. _`Cirrus CI FreeBSD tests`: https://cirrus-ci.com/github/Smattr/rumur
+.. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
 .. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
 .. _`packaged in Debian unstable`: https://packages.debian.org/sid/rumur
+.. _`Request For Sponsorship`: https://mentors.debian.net/sponsor/rfs-howto
 .. _`upstream on Github`: https://github.com/Smattr/rumur
 .. _`Travis CI regression tests`: https://travis-ci.org/Smattr/rumur/builds/

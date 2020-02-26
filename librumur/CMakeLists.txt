@@ -3,15 +3,15 @@ project(librumur LANGUAGES CXX)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
-find_path(GMPXX_INCLUDE NAMES gmpxx.h)
+find_path(GMPXX_INCLUDE NAMES gmpxx.h PATHS ENV CPLUS_INCLUDE_PATH)
 if(NOT GMPXX_INCLUDE)
   message(FATAL_ERROR "GMP headers not found")
 endif()
-find_library(GMP_LIBRARIES NAMES gmp)
+find_library(GMP_LIBRARIES NAMES gmp PATHS ENV LIBRARY_PATH)
 if(NOT GMP_LIBRARIES)
   message(FATAL_ERROR "libgmp not found")
 endif()
-find_library(GMPXX_LIBRARIES NAMES gmpxx)
+find_library(GMPXX_LIBRARIES NAMES gmpxx PATHS ENV LIBRARY_PATH)
 if(NOT GMPXX_LIBRARIES)
   message(FATAL_ERROR "libgmpxx not found")
 endif()
@@ -37,10 +37,15 @@ CHECK_CXX_COMPILER_FLAG(-Wregister HAS_WARNING_REGISTER)
 if(HAS_WARNING_REGISTER)
   set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-register")
 endif()
+get_source_file_property(LEXER_COMPILE_FLAGS lexer.l.cc COMPILE_FLAGS)
+CHECK_CXX_COMPILER_FLAG(-Wdeprecated-register HAS_WARNING_DEPRECATED_REGISTER)
+if(HAS_WARNING_DEPRECATED_REGISTER)
+  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-deprecated-register")
+endif()
 
 add_custom_command(
   OUTPUT rumur-get-version.h
-  COMMAND python src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -95,6 +100,7 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/location.hh
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.hh
   ${CMAKE_CURRENT_BINARY_DIR}/position.hh
+  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   ${CMAKE_CURRENT_BINARY_DIR}/stack.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rumur)
 

@@ -96,6 +96,15 @@ of the result. Using \fBmachine-readable\fR generates output in an XML format
 suitable for consumption by a following tool in an I/O pipeline.
 .RE
 .PP
+\fB--pack-state\fR [\fBon\fR | \fBoff\fR]
+.RS
+Set whether auxiliary state data is compressed in the generated verifier.
+Compression (\fBon\fR, the default) saves memory at the expense of runtime. That
+is, by default the verifier will try to minimise memory usage. If your model is
+small enough to comfortably fit in available memory, you may want to set this to
+\fBoff\fR to accelerate the checking process.
+.RE
+.PP
 \fB--quiet\fR or \fB-q\fR
 .RS
 Don't output any messages while generating the verifier.
@@ -235,7 +244,7 @@ instruct Rumur how to use them. Note that Rumur can only use a single SMT
 solver and specifying the \fB--smt-path\fR option multiple times will only
 retain the last path given.
 .PP
-\fB--smt-arg\fR \fBARG\fI
+\fB--smt-arg\fR \fIARG\fR
 .RS
 A command line argument to pass to the SMT solver. This option can be given
 multiple times and arguments are passed in the order listed. E.g. if you specify

@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if xml else re.compile('enum { HELLO, WORLD }')
+-- checker_output: None if self.xml else re.compile('enum { HELLO, WORLD }')
 
 /* This model attempts to provoke a bug first observed on commit
  * 42b424c6d5986e44c218152e96b065b056ea494b. Enums would be incorrectly printed

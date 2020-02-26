@@ -1,7 +1,10 @@
--- rumur_flags: smt_args()
--- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
+-- rumur_flags: SMT_ARGS
+-- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
 
--- a variant of smt-forall.m using an inline range
+-- similar to smt-exists, but using a pre-defined type
+
+type
+  t: 1 .. 2;
 
 var
   x: boolean;
@@ -14,7 +17,7 @@ end;
 rule begin
   -- if the SMT bridge is working correctly, it should simplify the condition as
   -- a tautology into true, avoiding the read of an undefined variable
-  if forall z := 1 to 2 do z = 1 | z = 2 end | y then
+  if y | exists z: t do z = 1 end then
     x := !x;
   end;
 end;

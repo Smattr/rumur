@@ -1,5 +1,5 @@
--- rumur_flags: smt_args()
--- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
+-- rumur_flags: SMT_ARGS
+-- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
 
 -- similar to smt-forall, but using a pre-defined type
 
@@ -17,7 +17,7 @@ end;
 rule begin
   -- if the SMT bridge is working correctly, it should simplify the condition as
   -- a tautology into true, avoiding the read of an undefined variable
-  if forall z: t do z = 1 | z = 2 end | y then
+  if y | forall z: t do z = 1 | z = 2 end then
     x := !x;
   end;
 end;

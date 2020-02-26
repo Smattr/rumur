@@ -1,6 +1,6 @@
 <grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
 
-  <!-- RelaxNG schema for the output produced by rumur-ast-dump -->
+  <!-- RelaxNG schema for the output produced by murphi2xml -->
 
   <start>
     <ref name="unit"/>

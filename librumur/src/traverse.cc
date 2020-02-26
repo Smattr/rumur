@@ -317,7 +317,7 @@ void BaseTraversal::dispatch(Node &n) {
 }
 
 void Traversal::visit_add(Add &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_aliasdecl(AliasDecl &n) {
@@ -339,7 +339,7 @@ void Traversal::visit_aliasstmt(AliasStmt &n) {
 }
 
 void Traversal::visit_and(And &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_array(Array &n) {
@@ -366,7 +366,7 @@ void Traversal::visit_constdecl(ConstDecl &n) {
 }
 
 void Traversal::visit_div(Div &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_element(Element &n) {
@@ -377,7 +377,7 @@ void Traversal::visit_element(Element &n) {
 void Traversal::visit_enum(Enum&) { }
 
 void Traversal::visit_eq(Eq &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_errorstmt(ErrorStmt&) { }
@@ -421,11 +421,11 @@ void Traversal::visit_functioncall(FunctionCall &n) {
 }
 
 void Traversal::visit_geq(Geq &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_gt(Gt &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_if(If &n) {
@@ -441,7 +441,7 @@ void Traversal::visit_ifclause(IfClause &n) {
 }
 
 void Traversal::visit_implication(Implication &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_isundefined(IsUndefined &n) {
@@ -449,15 +449,15 @@ void Traversal::visit_isundefined(IsUndefined &n) {
 }
 
 void Traversal::visit_leq(Leq &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_lt(Lt &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_mod(Mod &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_model(Model &n) {
@@ -470,25 +470,25 @@ void Traversal::visit_model(Model &n) {
 }
 
 void Traversal::visit_mul(Mul &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_negative(Negative &n) {
-  visit_uexpr(static_cast<UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void Traversal::visit_neq(Neq &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_not(Not &n) {
-  visit_uexpr(static_cast<UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void Traversal::visit_number(Number&) { }
 
 void Traversal::visit_or(Or &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_procedurecall(ProcedureCall &n) {
@@ -572,7 +572,7 @@ void Traversal::visit_startstate(StartState &n) {
 }
 
 void Traversal::visit_sub(Sub &n) {
-  visit_bexpr(static_cast<BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void Traversal::visit_switch(Switch &n) {
@@ -925,7 +925,7 @@ void ConstBaseTraversal::dispatch(const Node &n) {
 }
 
 void ConstTraversal::visit_add(const Add &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_aliasdecl(const AliasDecl &n) {
@@ -947,7 +947,7 @@ void ConstTraversal::visit_aliasstmt(const AliasStmt &n) {
 }
 
 void ConstTraversal::visit_and(const And &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_array(const Array &n) {
@@ -974,7 +974,7 @@ void ConstTraversal::visit_constdecl(const ConstDecl &n) {
 }
 
 void ConstTraversal::visit_div(const Div &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_element(const Element &n) {
@@ -985,7 +985,7 @@ void ConstTraversal::visit_element(const Element &n) {
 void ConstTraversal::visit_enum(const Enum&) { }
 
 void ConstTraversal::visit_eq(const Eq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_errorstmt(const ErrorStmt&) { }
@@ -1029,11 +1029,11 @@ void ConstTraversal::visit_functioncall(const FunctionCall &n) {
 }
 
 void ConstTraversal::visit_geq(const Geq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_gt(const Gt &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_if(const If &n) {
@@ -1049,7 +1049,7 @@ void ConstTraversal::visit_ifclause(const IfClause &n) {
 }
 
 void ConstTraversal::visit_implication(const Implication &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_isundefined(const IsUndefined &n) {
@@ -1057,15 +1057,15 @@ void ConstTraversal::visit_isundefined(const IsUndefined &n) {
 }
 
 void ConstTraversal::visit_leq(const Leq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_lt(const Lt &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_mod(const Mod &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_model(const Model &n) {
@@ -1078,25 +1078,25 @@ void ConstTraversal::visit_model(const Model &n) {
 }
 
 void ConstTraversal::visit_mul(const Mul &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_negative(const Negative &n) {
-  visit_uexpr(static_cast<const UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void ConstTraversal::visit_neq(const Neq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_not(const Not &n) {
-  visit_uexpr(static_cast<const UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void ConstTraversal::visit_number(const Number&) { }
 
 void ConstTraversal::visit_or(const Or &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_procedurecall(const ProcedureCall &n) {
@@ -1180,7 +1180,7 @@ void ConstTraversal::visit_startstate(const StartState &n) {
 }
 
 void ConstTraversal::visit_sub(const Sub &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_switch(const Switch &n) {
@@ -1433,11 +1433,11 @@ void ConstStmtTraversal::visit_aliasrule(const AliasRule &n) {
 }
 
 void ConstStmtTraversal::visit_add(const Add &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_and(const And &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_array(const Array &n) {
@@ -1455,7 +1455,7 @@ void ConstStmtTraversal::visit_constdecl(const ConstDecl &n) {
 }
 
 void ConstStmtTraversal::visit_div(const Div &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_element(const Element &n) {
@@ -1466,7 +1466,7 @@ void ConstStmtTraversal::visit_element(const Element &n) {
 void ConstStmtTraversal::visit_enum(const Enum&) { }
 
 void ConstStmtTraversal::visit_eq(const Eq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_exists(const Exists &n) {
@@ -1502,11 +1502,11 @@ void ConstStmtTraversal::visit_functioncall(const FunctionCall &n) {
 }
 
 void ConstStmtTraversal::visit_geq(const Geq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_gt(const Gt &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_ifclause(const IfClause &n) {
@@ -1517,7 +1517,7 @@ void ConstStmtTraversal::visit_ifclause(const IfClause &n) {
 }
 
 void ConstStmtTraversal::visit_implication(const Implication &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_isundefined(const IsUndefined &n) {
@@ -1525,15 +1525,15 @@ void ConstStmtTraversal::visit_isundefined(const IsUndefined &n) {
 }
 
 void ConstStmtTraversal::visit_leq(const Leq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_lt(const Lt &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_mod(const Mod &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_model(const Model &n) {
@@ -1546,25 +1546,25 @@ void ConstStmtTraversal::visit_model(const Model &n) {
 }
 
 void ConstStmtTraversal::visit_mul(const Mul &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_negative(const Negative &n) {
-  visit_uexpr(static_cast<const UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void ConstStmtTraversal::visit_neq(const Neq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_not(const Not &n) {
-  visit_uexpr(static_cast<const UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void ConstStmtTraversal::visit_number(const Number&) { }
 
 void ConstStmtTraversal::visit_or(const Or &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_property(const Property &n) {
@@ -1637,7 +1637,7 @@ void ConstStmtTraversal::visit_switchcase(const SwitchCase &n) {
 }
 
 void ConstStmtTraversal::visit_sub(const Sub &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstStmtTraversal::visit_ternary(const Ternary &n) {
@@ -1662,7 +1662,7 @@ void ConstStmtTraversal::visit_vardecl(const VarDecl &n) {
 }
 
 void ConstTypeTraversal::visit_add(const Add &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_aliasdecl(const AliasDecl &n) {
@@ -1684,7 +1684,7 @@ void ConstTypeTraversal::visit_aliasstmt(const AliasStmt &n) {
 }
 
 void ConstTypeTraversal::visit_and(const And &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_assignment(const Assignment &n) {
@@ -1706,7 +1706,7 @@ void ConstTypeTraversal::visit_constdecl(const ConstDecl &n) {
 }
 
 void ConstTypeTraversal::visit_div(const Div &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_element(const Element &n) {
@@ -1715,7 +1715,7 @@ void ConstTypeTraversal::visit_element(const Element &n) {
 }
 
 void ConstTypeTraversal::visit_eq(const Eq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_errorstmt(const ErrorStmt&) { }
@@ -1759,11 +1759,11 @@ void ConstTypeTraversal::visit_functioncall(const FunctionCall &n) {
 }
 
 void ConstTypeTraversal::visit_geq(const Geq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_gt(const Gt &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_if(const If &n) {
@@ -1779,7 +1779,7 @@ void ConstTypeTraversal::visit_ifclause(const IfClause &n) {
 }
 
 void ConstTypeTraversal::visit_implication(const Implication &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_isundefined(const IsUndefined &n) {
@@ -1787,15 +1787,15 @@ void ConstTypeTraversal::visit_isundefined(const IsUndefined &n) {
 }
 
 void ConstTypeTraversal::visit_leq(const Leq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_lt(const Lt &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_mod(const Mod &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_model(const Model &n) {
@@ -1808,25 +1808,25 @@ void ConstTypeTraversal::visit_model(const Model &n) {
 }
 
 void ConstTypeTraversal::visit_mul(const Mul &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_negative(const Negative &n) {
-  visit_uexpr(static_cast<const UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void ConstTypeTraversal::visit_neq(const Neq &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_not(const Not &n) {
-  visit_uexpr(static_cast<const UnaryExpr&>(n));
+  visit_uexpr(n);
 }
 
 void ConstTypeTraversal::visit_number(const Number&) { }
 
 void ConstTypeTraversal::visit_or(const Or &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_procedurecall(const ProcedureCall &n) {
@@ -1896,7 +1896,7 @@ void ConstTypeTraversal::visit_startstate(const StartState &n) {
 }
 
 void ConstTypeTraversal::visit_sub(const Sub &n) {
-  visit_bexpr(static_cast<const BinaryExpr&>(n));
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_switch(const Switch &n) {
