@@ -58,4 +58,11 @@ void generate_h(const Node &n, bool pack, std::ostream &out) {
 
   HGenerator gen(out, pack);
   gen.dispatch(n);
+
+  // close the `extern "C"` block opened in ../resources/h_prefix.h
+  out
+    << "\n"
+    << "#ifdef __cplusplus\n"
+    << "}\n"
+    << "#endif\n";
 }
