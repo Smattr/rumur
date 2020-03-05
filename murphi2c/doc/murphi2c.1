@@ -19,10 +19,20 @@ produce C code that does not compile. For such models, Murphi2C is only intended
 to generate an initial skeleton for a C translation. You should always inspect
 the output C code to confirm it matches your expectations.
 .SH OPTIONS
+\fB--header\fR
+.RS
+Generate a C header, as opposed to a source file.
+.RE
+.PP
 \fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
 .RS
 Set path to write the generated C code to. Without this option, code is written
 to stdout.
+.RE
+.PP
+\fB--source\fR
+.RS
+Generate a C source file, as opposed to a header. This is the default.
 .RE
 .PP
 \fB--version\fR
