@@ -1,6 +1,6 @@
 #include <cassert>
 #include <cstddef>
-#include "CodeGenerator.h"
+#include "CLikeGenerator.h"
 #include "../../common/escape.h"
 #include "generate_c.h"
 #include <gmpxx.h>
@@ -15,26 +15,14 @@ using namespace rumur;
 
 namespace {
 
-class CGenerator : public CodeGenerator, public ConstBaseTraversal {
+class CGenerator : public CLikeGenerator {
 
  private:
-  std::ostream &out;
   bool pack;
 
  public:
-  CGenerator(std::ostream &out_, bool pack_): out(out_), pack(pack_) { }
-
-  // helpers to make output below more natural
-
-  CGenerator &operator<<(const std::string &s) {
-    out << s;
-    return *this;
-  }
-
-  CGenerator &operator<<(const Node &n) {
-    dispatch(n);
-    return *this;
-  }
+  CGenerator(std::ostream &out_, bool pack_):
+    CLikeGenerator(out_), pack(pack_) { }
 
   void visit_add(const Add &n) final {
     *this << "(" << *n.lhs << " + " << *n.rhs << ")";
