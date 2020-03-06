@@ -14,10 +14,9 @@ class HGenerator : public CodeGenerator, public ConstTraversal {
 
  private:
   std::ostream &out;
-  bool pack;
 
  public:
-  HGenerator(std::ostream &out_, bool pack_): out(out_), pack(pack_) { }
+  HGenerator(std::ostream &out_, bool): out(out_) { }
 
   // helpers to make output below more natural
 
