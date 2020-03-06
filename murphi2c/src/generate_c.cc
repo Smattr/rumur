@@ -18,7 +18,7 @@ namespace {
 class CGenerator : public CLikeGenerator {
 
  public:
-  using CLikeGenerator::CLikeGenerator;
+  CGenerator(std::ostream &out_, bool pack_): CLikeGenerator(out_, pack_) { }
 
   void visit_aliasdecl(const AliasDecl &n) final {
     *this << "#define " << n.name << " " << *n.value << "\n";
