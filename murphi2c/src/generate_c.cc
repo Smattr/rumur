@@ -17,16 +17,8 @@ namespace {
 
 class CGenerator : public CLikeGenerator {
 
- private:
-  bool pack;
-
  public:
-  CGenerator(std::ostream &out_, bool pack_):
-    CLikeGenerator(out_), pack(pack_) { }
-
-  void visit_add(const Add &n) final {
-    *this << "(" << *n.lhs << " + " << *n.rhs << ")";
-  }
+  using CLikeGenerator::CLikeGenerator;
 
   void visit_aliasdecl(const AliasDecl &n) final {
     *this << "#define " << n.name << " " << *n.value << "\n";
@@ -49,10 +41,6 @@ class CGenerator : public CLikeGenerator {
     for (const Ptr<AliasDecl> &a : n.aliases) {
       *this << "#undef " << a->name << "\n";
     }
-  }
-
-  void visit_and(const And &n) final {
-    *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
 
   void visit_array(const Array &n) final {
@@ -99,14 +87,6 @@ class CGenerator : public CLikeGenerator {
     *this << " " << n.name << " = " << *n.value << ";\n";
   }
 
-  void visit_div(const Div &n) final {
-    *this << "(" << *n.lhs << " / " << *n.rhs << ")";
-  }
-
-  void visit_element(const Element &n) final {
-    *this << "(" << *n.array << ".data[" << *n.index << "])";
-  }
-
   void visit_enum(const Enum &n) final {
     *this << "enum { ";
     for (const std::pair<std::string, location> &m : n.members) {
@@ -115,38 +95,8 @@ class CGenerator : public CLikeGenerator {
     *this << "}";
   }
 
-  void visit_eq(const Eq &n) final {
-
-    if (!n.lhs->type()->is_simple()) {
-      // This is a comparison of an array or struct. We cannot use the built-in
-      // == operator, so we use memcmp. This only works if all members are
-      // packed, hence why `__attribute__((pack))` is emitted in other places.
-      assert(pack && "comparison of complex types is present but structures "
-        "are not packed");
-      *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
-        << ") == 0)";
-
-      return;
-    }
-
-    *this << "(" << *n.lhs << " == " << *n.rhs << ")";
-  }
-
   void visit_errorstmt(const ErrorStmt &n) final {
     *this << indentation() << "error(\"" << escape(n.message) << "\");\n";
-  }
-
-  void visit_exists(const Exists &n) final {
-    *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= "
-      << *n.expr << "; } res_; })";
-  }
-
-  void visit_exprid(const ExprID &n) final {
-    *this << "(" << n.id << ")";
-  }
-
-  void visit_field(const Field &n) final {
-    *this << "(" << *n.record << "." << n.field << ")";
   }
 
   void visit_for(const For &n) final {
@@ -173,20 +123,6 @@ class CGenerator : public CLikeGenerator {
 
     dedent();
     *this << indentation() << "} while (0);\n";
-  }
-
-  void visit_forall(const Forall &n) final {
-
-    // open a GNU statement expression
-    *this << "({ ";
-
-    // see corresponding logic in visit_for() for an explanation
-    if (auto e = dynamic_cast<const Enum*>(n.quantifier.type.get())) {
-      *this << *e << "; ";
-    }
-
-    *this << "bool res_ = true; " << n.quantifier << " { res_ &= "
-      << *n.expr << "; } res_; })";
   }
 
   void visit_function(const Function &n) final {
@@ -235,33 +171,6 @@ class CGenerator : public CLikeGenerator {
     *this << "}\n";
   }
 
-  void visit_functioncall(const FunctionCall &n) final {
-    *this << n.name << "(";
-    assert(n.function != nullptr && "unresolved function call in AST");
-    auto it = n.function->parameters.begin();
-    bool first = true;
-    for (const Ptr<Expr> &a : n.arguments) {
-      if (!first) {
-        *this << ", ";
-      }
-      if (!(*it)->readonly) {
-        *this << "&";
-      }
-      *this << *a;
-      first = false;
-      it++;
-    }
-    *this << ")";
-  }
-
-  void visit_geq(const Geq &n) final {
-    *this << "(" << *n.lhs << " >= " << *n.rhs << ")";
-  }
-
-  void visit_gt(const Gt &n) final {
-    *this << "(" << *n.lhs << " > " << *n.rhs << ")";
-  }
-
   void visit_if(const If &n) final {
     bool first = true;
     for (const IfClause &c : n.clauses) {
@@ -287,29 +196,6 @@ class CGenerator : public CLikeGenerator {
     }
     dedent();
     *this << indentation() << "}";
-  }
-
-  void visit_implication(const Implication &n) final {
-    *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
-  }
-
-  void visit_isundefined(const IsUndefined&) final {
-    // check() prevents a model with isundefined expressions from making it
-    // through to here
-    assert(!"unreachable");
-    __builtin_unreachable();
-  }
-
-  void visit_leq(const Leq &n) final {
-    *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
-  }
-
-  void visit_lt(const Lt &n) final {
-    *this << "(" << *n.lhs << " < " << *n.rhs << ")";
-  }
-
-  void visit_mod(const Mod &n) final {
-    *this << "(" << *n.lhs << " % " << *n.rhs << ")";
   }
 
   void visit_model(const Model &n) final {
@@ -338,52 +224,6 @@ class CGenerator : public CLikeGenerator {
     for (const Ptr<Rule> &r : flattened) {
       *this << *r << "\n";
     }
-  }
-
-  void visit_mul(const Mul &n) final {
-    *this << "(" << *n.lhs << " * " << *n.rhs << ")";
-  }
-
-  void visit_negative(const Negative &n) final {
-    *this << "(-" << *n.rhs << ")";
-  }
-
-  void visit_neq(const Neq &n) final {
-
-    if (!n.lhs->type()->is_simple()) {
-      // see explanation in visit_eq()
-      assert(pack && "comparison of complex types is present but structures "
-        "are not packed");
-      *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
-        << ") != 0)";
-
-      return;
-    }
-
-    *this << "(" << *n.lhs << " != " << *n.rhs << ")";
-  }
-
-  void visit_not(const Not &n) final {
-    *this << "(!" << *n.rhs << ")";
-  }
-
-  void visit_number(const Number &n) final {
-    *this << "(INT64_C(" << n.value.get_str() << "))";
-  }
-
-  void visit_or(const Or &n) final {
-    *this << "(" << *n.lhs << " || " << *n.rhs << ")";
-  }
-
-  void visit_procedurecall(const ProcedureCall &n) final {
-    *this << indentation() << n.call << ";\n";
-  }
-
-  void visit_property(const Property&) final {
-    // this is unreachable because generate_c is only ever called with a Model
-    // and nothing that contains a Property descends into it
-    assert(!"unreachable");
-    __builtin_unreachable();
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -698,10 +538,6 @@ class CGenerator : public CLikeGenerator {
     *this << indentation() << "}\n\n";
   }
 
-  void visit_sub(const Sub &n) final {
-    *this << "(" << *n.lhs << " - " << *n.rhs << ")";
-  }
-
   void visit_switch(const Switch &n) final {
 
     // Rumur permits switch statements with non-constant case expressions, while
@@ -766,21 +602,12 @@ class CGenerator : public CLikeGenerator {
     dedent();
   }
 
-  void visit_ternary(const Ternary &n) final {
-    *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
-  }
-
   void visit_typedecl(const TypeDecl &n) final {
     *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
   }
 
   void visit_typeexprid(const TypeExprID &n) final {
     *this << n.name;
-  }
-
-  void visit_undefine(const Undefine &n) final {
-    *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-      << "));\n";
   }
 
   void visit_vardecl(const VarDecl &n) final {
