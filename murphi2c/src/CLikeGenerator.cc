@@ -366,6 +366,13 @@ void CLikeGenerator::visit_return(const Return &n) {
   *this << ";\n";
 }
 
+void CLikeGenerator::visit_ruleset(const Ruleset&) {
+  // this is unreachable because generate_c is only ever called with a Model
+  // and all rule are flattened during visit_model
+  assert(!"unreachable");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_scalarset(const Scalarset&) {
   *this << "int64_t";
 }

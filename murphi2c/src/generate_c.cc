@@ -190,13 +190,6 @@ class CGenerator : public CLikeGenerator {
     assert(!"missing case in visit_quantifier()");
   }
 
-  void visit_ruleset(const Ruleset&) final {
-    // this is unreachable because generate_c is only ever called with a Model
-    // and all rule are flattened during visit_model
-    assert(!"unreachable");
-    __builtin_unreachable();
-  }
-
   void visit_simplerule(const SimpleRule &n) final {
     *this << indentation() << "bool guard_" << n.name << "(";
 
