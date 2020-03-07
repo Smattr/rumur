@@ -93,6 +93,90 @@ class HGenerator : public CodeGenerator, public ConstTraversal {
     }
   }
 
+  void visit_propertyrule(const PropertyRule &n) final {
+
+    // function prototype
+    *this << indentation() << "bool " << n.name << "(";
+
+    // parameters
+    bool first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ");\n";
+  }
+
+  void visit_simplerule(const SimpleRule &n) final {
+    *this << indentation() << "bool guard_" << n.name << "(";
+
+    // parameters
+    bool first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ");\n\n";
+
+    *this << indentation() << "void rule_" << n.name << "(";
+
+    // parameters
+    first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ")\n";
+  }
+
+  void visit_startstate(const StartState &n) final {
+    *this << indentation() << "void startstate_" << n.name << "(";
+
+    // parameters
+    bool first = true;
+    for (const Quantifier &q : n.quantifiers) {
+      if (!first) {
+        *this << ", ";
+      }
+      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        *this << t->name;
+      } else {
+        *this << "int64_t";
+      }
+      *this << " " << q.name;
+      first = false;
+    }
+
+    *this << ");\n";
+  }
+
   void visit_vardecl(const VarDecl &n) final {
     *this << indentation() << "extern " << *n.type << " " << n.name << ";\n";
   }
