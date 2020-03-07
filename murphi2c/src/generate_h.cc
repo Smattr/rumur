@@ -1,5 +1,5 @@
 #include <cstddef>
-#include "CodeGenerator.h"
+#include "CLikeGenerator.h"
 #include "generate_c.h"
 #include "generate_h.h"
 #include <iostream>
@@ -10,25 +10,10 @@ using namespace rumur;
 
 namespace {
 
-class HGenerator : public CodeGenerator, public ConstTraversal {
-
- private:
-  std::ostream &out;
+class HGenerator : public CLikeGenerator {
 
  public:
-  HGenerator(std::ostream &out_, bool): out(out_) { }
-
-  // helpers to make output below more natural
-
-  HGenerator &operator<<(const std::string &s) {
-    out << s;
-    return *this;
-  }
-
-  HGenerator &operator<<(const Node &n) {
-    dispatch(n);
-    return *this;
-  }
+  HGenerator(std::ostream &out_, bool pack_): CLikeGenerator(out_, pack_) { }
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "extern const ";
@@ -63,34 +48,6 @@ class HGenerator : public CodeGenerator, public ConstTraversal {
       first = false;
     }
     *this << ");\n";
-  }
-
-  void visit_model(const Model &n) final {
-
-    // constants, types and variables
-    for (const Ptr<Decl> &d : n.decls) {
-      *this << *d;
-    }
-
-    *this << "\n";
-
-    // functions and procedures
-    for (const Ptr<Function> &f : n.functions) {
-      *this << *f << "\n";
-    }
-
-    // flatten the rules so we do not have to deal with the hierarchy of
-    // rulesets, aliasrules, etc.
-    std::vector<Ptr<Rule>> flattened;
-    for (const Ptr<Rule> &r : n.rules) {
-      std::vector<Ptr<Rule>> rs = r->flatten();
-      flattened.insert(flattened.end(), rs.begin(), rs.end());
-    }
-
-    // startstates, rules, invariants
-    for (const Ptr<Rule> &r : flattened) {
-      *this << *r << "\n";
-    }
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
