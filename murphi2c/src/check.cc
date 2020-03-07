@@ -11,16 +11,19 @@ namespace {
 class Check : public ConstTraversal {
 
  public:
+  bool ok = true;
+
   void visit_isundefined(const IsUndefined&) final {
     std::cerr << "isundefined expressions are not supported\n";
-    exit(EXIT_FAILURE);
+    ok = false;
   }
 
 };
 
 }
 
-void check(const Node &n) {
+bool check(const Node &n) {
   Check c;
   c.dispatch(n);
+  return c.ok;
 }

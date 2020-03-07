@@ -124,7 +124,8 @@ int main(int argc, char **argv) {
   assert(m != nullptr);
 
   // validate that this model is OK to translate
-  check(*m);
+  if (!check(*m))
+    return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
   name_rules(*m);
