@@ -11,6 +11,13 @@ void CLikeGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_aliasrule(const AliasRule&) {
+  // this is unreachable because generate_c is only ever called with a Model
+  // and visit_model flattens all rules
+  assert(!"unreachable");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_and(const And &n) {
   *this << "(" << *n.lhs << " && " << *n.rhs << ")";
 }

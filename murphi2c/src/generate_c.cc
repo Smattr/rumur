@@ -24,13 +24,6 @@ class CGenerator : public CLikeGenerator {
     *this << "#define " << n.name << " " << *n.value << "\n";
   }
 
-  void visit_aliasrule(const AliasRule&) final {
-    // this is unreachable because generate_c is only ever called with a Model
-    // and visit_model flattens all rules
-    assert(!"unreachable");
-    __builtin_unreachable();
-  }
-
   void visit_aliasstmt(const AliasStmt &n) final {
     for (const Ptr<AliasDecl> &a : n.aliases) {
       *this << *a;
