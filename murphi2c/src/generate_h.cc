@@ -144,7 +144,10 @@ class HGenerator : public CLikeGenerator {
   }
 
   void visit_vardecl(const VarDecl &n) final {
-    *this << indentation() << "extern " << *n.type << " " << n.name << ";\n";
+    *this << indentation();
+    if (n.is_in_state())
+      *this << "extern ";
+    *this << *n.type << " " << n.name << ";\n";
   }
 };
 
