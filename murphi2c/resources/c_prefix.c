@@ -42,3 +42,5 @@ static void liveness_(const char *message __attribute__((unused))) {
 }
 
 void (*liveness)(const char*) = liveness_;
+
+

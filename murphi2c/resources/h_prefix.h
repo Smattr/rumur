@@ -4,11 +4,16 @@
 
 
 #include <inttypes.h>
+#include <stdbool.h>
 #include <string.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/* built-in boolean type */
+typedef bool boolean;
 
 
 /* The following function pointers are invoked when model conditions are hit.
@@ -38,3 +43,5 @@ extern void (*cover)(const char *message);
  * nothing.
  */
 extern void (*liveness)(const char *mesage);
+
+
