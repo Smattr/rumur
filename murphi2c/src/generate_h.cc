@@ -30,16 +30,42 @@ class HGenerator : public CodeGenerator, public ConstTraversal {
     return *this;
   }
 
-  void visit_model(const Model &n) final {
-
-    // emit declarations
-    for (const Ptr<Decl> &d : n.decls)
-      *this << *d;
+  void visit_constdecl(const ConstDecl &n) final {
+    *this << indentation() << "extern const ";
+    if (n.type == nullptr) {
+      *this << "int64_t";
+    } else {
+      *this << *n.type;
+    }
+    *this << " " << n.name << ";\n";
   }
 
-  void visit_typeexprid(const TypeExprID &n) final {
-    // FIXME: ideally we just want to call CGenerator::visit_typeexprid() here
-    *this << n.name;
+  void visit_model(const Model &n) final {
+
+    // constants, types and variables
+    for (const Ptr<Decl> &d : n.decls) {
+      *this << *d;
+    }
+
+    *this << "\n";
+
+    // functions and procedures
+    for (const Ptr<Function> &f : n.functions) {
+      *this << *f << "\n";
+    }
+
+    // flatten the rules so we do not have to deal with the hierarchy of
+    // rulesets, aliasrules, etc.
+    std::vector<Ptr<Rule>> flattened;
+    for (const Ptr<Rule> &r : n.rules) {
+      std::vector<Ptr<Rule>> rs = r->flatten();
+      flattened.insert(flattened.end(), rs.begin(), rs.end());
+    }
+
+    // startstates, rules, invariants
+    for (const Ptr<Rule> &r : flattened) {
+      *this << *r << "\n";
+    }
   }
 
   void visit_vardecl(const VarDecl &n) final {
