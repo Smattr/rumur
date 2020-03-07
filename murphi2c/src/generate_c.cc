@@ -19,10 +19,6 @@ class CGenerator : public CLikeGenerator {
  public:
   CGenerator(std::ostream &out_, bool pack_): CLikeGenerator(out_, pack_) { }
 
-  void visit_aliasdecl(const AliasDecl &n) final {
-    *this << "#define " << n.name << " " << *n.value << "\n";
-  }
-
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
     if (n.type == nullptr) {

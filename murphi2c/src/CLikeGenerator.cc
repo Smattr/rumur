@@ -12,6 +12,10 @@ void CLikeGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
+  *this << "#define " << n.name << " " << *n.value << "\n";
+}
+
 void CLikeGenerator::visit_aliasrule(const AliasRule&) {
   // this is unreachable because generate_c is only ever called with a Model
   // and visit_model flattens all rules

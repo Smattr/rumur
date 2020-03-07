@@ -17,6 +17,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   CLikeGenerator(std::ostream &out_, bool pack_): out(out_), pack(pack_) { }
 
   void visit_add(const rumur::Add &n) final;
+  void visit_aliasdecl(const rumur::AliasDecl &n) final;
   void visit_aliasrule(const rumur::AliasRule&) final;
   void visit_aliasstmt(const rumur::AliasStmt &n) final;
   void visit_and(const rumur::And &n) final;
