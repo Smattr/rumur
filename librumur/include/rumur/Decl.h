@@ -111,11 +111,6 @@ struct VarDecl : public ExprDecl {
    */
   bool readonly = false;
 
-  // DEPRECATED, DO NOT USE
-  // Commented out because it triggers warnings when the copy ctor is invoked:
-  // [[gnu::deprecated("state_variable has been replaced by is_in_state()")]]
-  bool state_variable = false;
-
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc_);
   VarDecl *clone() const final;
