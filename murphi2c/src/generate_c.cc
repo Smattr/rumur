@@ -332,10 +332,6 @@ class CGenerator : public CLikeGenerator {
     *this << indentation() << "}\n\n";
   }
 
-  void visit_typedecl(const TypeDecl &n) final {
-    *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
-  }
-
   void visit_vardecl(const VarDecl &n) final {
     *this << indentation() << *n.type << " " << n.name << ";\n";
   }

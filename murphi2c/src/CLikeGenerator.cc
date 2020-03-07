@@ -442,6 +442,10 @@ void CLikeGenerator::visit_ternary(const Ternary &n) {
   *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
+  *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
+}
+
 void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
   *this << n.name;
 }

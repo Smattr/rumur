@@ -62,6 +62,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_switch(const rumur::Switch &n) final;
   void visit_switchcase(const rumur::SwitchCase &n) final;
   void visit_ternary(const rumur::Ternary &n) final;
+  void visit_typedecl(const rumur::TypeDecl &n) final;
   void visit_typeexprid(const rumur::TypeExprID &n) final;
   void visit_undefine(const rumur::Undefine &n) final;
   void visit_while(const rumur::While &n) final;
