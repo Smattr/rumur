@@ -5,6 +5,7 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
+#include <utility>
 
 using namespace rumur;
 
@@ -79,6 +80,14 @@ void CLikeGenerator::visit_div(const Div &n) {
 
 void CLikeGenerator::visit_element(const Element &n) {
   *this << "(" << *n.array << ".data[" << *n.index << "])";
+}
+
+void CLikeGenerator::visit_enum(const Enum &n) {
+  *this << "enum { ";
+  for (const std::pair<std::string, location> &m : n.members) {
+    *this << m.first << ", ";
+  }
+  *this << "}";
 }
 
 void CLikeGenerator::visit_eq(const Eq &n) {

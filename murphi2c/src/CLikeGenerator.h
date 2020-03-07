@@ -26,6 +26,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_clear(const rumur::Clear &n) final;
   void visit_div(const rumur::Div &n) final;
   void visit_element(const rumur::Element &n) final;
+  void visit_enum(const rumur::Enum &n) final;
   void visit_eq(const rumur::Eq &n) final;
   void visit_errorstmt(const rumur::ErrorStmt &n) final;
   void visit_exists(const rumur::Exists &n) final;

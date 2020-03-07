@@ -29,14 +29,6 @@ class CGenerator : public CLikeGenerator {
     *this << " " << n.name << " = " << *n.value << ";\n";
   }
 
-  void visit_enum(const Enum &n) final {
-    *this << "enum { ";
-    for (const std::pair<std::string, location> &m : n.members) {
-      *this << m.first << ", ";
-    }
-    *this << "}";
-  }
-
   void visit_function(const Function &n) final {
     *this << indentation();
     if (n.return_type == nullptr) {
