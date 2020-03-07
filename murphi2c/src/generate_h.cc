@@ -40,6 +40,31 @@ class HGenerator : public CodeGenerator, public ConstTraversal {
     *this << " " << n.name << ";\n";
   }
 
+  void visit_function(const Function &n) final {
+    *this << indentation();
+    if (n.return_type == nullptr) {
+      *this << "void";
+    } else {
+      *this << *n.return_type;
+    }
+    *this << " " << n.name << "(";
+    bool first = true;
+    for (const Ptr<VarDecl> &p : n.parameters) {
+      if (!first) {
+        *this << ", ";
+      }
+      *this << *p->type << " ";
+      // if this is a var parameter, it needs to be a pointer
+      if (!p->readonly) {
+        *this << "*" << p->name << "_";
+      } else {
+        *this << p->name;
+      }
+      first = false;
+    }
+    *this << ");\n";
+  }
+
   void visit_model(const Model &n) final {
 
     // constants, types and variables
