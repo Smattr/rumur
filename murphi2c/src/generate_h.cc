@@ -117,7 +117,7 @@ class HGenerator : public CLikeGenerator {
       }
     }
 
-    *this << ")\n";
+    *this << ");\n";
   }
 
   void visit_startstate(const StartState &n) final {
