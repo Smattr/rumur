@@ -241,6 +241,31 @@ void CLikeGenerator::visit_mod(const Mod &n) {
   *this << "(" << *n.lhs << " % " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_model(const Model &n) {
+
+  // constants, types and variables
+  for (const Ptr<Decl> &d : n.decls)
+    *this << *d;
+
+  *this << "\n";
+
+  // functions and procedures
+  for (const Ptr<Function> &f : n.functions)
+    *this << *f << "\n";
+
+  // flatten the rules so we do not have to deal with the hierarchy of
+  // rulesets, aliasrules, etc.
+  std::vector<Ptr<Rule>> flattened;
+  for (const Ptr<Rule> &r : n.rules) {
+    std::vector<Ptr<Rule>> rs = r->flatten();
+    flattened.insert(flattened.end(), rs.begin(), rs.end());
+  }
+
+  // startstates, rules, invariants
+  for (const Ptr<Rule> &r : flattened)
+    *this << *r << "\n";
+}
+
 void CLikeGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
 }
