@@ -23,31 +23,6 @@ class CGenerator : public CLikeGenerator {
     *this << "#define " << n.name << " " << *n.value << "\n";
   }
 
-  void visit_array(const Array &n) final {
-    mpz_class count = n.index_type->count();
-
-    assert(count > 0 && "index type of array does not include undefined");
-    count--;
-
-    // wrap the array in a struct so that we do not have the awkwardness of
-    // having to emit its type and size on either size of another node
-    *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
-      << *n.element_type << " data[" << count.get_str() << "];";
-
-    // The index for this array may be an enum declared inline:
-    //
-    //   array [enum {A, B}] of foo
-    //
-    // If so, we need to emit it somehow so that the enum’s members can be
-    // referenced later. We define it within this struct to avoid any awkward
-    // lexical issues.
-    if (auto e = dynamic_cast<const Enum*>(n.index_type.get())) {
-      *this << " " << *e << ";";
-    }
-
-     *this <<" }";
-  }
-
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
     if (n.type == nullptr) {
@@ -227,29 +202,11 @@ class CGenerator : public CLikeGenerator {
     assert(!"missing case in visit_quantifier()");
   }
 
-  void visit_range(const Range&) final {
-    *this << "int64_t";
-  }
-
-  void visit_record(const Record &n) final {
-    *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{\n";
-    indent();
-    for (const Ptr<VarDecl> &f : n.fields) {
-      *this << *f;
-    }
-    dedent();
-    *this << indentation() << "}";
-  }
-
   void visit_ruleset(const Ruleset&) final {
     // this is unreachable because generate_c is only ever called with a Model
     // and all rule are flattened during visit_model
     assert(!"unreachable");
     __builtin_unreachable();
-  }
-
-  void visit_scalarset(const Scalarset&) final {
-    *this << "int64_t";
   }
 
   void visit_simplerule(const SimpleRule &n) final {
@@ -389,10 +346,6 @@ class CGenerator : public CLikeGenerator {
 
   void visit_typedecl(const TypeDecl &n) final {
     *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
-  }
-
-  void visit_typeexprid(const TypeExprID &n) final {
-    *this << n.name;
   }
 
   void visit_vardecl(const VarDecl &n) final {

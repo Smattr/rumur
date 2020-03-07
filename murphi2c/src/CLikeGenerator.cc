@@ -35,6 +35,31 @@ void CLikeGenerator::visit_and(const And &n) {
   *this << "(" << *n.lhs << " && " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_array(const Array &n) {
+  mpz_class count = n.index_type->count();
+
+  assert(count > 0 && "index type of array does not include undefined");
+  count--;
+
+  // wrap the array in a struct so that we do not have the awkwardness of
+  // having to emit its type and size on either size of another node
+  *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
+    << *n.element_type << " data[" << count.get_str() << "];";
+
+  // The index for this array may be an enum declared inline:
+  //
+  //   array [enum {A, B}] of foo
+  //
+  // If so, we need to emit it somehow so that the enum’s members can be
+  // referenced later. We define it within this struct to avoid any awkward
+  // lexical issues.
+  if (auto e = dynamic_cast<const Enum*>(n.index_type.get())) {
+    *this << " " << *e << ";";
+  }
+
+   *this <<" }";
+}
+
 void CLikeGenerator::visit_assignment(const Assignment &n) {
   *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
 }
@@ -306,12 +331,30 @@ void CLikeGenerator::visit_put(const Put &n) {
   *this << ";\n";
 }
 
+void CLikeGenerator::visit_range(const Range&) {
+  *this << "int64_t";
+}
+
+void CLikeGenerator::visit_record(const Record &n) {
+  *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{\n";
+  indent();
+  for (const Ptr<VarDecl> &f : n.fields) {
+    *this << *f;
+  }
+  dedent();
+  *this << indentation() << "}";
+}
+
 void CLikeGenerator::visit_return(const Return &n) {
   *this << indentation() << "return";
   if (n.expr != nullptr) {
     *this << " " << *n.expr;
   }
   *this << ";\n";
+}
+
+void CLikeGenerator::visit_scalarset(const Scalarset&) {
+  *this << "int64_t";
 }
 
 void CLikeGenerator::visit_sub(const Sub &n) {
@@ -384,6 +427,10 @@ void CLikeGenerator::visit_switchcase(const SwitchCase &n) {
 
 void CLikeGenerator::visit_ternary(const Ternary &n) {
   *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
+  *this << n.name;
 }
 
 void CLikeGenerator::visit_undefine(const Undefine &n) {

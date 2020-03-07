@@ -20,6 +20,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_aliasrule(const rumur::AliasRule&) final;
   void visit_aliasstmt(const rumur::AliasStmt &n) final;
   void visit_and(const rumur::And &n) final;
+  void visit_array(const rumur::Array &n) final;
   void visit_assignment(const rumur::Assignment &n) final;
   void visit_clear(const rumur::Clear &n) final;
   void visit_div(const rumur::Div &n) final;
@@ -51,11 +52,15 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_property(const rumur::Property&) final;
   void visit_propertystmt(const rumur::PropertyStmt &n) final;
   void visit_put(const rumur::Put &n) final;
+  void visit_range(const rumur::Range&) final;
+  void visit_record(const rumur::Record &n) final;
   void visit_return(const rumur::Return &n) final;
+  void visit_scalarset(const rumur::Scalarset&) final;
   void visit_sub(const rumur::Sub &n) final;
   void visit_switch(const rumur::Switch &n) final;
   void visit_switchcase(const rumur::SwitchCase &n) final;
   void visit_ternary(const rumur::Ternary &n) final;
+  void visit_typeexprid(const rumur::TypeExprID &n) final;
   void visit_undefine(const rumur::Undefine &n) final;
   void visit_while(const rumur::While &n) final;
 
