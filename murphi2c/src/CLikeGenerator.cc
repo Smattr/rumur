@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include "CLikeGenerator.h"
+#include "../../common/escape.h"
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
@@ -18,8 +19,29 @@ void CLikeGenerator::visit_aliasrule(const AliasRule&) {
   __builtin_unreachable();
 }
 
+void CLikeGenerator::visit_aliasstmt(const AliasStmt &n) {
+  for (const Ptr<AliasDecl> &a : n.aliases) {
+    *this << *a;
+  }
+  for (const Ptr<Stmt> &s : n.body) {
+    *this << *s;
+  }
+  for (const Ptr<AliasDecl> &a : n.aliases) {
+    *this << "#undef " << a->name << "\n";
+  }
+}
+
 void CLikeGenerator::visit_and(const And &n) {
   *this << "(" << *n.lhs << " && " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_assignment(const Assignment &n) {
+  *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
+}
+
+void CLikeGenerator::visit_clear(const Clear &n) {
+  *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
+    << "));\n";
 }
 
 void CLikeGenerator::visit_div(const Div &n) {
@@ -47,6 +69,10 @@ void CLikeGenerator::visit_eq(const Eq &n) {
   *this << "(" << *n.lhs << " == " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_errorstmt(const ErrorStmt &n) {
+  *this << indentation() << "error(\"" << escape(n.message) << "\");\n";
+}
+
 void CLikeGenerator::visit_exists(const Exists &n) {
   *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= "
     << *n.expr << "; } res_; })";
@@ -58,6 +84,32 @@ void CLikeGenerator::visit_exprid(const ExprID &n) {
 
 void CLikeGenerator::visit_field(const Field &n) {
   *this << "(" << *n.record << "." << n.field << ")";
+}
+
+void CLikeGenerator::visit_for(const For &n) {
+
+  // open a scope to make all of this appear as a single statement to any
+  // enclosing code
+  *this << indentation() << "do {\n";
+  indent();
+
+  // if the type of the quantifier is an enum defined inline, we need to
+  // define this in advance because C does not permit this to be defined
+  // within the for loop initialiser
+  if (auto e = dynamic_cast<const Enum*>(n.quantifier.type.get())) {
+    *this << indentation() << *e << ";\n";
+  }
+
+  *this << indentation() << n.quantifier << " {\n";
+  indent();
+  for (const Ptr<Stmt> &s : n.body) {
+    *this << *s;
+  }
+  dedent();
+  *this << indentation() << "}\n";
+
+  dedent();
+  *this << indentation() << "} while (0);\n";
 }
 
 void CLikeGenerator::visit_forall(const Forall &n) {
@@ -99,6 +151,33 @@ void CLikeGenerator::visit_geq(const Geq &n) {
 
 void CLikeGenerator::visit_gt(const Gt &n) {
   *this << "(" << *n.lhs << " > " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_if(const If &n) {
+  bool first = true;
+  for (const IfClause &c : n.clauses) {
+    if (first) {
+      *this << indentation();
+    } else {
+      *this << " else ";
+    }
+    dispatch(c);
+    first = false;
+  }
+  *this << "\n";
+}
+
+void CLikeGenerator::visit_ifclause(const IfClause &n) {
+  if (n.condition != nullptr) {
+    *this << "if " << *n.condition << " ";
+  }
+  *this << "{\n";
+  indent();
+  for (const Ptr<Stmt> &s : n.body) {
+    *this << *s;
+  }
+  dedent();
+  *this << indentation() << "}";
 }
 
 void CLikeGenerator::visit_implication(const Implication &n) {
@@ -170,8 +249,137 @@ void CLikeGenerator::visit_property(const Property&) {
   __builtin_unreachable();
 }
 
+void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
+
+  switch (n.property.category) {
+
+    case Property::ASSERTION:
+      *this << indentation() << "if (!" << *n.property.expr << ") {\n";
+      indent();
+      *this << indentation() << "failed_assertion(\""
+        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+        << "\");\n";
+      dedent();
+      *this << indentation() << "}\n";
+      break;
+
+    case Property::ASSUMPTION:
+      *this << indentation() << "if (!" << *n.property.expr << ") {\n";
+      indent();
+      *this << indentation() << "failed_assumption(\""
+        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+        << "\");\n";
+      dedent();
+      *this << indentation() << "}\n";
+      break;
+
+    case Property::COVER:
+      *this << indentation() << "if " << *n.property.expr << " {\n";
+      indent();
+      *this << indentation() << "cover(\""
+        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+        << "\");\n";
+      dedent();
+      *this << indentation() << "}\n";
+      break;
+
+    case Property::LIVENESS:
+      *this << indentation() << "if " << *n.property.expr << " {\n";
+      indent();
+      *this << indentation() << "liveness(\""
+        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+        << "\");\n";
+      dedent();
+      *this << indentation() << "}\n";
+      break;
+
+  }
+}
+
+void CLikeGenerator::visit_put(const Put &n) {
+  *this << indentation() << "printf(";
+  if (n.expr == nullptr) {
+    *this << "\"%s\\n\", \"" << escape(n.value) << "\")";
+  } else {
+    *this << "\"%\" PRId64 \"\\n\", " << *n.expr << ")";
+  }
+  *this << ";\n";
+}
+
+void CLikeGenerator::visit_return(const Return &n) {
+  *this << indentation() << "return";
+  if (n.expr != nullptr) {
+    *this << " " << *n.expr;
+  }
+  *this << ";\n";
+}
+
 void CLikeGenerator::visit_sub(const Sub &n) {
   *this << "(" << *n.lhs << " - " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_switch(const Switch &n) {
+
+  // Rumur permits switch statements with non-constant case expressions, while
+  // C’s switch statements do not support this. To deal with this discrepancy,
+  // we emit switch statements as more flexible if-then-else blocks instead.
+
+  // make the variable declaration and if-then-else block appear as a single
+  // statement to any enclosing code
+  *this << indentation() << "do {\n";
+  indent();
+
+  // we need to declare a temporary for the expression here because it may not
+  // be pure, so we cannot necessarily safely emit it repeatedly in the
+  // if-then-else conditions
+  *this << indentation() << "__typeof__(" << *n.expr << ") res_ = " << *n.expr
+    << ";\n";
+
+  bool first = true;
+  for (const SwitchCase &c : n.cases) {
+    if (first) {
+      *this << indentation();
+    } else {
+      *this << " else ";
+    }
+    if (!c.matches.empty()) {
+      std::string sep = "";
+      *this << "if (";
+      for (const Ptr<Expr> &m : c.matches) {
+        *this << sep << "res_ == " << *m;
+        sep = " || ";
+      }
+      *this << ") ";
+    }
+    *this << "{\n";
+    indent();
+    for (const Ptr<Stmt> &s : c.body) {
+      *this << *s;
+    }
+    dedent();
+    *this << indentation() << "}";
+    first = false;
+  }
+  *this << "\n";
+
+  dedent();
+  *this << indentation() << "} while (0);\n";
+}
+
+void CLikeGenerator::visit_switchcase(const SwitchCase &n) {
+  if (n.matches.empty()) {
+    *this << indentation() << "default:\n";
+  } else {
+    for (const Ptr<Expr> &m : n.matches) {
+      *this << indentation() << "case " << *m << ":\n";
+    }
+  }
+  indent();
+  for (const Ptr<Stmt> &s : n.body) {
+    *this << *s;
+  }
+  *this << indentation() << "break;\n";
+  dedent();
 }
 
 void CLikeGenerator::visit_ternary(const Ternary &n) {
@@ -181,6 +389,16 @@ void CLikeGenerator::visit_ternary(const Ternary &n) {
 void CLikeGenerator::visit_undefine(const Undefine &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
     << "));\n";
+}
+
+void CLikeGenerator::visit_while(const While &n) {
+  *this << indentation() << "while " << *n.condition << " {\n";
+  indent();
+  for (const Ptr<Stmt> &s : n.body) {
+    *this << *s;
+  }
+  dedent();
+  *this << indentation() << "}\n";
 }
 
 CLikeGenerator &CLikeGenerator::operator<<(const std::string &s) {
