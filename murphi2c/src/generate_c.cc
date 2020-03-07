@@ -4,6 +4,7 @@
 #include <iostream>
 #include "resources.h"
 #include <rumur/rumur.h>
+#include <string>
 
 using namespace rumur;
 
@@ -32,19 +33,20 @@ class CGenerator : public CLikeGenerator {
       *this << *n.return_type;
     }
     *this << " " << n.name << "(";
-    bool first = true;
-    for (const Ptr<VarDecl> &p : n.parameters) {
-      if (!first) {
-        *this << ", ";
+    if (n.parameters.empty()) {
+      *this << "void";
+    } else {
+      std::string sep;
+      for (const Ptr<VarDecl> &p : n.parameters) {
+        *this << sep << *p->type << " ";
+        // if this is a var parameter, it needs to be a pointer
+        if (!p->readonly) {
+          *this << "*" << p->name << "_";
+        } else {
+          *this << p->name;
+        }
+        sep = ", ";
       }
-      *this << *p->type << " ";
-      // if this is a var parameter, it needs to be a pointer
-      if (!p->readonly) {
-        *this << "*" << p->name << "_";
-      } else {
-        *this << p->name;
-      }
-      first = false;
     }
     *this << ") {\n";
     indent();
@@ -76,18 +78,20 @@ class CGenerator : public CLikeGenerator {
     *this << indentation() << "bool " << n.name << "(";
 
     // parameters
-    bool first = true;
-    for (const Quantifier &q : n.quantifiers) {
-      if (!first) {
-        *this << ", ";
+    if (n.quantifiers.empty()) {
+      *this << "void";
+    } else {
+      std::string sep;
+      for (const Quantifier &q : n.quantifiers) {
+        *this << sep;
+        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+          *this << t->name;
+        } else {
+          *this << "int64_t";
+        }
+        *this << " " << q.name;
+        sep = ", ";
       }
-      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
-        *this << t->name;
-      } else {
-        *this << "int64_t";
-      }
-      *this << " " << q.name;
-      first = false;
     }
 
     *this << ") {\n";
@@ -113,18 +117,20 @@ class CGenerator : public CLikeGenerator {
     *this << indentation() << "bool guard_" << n.name << "(";
 
     // parameters
-    bool first = true;
-    for (const Quantifier &q : n.quantifiers) {
-      if (!first) {
-        *this << ", ";
+    if (n.quantifiers.empty()) {
+      *this << "void";
+    } else {
+      std::string sep;
+      for (const Quantifier &q : n.quantifiers) {
+        *this << sep;
+        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+          *this << t->name;
+        } else {
+          *this << "int64_t";
+        }
+        *this << " " << q.name;
+        sep = ", ";
       }
-      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
-        *this << t->name;
-      } else {
-        *this << "int64_t";
-      }
-      *this << " " << q.name;
-      first = false;
     }
 
     *this << ") {\n";
@@ -154,18 +160,20 @@ class CGenerator : public CLikeGenerator {
     *this << indentation() << "void rule_" << n.name << "(";
 
     // parameters
-    first = true;
-    for (const Quantifier &q : n.quantifiers) {
-      if (!first) {
-        *this << ", ";
+    if (n.quantifiers.empty()) {
+      *this << "void";
+    } else {
+      std::string sep;
+      for (const Quantifier &q : n.quantifiers) {
+        *this << sep;
+        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+          *this << t->name;
+        } else {
+          *this << "int64_t";
+        }
+        *this << " " << q.name;
+        sep = ", ";
       }
-      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
-        *this << t->name;
-      } else {
-        *this << "int64_t";
-      }
-      *this << " " << q.name;
-      first = false;
     }
 
     *this << ") {\n";
@@ -201,18 +209,20 @@ class CGenerator : public CLikeGenerator {
     *this << indentation() << "void startstate_" << n.name << "(";
 
     // parameters
-    bool first = true;
-    for (const Quantifier &q : n.quantifiers) {
-      if (!first) {
-        *this << ", ";
+    if (n.quantifiers.empty()) {
+      *this << "void";
+    } else {
+      std::string sep;
+      for (const Quantifier &q : n.quantifiers) {
+        *this << sep;
+        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+          *this << t->name;
+        } else {
+          *this << "int64_t";
+        }
+        *this << " " << q.name;
+        sep = ", ";
       }
-      if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
-        *this << t->name;
-      } else {
-        *this << "int64_t";
-      }
-      *this << " " << q.name;
-      first = false;
     }
 
     *this << ") {\n";
