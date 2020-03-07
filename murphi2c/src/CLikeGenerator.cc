@@ -1,11 +1,12 @@
-#include <cassert>
 #include <cstddef>
+#include <cassert>
 #include "CLikeGenerator.h"
 #include "../../common/escape.h"
-#include <iostream>
+#include <gmpxx.h>
 #include <rumur/rumur.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 using namespace rumur;
 

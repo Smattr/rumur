@@ -1,6 +1,5 @@
 #include <cstddef>
 #include "CLikeGenerator.h"
-#include "generate_c.h"
 #include "generate_h.h"
 #include <iostream>
 #include "resources.h"

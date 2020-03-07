@@ -1,14 +1,9 @@
-#include <cassert>
 #include <cstddef>
 #include "CLikeGenerator.h"
 #include "generate_c.h"
-#include <gmpxx.h>
 #include <iostream>
 #include "resources.h"
 #include <rumur/rumur.h>
-#include <string>
-#include <utility>
-#include <vector>
 
 using namespace rumur;
 
