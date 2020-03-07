@@ -142,54 +142,6 @@ class CGenerator : public CLikeGenerator {
     *this << "}\n";
   }
 
-  void visit_quantifier(const Quantifier &n) final {
-
-    if (n.type == nullptr) {
-      bool down_count = n.from->constant() && n.to->constant()
-        && n.to->constant_fold() < n.from->constant_fold();
-      *this << "for (int64_t " << n.name << " = " << *n.from << "; " << n.name
-        << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; " << n.name
-        << " += ";
-      if (n.step == nullptr) {
-        *this << "1";
-      } else {
-        *this << *n.step;
-      }
-      *this << ")";
-      return;
-    }
-
-    const Ptr<TypeExpr> resolved = n.type->resolve();
-
-    if (auto e = dynamic_cast<const Enum*>(resolved.get())) {
-      if (e->members.empty()) {
-        // degenerate loop
-        *this << "for (int " << n.name << " = 0; " << n.name << " < 0; "
-          << n.name << "++)";
-      } else {
-        // common case
-        *this << "for (__typeof__(" << e->members[0].first << ") " << n.name
-          << " = " << e->members[0].first << "; " << n.name << " <= "
-          << e->members[e->members.size() - 1].first << "; " << n.name << "++)";
-      }
-      return;
-    }
-
-    if (auto r = dynamic_cast<const Range*>(resolved.get())) {
-      *this << "for (int64_t " << n.name << " = " << *r->min << "; " << n.name
-        << " <= " << *r->max << "; " << n.name << "++)";
-      return;
-    }
-
-    if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
-      *this << "for (int64_t " << n.name << " = 0; " << n.name << " <= "
-        << *s->bound << "; " << n.name << "++)";
-      return;
-    }
-
-    assert(!"missing case in visit_quantifier()");
-  }
-
   void visit_simplerule(const SimpleRule &n) final {
     *this << indentation() << "bool guard_" << n.name << "(";
 
