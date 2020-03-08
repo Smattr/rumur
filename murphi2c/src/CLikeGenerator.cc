@@ -3,6 +3,7 @@
 #include "CLikeGenerator.h"
 #include "../../common/escape.h"
 #include <gmpxx.h>
+#include "options.h"
 #include <rumur/rumur.h>
 #include <string>
 #include <utility>
@@ -295,7 +296,7 @@ void CLikeGenerator::visit_not(const Not &n) {
 }
 
 void CLikeGenerator::visit_number(const Number &n) {
-  *this << "(INT64_C(" << n.value.get_str() << "))";
+  *this << "((" << value_type << ")(" << n.value.get_str() << "))";
 }
 
 void CLikeGenerator::visit_or(const Or &n) {
@@ -375,9 +376,9 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
   if (n.type == nullptr) {
     bool down_count = n.from->constant() && n.to->constant()
       && n.to->constant_fold() < n.from->constant_fold();
-    *this << "for (int64_t " << n.name << " = " << *n.from << "; " << n.name
-      << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; " << n.name
-      << " += ";
+    *this << "for (" << value_type << " " << n.name << " = " << *n.from << "; "
+      << n.name << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; "
+      << n.name << " += ";
     if (n.step == nullptr) {
       *this << "1";
     } else {
@@ -404,14 +405,14 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
   }
 
   if (auto r = dynamic_cast<const Range*>(resolved.get())) {
-    *this << "for (int64_t " << n.name << " = " << *r->min << "; " << n.name
-      << " <= " << *r->max << "; " << n.name << "++)";
+    *this << "for (" << value_type << " " << n.name << " = " << *r->min << "; "
+      << n.name << " <= " << *r->max << "; " << n.name << "++)";
     return;
   }
 
   if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
-    *this << "for (int64_t " << n.name << " = 0; " << n.name << " <= "
-      << *s->bound << "; " << n.name << "++)";
+    *this << "for (" << value_type << " " << n.name << " = 0; " << n.name
+      << " <= " << *s->bound << "; " << n.name << "++)";
     return;
   }
 
@@ -419,7 +420,7 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
 }
 
 void CLikeGenerator::visit_range(const Range&) {
-  *this << "int64_t";
+  *this << value_type;
 }
 
 void CLikeGenerator::visit_record(const Record &n) {
@@ -448,7 +449,7 @@ void CLikeGenerator::visit_ruleset(const Ruleset&) {
 }
 
 void CLikeGenerator::visit_scalarset(const Scalarset&) {
-  *this << "int64_t";
+  *this << value_type;
 }
 
 void CLikeGenerator::visit_sub(const Sub &n) {

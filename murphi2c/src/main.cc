@@ -11,6 +11,7 @@
 #include <iostream>
 #include <memory>
 #include "name_rules.h"
+#include "options.h"
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <sstream>
@@ -29,11 +30,12 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
-      { "header",  no_argument,       0, 128 },
-      { "help",    no_argument,       0, 'h' },
-      { "output",  required_argument, 0, 'o' },
-      { "source",  no_argument,       0, 129 },
-      { "version", no_argument,       0, 130 },
+      { "header",     no_argument,       0, 128 },
+      { "help",       no_argument,       0, 'h' },
+      { "output",     required_argument, 0, 'o' },
+      { "source",     no_argument,       0, 129 },
+      { "value-type", required_argument, 0, 130 },
+      { "version",    no_argument,       0, 131 },
       { 0, 0, 0, 0 },
     };
 
@@ -71,7 +73,12 @@ static void parse_args(int argc, char **argv) {
         source = true;
         break;
 
-      case 130: // --version
+      case 130: // --value-type
+        // note that we just assume the type the user gave us exists
+        value_type = optarg;
+        break;
+
+      case 131: // --version
         std::cout << "Rumur version " << rumur::get_version() << "\n";
         exit(EXIT_SUCCESS);
 

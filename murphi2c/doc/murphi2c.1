@@ -39,6 +39,14 @@ to stdout.
 Generate a C source file, as opposed to a header. This is the default.
 .RE
 .PP
+\fB--value-type\fR \fITYPE\fR
+.RS
+Change the C type used to represent scalar values in the emitted code. By
+default, \fIint\fR is used. Murphi2C does not validate that the type you specify
+is a valid C type, but simply trusts that you have given something that will be
+available when you compile the generated code.
+.RE
+.PP
 \fB--version\fR
 .RS
 Display version information and exit.

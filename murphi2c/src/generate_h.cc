@@ -2,6 +2,7 @@
 #include "CLikeGenerator.h"
 #include "generate_h.h"
 #include <iostream>
+#include "options.h"
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
@@ -18,7 +19,7 @@ class HGenerator : public CLikeGenerator {
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "extern const ";
     if (n.type == nullptr) {
-      *this << "int64_t";
+      *this << value_type;
     } else {
       *this << *n.type;
     }
@@ -66,7 +67,7 @@ class HGenerator : public CLikeGenerator {
         if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
           *this << t->name;
         } else {
-          *this << "int64_t";
+          *this << value_type;
         }
         *this << " " << q.name;
         sep = ", ";
@@ -89,7 +90,7 @@ class HGenerator : public CLikeGenerator {
         if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
           *this << t->name;
         } else {
-          *this << "int64_t";
+          *this << value_type;
         }
         *this << " " << q.name;
         sep = ", ";
@@ -110,7 +111,7 @@ class HGenerator : public CLikeGenerator {
         if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
           *this << t->name;
         } else {
-          *this << "int64_t";
+          *this << value_type;
         }
         *this << " " << q.name;
         sep = ", ";
@@ -133,7 +134,7 @@ class HGenerator : public CLikeGenerator {
         if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
           *this << t->name;
         } else {
-          *this << "int64_t";
+          *this << value_type;
         }
         *this << " " << q.name;
         sep = ", ";
