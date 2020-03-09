@@ -2048,41 +2048,22 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: macOS, XCode 7.3.1 Clang, Homebrew
+  - name: macOS, XCode 8.3.3 Clang, Homebrew
     os: osx
-    osx_image: xcode7.3
+    osx_image: xcode8.3
     env:
       # To quote Homebrew, "bison is keg-only, which means it was not symlinked
       # into /usr/local, because some formulae require a newer version of
       # bison." I do not know when this became the case as it was not
       # originally, but we'll force this. Also, we need to install Python 3.6
       # via pyenv and force it into our $PATH because the Homebrew recipe for
-      # Python 3.6 is broken on older MacOS. 3.6.0 is only available in beta
-      # prior to the xcode8 image.
-      - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0b1/bin:${PATH}
+      # Python 3.6 is broken on older MacOS.
+      - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
 
       # The version of Bison that comes with XCode 7.3 is too old to support
       # some of the flags/features we use. To install newer versions and make
       # them available to CMake we need to link them into the system
       # directories.
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0b1 && CC=clang && CXX=clang++"
-      - CXXFLAGS="-fsanitize=address -Werror"
-
-  - name: macOS, XCode 8.0 Clang, Homebrew
-    os: osx
-    osx_image: xcode8
-    env:
-      - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      # somehow the xcode8 image does not have pyenv, despite earlier and later
-      # xcode images having it
-      - MATRIX_EVAL="brew update && brew install bison ninja pyenv && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
-      - CXXFLAGS="-fsanitize=address -Werror"
-
-  - name: macOS, XCode 8.3.3 Clang, Homebrew
-    os: osx
-    osx_image: xcode8.3
-    env:
-      - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
       - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
