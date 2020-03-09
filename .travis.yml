@@ -1132,7 +1132,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MAX_TEST=500
+      - MAX_TEST=750
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1154,8 +1154,8 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=501
-      - MAX_TEST=1000
+      - MIN_TEST=751
+      - MAX_TEST=1500
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1177,8 +1177,8 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=1001
-      - MAX_TEST=1500
+      - MIN_TEST=1501
+      - MAX_TEST=2250
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1200,8 +1200,8 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=1501
-      - MAX_TEST=2000
+      - MIN_TEST=2251
+      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1223,7 +1223,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=2001
+      - MIN_TEST=3001
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1290,7 +1290,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MAX_TEST=500
+      - MAX_TEST=750
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1312,8 +1312,8 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=501
-      - MAX_TEST=1000
+      - MIN_TEST=751
+      - MAX_TEST=1500
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1335,8 +1335,8 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=1001
-      - MAX_TEST=1500
+      - MIN_TEST=1501
+      - MAX_TEST=2250
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1358,8 +1358,8 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=1501
-      - MAX_TEST=2000
+      - MIN_TEST=2251
+      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1381,7 +1381,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - MIN_TEST=2001
+      - MIN_TEST=3001
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1

@@ -67,6 +67,9 @@ def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
 # C compiler
 CC = os.environ.get('CC', which('cc'))
 
+# C++ compiler
+CXX = os.environ.get('CXX', which('c++'))
+
 def has_mcx16() -> bool:
   'does the compiler support -mcx16?'
 
@@ -311,6 +314,104 @@ class Executable(Test):
            Skip(output.strip()) if ret == 125 else \
            Fail(output)
 
+class Murphi2CTest(Tweakable):
+  def __init__(self, model: str):
+    super().__init__()
+    self.model = model
+    self.xml = False # dummy setting that tests might reference
+  def description(self) -> str:
+    return f'----{"V" if HAS_VALGRIND else " "} ' \
+           f'murphi2c {os.path.basename(self.model)}'
+  def run(self) -> Result:
+
+    self.apply_options(self.model)
+
+    # there is no C equivalent of isundefined, because an implicit assumption in
+    # the C representation is that you do not rely on undefined values
+    with open(self.model, 'rt', encoding='utf-8') as f:
+      should_fail = re.search(r'\bisundefined\b', f.read()) is not None
+
+    args = ['murphi2c', self.model]
+    if HAS_VALGRIND:
+      args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
+        '--error-exitcode=42'] + args
+    ret, stdout, stderr = run(args)
+    if HAS_VALGRIND:
+      if ret == 42:
+        return Fail(f'Memory leak:\n{stdout}{stderr}')
+
+    # if rumur was expected to reject this model, we allow murphi2c to fail
+    if self.rumur_exit_code == 0 and not should_fail and ret != 0:
+      return Fail(f'Unexpected murphi2c exit status {ret}:\n{stdout}{stderr}')
+
+    if should_fail and ret == 0:
+      return Fail(f'Unexpected murphi2c exit status {ret}:\n{stdout}{stderr}')
+
+    if ret != 0:
+      return None
+
+    # ask the C compiler if this is valid
+    ret, stdout, stderr = run([CC, '-std=c11', '-c', '-o', os.devnull, '-x', 'c',
+      '-'], stdout)
+    if ret != 0:
+      return Fail(f'C compilation failed:\n{stdout}{stderr}')
+
+class Murphi2CHeaderTest(Tweakable):
+  def __init__(self, model: str):
+    super().__init__()
+    self.model = model
+    self.xml = False # dummy setting that tests might reference
+  def description(self) -> str:
+    return f'----{"V" if HAS_VALGRIND else " "} ' \
+           f'murphi2c --header {os.path.basename(self.model)}'
+  def run(self) -> Result:
+
+    self.apply_options(self.model)
+
+    # there is no C equivalent of isundefined, because an implicit assumption in
+    # the C representation is that you do not rely on undefined values
+    with open(self.model, 'rt', encoding='utf-8') as f:
+      should_fail = re.search(r'\bisundefined\b', f.read()) is not None
+
+    args = ['murphi2c', '--header', self.model]
+    if HAS_VALGRIND:
+      args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
+        '--error-exitcode=42'] + args
+    ret, stdout, stderr = run(args)
+    if HAS_VALGRIND:
+      if ret == 42:
+        return Fail(f'Memory leak:\n{stdout}{stderr}')
+
+    # if rumur was expected to reject this model, we allow murphi2c to fail
+    if self.rumur_exit_code == 0 and not should_fail and ret != 0:
+      return Fail(f'Unexpected murphi2c exit status {ret}:\n{stdout}{stderr}')
+
+    if should_fail and ret == 0:
+      return Fail(f'Unexpected murphi2c exit status {ret}:\n{stdout}{stderr}')
+
+    if ret != 0:
+      return None
+
+    with TemporaryDirectory() as tmp:
+
+      # write the header to a temporary file
+      header = os.path.join(tmp, 'header.h')
+      with open(header, 'wt', encoding='utf-8') as f:
+        f.write(stdout)
+
+      # ask the C compiler if the header is valid
+      main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
+      ret, stdout, stderr = run([CC, '-std=c11', '-o', os.devnull, '-x', 'c',
+        '-'], main_c)
+      if ret != 0:
+        return Fail(f'C compilation failed:\n{stdout}{stderr}')
+
+      # ask the C++ compiler if it is valid there too
+      ret, stdout, stderr = run([CXX, '-std=c++11', '-o', os.devnull, '-x',
+        'c++', '-'], main_c)
+      if ret != 0:
+        return Fail(f'C++ compilation failed:\n{stdout}{stderr}')
+
 class Murphi2XMLTest(Tweakable):
   def __init__(self, model: str):
     super().__init__()
@@ -420,6 +521,14 @@ def main(args: [str]) -> int:
 
     if in_range(index):
       tests.append(Murphi2XMLTest(path))
+    index += 1
+
+    if in_range(index):
+      tests.append(Murphi2CTest(path))
+    index += 1
+
+    if in_range(index):
+      tests.append(Murphi2CHeaderTest(path))
     index += 1
 
   if len(tests) == 0:
