@@ -19,7 +19,7 @@ class HGenerator : public CLikeGenerator {
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "extern const ";
     if (n.type == nullptr) {
-      *this << value_type;
+      *this << "__typeof__(" << *n.value << ")";
     } else {
       *this << *n.type;
     }
