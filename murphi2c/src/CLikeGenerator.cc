@@ -209,7 +209,19 @@ void CLikeGenerator::visit_if(const If &n) {
 
 void CLikeGenerator::visit_ifclause(const IfClause &n) {
   if (n.condition != nullptr) {
-    *this << "if " << *n.condition << " ";
+
+    // we do not need to emit surrounding brackets for binary expressions
+    // because they are already emitted with brackets
+    bool needs_bracketing
+      = dynamic_cast<const BinaryExpr*>(n.condition.get()) == nullptr;
+
+    *this << "if ";
+    if (needs_bracketing)
+      *this << "(";
+    *this << *n.condition;
+    if (needs_bracketing)
+      *this << ")";
+    *this << " ";
   }
   *this << "{\n";
   indent();
