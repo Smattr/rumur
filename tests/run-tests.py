@@ -352,7 +352,8 @@ class Murphi2CTest(Tweakable):
 
     # ask the C compiler if this is valid
     ret, stdout, stderr = run([CC, '-std=c11', '-c', '-o', os.devnull, '-x', 'c',
-      '-'], stdout)
+      '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits'],
+      stdout)
     if ret != 0:
       return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
@@ -402,13 +403,15 @@ class Murphi2CHeaderTest(Tweakable):
       # ask the C compiler if the header is valid
       main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
       ret, stdout, stderr = run([CC, '-std=c11', '-o', os.devnull, '-x', 'c',
-        '-'], main_c)
+        '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits'],
+        main_c)
       if ret != 0:
         return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
       # ask the C++ compiler if it is valid there too
       ret, stdout, stderr = run([CXX, '-std=c++11', '-o', os.devnull, '-x',
-        'c++', '-'], main_c)
+        'c++', '-', '-Werror=format', '-Werror=sign-compare',
+        '-Werror=type-limits'], main_c)
       if ret != 0:
         return Fail(f'C++ compilation failed:\n{stdout}{stderr}')
 
