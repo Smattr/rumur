@@ -374,11 +374,11 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
 }
 
 void CLikeGenerator::visit_put(const Put &n) {
-  *this << indentation() << "printf(";
+  *this << indentation();
   if (n.expr == nullptr) {
-    *this << "\"%s\\n\", \"" << escape(n.value) << "\")";
+    *this << "printf(\"%s\\n\", \"" << escape(n.value) << "\")";
   } else {
-    *this << "\"%\" PRId64 \"\\n\", " << *n.expr << ")";
+    *this << "print" << value_type << "(" << *n.expr << ")";
   }
   *this << ";\n";
 }
