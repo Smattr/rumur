@@ -14,8 +14,10 @@ class Check : public ConstTraversal {
   bool ok = true;
 
   void visit_isundefined(const IsUndefined&) final {
-    std::cerr << "isundefined expressions are not supported\n";
-    ok = false;
+    if (ok) {
+      std::cerr << "isundefined expressions are not supported\n";
+      ok = false;
+    }
   }
 
 };
