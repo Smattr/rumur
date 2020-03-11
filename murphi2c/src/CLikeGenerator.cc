@@ -537,6 +537,12 @@ void CLikeGenerator::visit_ternary(const Ternary &n) {
 }
 
 void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
+
+  // If we are typedefing something that is an enum, save this for later lookup.
+  // See CGenerator/HGenerator::visit_constdecl for the purpose of this.
+  if (auto e = dynamic_cast<const Enum*>(n.value.get()))
+    enum_typedefs[e->unique_id] = n.name;
+
   *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
 }
 

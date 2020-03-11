@@ -18,10 +18,24 @@ class CGenerator : public CLikeGenerator {
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
-    if (n.type == nullptr) {
-      *this << "__typeof__(" << *n.value << ")";
-    } else {
+
+    // if this constant has an explicit type, use that
+    if (n.type != nullptr) {
       *this << *n.type;
+
+    } else {
+
+      // otherwise, if it was a previously typedefed enum, use its typedefed
+      // name (to avoid later -Wsign-compare warnings on GCC)
+      const Ptr<TypeExpr> type = n.value->type();
+      auto it = enum_typedefs.find(type->unique_id);
+      if (it != enum_typedefs.end()) {
+        *this << it->second;
+
+      // fallback on the type of the right hand side
+      } else {
+        *this << "__typeof__(" << *n.value << ")";
+      }
     }
     *this << " " << n.name << " = " << *n.value << ";\n";
   }

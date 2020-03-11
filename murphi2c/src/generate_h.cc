@@ -18,11 +18,20 @@ class HGenerator : public CLikeGenerator {
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "extern const ";
-    if (n.type == nullptr) {
-      *this << "__typeof__(" << *n.value << ")";
-    } else {
+
+    // replicate the logic from CGenerator::visit_constdecl
+    if (n.type != nullptr) {
       *this << *n.type;
+    } else {
+      const Ptr<TypeExpr> type = n.value->type();
+      auto it = enum_typedefs.find(type->unique_id);
+      if (it != enum_typedefs.end()) {
+        *this << it->second;
+      } else {
+        *this << "__typeof__(" << *n.value << ")";
+      }
     }
+
     *this << " " << n.name << ";\n";
   }
 
