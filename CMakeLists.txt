@@ -35,7 +35,7 @@ endif()
 add_subdirectory(murphi2xml)
 add_subdirectory(librumur)
 add_subdirectory(murphi2c)
-add_subdirectory(pp)
+add_subdirectory(murphi2murphi)
 add_subdirectory(rumur)
 
 enable_testing()
