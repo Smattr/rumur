@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
   // Parse input model
   Ptr<Model> m;
   try {
-    m = parse(in.get());
+    m = parse(*in);
     resolve_symbols(*m);
     validate(*m);
   } catch (Error &e) {
