@@ -15,9 +15,10 @@ enum struct Color {
 enum trace_category_t {
   TC_HANDLE_READS       =  0x1,
   TC_HANDLE_WRITES      =  0x2,
-  TC_QUEUE              =  0x4,
-  TC_SET                =  0x8,
-  TC_SYMMETRY_REDUCTION = 0x10,
+  TC_MEMORY_USAGE       =  0x4,
+  TC_QUEUE              =  0x8,
+  TC_SET                = 0x10,
+  TC_SYMMETRY_REDUCTION = 0x20,
 };
 
 enum struct LogLevel {
@@ -43,6 +44,12 @@ enum struct SymmetryReduction {
   OFF,
   HEURISTIC,
   EXHAUSTIVE,
+};
+
+enum struct SmtSimplification {
+  OFF,
+  ON,
+  AUTO,
 };
 
 struct Options {
@@ -85,6 +92,9 @@ struct Options {
   // Type used for value_t in the checker
   std::string value_type = "auto";
 
+  // whether to bit-pack members of the state struct
+  bool pack_state = true;
+
   // options related to SMT solver interaction
   struct {
 
@@ -98,10 +108,16 @@ struct Options {
     mpz_class budget = 30000;
 
     // use SMT solver for expression simplification?
-    bool simplification = false;
+    SmtSimplification simplification = SmtSimplification::AUTO;
 
     // SMTLIB logic to use when building problems
-    std::string logic = "AUFLIA";
+    std::string logic;
+
+    // text to emit to the solver prior to a SAT problem
+    std::vector<std::string> prelude;
+
+    // use BitVecs instead of Ints?
+    bool use_bitvectors = false;
 
   } smt;
 };

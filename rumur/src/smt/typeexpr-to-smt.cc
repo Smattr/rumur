@@ -17,11 +17,8 @@ namespace { class Translator : public ConstTypeTraversal {
 
  private:
   std::ostringstream out;
-  const Logic *logic;
 
  public:
-  Translator(): logic(&get_logic(options.smt.logic)) { }
-
   Translator &operator<<(const std::string &s) {
     out << s;
     return *this;
@@ -42,7 +39,7 @@ namespace { class Translator : public ConstTypeTraversal {
 
   void visit_enum(const Enum &n) final {
     // the SMT solver already knows the type of booleans
-    if (n == *Boolean) {
+    if (n.is_boolean()) {
       *this << "Bool";
       return;
     }
@@ -50,14 +47,14 @@ namespace { class Translator : public ConstTypeTraversal {
     /* we assume our caller will emit the members of this enum if they are
      * relevant to them.
      */
-    *this << logic->integer_type();
+    *this << integer_type();
   }
 
   void visit_range(const Range&) final {
     /* we assume our caller will eventually set the lower and upper bound
      * constraints for this integer if it is relevant to them
      */
-    *this << logic->integer_type();
+    *this << integer_type();
   }
 
   void visit_record(const Record &n) final {
@@ -71,7 +68,7 @@ namespace { class Translator : public ConstTypeTraversal {
      * declare it as an integer and don't expect the solver to use any symmetry
      * reasoning.
      */
-    *this << logic->integer_type();
+    *this << integer_type();
   }
 
   void visit_typeexprid(const TypeExprID &n) final {

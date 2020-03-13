@@ -6,32 +6,19 @@
 
 namespace smt {
 
-class Logic {
+std::string integer_type();
 
- private:
-  bool bitvectors;
-  bool integers;
+std::string numeric_literal(const mpz_class &value);
 
- public:
-  Logic(bool bv, bool ia);
-
-  std::string integer_type() const;
-
-  std::string numeric_literal(const mpz_class &value) const;
-
-  std::string add(void) const;
-  std::string div(void) const;
-  std::string geq(void) const;
-  std::string gt (void) const;
-  std::string leq(void) const;
-  std::string lt (void) const;
-  std::string mod(void) const;
-  std::string mul(void) const;
-  std::string neg(void) const;
-  std::string sub(void) const;
-};
-
-// find the version of the above API for a given SMT logic
-const Logic &get_logic(const std::string &name);
+std::string add();
+std::string div();
+std::string geq();
+std::string gt ();
+std::string leq();
+std::string lt ();
+std::string mod();
+std::string mul();
+std::string neg();
+std::string sub();
 
 }

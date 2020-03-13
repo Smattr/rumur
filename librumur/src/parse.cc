@@ -12,12 +12,10 @@
 
 namespace rumur {
 
-Ptr<Model> parse(std::istream *input) {
-
-  assert(input != nullptr);
+Ptr<Model> parse(std::istream &input) {
 
   // Setup the parser
-  scanner s(input);
+  scanner s(&input);
   Ptr<Model> m;
   parser p(s, m);
 
@@ -26,14 +24,13 @@ Ptr<Model> parse(std::istream *input) {
   if (err != 0)
     throw Error("parsing failed", location());
 
-  // mark the global declarations
-  for (Ptr<Decl> &d : m->decls) {
-    if (auto v = dynamic_cast<VarDecl*>(&*d)) {
-      v->state_variable = true;
-    }
-  }
-
   return m;
+}
+
+Ptr<Model> parse(std::istream *input) {
+  assert(input != nullptr);
+
+  return parse(*input);
 }
 
 }

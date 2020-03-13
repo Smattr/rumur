@@ -1,4 +1,3 @@
--- c_flags: ['-std=c11'] + (['-mcx16'] if X86_64 else []) + ['-Werror=sign-compare']
 -- checker_exit_code: 1
 
 /* On 466fe5b288aaa45c9970e1391701dd8653f8ab82 it was observed that the

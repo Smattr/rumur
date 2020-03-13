@@ -1,5 +1,5 @@
--- rumur_flags: ['--smt-simplification', 'on'] + smt_args()
--- skip_reason: 'no SMT solver available' if len(smt_args()) == 0 else None
+-- rumur_flags: SMT_ARGS
+-- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
 
 /* This model attempts to provoke a bug first observed on commit
  * 5d4f1939ddc5d5d9336f0ce35e953c51e8b5aeca. The SMT bridge did not correctly

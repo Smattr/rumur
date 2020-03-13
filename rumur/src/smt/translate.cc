@@ -4,9 +4,10 @@
 #include <locale>
 #include "logic.h"
 #include "../options.h"
-#include "translate.h"
 #include <sstream>
 #include <string>
+#include "translate.h"
+#include "../utils.h"
 
 using namespace rumur;
 
@@ -16,11 +17,8 @@ namespace { class Translator : public ConstExprTraversal {
 
  private:
   std::ostringstream buffer;
-  const Logic *logic;
 
  public:
-  Translator(const Logic &logic_): logic(&logic_) { }
-
   std::string str() const {
     return buffer.str();
   }
@@ -36,7 +34,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_add(const Add &n) {
-    *this << "(" << logic->add() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << add() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_and(const And &n) {
@@ -56,11 +54,11 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_exists(const Exists &n) {
-    throw Unsupported(n);
+    translate_quantified(n.quantifier, *n.expr, false);
   }
 
   void visit_div(const Div &n) {
-    *this << "(" << logic->div() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << div() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_field(const Field &n) {
@@ -79,7 +77,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_forall(const Forall &n) {
-    throw Unsupported(n);
+    translate_quantified(n.quantifier, *n.expr, true);
   }
 
   void visit_functioncall(const FunctionCall &n) {
@@ -87,11 +85,11 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_geq(const Geq &n) {
-    *this << "(" << logic->geq() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << geq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_gt(const Gt &n) {
-    *this << "(" << logic->gt() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << gt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_implication(const Implication &n) {
@@ -103,23 +101,23 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_leq(const Leq &n) {
-    *this << "(" << logic->leq() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << leq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_lt(const Lt &n) {
-    *this << "(" << logic->lt() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << lt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_mod(const Mod &n) {
-    *this << "(" << logic->mod() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << mod() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_mul(const Mul &n) {
-    *this << "(" << logic->mul() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << mul() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_negative(const Negative &n) {
-    *this << "(" << logic->neg() << " " << *n.rhs << ")";
+    *this << "(" << neg() << " " << *n.rhs << ")";
   }
 
   void visit_neq(const Neq &n) {
@@ -127,7 +125,7 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_number(const Number &n) {
-    *this << logic->numeric_literal(n.value);
+    *this << numeric_literal(n.value);
   }
 
   void visit_not(const Not &n) {
@@ -139,18 +137,116 @@ namespace { class Translator : public ConstExprTraversal {
   }
 
   void visit_sub(const Sub &n) {
-    *this << "(" << logic->sub() << " " << *n.lhs << " " << *n.rhs << ")";
+    *this << "(" << sub() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_ternary(const Ternary &n) {
     *this << "(ite " << *n.cond << " " << *n.lhs << " " << *n.rhs << ")";
   }
+
+ private:
+  void translate_quantified(const Quantifier &q, const Expr &e, bool forall) {
+
+    // find a name for the quantified variable
+    const std::string qname = mangle(q.decl->name, q.decl->unique_id);
+    const std::string qtype = integer_type();
+
+    // determine the parts of the expression we will construct that depend on
+    // forall
+    const std::string binder  = forall ? "forall" : "exists";
+    const std::string op      = forall ? "or"     : "and";
+    const std::string lb_rel  = forall ? lt()     : geq();
+    const std::string ub_rel1 = forall ? gt()     : leq();
+    const std::string ub_rel2 = forall ? geq()    : lt();
+    const std::string step_o  = forall ? "(not "  : "";
+    const std::string step_c  = forall ? ")"      : "";
+
+    // “∀q.”/“∃q.”
+    *this << "(" << binder << " ((" << qname << " " << qtype << ")) (" << op;
+
+    // “q < lb”/“q ≥ lb”
+    *this << " (" << lb_rel << " " << qname << " ";
+    if (q.type != nullptr) {
+      const Ptr<TypeExpr> t = q.type->resolve();
+
+      if (isa<Enum>(t) || isa<Scalarset>(t)) {
+        *this << numeric_literal(0);
+      } else {
+        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
+          "quantifier");
+        const Range &r = dynamic_cast<const Range&>(*t);
+        assert(r.min != nullptr && "unbounded range type");
+        *this << *r.min;
+      }
+    } else {
+      assert(q.from != nullptr && "quantified variable has no type and also no "
+        "lower bound");
+      *this << *q.from;
+    }
+    *this << ")";
+
+    // or/and “q > ub”/“q ≤ ub”
+    *this << " (";
+    if (q.type != nullptr) {
+      const Ptr<TypeExpr> t = q.type->resolve();
+
+      assert ((isa<Enum>(t) || isa<Range>(t) || isa<Scalarset>(t)) &&
+        "non-(range|enum|scalarset) variable in quantifier");
+
+      if (auto n = dynamic_cast<const Enum*>(t.get())) {
+        size_t s = n->members.size();
+        *this << ub_rel2 << " " << qname << " " << numeric_literal(s);
+
+      } else if (auto r = dynamic_cast<const Range*>(t.get())) {
+        assert (r->max != nullptr && "unbounded range type");
+        *this << ub_rel1 << " " << qname << " " << *r->max;
+
+      } else {
+        auto s = dynamic_cast<const Scalarset&>(*t);
+        *this << ub_rel2 << " " << qname << " " << *s.bound;
+      }
+    } else {
+      assert(q.to != nullptr && "quantified variable has no type and also no "
+        "upper bound");
+      *this << ub_rel1 << " " << qname << " " << *q.to;
+    }
+    *this << ")";
+
+    // or/and “!∃i. q = lb + i * step”/“∃i. q = lb + i * step”
+    const std::string iname = qname + "_iteration";
+    *this << " " << step_o << "(exists ((" << iname << " " << qtype << ")) (= "
+      << qname << " (" << add() << " ";
+    if (q.type != nullptr) {
+      const Ptr<TypeExpr> t = q.type->resolve();
+
+      if (isa<Enum>(t) || isa<Scalarset>(t)) {
+        *this << numeric_literal(0);
+      } else {
+        assert(isa<Range>(t) && "non-(range|enum|scalarset) variable in "
+          "quantifier");
+        const Range &r = dynamic_cast<const Range&>(*t);
+        assert(r.min != nullptr && "unbounded range type");
+        *this << *r.min;
+      }
+    } else {
+      *this << *q.from;
+    }
+    *this << " (" << mul() << " " << iname << " ";
+    if (q.step == nullptr) {
+      *this << numeric_literal(1);
+    } else {
+      *this << *q.step;
+    }
+    *this << "))))" << step_c;
+
+    // finally the enclosed expression itself
+    *this << " " << e << "))";
+  }
+
 }; }
 
 std::string translate(const Expr &expr) {
-  const Logic &logic = get_logic(options.smt.logic);
-
-  Translator t(logic);
+  Translator t;
   t.dispatch(expr);
   return t.str();
 }
@@ -166,20 +262,20 @@ std::string mangle(const std::string &s, size_t id) {
 
   // if you're debugging a bad translation to SMT, you can change this to `true`
   // to get the Murphi name of a symbol output as a comment in the SMT problem
-  const std::string suffix = false ? "; " + s + "\n" : "";
+  const std::string prefix = false ? "; " + s + ":\n" : "";
 
   const std::string l = lower(s);
 
   // if this is a boolean literal, the solver already knows of it
   if (l == "true" || l == "false")
-    return l + suffix;
+    return prefix + l;
 
   // if this is the boolean type, the solver already knows of it
   if (l == "boolean")
-    return "Bool" + suffix;
+    return prefix + "Bool";
 
   // otherwise synthesise a node-unique name for this
-  return "s" + std::to_string(id) + suffix;
+  return prefix + "s" + std::to_string(id);
 }
 
 }

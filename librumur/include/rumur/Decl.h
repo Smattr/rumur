@@ -52,6 +52,7 @@ struct AliasDecl : public ExprDecl {
   AliasDecl *clone() const final;
   virtual ~AliasDecl() = default;
 
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
@@ -74,6 +75,7 @@ struct ConstDecl : public ExprDecl {
   ConstDecl *clone() const final;
   virtual ~ConstDecl() = default;
 
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
@@ -90,6 +92,7 @@ struct TypeDecl : public Decl {
   TypeDecl *clone() const final;
   virtual ~TypeDecl() = default;
 
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
 };
 
@@ -108,11 +111,6 @@ struct VarDecl : public ExprDecl {
    */
   bool readonly = false;
 
-  // DEPRECATED, DO NOT USE
-  // Commented out because it triggers warnings when the copy ctor is invoked:
-  // [[gnu::deprecated("state_variable has been replaced by is_in_state()")]]
-  bool state_variable = false;
-
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
     const location &loc_);
   VarDecl *clone() const final;
@@ -126,6 +124,7 @@ struct VarDecl : public ExprDecl {
    */
   bool is_in_state() const;
 
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;

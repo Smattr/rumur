@@ -50,6 +50,10 @@ struct TypeExpr : public Node {
   // given type?
   bool coerces_to(const TypeExpr &other) const;
 
+  // Is this the type Boolean? Note that this only returns true for the actual
+  // type Boolean, and not for TypeExprIDs that point at Boolean.
+  virtual bool is_boolean() const;
+
   __attribute__((deprecated("equatable_with() has been replaced by coerces_to()")))
   bool equatable_with(const TypeExpr &other) const;
 };
@@ -64,6 +68,7 @@ struct Range : public TypeExpr {
   virtual ~Range() = default;
 
   mpz_class count() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -83,6 +88,7 @@ struct Scalarset : public TypeExpr {
   virtual ~Scalarset() = default;
 
   mpz_class count() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -108,6 +114,7 @@ struct Enum : public TypeExpr {
   virtual ~Enum() = default;
 
   mpz_class count() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   void validate() const final;
@@ -116,6 +123,7 @@ struct Enum : public TypeExpr {
   std::string upper_bound() const final;
   std::string to_string() const final;
   bool constant() const final;
+  bool is_boolean() const final;
 };
 
 struct Record : public TypeExpr {
@@ -128,6 +136,7 @@ struct Record : public TypeExpr {
 
   mpz_class width() const final;
   mpz_class count() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
@@ -144,6 +153,7 @@ struct Array : public TypeExpr {
 
   mpz_class width() const final;
   mpz_class count() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
@@ -161,6 +171,7 @@ struct TypeExprID : public TypeExpr {
 
   mpz_class width() const final;
   mpz_class count() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   bool is_simple() const final;
   Ptr<TypeExpr> resolve() const final;

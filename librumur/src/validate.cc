@@ -44,6 +44,7 @@ class Validator : public ConstBaseTraversal {
       dispatch(*a);
     for (auto &s : n.body)
       dispatch(*s);
+    n.validate();
   }
 
   void visit_and(const And &n) final {
@@ -398,10 +399,6 @@ class Validator : public ConstBaseTraversal {
   virtual ~Validator() = default;
 };
 
-}
-
-void validate_model(const Model &m) {
-  validate(m);
 }
 
 void validate(const Node &n) {

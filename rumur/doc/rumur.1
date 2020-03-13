@@ -96,6 +96,15 @@ of the result. Using \fBmachine-readable\fR generates output in an XML format
 suitable for consumption by a following tool in an I/O pipeline.
 .RE
 .PP
+\fB--pack-state\fR [\fBon\fR | \fBoff\fR]
+.RS
+Set whether auxiliary state data is compressed in the generated verifier.
+Compression (\fBon\fR, the default) saves memory at the expense of runtime. That
+is, by default the verifier will try to minimise memory usage. If your model is
+small enough to comfortably fit in available memory, you may want to set this to
+\fBoff\fR to accelerate the checking process.
+.RE
+.PP
 \fB--quiet\fR or \fB-q\fR
 .RS
 Don't output any messages while generating the verifier.
@@ -174,6 +183,8 @@ Available event categories are:
 .IP \[bu]
 \fIhandle_writes\fR Writes to variable handles
 .IP \[bu]
+\fImemory_usage\fR Summary of memory allocation during checking
+.IP \[bu]
 \fIqueue\fR Events relating to the pending state queue
 .IP \[bu]
 \fIset\fR Events relating to the seen state set
@@ -220,11 +231,11 @@ to find and use your SMT solver. Some examples of solver configuration:
 .RS
 # for Z3 with a 5 second timeout
 .br
-\fBrumur --smt-simplification on --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
+\fBrumur --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
 .PP
 # for CVC4 with a 5 second timeout
 .br
-\fBrumur --smt-simplification on --smt-path cvc4 --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
+\fBrumur --smt-path cvc4 --smt-prelude "(set-logic AUFLIA)" --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
 .RE
 .PP
 For other solvers, consult their manpages or documentation to determine what
@@ -233,12 +244,22 @@ instruct Rumur how to use them. Note that Rumur can only use a single SMT
 solver and specifying the \fB--smt-path\fR option multiple times will only
 retain the last path given.
 .PP
-\fB--smt-arg\fR \fBARG\fI
+\fB--smt-arg\fR \fIARG\fR
 .RS
 A command line argument to pass to the SMT solver. This option can be given
 multiple times and arguments are passed in the order listed. E.g. if you specify
 \fB--smt-arg=--tlimit\fR \fB--smt-arg=5000\fR the solver will be called with the
 command line arguments \fB--tlimit\fR \fB5000\fR.
+.RE
+.PP
+\fB--smt-bitvectors\fR [\fBoff\fR | \fBon\fR]
+.RS
+Select whether simple types (enums, ranges, and scalarsets) are translated to
+bitvectors or unbounded integers when passed to the solver. By default,
+unbounded integers are used (\fB--smt-bitvectors off\fR). If you turn this
+option on, 64-bit vectors are used instead. Whether integers, bitvectors, or
+both are supported will depend on your solver as well as the SMT logic you are
+using.
 .RE
 .PP
 \fB--smt-budget\fR \fIMILLISECONDS\fR
@@ -253,13 +274,6 @@ exceed the budget. You may want to use the \fB--smt-arg\fR option to pass the
 SMT solver a timeout limit if it supports one.
 .RE
 .PP
-\fB--smt-logic\fR \fILOGIC\fR
-.RS
-Set the target logic used for communication with the SMT solver. By default,
-this is \fBAUFLIA\fR. Supported logics are those supporting integer
-arithmetic or bitvector arithmetic.
-.RE
-.PP
 \fB--smt-path\fR \fIPATH\fR
 .RS
 Command or path to the SMT solver. This will use your environment's \fBPATH\fR
@@ -268,11 +282,29 @@ provide the name of its binary. Note that this option has no effect unless you
 also pass \fB--smt-simplification\fR \fBon\fR.
 .RE
 .PP
+\fB--smt-prelude\fR \fITEXT\fR
+.RS
+Text to emit when communicating with the solver prior to sending the actual
+problem itself. You can use this to set a solver logic or other options. This
+option can be given multiple times and each argument will be passed to the
+solver on a separate line.
+.RE
+.PP
 \fB--smt-simplification\fR [\fBoff\fR | \fBon\fR]
 .RS
 Disable or enable using the SMT solver to simplify the input model. By default,
-this is \fBoff\fR. Note that this option has no effect unless you also configure
-a path to the SMT solver with \fB--smt-path\fR.
+this is automatic, in that it is turned \fBon\fR if you use any of the other SMT
+options or \fBoff\fR if you do not use them.
+.RE
+.SH LEGACY OPTIONS
+The following options should no longer be used but are documented here for
+completeness.
+.PP
+\fB--smt-logic\fR \fILOGIC\fR
+.RS
+Set the target logic used for communication with the SMT solver. This option is
+deprecated and you should use \fB--smt-prelude\fR instead. For example,
+\fB--smt-prelude AUFLIA\fR.
 .RE
 .SH AUTHOR
 All comments, questions and complaints should be directed to Matthew Fernandez

@@ -69,30 +69,6 @@ void Model::validate() const {
   }
 }
 
-unsigned long Model::assumption_count() const {
-
-  // Define a traversal for counting the assumptions encountered.
-  class AssumptionCounter : public ConstTraversal {
-
-   public:
-    unsigned long assumptions = 0;
-
-    void visit_property(const Property &n) final {
-      if (n.category == Property::ASSUMPTION)
-        assumptions++;
-      dispatch(*n.expr);
-    }
-
-    virtual ~AssumptionCounter() = default;
-  };
-
-  // Use the traversal to count our own assumptions.
-  AssumptionCounter ac;
-  ac.dispatch(*this);
-
-  return ac.assumptions;
-}
-
 mpz_class Model::liveness_count() const {
 
   // Define a traversal for counting liveness properties.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 Wrapper script for running the Rumur model checker.
@@ -13,22 +13,25 @@ import atexit
 import os
 import platform
 import shutil
-import subprocess
+import subprocess as sp
 import sys
 import tempfile
+from typing import Optional
 
-def which(cmd):
+def which(cmd: str) -> Optional[str]:
   '''
   Equivalent of shell `which`
   '''
   try:
-    with open(os.devnull, 'wt') as f:
-      return subprocess.check_output(['which', cmd], stderr=f,
-        universal_newlines=True).strip()
-  except subprocess.CalledProcessError:
+    return sp.check_output(['which', cmd], stderr=sp.DEVNULL,
+      universal_newlines=True).strip()
+  except sp.CalledProcessError:
     return None
 
-def categorise(cc):
+# C compiler
+CC = which(os.environ.get('CC', 'cc'))
+
+def categorise(cc: str) -> str:
   '''
   Determine the vendor of a given C compiler
   '''
@@ -56,16 +59,14 @@ def categorise(cc):
 
   # Compile it
   aout = os.path.join(tmp, 'a.out')
-  cc_proc = subprocess.Popen([cc, '-o', aout, src], universal_newlines=True,
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  stdout, stderr = cc_proc.communicate()
+  cc_proc = sp.run([cc, '-o', aout, src], universal_newlines=True,
+    stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
   # Run it
   if cc_proc.returncode == 0:
     try:
-      categorisation = subprocess.check_output([aout],
-        universal_newlines=True).strip()
-    except subprocess.CalledProcessError:
+      categorisation = sp.check_output([aout], universal_newlines=True).strip()
+    except sp.CalledProcessError:
       pass
 
   # Clean up
@@ -73,7 +74,67 @@ def categorise(cc):
 
   return categorisation
 
-def main(args):
+def supports(flag: str) -> bool:
+  '''check whether the compiler supports a given command line flag'''
+
+  # a trivial program to ask it to compile
+  program = 'int main(void) { return 0; }'
+
+  # compile it
+  p = sp.run([CC, '-o', os.devnull, '-x', 'c', '-', flag], stderr=sp.DEVNULL,
+    input=program.encode('utf-8', 'replace'))
+
+  # check whether compilation succeeded
+  return p.returncode == 0
+
+def needs_libatomic() -> bool:
+  '''check whether the compiler needs -latomic for a double-word
+  compare-and-swap'''
+
+  # CAS program to ask it to compile
+  program = 'int main(void) {\n' \
+            '#if __SIZEOF_POINTER__ <= 4\n' \
+            '  uint64_t target = 0;\n' \
+            '#elif __SIZEOF_POINTER__ <= 8\n' \
+            '  unsigned __int128 target = 0;\n' \
+            '#endif\n' \
+            '  return __sync_val_compare_and_swap(&target, 0, 1);\n' \
+            '}\n'
+
+  # compile it
+  args = [CC, '-x', 'c', '-std=c11', '-', '-o', os.devnull]
+  if supports('-mcx16'):
+    args.append('-mcx16')
+  p = sp.run(args, stderr=sp.DEVNULL, input=program.encode('utf-8', 'replace'))
+
+  # check whether compilation succeeded
+  return p.returncode != 0
+
+def optimisation_flags() -> [str]:
+  '''C compiler optimisation command line options for this platform'''
+
+  flags = ['-O3']
+
+  # optimise code for the current host architecture
+  if supports('-march=native'): flags.append('-march=native')
+
+  # optimise code for the current host CPU
+  if supports('-mtune=native'): flags.append('-mtune=native')
+
+  # enable link-time optimisation
+  if supports('-flto'): flags.append('-flto')
+
+  cc_vendor = categorise(CC)
+
+  # allow GCC to perform more advanced interprocedural optimisations
+  if cc_vendor == 'gcc': flags.append('-fwhole-program')
+
+  # on platforms that need it made explicit, enable CMPXCHG16B
+  if supports('-mcx16'): flags.append('-mcx16')
+
+  return flags
+
+def main(args: [str]) -> int:
 
   # Find the Rumur binary
   rumur_bin = which('rumur')
@@ -83,55 +144,44 @@ def main(args):
     sys.stderr.write('rumur binary not found\n')
     return -1
 
-  # Find and categorise the C compiler
-  cc = which(os.environ.get('CC', 'cc'))
-  if cc is None:
+  # if the user asked for help or version information, run Rumur directly
+  for arg in args[1:]:
+    if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
+      os.execv(rumur_bin, [rumur_bin] + args[1:])
+
+  if CC is None:
     sys.stderr.write('no C compiler found\n')
     return -1
-  cc_vendor = categorise(cc)
+
+  # Generate the checker
+  print('Generating the checker...')
+  rumur_proc = sp.run([rumur_bin] + args[1:] + ['--output', '/dev/stdout'],
+    stdin=sp.PIPE, stdout=sp.PIPE)
+  if rumur_proc.returncode != 0:
+    return rumur_proc.returncode
+  checker_c = rumur_proc.stdout
+
+  ok = True
 
   # Setup a temporary directory in which to generate the checker
   tmp = tempfile.mkdtemp()
   atexit.register(shutil.rmtree, tmp)
 
-  ok = True
-
-  # Generate the checker
-  print('Generating the checker...')
-  checker_c = os.path.join(tmp, 'checker.c')
-  rumur_proc = subprocess.Popen([rumur_bin] + args[1:] + ['--output', checker_c],
-    stdin=subprocess.PIPE)
-  rumur_proc.communicate()
-  ok &= rumur_proc.returncode == 0
-
-  # if the user asked for help or version information, Rumur will have exited
-  # without generating a checker
-  for arg in args[1:]:
-    if arg.startswith('-h') or arg.startswith('--h') or arg.startswith('--vers'):
-      return 0 if ok else -1
-
   # Compile the checker
   if ok:
     print('Compiling the checker...')
     aout = os.path.join(tmp, 'a.out')
-    cc_flags = ['-std=c11', '-O3', '-march=native', '-mtune=native', '-o', aout,
-      checker_c]
-    if platform.machine() in ('amd64', 'x86_64') and cc_vendor == 'gcc':
-      # GCC needs a personal invitation to use cmpxchg16b
-      cc_flags += ['-mcx16']
-    if cc_vendor == 'gcc':
-      # Allow GCC to perform more advanced interprocedural optimisations
-      cc_flags += ['-fwhole-program']
-    cc_flags += ['-lpthread']
-    cc_proc = subprocess.Popen([cc] + cc_flags)
-    cc_proc.communicate()
+    argv = [CC, '-std=c11'] + optimisation_flags() + ['-o', aout, '-x', 'c',
+      '-', '-lpthread']
+    if needs_libatomic():
+      argv.append('-latomic')
+    cc_proc = sp.run(argv, input=checker_c)
     ok &= cc_proc.returncode == 0
 
   # Run the checker
   if ok:
     print('Running the checker...')
-    checker_proc = subprocess.Popen([aout])
-    checker_proc.communicate()
+    checker_proc = sp.run([aout])
     ok &= checker_proc.returncode == 0
 
   return 0 if ok else -1

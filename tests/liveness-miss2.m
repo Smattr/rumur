@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if xml else re.compile(r'liveness property "x is 10" violated')
+-- checker_output: None if self.xml else re.compile(r'liveness property "x is 10" violated')
 
 -- a variant of liveness-miss1.m that leaves two values unreached
 

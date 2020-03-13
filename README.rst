@@ -8,6 +8,27 @@ with some extensions and generates a C program that implements a verifier.
 
 Quickstart
 ----------
+
+Installation on Debian Unstable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: sh
+
+  apt install rumur
+
+Installation on FreeBSD
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: sh
+
+  pkg install rumur
+
+Thanks to `yuri@FreeBSD`_ for packaging.
+
+.. _`yuri@FreeBSD`: https://github.com/yurivict
+
+Building from Source
+~~~~~~~~~~~~~~~~~~~~
 First you will need to have the following dependencies installed:
 
 * Either GCC_ or Clang_
@@ -15,39 +36,39 @@ First you will need to have the following dependencies installed:
 * CMake_
 * Flex_
 * Libgmp_
-* Python_
+* Python_ ≥ 3.6
 
 Then:
 
 .. code-block:: sh
 
-    # Download Rumur
-    git clone https://github.com/Smattr/rumur
-    cd rumur
+  # Download Rumur
+  git clone https://github.com/Smattr/rumur
+  cd rumur
 
-    # Configure and compile
-    mkdir build
-    cd build
-    cmake ..
-    make
-    make install
+  # Configure and compile
+  mkdir build
+  cd build
+  cmake ..
+  make
+  make install
 
-    # Generate a checker
-    rumur my-model.m --output my-model.c
+  # Generate a checker
+  rumur my-model.m --output my-model.c
 
-    # Compile the checker (also pass -mcx16 if using GCC on x86-64)
-    cc -std=c11 -O3 my-model.c -lpthread
+  # Compile the checker (also pass -mcx16 if using GCC on x86-64)
+  cc -std=c11 -O3 my-model.c -lpthread
 
-    # Run the checker
-    ./a.out
+  # Run the checker
+  ./a.out
 
 Compilation produces several artefacts including the `rumur` binary itself:
 
-* bin/rumur: Tool for translating a Murphi model into a program that implements
+* rumur: Tool for translating a Murphi model into a program that implements
   a checker;
-* bin/rumur-ast-dump: Tool for emitting an XML representation of a Murphi
-  model's Abstract Syntax Tree;
-* lib/librumur.a: A library for building your own Murphi model tools; and
+* murphi2xml: Tool for emitting an XML representation of a Murphi model’s
+  Abstract Syntax Tree;
+* librumur.a: A library for building your own Murphi model tools; and
 * include/rumur/: The API for the above library.
 
 Comparison with CMurphi

@@ -1,197 +1,125 @@
 #include <cstddef>
-#include "except.h"
 #include <gmpxx.h>
 #include "logic.h"
+#include "../options.h"
 #include <string>
-#include <unordered_map>
 
 namespace smt {
 
 static const size_t BITVECTOR_WIDTH = 64;
 
-Logic::Logic(bool bv, bool ia):
-    bitvectors(bv),
-    integers(ia) { }
+std::string integer_type() {
 
-std::string Logic::integer_type() const {
-
-  if (integers)
-    return "Int";
-
-  if (bitvectors)
+  if (options.smt.use_bitvectors) {
     return "(_ BitVec " + std::to_string(BITVECTOR_WIDTH) + ")";
-
-  throw Unsupported();
-}
-
-std::string Logic::numeric_literal(const mpz_class &value) const {
-
-  if (integers)
-    return value.get_str();
-
-  if (bitvectors)
-    return "(_ bv" + value.get_str() + " " + std::to_string(BITVECTOR_WIDTH)
-      + ")";
-
-  throw Unsupported();
-}
-
-std::string Logic::add(void) const {
-
-  if (integers)
-    return "+";
-
-  if (bitvectors)
-    return "bvadd";
-
-  throw Unsupported();
-}
-
-std::string Logic::div(void) const {
-
-  if (integers) {
-    /* XXX: may cause solvers like CVC4 to fail with an error. Not visible to
-     * the user unless passing --debug though, so left as-is for now.
-     */
-    return "div";
   }
 
-  if (bitvectors)
+  return "Int";
+}
+
+std::string numeric_literal(const mpz_class &value) {
+
+  if (value < 0)
+    return "(" + neg() + " " + numeric_literal(-value) + ")";
+
+  if (options.smt.use_bitvectors) {
+    return "(_ bv" + value.get_str() + " " + std::to_string(BITVECTOR_WIDTH)
+      + ")";
+  }
+
+  return value.get_str();
+}
+
+std::string add() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvadd";
+  }
+
+  return "+";
+}
+
+std::string div() {
+
+  if (options.smt.use_bitvectors) {
     return "bvsdiv";
+  }
 
-  throw Unsupported();
+  // XXX: may cause solvers like CVC4 to fail with an error. Not visible to the
+  // the user unless passing --debug though, so left as-is for now.
+  return "div";
 }
 
-std::string Logic::geq(void) const {
+std::string geq() {
 
-  if (integers)
-    return ">=";
-
-  if (bitvectors)
+  if (options.smt.use_bitvectors) {
     return "bvsge";
+  }
 
-  throw Unsupported();
+  return ">=";
 }
 
-std::string Logic::gt(void) const {
-  
-  if (integers)
-    return ">";
-    
-  if (bitvectors)
+std::string gt(void) {
+
+  if (options.smt.use_bitvectors) {
     return "bvsgt";
-    
-  throw Unsupported();
+  }
+
+  return ">";
 }
 
-std::string Logic::leq(void) const {
-  
-  if (integers)
-    return "<=";
-    
-  if (bitvectors)
+std::string leq() {
+
+  if (options.smt.use_bitvectors) {
     return "bvsle";
-    
-  throw Unsupported();
+  }
+
+  return "<=";
 }
 
-std::string Logic::lt (void) const {
-  
-  if (integers)
-    return "<";
-    
-  if (bitvectors)
+std::string lt() {
+
+  if (options.smt.use_bitvectors) {
     return "bvslt";
-    
-  throw Unsupported();
+  }
+
+  return "<";
 }
 
-std::string Logic::mod(void) const {
+std::string mod() {
 
-  if (integers)
-    return "mod";
-
-  if (bitvectors)
+  if (options.smt.use_bitvectors) {
     return "bvsmod";
-    
-  throw Unsupported();
+  }
+
+  return "mod";
 }
 
-std::string Logic::mul(void) const {
-  
-  if (integers)
-    return "*";
-    
-  if (bitvectors)
+std::string mul() {
+
+  if (options.smt.use_bitvectors) {
     return "bvmul";
-    
-  throw Unsupported();
+  }
+
+  return "*";
 }
 
-std::string Logic::neg(void) const {
-  
-  if (integers)
-    return "-";
-    
-  if (bitvectors)
+std::string neg() {
+
+  if (options.smt.use_bitvectors) {
     return "bvneg";
-    
-  throw Unsupported();
+  }
+
+  return "-";
 }
 
-std::string Logic::sub(void) const {
-  
-  if (integers)
-    return "-";
-    
-  if (bitvectors)
+std::string sub() {
+
+  if (options.smt.use_bitvectors) {
     return "bvsub";
-    
-  throw Unsupported();
-}
+  }
 
-static const std::unordered_map<std::string, Logic> LOGICS = {
-                 //    BV     IA
-  { "ALIA",      Logic(false, true ) },
-  { "AUFLIA",    Logic(false, true ) },
-  { "AUFLIRA",   Logic(false, true ) },
-  { "AUFNIRA",   Logic(false, true ) },
-  { "LIA",       Logic(false, true ) },
-  { "LRA",       Logic(false, false) },
-  { "NIA",       Logic(false, true ) },
-  { "NRA",       Logic(false, false) },
-  { "QF_ABV",    Logic(true,  false) },
-  { "QF_ALIA",   Logic(false, true ) },
-  { "QF_AUFBV",  Logic(true,  false) },
-  { "QF_AUFLIA", Logic(false, true ) },
-  { "QF_AX",     Logic(false, false) },
-  { "QF_BV",     Logic(true,  false) },
-  { "QF_IDL",    Logic(false, false) },
-  { "QF_LIA",    Logic(false, true ) },
-  { "QF_LRA",    Logic(false, false) },
-  { "QF_NIA",    Logic(false, true ) },
-  { "QF_NRA",    Logic(false, false) },
-  { "QF_RDL",    Logic(false, false) },
-  { "QF_UF",     Logic(false, false) },
-  { "QF_UFBV",   Logic(true,  false) },
-  { "QF_UFIDL",  Logic(false, false) },
-  { "QF_UFLIA",  Logic(false, true ) },
-  { "QF_UFLRA",  Logic(false, false) },
-  { "QF_UFNIA",  Logic(false, true ) },
-  { "QF_UFNRA",  Logic(false, false) },
-  { "UFLRA",     Logic(false, false) },
-  { "UFNIA",     Logic(false, true ) },
-  { "",          Logic(true,  true ) }, // unknown
-};
-
-const Logic &get_logic(const std::string &name) {
-
-  auto it = LOGICS.find(name);
-  if (it != LOGICS.end())
-    return it->second;
-
-  // unknown logic
-  return LOGICS.at("");
+  return "-";
 }
 
 }
