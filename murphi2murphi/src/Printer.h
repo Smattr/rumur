@@ -3,11 +3,12 @@
 #include <climits>
 #include <iostream>
 #include <rumur/rumur.h>
+#include "Stage.h"
 #include <string>
 #include <sstream>
 #include <vector>
 
-class Printer : public rumur::ConstBaseTraversal {
+class Printer : public Stage {
 
  private:
   std::istream &in;
@@ -17,24 +18,8 @@ class Printer : public rumur::ConstBaseTraversal {
   unsigned long line = 1;
   unsigned long column = 1;
 
-  // does the next semantically relevant output character need to be a
-  // semicolon?
-  bool pending_semi = false;
-
-  // Omit semi-colon if it is the next encountered character? This should never
-  // be set at the same time as pending semi.
-  bool swallow_semi = false;
-
-  // buffered content that we have notionally written but may need to add
-  // characters before it in the output
-  std::ostringstream pending;
-
-  // ranges from the source file that should be dropped in the output file
-  std::vector<rumur::location> deletions;
-
  public:
-  Printer(std::istream &in_, std::ostream &out_,
-    const std::vector<rumur::location> &deletions_);
+  Printer(std::istream &in_, std::ostream &out_);
 
   void visit_add(const rumur::Add &n) final;
   void visit_aliasdecl(const rumur::AliasDecl &n) final;
@@ -96,15 +81,19 @@ class Printer : public rumur::ConstBaseTraversal {
   void visit_vardecl(const rumur::VarDecl &n) final;
   void visit_while(const rumur::While &n) final;
 
-  virtual ~Printer();
+  void write(const std::string &c) final;
+
+  void sync_to(const rumur::Node &n) final;
+  void sync_to(const rumur::position &pos) final;
+
+  void skip_to(const rumur::Node &n) final;
+  void skip_to(const rumur::position &pos) final;
+
+  void finalise() final;
+
+  virtual ~Printer() = default;
 
  private:
   void visit_bexpr(const std::string &tag, const rumur::BinaryExpr &n);
   void visit_uexpr(const std::string &tag, const rumur::UnaryExpr &n);
-  void sync_to(const rumur::Node &n);
-  void sync_to(const rumur::position &pos
-    = rumur::position(nullptr, UINT_MAX, UINT_MAX));
-
-  // should this character from the input be dropped in the output?
-  bool deleted(const rumur::position &pos) const;
 };

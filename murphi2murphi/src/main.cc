@@ -1,17 +1,19 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include "find-liveness.h"
+#include "ExplicitSemicolons.h"
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
 #include <memory>
 #include "options.h"
+#include "Pipeline.h"
 #include "Printer.h"
+#include "RemoveLiveness.h"
 #include <rumur/rumur.h>
 #include <sstream>
+#include "Stage.h"
 #include <sys/stat.h>
-#include <vector>
 
 using namespace rumur;
 
@@ -130,7 +132,7 @@ int main(int argc, char **argv) {
 
   assert(in != nullptr);
 
-  // Parse input model
+  // parse input model
   Ptr<Model> m;
   try {
     m = parse(*in);
@@ -143,16 +145,23 @@ int main(int argc, char **argv) {
 
   assert(m != nullptr);
 
-  // optionally remove liveness properties
-  std::vector<location> liveness_ranges;
-  if (options.remove_liveness) {
-    liveness_ranges = find_liveness(*m);
-  }
+  // create a pipeline that we will incrementally populate
+  Pipeline pipe;
 
-  {
-    Printer p(*in_replay, out == nullptr ? std::cout : *out, liveness_ranges);
-    p.dispatch(*m);
-  }
+  // add output generator
+  Printer p(*in_replay, out == nullptr ? std::cout : *out);
+  pipe.add_stage(p);
+
+  // are we adding semi-colons?
+  if (options.explicit_semicolons)
+    pipe.make_stage<ExplicitSemicolons>();
+
+  // are we removing liveness?
+  if (options.remove_liveness)
+    pipe.make_stage<RemoveLiveness>();
+
+  // now we can run the pipeline
+  pipe.process(*m);
 
   return EXIT_SUCCESS;
 }

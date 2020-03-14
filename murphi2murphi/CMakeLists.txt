@@ -1,8 +1,11 @@
 add_executable(murphi2murphi
-  src/find-liveness.cc
+  src/ExplicitSemicolons.cc
   src/main.cc
   src/options.cc
-  src/Printer.cc)
+  src/Pipeline.cc
+  src/Printer.cc
+  src/RemoveLiveness.cc
+  src/Stage.cc)
 
 target_include_directories(murphi2murphi
   PRIVATE
