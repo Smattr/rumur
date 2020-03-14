@@ -163,5 +163,8 @@ int main(int argc, char **argv) {
   // now we can run the pipeline
   pipe.process(*m);
 
+  // note that we are done
+  pipe.finalise();
+
   return EXIT_SUCCESS;
 }
