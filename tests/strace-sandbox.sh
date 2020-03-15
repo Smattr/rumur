@@ -90,6 +90,22 @@ ${CC:-cc} -std=c11 ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
 strace ./model.exe
 RET=$?
 
+# if we did not yet see a failure, test to see if the sandbox also permits
+# anything extra we do with --debug
+if [ $RET -eq 0 ]; then
+
+  # generate a sandboxed checker with debugging enabled
+  rumur --sandbox on --debug --output model.c model.m
+
+  # compile the sandboxed checker
+  ${CC:-cc} -std=c11 ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
+
+  # run the model under strace
+  strace ./model.exe
+  RET=$?
+
+fi
+
 # clean up
 popd
 rm -rf ${TMP}

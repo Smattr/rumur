@@ -289,11 +289,11 @@ static void sandbox(void) {
        */
 #ifdef __NR_gettimeofday
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_gettimeofday, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_time
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_time, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
       /* Deny everything else. On a disallowed syscall, we trap instead of

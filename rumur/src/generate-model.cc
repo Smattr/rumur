@@ -1,4 +1,5 @@
 #include <cstddef>
+#include "../../common/escape.h"
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>

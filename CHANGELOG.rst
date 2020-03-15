@@ -1,6 +1,30 @@
 Change log
 ==========
 
+v2020.03.12
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: ``time()`` and ``gettimeofday()`` are now permitted when generating a
+  sandboxed verifier on Linux. These were supposed to be allowed previously but
+  there was a typo when initially adding this. This is only relevant for Linux
+  platforms that do not implement these system calls in vDSO_ (commit
+  6cce8fe23796e459bb98021ccc172ba139745f46).
+* A new binary, murphi2c, has been added that translates a Murphi model into C
+  code suitable for integration into a C/C++ simulator. See its man page or
+  ``--help`` for more information.
+* A minor typo was corrected in the murphi2xml man page (commit
+  75dcef20a57ff939bf789bc98f6f2bd037fd1629).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``VarDecl::state_variable`` that was previously deprecated, has been removed.
+  Clients should call ``VarDecl::is_in_state()`` as a replacement (commit
+  1776a4c6968e3c98861665af398bd042e435c096).
+* XCode < 8.3.3 is no longer supported as a development environment under macOS.
+  Users are recommended to upgrade to a newer version of XCode/macOS.
+
 v2020.02.17
 -----------
 
