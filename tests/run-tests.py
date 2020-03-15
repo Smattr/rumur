@@ -352,8 +352,8 @@ class Murphi2CTest(Tweakable):
 
     # ask the C compiler if this is valid
     ret, stdout, stderr = run([CC, '-std=c11', '-c', '-o', os.devnull, '-x', 'c',
-      '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits'],
-      stdout)
+      '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits',
+      '-Werror=enum-conversion'], stdout)
     if ret != 0:
       return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
@@ -403,8 +403,8 @@ class Murphi2CHeaderTest(Tweakable):
       # ask the C compiler if the header is valid
       main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
       ret, stdout, stderr = run([CC, '-std=c11', '-o', os.devnull, '-x', 'c',
-        '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits'],
-        main_c)
+        '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits',
+        '-Werror=enum-conversion'], main_c)
       if ret != 0:
         return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
