@@ -557,6 +557,21 @@ def main(args: [str]) -> int:
     pr(f'no tests found\n')
     return -1
 
+  pr( 'Configuration:\n'
+     f'  CPUS = {CPUS}\n'
+     f'  STDOUT_ISATTY = {STDOUT_ISATTY}\n'
+     f'  MIN_TEST = {MIN_TEST}\n'
+     f'  MAX_TEST = {MAX_TEST}\n'
+     f'  CC = {CC}\n'
+     f'  CXX = {CXX}\n'
+     f'  HAS_MCX16 = {HAS_MCX16}\n'
+     f'  NEEDS_LIBATOMIC = {NEEDS_LIBATOMIC}\n'
+     f'  HAS_SANDBOX = {HAS_SANDBOX}\n'
+     f'  SMT_ARGS = {SMT_ARGS}\n'
+     f'  HAS_VALGRIND = {HAS_VALGRIND}\n'
+     f'  HAS_ENUM_CONVERSION = {HAS_ENUM_CONVERSION}\n'
+      '\n')
+
   pr(f'Running {len(tests)} tests using {options.jobs} threads...\n'
       '     +------ debug\n'
       '     |+----- optimised\n'
