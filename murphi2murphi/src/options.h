@@ -8,6 +8,9 @@ struct Options {
 
   // remove liveness invariants and statements?
   bool remove_liveness = false;
+
+  // turn switch statements into if statements?
+  bool switch_to_if = false;
 };
 
 extern Options options;

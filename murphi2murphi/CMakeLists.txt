@@ -5,7 +5,8 @@ add_executable(murphi2murphi
   src/Pipeline.cc
   src/Printer.cc
   src/RemoveLiveness.cc
-  src/Stage.cc)
+  src/Stage.cc
+  src/SwitchToIf.cc)
 
 target_include_directories(murphi2murphi
   PRIVATE

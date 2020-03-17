@@ -13,6 +13,7 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include "Stage.h"
+#include "SwitchToIf.h"
 #include <sys/stat.h>
 
 using namespace rumur;
@@ -43,8 +44,10 @@ static void parse_args(int argc, char **argv) {
       { "help",                   no_argument,       0, '?' },
       { "no-explicit-semicolons", no_argument,       0, 129 },
       { "no-remove-liveness",     no_argument,       0, 130 },
+      { "no-switch-to-if",        no_argument,       0, 131 },
       { "output",                 required_argument, 0, 'o' },
-      { "remove-liveness",        no_argument,       0, 131 },
+      { "remove-liveness",        no_argument,       0, 132 },
+      { "switch-to-if",           no_argument,       0, 133 },
       { 0, 0, 0, 0 },
     };
 
@@ -73,6 +76,10 @@ static void parse_args(int argc, char **argv) {
         options.remove_liveness = false;
         break;
 
+      case 131: // --no-switch-to-if
+        options.switch_to_if = false;
+        break;
+
       case 'o': { // --output
         auto o = std::make_shared<std::ofstream>(optarg);
         if (!o->is_open()) {
@@ -83,8 +90,12 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 131: // --remove-liveness
+      case 132: // --remove-liveness
         options.remove_liveness = true;
+        break;
+
+      case 133: // --switch-to-if
+        options.switch_to_if = true;
         break;
 
       default:
@@ -170,11 +181,21 @@ int main(int argc, char **argv) {
   if (options.remove_liveness)
     pipe.make_stage<RemoveLiveness>();
 
-  // now we can run the pipeline
-  pipe.process(*m);
+  // are we transforming switches to ifs?
+  if (options.switch_to_if)
+    pipe.make_stage<SwitchToIf>();
 
-  // note that we are done
-  pipe.finalise();
+  try {
+    // now we can run the pipeline
+    pipe.process(*m);
+
+    // note that we are done
+    pipe.finalise();
+
+  } catch (Error &e) {
+    std::cerr << e.loc << ":" << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }
