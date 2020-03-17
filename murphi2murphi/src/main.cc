@@ -50,6 +50,7 @@ static void parse_args(int argc, char **argv) {
       { "output",                 required_argument, 0, 'o' },
       { "remove-liveness",        no_argument,       0, 132 },
       { "switch-to-if",           no_argument,       0, 133 },
+      { "version",                no_argument,       0, 134 },
       { 0, 0, 0, 0 },
     };
 
@@ -103,6 +104,10 @@ static void parse_args(int argc, char **argv) {
       case 133: // --switch-to-if
         options.switch_to_if = true;
         break;
+
+      case 134: // --version
+        std::cout << "Murphi2Murphi version " << get_version() << "\n";
+        exit(EXIT_SUCCESS);
 
       default:
         std::cerr << "unexpected error\n";
