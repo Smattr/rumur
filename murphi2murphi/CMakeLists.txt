@@ -1,4 +1,14 @@
+# Define resources.
+add_custom_command(
+  OUTPUT resources_manpage.cc
+  COMMAND ../misc/xxd.py doc/murphi2murphi.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  MAIN_DEPENDENCY doc/murphi2murphi.1
+  DEPENDS ../misc/xxd.py
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 add_executable(murphi2murphi
+  ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  ../common/help.cc
   src/ExplicitSemicolons.cc
   src/main.cc
   src/options.cc

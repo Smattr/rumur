@@ -4,12 +4,14 @@
 #include "ExplicitSemicolons.h"
 #include <fstream>
 #include <getopt.h>
+#include "../../common/help.h"
 #include <iostream>
 #include <memory>
 #include "options.h"
 #include "Pipeline.h"
 #include "Printer.h"
 #include "RemoveLiveness.h"
+#include "resources.h"
 #include <rumur/rumur.h>
 #include <sstream>
 #include "Stage.h"
@@ -41,7 +43,7 @@ static void parse_args(int argc, char **argv) {
 
     static struct option opts[] = {
       { "explicit-semicolons",    no_argument,       0, 128 },
-      { "help",                   no_argument,       0, '?' },
+      { "help",                   no_argument,       0, 'h' },
       { "no-explicit-semicolons", no_argument,       0, 129 },
       { "no-remove-liveness",     no_argument,       0, 130 },
       { "no-switch-to-if",        no_argument,       0, 131 },
@@ -64,8 +66,12 @@ static void parse_args(int argc, char **argv) {
         options.explicit_semicolons = true;
         break;
 
-      case '?': // --help
-        std::cerr << "TODO\n";
+      case '?':
+        std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+        exit(EXIT_SUCCESS);
+
+      case 'h': // --help
+        help(doc_murphi2murphi_1, doc_murphi2murphi_1_len);
         exit(EXIT_SUCCESS);
 
       case 129: // --no-explicit-semicolons
