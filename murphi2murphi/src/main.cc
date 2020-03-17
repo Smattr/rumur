@@ -17,6 +17,7 @@
 #include "Stage.h"
 #include "SwitchToIf.h"
 #include <sys/stat.h>
+#include "ToAscii.h"
 
 using namespace rumur;
 
@@ -47,10 +48,12 @@ static void parse_args(int argc, char **argv) {
       { "no-explicit-semicolons", no_argument,       0, 129 },
       { "no-remove-liveness",     no_argument,       0, 130 },
       { "no-switch-to-if",        no_argument,       0, 131 },
+      { "no-to-ascii",            no_argument,       0, 132 },
       { "output",                 required_argument, 0, 'o' },
-      { "remove-liveness",        no_argument,       0, 132 },
-      { "switch-to-if",           no_argument,       0, 133 },
-      { "version",                no_argument,       0, 134 },
+      { "remove-liveness",        no_argument,       0, 133 },
+      { "switch-to-if",           no_argument,       0, 134 },
+      { "to-ascii",               no_argument,       0, 135 },
+      { "version",                no_argument,       0, 136 },
       { 0, 0, 0, 0 },
     };
 
@@ -87,6 +90,10 @@ static void parse_args(int argc, char **argv) {
         options.switch_to_if = false;
         break;
 
+      case 132: // --no-to-ascii
+        options.to_ascii = false;
+        break;
+
       case 'o': { // --output
         auto o = std::make_shared<std::ofstream>(optarg);
         if (!o->is_open()) {
@@ -97,15 +104,19 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 132: // --remove-liveness
+      case 133: // --remove-liveness
         options.remove_liveness = true;
         break;
 
-      case 133: // --switch-to-if
+      case 134: // --switch-to-if
         options.switch_to_if = true;
         break;
 
-      case 134: // --version
+      case 135: // --to-ascii
+        options.to_ascii = true;
+        break;
+
+      case 136: // --version
         std::cout << "Murphi2Murphi version " << get_version() << "\n";
         exit(EXIT_SUCCESS);
 
@@ -195,6 +206,10 @@ int main(int argc, char **argv) {
   // are we transforming switches to ifs?
   if (options.switch_to_if)
     pipe.make_stage<SwitchToIf>();
+
+  // are we removing unicode operators?
+  if (options.to_ascii)
+    pipe.make_stage<ToAscii>();
 
   try {
     // now we can run the pipeline

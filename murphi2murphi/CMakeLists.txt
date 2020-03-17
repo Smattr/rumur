@@ -16,7 +16,8 @@ add_executable(murphi2murphi
   src/Printer.cc
   src/RemoveLiveness.cc
   src/Stage.cc
-  src/SwitchToIf.cc)
+  src/SwitchToIf.cc
+  src/ToAscii.cc)
 
 target_include_directories(murphi2murphi
   PRIVATE
