@@ -52,7 +52,7 @@ static void parse_args(int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "h", opts, &option_index);
+    int c = getopt_long(argc, argv, "ho:", opts, &option_index);
 
     if (c == -1) {
       break;
