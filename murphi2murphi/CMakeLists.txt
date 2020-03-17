@@ -16,5 +16,18 @@ target_include_directories(murphi2murphi
 target_link_libraries(murphi2murphi
   librumur)
 
+# Compress manpage
+add_custom_target(man-murphi2murphi
+  ALL
+  DEPENDS murphi2murphi.1.gz)
+add_custom_command(
+  OUTPUT murphi2murphi.1.gz
+  COMMAND gzip -9 --no-name --to-stdout doc/murphi2murphi.1 >"${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi.1.gz"
+  MAIN_DEPENDENCY doc/murphi2murphi.1
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 install(TARGETS murphi2murphi
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi.1.gz
+  DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
