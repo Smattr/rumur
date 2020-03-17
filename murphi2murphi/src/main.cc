@@ -136,14 +136,24 @@ int main(int argc, char **argv) {
   Ptr<Model> m;
   try {
     m = parse(*in);
-    resolve_symbols(*m);
-    validate(*m);
   } catch (Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
 
   assert(m != nullptr);
+
+  // assign unique identifiers to AST nodes
+  m->reindex();
+
+  // resolve symbolic references and validate the model
+  try {
+    resolve_symbols(*m);
+    validate(*m);
+  } catch (Error &e) {
+    std::cerr << e.loc << ":" << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
   // create a pipeline that we will incrementally populate
   Pipeline pipe;
