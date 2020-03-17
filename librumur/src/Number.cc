@@ -49,4 +49,8 @@ std::string Number::to_string() const {
   return value.get_str();
 }
 
+bool Number::is_pure() const {
+  return true;
+}
+
 }

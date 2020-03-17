@@ -32,6 +32,7 @@ struct Number : public Expr {
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 }
