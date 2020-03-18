@@ -9,6 +9,7 @@ add_custom_command(
 add_executable(murphi2murphi
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ../common/help.cc
+  src/DecomposeComplexComparisons.cc
   src/ExplicitSemicolons.cc
   src/main.cc
   src/options.cc

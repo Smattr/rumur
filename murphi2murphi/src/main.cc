@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include "DecomposeComplexComparisons.h"
 #include "ExplicitSemicolons.h"
 #include <fstream>
 #include <getopt.h>
@@ -43,17 +44,19 @@ static void parse_args(int argc, char **argv) {
   for (;;) {
 
     static struct option opts[] = {
-      { "explicit-semicolons",    no_argument,       0, 128 },
-      { "help",                   no_argument,       0, 'h' },
-      { "no-explicit-semicolons", no_argument,       0, 129 },
-      { "no-remove-liveness",     no_argument,       0, 130 },
-      { "no-switch-to-if",        no_argument,       0, 131 },
-      { "no-to-ascii",            no_argument,       0, 132 },
-      { "output",                 required_argument, 0, 'o' },
-      { "remove-liveness",        no_argument,       0, 133 },
-      { "switch-to-if",           no_argument,       0, 134 },
-      { "to-ascii",               no_argument,       0, 135 },
-      { "version",                no_argument,       0, 136 },
+      { "decompose-complex-comparisons",    no_argument,       0, 128 },
+      { "explicit-semicolons",              no_argument,       0, 129 },
+      { "help",                             no_argument,       0, 'h' },
+      { "no-decompose-complex-comparisons", no_argument,       0, 130 },
+      { "no-explicit-semicolons",           no_argument,       0, 131 },
+      { "no-remove-liveness",               no_argument,       0, 132 },
+      { "no-switch-to-if",                  no_argument,       0, 133 },
+      { "no-to-ascii",                      no_argument,       0, 134 },
+      { "output",                           required_argument, 0, 'o' },
+      { "remove-liveness",                  no_argument,       0, 135 },
+      { "switch-to-if",                     no_argument,       0, 136 },
+      { "to-ascii",                         no_argument,       0, 137 },
+      { "version",                          no_argument,       0, 138 },
       { 0, 0, 0, 0 },
     };
 
@@ -66,7 +69,11 @@ static void parse_args(int argc, char **argv) {
 
     switch (c) {
 
-      case 128: // --explicit-semicolons
+      case 128: // --decompose-complex-comparisons
+        options.decompose_complex_comparisons = true;
+        break;
+
+      case 129: // --explicit-semicolons
         options.explicit_semicolons = true;
         break;
 
@@ -78,19 +85,23 @@ static void parse_args(int argc, char **argv) {
         help(doc_murphi2murphi_1, doc_murphi2murphi_1_len);
         exit(EXIT_SUCCESS);
 
-      case 129: // --no-explicit-semicolons
+      case 130: // --no-decompose-complex-comparisons
+        options.decompose_complex_comparisons = false;
+        break;
+
+      case 131: // --no-explicit-semicolons
         options.explicit_semicolons = false;
         break;
 
-      case 130: // --no-remove-liveness
+      case 132: // --no-remove-liveness
         options.remove_liveness = false;
         break;
 
-      case 131: // --no-switch-to-if
+      case 133: // --no-switch-to-if
         options.switch_to_if = false;
         break;
 
-      case 132: // --no-to-ascii
+      case 134: // --no-to-ascii
         options.to_ascii = false;
         break;
 
@@ -104,19 +115,19 @@ static void parse_args(int argc, char **argv) {
         break;
       }
 
-      case 133: // --remove-liveness
+      case 135: // --remove-liveness
         options.remove_liveness = true;
         break;
 
-      case 134: // --switch-to-if
+      case 136: // --switch-to-if
         options.switch_to_if = true;
         break;
 
-      case 135: // --to-ascii
+      case 137: // --to-ascii
         options.to_ascii = true;
         break;
 
-      case 136: // --version
+      case 138: // --version
         std::cout << "Murphi2Murphi version " << get_version() << "\n";
         exit(EXIT_SUCCESS);
 
@@ -210,6 +221,10 @@ int main(int argc, char **argv) {
   // are we removing unicode operators?
   if (options.to_ascii)
     pipe.make_stage<ToAscii>();
+
+  // are we decomposing complex comparisons?
+  if (options.decompose_complex_comparisons)
+    pipe.make_stage<DecomposeComplexComparisons>();
 
   try {
     // now we can run the pipeline

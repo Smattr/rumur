@@ -12,8 +12,11 @@ struct Options {
   // turn switch statements into if statements?
   bool switch_to_if = false;
 
-  // turn unicode operators into their ASCII equivalents
+  // turn unicode operators into their ASCII equivalents?
   bool to_ascii = false;
+
+  // turn complex ==/!= into simple ==/!=s?
+  bool decompose_complex_comparisons = false;
 };
 
 extern Options options;

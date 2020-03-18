@@ -23,6 +23,15 @@ See
 .BR rumur(1)
 for more information about Rumur or Murphi.
 .SH OPTIONS
+\fB--decompose-complex-comparisons\fR
+.RS
+Rumur supports comparing values of complex type (records and arrays) with each
+other using the \fB=\fR and \fB!=\fR operators. Other Murphi tools typically
+only support the comparison of values of simple type (booleans, ranges, enums,
+scalarsets). This option breaks comparisons of complex typed values into
+element-wise comparisons of their members, for compatibility with other tools.
+.RE
+.PP
 \fB--explicit-semicolons\fR
 .RS
 Rumur allows semi-colons to be omitted in some places within a Murphi model.
