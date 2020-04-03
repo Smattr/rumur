@@ -5,6 +5,7 @@
 #include <sstream>
 #include "Stage.h"
 #include <string>
+#include <unordered_set>
 
 using namespace rumur;
 
@@ -19,9 +20,44 @@ void DecomposeComplexComparisons::visit_neq(const Neq &n) {
   rewrite(n, false);
 }
 
-static std::string explode(const std::string &prefix_a,
-    const std::string &prefix_b, const std::string &stem, const TypeExpr &type,
-    bool is_eq) {
+// find all identifiers used within a given expression
+static std::unordered_set<std::string> find_ids(const Expr &e) {
+
+  // a traversal that collects ExprIDs
+  class ExprIDFinder : public ConstTraversal {
+
+   public:
+    std::unordered_set<std::string> ids;
+
+    void visit_exprid(const ExprID &n) final {
+      (void)ids.insert(n.id);
+    }
+  };
+
+  // use this to find all contained ExprIDs
+  ExprIDFinder finder;
+  finder.dispatch(e);
+
+  return finder.ids;
+}
+
+// create a new identifier, unique with respect to the given identifiers
+static std::string make_id(std::unordered_set<std::string> &ids) {
+  // arbitrary prefix
+  std::string v = "i";
+  for (size_t i = 0; ; i++) {
+    std::string candidate = v + std::to_string(i);
+    auto res = ids.insert(candidate);
+    if (res.second)
+      return candidate;
+    assert(i != SIZE_MAX && "exhausted variable space");
+  }
+  __builtin_unreachable();
+}
+
+static std::string explode(std::unordered_set<std::string> &ids,
+    const std::string &prefix_a, const std::string &prefix_b,
+    const std::string &stem, const TypeExpr &type, bool is_eq) {
 
   std::ostringstream buf;
 
@@ -38,9 +74,9 @@ static std::string explode(const std::string &prefix_a,
   if (auto r = dynamic_cast<const Record*>(t.get())) {
     std::string sep;
     for (const Ptr<VarDecl> &f : r->fields) {
+      const std::string new_stem = stem + "." + f->name;
       buf << sep << "("
-        << explode(prefix_a, prefix_b, stem + "." + f->name, *f->type, is_eq)
-        << ")";
+        << explode(ids, prefix_a, prefix_b, new_stem, *f->type, is_eq) << ")";
       sep = is_eq ? " & " : " | ";
     }
     return buf.str();
@@ -52,10 +88,14 @@ static std::string explode(const std::string &prefix_a,
 
   const std::string binder = is_eq ? "forall" : "exists";
 
-  // FIXME: we need to generate a unique variable for the binder here
-  buf << binder << " x: " << a->index_type->to_string() << " do "
-    << explode(prefix_a, prefix_b, stem + "[x]", *a->element_type, is_eq)
+  // invent an id for the index in the binder
+  const std::string i = make_id(ids);
+
+  const std::string new_stem = stem + "[" + i + "]";
+  buf << binder << " " << i << ": " << a->index_type->to_string() << " do "
+    << explode(ids, prefix_a, prefix_b, new_stem, *a->element_type, is_eq)
     << " end" << binder;
+
   return buf.str();
 }
 
@@ -89,6 +129,11 @@ void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
   // skip this comparison itself
   top->skip_to(n.loc.end);
 
+  // find any identifiers used in either LHS or RHS
+  std::unordered_set<std::string> ids = find_ids(*n.lhs);
+  std::unordered_set<std::string> rhs_ids = find_ids(*n.rhs);
+  ids.insert(rhs_ids.begin(), rhs_ids.end());
+
   // write a decomposed version of the comparison
-  *top << explode(n.lhs->to_string(), n.rhs->to_string(), "", *t, is_eq);
+  *top << explode(ids, n.lhs->to_string(), n.rhs->to_string(), "", *t, is_eq);
 }
