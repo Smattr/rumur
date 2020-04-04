@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <cassert>
 #include <ctype.h>
 #include "RemoveLiveness.h"
 #include <rumur/rumur.h>

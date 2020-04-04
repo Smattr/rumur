@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <rumur/rumur.h>
 #include "Stage.h"
 #include <string>

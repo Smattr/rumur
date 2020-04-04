@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cassert>
+#include <climits>
 #include "DecomposeComplexComparisons.h"
 #include <rumur/rumur.h>
 #include <sstream>

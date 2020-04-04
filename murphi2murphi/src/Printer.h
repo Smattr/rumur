@@ -1,12 +1,10 @@
 #pragma once
 
-#include <climits>
+#include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
 #include "Stage.h"
 #include <string>
-#include <sstream>
-#include <vector>
 
 class Printer : public Stage {
 

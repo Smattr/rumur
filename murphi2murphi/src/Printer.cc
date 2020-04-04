@@ -1,5 +1,4 @@
-#include <cassert>
-#include <ctype.h>
+#include <cstddef>
 #include <iostream>
 #include "Printer.h"
 #include <rumur/rumur.h>

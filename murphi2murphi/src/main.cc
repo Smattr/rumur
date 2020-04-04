@@ -1,6 +1,7 @@
+#include <cstddef>
 #include <cassert>
-#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include "DecomposeComplexComparisons.h"
 #include "ExplicitSemicolons.h"
 #include <fstream>

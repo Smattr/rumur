@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 // global options set by command line flags
 struct Options {
 
