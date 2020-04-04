@@ -1,7 +1,6 @@
 #include <cassert>
 #include <ctype.h>
 #include <iostream>
-#include "position-ops.h"
 #include "Printer.h"
 #include <rumur/rumur.h>
 #include <sstream>
