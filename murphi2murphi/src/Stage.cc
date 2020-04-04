@@ -37,22 +37,19 @@ Stage &Stage::operator<<(const std::string &s) {
 
     switch (leader) {
 
-      // XXX: C++14 binary literals and case ranges used here even though they
-      // are not C++11 because GCC and Clang both support them
-
-      case 0b00000000 ... 0b01111111:
+      case 0 ... 127:
         length = length < 1 ? length : 1;
         break;
 
-      case 0b11000000 ... 0b11011111:
+      case 192 ... 223:
         length = length < 2 ? length : 2;
         break;
 
-      case 0b11100000 ... 0b11101111:
+      case 224 ... 239:
         length = length < 3 ? length : 3;
         break;
 
-      case 0b11110000 ... 0b11110111:
+      case 240 ... 247:
         length = length < 4 ? length : 4;
         break;
 
