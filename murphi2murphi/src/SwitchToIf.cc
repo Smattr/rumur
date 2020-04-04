@@ -113,7 +113,6 @@ void SwitchToIf::visit_switch(const Switch &n) {
     if (!c.body.empty())
       *top << ";";
 
-    // FIXME: what if this switch has no default case?
     sep = "\n" + indent + "els";
   }
 
