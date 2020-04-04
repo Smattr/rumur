@@ -62,6 +62,13 @@ void SwitchToIf::visit_switch(const Switch &n) {
   // write everything up to the start of this expression
   top->sync_to(n);
 
+  // handle an edge case where the switch has no cases and should be omitted
+  // entirely
+  if (n.cases.empty()) {
+    top->skip_to(n.loc.end);
+    return;
+  }
+
   // see if we can figure out what level of indentation this switch statement is
   // at
   assert(n.loc.begin.column > 0);
