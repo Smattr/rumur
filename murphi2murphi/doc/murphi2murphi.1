@@ -1,0 +1,101 @@
+.TH MURPHI2MURPHI 1
+.SH NAME
+murphi2murphi \- preprocessor for Murphi models
+.SH SYNOPSIS
+.B \fBmurphi2murphi\fR \fBoptions\fR [\fB--output\fR \fIFILE\fR] [\fIFILE\fR]
+.SH DESCRIPTION
+Murphi2Murphi is a utility bundled with the Rumur model checker. It can be used
+for various source-to-source transformations of Murphi models. It supports
+options for "desugaring" Rumur-specific constructs into equivalent, more widely
+supported Murphi constructs. It is also useful for reducing the number of
+different constructs that appear in a Murphi model, to simplify the job of
+downstream model-consuming tools.
+.PP
+All transformations are off by default. I.e. Murphi2Murphi will simply reproduce
+the source model unmodified. Transformations can be selectively enabled using
+the options described below. Each transformation option below has an inverse
+\fBno-\fRprefixed option (e.g. \fB--no-explicit-semicolons\fR for
+\fB--explicit-semicolons\fR) for disabling that transformation. Whichever occurs
+last, the enabling option for a transformation or the disabling option for a
+transformation, will take precedence.
+.PP
+See
+.BR rumur(1)
+for more information about Rumur or Murphi.
+.SH OPTIONS
+\fB--decompose-complex-comparisons\fR
+.RS
+Rumur supports comparing values of complex type (records and arrays) with each
+other using the \fB=\fR and \fB!=\fR operators. Other Murphi tools typically
+only support the comparison of values of simple type (booleans, ranges, enums,
+scalarsets). This option breaks comparisons of complex typed values into
+element-wise comparisons of their members, for compatibility with other tools.
+.RE
+.PP
+\fB--explicit-semicolons\fR
+.RS
+Rumur allows semi-colons to be omitted in some places within a Murphi model.
+E.g. the semi-colon following a rule definition is optional. This option adds
+semi-colons where they have been omitted, to aid other Murphi tools that may
+require them.
+.RE
+.PP
+\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+.RS
+Set path to write the resulting model to. Without this option, the model is
+written to stdout.
+.RE
+.PP
+\fB--remove-liveness\fR
+.RS
+Remove any liveness properties from the model. These are not supported by other
+Murphi tools.
+.RE
+.PP
+\fB--switch-to-if\fR
+.RS
+Transform switch statements into if-then-else statements. This can be useful for
+downstream tools that then only need to handle if-then-else statements, and not
+also switch statements.
+.RE
+.PP
+\fB--to-ascii\fR
+.RS
+Turn extended unicode operators into their ASCII equivalents. This makes models
+that use these extended characters compatible with other Murphi tools.
+.RE
+.PP
+\fB--version\fR
+.RS
+Display version information and exit.
+.RE
+.SH SEE ALSO
+rumur(1)
+.SH AUTHOR
+All comments, questions and complaints should be directed to Matthew Fernandez
+<matthew.fernandez@gmail.com>.
+.SH LICENSE
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>
