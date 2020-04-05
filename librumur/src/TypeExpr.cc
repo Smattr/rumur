@@ -166,10 +166,6 @@ bool TypeExpr::is_boolean() const {
   return false;
 }
 
-bool TypeExpr::equatable_with(const TypeExpr &other) const {
-  return coerces_to(other);
-}
-
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
   const location &loc_):
   TypeExpr(loc_), min(min_), max(max_) {
