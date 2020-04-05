@@ -35,29 +35,21 @@ Stage &Stage::operator<<(const std::string &s) {
 
     uint8_t leader = static_cast<uint8_t>(s[i]);
 
-    switch (leader) {
+    if ((leader >> 7) == 0) {
+      length = length < 1 ? length : 1;
 
-      case 0 ... 127:
-        length = length < 1 ? length : 1;
-        break;
+    } else if ((leader >> 5) == 6) {
+      length = length < 2 ? length : 2;
 
-      case 192 ... 223:
-        length = length < 2 ? length : 2;
-        break;
+    } else if ((leader >> 4) == 14) {
+      length = length < 3 ? length : 3;
 
-      case 224 ... 239:
-        length = length < 3 ? length : 3;
-        break;
+    } else if ((leader >> 3) == 30) {
+      length = length < 4 ? length : 4;
 
-      case 240 ... 247:
-        length = length < 4 ? length : 4;
-        break;
-
-      default:
-        // Malformed. Just treat it as a 1-byte character.
-        length = 1;
-        break;
-
+    } else {
+      // Malformed. Just treat it as a 1-byte character.
+      length = 1;
     }
 
     // write out this character
