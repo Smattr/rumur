@@ -1,0 +1,12 @@
+#compdef murphi2c
+
+# Zsh completion script for Murphi2C
+
+_arguments \
+  '--header[generate a C header]' \
+  '--help[display help information]' \
+  {--output,-o}'[path to write source/header to]:filename:_files' \
+  '--source[generate a C source file]' \
+  '--value-type[change C type user to represent scalars]:TYPE' \
+  '--version[output version information]' \
+  '*::filename:_files -g "*.m"'
