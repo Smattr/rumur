@@ -1,0 +1,19 @@
+#compdef murphi2murphi
+
+# Zsh completion script for Murphi2Murphi
+
+_arguments \
+  '--decompose-complex-comparisons[expand array and record equality tests]' \
+  '--explicit-semicolons[add omitted semicolons]' \
+  '--help[display help information]' \
+  '--no-decompose-complex-comparisons[do not expand array and record equality tests]' \
+  '--no-explicit-semicolons[do not add omitted semicolons]' \
+  '--no-remove-liveness[do not delete liveness properties]' \
+  '--no-switch-to-if[do not turn switch statements into if statements]' \
+  '--no-to-ascii[do not remove use of unicode operators]' \
+  {--output,-o}'[path to write resulting model to]:filename:_files' \
+  '--remove-liveness[delete liveness properties]' \
+  '--switch-to-if[turn switch statements into if statements]' \
+  '--to-ascii[remove use of unicode operators]' \
+  '--version[output version information]' \
+  '*::filename:_files -g "*.m"'
