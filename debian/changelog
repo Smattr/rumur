@@ -1,3 +1,11 @@
+rumur (2020.04.05-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * Add some autopkgtests for new binary, murphi2murphi.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 19 Apr 2020 09:08:53 -0700
+
 rumur (2020.03.12-1) unstable; urgency=medium
 
   * New upstream release.
