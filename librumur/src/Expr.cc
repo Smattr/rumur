@@ -78,12 +78,20 @@ std::string Ternary::to_string() const {
     + rhs->to_string() + ")";
 }
 
+bool Ternary::is_pure() const {
+  return cond->is_pure() && lhs->is_pure() && rhs->is_pure();
+}
+
 BinaryExpr::BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
   const location &loc_):
   Expr(loc_), lhs(lhs_), rhs(rhs_) { }
 
 bool BinaryExpr::constant() const {
   return lhs->constant() && rhs->constant();
+}
+
+bool BinaryExpr::is_pure() const {
+  return lhs->is_pure() && rhs->is_pure();
 }
 
 BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
@@ -176,6 +184,10 @@ UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
 
 bool UnaryExpr::constant() const {
   return rhs->constant();
+}
+
+bool UnaryExpr::is_pure() const {
+  return rhs->is_pure();
 }
 
 Not::Not(const Ptr<Expr> &rhs_, const location &loc_): UnaryExpr(rhs_, loc_) { }
@@ -642,6 +654,10 @@ bool ExprID::is_literal_false() const {
   return id == "false";
 }
 
+bool ExprID::is_pure() const {
+  return true;
+}
+
 Field::Field(const Ptr<Expr> &record_, const std::string &field_,
   const location &loc_):
   Expr(loc_), record(record_), field(field_) {
@@ -709,6 +725,10 @@ std::string Field::to_string() const {
   return record->to_string() + "." + field;
 }
 
+bool Field::is_pure() const {
+  return true;
+}
+
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
   const location &loc_):
   Expr(loc_), array(array_), index(index_) {
@@ -762,6 +782,10 @@ bool Element::is_readonly() const {
 
 std::string Element::to_string() const {
   return array->to_string() + "[" + index->to_string() + "]";
+}
+
+bool Element::is_pure() const {
+  return true;
 }
 
 FunctionCall::FunctionCall(const std::string &name_,
@@ -874,6 +898,26 @@ std::string FunctionCall::to_string() const {
   }
   s += ")";
   return s;
+}
+
+bool FunctionCall::is_pure() const {
+
+  // If this is a recursive call within a function, it may have no referent. In
+  // this case, conservatively assume it is impure.
+  if (function == nullptr)
+    return false;
+
+  // if the function itself has side effects, the function call is impure
+  if (!function->is_pure())
+    return false;
+
+  // if any of the parameters have side effects, the function call is impure
+  for (const Ptr<Expr> &a : arguments) {
+    if (!a->is_pure())
+      return false;
+  }
+
+  return true;
 }
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
@@ -1036,6 +1080,35 @@ std::string Quantifier::lower_bound() const {
   return "VALUE_C(" + from->constant_fold().get_str() + ")";
 }
 
+bool Quantifier::is_pure() const {
+
+  if (type != nullptr) {
+    const Ptr<TypeExpr> t = type->resolve();
+
+    if (auto r = dynamic_cast<const Range*>(t.get()))
+      return r->min->is_pure() && r->max->is_pure();
+
+    if (auto s = dynamic_cast<const Scalarset*>(t.get()))
+      return s->bound->is_pure();
+
+    assert(dynamic_cast<const Enum*>(t.get()) != nullptr &&
+      "complex type encountered in quantifier");
+
+    return true;
+  }
+
+  if (from != nullptr && !from->is_pure())
+    return false;
+
+  if (to != nullptr && !to->is_pure())
+    return false;
+
+  if (step != nullptr && !step->is_pure())
+    return false;
+
+  return true;
+}
+
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
@@ -1071,6 +1144,10 @@ std::string Exists::to_string() const {
     + " endexists";
 }
 
+bool Exists::is_pure() const {
+  return quantifier.is_pure() && expr->is_pure();
+}
+
 Forall::Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
   const location &loc_):
   Expr(loc_), quantifier(quantifier_), expr(expr_) { }
@@ -1104,6 +1181,10 @@ void Forall::validate() const {
 std::string Forall::to_string() const {
   return "forall " + quantifier.to_string() + " do " + expr->to_string()
     + " endforall";
+}
+
+bool Forall::is_pure() const {
+  return quantifier.is_pure() && expr->is_pure();
 }
 
 IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_):
@@ -1148,6 +1229,10 @@ void IsUndefined::validate() const {
 
 std::string IsUndefined::to_string() const {
   return "isundefined(" + expr->to_string() + ")";
+}
+
+bool IsUndefined::is_pure() const {
+  return expr->is_pure();
 }
 
 }

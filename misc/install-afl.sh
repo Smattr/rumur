@@ -18,7 +18,7 @@ TMP=$(mktemp -d)
 pushd "${TMP}"
 
 # download
-curl --retry 3 -O http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
+curl --retry 3 -O https://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
 
 # decompress
 tar xf afl-latest.tgz

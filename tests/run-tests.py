@@ -314,6 +314,21 @@ class Executable(Test):
            Skip(output.strip()) if ret == 125 else \
            Fail(output)
 
+def has_enum_conversion() -> bool:
+  'test if the C compiler supports -Werror=enum-conversion'
+
+  # a trivial test program
+  program = 'int main(void) { return 0; }'
+
+  # try to compile this
+  args = [CC, '-std=c11', '-o', os.devnull, '-x', 'c', '-',
+    '-Werror=enum-conversion']
+  ret, _, _ = run(args, program)
+
+  return ret == 0
+
+HAS_ENUM_CONVERSION = has_enum_conversion()
+
 class Murphi2CTest(Tweakable):
   def __init__(self, model: str):
     super().__init__()
@@ -351,9 +366,11 @@ class Murphi2CTest(Tweakable):
       return None
 
     # ask the C compiler if this is valid
-    ret, stdout, stderr = run([CC, '-std=c11', '-c', '-o', os.devnull, '-x', 'c',
-      '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits'],
-      stdout)
+    args = [CC, '-std=c11', '-c', '-o', os.devnull, '-x', 'c', '-',
+      '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
+    if HAS_ENUM_CONVERSION:
+      args.append('-Werror=enum-conversion')
+    ret, stdout, stderr = run(args, stdout)
     if ret != 0:
       return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
@@ -402,9 +419,11 @@ class Murphi2CHeaderTest(Tweakable):
 
       # ask the C compiler if the header is valid
       main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
-      ret, stdout, stderr = run([CC, '-std=c11', '-o', os.devnull, '-x', 'c',
-        '-', '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits'],
-        main_c)
+      args = [CC, '-std=c11', '-o', os.devnull, '-x', 'c', '-',
+        '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
+      if HAS_ENUM_CONVERSION:
+        args.append('-Werror=enum-conversion')
+      ret, stdout, stderr = run(args, main_c)
       if ret != 0:
         return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
@@ -537,6 +556,21 @@ def main(args: [str]) -> int:
   if len(tests) == 0:
     pr(f'no tests found\n')
     return -1
+
+  pr( 'Configuration:\n'
+     f'  CPUS = {CPUS}\n'
+     f'  STDOUT_ISATTY = {STDOUT_ISATTY}\n'
+     f'  MIN_TEST = {MIN_TEST}\n'
+     f'  MAX_TEST = {MAX_TEST}\n'
+     f'  CC = {CC}\n'
+     f'  CXX = {CXX}\n'
+     f'  HAS_MCX16 = {HAS_MCX16}\n'
+     f'  NEEDS_LIBATOMIC = {NEEDS_LIBATOMIC}\n'
+     f'  HAS_SANDBOX = {HAS_SANDBOX}\n'
+     f'  SMT_ARGS = {SMT_ARGS}\n'
+     f'  HAS_VALGRIND = {HAS_VALGRIND}\n'
+     f'  HAS_ENUM_CONVERSION = {HAS_ENUM_CONVERSION}\n'
+      '\n')
 
   pr(f'Running {len(tests)} tests using {options.jobs} threads...\n'
       '     +------ debug\n'

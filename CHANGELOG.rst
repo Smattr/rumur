@@ -1,6 +1,30 @@
 Change log
 ==========
 
+v2020.04.05
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: murphi2c should no longer confuse multiple enum types within a model
+  when generating its C output (commit
+  34b66de87e17909538ff25e6c090791d1738f1f6).
+* Bug fix: murphi2c now reports its name correctly in its ``--version`` output
+  instead of referring to Rumur (commit
+  8cf120cff76e1d58425be553b2a333c8c23482d9).
+* A new binary, murphi2murphi, has been added that serves as a preprocessor or
+  source-to-source translator for Murphi models. See its man page or ``--help``
+  for more information.
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A new API function, ``Expr::is_pure()`` has been added for determining whether
+  an expression is side-effect free (commit
+  499151975b8f6b25829e1bf2605943ab5e1832e0).
+* ``TypeExpr::equatable_with()`` that was previously deprecated, has been
+  removed. Clients should call ``TypeExpr::coerces_to()`` instead (commit
+  f7fc46cb7de8ead4ea840d249ae7ff0689e35abe).
+
 v2020.03.12
 -----------
 

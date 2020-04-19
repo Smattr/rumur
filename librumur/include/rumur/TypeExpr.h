@@ -53,9 +53,6 @@ struct TypeExpr : public Node {
   // Is this the type Boolean? Note that this only returns true for the actual
   // type Boolean, and not for TypeExprIDs that point at Boolean.
   virtual bool is_boolean() const;
-
-  __attribute__((deprecated("equatable_with() has been replaced by coerces_to()")))
-  bool equatable_with(const TypeExpr &other) const;
 };
 
 struct Range : public TypeExpr {

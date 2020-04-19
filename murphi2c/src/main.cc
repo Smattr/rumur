@@ -79,7 +79,7 @@ static void parse_args(int argc, char **argv) {
         break;
 
       case 131: // --version
-        std::cout << "Rumur version " << rumur::get_version() << "\n";
+        std::cout << "Murphi2C version " << rumur::get_version() << "\n";
         exit(EXIT_SUCCESS);
 
       default:
@@ -121,14 +121,24 @@ int main(int argc, char **argv) {
   rumur::Ptr<rumur::Model> m;
   try {
     m = rumur::parse(in == nullptr ? std::cin : *in);
-    resolve_symbols(*m);
-    validate(*m);
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
 
   assert(m != nullptr);
+
+  // update unique identifiers within the model
+  m->reindex();
+
+  // check the model is valid
+  try {
+    resolve_symbols(*m);
+    validate(*m);
+  } catch (rumur::Error &e) {
+    std::cerr << e.loc << ":" << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
   // validate that this model is OK to translate
   if (!check(*m))

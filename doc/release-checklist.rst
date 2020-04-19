@@ -2,30 +2,39 @@ Release Checklist
 =================
 The process of cutting a new Rumur release should follow these steps:
 
-1. Update ``LAST_RELEASE`` in ../librumur/src/make-version.py. For version numbers,
-   we use “vYYYY.MM.DD” with the date of the release.
-2. Update ../CHANGELOG.rst with information about the changes in the new
-   release. Changes should be separated into “user-facing” and “internal,”
-   providing commit hash(es) as a reference where possible. The ordering in
-   which changes are listed should firstly prioritise bug fixes (which should be
-   explicitly marked as such) and then by the impact on users/developers a
-   change will have. Code changes that are only of relevance to people hacking
-   on Rumur can be omitted, and this audience can read about them in the Git
-   log.
-3. Commit this to master.
-4. Push this to `upstream on Github`_.
-5. Wait for the `Travis CI regression tests`_ to pass. Travis is not very
-   reliable and many errors are caused by infrastructure failures rather than
-   your actual changes. So if you get a failure, check the logs to make sure
-   it is not a false positive.
-6. Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
-   release to work on FreeBSD because Rumur is in
-   `FreeBSD’s package repository`_ and new releases are pulled in automatically.
-   If one of these tests fail, you may need to look at the raw log because the
-   summary output hides some stderr lines.
-7. Tag the commit with the version number in “vYYYY.MM.DD” format.
-8. Push the new version tag upstream.
-9. Package Rumur for Debian (see below).
+1.  Grep the source tree for any deprecated functions or data (marked with
+    ``__attribute__((deprecated))`` or a “deprecated” comment). Any that were
+    deprecated more than six months ago can, and should, be removed for the
+    upcoming release.
+2.  Check the `Debian buildd results`_ for the last uploaded version of Rumur.
+    If there were any failures, consider introducing commits to try to address
+    them prior to release. The buildd tests are only run each time there is a
+    new Debian package uploaded, so the turn around time on seeing a failure
+    here and having an opportunity to fix it can be long.
+3.  Update ``LAST_RELEASE`` in ../librumur/src/make-version.py. For version
+    numbers, we use “vYYYY.MM.DD” with the date of the release.
+4.  Update ../CHANGELOG.rst with information about the changes in the new
+    release. Changes should be separated into “user-facing” and “internal,”
+    providing commit hash(es) as a reference where possible. The ordering in
+    which changes are listed should firstly prioritise bug fixes (which should
+    be explicitly marked as such) and then by the impact on users/developers a
+    change will have. Code changes that are only of relevance to people hacking
+    on Rumur can be omitted, and this audience can read about them in the Git
+    log.
+5.  Commit this to master.
+6.  Push this to `upstream on Github`_.
+7.  Wait for the `Travis CI regression tests`_ to pass. Travis is not very
+    reliable and many errors are caused by infrastructure failures rather than
+    your actual changes. So if you get a failure, check the logs to make sure
+    it is not a false positive.
+8.  Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
+    release to work on FreeBSD because Rumur is in
+    `FreeBSD’s package repository`_ and new releases are pulled in
+    automatically. If one of these tests fail, you may need to look at the raw
+    log because the summary output hides some stderr lines.
+9.  Tag the commit with the version number in “vYYYY.MM.DD” format.
+10. Push the new version tag upstream.
+11. Package Rumur for Debian (see below).
 
 Github’s automated release process should notice the version tag and show the
 new release as a downloadable zip/tarball on the “releases” tab of
@@ -90,6 +99,7 @@ main repositories.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
 .. _`Cirrus CI FreeBSD tests`: https://cirrus-ci.com/github/Smattr/rumur
+.. _`Debian buildd results`: https://buildd.debian.org/status/package.php?p=rumur
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
 .. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
 .. _`packaged in Debian unstable`: https://packages.debian.org/sid/rumur

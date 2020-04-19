@@ -56,6 +56,9 @@ struct Expr : public Node {
 
   // is this expression the boolean literal “false”?
   virtual bool is_literal_false() const;
+
+  // is this expression side-effect free?
+  virtual bool is_pure() const = 0;
 };
 
 struct Ternary : public Expr {
@@ -76,6 +79,7 @@ struct Ternary : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 
   /* Note we do not override is_lvalue. Unlike in C, ternary expressions are not
    * considered lvalues.
@@ -93,6 +97,7 @@ struct BinaryExpr : public Expr {
 
   BinaryExpr *clone() const override = 0;
   bool constant() const final;
+  bool is_pure() const final;
 };
 
 struct BooleanBinaryExpr : public BinaryExpr {
@@ -153,6 +158,7 @@ struct UnaryExpr : public Expr {
   virtual ~UnaryExpr() = default;
 
   bool constant() const final;
+  bool is_pure() const final;
 };
 
 struct Not : public UnaryExpr {
@@ -371,6 +377,7 @@ struct ExprID : public Expr {
   std::string to_string() const final;
   bool is_literal_true() const final;
   bool is_literal_false() const final;
+  bool is_pure() const final;
 };
 
 struct Field : public Expr {
@@ -392,6 +399,7 @@ struct Field : public Expr {
   bool is_lvalue() const final;
   bool is_readonly() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 struct Element : public Expr {
@@ -413,6 +421,7 @@ struct Element : public Expr {
   bool is_lvalue() const final;
   bool is_readonly() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 struct FunctionCall : public Expr {
@@ -436,6 +445,7 @@ struct FunctionCall : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 struct Quantifier : public Node {
@@ -475,6 +485,9 @@ struct Quantifier : public Node {
 
   // get the lower bound of this quantified expression as a C expression
   std::string lower_bound() const;
+
+  // is this side-effect free?
+  bool is_pure() const;
 };
 
 struct Exists : public Expr {
@@ -494,6 +507,7 @@ struct Exists : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 struct Forall : public Expr {
@@ -513,6 +527,7 @@ struct Forall : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 struct IsUndefined : public Expr {
@@ -530,6 +545,7 @@ struct IsUndefined : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
+  bool is_pure() const final;
 };
 
 }
