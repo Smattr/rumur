@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# a basic test that murphi2murphi produces valid Murphi
+
+if [ -z "${AUTOPKGTEST_TMP}" ]; then
+  printf 'AUTOPKGTEST_TMP not set; not running in autopkgtest?\n' >&2
+  exit 1
+fi
+
+set -e
+set -x
+
+# move to temporary directory
+mkdir -p ${AUTOPKGTEST_TMP}/murphi2murphi-basic
+cd ${AUTOPKGTEST_TMP}/murphi2murphi-basic
+
+# construct a simple model with omitted semi-colons
+cat - >model.m <<EOT
+var
+  x: boolean
+
+startstate begin
+  x := true;
+end
+
+rule begin
+  x := !x;
+end
+EOT
+
+# ask murphi2murphi to add semi-colons
+murphi2murphi --output transformed.m --explicit-semicolons model.m
+
+# confirm that rumur thinks the result is acceptable
+rumur --output /dev/null transformed.m

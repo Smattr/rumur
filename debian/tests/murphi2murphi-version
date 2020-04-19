@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# test that we can simply run murphi2murphi
+
+set -e
+set -x
+
+murphi2murphi --version
