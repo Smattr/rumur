@@ -66,6 +66,9 @@ Compilation produces several artefacts including the `rumur` binary itself:
 
 * rumur: Tool for translating a Murphi model into a program that implements
   a checker;
+* murphi2c: Tool for translating a Murphi model into C code for use in a
+  simulator;
+* murphi2murphi: A preprocessor for Murphi models;
 * murphi2xml: Tool for emitting an XML representation of a Murphi model’s
   Abstract Syntax Tree;
 * librumur.a: A library for building your own Murphi model tools; and
