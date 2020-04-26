@@ -38,7 +38,7 @@ add_subdirectory(murphi2murphi)
 add_subdirectory(murphi2xml)
 add_subdirectory(rumur)
 
-add_custom_target(test
+add_custom_target(check
   COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:$ENV{PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --jobs 1)
-add_dependencies(test murphi2c murphi2murphi murphi2xml rumur)
+add_dependencies(check murphi2c murphi2murphi murphi2xml rumur)
