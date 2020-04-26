@@ -244,10 +244,7 @@ void Printer::visit_implication(const Implication &n) {
 }
 
 void Printer::visit_isundefined(const IsUndefined &n) {
-  top->sync_to(n);
-  top->sync_to(*n.expr);
-  top->dispatch(*n.expr);
-  top->sync_to(n.loc.end);
+  visit_uexpr("isundefined", n);
 }
 
 void Printer::visit_leq(const Leq &n) {

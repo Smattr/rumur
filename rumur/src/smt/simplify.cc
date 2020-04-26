@@ -190,12 +190,7 @@ namespace { class Simplifier : public BaseTraversal {
   }
 
   void visit_implication(Implication &n) final { visit_bexpr(n); }
-
-  void visit_isundefined(IsUndefined &n) final {
-    dispatch(*n.expr);
-    simplify(n.expr);
-  }
-
+  void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
   void visit_leq(Leq &n) final { visit_bexpr(n); }
   void visit_lt(Lt &n) final { visit_bexpr(n); }
   void visit_mod(Mod &n) final { visit_bexpr(n); }

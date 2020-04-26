@@ -445,7 +445,7 @@ void Traversal::visit_implication(Implication &n) {
 }
 
 void Traversal::visit_isundefined(IsUndefined &n) {
-  dispatch(*n.expr);
+  visit_uexpr(n);
 }
 
 void Traversal::visit_leq(Leq &n) {
@@ -1053,7 +1053,7 @@ void ConstTraversal::visit_implication(const Implication &n) {
 }
 
 void ConstTraversal::visit_isundefined(const IsUndefined &n) {
-  dispatch(*n.expr);
+  visit_uexpr(n);
 }
 
 void ConstTraversal::visit_leq(const Leq &n) {
@@ -1521,7 +1521,7 @@ void ConstStmtTraversal::visit_implication(const Implication &n) {
 }
 
 void ConstStmtTraversal::visit_isundefined(const IsUndefined &n) {
-  dispatch(*n.expr);
+  visit_uexpr(n);
 }
 
 void ConstStmtTraversal::visit_leq(const Leq &n) {
@@ -1783,7 +1783,7 @@ void ConstTypeTraversal::visit_implication(const Implication &n) {
 }
 
 void ConstTypeTraversal::visit_isundefined(const IsUndefined &n) {
-  dispatch(*n.expr);
+  visit_uexpr(n);
 }
 
 void ConstTypeTraversal::visit_leq(const Leq &n) {

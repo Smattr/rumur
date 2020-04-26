@@ -157,7 +157,7 @@ struct UnaryExpr : public Expr {
   UnaryExpr *clone() const override = 0;
   virtual ~UnaryExpr() = default;
 
-  bool constant() const final;
+  bool constant() const override;
   bool is_pure() const final;
 };
 
@@ -530,9 +530,7 @@ struct Forall : public Expr {
   bool is_pure() const final;
 };
 
-struct IsUndefined : public Expr {
-
-  Ptr<Expr> expr;
+struct IsUndefined : public UnaryExpr {
 
   IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
   virtual ~IsUndefined() = default;
@@ -545,7 +543,6 @@ struct IsUndefined : public Expr {
   bool operator==(const Node &other) const final;
   void validate() const final;
   std::string to_string() const final;
-  bool is_pure() const final;
 };
 
 }
