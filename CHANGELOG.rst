@@ -1,6 +1,24 @@
 Change log
 ==========
 
+v2020.04.26
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: value type calculation (which C type to use for scalar values during
+  checking) now correctly assesses ``:= ... to ...`` for ranges. Previously the
+  presence of one of these expressions in the input model would pessimise the
+  calculation into selecting ``int64_t`` even if a narrower type would be
+  acceptable (commit 371fbc37047088c7f964dfdeedea2420cae46b1c).
+* Record field ordering and model variable ordering is now optimised for runtime
+  performance during checking (commit 2cb30e7c675d08837c26e0e204fa9f8457c40053).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``IsUndefined`` now inherits from ``UnaryExpr`` (commit
+  523a021e059382e6fa76afab7bfa011638332360).
+
 v2020.04.05
 -----------
 
