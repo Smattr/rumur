@@ -40,6 +40,7 @@ add_executable(rumur
   src/log.cc
   src/main.cc
   src/max-simple-width.cc
+  src/optimise-field-ordering.cc
   src/options.cc
   src/output.cc
   src/process.cc

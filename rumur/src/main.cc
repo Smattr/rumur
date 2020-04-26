@@ -13,6 +13,7 @@
 #include <iostream>
 #include "log.h"
 #include <memory>
+#include "optimise-field-ordering.h"
 #include "options.h"
 #include "resources.h"
 #include <rumur/rumur.h>
@@ -634,6 +635,9 @@ int main(int argc, char **argv) {
       *info << e.what() << "\n";
     }
   }
+
+  // re-order fields to optimise access to them
+  optimise_field_ordering(*m);
 
   // get value_t to use in the checker
   std::pair<ValueType, ValueType> value_types;
