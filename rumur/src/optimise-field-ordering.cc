@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <gmpxx.h>
+#include "optimise-field-ordering.h"
 #include <rumur/rumur.h>
 #include <vector>
 
