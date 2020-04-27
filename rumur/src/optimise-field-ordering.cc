@@ -12,16 +12,7 @@ static bool is_onehot(mpz_class v) {
   if (v == 0)
     return false;
 
-  for (;;) {
-    if (v == 1) {
-      return true;
-    } else if ((v & 1) == 1) {
-      return false;
-    }
-    v >>= 1;
-  }
-
-  return false;
+  return mpz_popcount(v.get_mpz_t()) == 1;
 }
 
 // compare two fields based on size
