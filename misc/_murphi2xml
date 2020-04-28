@@ -1,0 +1,9 @@
+#compdef murphi2xml
+
+# Zsh completion script for Murphi2XML
+
+_arguments \
+  '--help[display help information]' \
+  {--output,-o}'[path to write XML to]:filename:_files' \
+  '--version[output version information]' \
+  '*::filename:_files -g "*.m"'

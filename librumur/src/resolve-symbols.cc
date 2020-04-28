@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cassert>
 #include <gmpxx.h>
 #include "location.hh"
 #include <memory>
@@ -226,14 +227,15 @@ class Resolver : public Traversal {
     // narrow its VarDecl
     if (n.from != nullptr && n.from->constant() &&
         n.to != nullptr && n.to->constant()) {
-      auto r = dynamic_cast<Range&>(*n.decl->type);
+      auto r = dynamic_cast<Range*>(n.decl->type.get());
+      assert(r != nullptr && "non-range type used for inferred loop decl");
       // the range may have been given as either an up count or down count
       if (n.from->constant_fold() <= n.to->constant_fold()) {
-        r.min = n.from;
-        r.max = n.to;
+        r->min = n.from;
+        r->max = n.to;
       } else {
-        r.min = n.to;
-        r.max = n.from;
+        r->min = n.to;
+        r->max = n.from;
       }
     }
 

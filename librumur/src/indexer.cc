@@ -168,8 +168,7 @@ void Indexer::visit_implication(Implication &n) {
 }
 
 void Indexer::visit_isundefined(IsUndefined &n) {
-  n.unique_id = next++;
-  dispatch(*n.expr);
+  visit_uexpr(static_cast<UnaryExpr&>(n));
 }
 
 void Indexer::visit_leq(Leq &n) {

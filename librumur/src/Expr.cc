@@ -1188,7 +1188,7 @@ bool Forall::is_pure() const {
 }
 
 IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_):
-  Expr(loc_), expr(expr_) { }
+  UnaryExpr(expr_, loc_) { }
 
 IsUndefined *IsUndefined::clone() const {
   return new IsUndefined(*this);
@@ -1210,29 +1210,25 @@ bool IsUndefined::operator==(const Node &other) const {
   auto o = dynamic_cast<const IsUndefined*>(&other);
   if (o == nullptr)
     return false;
-  if (*expr != *o->expr)
+  if (*rhs != *o->rhs)
     return false;
   return true;
 }
 
 void IsUndefined::validate() const {
 
-  if (!expr->is_lvalue())
+  if (!rhs->is_lvalue())
     throw Error("non-lvalue expression cannot be used in isundefined",
-      expr->loc);
+      rhs->loc);
 
-  const Ptr<TypeExpr> t = expr->type();
+  const Ptr<TypeExpr> t = rhs->type();
   if (!t->is_simple())
-    throw Error("complex type used in isundefined", expr->loc);
+    throw Error("complex type used in isundefined", rhs->loc);
 
 }
 
 std::string IsUndefined::to_string() const {
-  return "isundefined(" + expr->to_string() + ")";
-}
-
-bool IsUndefined::is_pure() const {
-  return expr->is_pure();
+  return "isundefined(" + rhs->to_string() + ")";
 }
 
 }

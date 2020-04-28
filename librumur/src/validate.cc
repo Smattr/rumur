@@ -182,7 +182,7 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_isundefined(const IsUndefined &n) final {
-    dispatch(*n.expr);
+    dispatch(*n.rhs);
     n.validate();
   }
 

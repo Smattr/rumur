@@ -447,7 +447,7 @@ class Generator : public ConstExprTraversal {
 
   void visit_isundefined(const IsUndefined &n) final {
     *this << "handle_isundefined(s, ";
-    generate_lvalue(*out, *n.expr);
+    generate_lvalue(*out, *n.rhs);
     *this << ")";
   }
 

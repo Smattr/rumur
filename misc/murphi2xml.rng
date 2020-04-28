@@ -473,9 +473,7 @@
   <define name="isundefined">
     <element name="isundefined">
       <ref name="location"/>
-      <ref name="content"/>
-      <ref name="expr"/>
-      <ref name="content"/>
+      <ref name="uexpr"/>
     </element>
   </define>
 
