@@ -2062,6 +2062,34 @@ matrix:
       - MATRIX_EVAL=""
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
+  - name: Ubuntu Linux 18.04, GCC, ppc64le
+    arch: ppc64le
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+    env:
+      - MATRIX_EVAL=""
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
+  - name: Ubuntu Linux 18.04, GCC, s390x
+    arch: s390x
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+    env:
+      - MATRIX_EVAL=""
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
   - name: macOS, XCode 8.3.3 Clang, Homebrew
     os: osx
     osx_image: xcode8.3
