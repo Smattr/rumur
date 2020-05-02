@@ -2048,6 +2048,20 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
+  - name: Ubuntu Linux 18.04, GCC, arm64
+    arch: arm64
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+    env:
+      - MATRIX_EVAL=""
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
+
   - name: macOS, XCode 8.3.3 Clang, Homebrew
     os: osx
     osx_image: xcode8.3
