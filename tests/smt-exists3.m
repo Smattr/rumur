@@ -1,5 +1,5 @@
--- rumur_flags: SMT_ARGS
--- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
+-- rumur_flags: config['SMT_ARGS']
+-- skip_reason: 'no SMT solver available' if config['SMT_ARGS'] is None else None
 
 -- a variant of smt-exists.m using an inline range
 

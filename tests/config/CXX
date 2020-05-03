@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# C++ compiler
+
+
+if [ -z "${CXX}" ]; then
+  CXX=$(which c++)
+fi
+
+printf '"%s"\n' "${CXX}"

@@ -13,7 +13,7 @@ import shutil
 import subprocess as sp
 import sys
 import tempfile
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 CPUS = multiprocessing.cpu_count()
 
@@ -23,6 +23,9 @@ GREEN  = '\033[32m' if STDOUT_ISATTY else ''
 RED    = '\033[31m' if STDOUT_ISATTY else ''
 YELLOW = '\033[33m' if STDOUT_ISATTY else ''
 RESET  = '\033[0m'  if STDOUT_ISATTY else ''
+
+# configuration (will be populated from config/)
+config: Dict[str, Any] = {}
 
 def enc(s): return s.encode('utf-8', 'replace')
 def dec(s): return s.decode('utf-8', 'replace')
@@ -51,118 +54,18 @@ def pr(s: str) -> None:
   sys.stdout.flush()
   print_lock.release()
 
-def which(cmd: str) -> Optional[str]:
-  try:
-    return sp.check_output(['which', cmd], stderr=sp.DEVNULL,
-      universal_newlines=True).strip()
-  except sp.CalledProcessError:
-    return None
-
 def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
   if stdin is not None:
     stdin = enc(stdin)
-  p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin)
+  env = {k: v for k, v in os.environ.items()}
+  env.update({k: str(v) for k, v in config.items()})
+  p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin, env=env)
   return p.returncode, dec(p.stdout), dec(p.stderr)
-
-# C compiler
-CC = os.environ.get('CC', which('cc'))
-
-# C++ compiler
-CXX = os.environ.get('CXX', which('c++'))
-
-def has_mcx16() -> bool:
-  'does the compiler support -mcx16?'
-
-  code = 'int main(void) {\n' \
-         '  return 0;\n' \
-         '}\n'
-
-  args = [CC, '-x', 'c', '-std=c11', '-mcx16', '-', '-o', os.devnull]
-  ret, _, _ = run(args, code)
-  return ret == 0
-
-HAS_MCX16 = has_mcx16()
-
-# initial flags to pass to our C compiler
-C_FLAGS = ['-x', 'c', '-std=c11', '-Werror=format', '-Werror=sign-compare',
-  '-Werror=type-limits'] + (['-mcx16'] if HAS_MCX16 else [])
-
-def needs_libatomic() -> bool:
-  'does the toolchain need -latomic to support dword CAS?'
-
-  code = '#include <stdint.h>\n' \
-         '\n' \
-         'int main(void) {\n' \
-         '#if __SIZEOF_POINTER__ <= 4\n' \
-         '  uint64_t target = 0;\n' \
-         '#elif __SIZEOF_POINTER__ <= 8\n' \
-         '  unsigned __int128 target = 0;\n' \
-         '#endif\n' \
-         '  return (int)__sync_val_compare_and_swap(&target, 0, 1);\n' \
-         '}\n'
-
-  args = [CC, '-x', 'c', '-std=c11', '-', '-o', os.devnull]
-  if HAS_MCX16:
-    args.append('-mcx16')
-  ret, _, _ = run(args, code)
-  return ret != 0
-
-NEEDS_LIBATOMIC = needs_libatomic()
 
 VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
 MURPHI2XML_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
       'murphi2xml.rng'))
-
-SECCOMP_SUPPORTED = os.path.abspath(os.path.join(os.path.dirname(__file__),
-  '../misc/seccomp-supported.sh'))
-
-def has_sandbox() -> bool:
-  'whether the current platform has sandboxing support for the verifier'
-
-  if platform.system() == 'Darwin':
-    return True
-
-  if platform.system() == 'FreeBSD':
-    return True
-
-  if platform.system() == 'Linux':
-    ret, _, _ = run([SECCOMP_SUPPORTED])
-    return ret == 0
-
-  if platform.system() == 'OpenBSD':
-    return True
-
-  return False
-
-HAS_SANDBOX = has_sandbox()
-
-def smt_args(bv: bool = False) -> [str]:
-  'get SMT arguments for an available solver'
-
-  # preference 1: Z3
-  if which('z3') is not None:
-    # we leave a blank logic here, as Z3 performs best when not given a logic
-    args = ['--smt-path', 'z3', '--smt-arg=-smt2', '--smt-arg=-in']
-    if bv:
-      args += ['--smt-bitvectors', 'on']
-    return args
-
-  # preference 2: CVC4
-  if which('cvc4') is not None:
-    args = ['--smt-path', 'cvc4', '--smt-arg=--lang=smt2',
-      '--smt-arg=--rewrite-divk']
-    if bv:
-      args += ['--smt-prelude', '(set-logic AUFBV)', '--smt-bitvectors', 'on']
-    else:
-      args += ['--smt-prelude', '(set-logic AUFLIA)']
-    return args
-
-  # otherwise, give up
-  return []
-
-SMT_ARGS = smt_args()
-SMT_BV_ARGS = smt_args(True)
 
 class TemporaryDirectory(object):
   'an mkdtemp() that cleans up after itself'
@@ -174,8 +77,6 @@ class TemporaryDirectory(object):
   def __exit__(self, *_):
     if self.tmp is not None:
       shutil.rmtree(self.tmp)
-
-HAS_VALGRIND = which('valgrind') is not None
 
 class Result(abc.ABC): pass
 class Skip(Result):
@@ -221,13 +122,13 @@ class Model(Tweakable):
     self.optimised = optimised
     self.multithreaded = multithreaded
     self.xml = xml
-    self.valgrind = HAS_VALGRIND
+    self.valgrind = config['HAS_VALGRIND']
   def description(self) -> str:
-    return f'{"D" if self.debug         else " "}' \
-           f'{"O" if self.optimised     else " "}' \
-           f'{"M" if self.multithreaded else " "}' \
-           f'{"X" if self.xml           else " "}' \
-           f'{"V" if HAS_VALGRIND       else " "}' \
+    return f'{"D" if self.debug              else " "}' \
+           f'{"O" if self.optimised          else " "}' \
+           f'{"M" if self.multithreaded      else " "}' \
+           f'{"X" if self.xml                else " "}' \
+           f'{"V" if config["HAS_VALGRIND"] else " "}' \
            f' {os.path.basename(self.model)}'
   def run(self) -> Result:
 
@@ -243,13 +144,13 @@ class Model(Tweakable):
       + (['--threads', '1'] if not self.multithreaded else [])           \
       + self.rumur_flags
 
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
 
     # call rumur
     ret, stdout, stderr = run(args)
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
     if ret != self.rumur_exit_code:
@@ -264,9 +165,10 @@ class Model(Tweakable):
 
       # build up arguments to call the C compiler
       model_bin = os.path.join(tmp, 'model.exe')
-      args = [CC] + C_FLAGS + ['-o', model_bin, '-', '-lpthread']
+      args = [config['CC']] + config['C_FLAGS'] + ['-o', model_bin, '-',
+        '-lpthread']
 
-      if NEEDS_LIBATOMIC:
+      if config['NEEDS_LIBATOMIC']:
         args.append('-latomic')
 
       # call the C compiler
@@ -294,7 +196,7 @@ class Model(Tweakable):
 
       model_xml = stdout
 
-      if which('xmllint') is None: return Skip('xmllint not available')
+      if not config['HAS_XMLLINT']: return Skip('xmllint not available')
 
       # validate the XML
       args = ['xmllint', '--relaxng', VERIFIER_RNG, '--noout', '-']
@@ -314,28 +216,13 @@ class Executable(Test):
            Skip(output.strip()) if ret == 125 else \
            Fail(output)
 
-def has_enum_conversion() -> bool:
-  'test if the C compiler supports -Werror=enum-conversion'
-
-  # a trivial test program
-  program = 'int main(void) { return 0; }'
-
-  # try to compile this
-  args = [CC, '-std=c11', '-o', os.devnull, '-x', 'c', '-',
-    '-Werror=enum-conversion']
-  ret, _, _ = run(args, program)
-
-  return ret == 0
-
-HAS_ENUM_CONVERSION = has_enum_conversion()
-
 class Murphi2CTest(Tweakable):
   def __init__(self, model: str):
     super().__init__()
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if HAS_VALGRIND else " "} ' \
+    return f'----{"V" if config["HAS_VALGRIND"] else " "} ' \
            f'murphi2c {os.path.basename(self.model)}'
   def run(self) -> Result:
 
@@ -347,11 +234,11 @@ class Murphi2CTest(Tweakable):
       should_fail = re.search(r'\bisundefined\b', f.read()) is not None
 
     args = ['murphi2c', self.model]
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
     ret, stdout, stderr = run(args)
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
@@ -366,9 +253,7 @@ class Murphi2CTest(Tweakable):
       return None
 
     # ask the C compiler if this is valid
-    args = [CC] + C_FLAGS + ['-c', '-o', os.devnull, '-']
-    if HAS_ENUM_CONVERSION:
-      args.append('-Werror=enum-conversion')
+    args = [config['CC']] + config['C_FLAGS'] + ['-c', '-o', os.devnull, '-']
     ret, stdout, stderr = run(args, stdout)
     if ret != 0:
       return Fail(f'C compilation failed:\n{stdout}{stderr}')
@@ -379,7 +264,7 @@ class Murphi2CHeaderTest(Tweakable):
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if HAS_VALGRIND else " "} ' \
+    return f'----{"V" if config["HAS_VALGRIND"] else " "} ' \
            f'murphi2c --header {os.path.basename(self.model)}'
   def run(self) -> Result:
 
@@ -391,11 +276,11 @@ class Murphi2CHeaderTest(Tweakable):
       should_fail = re.search(r'\bisundefined\b', f.read()) is not None
 
     args = ['murphi2c', '--header', self.model]
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
     ret, stdout, stderr = run(args)
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
@@ -418,16 +303,14 @@ class Murphi2CHeaderTest(Tweakable):
 
       # ask the C compiler if the header is valid
       main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
-      args = [CC] + C_FLAGS + ['-o', os.devnull, '-']
-      if HAS_ENUM_CONVERSION:
-        args.append('-Werror=enum-conversion')
+      args = [config['CC']] + config['C_FLAGS'] + ['-o', os.devnull, '-']
       ret, stdout, stderr = run(args, main_c)
       if ret != 0:
         return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
       # ask the C++ compiler if it is valid there too
-      ret, stdout, stderr = run([CXX, '-std=c++11', '-o', os.devnull, '-x',
-        'c++', '-', '-Werror=format', '-Werror=sign-compare',
+      ret, stdout, stderr = run([config['CXX'], '-std=c++11', '-o', os.devnull,
+        '-x', 'c++', '-', '-Werror=format', '-Werror=sign-compare',
         '-Werror=type-limits'], main_c)
       if ret != 0:
         return Fail(f'C++ compilation failed:\n{stdout}{stderr}')
@@ -438,18 +321,18 @@ class Murphi2XMLTest(Tweakable):
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if HAS_VALGRIND else " "} ' \
+    return f'----{"V" if config["HAS_VALGRIND"] else " "} ' \
            f'murphi2xml {os.path.basename(self.model)}'
   def run(self) -> Result:
 
     self.apply_options(self.model)
 
     args = ['murphi2xml', self.model]
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
     ret, stdout, stderr = run(args)
-    if HAS_VALGRIND:
+    if config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
@@ -464,7 +347,7 @@ class Murphi2XMLTest(Tweakable):
     xmlcontent = stdout
 
     # See if we have xmllint
-    if which('xmllint') is None:
+    if not config['HAS_XMLLINT']:
       return Skip('xmllint not available for validation')
 
     # Validate the XML
@@ -500,6 +383,19 @@ def main(args: [str]) -> int:
   parser.add_argument('testcase', nargs='*',
     help='specific test case(s) to run')
   options = parser.parse_args(args[1:])
+
+  # parse configuration
+  global config
+  for p in sorted(os.listdir(os.path.join(os.path.dirname(__file__), 'config'))):
+    path = os.path.join(os.path.dirname(__file__), 'config', p)
+
+    # skip subdirectories
+    if os.path.isdir(path): continue
+
+    # skip non-executable files
+    if not os.access(path, os.X_OK): continue
+
+    config[p] = eval(sp.check_output([path]))
 
   pool = multiprocessing.Pool(options.jobs)
 
@@ -559,16 +455,10 @@ def main(args: [str]) -> int:
      f'  CPUS = {CPUS}\n'
      f'  STDOUT_ISATTY = {STDOUT_ISATTY}\n'
      f'  MIN_TEST = {MIN_TEST}\n'
-     f'  MAX_TEST = {MAX_TEST}\n'
-     f'  CC = {CC}\n'
-     f'  CXX = {CXX}\n'
-     f'  HAS_MCX16 = {HAS_MCX16}\n'
-     f'  NEEDS_LIBATOMIC = {NEEDS_LIBATOMIC}\n'
-     f'  HAS_SANDBOX = {HAS_SANDBOX}\n'
-     f'  SMT_ARGS = {SMT_ARGS}\n'
-     f'  HAS_VALGRIND = {HAS_VALGRIND}\n'
-     f'  HAS_ENUM_CONVERSION = {HAS_ENUM_CONVERSION}\n'
-      '\n')
+     f'  MAX_TEST = {MAX_TEST}\n')
+  for key, value in config.items():
+    pr(f'  {key} = {value}\n')
+  pr('\n')
 
   pr(f'Running {len(tests)} tests using {options.jobs} threads...\n'
       '     +------ debug\n'

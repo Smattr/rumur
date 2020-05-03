@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+#does the toolchain need -latomic to support dword CAS?
+
+
+# repeat the HAS_MCX16 logic
+${CC:-cc} -x c -std=c11 -mcx16 -o /dev/null - &>/dev/null <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+if [ $? -eq 0 ]; then
+  MCX16=-mcx16
+else
+  MCX16=
+fi
+
+# compile a program that operates on a double-word
+${CC:-cc} -x c -std=c11 ${MCX16} -o /dev/null - &>/dev/null <<EOT
+#include <stdint.h>
+
+int main(void) {
+#if __SIZEOF_POINTER__ <= 4
+  uint64_t target = 0;
+#elif __SIZEOF_POINTER__ <= 8
+  unsigned __int128 target = 0;
+#endif\n'
+  return (int)__sync_val_compare_and_swap(&target, 0, 1);
+}
+EOT
+
+# see if the compiler errored
+if [ $? -eq 0 ]; then
+  printf 'False\n'
+else
+  printf 'True\n'
+fi

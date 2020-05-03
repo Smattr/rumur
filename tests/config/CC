@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# C compiler
+
+
+if [ -z "${CC}" ]; then
+  CC=$(which cc)
+fi
+
+printf '"%s"\n' "${CC}"
