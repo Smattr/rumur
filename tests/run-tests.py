@@ -366,8 +366,7 @@ class Murphi2CTest(Tweakable):
       return None
 
     # ask the C compiler if this is valid
-    args = [CC, '-std=c11', '-c', '-o', os.devnull, '-x', 'c', '-',
-      '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
+    args = [CC] + C_FLAGS + ['-c', '-o', os.devnull, '-']
     if HAS_ENUM_CONVERSION:
       args.append('-Werror=enum-conversion')
     ret, stdout, stderr = run(args, stdout)
@@ -419,8 +418,7 @@ class Murphi2CHeaderTest(Tweakable):
 
       # ask the C compiler if the header is valid
       main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
-      args = [CC, '-std=c11', '-o', os.devnull, '-x', 'c', '-',
-        '-Werror=format', '-Werror=sign-compare', '-Werror=type-limits']
+      args = [CC] + C_FLAGS + ['-o', os.devnull, '-']
       if HAS_ENUM_CONVERSION:
         args.append('-Werror=enum-conversion')
       ret, stdout, stderr = run(args, main_c)
