@@ -60,7 +60,7 @@ int main(void) {
 EOT
 
 # compile the test program
-if ! ${CC:-cc} -std=c11  test.c; then
+if ! ${CC:-cc} -std=c11 test.c; then
   popd
   rm -rf "${TMP}"
   exit 1
