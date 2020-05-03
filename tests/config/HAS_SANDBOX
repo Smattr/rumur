@@ -26,7 +26,11 @@ if [ "$(uname -s)" = "Linux" ]; then
 
   # create a temporary space to work in
   TMP=$(mktemp -d)
-  pushd ${TMP}
+  pushd ${TMP} &>/dev/null
+  if [ $? -ne 0 ]; then
+    printf 'pushd failed\n' >&2
+    exit 1
+  fi
 
   # create a sandbox testing program
   cat - >test.c <<EOT
@@ -74,7 +78,7 @@ EOT
 
   # compile the test program
   if ! ${CC:-cc} -std=c11 test.c &>/dev/null; then
-    popd
+    popd &>/dev/null
     rm -rf "${TMP}"
     printf 'False\n'
     exit 0
@@ -82,14 +86,14 @@ EOT
 
   # execute the test program
   if ! ./a.out &>/dev/null; then
-    popd
+    popd &>/dev/null
     rm -rf "${TMP}"
     printf 'False\n'
     exit 0
   fi
 
   # clean up
-  popd
+  popd &>/dev/null
   rm -rf "${TMP}"
 
   printf 'True\n'
