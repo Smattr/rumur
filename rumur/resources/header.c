@@ -2139,25 +2139,24 @@ static void reclaim(queue_handle_t h) {
 
 #if THREADS == 1
   #define atomic_read(p) (*(p))
-#else
+#elif defined(__x86_64__) || defined(__i386__)
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
    *   memory. The way to work around this is apparently the following
    *   degenerate CMPXCHG16B.
    * i386: __atomic_load_n emits code calling a libatomic function that takes a
    *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
    *   __sync built-in instead.
-   * There is some evidence that this problem (the compiler emitting a libatomic
-   * call) also exists on other architectures like arm64. So we unconditionally
-   * use this instead of __atomic_load or atomic_load.
    */
   #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
+#else
+  #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
 #endif
 
 #if THREADS == 1
   #define atomic_write(p, v) do { *(p) = (v); } while (0)
-#else
-  /* as explained above, we need some extra gymnastics to avoid a call to
-   * libatomic
+#elif defined(__x86_64__) || defined(__i386__)
+  /* As explained above, we need some extra gymnastics to avoid a call to
+   * libatomic on x86-64 and i386.
    */
   #define atomic_write(p, v) \
     do { \
@@ -2170,6 +2169,8 @@ static void reclaim(queue_handle_t h) {
         _old = __sync_val_compare_and_swap(_target, _expected, _new); \
       } while (_expected != _old); \
     } while (0)
+#else
+  #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
 #endif
 
 #if THREADS == 1
@@ -2182,12 +2183,16 @@ static void reclaim(queue_handle_t h) {
       } \
       _success; \
     })
-#else
+#elif defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
   #define atomic_cas(p, expected, new) \
     __sync_bool_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas(p, expected, new) \
+    __atomic_compare_exchange_n((p), &(expected), (new), false, \
+      __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #endif
 
 #if THREADS == 1
@@ -2200,12 +2205,20 @@ static void reclaim(queue_handle_t h) {
       } \
       _old; \
     })
-#else
+#elif defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
   #define atomic_cas_val(p, expected, new) \
     __sync_val_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas_val(p, expected, new) \
+    ({ \
+      __typeof__(expected) _expected = (expected); \
+      __atomic_compare_exchange_n((p), &(_expected), (new), false, \
+        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+      _expected; \
+    })
 #endif
 
 /******************************************************************************/

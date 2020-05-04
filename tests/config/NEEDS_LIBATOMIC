@@ -19,13 +19,65 @@ fi
 ${CC:-cc} -x c -std=c11 ${MCX16} -o /dev/null - &>/dev/null <<EOT
 #include <stdint.h>
 
+// replicate what is in ../../rumur/resources/header.c
+#if defined(__x86_64__) || defined(__i386__)
+  #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
+#else
+  #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+  #define atomic_write(p, v) \
+    do { \
+      __typeof__(p) _target = (p); \
+      __typeof__(*(p)) _expected; \
+      __typeof__(*(p)) _old = 0; \
+      __typeof__(*(p)) _new = (v); \
+      do { \
+        _expected = _old; \
+        _old = __sync_val_compare_and_swap(_target, _expected, _new); \
+      } while (_expected != _old); \
+    } while (0)
+#else
+  #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+  #define atomic_cas(p, expected, new) \
+    __sync_bool_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas(p, expected, new) \
+    __atomic_compare_exchange_n((p), &(expected), (new), false, \
+      __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
+#endif
+
+#if defined(__x86_64__) || defined(__i386__)
+  #define atomic_cas_val(p, expected, new) \
+    __sync_val_compare_and_swap((p), (expected), (new))
+#else
+  #define atomic_cas_val(p, expected, new) \
+    ({ \
+      __typeof__(expected) _expected = (expected); \
+      __atomic_compare_exchange_n((p), &(_expected), (new), false, \
+        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+      _expected; \
+    })
+#endif
+
 int main(void) {
 #if __SIZEOF_POINTER__ <= 4
   uint64_t target = 0;
 #elif __SIZEOF_POINTER__ <= 8
   unsigned __int128 target = 0;
-#endif\n'
-  return (int)__sync_val_compare_and_swap(&target, 0, 1);
+#endif
+
+  target = atomic_read(&target);
+
+  atomic_write(&target, 42);
+
+  atomic_cas(&target, 42, 0);
+
+  return (int)atomic_cas_val(&target, 0, 42);
 }
 EOT
 
