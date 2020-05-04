@@ -25,7 +25,7 @@ YELLOW = '\033[33m' if STDOUT_ISATTY else ''
 RESET  = '\033[0m'  if STDOUT_ISATTY else ''
 
 # configuration (will be populated from config/)
-config: Dict[str, Any] = {}
+config = None
 
 def enc(s): return s.encode('utf-8', 'replace')
 def dec(s): return s.decode('utf-8', 'replace')
@@ -386,6 +386,8 @@ def main(args: [str]) -> int:
 
   # parse configuration
   global config
+  manager = multiprocessing.Manager()
+  config = manager.dict()
   for p in sorted(os.listdir(os.path.join(os.path.dirname(__file__), 'config'))):
     path = os.path.join(os.path.dirname(__file__), 'config', p)
 
