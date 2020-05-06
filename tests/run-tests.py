@@ -24,9 +24,6 @@ RED    = '\033[31m' if STDOUT_ISATTY else ''
 YELLOW = '\033[33m' if STDOUT_ISATTY else ''
 RESET  = '\033[0m'  if STDOUT_ISATTY else ''
 
-# configuration (will be populated from config/)
-config = None
-
 def enc(s): return s.encode('utf-8', 'replace')
 def dec(s): return s.decode('utf-8', 'replace')
 
@@ -54,11 +51,10 @@ def pr(s: str) -> None:
   sys.stdout.flush()
   print_lock.release()
 
-def run(args: [str], stdin: Optional[str] = None) -> Tuple[int, str, str]:
+def run(args: [str], env: Dict[str, str], stdin: Optional[str] = None
+    ) -> Tuple[int, str, str]:
   if stdin is not None:
     stdin = enc(stdin)
-  env = {k: v for k, v in os.environ.items()}
-  env.update({k: str(v) for k, v in config.items()})
   p = sp.run(args, stdout=sp.PIPE, stderr=sp.PIPE, input=stdin, env=env)
   return p.returncode, dec(p.stdout), dec(p.stderr)
 
@@ -85,6 +81,13 @@ class Fail(Result):
   def __init__(self, output: str): self.output = output
 
 class Test(abc.ABC):
+  def __init__(self, config: Dict[str, Any]):
+    self.config = config # save config in case child wants it
+  def env(self) -> Dict[str, str]:
+    'construct an environment for running external programs'
+    env = {k: v for k, v in os.environ.items()}
+    env.update({k: str(v) for k, v in self.config.items()})
+    return env
   @abc.abstractmethod
   def description(self) -> str: raise NotImplementedError
   @abc.abstractmethod
@@ -95,7 +98,8 @@ TWEAK_LINE = re.compile(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$')
 
 class Tweakable(Test):
   'a test case that can take extra customisation via comment lines'
-  def __init__(self):
+  def __init__(self, config: Dict[str, Any]):
+    super().__init__(config)
     # default options
     self.rumur_flags = []
     self.rumur_exit_code = 0
@@ -115,20 +119,19 @@ class Tweakable(Test):
 
 class Model(Tweakable):
   def __init__(self, model: str, debug: bool, optimised: bool, \
-      multithreaded: bool, xml: bool):
-    super().__init__()
+      multithreaded: bool, xml: bool, config: Dict[str, Any]):
+    super().__init__(config)
     self.model = model
     self.debug = debug
     self.optimised = optimised
     self.multithreaded = multithreaded
     self.xml = xml
-    self.valgrind = config['HAS_VALGRIND']
   def description(self) -> str:
-    return f'{"D" if self.debug              else " "}' \
-           f'{"O" if self.optimised          else " "}' \
-           f'{"M" if self.multithreaded      else " "}' \
-           f'{"X" if self.xml                else " "}' \
-           f'{"V" if config["HAS_VALGRIND"] else " "}' \
+    return f'{"D" if self.debug                  else " "}' \
+           f'{"O" if self.optimised              else " "}' \
+           f'{"M" if self.multithreaded          else " "}' \
+           f'{"X" if self.xml                    else " "}' \
+           f'{"V" if self.config["HAS_VALGRIND"] else " "}' \
            f' {os.path.basename(self.model)}'
   def run(self) -> Result:
 
@@ -144,13 +147,13 @@ class Model(Tweakable):
       + (['--threads', '1'] if not self.multithreaded else [])           \
       + self.rumur_flags
 
-    if config['HAS_VALGRIND']:
+    if self.config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
 
     # call rumur
-    ret, stdout, stderr = run(args)
-    if config['HAS_VALGRIND']:
+    ret, stdout, stderr = run(args, self.env())
+    if self.config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
     if ret != self.rumur_exit_code:
@@ -165,19 +168,19 @@ class Model(Tweakable):
 
       # build up arguments to call the C compiler
       model_bin = os.path.join(tmp, 'model.exe')
-      args = [config['CC']] + config['C_FLAGS'] + ['-o', model_bin, '-',
-        '-lpthread']
+      args = [self.config['CC']] + self.config['C_FLAGS'] + ['-o', model_bin,
+        '-', '-lpthread']
 
-      if config['NEEDS_LIBATOMIC']:
+      if self.config['NEEDS_LIBATOMIC']:
         args.append('-latomic')
 
       # call the C compiler
-      ret, stdout, stderr = run(args, model_c)
+      ret, stdout, stderr = run(args, self.env(), model_c)
       if ret != 0:
         return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
       # now run the model itself
-      ret, stdout, stderr = run([model_bin])
+      ret, stdout, stderr = run([model_bin], self.env())
       if ret != self.checker_exit_code:
         return Fail(f'Unexpected checker exit status {ret}:\n{stdout}{stderr}')
 
@@ -196,33 +199,34 @@ class Model(Tweakable):
 
       model_xml = stdout
 
-      if not config['HAS_XMLLINT']: return Skip('xmllint not available')
+      if not self.config['HAS_XMLLINT']: return Skip('xmllint not available')
 
       # validate the XML
       args = ['xmllint', '--relaxng', VERIFIER_RNG, '--noout', '-']
-      ret, stdout, stderr = run(args, model_xml)
+      ret, stdout, stderr = run(args, self.env(), model_xml)
       if ret != 0:
         return Fail( 'Failed to XML-validate machine reachable output:\n'
                     f'{stdout}{stderr}')
 
 class Executable(Test):
-  def __init__(self, exe: str):
+  def __init__(self, exe: str, config: Dict[str, Any]):
+    super().__init__(config)
     self.exe = exe
   def description(self) -> str: return f'----- exec {os.path.basename(self.exe)}'
   def run(self) -> Result:
-    ret, stdout, stderr = run(self.exe)
+    ret, stdout, stderr = run(self.exe, self.env())
     output = f'{stdout}{stderr}'
     return None                 if ret == 0 else \
            Skip(output.strip()) if ret == 125 else \
            Fail(output)
 
 class Murphi2CTest(Tweakable):
-  def __init__(self, model: str):
-    super().__init__()
+  def __init__(self, model: str, config: Dict[str, Any]):
+    super().__init__(config)
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if config["HAS_VALGRIND"] else " "} ' \
+    return f'----{"V" if self.config["HAS_VALGRIND"] else " "} ' \
            f'murphi2c {os.path.basename(self.model)}'
   def run(self) -> Result:
 
@@ -234,11 +238,11 @@ class Murphi2CTest(Tweakable):
       should_fail = re.search(r'\bisundefined\b', f.read()) is not None
 
     args = ['murphi2c', self.model]
-    if config['HAS_VALGRIND']:
+    if self.config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
-    ret, stdout, stderr = run(args)
-    if config['HAS_VALGRIND']:
+    ret, stdout, stderr = run(args, self.env())
+    if self.config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
@@ -253,18 +257,19 @@ class Murphi2CTest(Tweakable):
       return None
 
     # ask the C compiler if this is valid
-    args = [config['CC']] + config['C_FLAGS'] + ['-c', '-o', os.devnull, '-']
-    ret, stdout, stderr = run(args, stdout)
+    args = [self.config['CC']] + self.config['C_FLAGS'] + ['-c', '-o',
+      os.devnull, '-']
+    ret, stdout, stderr = run(args, self.env(), stdout)
     if ret != 0:
       return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
 class Murphi2CHeaderTest(Tweakable):
-  def __init__(self, model: str):
-    super().__init__()
+  def __init__(self, model: str, config: Dict[str, Any]):
+    super().__init__(config)
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if config["HAS_VALGRIND"] else " "} ' \
+    return f'----{"V" if self.config["HAS_VALGRIND"] else " "} ' \
            f'murphi2c --header {os.path.basename(self.model)}'
   def run(self) -> Result:
 
@@ -276,11 +281,11 @@ class Murphi2CHeaderTest(Tweakable):
       should_fail = re.search(r'\bisundefined\b', f.read()) is not None
 
     args = ['murphi2c', '--header', self.model]
-    if config['HAS_VALGRIND']:
+    if self.config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
-    ret, stdout, stderr = run(args)
-    if config['HAS_VALGRIND']:
+    ret, stdout, stderr = run(args, self.env())
+    if self.config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
@@ -303,36 +308,37 @@ class Murphi2CHeaderTest(Tweakable):
 
       # ask the C compiler if the header is valid
       main_c = f'#include "{header}"\nint main(void) {{ return 0; }}\n'
-      args = [config['CC']] + config['C_FLAGS'] + ['-o', os.devnull, '-']
-      ret, stdout, stderr = run(args, main_c)
+      args = [self.config['CC']] + self.config['C_FLAGS'] + ['-o', os.devnull,
+        '-']
+      ret, stdout, stderr = run(args, self.env(), main_c)
       if ret != 0:
         return Fail(f'C compilation failed:\n{stdout}{stderr}')
 
       # ask the C++ compiler if it is valid there too
-      ret, stdout, stderr = run([config['CXX'], '-std=c++11', '-o', os.devnull,
-        '-x', 'c++', '-', '-Werror=format', '-Werror=sign-compare',
-        '-Werror=type-limits'], main_c)
+      ret, stdout, stderr = run([self.config['CXX'], '-std=c++11', '-o',
+        os.devnull, '-x', 'c++', '-', '-Werror=format', '-Werror=sign-compare',
+        '-Werror=type-limits'], self.env(), main_c)
       if ret != 0:
         return Fail(f'C++ compilation failed:\n{stdout}{stderr}')
 
 class Murphi2XMLTest(Tweakable):
-  def __init__(self, model: str):
-    super().__init__()
+  def __init__(self, model: str, config: Dict[str, Any]):
+    super().__init__(config)
     self.model = model
     self.xml = False # dummy setting that tests might reference
   def description(self) -> str:
-    return f'----{"V" if config["HAS_VALGRIND"] else " "} ' \
+    return f'----{"V" if self.config["HAS_VALGRIND"] else " "} ' \
            f'murphi2xml {os.path.basename(self.model)}'
   def run(self) -> Result:
 
     self.apply_options(self.model)
 
     args = ['murphi2xml', self.model]
-    if config['HAS_VALGRIND']:
+    if self.config['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
         '--error-exitcode=42'] + args
-    ret, stdout, stderr = run(args)
-    if config['HAS_VALGRIND']:
+    ret, stdout, stderr = run(args, self.env())
+    if self.config['HAS_VALGRIND']:
       if ret == 42:
         return Fail(f'Memory leak:\n{stdout}{stderr}')
 
@@ -347,12 +353,12 @@ class Murphi2XMLTest(Tweakable):
     xmlcontent = stdout
 
     # See if we have xmllint
-    if not config['HAS_XMLLINT']:
+    if not self.config['HAS_XMLLINT']:
       return Skip('xmllint not available for validation')
 
     # Validate the XML
     ret, stdout, stderr = run(['xmllint', '--relaxng', MURPHI2XML_RNG,
-      '--noout', '-'], xmlcontent)
+      '--noout', '-'], self.env(), xmlcontent)
     if ret != 0:
       return Fail(f'Failed to validate:\n{stdout}{stderr}')
 
@@ -385,9 +391,7 @@ def main(args: [str]) -> int:
   options = parser.parse_args(args[1:])
 
   # parse configuration
-  global config
-  manager = multiprocessing.Manager()
-  config = manager.dict()
+  config: Dict[str, Any] = {}
   for p in sorted(os.listdir(os.path.join(os.path.dirname(__file__), 'config'))):
     path = os.path.join(os.path.dirname(__file__), 'config', p)
 
@@ -421,7 +425,7 @@ def main(args: [str]) -> int:
     # if this is executable, treat it as a test case
     if os.access(path, os.X_OK):
       if in_range(index):
-        tests.append(Executable(path))
+        tests.append(Executable(path, config))
       index += 1
 
     # if this is not a model, skip the remaining generic logic
@@ -434,19 +438,19 @@ def main(args: [str]) -> int:
       if debug and xml: continue
 
       if in_range(index):
-        tests.append(Model(path, debug, optimised, multithreaded, xml))
+        tests.append(Model(path, debug, optimised, multithreaded, xml, config))
       index += 1
 
     if in_range(index):
-      tests.append(Murphi2XMLTest(path))
+      tests.append(Murphi2XMLTest(path, config))
     index += 1
 
     if in_range(index):
-      tests.append(Murphi2CTest(path))
+      tests.append(Murphi2CTest(path, config))
     index += 1
 
     if in_range(index):
-      tests.append(Murphi2CHeaderTest(path))
+      tests.append(Murphi2CHeaderTest(path, config))
     index += 1
 
   if len(tests) == 0:

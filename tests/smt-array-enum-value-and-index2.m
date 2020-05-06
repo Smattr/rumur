@@ -1,5 +1,5 @@
--- rumur_flags: config['SMT_ARGS']
--- skip_reason: 'no SMT solver available' if config['SMT_ARGS'] is None else None
+-- rumur_flags: self.config['SMT_ARGS']
+-- skip_reason: 'no SMT solver available' if self.config['SMT_ARGS'] is None else None
 
 -- variant of smt-array-enum-value-and-index.m which pre-defines the enums
 

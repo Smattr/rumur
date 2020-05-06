@@ -1,5 +1,5 @@
--- rumur_flags: config['SMT_BV_ARGS']
--- skip_reason: 'no SMT solver available' if config['SMT_BV_ARGS'] is None else None
+-- rumur_flags: self.config['SMT_BV_ARGS']
+-- skip_reason: 'no SMT solver available' if self.config['SMT_BV_ARGS'] is None else None
 
 -- equivalent of smt-exists.m but using --smt-bitvectors on
 
