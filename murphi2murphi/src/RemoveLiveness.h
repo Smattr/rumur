@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cstddef>
+#include <queue>
 #include <rumur/rumur.h>
 #include "Stage.h"
 
@@ -11,6 +12,9 @@ class RemoveLiveness : public IntermediateStage {
  private:
   // does the next seen semi-colon need to be deleted?
   bool swallow_semi = false;
+
+  // queued updates to .swallow_semi
+  std::queue<bool> state;
 
  public:
   explicit RemoveLiveness(Stage &next_);

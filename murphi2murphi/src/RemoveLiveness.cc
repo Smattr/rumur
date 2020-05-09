@@ -11,9 +11,14 @@ RemoveLiveness::RemoveLiveness(Stage &next_): IntermediateStage(next_) { }
 
 void RemoveLiveness::process(const Token &t) {
 
-  // ignore any shift messages
   if (t.type == Token::SUBJ) {
-    next.process(t);
+    // if this is for us, update our state
+    if (t.subject == this) {
+      swallow_semi = state.front();
+      state.pop();
+    } else { // ignore any other shift messages
+      next.process(t);
+    }
     return;
   }
 
@@ -56,5 +61,9 @@ void RemoveLiveness::visit_propertyrule(const PropertyRule &n) {
   top->skip_to(n.loc.end);
 
   // note that we may now encounter a semi-colon that needs to be deleted
-  swallow_semi = true;
+  state.push(true);
+
+  // push a shift state message into the pipe to tell ourselves to later consume
+  // this update
+  top->process(Token(this));
 }
