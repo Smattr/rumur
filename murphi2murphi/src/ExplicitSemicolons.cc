@@ -11,6 +11,15 @@ ExplicitSemicolons::ExplicitSemicolons(Stage &next_):
 
 void ExplicitSemicolons::process(const Token &t) {
 
+  // if this is a message to ourselves, update our state
+  if (t.type == Token::SUBJ && t.subject == this) {
+    assert(!state.empty() && "message to shift state when we have no pending "
+      "next state");
+    pending_semi = state.front();
+    state.pop();
+    return;
+  }
+
   // if we are not waiting on a semi-colons, we can simply output this character
   if (!pending_semi) {
     assert(pending.empty());
@@ -52,42 +61,48 @@ void ExplicitSemicolons::process(const Token &t) {
 // and note that we then have a pending semi-colon
 void ExplicitSemicolons::visit_aliasrule(const AliasRule &n) {
   next.visit_aliasrule(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_constdecl(const ConstDecl &n) {
   next.visit_constdecl(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_function(const Function &n) {
   next.visit_function(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_propertyrule(const PropertyRule &n) {
   next.visit_propertyrule(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_ruleset(const Ruleset &n) {
   next.visit_ruleset(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_simplerule(const SimpleRule &n) {
   next.dispatch(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_startstate(const StartState &n) {
   next.visit_startstate(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_typedecl(const TypeDecl &n) {
   next.visit_typedecl(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 void ExplicitSemicolons::visit_vardecl(const VarDecl &n) {
   next.visit_vardecl(n);
-  pending_semi = true;
+  set_pending_semi();
 }
 
 void ExplicitSemicolons::finalise() {
+
+  // apply any unconsumed updates
+  while (!state.empty()) {
+    pending_semi = state.front();
+    state.pop();
+  }
 
   // if we have a pending semi-colon, we know we are never going to see one now
   if (pending_semi)
@@ -101,4 +116,14 @@ void ExplicitSemicolons::flush() {
   for (const Token &t : pending)
     next.process(t);
   pending.clear();
+}
+
+void ExplicitSemicolons::set_pending_semi() {
+
+  // queue the update to take effect in the future
+  state.push(true);
+
+  // put a message in the pipeline to tell ourselves to later shift this state
+  // into .pending_semi
+  top->process(Token(this));
 }
