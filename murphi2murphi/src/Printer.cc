@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cassert>
 #include <iostream>
 #include "Printer.h"
 #include <rumur/rumur.h>
@@ -572,8 +573,11 @@ void Printer::visit_while(const While &n) {
 }
 
 void Printer::process(const Token &t) {
-  if (t.type == Token::CHAR)
-    out << t.character;
+
+  assert(t.type != Token::SUBJ && "an IntermediateStage did not put a shift "
+    "message in the processing pipe that they did not consume");
+
+  out << t.character;
 }
 
 void Printer::sync_to(const Node &n) {
