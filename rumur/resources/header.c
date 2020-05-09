@@ -78,6 +78,10 @@ enum { STATE_OTHER_BYTES
   #define NONNULL /* nothing; other compilers don't have _Nonnull */
 #endif
 
+#if USE_RTM
+  #include <immintrin.h>
+#endif
+
 /* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
  * sufficient. The two are:
@@ -575,10 +579,25 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
  ******************************************************************************/
 
 static unsigned long atomic_fetch_inc_ul(unsigned long *ptr) {
+
+#if USE_RTM
+  if (__builtin_expect(_xbegin() == _XBEGIN_STARTED, 1)) {
+    unsigned long v = *ptr;
+    ++(*ptr);
+    _xend();
+    return v;
+  }
+#endif
+
   return __atomic_fetch_add(ptr, 1, __ATOMIC_SEQ_CST);
 }
 
 static unsigned long atomic_load_ul(unsigned long *ptr) {
+
+  /* unsigned long reads are already atomic on any x86 CPU with RTM, so there is
+   * no point in providing an RTM-based alternative here
+   */
+
   return __atomic_load_n(ptr, __ATOMIC_SEQ_CST);
 }
 
