@@ -95,6 +95,9 @@ struct Options {
   // whether to bit-pack members of the state struct
   bool pack_state = true;
 
+  // optimise atomic operations using Retricted Transactional Memory?
+  bool use_rtm = false;
+
   // options related to SMT solver interaction
   struct {
 

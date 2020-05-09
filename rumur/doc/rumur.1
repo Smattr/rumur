@@ -110,6 +110,15 @@ small enough to comfortably fit in available memory, you may want to set this to
 Don't output any messages while generating the verifier.
 .RE
 .PP
+\fB--rtm\fR [\fBon\fR | \fBoff\fR]
+.RS
+Control whether x86 Restricted Transactional Memory (RTM) is used to optimise
+atomic operations in the verifier. If set to \fBon\fR, RTM instructions will be
+opportunistically used for atomic operations, falling back to LOCK-prefixed
+instructions when failing. This can decrease the runtime of the verifier. By
+default this is \fBoff\fR.
+.RE
+.PP
 \fB--sandbox\fR [\fBon\fR | \fBoff\fR]
 .RS
 Control whether the generated verifier uses your operating system's sandboxing

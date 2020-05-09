@@ -15,6 +15,7 @@ _arguments \
   '--output-format[how verifier should print output]: :(machine-readable human-readable)' \
   '--pack-state[compress verifier auxiliary state]: :(on off)' \
   {--quiet,-q}'[suppress output while generating verifier]' \
+  '--rtm[use Restricted Transactional Memory]: :(on off)' \
   '--sandbox[verifier privilege restriction]: :(on off)' \
   {--set-capacity,-s}'[initial memory (in bytes) to allocate for the seen set]:SIZE' \
   {--set-expand-threshold,-e}'[limit at which to expand the seen set]:occupancy percentage' \

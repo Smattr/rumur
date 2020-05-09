@@ -58,6 +58,7 @@ static void parse_args(int argc, char **argv) {
       OPT_MONOPOLISE,
       OPT_OUTPUT_FORMAT,
       OPT_PACK_STATE,
+      OPT_RTM,
       OPT_SANDBOX,
       OPT_SMT_ARG,
       OPT_SMT_BITVECTORS,
@@ -87,6 +88,7 @@ static void parse_args(int argc, char **argv) {
       { "output-format", required_argument, 0, OPT_OUTPUT_FORMAT },
       { "pack-state", required_argument, 0, OPT_PACK_STATE },
       { "quiet", no_argument, 0, 'q' },
+      { "rtm", required_argument, 0, OPT_RTM },
       { "sandbox", required_argument, 0, OPT_SANDBOX },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
@@ -282,6 +284,16 @@ static void parse_args(int argc, char **argv) {
           exit(EXIT_FAILURE);
         }
         break;
+
+      case OPT_RTM: // --rtm ...
+        if (strcmp(optarg, "off") == 0) {
+          options.use_rtm = false;
+        } else if (strcmp(optarg, "on") == 0) {
+          options.use_rtm = true;
+        } else {
+          std::cerr << "invalid argument to --rtm, \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
 
       case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
         if (strcmp(optarg, "off") == 0) {
