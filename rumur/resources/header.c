@@ -2151,6 +2151,14 @@ static dword_t atomic_read(dword_t *p) {
     return *p;
   }
 
+#if USE_RTM
+  if (__builtin_expect(_xbegin() == _XBEGIN_STARTED, 1)) {
+    dword_t v = *p;
+    _xend();
+    return v;
+  }
+#endif
+
 #if defined(__x86_64__) || defined(__i386__)
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
    *   memory. The way to work around this is apparently the following
@@ -2171,6 +2179,14 @@ static void atomic_write(dword_t *p, dword_t v) {
     *p = v;
     return;
   }
+
+#if USE_RTM
+  if (__builtin_expect(_xbegin() == _XBEGIN_STARTED, 1)) {
+    *p = v;
+    _xend();
+    return;
+  }
+#endif
 
 #if defined(__x86_64__) || defined(__i386__)
   /* As explained above, we need some extra gymnastics to avoid a call to
@@ -2198,6 +2214,18 @@ static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
     return false;
   }
 
+#if USE_RTM
+  if (__builtin_expect(_xbegin() == _XBEGIN_STARTED, 1)) {
+    bool result = false;
+    if (*p == expected) {
+      *p = new;
+      result = true;
+    }
+    _xend();
+    return result;
+  }
+#endif
+
 #if defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
@@ -2218,6 +2246,17 @@ static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
     }
     return old;
   }
+
+#if USE_RTM
+  if (__builtin_expect(_xbegin() == _XBEGIN_STARTED, 1)) {
+    dword_t old = *p;
+    if (old == expected) {
+      *p = new;
+    }
+    _xend();
+    return old;
+  }
+#endif
 
 #if defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
