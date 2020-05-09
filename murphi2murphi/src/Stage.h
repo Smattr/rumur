@@ -4,20 +4,39 @@
 #include <rumur/rumur.h>
 #include <string>
 
+class Stage;
+
+// a message sent to a stage
+struct Token {
+  enum {
+    CHAR, // write the given character to the output
+    SUBJ, // update to your next internal pending state
+  } type;
+
+  // only one of these is ever active, but we avoid using a union so we still
+  // get default ctors etc
+  std::string character;
+  const Stage *subject = nullptr;
+
+  explicit Token(const std::string &c): type(CHAR), character(c) { }
+  explicit Token(const Stage *s): type(SUBJ), subject(s) { }
+};
+
 class Stage : public rumur::ConstBaseTraversal {
 
  protected:
   Stage *top = nullptr;
 
  public:
-  // pass one or more characters to write()
+  // pass one or more characters to process()
   Stage &operator<<(const std::string &s);
 
   // make this stage aware it is part of the given pipeline
   void attach(Stage &top_);
 
-  // write a character to the output stream
-  virtual void write(const std::string &c) = 0;
+  // process a token, either a character to write to the output stream or a
+  // notification to shift state
+  virtual void process(const Token &t) = 0;
 
   // write characters from the input file into the output file, up to the given
   // position in the input
@@ -103,7 +122,7 @@ class IntermediateStage : public Stage {
   void visit_vardecl(const rumur::VarDecl &n) override;
   void visit_while(const rumur::While &n) override;
 
-  void write(const std::string &c) override;
+  void process(const Token &t) override;
 
   void sync_to(const rumur::Node &n) override;
   void sync_to(const rumur::position &pos) override;

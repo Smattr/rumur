@@ -2,9 +2,8 @@
 
 #include <cstddef>
 #include <rumur/rumur.h>
-#include <sstream>
 #include "Stage.h"
-#include <string>
+#include <vector>
 
 class ExplicitSemicolons : public IntermediateStage {
 
@@ -12,13 +11,13 @@ class ExplicitSemicolons : public IntermediateStage {
   // does the next written character need to be a semicolon?
   bool pending_semi = false;
 
-  // buffered characters we have not yet sent to the next stage
-  std::ostringstream pending;
+  // buffered tokens we have not yet sent to the next stage
+  std::vector<Token> pending;
 
  public:
   explicit ExplicitSemicolons(Stage &next_);
 
-  void write(const std::string &c) final;
+  void process(const Token &t) final;
 
   // override visitors for all nodes that can have an omitted semicolon
   void visit_aliasrule(const rumur::AliasRule &n) final;

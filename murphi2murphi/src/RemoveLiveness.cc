@@ -9,17 +9,23 @@ using namespace rumur;
 
 RemoveLiveness::RemoveLiveness(Stage &next_): IntermediateStage(next_) { }
 
-void RemoveLiveness::write(const std::string &c) {
+void RemoveLiveness::process(const Token &t) {
+
+  // ignore any shift messages
+  if (t.type == Token::SUBJ) {
+    next.process(t);
+    return;
+  }
 
   // if we are not hunting a to-be-deleted semi-colon, we are done
   if (!swallow_semi) {
-    next << c;
+    next.process(t);
     return;
   }
 
   // if this is white space, remain on the hunt for a semi-colon
-  if (c.size() == 1 && isspace(c.c_str()[0])) {
-    next << c;
+  if (t.character.size() == 1 && isspace(t.character.c_str()[0])) {
+    next.process(t);
     return;
   }
 
@@ -28,11 +34,11 @@ void RemoveLiveness::write(const std::string &c) {
   swallow_semi = false;
 
   // if this is a semi-colon, suppress it
-  if (c == ";")
+  if (t.character == ";")
     return;
 
   // otherwise, let it go through
-  next << c;
+  next.process(t);
 }
 
 void RemoveLiveness::visit_propertyrule(const PropertyRule &n) {

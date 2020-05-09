@@ -3,26 +3,35 @@
 #include <ctype.h>
 #include "ExplicitSemicolons.h"
 #include <rumur/rumur.h>
-#include <string>
 
 using namespace rumur;
 
 ExplicitSemicolons::ExplicitSemicolons(Stage &next_):
   IntermediateStage(next_) { }
 
-void ExplicitSemicolons::write(const std::string &c) {
+void ExplicitSemicolons::process(const Token &t) {
 
   // if we are not waiting on a semi-colons, we can simply output this character
   if (!pending_semi) {
-    assert(pending.str() == "");
-    next.write(c);
+    assert(pending.empty());
+    next.process(t);
     return;
   }
 
-  // if this is white space, keep accruing pending characters
-  if (c.size() == 1 && isspace(c.c_str()[0])) {
-    pending << c;
-    return;
+  switch (t.type) {
+
+    case Token::CHAR:
+      // if this is white space, keep accruing pending characters
+      if (t.character.size() == 1 && isspace(t.character.c_str()[0])) {
+        pending.push_back(t);
+        return;
+      }
+      break;
+
+    // if this was a shift message to another Stage, accrue it
+    case Token::SUBJ:
+      pending.push_back(t);
+      return;
   }
 
   // if we reached here, we know one way or another we are done accruing
@@ -30,13 +39,13 @@ void ExplicitSemicolons::write(const std::string &c) {
 
   // the semi-colon was either explicit already if this character itself is a
   // semi-colon, or it was omitted otherwise
-  if (c != ";")
-    next.write(";");
+  if (t.type == Token::CHAR && t.character != ";")
+    next << ";";
 
-  // flush the accrued white space
+  // flush the accrued white space and shift messages
   flush();
 
-  next.write(c);
+  next.process(t);
 }
 
 // each of these need to simply passthrough to the next stage in the pipeline
@@ -89,6 +98,7 @@ void ExplicitSemicolons::finalise() {
 }
 
 void ExplicitSemicolons::flush() {
-  next << pending.str();
-  pending.str("");
+  for (const Token &t : pending)
+    next.process(t);
+  pending.clear();
 }

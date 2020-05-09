@@ -10,7 +10,7 @@ using namespace rumur;
 Stage &Stage::operator<<(const std::string &s) {
 
   // We expect the input argument to contain a sequence of UTF-8 characters that
-  // we want to pass to write() character-by-character. However iterating
+  // we want to pass to process() character-by-character. However iterating
   // through a std::string yields 8-bit chars, not UTF-8 characters. So we
   // commit a minor sin and roll our own UTF-8 character-by-character iteration.
 
@@ -53,7 +53,8 @@ Stage &Stage::operator<<(const std::string &s) {
     }
 
     // write out this character
-    write(s.substr(i, length));
+    Token t(s.substr(i, length));
+    process(t);
 
     // move to the next character
     assert(i + length <= s.size());
@@ -248,8 +249,8 @@ void IntermediateStage::visit_while(const While &n) {
   next.visit_while(n);
 }
 
-void IntermediateStage::write(const std::string &c) {
-  next.write(c);
+void IntermediateStage::process(const Token &t) {
+  next.process(t);
 }
 
 void IntermediateStage::sync_to(const Node &n) {

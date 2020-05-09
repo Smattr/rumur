@@ -4,12 +4,11 @@
 
 #include <cstddef>
 #include "Stage.h"
-#include <string>
 
 class ToAscii : public IntermediateStage {
 
  private:
-  // states for write() state machine
+  // states for process() state machine
   enum State {
     IDLE,
     IDLE_DASH, // saw '-'
@@ -29,7 +28,7 @@ class ToAscii : public IntermediateStage {
  public:
   explicit ToAscii(Stage &next_);
 
-  void write(const std::string &c) final;
+  void process(const Token &t) final;
 
   virtual ~ToAscii() = default;
 };

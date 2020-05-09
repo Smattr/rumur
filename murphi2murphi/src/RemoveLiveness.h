@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <rumur/rumur.h>
 #include "Stage.h"
-#include <string>
 
 class RemoveLiveness : public IntermediateStage {
 
@@ -18,7 +17,7 @@ class RemoveLiveness : public IntermediateStage {
 
   // interpose on the output, so we have a chance to suppress any spurious
   // semi-colons following a deleted liveness property
-  void write(const std::string &c) final;
+  void process(const Token &t) final;
 
   // Structurally a liveness property can be contained within a PropertyRule or
   // a PropertyStmt. However, liveness properties are only legally allowed to

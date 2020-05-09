@@ -21,7 +21,7 @@ class SwitchToIf : public IntermediateStage {
  public:
   explicit SwitchToIf(Stage &next_);
 
-  void write(const std::string &c) final;
+  void process(const Token &t) final;
 
   void visit_switch(const rumur::Switch &n) final;
 

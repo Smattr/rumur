@@ -79,7 +79,7 @@ class Printer : public Stage {
   void visit_vardecl(const rumur::VarDecl &n) final;
   void visit_while(const rumur::While &n) final;
 
-  void write(const std::string &c) final;
+  void process(const Token &t) final;
 
   void sync_to(const rumur::Node &n) final;
   void sync_to(const rumur::position &pos) final;

@@ -571,8 +571,9 @@ void Printer::visit_while(const While &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::write(const std::string &c) {
-  out << c;
+void Printer::process(const Token &t) {
+  if (t.type == Token::CHAR)
+    out << t.character;
 }
 
 void Printer::sync_to(const Node &n) {

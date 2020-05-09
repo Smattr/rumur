@@ -6,17 +6,23 @@
 
 ToAscii::ToAscii(Stage &next_): IntermediateStage(next_) { }
 
-void ToAscii::write(const std::string &c) {
+void ToAscii::process(const Token &t) {
+
+  // ignore any shift messages
+  if (t.type == Token::SUBJ) {
+    next.process(t);
+    return;
+  }
+
+  std::string s = t.character;
 
   if (pending_space) {
-    if (c.size() != 1 || !isspace(c[0]))
-      next.write(" ");
+    if (s.size() != 1 || !isspace(s[0]))
+      next << " ";
     pending_space = false;
   }
 
   bool in_idle = state == IDLE || state == IDLE_DASH || state == IDLE_SLASH;
-
-  std::string s = c;
 
   if (in_idle) {
     if      (s == "“") s = "\"";
@@ -76,34 +82,34 @@ void ToAscii::write(const std::string &c) {
 
     case IN_STRING:
       if (s == "\"" || s == "”") {
-        next.write("\"");
+        next << "\"";
         state = IDLE;
       } else {
-        next.write(s);
+        next << s;
         if (s == "\\")
           state = IN_STRING_SLASH;
       }
       break;
 
     case IN_STRING_SLASH:
-      next.write(s);
+      next << s;
       state = IN_STRING;
       break;
 
     case IN_LINE_COMMENT:
-      next.write(s);
+      next << s;
       if (s == "\n")
         state = IDLE;
       break;
 
     case IN_MULTILINE_COMMENT:
-      next.write(s);
+      next << s;
       if (s == "*")
         state = IN_MULTILINE_COMMENT_STAR;
       break;
 
     case IN_MULTILINE_COMMENT_STAR:
-      next.write(s);
+      next << s;
       if (s == "*") {
         // stay in IN_MULTILINE_COMMENT_STAR
       } else if (s == "/") {
