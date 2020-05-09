@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# test whether the CPU supports Restricted Transactional Memory
+
+# on macOS, check sysctl
+if [ "$(uname -s)" = "Darwin" ]; then
+  if [ $(sysctl -n hw.optional.rtm 2>/dev/null) -eq 1 ]; then
+    printf 'True\n'
+  else
+    printf 'False\n'
+  fi
+  exit 0
+fi
+
+# on Linux, check cpuinfo
+if [ "$(uname -s)" = "Linux" ]; then
+  if grep --quiet 'flags\s*:.*\<rtm\>' /proc/cpuinfo; then
+    printf 'True\n'
+  else
+    printf 'False\n'
+  fi
+  exit 0
+fi
+
+# otherwise, assume we do not have it
+printf 'False\n'
