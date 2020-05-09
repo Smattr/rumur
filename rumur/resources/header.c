@@ -571,6 +571,20 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
   } while (0)
 
 /*******************************************************************************
+ * atomic wrappers                                                             *
+ ******************************************************************************/
+
+static unsigned long atomic_fetch_inc_ul(unsigned long *ptr) {
+  return __atomic_fetch_add(ptr, 1, __ATOMIC_SEQ_CST);
+}
+
+static unsigned long atomic_load_ul(unsigned long *ptr) {
+  return __atomic_load_n(ptr, __ATOMIC_SEQ_CST);
+}
+
+/******************************************************************************/
+
+/*******************************************************************************
  * Arithmetic wrappers                                                         *
  *                                                                             *
  * For compilers that support them, we call the overflow built-ins to check    *
@@ -1254,8 +1268,7 @@ static _Noreturn int exit_with(int status);
 static __attribute__((format(printf, 2, 3))) _Noreturn void error(
   const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
-  unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
-    __ATOMIC_SEQ_CST);
+  unsigned long prior_errors = atomic_fetch_inc_ul(&error_count);
 
   if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 
