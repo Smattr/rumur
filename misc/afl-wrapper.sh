@@ -5,8 +5,8 @@
 # echo commands
 set -x
 
-# run AFL fuzzing for 30m
-timeout --preserve-status 1800s afl-fuzz -m 8192 -i ../tests -o findings_dir -- rumur --output /tmp/model.c @@
+# run AFL fuzzing for 40m
+timeout --preserve-status 2400s afl-fuzz -m 8192 -i ../tests -o findings_dir -- rumur --output /tmp/model.c @@
 
 # remove the crashes dir if it is empty; this will fail if not empty
 rmdir findings_dir/crashes &>/dev/null
