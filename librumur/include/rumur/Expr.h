@@ -106,6 +106,7 @@ struct BooleanBinaryExpr : public BinaryExpr {
     const location &loc_);
   BooleanBinaryExpr() = delete;
 
+  Ptr<TypeExpr> type() const final;
   void validate() const final;
 };
 
@@ -116,7 +117,6 @@ struct Implication : public BooleanBinaryExpr {
   Implication *clone() const final;
   virtual ~Implication() = default;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -129,7 +129,6 @@ struct Or : public BooleanBinaryExpr {
   virtual ~Or() = default;
   Or *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -142,7 +141,6 @@ struct And : public BooleanBinaryExpr {
   virtual ~And() = default;
   And *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;

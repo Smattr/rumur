@@ -97,6 +97,10 @@ bool BinaryExpr::is_pure() const {
 BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
 
+Ptr<TypeExpr> BooleanBinaryExpr::type() const {
+  return Boolean;
+}
+
 void BooleanBinaryExpr::validate() const {
   if (!lhs->is_boolean())
     throw Error("left hand side of expression is not a boolean", lhs->loc);
@@ -111,10 +115,6 @@ Implication::Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
 
 Implication *Implication::clone() const {
   return new Implication(*this);
-}
-
-Ptr<TypeExpr> Implication::type() const {
-  return Boolean;
 }
 
 mpz_class Implication::constant_fold() const {
@@ -137,10 +137,6 @@ Or *Or::clone() const {
   return new Or(*this);
 }
 
-Ptr<TypeExpr> Or::type() const {
-  return Boolean;
-}
-
 mpz_class Or::constant_fold() const {
   return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
@@ -159,10 +155,6 @@ And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 And *And::clone() const {
   return new And(*this);
-}
-
-Ptr<TypeExpr> And::type() const {
-  return Boolean;
 }
 
 mpz_class And::constant_fold() const {
