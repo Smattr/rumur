@@ -274,6 +274,7 @@ struct ArithmeticBinaryExpr : public BinaryExpr {
   ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
     const location &loc_);
 
+  Ptr<TypeExpr> type() const final;
   void validate() const final;
 };
 
@@ -283,7 +284,6 @@ struct Add : public ArithmeticBinaryExpr {
   virtual ~Add() = default;
   Add *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -296,7 +296,6 @@ struct Sub : public ArithmeticBinaryExpr {
   virtual ~Sub() = default;
   Sub *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -323,7 +322,6 @@ struct Mul : public ArithmeticBinaryExpr {
   virtual ~Mul() = default;
   Mul *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -336,7 +334,6 @@ struct Div : public ArithmeticBinaryExpr {
   virtual ~Div() = default;
   Div *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -349,7 +346,6 @@ struct Mod : public ArithmeticBinaryExpr {
   virtual ~Mod() = default;
   Mod *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;

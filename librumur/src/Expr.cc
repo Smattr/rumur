@@ -411,15 +411,15 @@ void ArithmeticBinaryExpr::validate() const {
       loc);
 }
 
+Ptr<TypeExpr> ArithmeticBinaryExpr::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
+}
+
 Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
   ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 
 Add *Add::clone() const {
   return new Add(*this);
-}
-
-Ptr<TypeExpr> Add::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Add::constant_fold() const {
@@ -440,10 +440,6 @@ Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Sub *Sub::clone() const {
   return new Sub(*this);
-}
-
-Ptr<TypeExpr> Sub::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Sub::constant_fold() const {
@@ -495,10 +491,6 @@ Mul *Mul::clone() const {
   return new Mul(*this);
 }
 
-Ptr<TypeExpr> Mul::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
-}
-
 mpz_class Mul::constant_fold() const {
   return lhs->constant_fold() * rhs->constant_fold();
 }
@@ -517,10 +509,6 @@ Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Div *Div::clone() const {
   return new Div(*this);
-}
-
-Ptr<TypeExpr> Div::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Div::constant_fold() const {
@@ -545,10 +533,6 @@ Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Mod *Mod::clone() const {
   return new Mod(*this);
-}
-
-Ptr<TypeExpr> Mod::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Mod::constant_fold() const {
