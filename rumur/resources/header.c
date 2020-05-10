@@ -519,6 +519,10 @@ static void print_lock(void) {
   assert(r == 0);
 }
 
+static bool print_trylock(void) {
+  return pthread_mutex_trylock(&print_mutex) == 0;
+}
+
 static void print_unlock(void) {
   int r __attribute__((unused)) = pthread_mutex_unlock(&print_mutex);
   assert(r == 0);
