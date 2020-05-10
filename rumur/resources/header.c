@@ -1866,6 +1866,60 @@ static __attribute__((unused)) value_t negate(const char *NONNULL context,
   return -a;
 }
 
+/* wrappers for << and >> to avoid C undefined behaviour */
+static __attribute__((unused)) value_t rsh(value_t a, value_t b);
+static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
+
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b < 0) {
+    return rsh(a, -b);
+  }
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  return (value_t)((raw_value_t)a << b);
+}
+
+static value_t rsh(value_t a, value_t b) {
+
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b < 0) {
+    return lsh(a, -b);
+  }
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  return (value_t)((raw_value_t)a >> b);
+}
+
 /* A version of quicksort that operates on "schedules," arrays of indices that
  * serve as a proxy for the collection being sorted.
  */
