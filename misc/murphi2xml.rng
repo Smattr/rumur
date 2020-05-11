@@ -268,6 +268,7 @@
       <ref name="implication"/>
       <ref name="isundefined"/>
       <ref name="leq"/>
+      <ref name="lsh"/>
       <ref name="lt"/>
       <ref name="mod"/>
       <ref name="mul"/>
@@ -505,6 +506,13 @@
         <data type="integer"/>
       </attribute>
     </optional>
+  </define>
+
+  <define name="lsh">
+    <element name="lsh">
+      <ref name="location"/>
+      <ref name="binexpr"/>
+    </element>
   </define>
 
   <define name="lt">

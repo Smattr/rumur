@@ -192,6 +192,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_lsh(const Lsh &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_lt(const Lt &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);

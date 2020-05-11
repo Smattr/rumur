@@ -155,6 +155,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Lsh*>(&n)) {
+    visit_lsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Lt*>(&n)) {
     visit_lt(*i);
     return;
@@ -449,6 +454,10 @@ void Traversal::visit_isundefined(IsUndefined &n) {
 }
 
 void Traversal::visit_leq(Leq &n) {
+  visit_bexpr(n);
+}
+
+void Traversal::visit_lsh(Lsh &n) {
   visit_bexpr(n);
 }
 
@@ -763,6 +772,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Lsh*>(&n)) {
+    visit_lsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Lt*>(&n)) {
     visit_lt(*i);
     return;
@@ -1057,6 +1071,10 @@ void ConstTraversal::visit_isundefined(const IsUndefined &n) {
 }
 
 void ConstTraversal::visit_leq(const Leq &n) {
+  visit_bexpr(n);
+}
+
+void ConstTraversal::visit_lsh(const Lsh &n) {
   visit_bexpr(n);
 }
 
@@ -1528,6 +1546,10 @@ void ConstStmtTraversal::visit_leq(const Leq &n) {
   visit_bexpr(n);
 }
 
+void ConstStmtTraversal::visit_lsh(const Lsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstStmtTraversal::visit_lt(const Lt &n) {
   visit_bexpr(n);
 }
@@ -1787,6 +1809,10 @@ void ConstTypeTraversal::visit_isundefined(const IsUndefined &n) {
 }
 
 void ConstTypeTraversal::visit_leq(const Leq &n) {
+  visit_bexpr(n);
+}
+
+void ConstTypeTraversal::visit_lsh(const Lsh &n) {
   visit_bexpr(n);
 }
 

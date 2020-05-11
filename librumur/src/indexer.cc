@@ -175,6 +175,10 @@ void Indexer::visit_leq(Leq &n) {
   visit_bexpr(n);
 }
 
+void Indexer::visit_lsh(Lsh &n) {
+  visit_bexpr(n);
+}
+
 void Indexer::visit_lt(Lt &n) {
   visit_bexpr(n);
 }

@@ -155,6 +155,9 @@ void IntermediateStage::visit_isundefined(const IsUndefined &n) {
 void IntermediateStage::visit_leq(const Leq &n) {
   next.visit_leq(n);
 }
+void IntermediateStage::visit_lsh(const Lsh &n) {
+  next.visit_lsh(n);
+}
 void IntermediateStage::visit_lt(const Lt &n) {
   next.visit_lt(n);
 }

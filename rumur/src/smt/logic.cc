@@ -1,4 +1,5 @@
 #include <cstddef>
+#include "except.h"
 #include <gmpxx.h>
 #include "logic.h"
 #include "../options.h"
@@ -75,6 +76,15 @@ std::string leq() {
   }
 
   return "<=";
+}
+
+std::string lsh() {
+
+  if (options.smt.use_bitvectors)
+    return "bvshl";
+
+  throw Unsupported("SMT simplification involving left shifts is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
 }
 
 std::string lt() {

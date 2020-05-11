@@ -90,6 +90,7 @@ class IntermediateStage : public Stage {
   void visit_implication(const rumur::Implication &n) override;
   void visit_isundefined(const rumur::IsUndefined &n) override;
   void visit_leq(const rumur::Leq &n) override;
+  void visit_lsh(const rumur::Lsh &n) override;
   void visit_lt(const rumur::Lt &n) override;
   void visit_mod(const rumur::Mod &n) override;
   void visit_model(const rumur::Model &n) override;

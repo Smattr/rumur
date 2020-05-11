@@ -15,6 +15,7 @@ std::string div();
 std::string geq();
 std::string gt ();
 std::string leq();
+std::string lsh();
 std::string lt ();
 std::string mod();
 std::string mul();

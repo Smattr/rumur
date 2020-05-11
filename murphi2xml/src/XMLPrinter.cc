@@ -430,6 +430,10 @@ void XMLPrinter::visit_leq(const Leq &n) {
   visit_bexpr("leq", n);
 }
 
+void XMLPrinter::visit_lsh(const Lsh &n) {
+  visit_bexpr("lsh", n);
+}
+
 void XMLPrinter::visit_lt(const Lt &n) {
   visit_bexpr("lt", n);
 }

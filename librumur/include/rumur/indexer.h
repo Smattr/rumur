@@ -46,6 +46,7 @@ class Indexer : public BaseTraversal {
   void visit_implication(Implication &n) final;
   void visit_isundefined(IsUndefined &n) final;
   void visit_leq(Leq &n) final;
+  void visit_lsh(Lsh &n) final;
   void visit_lt(Lt &n) final;
   void visit_model(Model &n) final;
   void visit_mod(Mod &n) final;

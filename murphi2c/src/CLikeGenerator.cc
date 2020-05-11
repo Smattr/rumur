@@ -247,6 +247,10 @@ void CLikeGenerator::visit_leq(const Leq &n) {
   *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_lsh(const Lsh &n) {
+  *this << "(" << *n.lhs << " << " << *n.rhs << ")";
+}
+
 void CLikeGenerator::visit_lt(const Lt &n) {
   *this << "(" << *n.lhs << " < " << *n.rhs << ")";
 }

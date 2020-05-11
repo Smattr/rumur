@@ -46,6 +46,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_if(const rumur::If &n) final;
   void visit_ifclause(const rumur::IfClause &n) final;
   void visit_leq(const rumur::Leq &n) final;
+  void visit_lsh(const rumur::Lsh &n) final;
   void visit_lt(const rumur::Lt &n) final;
   void visit_mod(const rumur::Mod &n) final;
   void visit_model(const rumur::Model &n) final;

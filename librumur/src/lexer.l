@@ -146,6 +146,7 @@ true {
 "→"  { return rumur::parser::token::IMPLIES;   }
 "<=" { return rumur::parser::token::LEQ;       }
 "≤"  { return rumur::parser::token::LEQ;       }
+"<<" { return rumur::parser::token::LSH;       }
 "!=" { return rumur::parser::token::NEQ;       }
 "≠"  { return rumur::parser::token::NEQ;       }
 "==>" { return rumur::parser::token::ARROW;    }

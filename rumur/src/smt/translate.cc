@@ -104,6 +104,10 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(" << leq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_lsh(const Lsh &n) {
+    *this << "(" << lsh() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_lt(const Lt &n) {
     *this << "(" << lt() << " " << *n.lhs << " " << *n.rhs << ")";
   }

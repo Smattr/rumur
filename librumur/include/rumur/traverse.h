@@ -47,6 +47,7 @@ class BaseTraversal {
   virtual void visit_implication(Implication &n) = 0;
   virtual void visit_isundefined(IsUndefined &n) = 0;
   virtual void visit_leq(Leq &n) = 0;
+  virtual void visit_lsh(Lsh &n) = 0;
   virtual void visit_lt(Lt &n) = 0;
   virtual void visit_model(Model &n) = 0;
   virtual void visit_mod(Mod &n) = 0;
@@ -120,6 +121,7 @@ class Traversal : public BaseTraversal {
   void visit_implication(Implication &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
+  void visit_lsh(Lsh &n) override;
   void visit_lt(Lt &n) override;
   void visit_model(Model &n) override;
   void visit_mod(Mod &n) override;
@@ -192,6 +194,7 @@ class ConstBaseTraversal {
   virtual void visit_implication(const Implication &n) = 0;
   virtual void visit_isundefined(const IsUndefined &n) = 0;
   virtual void visit_leq(const Leq &n) = 0;
+  virtual void visit_lsh(const Lsh &n) = 0;
   virtual void visit_lt(const Lt &n) = 0;
   virtual void visit_model(const Model &n) = 0;
   virtual void visit_mod(const Mod &n) = 0;
@@ -262,6 +265,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_implication(const Implication &n) override;
   void visit_isundefined(const IsUndefined &n) override;
   void visit_leq(const Leq &n) override;
+  void visit_lsh(const Lsh &n) override;
   void visit_lt(const Lt &n) override;
   void visit_model(const Model &n) override;
   void visit_mod(const Mod &n) override;
@@ -376,6 +380,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_implication(const Implication &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
+  void visit_lsh(const Lsh &n) final;
   void visit_lt(const Lt &n) final;
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
@@ -438,6 +443,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_implication(const Implication &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
+  void visit_lsh(const Lsh &n) final;
   void visit_lt(const Lt &n) final;
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;

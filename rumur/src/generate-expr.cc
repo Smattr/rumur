@@ -457,6 +457,12 @@ class Generator : public ConstExprTraversal {
     *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
   }
 
+  void visit_lsh(const Lsh &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "lsh(" << *n.lhs << ", " << *n.rhs << ")";
+  }
+
   void visit_lt(const Lt &n) final {
     if (lvalue)
       invalid(n);

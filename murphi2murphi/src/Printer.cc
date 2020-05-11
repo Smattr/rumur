@@ -252,6 +252,10 @@ void Printer::visit_leq(const Leq &n) {
   visit_bexpr(n);
 }
 
+void Printer::visit_lsh(const Lsh &n) {
+  visit_bexpr(n);
+}
+
 void Printer::visit_lt(const Lt &n) {
   visit_bexpr(n);
 }

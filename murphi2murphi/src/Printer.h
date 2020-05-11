@@ -46,6 +46,7 @@ class Printer : public Stage {
   void visit_implication(const rumur::Implication &n) final;
   void visit_isundefined(const rumur::IsUndefined &n) final;
   void visit_leq(const rumur::Leq &n) final;
+  void visit_lsh(const rumur::Lsh &n) final;
   void visit_lt(const rumur::Lt &n) final;
   void visit_mod(const rumur::Mod &n) final;
   void visit_model(const rumur::Model &n) final;

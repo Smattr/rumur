@@ -544,6 +544,59 @@ std::string Mod::to_string() const {
   return "(" + lhs->to_string() + " % " + rhs->to_string() + ")";
 }
 
+Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Lsh *Lsh::clone() const {
+  return new Lsh(*this);
+}
+
+// shift an mpz value left or right
+static mpz_class shift(mpz_class v, mpz_class lshift) {
+
+  // is this actually a right shift?
+  if (lshift < 0) {
+
+    // extract the shift value into a bit count
+    mpz_class rshift = -lshift;
+    if (!rshift.fits_ulong_p())
+      return 0;
+    mp_bitcnt_t r = static_cast<mp_bitcnt_t>(rshift.get_ui());
+
+    // do a right shift using the GMP C API
+    mpz_t rop;
+    mpz_tdiv_q_2exp(rop, v.get_mpz_t(), r);
+
+    return mpz_class(rop);
+  }
+
+  // extract the shift value into a bit count
+  if (!lshift.fits_ulong_p())
+    return 0;
+  mp_bitcnt_t l = static_cast<mp_bitcnt_t>(lshift.get_ui());
+
+  // do a left shift using the GMP C API
+  mpz_t rop;
+  mpz_mul_2exp(rop, v.get_mpz_t(), l);
+
+  return mpz_class(rop);
+}
+
+mpz_class Lsh::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return shift(a, b);
+}
+
+bool Lsh::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Lsh*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Lsh::to_string() const {
+  return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
+}
+
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {

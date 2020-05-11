@@ -144,6 +144,7 @@
 %token ISUNDEFINED
 %token LEQ
 %token LIVENESS
+%token LSH
 %token NEQ
 %token <std::string> NUMBER
 %token OF
@@ -170,6 +171,7 @@
 %left '&'
 %precedence '!'
 %nonassoc '<' LEQ DEQ '=' NEQ GEQ '>'
+%left LSH
 %left '+' '-'
 %left '*' '/' '%'
 
@@ -323,6 +325,8 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Eq>::make($1, $3, @$);
 } | expr NEQ expr {
   $$ = rumur::Ptr<rumur::Neq>::make($1, $3, @$);
+} | expr LSH expr {
+  $$ = rumur::Ptr<rumur::Lsh>::make($1, $3, @$);
 } | expr '+' expr {
   $$ = rumur::Ptr<rumur::Add>::make($1, $3, @$);
 } | expr '-' expr {
