@@ -4,7 +4,6 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include "Stage.h"
-#include <string>
 
 class Printer : public Stage {
 
@@ -92,6 +91,6 @@ class Printer : public Stage {
   virtual ~Printer() = default;
 
  private:
-  void visit_bexpr(const std::string &tag, const rumur::BinaryExpr &n);
-  void visit_uexpr(const std::string &tag, const rumur::UnaryExpr &n);
+  void visit_bexpr(const rumur::BinaryExpr &n);
+  void visit_uexpr(const rumur::UnaryExpr &n);
 };
