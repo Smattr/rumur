@@ -1917,7 +1917,7 @@ static value_t rsh(value_t a, value_t b) {
   #pragma GCC diagnostic pop
 #endif
 
-  return (value_t)((raw_value_t)a >> b);
+  return a >> b;
 }
 
 /* A version of quicksort that operates on "schedules," arrays of indices that

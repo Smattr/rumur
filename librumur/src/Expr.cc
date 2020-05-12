@@ -1,4 +1,5 @@
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <gmpxx.h>
@@ -551,33 +552,52 @@ Lsh *Lsh::clone() const {
   return new Lsh(*this);
 }
 
-// shift an mpz value left or right
-static mpz_class shift(mpz_class v, mpz_class lshift) {
+// right shift an mpz value
+static mpz_class rshift(mpz_class a, mpz_class b);
+
+// left shift an mpz value
+static mpz_class lshift(mpz_class a, mpz_class b) {
 
   // is this actually a right shift?
-  if (lshift < 0) {
+  if (b < 0)
+    return rshift(a, -b);
 
-    // extract the shift value into a bit count
-    mpz_class rshift = -lshift;
-    if (!rshift.fits_ulong_p())
-      return 0;
-    mp_bitcnt_t r = static_cast<mp_bitcnt_t>(rshift.get_ui());
-
-    // do a right shift using the GMP C API
-    mpz_t rop;
-    mpz_tdiv_q_2exp(rop, v.get_mpz_t(), r);
-
-    return mpz_class(rop);
+  // if the shift is beyond what we can do in one shot, recurse
+  while (!b.fits_ulong_p()) {
+    a = lshift(a, mpz_class(ULONG_MAX));
+    b -= ULONG_MAX;
   }
 
   // extract the shift value into a bit count
-  if (!lshift.fits_ulong_p())
-    return 0;
-  mp_bitcnt_t l = static_cast<mp_bitcnt_t>(lshift.get_ui());
+  mp_bitcnt_t l = static_cast<mp_bitcnt_t>(b.get_ui());
 
   // do a left shift using the GMP C API
   mpz_t rop;
-  mpz_mul_2exp(rop, v.get_mpz_t(), l);
+  mpz_init(rop);
+  mpz_mul_2exp(rop, a.get_mpz_t(), l);
+
+  return mpz_class(rop);
+}
+
+static mpz_class rshift(mpz_class a, mpz_class b) {
+
+  // is this actually a left shift?
+  if (b < 0)
+    return lshift(a, -b);
+
+  // if the shift is beyond what we can do in one shot, recurse
+  while (!b.fits_ulong_p()) {
+    a = rshift(a, mpz_class(ULONG_MAX));
+    b -= ULONG_MAX;
+  }
+
+  // extract the shift value into a bit count
+  mp_bitcnt_t r = static_cast<mp_bitcnt_t>(b.get_ui());
+
+  // do a right shift using the GMP C API
+  mpz_t rop;
+  mpz_init(rop);
+  mpz_fdiv_q_2exp(rop, a.get_mpz_t(), r);
 
   return mpz_class(rop);
 }
@@ -585,7 +605,7 @@ static mpz_class shift(mpz_class v, mpz_class lshift) {
 mpz_class Lsh::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
-  return shift(a, b);
+  return lshift(a, b);
 }
 
 bool Lsh::operator==(const Node &other) const {
