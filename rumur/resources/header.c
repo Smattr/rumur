@@ -78,6 +78,10 @@ enum { STATE_OTHER_BYTES
   #define NONNULL /* nothing; other compilers don't have _Nonnull */
 #endif
 
+#if USE_RTM
+  #include <immintrin.h>
+#endif
+
 /* A word about atomics... There are two different atomic operation mechanisms
  * used in this code and it may not immediately be obvious why one was not
  * sufficient. The two are:
