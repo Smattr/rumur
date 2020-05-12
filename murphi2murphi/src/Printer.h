@@ -65,6 +65,7 @@ class Printer : public Stage {
   void visit_range(const rumur::Range &n) final;
   void visit_record(const rumur::Record &n) final;
   void visit_return(const rumur::Return &n) final;
+  void visit_rsh(const rumur::Rsh &n) final;
   void visit_ruleset(const rumur::Ruleset &n) final;
   void visit_scalarset(const rumur::Scalarset &n) final;
   void visit_simplerule(const rumur::SimpleRule &n) final;

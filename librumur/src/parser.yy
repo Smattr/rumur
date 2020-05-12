@@ -152,6 +152,7 @@
 %token PUT
 %token RECORD
 %token RETURN
+%token RSH
 %token RULE
 %token RULESET
 %token SCALARSET
@@ -171,7 +172,7 @@
 %left '&'
 %precedence '!'
 %nonassoc '<' LEQ DEQ '=' NEQ GEQ '>'
-%left LSH
+%left LSH RSH
 %left '+' '-'
 %left '*' '/' '%'
 
@@ -327,6 +328,8 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Neq>::make($1, $3, @$);
 } | expr LSH expr {
   $$ = rumur::Ptr<rumur::Lsh>::make($1, $3, @$);
+} | expr RSH expr {
+  $$ = rumur::Ptr<rumur::Rsh>::make($1, $3, @$);
 } | expr '+' expr {
   $$ = rumur::Ptr<rumur::Add>::make($1, $3, @$);
 } | expr '-' expr {

@@ -520,7 +520,13 @@ class Generator : public ConstExprTraversal {
       invalid(n);
     *this << "(" << *n.lhs << " || " << *n.rhs << ")";
   }
-   
+
+  void visit_rsh(const Rsh &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "rsh(" << *n.lhs << ", " << *n.rhs << ")";
+  }
+
   void visit_sub(const Sub &n) final {
     if (lvalue)
       invalid(n);

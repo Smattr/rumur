@@ -280,6 +280,10 @@ void Indexer::visit_return(Return &n) {
     dispatch(*n.expr);
 }
 
+void Indexer::visit_rsh(Rsh &n) {
+  visit_bexpr(n);
+}
+
 void Indexer::visit_ruleset(Ruleset &n) {
   n.unique_id = next++;
   for (Quantifier &q : n.quantifiers)

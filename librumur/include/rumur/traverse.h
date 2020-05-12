@@ -66,6 +66,7 @@ class BaseTraversal {
   virtual void visit_range(Range &n) = 0;
   virtual void visit_record(Record &n) = 0;
   virtual void visit_return(Return &n) = 0;
+  virtual void visit_rsh(Rsh &n) = 0;
   virtual void visit_ruleset(Ruleset &n) = 0;
   virtual void visit_scalarset(Scalarset &n) = 0;
   virtual void visit_simplerule(SimpleRule &n) = 0;
@@ -140,6 +141,7 @@ class Traversal : public BaseTraversal {
   void visit_range(Range &n) override;
   void visit_record(Record &n) override;
   void visit_return(Return &n) override;
+  void visit_rsh(Rsh &n) override;
   void visit_ruleset(Ruleset &n) override;
   void visit_scalarset(Scalarset &n) override;
   void visit_simplerule(SimpleRule &n) override;
@@ -213,6 +215,7 @@ class ConstBaseTraversal {
   virtual void visit_range(const Range &n) = 0;
   virtual void visit_record(const Record &n) = 0;
   virtual void visit_return(const Return &n) = 0;
+  virtual void visit_rsh(const Rsh &n) = 0;
   virtual void visit_ruleset(const Ruleset &n) = 0;
   virtual void visit_scalarset(const Scalarset &n) = 0;
   virtual void visit_simplerule(const SimpleRule &n) = 0;
@@ -284,6 +287,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_range(const Range &n) override;
   void visit_record(const Record &n) override;
   void visit_return(const Return &n) override;
+  void visit_rsh(const Rsh &n) override;
   void visit_ruleset(const Ruleset &n) override;
   void visit_scalarset(const Scalarset &n) override;
   void visit_simplerule(const SimpleRule &n) override;
@@ -395,6 +399,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_quantifier(const Quantifier &n) final;
   void visit_range(const Range &n) final;
   void visit_record(const Record &n) final;
+  void visit_rsh(const Rsh &n) final;
   void visit_ruleset(const Ruleset &n) final;
   void visit_scalarset(const Scalarset &n) final;
   void visit_simplerule(const SimpleRule &n) final;
@@ -460,6 +465,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_put(const Put &n) final;
   void visit_quantifier(const Quantifier &n) final;
   void visit_return(const Return &n) final;
+  void visit_rsh(const Rsh &n) final;
   void visit_ruleset(const Ruleset &n) final;
   void visit_simplerule(const SimpleRule &n) final;
   void visit_startstate(const StartState &n) final;

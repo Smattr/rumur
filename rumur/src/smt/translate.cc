@@ -140,6 +140,10 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(or " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_rsh(const Rsh &n) {
+    *this << "(" << rsh() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_sub(const Sub &n) {
     *this << "(" << sub() << " " << *n.lhs << " " << *n.rhs << ")";
   }

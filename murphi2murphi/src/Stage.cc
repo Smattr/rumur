@@ -212,6 +212,9 @@ void IntermediateStage::visit_record(const Record &n) {
 void IntermediateStage::visit_return(const Return &n) {
   next.visit_return(n);
 }
+void IntermediateStage::visit_rsh(const Rsh &n) {
+  next.visit_rsh(n);
+}
 void IntermediateStage::visit_ruleset(const Ruleset &n) {
   next.visit_ruleset(n);
 }

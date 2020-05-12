@@ -660,6 +660,10 @@ void XMLPrinter::visit_return(const Return &n) {
   o << "</return>";
 }
 
+void XMLPrinter::visit_rsh(const Rsh &n) {
+  visit_bexpr("rsh", n);
+}
+
 void XMLPrinter::visit_ruleset(const Ruleset &n) {
   sync_to(n);
   o << "<ruleset name=\"" << xml_escape(n.name) << "\" ";

@@ -457,6 +457,10 @@ void CLikeGenerator::visit_return(const Return &n) {
   *this << ";\n";
 }
 
+void CLikeGenerator::visit_rsh(const Rsh &n) {
+  *this << "(" << *n.lhs << " >> " << *n.rhs << ")";
+}
+
 void CLikeGenerator::visit_ruleset(const Ruleset&) {
   // this is unreachable because generate_c is only ever called with a Model
   // and all rule are flattened during visit_model

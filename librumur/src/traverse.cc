@@ -250,6 +250,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Rsh*>(&n)) {
+    visit_rsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Ruleset*>(&n)) {
     visit_ruleset(*i);
     return;
@@ -547,6 +552,10 @@ void Traversal::visit_record(Record &n) {
 void Traversal::visit_return(Return &n) {
   if (n.expr != nullptr)
     dispatch(*n.expr);
+}
+
+void Traversal::visit_rsh(Rsh &n) {
+  visit_bexpr(n);
 }
 
 void Traversal::visit_ruleset(Ruleset &n) {
@@ -867,6 +876,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Rsh*>(&n)) {
+    visit_rsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Ruleset*>(&n)) {
     visit_ruleset(*i);
     return;
@@ -1164,6 +1178,10 @@ void ConstTraversal::visit_record(const Record &n) {
 void ConstTraversal::visit_return(const Return &n) {
   if (n.expr != nullptr)
     dispatch(*n.expr);
+}
+
+void ConstTraversal::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_ruleset(const Ruleset &n) {
@@ -1620,6 +1638,10 @@ void ConstStmtTraversal::visit_record(const Record &n) {
     dispatch(*f);
 }
 
+void ConstStmtTraversal::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstStmtTraversal::visit_ruleset(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -1892,6 +1914,10 @@ void ConstTypeTraversal::visit_quantifier(const Quantifier &n) {
 void ConstTypeTraversal::visit_return(const Return &n) {
   if (n.expr != nullptr)
     dispatch(*n.expr);
+}
+
+void ConstTypeTraversal::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_ruleset(const Ruleset &n) {

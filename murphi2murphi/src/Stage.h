@@ -109,6 +109,7 @@ class IntermediateStage : public Stage {
   void visit_range(const rumur::Range &n) override;
   void visit_record(const rumur::Record &n) override;
   void visit_return(const rumur::Return &n) override;
+  void visit_rsh(const rumur::Rsh &n) override;
   void visit_ruleset(const rumur::Ruleset &n) override;
   void visit_scalarset(const rumur::Scalarset &n) override;
   void visit_simplerule(const rumur::SimpleRule &n) override;

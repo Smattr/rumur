@@ -302,6 +302,8 @@ namespace { class Simplifier : public BaseTraversal {
     }
   }
 
+  void visit_rsh(Rsh &n) final { visit_bexpr(n); }
+
   void visit_ruleset(Ruleset &n) final {
     solver->open_scope();
     for (Quantifier &quantifier : n.quantifiers)

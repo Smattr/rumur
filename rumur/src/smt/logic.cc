@@ -123,6 +123,15 @@ std::string neg() {
   return "-";
 }
 
+std::string rsh() {
+
+  if (options.smt.use_bitvectors)
+    return "bvashr";
+
+  throw Unsupported("SMT simplification involving right shifts is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
 std::string sub() {
 
   if (options.smt.use_bitvectors) {

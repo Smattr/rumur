@@ -617,6 +617,28 @@ std::string Lsh::to_string() const {
   return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
 }
 
+Rsh::Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Rsh *Rsh::clone() const {
+  return new Rsh(*this);
+}
+
+mpz_class Rsh::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return rshift(a, b);
+}
+
+bool Rsh::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Rsh*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Rsh::to_string() const {
+  return "(" + lhs->to_string() + " >> " + rhs->to_string() + ")";
+}
+
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {

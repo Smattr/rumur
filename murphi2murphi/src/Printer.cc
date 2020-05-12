@@ -406,6 +406,10 @@ void Printer::visit_return(const Return &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
+}
+
 void Printer::visit_ruleset(const Ruleset &n) {
   top->sync_to(n);
   if (!n.quantifiers.empty()) {

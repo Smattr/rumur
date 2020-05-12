@@ -310,6 +310,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_rsh(const Rsh &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_ruleset(const Ruleset &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);

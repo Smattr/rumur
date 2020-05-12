@@ -142,6 +142,7 @@ true {
 ".." { return rumur::parser::token::DOTDOT;    }
 ">=" { return rumur::parser::token::GEQ;       }
 "≥"  { return rumur::parser::token::GEQ;       }
+">>" { return rumur::parser::token::RSH;       }
 "->" { return rumur::parser::token::IMPLIES;   }
 "→"  { return rumur::parser::token::IMPLIES;   }
 "<=" { return rumur::parser::token::LEQ;       }

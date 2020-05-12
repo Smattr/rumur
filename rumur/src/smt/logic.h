@@ -20,6 +20,7 @@ std::string lt ();
 std::string mod();
 std::string mul();
 std::string neg();
+std::string rsh();
 std::string sub();
 
 }

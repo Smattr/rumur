@@ -277,6 +277,7 @@
       <ref name="not"/>
       <ref name="number"/>
       <ref name="or"/>
+      <ref name="rsh"/>
       <ref name="sub"/>
       <ref name="ternary"/>
     </choice>
@@ -754,6 +755,13 @@
         <ref name="expr"/>
         <ref name="content"/>
       </optional>
+    </element>
+  </define>
+
+  <define name="rsh">
+    <element name="rsh">
+      <ref name="location"/>
+      <ref name="binexpr"/>
     </element>
   </define>
 

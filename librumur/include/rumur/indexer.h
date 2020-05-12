@@ -65,6 +65,7 @@ class Indexer : public BaseTraversal {
   void visit_range(Range &n) final;
   void visit_record(Record &n) final;
   void visit_return(Return &n) final;
+  void visit_rsh(Rsh &n) final;
   void visit_ruleset(Ruleset &n) final;
   void visit_scalarset(Scalarset &n) final;
   void visit_simplerule(SimpleRule &n) final;
