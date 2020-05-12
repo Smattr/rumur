@@ -294,6 +294,7 @@ static void parse_args(int argc, char **argv) {
           std::cerr << "invalid argument to --rtm, \"" << optarg << "\"\n";
           exit(EXIT_FAILURE);
         }
+        break;
 
       case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
         if (strcmp(optarg, "off") == 0) {
