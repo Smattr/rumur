@@ -115,10 +115,21 @@ int main(int argc, char **argv) {
 
   assert(in != nullptr);
 
-  // Parse input model
+  // parse input model
   rumur::Ptr<rumur::Model> m;
   try {
     m = rumur::parse(*in);
+  } catch (rumur::Error &e) {
+    std::cerr << e.loc << ":" << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
+
+  // re-index the model to make sure AST node identifiers are ready for symbol
+  // resolution below
+  m->reindex();
+
+  // resolve symbolic references and validate the model
+  try {
     resolve_symbols(*m);
     validate(*m);
   } catch (rumur::Error &e) {
