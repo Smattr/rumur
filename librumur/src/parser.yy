@@ -309,7 +309,10 @@ expr: expr '?' expr ':' expr {
 } | expr '|' expr {
   $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
 } | expr '&' expr {
-  $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
+  /* construct this as an ambiguous expression, that will later be resolved into
+   * an And
+   */
+  $$ = rumur::Ptr<rumur::AmbiguousAmp>::make($1, $3, @$);
 } | '!' expr {
   $$ = rumur::Ptr<rumur::Not>::make($2, @$);
 } | expr '<' expr {

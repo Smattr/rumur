@@ -88,6 +88,12 @@ class BaseTraversal {
    */
   void dispatch(Node &n);
 
+  // Unlike the other visitation methods, we provide an implementation for
+  // AmbiguousAmp because it is an entity that only exists in an unresolved AST.
+  // We assume that inheritors, even if they want to handle “everything,” may
+  // not want to handle this synthetic type.
+  virtual void visit_ambiguousamp(AmbiguousAmp &n);
+
   virtual ~BaseTraversal() = default;
 };
 
@@ -231,6 +237,8 @@ class ConstBaseTraversal {
   virtual void visit_while(const While &n) = 0;
 
   void dispatch(const Node &n);
+
+  virtual void visit_ambiguousamp(const AmbiguousAmp &n);
 
   virtual ~ConstBaseTraversal() = default;
 };

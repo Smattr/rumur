@@ -147,6 +147,22 @@ struct And : public BooleanBinaryExpr {
   std::string to_string() const final;
 };
 
+// An 'x & y' expression where a decision has not yet been made as to whether
+// the '&' is a logical AND or a bitwise AND. These nodes can only occur in the
+// AST prior to symbol resolution.
+struct AmbiguousAmp : public BinaryExpr {
+
+  AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~AmbiguousAmp() = default;
+  AmbiguousAmp *clone() const final;
+
+  Ptr<TypeExpr> type() const final;
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
 struct UnaryExpr : public Expr {
 
   Ptr<Expr> rhs;

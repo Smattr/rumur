@@ -22,6 +22,7 @@ class Indexer : public BaseTraversal {
   void visit_aliasdecl(AliasDecl &n) final;
   void visit_aliasrule(AliasRule &n) final;
   void visit_aliasstmt(AliasStmt &n) final;
+  void visit_ambiguousamp(AmbiguousAmp &n) final;
   void visit_and(And &n) final;
   void visit_array(Array &n) final;
   void visit_assignment(Assignment &n) final;

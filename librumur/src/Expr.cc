@@ -171,6 +171,34 @@ std::string And::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
+AmbiguousAmp::AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+  const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
+AmbiguousAmp *AmbiguousAmp::clone() const {
+  return new AmbiguousAmp(*this);
+}
+
+Ptr<TypeExpr> AmbiguousAmp::type() const {
+  // we cannot retrieve the type of this expression because it has no certain
+  // type until we decide whether it is a logical AND or bitwise AND
+  throw Error("cannot retrieve the type of an unresolved '&' expression", loc);
+}
+
+mpz_class AmbiguousAmp::constant_fold() const {
+  // we cannot constant fold this if we do not yet know whether it is a logical
+  // AND or a bitwise AND
+  throw Error("cannot constant fold an unresolved '&' expression", loc);
+}
+
+bool AmbiguousAmp::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AmbiguousAmp*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string AmbiguousAmp::to_string() const {
+  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+}
+
 UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), rhs(rhs_) {
 }

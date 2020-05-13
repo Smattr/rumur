@@ -35,6 +35,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<AmbiguousAmp*>(&n)) {
+    visit_ambiguousamp(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<And*>(&n)) {
     visit_and(*i);
     return;
@@ -324,6 +329,11 @@ void BaseTraversal::dispatch(Node &n) {
   std::cerr << "missed case in BaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
   assert(!"missed case in BaseTraversal::dispatch");
+}
+
+void BaseTraversal::visit_ambiguousamp(AmbiguousAmp &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit_add(Add &n) {
@@ -661,6 +671,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const AmbiguousAmp*>(&n)) {
+    visit_ambiguousamp(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const And*>(&n)) {
     visit_and(*i);
     return;
@@ -950,6 +965,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
   std::cerr << "missed case in ConstBaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
   assert(!"missed case in ConstBaseTraversal::dispatch");
+}
+
+void ConstBaseTraversal::visit_ambiguousamp(const AmbiguousAmp &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void ConstTraversal::visit_add(const Add &n) {
