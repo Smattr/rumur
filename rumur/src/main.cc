@@ -589,6 +589,7 @@ int main(int argc, char **argv) {
   parse_args(argc, argv);
 
   // Parse input model
+  *debug << "parsing input model...\n";
   Ptr<Model> m;
   try {
     m = parse(in == nullptr ? std::cin : *in);
@@ -605,11 +606,14 @@ int main(int argc, char **argv) {
   /* Re-index the model (assign unique identifiers to each node that are used in
    * generation of the verifier).
    */
+  *debug << "re-indexing...\n";
   m->reindex();
 
   // resolve symbolic references and validate the model
   try {
+    *debug << "resolving symbols...\n";
     resolve_symbols(*m);
+    *debug << "validating AST...\n";
     validate(*m);
   } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
@@ -625,6 +629,7 @@ int main(int argc, char **argv) {
 
   // run SMT simplification if the user enabled it
   if (options.smt.simplification == SmtSimplification::ON) {
+    *debug << "SMT simplification...\n";
     try {
       smt::simplify(*m);
     } catch (smt::BudgetExhausted&) {
@@ -637,9 +642,11 @@ int main(int argc, char **argv) {
   }
 
   // re-order fields to optimise access to them
+  *debug << "optimising field ordering...\n";
   optimise_field_ordering(*m);
 
   // get value_t to use in the checker
+  *debug << "determining value_t type...\n";
   std::pair<ValueType, ValueType> value_types;
   try {
     value_types = get_value_type(options.value_type, *m);
@@ -649,6 +656,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
+  *debug << "generating verifier...\n";
   assert(out != nullptr);
   if (output_checker(*out, *m, value_types) != 0)
     return EXIT_FAILURE;
