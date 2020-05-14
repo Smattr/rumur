@@ -41,6 +41,10 @@ void Indexer::visit_ambiguousamp(AmbiguousAmp &n) {
   visit_bexpr(n);
 }
 
+void Indexer::visit_ambiguouspipe(AmbiguousPipe &n) {
+  visit_bexpr(n);
+}
+
 void Indexer::visit_and(And &n) {
   visit_bexpr(n);
 }

@@ -81,6 +81,10 @@ class Resolver : public Traversal {
     visit_bexpr(n);
   }
 
+  void visit_ambiguouspipe(AmbiguousPipe &n) final {
+    visit_bexpr(n);
+  }
+
   void visit_and(And &n) final {
     visit_bexpr(n);
   }
@@ -496,9 +500,10 @@ class Resolver : public Traversal {
     disambiguate(n.rhs);
   }
 
-  // detect whether this is an AmbiguousAmp and, if so, resolve it into its more
-  // precise AST node type
+  // detect whether this is an ambiguous node and, if so, resolve it into its
+  // more precise AST node type
   void disambiguate(Ptr<Expr> &e) {
+
     if (auto a = dynamic_cast<const AmbiguousAmp*>(e.get())) {
 
       // try to get the type of the left hand side
@@ -527,6 +532,22 @@ class Resolver : public Traversal {
 
       // replace the ambiguous node
       e = replacement;
+
+      return;
+    }
+
+    if (auto o = dynamic_cast<const AmbiguousPipe*>(e.get())) {
+
+      // TODO: discriminate between logical OR and bitwise OR here
+
+      // create an equivalent node representing the logica OR
+      auto replacement = Ptr<Or>::make(o->lhs, o->rhs, o->loc);
+      replacement->unique_id = o->unique_id;
+
+      // replace the ambiguous node
+      e = replacement;
+
+      return;
     }
   }
 };

@@ -199,6 +199,34 @@ std::string AmbiguousAmp::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
+AmbiguousPipe::AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+  const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
+AmbiguousPipe *AmbiguousPipe::clone() const {
+  return new AmbiguousPipe(*this);
+}
+
+Ptr<TypeExpr> AmbiguousPipe::type() const {
+  // we cannot retrieve the type of this expression because it has no certain
+  // type until we decide whether it is a logical OR or bitwise OR
+  throw Error("cannot retrieve the type of an unresolved '|' expression", loc);
+}
+
+mpz_class AmbiguousPipe::constant_fold() const {
+  // we cannot constant fold this if we do not yet know whether it is a logical
+  // OR or a bitwise OR
+  throw Error("cannot constant fold an unresolved '|' expression", loc);
+}
+
+bool AmbiguousPipe::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AmbiguousPipe*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string AmbiguousPipe::to_string() const {
+  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
+}
+
 UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
   Expr(loc_), rhs(rhs_) {
 }

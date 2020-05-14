@@ -307,7 +307,10 @@ expr: expr '?' expr ':' expr {
 } | expr IMPLIES expr {
   $$ = rumur::Ptr<rumur::Implication>::make($1, $3, @$);
 } | expr '|' expr {
-  $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
+  /* construct this as an ambiguous expression, that will later be resolved into
+   * an Or
+   */
+  $$ = rumur::Ptr<rumur::AmbiguousPipe>::make($1, $3, @$);
 } | expr '&' expr {
   /* construct this as an ambiguous expression, that will later be resolved into
    * an And or a Band

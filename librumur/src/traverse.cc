@@ -40,6 +40,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<AmbiguousPipe*>(&n)) {
+    visit_ambiguouspipe(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<And*>(&n)) {
     visit_and(*i);
     return;
@@ -337,6 +342,11 @@ void BaseTraversal::dispatch(Node &n) {
 }
 
 void BaseTraversal::visit_ambiguousamp(AmbiguousAmp &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void BaseTraversal::visit_ambiguouspipe(AmbiguousPipe &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
 }
@@ -685,6 +695,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const AmbiguousPipe*>(&n)) {
+    visit_ambiguouspipe(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const And*>(&n)) {
     visit_and(*i);
     return;
@@ -982,6 +997,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
 }
 
 void ConstBaseTraversal::visit_ambiguousamp(const AmbiguousAmp &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstBaseTraversal::visit_ambiguouspipe(const AmbiguousPipe &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
 }

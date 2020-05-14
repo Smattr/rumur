@@ -53,6 +53,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_ambiguouspipe(const AmbiguousPipe &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_and(const And &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
