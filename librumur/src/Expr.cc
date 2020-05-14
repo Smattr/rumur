@@ -667,6 +667,28 @@ std::string Rsh::to_string() const {
   return "(" + lhs->to_string() + " >> " + rhs->to_string() + ")";
 }
 
+Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Band *Band::clone() const {
+  return new Band(*this);
+}
+
+mpz_class Band::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return a & b;
+}
+
+bool Band::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Band*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Band::to_string() const {
+  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+}
+
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {

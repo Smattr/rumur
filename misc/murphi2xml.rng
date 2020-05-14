@@ -112,6 +112,13 @@
     </element>
   </define>
 
+  <define name="band">
+    <element name="band">
+      <ref name="location"/>
+      <ref name="binexpr"/>
+    </element>
+  </define>
+
   <define name="binexpr">
     <ref name="content"/>
     <element name="lhs">
@@ -255,6 +262,7 @@
     <choice>
       <ref name="add"/>
       <ref name="and"/>
+      <ref name="band"/>
       <ref name="div"/>
       <ref name="element"/>
       <ref name="eq"/>

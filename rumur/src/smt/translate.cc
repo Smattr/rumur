@@ -41,6 +41,10 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(and " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_band(const Band &n) {
+    *this << "(" << band() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_element(const Element &n) {
     *this << "(select " << *n.array << " " << *n.index << ")";
   }

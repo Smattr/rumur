@@ -40,6 +40,16 @@ std::string add() {
   return "+";
 }
 
+std::string band() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvand";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise AND is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
 std::string div() {
 
   if (options.smt.use_bitvectors) {

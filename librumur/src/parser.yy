@@ -310,7 +310,7 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
 } | expr '&' expr {
   /* construct this as an ambiguous expression, that will later be resolved into
-   * an And
+   * an And or a Band
    */
   $$ = rumur::Ptr<rumur::AmbiguousAmp>::make($1, $3, @$);
 } | '!' expr {

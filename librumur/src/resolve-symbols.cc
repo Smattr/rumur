@@ -18,6 +18,7 @@
 #include <rumur/validate.h>
 #include <string>
 #include <utility>
+#include "utils.h"
 
 namespace rumur {
 
@@ -500,10 +501,28 @@ class Resolver : public Traversal {
   void disambiguate(Ptr<Expr> &e) {
     if (auto a = dynamic_cast<const AmbiguousAmp*>(e.get())) {
 
-      // TODO: discriminate between logical AND and bitwise AND here
+      // try to get the type of the left hand side
+      Ptr<TypeExpr> t;
+      try {
+        t = a->lhs->type();
+      } catch (Error&) {
+        // We failed because the left operand is somehow invalid. Silently
+        // ignore this, assuming it will be rediscovered during AST validation.
+        return;
+      }
 
-      // create an equivalent node representing the logical AND
-      auto replacement = Ptr<And>::make(a->lhs, a->rhs, a->loc);
+      // Form an unambiguous replacement node based on the type of the left
+      // operand. Note that the types of the left and right operands may be
+      // incompatible. However, this will cause an error during AST validation
+      // so we do not need to worry about that here.
+      Ptr<Expr> replacement;
+      if (isa<Range>(t)) {
+        replacement = Ptr<Band>::make(a->lhs, a->rhs, a->loc);
+      } else {
+        replacement = Ptr<And>::make(a->lhs, a->rhs, a->loc);
+      }
+
+      // also preserve the identifier which has already been set
       replacement->unique_id = a->unique_id;
 
       // replace the ambiguous node

@@ -92,6 +92,9 @@ void IntermediateStage::visit_array(const Array &n) {
 void IntermediateStage::visit_assignment(const Assignment &n) {
   next.visit_assignment(n);
 }
+void IntermediateStage::visit_band(const Band &n) {
+  next.visit_band(n);
+}
 void IntermediateStage::visit_clear(const Clear &n) {
   next.visit_clear(n);
 }

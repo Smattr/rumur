@@ -69,6 +69,7 @@ class IntermediateStage : public Stage {
   void visit_and(const rumur::And &n) override;
   void visit_array(const rumur::Array &n) override;
   void visit_assignment(const rumur::Assignment &n) override;
+  void visit_band(const rumur::Band &n) override;
   void visit_clear(const rumur::Clear &n) override;
   void visit_constdecl(const rumur::ConstDecl &n) override;
   void visit_div(const rumur::Div &n) override;

@@ -80,6 +80,8 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.rhs);
   }
 
+  void visit_band(Band &n) final { visit_bexpr(n); }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
 

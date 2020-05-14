@@ -26,6 +26,7 @@ class Indexer : public BaseTraversal {
   void visit_and(And &n) final;
   void visit_array(Array &n) final;
   void visit_assignment(Assignment &n) final;
+  void visit_band(Band &n) final;
   void visit_clear(Clear &n) final;
   void visit_constdecl(ConstDecl &n) final;
   void visit_div(Div &n) final;

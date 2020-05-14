@@ -71,6 +71,10 @@ void Printer::visit_array(const Array &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_band(const Band &n) {
+  visit_bexpr(n);
+}
+
 void Printer::visit_assignment(const Assignment &n) {
   top->sync_to(n);
   top->dispatch(*n.lhs);

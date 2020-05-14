@@ -151,6 +151,10 @@ void XMLPrinter::visit_assignment(const Assignment &n) {
   o << "</assignment>";
 }
 
+void XMLPrinter::visit_band(const Band &n) {
+  visit_bexpr("band", n);
+}
+
 void XMLPrinter::visit_clear(const Clear &n) {
   sync_to(n);
   o << "<clear ";
