@@ -119,6 +119,13 @@
     </element>
   </define>
 
+  <define name="bor">
+    <element name="bor">
+      <ref name="location"/>
+      <ref name="binexpr"/>
+    </element>
+  </define>
+
   <define name="binexpr">
     <ref name="content"/>
     <element name="lhs">
@@ -263,6 +270,7 @@
       <ref name="add"/>
       <ref name="and"/>
       <ref name="band"/>
+      <ref name="bor"/>
       <ref name="div"/>
       <ref name="element"/>
       <ref name="eq"/>

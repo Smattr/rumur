@@ -45,6 +45,10 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(" << band() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_bor(const Bor &n) {
+    *this << "(" << bor() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_element(const Element &n) {
     *this << "(select " << *n.array << " " << *n.index << ")";
   }

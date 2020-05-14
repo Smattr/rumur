@@ -81,6 +81,7 @@ namespace { class Simplifier : public BaseTraversal {
   }
 
   void visit_band(Band &n) final { visit_bexpr(n); }
+  void visit_bor(Bor &n) final { visit_bexpr(n); }
 
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);

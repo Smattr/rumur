@@ -65,6 +65,10 @@ void Indexer::visit_band(Band &n) {
   visit_bexpr(n);
 }
 
+void Indexer::visit_bor(Bor &n) {
+  visit_bexpr(n);
+}
+
 void Indexer::visit_bexpr(BinaryExpr &n) {
   n.unique_id = next++;
   dispatch(*n.lhs);

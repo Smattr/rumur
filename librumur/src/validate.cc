@@ -83,6 +83,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_bor(const Bor &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_clear(const Clear &n) final {
     dispatch(*n.rhs);
     n.validate();

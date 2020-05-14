@@ -538,10 +538,28 @@ class Resolver : public Traversal {
 
     if (auto o = dynamic_cast<const AmbiguousPipe*>(e.get())) {
 
-      // TODO: discriminate between logical OR and bitwise OR here
+      // try to get the type of the left hand side
+      Ptr<TypeExpr> t;
+      try {
+        t = o->lhs->type();
+      } catch (Error&) {
+        // We failed because the left operand is somehow invalid. Silently
+        // ignore this, assuming it will be rediscovered during AST validation.
+        return;
+      }
 
-      // create an equivalent node representing the logica OR
-      auto replacement = Ptr<Or>::make(o->lhs, o->rhs, o->loc);
+      // Form an unambiguous replacement node based on the type of the left
+      // operand. Note that the types of the left and right operands may be
+      // incompatible. However, this will cause an error during AST validation
+      // so we do not need to worry about that here.
+      Ptr<Expr> replacement;
+      if (isa<Range>(t)) {
+        replacement = Ptr<Bor>::make(o->lhs, o->rhs, o->loc);
+      } else {
+        replacement = Ptr<Or>::make(o->lhs, o->rhs, o->loc);
+      }
+
+      // also preserve the identifier which has already been set
       replacement->unique_id = o->unique_id;
 
       // replace the ambiguous node

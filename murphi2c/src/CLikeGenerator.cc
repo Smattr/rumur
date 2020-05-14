@@ -75,6 +75,10 @@ void CLikeGenerator::visit_band(const Band &n) {
   *this << "(" << *n.lhs << " & " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_bor(const Bor &n) {
+  *this << "(" << *n.lhs << " | " << *n.rhs << ")";
+}
+
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
     << "));\n";

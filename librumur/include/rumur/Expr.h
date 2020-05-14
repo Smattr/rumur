@@ -123,6 +123,7 @@ struct Implication : public BooleanBinaryExpr {
   std::string to_string() const final;
 };
 
+// logical OR
 struct Or : public BooleanBinaryExpr {
 
   Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
@@ -414,6 +415,19 @@ struct Band : public ArithmeticBinaryExpr {
   Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Band() = default;
   Band *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+// bitwise OR
+struct Bor : public ArithmeticBinaryExpr {
+
+  Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Bor() = default;
+  Bor *clone() const final;
 
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))

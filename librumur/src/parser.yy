@@ -308,7 +308,7 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Implication>::make($1, $3, @$);
 } | expr '|' expr {
   /* construct this as an ambiguous expression, that will later be resolved into
-   * an Or
+   * an Or or a Bor
    */
   $$ = rumur::Ptr<rumur::AmbiguousPipe>::make($1, $3, @$);
 } | expr '&' expr {
