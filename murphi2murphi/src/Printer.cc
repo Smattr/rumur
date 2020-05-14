@@ -588,6 +588,10 @@ void Printer::visit_while(const While &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_xor(const Xor &n) {
+  visit_bexpr(n);
+}
+
 void Printer::process(const Token &t) {
 
   assert(t.type != Token::SUBJ && "an IntermediateStage did not put a shift "

@@ -125,6 +125,7 @@ class IntermediateStage : public Stage {
   void visit_undefine(const rumur::Undefine &n) override;
   void visit_vardecl(const rumur::VarDecl &n) override;
   void visit_while(const rumur::While &n) override;
+  void visit_xor(const rumur::Xor &n) override;
 
   void process(const Token &t) override;
 

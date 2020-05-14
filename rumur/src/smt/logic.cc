@@ -60,6 +60,16 @@ std::string bor() {
     "supported when using a bitvector representation (--smt-bitvectors on)");
 }
 
+std::string bxor() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvxor";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise XOR is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
 std::string div() {
 
   if (options.smt.use_bitvectors) {

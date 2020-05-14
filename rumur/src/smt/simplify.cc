@@ -409,6 +409,8 @@ namespace { class Simplifier : public BaseTraversal {
       dispatch(*stmt);
   }
 
+  void visit_xor(Xor &n) final { visit_bexpr(n); }
+
  private:
 
   void visit_bexpr(BinaryExpr &n) {

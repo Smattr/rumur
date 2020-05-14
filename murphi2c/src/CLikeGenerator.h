@@ -77,6 +77,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_typeexprid(const rumur::TypeExprID &n) final;
   void visit_undefine(const rumur::Undefine &n) final;
   void visit_while(const rumur::While &n) final;
+  void visit_xor(const rumur::Xor &n) final;
 
   // helpers to make output more natural
   CLikeGenerator &operator<<(const std::string &s);

@@ -296,6 +296,7 @@
       <ref name="rsh"/>
       <ref name="sub"/>
       <ref name="ternary"/>
+      <ref name="xor"/>
     </choice>
   </define>
 
@@ -1139,6 +1140,13 @@
         <ref name="body"/>
         <ref name="content"/>
       </optional>
+    </element>
+  </define>
+
+  <define name="xor">
+    <element name="xor">
+      <ref name="location"/>
+      <ref name="binexpr"/>
     </element>
   </define>
 

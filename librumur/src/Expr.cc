@@ -739,6 +739,28 @@ std::string Bor::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
+Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Xor *Xor::clone() const {
+  return new Xor(*this);
+}
+
+mpz_class Xor::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return a ^ b;
+}
+
+bool Xor::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Xor*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Xor::to_string() const {
+  return "(" + lhs->to_string() + " ^ " + rhs->to_string() + ")";
+}
+
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
   const location &loc_):
   Expr(loc_), id(id_), value(value_) {

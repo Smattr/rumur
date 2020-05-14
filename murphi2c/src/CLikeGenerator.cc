@@ -581,6 +581,10 @@ void CLikeGenerator::visit_while(const While &n) {
   *this << indentation() << "}\n";
 }
 
+void CLikeGenerator::visit_xor(const Xor &n) {
+  *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
+}
+
 CLikeGenerator &CLikeGenerator::operator<<(const std::string &s) {
   out << s;
   return *this;

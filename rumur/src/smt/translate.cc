@@ -160,6 +160,10 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(ite " << *n.cond << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_xor(const Xor &n) {
+    *this << "(" << bxor() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
  private:
   void translate_quantified(const Quantifier &q, const Expr &e, bool forall) {
 

@@ -933,6 +933,10 @@ void XMLPrinter::visit_while(const While &n) {
   o << "</while>";
 }
 
+void XMLPrinter::visit_xor(const Xor &n) {
+  visit_bexpr("xor", n);
+}
+
 XMLPrinter::~XMLPrinter() {
   sync_to();
   o << "</unit>\n";

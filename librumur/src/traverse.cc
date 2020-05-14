@@ -340,6 +340,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Xor*>(&n)) {
+    visit_xor(*i);
+    return;
+  }
+
 #ifndef NDEBUG
   std::cerr << "missed case in BaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
@@ -675,6 +680,10 @@ void Traversal::visit_while(While &n) {
     dispatch(*s);
 }
 
+void Traversal::visit_xor(Xor &n) {
+  visit_bexpr(n);
+}
+
 Traversal::~Traversal() { }
 
 void ConstBaseTraversal::dispatch(const Node &n) {
@@ -1001,6 +1010,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
 
   if (auto i = dynamic_cast<const While*>(&n)) {
     visit_while(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Xor*>(&n)) {
+    visit_xor(*i);
     return;
   }
 
@@ -1337,6 +1351,10 @@ void ConstTraversal::visit_while(const While &n) {
   dispatch(*n.condition);
   for (auto &s : n.body)
     dispatch(*s);
+}
+
+void ConstTraversal::visit_xor(const Xor &n) {
+  visit_bexpr(n);
 }
 
 ConstTraversal::~ConstTraversal() { }
@@ -1789,6 +1807,10 @@ void ConstStmtTraversal::visit_vardecl(const VarDecl &n) {
     dispatch(*n.type);
 }
 
+void ConstStmtTraversal::visit_xor(const Xor &n) {
+  visit_bexpr(n);
+}
+
 void ConstTypeTraversal::visit_add(const Add &n) {
   visit_bexpr(n);
 }
@@ -2083,6 +2105,10 @@ void ConstTypeTraversal::visit_while(const While &n) {
   dispatch(*n.condition);
   for (auto &s : n.body)
     dispatch(*s);
+}
+
+void ConstTypeTraversal::visit_xor(const Xor &n) {
+  visit_bexpr(n);
 }
 
 }

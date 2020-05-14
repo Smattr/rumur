@@ -81,6 +81,7 @@ class Printer : public Stage {
   void visit_undefine(const rumur::Undefine &n) final;
   void visit_vardecl(const rumur::VarDecl &n) final;
   void visit_while(const rumur::While &n) final;
+  void visit_xor(const rumur::Xor &n) final;
 
   void process(const Token &t) final;
 

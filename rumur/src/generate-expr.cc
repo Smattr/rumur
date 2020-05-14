@@ -552,6 +552,12 @@ class Generator : public ConstExprTraversal {
     *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
   }
 
+  void visit_xor(const Xor &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
+  }
+
   virtual ~Generator() = default;
 
  private:

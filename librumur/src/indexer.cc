@@ -392,4 +392,8 @@ void Indexer::visit_while(While &n) {
     dispatch(*s);
 }
 
+void Indexer::visit_xor(Xor &n) {
+  visit_bexpr(n);
+}
+
 }

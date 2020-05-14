@@ -432,6 +432,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_xor(const Xor &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   virtual ~Validator() = default;
 };
 

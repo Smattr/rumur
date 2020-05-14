@@ -169,6 +169,7 @@
 %nonassoc '?' ':'
 %nonassoc IMPLIES
 %left '|'
+%left '^'
 %left '&'
 %precedence '!'
 %nonassoc '<' LEQ DEQ '=' NEQ GEQ '>'
@@ -311,6 +312,8 @@ expr: expr '?' expr ':' expr {
    * an Or or a Bor
    */
   $$ = rumur::Ptr<rumur::AmbiguousPipe>::make($1, $3, @$);
+} | expr '^' expr {
+  $$ = rumur::Ptr<rumur::Xor>::make($1, $3, @$);
 } | expr '&' expr {
   /* construct this as an ambiguous expression, that will later be resolved into
    * an And or a Band

@@ -27,5 +27,8 @@ syn match murphiOperator "==[^>]"he=e-1
 " UTF-8 operators that Rumur recognises
 syn match murphiOperator "[∀∃≔≥→≤≠⇒¬∧∨]"
 
+" xor operator that Rumur recognises
+syn match murphiOperator "\^"
+
 " recognise escape sequences in strings
 syn region murphiString start=+"\|“+ skip=+\\\\\|\\"\|\\”+ end=+"\|”+

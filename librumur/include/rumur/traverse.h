@@ -82,6 +82,7 @@ class BaseTraversal {
   virtual void visit_undefine(Undefine &n) = 0;
   virtual void visit_vardecl(VarDecl &n) = 0;
   virtual void visit_while(While &n) = 0;
+  virtual void visit_xor(Xor &n) = 0;
 
   /* Visitation dispatch. This simply determines the type of the Node argument
    * and calls the appropriate specialised 'visit' method. This is not virtual
@@ -166,6 +167,7 @@ class Traversal : public BaseTraversal {
   void visit_undefine(Undefine &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
+  void visit_xor(Xor &n) override;
 
   // Force class to be abstract
   virtual ~Traversal() = 0;
@@ -242,6 +244,7 @@ class ConstBaseTraversal {
   virtual void visit_undefine(const Undefine &n) = 0;
   virtual void visit_vardecl(const VarDecl &n) = 0;
   virtual void visit_while(const While &n) = 0;
+  virtual void visit_xor(const Xor &n) = 0;
 
   void dispatch(const Node &n);
 
@@ -319,6 +322,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_undefine(const Undefine &n) override;
   void visit_vardecl(const VarDecl &n) override;
   void visit_while(const While &n) override;
+  void visit_xor(const Xor &n) override;
 
   // Force class to be abstract
   virtual ~ConstTraversal() = 0;
@@ -430,6 +434,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_vardecl(const VarDecl &n) final;
+  void visit_xor(const Xor &n) final;
 
   virtual ~ConstStmtTraversal() = default;
 
@@ -499,6 +504,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_undefine(const Undefine &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
+  void visit_xor(const Xor &n) final;
 
   virtual ~ConstTypeTraversal() = default;
 

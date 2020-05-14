@@ -435,6 +435,19 @@ struct Bor : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
+struct Xor : public ArithmeticBinaryExpr {
+
+  Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Xor() = default;
+  Xor *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+
 struct ExprID : public Expr {
 
   std::string id;

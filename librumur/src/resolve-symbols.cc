@@ -485,6 +485,10 @@ class Resolver : public Traversal {
     disambiguate(n.condition);
   }
 
+  void visit_xor(Xor &n) final {
+    visit_bexpr(n);
+  }
+
   virtual ~Resolver() = default;
 
  private:

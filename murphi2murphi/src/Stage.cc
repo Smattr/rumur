@@ -260,6 +260,9 @@ void IntermediateStage::visit_vardecl(const VarDecl &n) {
 void IntermediateStage::visit_while(const While &n) {
   next.visit_while(n);
 }
+void IntermediateStage::visit_xor(const Xor &n) {
+  next.visit_xor(n);
+}
 
 void IntermediateStage::process(const Token &t) {
   next.process(t);
