@@ -533,6 +533,35 @@ std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
 
+Bnot::Bnot(const Ptr<Expr> &rhs_, const location &loc_):
+  UnaryExpr(rhs_, loc_) { }
+
+void Bnot::validate() const {
+  if (!isa<Range>(rhs->type()->resolve()))
+    throw Error("expression cannot be bitwise NOTed", rhs->loc);
+}
+
+Bnot *Bnot::clone() const {
+  return new Bnot(*this);
+}
+
+Ptr<TypeExpr> Bnot::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
+}
+
+mpz_class Bnot::constant_fold() const {
+  return ~rhs->constant_fold();
+}
+
+bool Bnot::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Bnot*>(&other);
+  return o != nullptr && *rhs == *o->rhs;
+}
+
+std::string Bnot::to_string() const {
+  return "(~" + rhs->to_string() + ")";
+}
+
 Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
   ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 

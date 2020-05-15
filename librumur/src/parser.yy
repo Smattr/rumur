@@ -178,6 +178,7 @@
 %left LSH RSH
 %left '+' '-'
 %left '*' '/' '%'
+%precedence '~'
 
 %type <rumur::Ptr<rumur::AliasRule>>                         aliasrule
 %type <std::shared_ptr<rumur::Property::Category>>           category
@@ -327,6 +328,8 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::AmbiguousAmp>::make($1, $3, @$);
 } | '!' expr {
   $$ = rumur::Ptr<rumur::Not>::make($2, @$);
+} | '~' expr {
+  $$ = rumur::Ptr<rumur::Bnot>::make($2, @$);
 } | expr '<' expr {
   $$ = rumur::Ptr<rumur::Lt>::make($1, $3, @$);
 } | expr LEQ expr {

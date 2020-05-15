@@ -50,6 +50,16 @@ std::string band() {
     "supported when using a bitvector representation (--smt-bitvectors on)");
 }
 
+std::string bnot() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvnot";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise NOT is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
 std::string bor() {
 
   if (options.smt.use_bitvectors) {

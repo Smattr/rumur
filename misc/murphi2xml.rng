@@ -119,6 +119,13 @@
     </element>
   </define>
 
+  <define name="bnot">
+    <element name="bnot">
+      <ref name="location"/>
+      <ref name="uexpr"/>
+    </element>
+  </define>
+
   <define name="bor">
     <element name="bor">
       <ref name="location"/>
@@ -270,6 +277,7 @@
       <ref name="add"/>
       <ref name="and"/>
       <ref name="band"/>
+      <ref name="bnot"/>
       <ref name="bor"/>
       <ref name="div"/>
       <ref name="element"/>

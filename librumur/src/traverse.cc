@@ -65,6 +65,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Bnot*>(&n)) {
+    visit_bnot(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Bor*>(&n)) {
     visit_bor(*i);
     return;
@@ -399,6 +404,10 @@ void Traversal::visit_assignment(Assignment &n) {
 
 void Traversal::visit_band(Band &n) {
   visit_bexpr(n);
+}
+
+void Traversal::visit_bnot(Bnot &n) {
+  visit_uexpr(n);
 }
 
 void Traversal::visit_bor(Bor &n) {
@@ -738,6 +747,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Bnot*>(&n)) {
+    visit_bnot(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Bor*>(&n)) {
     visit_bor(*i);
     return;
@@ -1072,6 +1086,10 @@ void ConstTraversal::visit_assignment(const Assignment &n) {
 
 void ConstTraversal::visit_band(const Band &n) {
   visit_bexpr(n);
+}
+
+void ConstTraversal::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
 }
 
 void ConstTraversal::visit_bor(const Bor &n) {
@@ -1579,6 +1597,10 @@ void ConstStmtTraversal::visit_band(const Band &n) {
   visit_bexpr(n);
 }
 
+void ConstStmtTraversal::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
+}
+
 void ConstStmtTraversal::visit_bor(const Bor &n) {
   visit_bexpr(n);
 }
@@ -1844,6 +1866,10 @@ void ConstTypeTraversal::visit_assignment(const Assignment &n) {
 
 void ConstTypeTraversal::visit_band(const Band &n) {
   visit_bexpr(n);
+}
+
+void ConstTypeTraversal::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
 }
 
 void ConstTypeTraversal::visit_bor(const Bor &n) {

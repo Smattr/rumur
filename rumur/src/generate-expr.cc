@@ -52,6 +52,12 @@ class Generator : public ConstExprTraversal {
     *this << "(" << *n.lhs << " & " << *n.rhs << ")";
   }
 
+  void visit_bnot(const Bnot &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "(~" << *n.rhs << ")";
+  }
+
   void visit_bor(const Bor &n) final {
     if (lvalue)
       invalid(n);

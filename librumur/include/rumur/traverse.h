@@ -27,6 +27,7 @@ class BaseTraversal {
   virtual void visit_array(Array &n) = 0;
   virtual void visit_assignment(Assignment &n) = 0;
   virtual void visit_band(Band &n) = 0;
+  virtual void visit_bnot(Bnot &n) = 0;
   virtual void visit_bor(Bor &n) = 0;
   virtual void visit_clear(Clear &n) = 0;
   virtual void visit_constdecl(ConstDecl &n) = 0;
@@ -112,6 +113,7 @@ class Traversal : public BaseTraversal {
   void visit_array(Array &n) override;
   void visit_assignment(Assignment &n) override;
   void visit_band(Band &n) override;
+  void visit_bnot(Bnot &n) override;
   void visit_bor(Bor &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
@@ -189,6 +191,7 @@ class ConstBaseTraversal {
   virtual void visit_array(const Array &n) = 0;
   virtual void visit_assignment(const Assignment &n) = 0;
   virtual void visit_band(const Band &n) = 0;
+  virtual void visit_bnot(const Bnot &n) = 0;
   virtual void visit_bor(const Bor &n) = 0;
   virtual void visit_clear(const Clear &n) = 0;
   virtual void visit_constdecl(const ConstDecl &n) = 0;
@@ -267,6 +270,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_array(const Array &n) override;
   void visit_assignment(const Assignment &n) override;
   void visit_band(const Band &n) override;
+  void visit_bnot(const Bnot &n) override;
   void visit_bor(const Bor &n) override;
   void visit_clear(const Clear &n) override;
   void visit_constdecl(const ConstDecl &n) override;
@@ -390,6 +394,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_and(const And &n) final;
   void visit_array(const Array &n) final;
   void visit_band(const Band &n) final;
+  void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
@@ -454,6 +459,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_and(const And &n) final;
   void visit_assignment(const Assignment &n) final;
   void visit_band(const Band &n) final;
+  void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;

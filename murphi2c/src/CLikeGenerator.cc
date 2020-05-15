@@ -75,6 +75,10 @@ void CLikeGenerator::visit_band(const Band &n) {
   *this << "(" << *n.lhs << " & " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_bnot(const Bnot &n) {
+  *this << "(~" << *n.rhs << ")";
+}
+
 void CLikeGenerator::visit_bor(const Bor &n) {
   *this << "(" << *n.lhs << " | " << *n.rhs << ")";
 }

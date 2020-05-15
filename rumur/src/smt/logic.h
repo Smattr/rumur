@@ -12,6 +12,7 @@ std::string numeric_literal(const mpz_class &value);
 
 std::string add ();
 std::string band();
+std::string bnot();
 std::string bor ();
 std::string bxor();
 std::string div ();

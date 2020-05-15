@@ -75,6 +75,10 @@ void Printer::visit_band(const Band &n) {
   visit_bexpr(n);
 }
 
+void Printer::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
+}
+
 void Printer::visit_bor(const Bor &n) {
   visit_bexpr(n);
 }

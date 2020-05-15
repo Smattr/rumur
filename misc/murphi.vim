@@ -31,8 +31,9 @@ syn match murphiOperator "[∀∃≔≥→≤≠⇒¬∧∨]"
 syn match murphiOperator "&&"
 syn match murphiOperator "||"
 
-" xor operator that Rumur recognises
+" bitwise operators that Rumur supports
 syn match murphiOperator "\^"
+syn match murphiOperator "\~"
 
 " recognise escape sequences in strings
 syn region murphiString start=+"\|“+ skip=+\\\\\|\\"\|\\”+ end=+"\|”+

@@ -65,6 +65,10 @@ void Indexer::visit_band(Band &n) {
   visit_bexpr(n);
 }
 
+void Indexer::visit_bnot(Bnot &n) {
+  visit_uexpr(n);
+}
+
 void Indexer::visit_bor(Bor &n) {
   visit_bexpr(n);
 }
