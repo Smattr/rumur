@@ -168,6 +168,7 @@
 
 %nonassoc '?' ':'
 %nonassoc IMPLIES
+%left AMPAMP
 %left '|'
 %left '^'
 %left '&'
@@ -307,6 +308,8 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Ternary>::make($1, $3, $5, @$);
 } | expr IMPLIES expr {
   $$ = rumur::Ptr<rumur::Implication>::make($1, $3, @$);
+} | expr AMPAMP expr {
+  $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
 } | expr '|' expr {
   /* construct this as an ambiguous expression, that will later be resolved into
    * an Or or a Bor

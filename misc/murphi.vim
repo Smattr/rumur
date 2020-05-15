@@ -27,6 +27,9 @@ syn match murphiOperator "==[^>]"he=e-1
 " UTF-8 operators that Rumur recognises
 syn match murphiOperator "[∀∃≔≥→≤≠⇒¬∧∨]"
 
+" extra logical operators that Rumur supports
+syn match murphiOperator "&&"
+
 " xor operator that Rumur recognises
 syn match murphiOperator "\^"
 
