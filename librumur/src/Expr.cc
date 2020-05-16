@@ -899,7 +899,12 @@ Ptr<TypeExpr> Field::type() const {
   const Ptr<TypeExpr> resolved = root->resolve();
 
   auto r = dynamic_cast<const Record*>(resolved.get());
-  assert(r != nullptr && "invalid left hand side of field expression");
+
+  // if we are called before types have been resolved (or during type
+  // resolution on a malformed model), it is possible that the root is not a
+  // record
+  if (r == nullptr)
+    throw Error("invalid left hand side of field expression", loc);
 
   for (const Ptr<VarDecl> &f : r->fields) {
     if (f->name == field)

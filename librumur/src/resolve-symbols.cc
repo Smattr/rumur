@@ -96,6 +96,18 @@ class Resolver : public Traversal {
     disambiguate(n.rhs);
   }
 
+  void visit_band(Band &n) final {
+    visit_bexpr(n);
+  }
+
+  void visit_bnot(Bnot &n) final {
+    visit_uexpr(n);
+  }
+
+  void visit_bor(Bor &n) final {
+    visit_bexpr(n);
+  }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
     disambiguate(n.rhs);
