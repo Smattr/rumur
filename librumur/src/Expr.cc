@@ -972,8 +972,12 @@ bool Element::constant() const {
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
   const Array *a = dynamic_cast<const Array*>(t.get());
-  assert(a != nullptr &&
-    "array reference based on something that is not an array");
+
+  // if we are called during symbol resolution on a malformed expression, our
+  // left hand side may not be an array
+  if (a == nullptr)
+    throw Error("array reference based on something that is not an array", loc);
+
   return a->element_type;
 }
 
