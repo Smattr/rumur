@@ -49,19 +49,19 @@ class Generator : public ConstExprTraversal {
   void visit_band(const Band &n) final {
     if (lvalue)
       invalid(n);
-    *this << "(" << *n.lhs << " & " << *n.rhs << ")";
+    *this << "((value_t)(" << *n.lhs << " & " << *n.rhs << "))";
   }
 
   void visit_bnot(const Bnot &n) final {
     if (lvalue)
       invalid(n);
-    *this << "(~" << *n.rhs << ")";
+    *this << "((value_t)~" << *n.rhs << ")";
   }
 
   void visit_bor(const Bor &n) final {
     if (lvalue)
       invalid(n);
-    *this << "(" << *n.lhs << " | " << *n.rhs << ")";
+    *this << "((value_t)(" << *n.lhs << " | " << *n.rhs << "))";
   }
 
   void visit_div(const Div &n) final {
@@ -561,7 +561,7 @@ class Generator : public ConstExprTraversal {
   void visit_xor(const Xor &n) final {
     if (lvalue)
       invalid(n);
-    *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
+    *this << "((value_t)(" << *n.lhs << " ^ " << *n.rhs << "))";
   }
 
   virtual ~Generator() = default;
