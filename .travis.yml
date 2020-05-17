@@ -1041,6 +1041,88 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
+  - name: Ubuntu Linux 18.04, GCC 10 (1/4)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+          - g++-10
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MAX_TEST=1000
+      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 10 (2/4)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+          - g++-10
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=1001
+      - MAX_TEST=2000
+      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 10 (3/4)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+          - g++-10
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=2001
+      - MAX_TEST=3000
+      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 10 (4/4)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+          - g++-10
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
   - name: Ubuntu Linux 18.04, GCC multilib (1/4)
     os: linux
     dist: bionic
