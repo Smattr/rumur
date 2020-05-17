@@ -1920,6 +1920,15 @@ static value_t rsh(value_t a, value_t b) {
   return a >> b;
 }
 
+/* Bitwise NOT wrapper. We only need this to suppress some spurious GCC
+ * warnings:
+ *   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=38341
+ *   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59098
+ */
+static __attribute__((unused)) value_t bnot(value_t v) {
+  return (value_t)~(raw_value_t)v;
+}
+
 /* A version of quicksort that operates on "schedules," arrays of indices that
  * serve as a proxy for the collection being sorted.
  */

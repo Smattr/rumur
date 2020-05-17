@@ -55,7 +55,7 @@ class Generator : public ConstExprTraversal {
   void visit_bnot(const Bnot &n) final {
     if (lvalue)
       invalid(n);
-    *this << "((value_t)~" << *n.rhs << ")";
+    *this << "bnot(" << *n.rhs << ")";
   }
 
   void visit_bor(const Bor &n) final {
