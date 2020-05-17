@@ -142,8 +142,10 @@
 %token IMPLIES
 %token INVARIANT
 %token ISUNDEFINED
+%token LAND
 %token LEQ
 %token LIVENESS
+%token LOR
 %token LSH
 %token NEQ
 %token <std::string> NUMBER
@@ -168,8 +170,8 @@
 
 %nonassoc '?' ':'
 %nonassoc IMPLIES
-%left PIPEPIPE
-%left AMPAMP
+%left PIPEPIPE LOR
+%left AMPAMP LAND
 %left '|'
 %left '^'
 %left '&'
@@ -312,7 +314,11 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Implication>::make($1, $3, @$);
 } | expr PIPEPIPE expr {
   $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
+} | expr LOR expr {
+  $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
 } | expr AMPAMP expr {
+  $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
+} | expr LAND expr {
   $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
 } | expr '|' expr {
   /* construct this as an ambiguous expression, that will later be resolved into

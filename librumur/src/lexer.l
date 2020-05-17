@@ -154,8 +154,8 @@ true {
 "⇒"  { return rumur::parser::token::ARROW;    }
 "==" { return rumur::parser::token::DEQ;       }
 "¬"  { return '!';                             }
-"∧"  { return '&';                             }
-"∨"  { return '|';                             }
+"∧"  { return rumur::parser::token::LAND;      }
+"∨"  { return rumur::parser::token::LOR;       }
 "&&" { return rumur::parser::token::AMPAMP;    }
 "||" { return rumur::parser::token::PIPEPIPE;  }
 
