@@ -64,6 +64,14 @@ compatible values; that is, it also supports records and arrays. The semantics
 are equivalent to writing out a long form comparison of every one of the complex
 values’ members.
 
+Operators
+---------
+The operators ``&`` and ``|`` are used for logical AND and OR, respectively.
+Rumur allows ``&&`` and ``||`` as synonyms for these. Rumur also supports a set
+of bitwise arithmetic operators, documented in bitwise-operators.rst_.
+
+.. _bitwise-operators.rst: ./bitwise-operators.rst
+
 Command-line Options
 --------------------
 CMurphi has a set of command-line options, and its generated verifier has
