@@ -1,6 +1,27 @@
 Change log
 ==========
 
+v2020.05.18
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Various bitwise operators are now supported in the input syntax. See
+  `doc/bitwise-operators.rst`_ for details.
+* Some more verbose messages are now printed when passing ``--debug`` to rumur
+  (commit 7f52532280054e32b1be72f44d0f4180d1a2dc86).
+* Progress output lines during verification are now skipped when there is heavy
+  contention on access to stdout. This reduces runtime bottlenecks in highly
+  multithreaded verifications (commit 4d47d9a9abf8882935011d20950c50fe75460657).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The variant of ``parse()`` that accepted a stream pointer was previously
+  deprecated and has now been removed. Clients should call the variant that
+  accepts a reference instead (commit dcabb240eeb7d505f673879c2ba68fbbb5d3fd96).
+
+.. _`doc/bitwise-operators.rst`: ./doc/bitwise-operators.rst
+
 v2020.04.26
 -----------
 
