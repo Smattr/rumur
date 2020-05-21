@@ -24,6 +24,9 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit_and(const rumur::And &n) final;
   void visit_array(const rumur::Array &n) final;
   void visit_assignment(const rumur::Assignment &n) final;
+  void visit_band(const rumur::Band &n) final;
+  void visit_bnot(const rumur::Bnot &n) final;
+  void visit_bor(const rumur::Bor &n) final;
   void visit_clear(const rumur::Clear &n) final;
   void visit_constdecl(const rumur::ConstDecl &n) final;
   void visit_div(const rumur::Div &n) final;
@@ -45,6 +48,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit_implication(const rumur::Implication &n) final;
   void visit_isundefined(const rumur::IsUndefined &n) final;
   void visit_leq(const rumur::Leq &n) final;
+  void visit_lsh(const rumur::Lsh &n) final;
   void visit_lt(const rumur::Lt &n) final;
   void visit_mod(const rumur::Mod &n) final;
   void visit_model(const rumur::Model &n) final;
@@ -63,6 +67,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit_range(const rumur::Range &n) final;
   void visit_record(const rumur::Record &n) final;
   void visit_return(const rumur::Return &n) final;
+  void visit_rsh(const rumur::Rsh &n) final;
   void visit_ruleset(const rumur::Ruleset &n) final;
   void visit_scalarset(const rumur::Scalarset &n) final;
   void visit_simplerule(const rumur::SimpleRule &n) final;
@@ -76,6 +81,7 @@ class XMLPrinter : public rumur::ConstBaseTraversal {
   void visit_undefine(const rumur::Undefine &n) final;
   void visit_vardecl(const rumur::VarDecl &n) final;
   void visit_while(const rumur::While &n) final;
+  void visit_xor(const rumur::Xor &n) final;
 
   virtual ~XMLPrinter();
 

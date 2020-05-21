@@ -27,10 +27,4 @@ Ptr<Model> parse(std::istream &input) {
   return m;
 }
 
-Ptr<Model> parse(std::istream *input) {
-  assert(input != nullptr);
-
-  return parse(*input);
-}
-
 }

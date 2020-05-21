@@ -1,0 +1,4 @@
+This directory contains scripts that are executed as part of the setup to the
+test suite. Executable files from this directory are run in alphabetical order
+and are expected to produce a string that can be eval()ed in Python. For more
+information, see usage in ../run-tests.py

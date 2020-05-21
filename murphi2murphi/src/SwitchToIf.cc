@@ -10,33 +10,39 @@ using namespace rumur;
 
 SwitchToIf::SwitchToIf(Stage &next_): IntermediateStage(next_) { }
 
-void SwitchToIf::write(const std::string &c) {
+void SwitchToIf::process(const Token &t) {
+
+  // ignore any shift messages
+  if (t.type == Token::SUBJ) {
+    next.process(t);
+    return;
+  }
 
   // if we already understand indentation, we can just pass through
   if (learned_indentation) {
-    next.write(c);
+    next.process(t);
     return;
   }
 
   // if this character is a newline, assume we have an opportunity to learn
   // indentation coming up
-  if (c == "\n") {
+  if (t.character == "\n") {
     last_newline = true;
     indentation = "";
-    next.write(c);
+    next.process(t);
     return;
   }
 
   // if we have not just seen a newline, assume we are not currently writing
   // indentation
   if (!last_newline) {
-    next.write(c);
+    next.process(t);
     return;
   }
 
   // if this is white space, continue accruing
-  if (c.size() == 1 && isspace(c[0])) {
-    indentation += c;
+  if (t.character.size() == 1 && isspace(t.character[0])) {
+    indentation += t.character;
 
   // otherwise, if we have found a non-zero offset, we know the indentation
   } else if (indentation != "") {
@@ -48,7 +54,7 @@ void SwitchToIf::write(const std::string &c) {
 
   }
 
-  next.write(c);
+  next.process(t);
 }
 
 void SwitchToIf::visit_switch(const Switch &n) {

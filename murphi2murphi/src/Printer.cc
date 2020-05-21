@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cassert>
 #include <iostream>
 #include "Printer.h"
 #include <rumur/rumur.h>
@@ -10,7 +11,7 @@ using namespace rumur;
 Printer::Printer(std::istream &in_, std::ostream &out_): in(in_), out(out_) { }
 
 void Printer::visit_add(const Add &n) {
-  visit_bexpr("add", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_aliasdecl(const AliasDecl &n) {
@@ -58,7 +59,7 @@ void Printer::visit_aliasstmt(const AliasStmt &n) {
 }
 
 void Printer::visit_and(const And &n) {
-  visit_bexpr("and", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_array(const Array &n) {
@@ -68,6 +69,18 @@ void Printer::visit_array(const Array &n) {
   top->sync_to(*n.element_type);
   top->dispatch(*n.element_type);
   top->sync_to(n.loc.end);
+}
+
+void Printer::visit_band(const Band &n) {
+  visit_bexpr(n);
+}
+
+void Printer::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
+}
+
+void Printer::visit_bor(const Bor &n) {
+  visit_bexpr(n);
 }
 
 void Printer::visit_assignment(const Assignment &n) {
@@ -93,7 +106,7 @@ void Printer::visit_constdecl(const ConstDecl &n) {
 }
 
 void Printer::visit_div(const Div &n) {
-  visit_bexpr("div", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_element(const Element &n) {
@@ -115,7 +128,7 @@ void Printer::visit_enum(const Enum &n) {
 }
 
 void Printer::visit_eq(const Eq &n) {
-  visit_bexpr("eq", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_errorstmt(const ErrorStmt &n) {
@@ -207,11 +220,11 @@ void Printer::visit_functioncall(const FunctionCall &n) {
 }
 
 void Printer::visit_geq(const Geq &n) {
-  visit_bexpr("geq", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_gt(const Gt &n) {
-  visit_bexpr("gt", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_if(const If &n) {
@@ -240,23 +253,27 @@ void Printer::visit_ifclause(const IfClause &n) {
 }
 
 void Printer::visit_implication(const Implication &n) {
-  visit_bexpr("implication", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_isundefined(const IsUndefined &n) {
-  visit_uexpr("isundefined", n);
+  visit_uexpr(n);
 }
 
 void Printer::visit_leq(const Leq &n) {
-  visit_bexpr("leq", n);
+  visit_bexpr(n);
+}
+
+void Printer::visit_lsh(const Lsh &n) {
+  visit_bexpr(n);
 }
 
 void Printer::visit_lt(const Lt &n) {
-  visit_bexpr("lt", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_mod(const Mod &n) {
-  visit_bexpr("mod", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_model(const Model &n) {
@@ -285,19 +302,19 @@ void Printer::visit_model(const Model &n) {
 }
 
 void Printer::visit_mul(const Mul &n) {
-  visit_bexpr("mul", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_negative(const Negative &n) {
-  visit_uexpr("negative", n);
+  visit_uexpr(n);
 }
 
 void Printer::visit_neq(const Neq &n) {
-  visit_bexpr("neq", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_not(const Not &n) {
-  visit_uexpr("not", n);
+  visit_uexpr(n);
 }
 
 void Printer::visit_number(const Number &n) {
@@ -306,7 +323,7 @@ void Printer::visit_number(const Number &n) {
 }
 
 void Printer::visit_or(const Or &n) {
-  visit_bexpr("or", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_procedurecall(const ProcedureCall &n) {
@@ -401,6 +418,10 @@ void Printer::visit_return(const Return &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
+}
+
 void Printer::visit_ruleset(const Ruleset &n) {
   top->sync_to(n);
   if (!n.quantifiers.empty()) {
@@ -484,7 +505,7 @@ void Printer::visit_startstate(const StartState &n) {
 }
 
 void Printer::visit_sub(const Sub &n) {
-  visit_bexpr("sub", n);
+  visit_bexpr(n);
 }
 
 void Printer::visit_switch(const Switch &n) {
@@ -571,8 +592,16 @@ void Printer::visit_while(const While &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::write(const std::string &c) {
-  out << c;
+void Printer::visit_xor(const Xor &n) {
+  visit_bexpr(n);
+}
+
+void Printer::process(const Token &t) {
+
+  assert(t.type != Token::SUBJ && "an IntermediateStage did not put a shift "
+    "message in the processing pipe that they did not consume");
+
+  out << t.character;
 }
 
 void Printer::sync_to(const Node &n) {
@@ -643,7 +672,7 @@ void Printer::finalise() {
   out.flush();
 }
 
-void Printer::visit_bexpr(const std::string &, const BinaryExpr &n) {
+void Printer::visit_bexpr(const BinaryExpr &n) {
   top->sync_to(n);
   top->sync_to(*n.lhs);
   top->dispatch(*n.lhs);
@@ -652,7 +681,7 @@ void Printer::visit_bexpr(const std::string &, const BinaryExpr &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_uexpr(const std::string &, const UnaryExpr &n) {
+void Printer::visit_uexpr(const UnaryExpr &n) {
   top->sync_to(n);
   top->sync_to(*n.rhs);
   top->dispatch(*n.rhs);

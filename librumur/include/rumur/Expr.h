@@ -106,6 +106,7 @@ struct BooleanBinaryExpr : public BinaryExpr {
     const location &loc_);
   BooleanBinaryExpr() = delete;
 
+  Ptr<TypeExpr> type() const final;
   void validate() const final;
 };
 
@@ -116,19 +117,47 @@ struct Implication : public BooleanBinaryExpr {
   Implication *clone() const final;
   virtual ~Implication() = default;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
 
+// logical OR
 struct Or : public BooleanBinaryExpr {
 
   Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Or() = default;
   Or *clone() const final;
 
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+// logical AND
+struct And : public BooleanBinaryExpr {
+
+  And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~And() = default;
+  And *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+// An 'x & y' expression where a decision has not yet been made as to whether
+// the '&' is a logical AND or a bitwise AND. These nodes can only occur in the
+// AST prior to symbol resolution.
+struct AmbiguousAmp : public BinaryExpr {
+
+  AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~AmbiguousAmp() = default;
+  AmbiguousAmp *clone() const final;
+
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
@@ -136,11 +165,15 @@ struct Or : public BooleanBinaryExpr {
   std::string to_string() const final;
 };
 
-struct And : public BooleanBinaryExpr {
+// An 'x | y' expression where a decision has not yet been made as to whether
+// the '|' is a logical OR or a bitwise OR. These nodes can only occur in the
+// AST prior to symbol resolution.
+struct AmbiguousPipe : public BinaryExpr {
 
-  And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~And() = default;
-  And *clone() const final;
+  AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+    const location &loc_);
+  virtual ~AmbiguousPipe() = default;
+  AmbiguousPipe *clone() const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -274,6 +307,7 @@ struct ArithmeticBinaryExpr : public BinaryExpr {
   ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
     const location &loc_);
 
+  Ptr<TypeExpr> type() const final;
   void validate() const final;
 };
 
@@ -283,7 +317,6 @@ struct Add : public ArithmeticBinaryExpr {
   virtual ~Add() = default;
   Add *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -296,7 +329,6 @@ struct Sub : public ArithmeticBinaryExpr {
   virtual ~Sub() = default;
   Sub *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -317,13 +349,26 @@ struct Negative : public UnaryExpr {
   std::string to_string() const final;
 };
 
+struct Bnot : public UnaryExpr {
+
+  Bnot(const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Bnot() = default;
+  Bnot *clone() const final;
+
+  Ptr<TypeExpr> type() const final;
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  void validate() const final;
+  std::string to_string() const final;
+};
+
 struct Mul : public ArithmeticBinaryExpr {
 
   Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mul() = default;
   Mul *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -336,7 +381,6 @@ struct Div : public ArithmeticBinaryExpr {
   virtual ~Div() = default;
   Div *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
@@ -349,12 +393,74 @@ struct Mod : public ArithmeticBinaryExpr {
   virtual ~Mod() = default;
   Mod *clone() const final;
 
-  Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   // __attribute__((deprecated("operator== will be removed in a future release")))
   bool operator==(const Node &other) const final;
   std::string to_string() const final;
 };
+
+struct Lsh : public ArithmeticBinaryExpr {
+
+  Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Lsh() = default;
+  Lsh *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+struct Rsh : public ArithmeticBinaryExpr {
+
+  Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Rsh() = default;
+  Rsh *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+// bitwise AND
+struct Band : public ArithmeticBinaryExpr {
+
+  Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Band() = default;
+  Band *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+// bitwise OR
+struct Bor : public ArithmeticBinaryExpr {
+
+  Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Bor() = default;
+  Bor *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
+struct Xor : public ArithmeticBinaryExpr {
+
+  Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  virtual ~Xor() = default;
+  Xor *clone() const final;
+
+  mpz_class constant_fold() const final;
+  // __attribute__((deprecated("operator== will be removed in a future release")))
+  bool operator==(const Node &other) const final;
+  std::string to_string() const final;
+};
+
 
 struct ExprID : public Expr {
 

@@ -151,6 +151,18 @@ void XMLPrinter::visit_assignment(const Assignment &n) {
   o << "</assignment>";
 }
 
+void XMLPrinter::visit_band(const Band &n) {
+  visit_bexpr("band", n);
+}
+
+void XMLPrinter::visit_bnot(const Bnot &n) {
+  visit_uexpr("bnot", n);
+}
+
+void XMLPrinter::visit_bor(const Bor &n) {
+  visit_bexpr("bor", n);
+}
+
 void XMLPrinter::visit_clear(const Clear &n) {
   sync_to(n);
   o << "<clear ";
@@ -430,6 +442,10 @@ void XMLPrinter::visit_leq(const Leq &n) {
   visit_bexpr("leq", n);
 }
 
+void XMLPrinter::visit_lsh(const Lsh &n) {
+  visit_bexpr("lsh", n);
+}
+
 void XMLPrinter::visit_lt(const Lt &n) {
   visit_bexpr("lt", n);
 }
@@ -654,6 +670,10 @@ void XMLPrinter::visit_return(const Return &n) {
   }
   sync_to(n.loc.end);
   o << "</return>";
+}
+
+void XMLPrinter::visit_rsh(const Rsh &n) {
+  visit_bexpr("rsh", n);
 }
 
 void XMLPrinter::visit_ruleset(const Ruleset &n) {
@@ -915,6 +935,10 @@ void XMLPrinter::visit_while(const While &n) {
   }
   sync_to(n.loc.end);
   o << "</while>";
+}
+
+void XMLPrinter::visit_xor(const Xor &n) {
+  visit_bexpr("xor", n);
 }
 
 XMLPrinter::~XMLPrinter() {

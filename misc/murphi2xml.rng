@@ -112,6 +112,27 @@
     </element>
   </define>
 
+  <define name="band">
+    <element name="band">
+      <ref name="location"/>
+      <ref name="binexpr"/>
+    </element>
+  </define>
+
+  <define name="bnot">
+    <element name="bnot">
+      <ref name="location"/>
+      <ref name="uexpr"/>
+    </element>
+  </define>
+
+  <define name="bor">
+    <element name="bor">
+      <ref name="location"/>
+      <ref name="binexpr"/>
+    </element>
+  </define>
+
   <define name="binexpr">
     <ref name="content"/>
     <element name="lhs">
@@ -255,6 +276,9 @@
     <choice>
       <ref name="add"/>
       <ref name="and"/>
+      <ref name="band"/>
+      <ref name="bnot"/>
+      <ref name="bor"/>
       <ref name="div"/>
       <ref name="element"/>
       <ref name="eq"/>
@@ -268,6 +292,7 @@
       <ref name="implication"/>
       <ref name="isundefined"/>
       <ref name="leq"/>
+      <ref name="lsh"/>
       <ref name="lt"/>
       <ref name="mod"/>
       <ref name="mul"/>
@@ -276,8 +301,10 @@
       <ref name="not"/>
       <ref name="number"/>
       <ref name="or"/>
+      <ref name="rsh"/>
       <ref name="sub"/>
       <ref name="ternary"/>
+      <ref name="xor"/>
     </choice>
   </define>
 
@@ -505,6 +532,13 @@
         <data type="integer"/>
       </attribute>
     </optional>
+  </define>
+
+  <define name="lsh">
+    <element name="lsh">
+      <ref name="location"/>
+      <ref name="binexpr"/>
+    </element>
   </define>
 
   <define name="lt">
@@ -746,6 +780,13 @@
         <ref name="expr"/>
         <ref name="content"/>
       </optional>
+    </element>
+  </define>
+
+  <define name="rsh">
+    <element name="rsh">
+      <ref name="location"/>
+      <ref name="binexpr"/>
     </element>
   </define>
 
@@ -1107,6 +1148,13 @@
         <ref name="body"/>
         <ref name="content"/>
       </optional>
+    </element>
+  </define>
+
+  <define name="xor">
+    <element name="xor">
+      <ref name="location"/>
+      <ref name="binexpr"/>
     </element>
   </define>
 

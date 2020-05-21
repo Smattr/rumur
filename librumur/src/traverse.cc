@@ -35,6 +35,16 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<AmbiguousAmp*>(&n)) {
+    visit_ambiguousamp(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<AmbiguousPipe*>(&n)) {
+    visit_ambiguouspipe(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<And*>(&n)) {
     visit_and(*i);
     return;
@@ -47,6 +57,21 @@ void BaseTraversal::dispatch(Node &n) {
 
   if (auto i = dynamic_cast<Assignment*>(&n)) {
     visit_assignment(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<Band*>(&n)) {
+    visit_band(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<Bnot*>(&n)) {
+    visit_bnot(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<Bor*>(&n)) {
+    visit_bor(*i);
     return;
   }
 
@@ -155,6 +180,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Lsh*>(&n)) {
+    visit_lsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Lt*>(&n)) {
     visit_lt(*i);
     return;
@@ -245,6 +275,11 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Rsh*>(&n)) {
+    visit_rsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<Ruleset*>(&n)) {
     visit_ruleset(*i);
     return;
@@ -310,10 +345,25 @@ void BaseTraversal::dispatch(Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<Xor*>(&n)) {
+    visit_xor(*i);
+    return;
+  }
+
 #ifndef NDEBUG
   std::cerr << "missed case in BaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
   assert(!"missed case in BaseTraversal::dispatch");
+}
+
+void BaseTraversal::visit_ambiguousamp(AmbiguousAmp &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void BaseTraversal::visit_ambiguouspipe(AmbiguousPipe &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void Traversal::visit_add(Add &n) {
@@ -350,6 +400,18 @@ void Traversal::visit_array(Array &n) {
 void Traversal::visit_assignment(Assignment &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
+}
+
+void Traversal::visit_band(Band &n) {
+  visit_bexpr(n);
+}
+
+void Traversal::visit_bnot(Bnot &n) {
+  visit_uexpr(n);
+}
+
+void Traversal::visit_bor(Bor &n) {
+  visit_bexpr(n);
 }
 
 void Traversal::visit_bexpr(BinaryExpr &n) {
@@ -452,6 +514,10 @@ void Traversal::visit_leq(Leq &n) {
   visit_bexpr(n);
 }
 
+void Traversal::visit_lsh(Lsh &n) {
+  visit_bexpr(n);
+}
+
 void Traversal::visit_lt(Lt &n) {
   visit_bexpr(n);
 }
@@ -540,6 +606,10 @@ void Traversal::visit_return(Return &n) {
     dispatch(*n.expr);
 }
 
+void Traversal::visit_rsh(Rsh &n) {
+  visit_bexpr(n);
+}
+
 void Traversal::visit_ruleset(Ruleset &n) {
   for (Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -619,6 +689,10 @@ void Traversal::visit_while(While &n) {
     dispatch(*s);
 }
 
+void Traversal::visit_xor(Xor &n) {
+  visit_bexpr(n);
+}
+
 Traversal::~Traversal() { }
 
 void ConstBaseTraversal::dispatch(const Node &n) {
@@ -643,6 +717,16 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const AmbiguousAmp*>(&n)) {
+    visit_ambiguousamp(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const AmbiguousPipe*>(&n)) {
+    visit_ambiguouspipe(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const And*>(&n)) {
     visit_and(*i);
     return;
@@ -655,6 +739,21 @@ void ConstBaseTraversal::dispatch(const Node &n) {
 
   if (auto i = dynamic_cast<const Assignment*>(&n)) {
     visit_assignment(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Band*>(&n)) {
+    visit_band(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Bnot*>(&n)) {
+    visit_bnot(*i);
+    return;
+  }
+
+  if (auto i = dynamic_cast<const Bor*>(&n)) {
+    visit_bor(*i);
     return;
   }
 
@@ -763,6 +862,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Lsh*>(&n)) {
+    visit_lsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Lt*>(&n)) {
     visit_lt(*i);
     return;
@@ -853,6 +957,11 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Rsh*>(&n)) {
+    visit_rsh(*i);
+    return;
+  }
+
   if (auto i = dynamic_cast<const Ruleset*>(&n)) {
     visit_ruleset(*i);
     return;
@@ -918,10 +1027,25 @@ void ConstBaseTraversal::dispatch(const Node &n) {
     return;
   }
 
+  if (auto i = dynamic_cast<const Xor*>(&n)) {
+    visit_xor(*i);
+    return;
+  }
+
 #ifndef NDEBUG
   std::cerr << "missed case in ConstBaseTraversal::dispatch: " << typeid(n).name() << "\n";
 #endif
   assert(!"missed case in ConstBaseTraversal::dispatch");
+}
+
+void ConstBaseTraversal::visit_ambiguousamp(const AmbiguousAmp &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
+}
+
+void ConstBaseTraversal::visit_ambiguouspipe(const AmbiguousPipe &n) {
+  dispatch(*n.lhs);
+  dispatch(*n.rhs);
 }
 
 void ConstTraversal::visit_add(const Add &n) {
@@ -958,6 +1082,18 @@ void ConstTraversal::visit_array(const Array &n) {
 void ConstTraversal::visit_assignment(const Assignment &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
+}
+
+void ConstTraversal::visit_band(const Band &n) {
+  visit_bexpr(n);
+}
+
+void ConstTraversal::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
+}
+
+void ConstTraversal::visit_bor(const Bor &n) {
+  visit_bexpr(n);
 }
 
 void ConstTraversal::visit_bexpr(const BinaryExpr &n) {
@@ -1060,6 +1196,10 @@ void ConstTraversal::visit_leq(const Leq &n) {
   visit_bexpr(n);
 }
 
+void ConstTraversal::visit_lsh(const Lsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstTraversal::visit_lt(const Lt &n) {
   visit_bexpr(n);
 }
@@ -1148,6 +1288,10 @@ void ConstTraversal::visit_return(const Return &n) {
     dispatch(*n.expr);
 }
 
+void ConstTraversal::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstTraversal::visit_ruleset(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -1225,6 +1369,10 @@ void ConstTraversal::visit_while(const While &n) {
   dispatch(*n.condition);
   for (auto &s : n.body)
     dispatch(*s);
+}
+
+void ConstTraversal::visit_xor(const Xor &n) {
+  visit_bexpr(n);
 }
 
 ConstTraversal::~ConstTraversal() { }
@@ -1445,6 +1593,18 @@ void ConstStmtTraversal::visit_array(const Array &n) {
   dispatch(*n.element_type);
 }
 
+void ConstStmtTraversal::visit_band(const Band &n) {
+  visit_bexpr(n);
+}
+
+void ConstStmtTraversal::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
+}
+
+void ConstStmtTraversal::visit_bor(const Bor &n) {
+  visit_bexpr(n);
+}
+
 void ConstStmtTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
@@ -1528,6 +1688,10 @@ void ConstStmtTraversal::visit_leq(const Leq &n) {
   visit_bexpr(n);
 }
 
+void ConstStmtTraversal::visit_lsh(const Lsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstStmtTraversal::visit_lt(const Lt &n) {
   visit_bexpr(n);
 }
@@ -1598,6 +1762,10 @@ void ConstStmtTraversal::visit_record(const Record &n) {
     dispatch(*f);
 }
 
+void ConstStmtTraversal::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstStmtTraversal::visit_ruleset(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -1661,6 +1829,10 @@ void ConstStmtTraversal::visit_vardecl(const VarDecl &n) {
     dispatch(*n.type);
 }
 
+void ConstStmtTraversal::visit_xor(const Xor &n) {
+  visit_bexpr(n);
+}
+
 void ConstTypeTraversal::visit_add(const Add &n) {
   visit_bexpr(n);
 }
@@ -1690,6 +1862,18 @@ void ConstTypeTraversal::visit_and(const And &n) {
 void ConstTypeTraversal::visit_assignment(const Assignment &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit_band(const Band &n) {
+  visit_bexpr(n);
+}
+
+void ConstTypeTraversal::visit_bnot(const Bnot &n) {
+  visit_uexpr(n);
+}
+
+void ConstTypeTraversal::visit_bor(const Bor &n) {
+  visit_bexpr(n);
 }
 
 void ConstTypeTraversal::visit_bexpr(const BinaryExpr &n) {
@@ -1790,6 +1974,10 @@ void ConstTypeTraversal::visit_leq(const Leq &n) {
   visit_bexpr(n);
 }
 
+void ConstTypeTraversal::visit_lsh(const Lsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstTypeTraversal::visit_lt(const Lt &n) {
   visit_bexpr(n);
 }
@@ -1868,6 +2056,10 @@ void ConstTypeTraversal::visit_return(const Return &n) {
     dispatch(*n.expr);
 }
 
+void ConstTypeTraversal::visit_rsh(const Rsh &n) {
+  visit_bexpr(n);
+}
+
 void ConstTypeTraversal::visit_ruleset(const Ruleset &n) {
   for (const Quantifier &q : n.quantifiers)
     dispatch(q);
@@ -1939,6 +2131,10 @@ void ConstTypeTraversal::visit_while(const While &n) {
   dispatch(*n.condition);
   for (auto &s : n.body)
     dispatch(*s);
+}
+
+void ConstTypeTraversal::visit_xor(const Xor &n) {
+  visit_bexpr(n);
 }
 
 }

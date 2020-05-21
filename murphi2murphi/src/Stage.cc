@@ -10,7 +10,7 @@ using namespace rumur;
 Stage &Stage::operator<<(const std::string &s) {
 
   // We expect the input argument to contain a sequence of UTF-8 characters that
-  // we want to pass to write() character-by-character. However iterating
+  // we want to pass to process() character-by-character. However iterating
   // through a std::string yields 8-bit chars, not UTF-8 characters. So we
   // commit a minor sin and roll our own UTF-8 character-by-character iteration.
 
@@ -53,7 +53,8 @@ Stage &Stage::operator<<(const std::string &s) {
     }
 
     // write out this character
-    write(s.substr(i, length));
+    Token t(s.substr(i, length));
+    process(t);
 
     // move to the next character
     assert(i + length <= s.size());
@@ -90,6 +91,15 @@ void IntermediateStage::visit_array(const Array &n) {
 }
 void IntermediateStage::visit_assignment(const Assignment &n) {
   next.visit_assignment(n);
+}
+void IntermediateStage::visit_band(const Band &n) {
+  next.visit_band(n);
+}
+void IntermediateStage::visit_bnot(const Bnot &n) {
+  next.visit_bnot(n);
+}
+void IntermediateStage::visit_bor(const Bor &n) {
+  next.visit_bor(n);
 }
 void IntermediateStage::visit_clear(const Clear &n) {
   next.visit_clear(n);
@@ -154,6 +164,9 @@ void IntermediateStage::visit_isundefined(const IsUndefined &n) {
 void IntermediateStage::visit_leq(const Leq &n) {
   next.visit_leq(n);
 }
+void IntermediateStage::visit_lsh(const Lsh &n) {
+  next.visit_lsh(n);
+}
 void IntermediateStage::visit_lt(const Lt &n) {
   next.visit_lt(n);
 }
@@ -208,6 +221,9 @@ void IntermediateStage::visit_record(const Record &n) {
 void IntermediateStage::visit_return(const Return &n) {
   next.visit_return(n);
 }
+void IntermediateStage::visit_rsh(const Rsh &n) {
+  next.visit_rsh(n);
+}
 void IntermediateStage::visit_ruleset(const Ruleset &n) {
   next.visit_ruleset(n);
 }
@@ -247,9 +263,12 @@ void IntermediateStage::visit_vardecl(const VarDecl &n) {
 void IntermediateStage::visit_while(const While &n) {
   next.visit_while(n);
 }
+void IntermediateStage::visit_xor(const Xor &n) {
+  next.visit_xor(n);
+}
 
-void IntermediateStage::write(const std::string &c) {
-  next.write(c);
+void IntermediateStage::process(const Token &t) {
+  next.process(t);
 }
 
 void IntermediateStage::sync_to(const Node &n) {

@@ -27,6 +27,9 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_and(const rumur::And &n) final;
   void visit_array(const rumur::Array &n) final;
   void visit_assignment(const rumur::Assignment &n) final;
+  void visit_band(const rumur::Band &n) final;
+  void visit_bnot(const rumur::Bnot &n) final;
+  void visit_bor(const rumur::Bor &n) final;
   void visit_clear(const rumur::Clear &n) final;
   void visit_div(const rumur::Div &n) final;
   void visit_element(const rumur::Element &n) final;
@@ -46,6 +49,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_if(const rumur::If &n) final;
   void visit_ifclause(const rumur::IfClause &n) final;
   void visit_leq(const rumur::Leq &n) final;
+  void visit_lsh(const rumur::Lsh &n) final;
   void visit_lt(const rumur::Lt &n) final;
   void visit_mod(const rumur::Mod &n) final;
   void visit_model(const rumur::Model &n) final;
@@ -63,6 +67,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_range(const rumur::Range&) final;
   void visit_record(const rumur::Record &n) final;
   void visit_return(const rumur::Return &n) final;
+  void visit_rsh(const rumur::Rsh &n) final;
   void visit_ruleset(const rumur::Ruleset&) final;
   void visit_scalarset(const rumur::Scalarset&) final;
   void visit_sub(const rumur::Sub &n) final;
@@ -73,6 +78,7 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   void visit_typeexprid(const rumur::TypeExprID &n) final;
   void visit_undefine(const rumur::Undefine &n) final;
   void visit_while(const rumur::While &n) final;
+  void visit_xor(const rumur::Xor &n) final;
 
   // helpers to make output more natural
   CLikeGenerator &operator<<(const std::string &s);

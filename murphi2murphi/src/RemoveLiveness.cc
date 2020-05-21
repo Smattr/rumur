@@ -9,17 +9,28 @@ using namespace rumur;
 
 RemoveLiveness::RemoveLiveness(Stage &next_): IntermediateStage(next_) { }
 
-void RemoveLiveness::write(const std::string &c) {
+void RemoveLiveness::process(const Token &t) {
+
+  if (t.type == Token::SUBJ) {
+    // if this is for us, update our state
+    if (t.subject == this) {
+      swallow_semi = state.front();
+      state.pop();
+    } else { // ignore any other shift messages
+      next.process(t);
+    }
+    return;
+  }
 
   // if we are not hunting a to-be-deleted semi-colon, we are done
   if (!swallow_semi) {
-    next << c;
+    next.process(t);
     return;
   }
 
   // if this is white space, remain on the hunt for a semi-colon
-  if (c.size() == 1 && isspace(c.c_str()[0])) {
-    next << c;
+  if (t.character.size() == 1 && isspace(t.character.c_str()[0])) {
+    next.process(t);
     return;
   }
 
@@ -28,11 +39,11 @@ void RemoveLiveness::write(const std::string &c) {
   swallow_semi = false;
 
   // if this is a semi-colon, suppress it
-  if (c == ";")
+  if (t.character == ";")
     return;
 
   // otherwise, let it go through
-  next << c;
+  next.process(t);
 }
 
 void RemoveLiveness::visit_propertyrule(const PropertyRule &n) {
@@ -50,5 +61,9 @@ void RemoveLiveness::visit_propertyrule(const PropertyRule &n) {
   top->skip_to(n.loc.end);
 
   // note that we may now encounter a semi-colon that needs to be deleted
-  swallow_semi = true;
+  state.push(true);
+
+  // push a shift state message into the pipe to tell ourselves to later consume
+  // this update
+  top->process(Token(this));
 }

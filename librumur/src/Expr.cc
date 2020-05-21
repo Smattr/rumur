@@ -1,4 +1,5 @@
 #include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <gmpxx.h>
@@ -97,6 +98,10 @@ bool BinaryExpr::is_pure() const {
 BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
   const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
 
+Ptr<TypeExpr> BooleanBinaryExpr::type() const {
+  return Boolean;
+}
+
 void BooleanBinaryExpr::validate() const {
   if (!lhs->is_boolean())
     throw Error("left hand side of expression is not a boolean", lhs->loc);
@@ -111,10 +116,6 @@ Implication::Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
 
 Implication *Implication::clone() const {
   return new Implication(*this);
-}
-
-Ptr<TypeExpr> Implication::type() const {
-  return Boolean;
 }
 
 mpz_class Implication::constant_fold() const {
@@ -137,10 +138,6 @@ Or *Or::clone() const {
   return new Or(*this);
 }
 
-Ptr<TypeExpr> Or::type() const {
-  return Boolean;
-}
-
 mpz_class Or::constant_fold() const {
   return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
@@ -161,10 +158,6 @@ And *And::clone() const {
   return new And(*this);
 }
 
-Ptr<TypeExpr> And::type() const {
-  return Boolean;
-}
-
 mpz_class And::constant_fold() const {
   return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
@@ -176,6 +169,62 @@ bool And::operator==(const Node &other) const {
 
 std::string And::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+}
+
+AmbiguousAmp::AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+  const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
+AmbiguousAmp *AmbiguousAmp::clone() const {
+  return new AmbiguousAmp(*this);
+}
+
+Ptr<TypeExpr> AmbiguousAmp::type() const {
+  // we cannot retrieve the type of this expression because it has no certain
+  // type until we decide whether it is a logical AND or bitwise AND
+  throw Error("cannot retrieve the type of an unresolved '&' expression", loc);
+}
+
+mpz_class AmbiguousAmp::constant_fold() const {
+  // we cannot constant fold this if we do not yet know whether it is a logical
+  // AND or a bitwise AND
+  throw Error("cannot constant fold an unresolved '&' expression", loc);
+}
+
+bool AmbiguousAmp::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AmbiguousAmp*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string AmbiguousAmp::to_string() const {
+  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+}
+
+AmbiguousPipe::AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+  const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+
+AmbiguousPipe *AmbiguousPipe::clone() const {
+  return new AmbiguousPipe(*this);
+}
+
+Ptr<TypeExpr> AmbiguousPipe::type() const {
+  // we cannot retrieve the type of this expression because it has no certain
+  // type until we decide whether it is a logical OR or bitwise OR
+  throw Error("cannot retrieve the type of an unresolved '|' expression", loc);
+}
+
+mpz_class AmbiguousPipe::constant_fold() const {
+  // we cannot constant fold this if we do not yet know whether it is a logical
+  // OR or a bitwise OR
+  throw Error("cannot constant fold an unresolved '|' expression", loc);
+}
+
+bool AmbiguousPipe::operator==(const Node &other) const {
+  auto o = dynamic_cast<const AmbiguousPipe*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string AmbiguousPipe::to_string() const {
+  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
 UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
@@ -411,15 +460,15 @@ void ArithmeticBinaryExpr::validate() const {
       loc);
 }
 
+Ptr<TypeExpr> ArithmeticBinaryExpr::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
+}
+
 Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
   ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 
 Add *Add::clone() const {
   return new Add(*this);
-}
-
-Ptr<TypeExpr> Add::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Add::constant_fold() const {
@@ -440,10 +489,6 @@ Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Sub *Sub::clone() const {
   return new Sub(*this);
-}
-
-Ptr<TypeExpr> Sub::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Sub::constant_fold() const {
@@ -488,15 +533,40 @@ std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
 
+Bnot::Bnot(const Ptr<Expr> &rhs_, const location &loc_):
+  UnaryExpr(rhs_, loc_) { }
+
+void Bnot::validate() const {
+  if (!isa<Range>(rhs->type()->resolve()))
+    throw Error("expression cannot be bitwise NOTed", rhs->loc);
+}
+
+Bnot *Bnot::clone() const {
+  return new Bnot(*this);
+}
+
+Ptr<TypeExpr> Bnot::type() const {
+  return Ptr<Range>::make(nullptr, nullptr, location());
+}
+
+mpz_class Bnot::constant_fold() const {
+  return ~rhs->constant_fold();
+}
+
+bool Bnot::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Bnot*>(&other);
+  return o != nullptr && *rhs == *o->rhs;
+}
+
+std::string Bnot::to_string() const {
+  return "(~" + rhs->to_string() + ")";
+}
+
 Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
   ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
 
 Mul *Mul::clone() const {
   return new Mul(*this);
-}
-
-Ptr<TypeExpr> Mul::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Mul::constant_fold() const {
@@ -517,10 +587,6 @@ Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Div *Div::clone() const {
   return new Div(*this);
-}
-
-Ptr<TypeExpr> Div::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
 mpz_class Div::constant_fold() const {
@@ -547,10 +613,6 @@ Mod *Mod::clone() const {
   return new Mod(*this);
 }
 
-Ptr<TypeExpr> Mod::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
-}
-
 mpz_class Mod::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
@@ -566,6 +628,166 @@ bool Mod::operator==(const Node &other) const {
 
 std::string Mod::to_string() const {
   return "(" + lhs->to_string() + " % " + rhs->to_string() + ")";
+}
+
+Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Lsh *Lsh::clone() const {
+  return new Lsh(*this);
+}
+
+// right shift an mpz value
+static mpz_class rshift(mpz_class a, mpz_class b);
+
+// left shift an mpz value
+static mpz_class lshift(mpz_class a, mpz_class b) {
+
+  // is this actually a right shift?
+  if (b < 0)
+    return rshift(a, -b);
+
+  // if the shift is beyond what we can do in one shot, recurse
+  while (!b.fits_ulong_p()) {
+    a = lshift(a, mpz_class(ULONG_MAX));
+    b -= ULONG_MAX;
+  }
+
+  // extract the shift value into a bit count
+  mp_bitcnt_t l = static_cast<mp_bitcnt_t>(b.get_ui());
+
+  // do a left shift using the GMP C API
+  mpz_t rop;
+  mpz_init(rop);
+  mpz_mul_2exp(rop, a.get_mpz_t(), l);
+
+  return mpz_class(rop);
+}
+
+static mpz_class rshift(mpz_class a, mpz_class b) {
+
+  // is this actually a left shift?
+  if (b < 0)
+    return lshift(a, -b);
+
+  // if the shift is beyond what we can do in one shot, recurse
+  while (!b.fits_ulong_p()) {
+    a = rshift(a, mpz_class(ULONG_MAX));
+    b -= ULONG_MAX;
+  }
+
+  // extract the shift value into a bit count
+  mp_bitcnt_t r = static_cast<mp_bitcnt_t>(b.get_ui());
+
+  // do a right shift using the GMP C API
+  mpz_t rop;
+  mpz_init(rop);
+  mpz_fdiv_q_2exp(rop, a.get_mpz_t(), r);
+
+  return mpz_class(rop);
+}
+
+mpz_class Lsh::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return lshift(a, b);
+}
+
+bool Lsh::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Lsh*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Lsh::to_string() const {
+  return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
+}
+
+Rsh::Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Rsh *Rsh::clone() const {
+  return new Rsh(*this);
+}
+
+mpz_class Rsh::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return rshift(a, b);
+}
+
+bool Rsh::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Rsh*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Rsh::to_string() const {
+  return "(" + lhs->to_string() + " >> " + rhs->to_string() + ")";
+}
+
+Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Band *Band::clone() const {
+  return new Band(*this);
+}
+
+mpz_class Band::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return a & b;
+}
+
+bool Band::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Band*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Band::to_string() const {
+  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+}
+
+Bor::Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Bor *Bor::clone() const {
+  return new Bor(*this);
+}
+
+mpz_class Bor::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return a | b;
+}
+
+bool Bor::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Bor*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Bor::to_string() const {
+  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
+}
+
+Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
+  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+
+Xor *Xor::clone() const {
+  return new Xor(*this);
+}
+
+mpz_class Xor::constant_fold() const {
+  mpz_class a = lhs->constant_fold();
+  mpz_class b = rhs->constant_fold();
+  return a ^ b;
+}
+
+bool Xor::operator==(const Node &other) const {
+  auto o = dynamic_cast<const Xor*>(&other);
+  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
+}
+
+std::string Xor::to_string() const {
+  return "(" + lhs->to_string() + " ^ " + rhs->to_string() + ")";
 }
 
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
@@ -677,7 +899,12 @@ Ptr<TypeExpr> Field::type() const {
   const Ptr<TypeExpr> resolved = root->resolve();
 
   auto r = dynamic_cast<const Record*>(resolved.get());
-  assert(r != nullptr && "invalid left hand side of field expression");
+
+  // if we are called before types have been resolved (or during type
+  // resolution on a malformed model), it is possible that the root is not a
+  // record
+  if (r == nullptr)
+    throw Error("invalid left hand side of field expression", loc);
 
   for (const Ptr<VarDecl> &f : r->fields) {
     if (f->name == field)
@@ -745,8 +972,12 @@ bool Element::constant() const {
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
   const Array *a = dynamic_cast<const Array*>(t.get());
-  assert(a != nullptr &&
-    "array reference based on something that is not an array");
+
+  // if we are called during symbol resolution on a malformed expression, our
+  // left hand side may not be an array
+  if (a == nullptr)
+    throw Error("array reference based on something that is not an array", loc);
+
   return a->element_type;
 }
 

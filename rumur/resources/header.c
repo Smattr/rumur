@@ -519,6 +519,10 @@ static void print_lock(void) {
   assert(r == 0);
 }
 
+static bool print_trylock(void) {
+  return pthread_mutex_trylock(&print_mutex) == 0;
+}
+
 static void print_unlock(void) {
   int r __attribute__((unused)) = pthread_mutex_unlock(&print_mutex);
   assert(r == 0);
@@ -1862,6 +1866,69 @@ static __attribute__((unused)) value_t negate(const char *NONNULL context,
   return -a;
 }
 
+/* wrappers for << and >> to avoid C undefined behaviour */
+static __attribute__((unused)) value_t rsh(value_t a, value_t b);
+static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
+
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b < 0) {
+    return rsh(a, -b);
+  }
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  return (value_t)((raw_value_t)a << b);
+}
+
+static value_t rsh(value_t a, value_t b) {
+
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b < 0) {
+    return lsh(a, -b);
+  }
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  return a >> b;
+}
+
+/* Bitwise NOT wrapper. We only need this to suppress some spurious GCC
+ * warnings:
+ *   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=38341
+ *   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59098
+ */
+static __attribute__((unused)) value_t bnot(value_t v) {
+  return (value_t)~(raw_value_t)v;
+}
+
 /* A version of quicksort that operates on "schedules," arrays of indices that
  * serve as a proxy for the collection being sorted.
  */
@@ -2137,9 +2204,21 @@ static void reclaim(queue_handle_t h) {
  * Atomic operations on double word values                                     *
  ******************************************************************************/
 
-#if THREADS == 1
-  #define atomic_read(p) (*(p))
-#elif defined(__x86_64__) || defined(__i386__)
+#if __SIZEOF_POINTER__ <= 4
+  typedef uint64_t dword_t;
+#elif __SIZEOF_POINTER__ <= 8
+  typedef unsigned __int128 dword_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for dword_t?"
+#endif
+
+static dword_t atomic_read(dword_t *p) {
+
+  if (THREADS == 1) {
+    return *p;
+  }
+
+#if defined(__x86_64__) || defined(__i386__)
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
    *   memory. The way to work around this is apparently the following
    *   degenerate CMPXCHG16B.
@@ -2147,79 +2226,78 @@ static void reclaim(queue_handle_t h) {
    *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
    *   __sync built-in instead.
    */
-  #define atomic_read(p) __sync_val_compare_and_swap((p), 0, 0)
-#else
-  #define atomic_read(p) __atomic_load_n((p), __ATOMIC_SEQ_CST)
+  return __sync_val_compare_and_swap(p, 0, 0);
 #endif
 
-#if THREADS == 1
-  #define atomic_write(p, v) do { *(p) = (v); } while (0)
-#elif defined(__x86_64__) || defined(__i386__)
+  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
+}
+
+static void atomic_write(dword_t *p, dword_t v) {
+
+  if (THREADS == 1) {
+    *p = v;
+    return;
+  }
+
+#if defined(__x86_64__) || defined(__i386__)
   /* As explained above, we need some extra gymnastics to avoid a call to
    * libatomic on x86-64 and i386.
    */
-  #define atomic_write(p, v) \
-    do { \
-      __typeof__(p) _target = (p); \
-      __typeof__(*(p)) _expected; \
-      __typeof__(*(p)) _old = 0; \
-      __typeof__(*(p)) _new = (v); \
-      do { \
-        _expected = _old; \
-        _old = __sync_val_compare_and_swap(_target, _expected, _new); \
-      } while (_expected != _old); \
-    } while (0)
-#else
-  #define atomic_write(p, v) __atomic_store_n((p), (v), __ATOMIC_SEQ_CST)
+  dword_t expected;
+  dword_t old = 0;
+  do {
+    expected = old;
+    old = __sync_val_compare_and_swap(p, expected, v);
+  } while (expected != old);
+  return;
 #endif
 
-#if THREADS == 1
-  #define atomic_cas(p, expected, new) \
-    ({ \
-      __typeof__(p) _p = (p); \
-      bool _success = *_p == (expected); \
-      if (_success) { \
-        *_p = (new); \
-      } \
-      _success; \
-    })
-#elif defined(__x86_64__) || defined(__i386__)
+  __atomic_store_n(p, v, __ATOMIC_SEQ_CST);
+}
+
+static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
+
+  if (THREADS == 1) {
+    if (*p == expected) {
+      *p = new;
+      return true;
+    }
+    return false;
+  }
+
+#if defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
-  #define atomic_cas(p, expected, new) \
-    __sync_bool_compare_and_swap((p), (expected), (new))
-#else
-  #define atomic_cas(p, expected, new) \
-    __atomic_compare_exchange_n((p), &(expected), (new), false, \
-      __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
+  return __sync_bool_compare_and_swap(p, expected, new);
 #endif
 
-#if THREADS == 1
-  #define atomic_cas_val(p, expected, new) \
-    ({ \
-      __typeof__(p) _p = (p); \
-      __typeof__(*(p)) _old = *_p; \
-      if (_old == (expected)) { \
-        *_p = (new); \
-      } \
-      _old; \
-    })
-#elif defined(__x86_64__) || defined(__i386__)
+  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+}
+
+static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
+
+  if (THREADS == 1) {
+    dword_t old = *p;
+    if (old == expected) {
+      *p = new;
+    }
+    return old;
+  }
+
+#if defined(__x86_64__) || defined(__i386__)
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
    */
-  #define atomic_cas_val(p, expected, new) \
-    __sync_val_compare_and_swap((p), (expected), (new))
-#else
-  #define atomic_cas_val(p, expected, new) \
-    ({ \
-      __typeof__(expected) _expected = (expected); \
-      __atomic_compare_exchange_n((p), &(_expected), (new), false, \
-        __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
-      _expected; \
-    })
+  return __sync_val_compare_and_swap(p, expected, new);
 #endif
+
+
+  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+  return expected;
+}
 
 /******************************************************************************/
 

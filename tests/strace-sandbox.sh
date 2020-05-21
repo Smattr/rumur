@@ -18,14 +18,10 @@ if ! which strace &>/dev/null; then
   exit 125
 fi
 
-if [ "$(uname -s)" = "Linux" ]; then
-  MY_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)
-
-  # check whether seccomp is available
-  if ! ${MY_DIR}/../misc/seccomp-supported.sh; then
-    print 'seccomp sandboxing not supported\n'
-    exit 125
-  fi
+# check whether sandboxing is available
+if [ "${HAS_SANDBOX}" != "True" ]; then
+  printf 'seccomp sandboxing not supported\n'
+  exit 125
 fi
 
 # echo commands
@@ -53,34 +49,17 @@ EOT
 rumur --sandbox on --output model.c model.m
 
 # check if the compiler supports -mcx16
-cat - >mcx16-check.c <<EOT
-int main(void) {
-  return 0;
-}
-EOT
-if ${CC:-cc} -std=c11 -mcx16 mcx16-check.c -o /dev/null; then
+if [ "${HAS_MCX16}" = "True" ]; then
   MCX16=-mcx16
 else
   MCX16=
 fi
 
 # check if we need libatomic support
-cat - >libatomic-check.c <<EOT
-#include <stdint.h>
-
-int main(void) {
-#if __SIZEOF_POINTER__ <= 4
-  uint64_t target = 0;
-#elif __SIZEOF_POINTER__ <= 8
-  unsigned __int128 target = 0;
-#endif
-  return (int)__sync_val_compare_and_swap(&target, 0, 1);
-}
-EOT
-if ${CC:-cc} -std=c11 ${MCX16} libatomic-check.c -o /dev/null; then
-  LIBATOMIC=
-else
+if [ "${NEEDS_LIBATOMIC}" != "False"]; then
   LIBATOMIC=-latomic
+else
+  LIBATOMIC=
 fi
 
 # compile the sandboxed checker

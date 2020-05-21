@@ -46,6 +46,24 @@ class Generator : public ConstExprTraversal {
     *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
 
+  void visit_band(const Band &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "((value_t)(" << *n.lhs << " & " << *n.rhs << "))";
+  }
+
+  void visit_bnot(const Bnot &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "bnot(" << *n.rhs << ")";
+  }
+
+  void visit_bor(const Bor &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "((value_t)(" << *n.lhs << " | " << *n.rhs << "))";
+  }
+
   void visit_div(const Div &n) final {
     if (lvalue)
       invalid(n);
@@ -457,6 +475,12 @@ class Generator : public ConstExprTraversal {
     *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
   }
 
+  void visit_lsh(const Lsh &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "lsh(" << *n.lhs << ", " << *n.rhs << ")";
+  }
+
   void visit_lt(const Lt &n) final {
     if (lvalue)
       invalid(n);
@@ -514,7 +538,13 @@ class Generator : public ConstExprTraversal {
       invalid(n);
     *this << "(" << *n.lhs << " || " << *n.rhs << ")";
   }
-   
+
+  void visit_rsh(const Rsh &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "rsh(" << *n.lhs << ", " << *n.rhs << ")";
+  }
+
   void visit_sub(const Sub &n) final {
     if (lvalue)
       invalid(n);
@@ -526,6 +556,12 @@ class Generator : public ConstExprTraversal {
     if (lvalue)
       invalid(n);
     *this << "(" << *n.cond << " ? " << *n.lhs << " : " << *n.rhs << ")";
+  }
+
+  void visit_xor(const Xor &n) final {
+    if (lvalue)
+      invalid(n);
+    *this << "((value_t)(" << *n.lhs << " ^ " << *n.rhs << "))";
   }
 
   virtual ~Generator() = default;

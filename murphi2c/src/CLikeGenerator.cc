@@ -71,6 +71,18 @@ void CLikeGenerator::visit_assignment(const Assignment &n) {
   *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
 }
 
+void CLikeGenerator::visit_band(const Band &n) {
+  *this << "(" << *n.lhs << " & " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_bnot(const Bnot &n) {
+  *this << "(~" << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_bor(const Bor &n) {
+  *this << "(" << *n.lhs << " | " << *n.rhs << ")";
+}
+
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
     << "));\n";
@@ -245,6 +257,10 @@ void CLikeGenerator::visit_isundefined(const IsUndefined&) {
 
 void CLikeGenerator::visit_leq(const Leq &n) {
   *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
+}
+
+void CLikeGenerator::visit_lsh(const Lsh &n) {
+  *this << "(" << *n.lhs << " << " << *n.rhs << ")";
 }
 
 void CLikeGenerator::visit_lt(const Lt &n) {
@@ -453,6 +469,10 @@ void CLikeGenerator::visit_return(const Return &n) {
   *this << ";\n";
 }
 
+void CLikeGenerator::visit_rsh(const Rsh &n) {
+  *this << "(" << *n.lhs << " >> " << *n.rhs << ")";
+}
+
 void CLikeGenerator::visit_ruleset(const Ruleset&) {
   // this is unreachable because generate_c is only ever called with a Model
   // and all rule are flattened during visit_model
@@ -563,6 +583,10 @@ void CLikeGenerator::visit_while(const While &n) {
   }
   dedent();
   *this << indentation() << "}\n";
+}
+
+void CLikeGenerator::visit_xor(const Xor &n) {
+  *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
 }
 
 CLikeGenerator &CLikeGenerator::operator<<(const std::string &s) {

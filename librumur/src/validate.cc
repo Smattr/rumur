@@ -47,6 +47,18 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_ambiguousamp(const AmbiguousAmp &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_ambiguouspipe(const AmbiguousPipe &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_and(const And &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -60,6 +72,23 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_assignment(const Assignment &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_band(const Band &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_bnot(const Bnot &n) final {
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_bor(const Bor &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
     n.validate();
@@ -192,6 +221,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_lsh(const Lsh &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_lt(const Lt &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -304,6 +339,12 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
+  void visit_rsh(const Rsh &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
+    n.validate();
+  }
+
   void visit_ruleset(const Ruleset &n) final {
     for (const Quantifier &q : n.quantifiers)
       dispatch(q);
@@ -393,6 +434,12 @@ class Validator : public ConstBaseTraversal {
     dispatch(*n.condition);
     for (auto &s : n.body)
       dispatch(*s);
+    n.validate();
+  }
+
+  void visit_xor(const Xor &n) final {
+    dispatch(*n.lhs);
+    dispatch(*n.rhs);
     n.validate();
   }
 

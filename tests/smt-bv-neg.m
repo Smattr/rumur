@@ -1,5 +1,5 @@
--- rumur_flags: SMT_BV_ARGS
--- skip_reason: 'no SMT solver available' if len(SMT_BV_ARGS) == 0 else None
+-- rumur_flags: self.config['SMT_BV_ARGS']
+-- skip_reason: 'no SMT solver available' if self.config['SMT_BV_ARGS'] is None else None
 
 -- test that the SMT bridge can cope with negation when using a bitvector logic
 

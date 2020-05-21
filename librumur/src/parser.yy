@@ -142,8 +142,11 @@
 %token IMPLIES
 %token INVARIANT
 %token ISUNDEFINED
+%token LAND
 %token LEQ
 %token LIVENESS
+%token LOR
+%token LSH
 %token NEQ
 %token <std::string> NUMBER
 %token OF
@@ -151,6 +154,7 @@
 %token PUT
 %token RECORD
 %token RETURN
+%token RSH
 %token RULE
 %token RULESET
 %token SCALARSET
@@ -166,12 +170,17 @@
 
 %nonassoc '?' ':'
 %nonassoc IMPLIES
+%left PIPEPIPE LOR
+%left AMPAMP LAND
 %left '|'
+%left '^'
 %left '&'
 %precedence '!'
 %nonassoc '<' LEQ DEQ '=' NEQ GEQ '>'
+%left LSH RSH
 %left '+' '-'
 %left '*' '/' '%'
+%precedence '~'
 
 %type <rumur::Ptr<rumur::AliasRule>>                         aliasrule
 %type <std::shared_ptr<rumur::Property::Category>>           category
@@ -303,12 +312,30 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Ternary>::make($1, $3, $5, @$);
 } | expr IMPLIES expr {
   $$ = rumur::Ptr<rumur::Implication>::make($1, $3, @$);
-} | expr '|' expr {
+} | expr PIPEPIPE expr {
   $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
-} | expr '&' expr {
+} | expr LOR expr {
+  $$ = rumur::Ptr<rumur::Or>::make($1, $3, @$);
+} | expr AMPAMP expr {
   $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
+} | expr LAND expr {
+  $$ = rumur::Ptr<rumur::And>::make($1, $3, @$);
+} | expr '|' expr {
+  /* construct this as an ambiguous expression, that will later be resolved into
+   * an Or or a Bor
+   */
+  $$ = rumur::Ptr<rumur::AmbiguousPipe>::make($1, $3, @$);
+} | expr '^' expr {
+  $$ = rumur::Ptr<rumur::Xor>::make($1, $3, @$);
+} | expr '&' expr {
+  /* construct this as an ambiguous expression, that will later be resolved into
+   * an And or a Band
+   */
+  $$ = rumur::Ptr<rumur::AmbiguousAmp>::make($1, $3, @$);
 } | '!' expr {
   $$ = rumur::Ptr<rumur::Not>::make($2, @$);
+} | '~' expr {
+  $$ = rumur::Ptr<rumur::Bnot>::make($2, @$);
 } | expr '<' expr {
   $$ = rumur::Ptr<rumur::Lt>::make($1, $3, @$);
 } | expr LEQ expr {
@@ -323,6 +350,10 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::Eq>::make($1, $3, @$);
 } | expr NEQ expr {
   $$ = rumur::Ptr<rumur::Neq>::make($1, $3, @$);
+} | expr LSH expr {
+  $$ = rumur::Ptr<rumur::Lsh>::make($1, $3, @$);
+} | expr RSH expr {
+  $$ = rumur::Ptr<rumur::Rsh>::make($1, $3, @$);
 } | expr '+' expr {
   $$ = rumur::Ptr<rumur::Add>::make($1, $3, @$);
 } | expr '-' expr {

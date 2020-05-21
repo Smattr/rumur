@@ -80,6 +80,10 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.rhs);
   }
 
+  void visit_band(Band &n) final { visit_bexpr(n); }
+  void visit_bnot(Bnot &n) final { visit_uexpr(n); }
+  void visit_bor(Bor &n) final { visit_bexpr(n); }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
 
@@ -192,6 +196,7 @@ namespace { class Simplifier : public BaseTraversal {
   void visit_implication(Implication &n) final { visit_bexpr(n); }
   void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
   void visit_leq(Leq &n) final { visit_bexpr(n); }
+  void visit_lsh(Lsh &n) final { visit_bexpr(n); }
   void visit_lt(Lt &n) final { visit_bexpr(n); }
   void visit_mod(Mod &n) final { visit_bexpr(n); }
 
@@ -301,6 +306,8 @@ namespace { class Simplifier : public BaseTraversal {
     }
   }
 
+  void visit_rsh(Rsh &n) final { visit_bexpr(n); }
+
   void visit_ruleset(Ruleset &n) final {
     solver->open_scope();
     for (Quantifier &quantifier : n.quantifiers)
@@ -402,6 +409,8 @@ namespace { class Simplifier : public BaseTraversal {
     for (Ptr<Stmt> &stmt : n.body)
       dispatch(*stmt);
   }
+
+  void visit_xor(Xor &n) final { visit_bexpr(n); }
 
  private:
 

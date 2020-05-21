@@ -41,6 +41,18 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(and " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_band(const Band &n) {
+    *this << "(" << band() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
+  void visit_bnot(const Bnot &n) {
+    *this << "(" << bnot() << " " << *n.rhs << ")";
+  }
+
+  void visit_bor(const Bor &n) {
+    *this << "(" << bor() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_element(const Element &n) {
     *this << "(select " << *n.array << " " << *n.index << ")";
   }
@@ -104,6 +116,10 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(" << leq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_lsh(const Lsh &n) {
+    *this << "(" << lsh() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_lt(const Lt &n) {
     *this << "(" << lt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
@@ -136,12 +152,20 @@ namespace { class Translator : public ConstExprTraversal {
     *this << "(or " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_rsh(const Rsh &n) {
+    *this << "(" << rsh() << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
   void visit_sub(const Sub &n) {
     *this << "(" << sub() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
   void visit_ternary(const Ternary &n) {
     *this << "(ite " << *n.cond << " " << *n.lhs << " " << *n.rhs << ")";
+  }
+
+  void visit_xor(const Xor &n) {
+    *this << "(" << bxor() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
  private:

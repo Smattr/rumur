@@ -26,6 +26,9 @@ class BaseTraversal {
   virtual void visit_and(And &n) = 0;
   virtual void visit_array(Array &n) = 0;
   virtual void visit_assignment(Assignment &n) = 0;
+  virtual void visit_band(Band &n) = 0;
+  virtual void visit_bnot(Bnot &n) = 0;
+  virtual void visit_bor(Bor &n) = 0;
   virtual void visit_clear(Clear &n) = 0;
   virtual void visit_constdecl(ConstDecl &n) = 0;
   virtual void visit_div(Div &n) = 0;
@@ -47,6 +50,7 @@ class BaseTraversal {
   virtual void visit_implication(Implication &n) = 0;
   virtual void visit_isundefined(IsUndefined &n) = 0;
   virtual void visit_leq(Leq &n) = 0;
+  virtual void visit_lsh(Lsh &n) = 0;
   virtual void visit_lt(Lt &n) = 0;
   virtual void visit_model(Model &n) = 0;
   virtual void visit_mod(Mod &n) = 0;
@@ -65,6 +69,7 @@ class BaseTraversal {
   virtual void visit_range(Range &n) = 0;
   virtual void visit_record(Record &n) = 0;
   virtual void visit_return(Return &n) = 0;
+  virtual void visit_rsh(Rsh &n) = 0;
   virtual void visit_ruleset(Ruleset &n) = 0;
   virtual void visit_scalarset(Scalarset &n) = 0;
   virtual void visit_simplerule(SimpleRule &n) = 0;
@@ -78,6 +83,7 @@ class BaseTraversal {
   virtual void visit_undefine(Undefine &n) = 0;
   virtual void visit_vardecl(VarDecl &n) = 0;
   virtual void visit_while(While &n) = 0;
+  virtual void visit_xor(Xor &n) = 0;
 
   /* Visitation dispatch. This simply determines the type of the Node argument
    * and calls the appropriate specialised 'visit' method. This is not virtual
@@ -85,6 +91,13 @@ class BaseTraversal {
    * change.
    */
   void dispatch(Node &n);
+
+  // Unlike the other visitation methods, we provide an implementation for
+  // the ambiguous nodes because they only exist in an unresolved AST. We assume
+  // that inheritors, even if they want to handle “everything,” may not want to
+  // handle these synthetic types.
+  virtual void visit_ambiguousamp(AmbiguousAmp &n);
+  virtual void visit_ambiguouspipe(AmbiguousPipe &n);
 
   virtual ~BaseTraversal() = default;
 };
@@ -99,6 +112,9 @@ class Traversal : public BaseTraversal {
   void visit_and(And &n) override;
   void visit_array(Array &n) override;
   void visit_assignment(Assignment &n) override;
+  void visit_band(Band &n) override;
+  void visit_bnot(Bnot &n) override;
+  void visit_bor(Bor &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
   void visit_div(Div &n) override;
@@ -120,6 +136,7 @@ class Traversal : public BaseTraversal {
   void visit_implication(Implication &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
+  void visit_lsh(Lsh &n) override;
   void visit_lt(Lt &n) override;
   void visit_model(Model &n) override;
   void visit_mod(Mod &n) override;
@@ -138,6 +155,7 @@ class Traversal : public BaseTraversal {
   void visit_range(Range &n) override;
   void visit_record(Record &n) override;
   void visit_return(Return &n) override;
+  void visit_rsh(Rsh &n) override;
   void visit_ruleset(Ruleset &n) override;
   void visit_scalarset(Scalarset &n) override;
   void visit_simplerule(SimpleRule &n) override;
@@ -151,6 +169,7 @@ class Traversal : public BaseTraversal {
   void visit_undefine(Undefine &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
+  void visit_xor(Xor &n) override;
 
   // Force class to be abstract
   virtual ~Traversal() = 0;
@@ -171,6 +190,9 @@ class ConstBaseTraversal {
   virtual void visit_and(const And &n) = 0;
   virtual void visit_array(const Array &n) = 0;
   virtual void visit_assignment(const Assignment &n) = 0;
+  virtual void visit_band(const Band &n) = 0;
+  virtual void visit_bnot(const Bnot &n) = 0;
+  virtual void visit_bor(const Bor &n) = 0;
   virtual void visit_clear(const Clear &n) = 0;
   virtual void visit_constdecl(const ConstDecl &n) = 0;
   virtual void visit_div(const Div &n) = 0;
@@ -192,6 +214,7 @@ class ConstBaseTraversal {
   virtual void visit_implication(const Implication &n) = 0;
   virtual void visit_isundefined(const IsUndefined &n) = 0;
   virtual void visit_leq(const Leq &n) = 0;
+  virtual void visit_lsh(const Lsh &n) = 0;
   virtual void visit_lt(const Lt &n) = 0;
   virtual void visit_model(const Model &n) = 0;
   virtual void visit_mod(const Mod &n) = 0;
@@ -210,6 +233,7 @@ class ConstBaseTraversal {
   virtual void visit_range(const Range &n) = 0;
   virtual void visit_record(const Record &n) = 0;
   virtual void visit_return(const Return &n) = 0;
+  virtual void visit_rsh(const Rsh &n) = 0;
   virtual void visit_ruleset(const Ruleset &n) = 0;
   virtual void visit_scalarset(const Scalarset &n) = 0;
   virtual void visit_simplerule(const SimpleRule &n) = 0;
@@ -223,8 +247,12 @@ class ConstBaseTraversal {
   virtual void visit_undefine(const Undefine &n) = 0;
   virtual void visit_vardecl(const VarDecl &n) = 0;
   virtual void visit_while(const While &n) = 0;
+  virtual void visit_xor(const Xor &n) = 0;
 
   void dispatch(const Node &n);
+
+  virtual void visit_ambiguousamp(const AmbiguousAmp &n);
+  virtual void visit_ambiguouspipe(const AmbiguousPipe &n);
 
   virtual ~ConstBaseTraversal() = default;
 };
@@ -241,6 +269,9 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_and(const And &n) override;
   void visit_array(const Array &n) override;
   void visit_assignment(const Assignment &n) override;
+  void visit_band(const Band &n) override;
+  void visit_bnot(const Bnot &n) override;
+  void visit_bor(const Bor &n) override;
   void visit_clear(const Clear &n) override;
   void visit_constdecl(const ConstDecl &n) override;
   void visit_div(const Div &n) override;
@@ -262,6 +293,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_implication(const Implication &n) override;
   void visit_isundefined(const IsUndefined &n) override;
   void visit_leq(const Leq &n) override;
+  void visit_lsh(const Lsh &n) override;
   void visit_lt(const Lt &n) override;
   void visit_model(const Model &n) override;
   void visit_mod(const Mod &n) override;
@@ -280,6 +312,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_range(const Range &n) override;
   void visit_record(const Record &n) override;
   void visit_return(const Return &n) override;
+  void visit_rsh(const Rsh &n) override;
   void visit_ruleset(const Ruleset &n) override;
   void visit_scalarset(const Scalarset &n) override;
   void visit_simplerule(const SimpleRule &n) override;
@@ -293,6 +326,7 @@ class ConstTraversal : public ConstBaseTraversal {
   void visit_undefine(const Undefine &n) override;
   void visit_vardecl(const VarDecl &n) override;
   void visit_while(const While &n) override;
+  void visit_xor(const Xor &n) override;
 
   // Force class to be abstract
   virtual ~ConstTraversal() = 0;
@@ -359,6 +393,9 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_aliasrule(const AliasRule &n) final;
   void visit_and(const And &n) final;
   void visit_array(const Array &n) final;
+  void visit_band(const Band &n) final;
+  void visit_bnot(const Bnot &n) final;
+  void visit_bor(const Bor &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
   void visit_element(const Element &n) final;
@@ -376,6 +413,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_implication(const Implication &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
+  void visit_lsh(const Lsh &n) final;
   void visit_lt(const Lt &n) final;
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
@@ -390,6 +428,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_quantifier(const Quantifier &n) final;
   void visit_range(const Range &n) final;
   void visit_record(const Record &n) final;
+  void visit_rsh(const Rsh &n) final;
   void visit_ruleset(const Ruleset &n) final;
   void visit_scalarset(const Scalarset &n) final;
   void visit_simplerule(const SimpleRule &n) final;
@@ -400,6 +439,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_vardecl(const VarDecl &n) final;
+  void visit_xor(const Xor &n) final;
 
   virtual ~ConstStmtTraversal() = default;
 
@@ -418,6 +458,9 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_aliasstmt(const AliasStmt &n) final;
   void visit_and(const And &n) final;
   void visit_assignment(const Assignment &n) final;
+  void visit_band(const Band &n) final;
+  void visit_bnot(const Bnot &n) final;
+  void visit_bor(const Bor &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
@@ -438,6 +481,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_implication(const Implication &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
+  void visit_lsh(const Lsh &n) final;
   void visit_lt(const Lt &n) final;
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
@@ -454,6 +498,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_put(const Put &n) final;
   void visit_quantifier(const Quantifier &n) final;
   void visit_return(const Return &n) final;
+  void visit_rsh(const Rsh &n) final;
   void visit_ruleset(const Ruleset &n) final;
   void visit_simplerule(const SimpleRule &n) final;
   void visit_startstate(const StartState &n) final;
@@ -465,6 +510,7 @@ class ConstTypeTraversal : public ConstBaseTraversal {
   void visit_undefine(const Undefine &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
+  void visit_xor(const Xor &n) final;
 
   virtual ~ConstTypeTraversal() = default;
 

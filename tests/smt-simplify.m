@@ -1,5 +1,5 @@
--- rumur_flags: SMT_ARGS
--- skip_reason: 'no SMT solver available' if len(SMT_ARGS) == 0 else None
+-- rumur_flags: self.config['SMT_ARGS']
+-- skip_reason: 'no SMT solver available' if self.config['SMT_ARGS'] is None else None
 
 /* This model tests whether Rumur is capable of simplifying simple conditions at
  * code generation time. If it is, then it will replace the `y = y` check with

@@ -1,5 +1,5 @@
 -- rumur_flags: ['--sandbox', 'on']
--- skip_reason: None if has_sandbox() else 'no suitable sandboxing facilities available on this platform'
+-- skip_reason: None if self.config['HAS_SANDBOX'] else 'no suitable sandboxing facilities available on this platform'
 
 /* Test that the sandboxing functionality is usable. Note that this merely
  * checks that the sandboxing option results in compilable code, not that the

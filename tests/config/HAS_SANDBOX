@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+# whether the current platform has sandboxing support for the verifier
+
+
+# assume macOS always has sandboxing support
+if [ "$(uname -s)" = "Darwin" ]; then
+  printf 'True\n'
+  exit 0
+fi
+
+# assume FreeBSD always has sandboxing support
+if [ "$(uname -s)" = "FreeBSD" ]; then
+  printf 'True\n'
+  exit 0
+fi
+
+# assume OpenBSD always has sandboxing support
+if [ "$(uname -s)" = "OpenBSD" ]; then
+  printf 'True\n'
+  exit 0
+fi
+
+# for Linux, we need to check for seccomp
+if [ "$(uname -s)" = "Linux" ]; then
+
+  # create a temporary space to work in
+  TMP=$(mktemp -d)
+  pushd ${TMP} &>/dev/null
+  if [ $? -ne 0 ]; then
+    printf 'pushd failed\n' >&2
+    exit 1
+  fi
+
+  # create a sandbox testing program
+  cat - >test.c <<EOT
+#include <linux/audit.h>
+#include <linux/filter.h>
+#include <linux/seccomp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/prctl.h>
+#include <sys/socket.h>
+#include <sys/syscall.h>
+
+int main(void) {
+
+  // disable addition of new privileges
+  int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+  if (r != 0) {
+    perror("prctl(PR_SET_NO_NEW_PRIVS) failed");
+    return EXIT_FAILURE;
+  }
+
+  // a BPF program that allows everything
+  static struct sock_filter filter[] = {
+
+    // return allow
+    BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+
+  };
+
+  static const struct sock_fprog filter_program = {
+    .len = sizeof(filter) / sizeof(filter[0]),
+    .filter = filter,
+  };
+
+  // apply the filter to ourselves
+  r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
+  if (r != 0) {
+    perror("prctl(PR_SET_SECCOMP) failed");
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+EOT
+
+  # compile the test program
+  if ! ${CC:-cc} -std=c11 test.c &>/dev/null; then
+    popd &>/dev/null
+    rm -rf "${TMP}"
+    printf 'False\n'
+    exit 0
+  fi
+
+  # execute the test program
+  if ! ./a.out &>/dev/null; then
+    popd &>/dev/null
+    rm -rf "${TMP}"
+    printf 'False\n'
+    exit 0
+  fi
+
+  # clean up
+  popd &>/dev/null
+  rm -rf "${TMP}"
+
+  printf 'True\n'
+  exit 0
+fi
+
+# for anything else, we do not have sandbox mechanisms
+printf 'False\n'

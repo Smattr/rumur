@@ -142,20 +142,24 @@ true {
 ".." { return rumur::parser::token::DOTDOT;    }
 ">=" { return rumur::parser::token::GEQ;       }
 "≥"  { return rumur::parser::token::GEQ;       }
+">>" { return rumur::parser::token::RSH;       }
 "->" { return rumur::parser::token::IMPLIES;   }
 "→"  { return rumur::parser::token::IMPLIES;   }
 "<=" { return rumur::parser::token::LEQ;       }
 "≤"  { return rumur::parser::token::LEQ;       }
+"<<" { return rumur::parser::token::LSH;       }
 "!=" { return rumur::parser::token::NEQ;       }
 "≠"  { return rumur::parser::token::NEQ;       }
 "==>" { return rumur::parser::token::ARROW;    }
 "⇒"  { return rumur::parser::token::ARROW;    }
 "==" { return rumur::parser::token::DEQ;       }
 "¬"  { return '!';                             }
-"∧"  { return '&';                             }
-"∨"  { return '|';                             }
+"∧"  { return rumur::parser::token::LAND;      }
+"∨"  { return rumur::parser::token::LOR;       }
+"&&" { return rumur::parser::token::AMPAMP;    }
+"||" { return rumur::parser::token::PIPEPIPE;  }
 
-[&!|:=><\-\%\+;{},\[\]\.()/\*\?] {
+[\^~&!|:=><\-\%\+;{},\[\]\.()/\*\?] {
   return YYText()[0];
 }
 

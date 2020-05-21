@@ -1,4 +1,5 @@
 #include <cstddef>
+#include "except.h"
 #include <gmpxx.h>
 #include "logic.h"
 #include "../options.h"
@@ -39,6 +40,46 @@ std::string add() {
   return "+";
 }
 
+std::string band() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvand";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise AND is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
+std::string bnot() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvnot";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise NOT is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
+std::string bor() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvor";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise OR is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
+std::string bxor() {
+
+  if (options.smt.use_bitvectors) {
+    return "bvxor";
+  }
+
+  throw Unsupported("SMT simplification involving bitwise XOR is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
 std::string div() {
 
   if (options.smt.use_bitvectors) {
@@ -77,6 +118,15 @@ std::string leq() {
   return "<=";
 }
 
+std::string lsh() {
+
+  if (options.smt.use_bitvectors)
+    return "bvshl";
+
+  throw Unsupported("SMT simplification involving left shifts is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
+}
+
 std::string lt() {
 
   if (options.smt.use_bitvectors) {
@@ -111,6 +161,15 @@ std::string neg() {
   }
 
   return "-";
+}
+
+std::string rsh() {
+
+  if (options.smt.use_bitvectors)
+    return "bvashr";
+
+  throw Unsupported("SMT simplification involving right shifts is only "
+    "supported when using a bitvector representation (--smt-bitvectors on)");
 }
 
 std::string sub() {

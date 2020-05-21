@@ -4,20 +4,39 @@
 #include <rumur/rumur.h>
 #include <string>
 
+class Stage;
+
+// a message sent to a stage
+struct Token {
+  enum {
+    CHAR, // write the given character to the output
+    SUBJ, // update to your next internal pending state
+  } type;
+
+  // only one of these is ever active, but we avoid using a union so we still
+  // get default ctors etc
+  std::string character;
+  const Stage *subject = nullptr;
+
+  explicit Token(const std::string &c): type(CHAR), character(c) { }
+  explicit Token(const Stage *s): type(SUBJ), subject(s) { }
+};
+
 class Stage : public rumur::ConstBaseTraversal {
 
  protected:
   Stage *top = nullptr;
 
  public:
-  // pass one or more characters to write()
+  // pass one or more characters to process()
   Stage &operator<<(const std::string &s);
 
   // make this stage aware it is part of the given pipeline
   void attach(Stage &top_);
 
-  // write a character to the output stream
-  virtual void write(const std::string &c) = 0;
+  // process a token, either a character to write to the output stream or a
+  // notification to shift state
+  virtual void process(const Token &t) = 0;
 
   // write characters from the input file into the output file, up to the given
   // position in the input
@@ -50,6 +69,9 @@ class IntermediateStage : public Stage {
   void visit_and(const rumur::And &n) override;
   void visit_array(const rumur::Array &n) override;
   void visit_assignment(const rumur::Assignment &n) override;
+  void visit_band(const rumur::Band &n) override;
+  void visit_bnot(const rumur::Bnot &n) override;
+  void visit_bor(const rumur::Bor &n) override;
   void visit_clear(const rumur::Clear &n) override;
   void visit_constdecl(const rumur::ConstDecl &n) override;
   void visit_div(const rumur::Div &n) override;
@@ -71,6 +93,7 @@ class IntermediateStage : public Stage {
   void visit_implication(const rumur::Implication &n) override;
   void visit_isundefined(const rumur::IsUndefined &n) override;
   void visit_leq(const rumur::Leq &n) override;
+  void visit_lsh(const rumur::Lsh &n) override;
   void visit_lt(const rumur::Lt &n) override;
   void visit_mod(const rumur::Mod &n) override;
   void visit_model(const rumur::Model &n) override;
@@ -89,6 +112,7 @@ class IntermediateStage : public Stage {
   void visit_range(const rumur::Range &n) override;
   void visit_record(const rumur::Record &n) override;
   void visit_return(const rumur::Return &n) override;
+  void visit_rsh(const rumur::Rsh &n) override;
   void visit_ruleset(const rumur::Ruleset &n) override;
   void visit_scalarset(const rumur::Scalarset &n) override;
   void visit_simplerule(const rumur::SimpleRule &n) override;
@@ -102,8 +126,9 @@ class IntermediateStage : public Stage {
   void visit_undefine(const rumur::Undefine &n) override;
   void visit_vardecl(const rumur::VarDecl &n) override;
   void visit_while(const rumur::While &n) override;
+  void visit_xor(const rumur::Xor &n) override;
 
-  void write(const std::string &c) override;
+  void process(const Token &t) override;
 
   void sync_to(const rumur::Node &n) override;
   void sync_to(const rumur::position &pos) override;

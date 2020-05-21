@@ -22,9 +22,14 @@ class Indexer : public BaseTraversal {
   void visit_aliasdecl(AliasDecl &n) final;
   void visit_aliasrule(AliasRule &n) final;
   void visit_aliasstmt(AliasStmt &n) final;
+  void visit_ambiguousamp(AmbiguousAmp &n) final;
+  void visit_ambiguouspipe(AmbiguousPipe &n) final;
   void visit_and(And &n) final;
   void visit_array(Array &n) final;
   void visit_assignment(Assignment &n) final;
+  void visit_band(Band &n) final;
+  void visit_bnot(Bnot &n) final;
+  void visit_bor(Bor &n) final;
   void visit_clear(Clear &n) final;
   void visit_constdecl(ConstDecl &n) final;
   void visit_div(Div &n) final;
@@ -46,6 +51,7 @@ class Indexer : public BaseTraversal {
   void visit_implication(Implication &n) final;
   void visit_isundefined(IsUndefined &n) final;
   void visit_leq(Leq &n) final;
+  void visit_lsh(Lsh &n) final;
   void visit_lt(Lt &n) final;
   void visit_model(Model &n) final;
   void visit_mod(Mod &n) final;
@@ -64,6 +70,7 @@ class Indexer : public BaseTraversal {
   void visit_range(Range &n) final;
   void visit_record(Record &n) final;
   void visit_return(Return &n) final;
+  void visit_rsh(Rsh &n) final;
   void visit_ruleset(Ruleset &n) final;
   void visit_scalarset(Scalarset &n) final;
   void visit_simplerule(SimpleRule &n) final;
@@ -77,6 +84,7 @@ class Indexer : public BaseTraversal {
   void visit_undefine(Undefine &n) final;
   void visit_vardecl(VarDecl &n) final;
   void visit_while(While &n) final;
+  void visit_xor(Xor &n) final;
 
   virtual ~Indexer() = default;
 

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# get SMT arguments for an available solver
+
+
+# preference 1: Z3
+if which z3 >/dev/null; then
+  # we leave a blank logic here, as Z3 performs best when not given a logic
+  printf '["--smt-path", "z3", "--smt-arg=-smt2", "--smt-arg=-in"]\n'
+  exit 0
+fi
+
+# preference 2: CVC4
+if which cvc4 &>/dev/null; then
+  printf '["--smt-path", "cvc4", "--smt-arg=--lang=smt2", '
+  printf '"--smt-arg=--rewrite-divk", "--smt-prelude", "(set-logic AUFLIA)"]\n'
+  exit 0
+fi
+
+# otherwise, give up
+printf 'None\n'
+exit 0
