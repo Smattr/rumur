@@ -56,7 +56,7 @@ else
 fi
 
 # check if we need libatomic support
-if [ "${NEEDS_LIBATOMIC}" != "False"]; then
+if [ "${NEEDS_LIBATOMIC}" != "False" ]; then
   LIBATOMIC=-latomic
 else
   LIBATOMIC=
