@@ -1,7 +1,7 @@
 " Vim support for Rumur extensions to the Murphi syntax
 " Language: murphi
 " Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
-" Lincese: The Unlicense
+" License: The Unlicense
 
 " Vim already knows how to highlight Murphi files, but doesn't know about the
 " extra things that Rumur supports. To use this file, copy it into

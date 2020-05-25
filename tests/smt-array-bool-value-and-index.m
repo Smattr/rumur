@@ -2,7 +2,7 @@
 -- skip_reason: 'no SMT solver available' if self.config['SMT_ARGS'] is None else None
 
 /* test whether the SMT bridge can simplify expressions involving arrays with
- * bool values and indicies
+ * bool values and indices
  */
 
 type

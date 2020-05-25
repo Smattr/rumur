@@ -43,6 +43,6 @@ extern void (*cover)(const char *message);
 /* Called when a model liveness property is hit. The default implementation does
  * nothing.
  */
-extern void (*liveness)(const char *mesage);
+extern void (*liveness)(const char *message);
 
 

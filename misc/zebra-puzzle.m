@@ -7,7 +7,7 @@
  */
 
 type
-  nationality: enum { ENGLISHMAN, SPANIARD, UKRANIAN, JAPANESE, NORWEGIAN }
+  nationality: enum { ENGLISHMAN, SPANIARD, UKRAINIAN, JAPANESE, NORWEGIAN }
   colour: enum { RED, GREEN, IVORY, YELLOW, BLUE }
   animal: enum { DOG, SNAIL, FOX, HORSE, ZEBRA }
   cigarette: enum { OLDGOLD, CHESTERFIELDS, KOOLS, LUCKYSTRIKE, PARLIAMENTS }
@@ -75,9 +75,9 @@ ruleset i: 0 .. 4 do
     !isundefined(houses[i].paint) & !isundefined(houses[i].beverage)
     & houses[i].beverage = COFFEE -> houses[i].paint = GREEN
 
-  assume "the Ukranian drinks tea"
+  assume "the Ukrainian drinks tea"
     !isundefined(houses[i].citizenship) & !isundefined(houses[i].beverage)
-    & houses[i].citizenship = UKRANIAN -> houses[i].beverage = TEA
+    & houses[i].citizenship = UKRAINIAN -> houses[i].beverage = TEA
 
   assume "the green house is immediately to the right of the ivory house"
     forall j: 0 .. 4 do
