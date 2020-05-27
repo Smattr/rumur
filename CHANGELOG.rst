@@ -1,6 +1,20 @@
 Change log
 ==========
 
+v2020.05.27
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: rumur-run’s check for whether libatomic is required is now more
+  accurate. Previously this would incorrectly detect that libatomic was not
+  required on some platforms (e.g. Linux ARM64), resulting in a link failure
+  (commit 620e514c1d322e05a9e67bb09cd0dc68cb810d38).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2020.05.18
 -----------
 
