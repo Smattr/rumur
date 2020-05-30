@@ -7,7 +7,7 @@ branches:
 matrix:
   include:
 
-  - name: Ubuntu Linux 14.04, GCC 4.7 (1/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (1/3)
     os: linux
     dist: trusty
     addons:
@@ -29,7 +29,7 @@ matrix:
       # traces.
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 14.04, GCC 4.7 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (2/3)
     os: linux
     dist: trusty
     addons:
@@ -49,7 +49,7 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 14.04, GCC 4.7 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 4.7 (3/3)
     os: linux
     dist: trusty
     addons:
@@ -65,30 +65,10 @@ matrix:
           - valgrind
     env:
       - MIN_TEST=2001
-      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 14.04, GCC 4.7 (4/4)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - ninja-build
-          - python3.6
-          - valgrind
-    env:
-      - MIN_TEST=3001
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (1/4)
+  - name: Ubuntu Linux 14.04, GCC 4.8 (1/3)
     os: linux
     dist: trusty
     addons:
@@ -107,7 +87,7 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 14.04, GCC 4.8 (2/4)
+  - name: Ubuntu Linux 14.04, GCC 4.8 (2/3)
     os: linux
     dist: trusty
     addons:
@@ -127,7 +107,7 @@ matrix:
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 14.04, GCC 4.8 (3/4)
+  - name: Ubuntu Linux 14.04, GCC 4.8 (3/3)
     os: linux
     dist: trusty
     addons:
@@ -143,26 +123,6 @@ matrix:
           - valgrind
     env:
       - MIN_TEST=2001
-      - MAX_TEST=3000
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (4/4)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - ninja-build
-          - python3.6
-          - valgrind
-    env:
-      - MIN_TEST=3001
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -333,7 +293,7 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 5 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -351,7 +311,7 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 5 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -370,7 +330,7 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 5 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -389,7 +349,7 @@ matrix:
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 5 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 5 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -403,6 +363,25 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
+      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 5 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - g++-5
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -489,7 +468,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 6 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -507,7 +486,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 6 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -526,7 +505,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 6 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -545,7 +524,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 6 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 6 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -559,6 +538,25 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
+      - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 6 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - g++-6
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -645,7 +643,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -663,7 +661,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -682,7 +680,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -701,7 +699,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 7 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -715,6 +713,25 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 7 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - g++-7
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -801,7 +818,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -819,7 +836,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -838,7 +855,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -857,7 +874,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 8 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -871,6 +888,25 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
+      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 8 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - g++-8
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -957,7 +993,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -979,7 +1015,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -1000,7 +1036,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -1021,7 +1057,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -1037,11 +1073,32 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (1/4)
+  - name: Ubuntu Linux 18.04, GCC 9 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+          - g++-9
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
+      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 10 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -1061,7 +1118,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (2/4)
+  - name: Ubuntu Linux 18.04, GCC 10 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -1082,7 +1139,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (3/4)
+  - name: Ubuntu Linux 18.04, GCC 10 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -1103,7 +1160,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (4/4)
+  - name: Ubuntu Linux 18.04, GCC 10 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -1119,6 +1176,27 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
+      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, GCC 10 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+          - g++-10
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1468,7 +1546,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 4.0 (1/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (1/6)
     os: linux
     dist: bionic
     addons:
@@ -1487,7 +1565,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 4.0 (2/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (2/6)
     os: linux
     dist: bionic
     addons:
@@ -1507,7 +1585,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 4.0 (3/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (3/6)
     os: linux
     dist: bionic
     addons:
@@ -1527,7 +1605,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 4.0 (4/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (4/6)
     os: linux
     dist: bionic
     addons:
@@ -1547,7 +1625,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 4.0 (5/5)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (5/6)
     os: linux
     dist: bionic
     addons:
@@ -1562,11 +1640,31 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=3750
       - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 5.0 (1/3)
+  - name: Ubuntu Linux 18.04, Clang 4.0 (6/6)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - clang-4.0
+          - g++-6
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=3751
+      - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, Clang 5.0 (1/4)
     os: linux
     dist: trusty
     addons:
@@ -1588,7 +1686,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 5.0 (2/3)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (2/4)
     os: linux
     dist: trusty
     addons:
@@ -1611,7 +1709,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 5.0 (3/3)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (3/4)
     os: linux
     dist: trusty
     addons:
@@ -1629,11 +1727,34 @@ matrix:
           - valgrind
     env:
       - MIN_TEST=2001
+      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 5.0 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 5.0 (4/4)
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+          - deadsnakes
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-5.0
+        packages:
+          - clang-5.0
+          - g++-6
+          - libxml2-utils
+          - ninja-build
+          - python3.6
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, Clang 5.0 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -1651,7 +1772,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 5.0 (2/4)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -1670,7 +1791,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 5.0 (3/4)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -1689,7 +1810,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 5.0 (4/4)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -1703,11 +1824,30 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
       - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 6.0 (1/3)
+  - name: Ubuntu Linux 18.04, Clang 5.0 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - clang-5.0
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
+      - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, Clang 6.0 (1/4)
     os: linux
     dist: trusty
     addons:
@@ -1729,7 +1869,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 6.0 (2/3)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (2/4)
     os: linux
     dist: trusty
     addons:
@@ -1752,7 +1892,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 6.0 (3/3)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (3/4)
     os: linux
     dist: trusty
     addons:
@@ -1770,11 +1910,34 @@ matrix:
           - valgrind
     env:
       - MIN_TEST=2001
+      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 6.0 (4/4)
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+          - deadsnakes
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-6.0
+        packages:
+          - clang-6.0
+          - g++-6
+          - libxml2-utils
+          - ninja-build
+          - python3.6
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, Clang 6.0 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -1792,7 +1955,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (2/4)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -1811,7 +1974,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (3/4)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -1830,7 +1993,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (4/4)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -1844,11 +2007,30 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 7 (1/3)
+  - name: Ubuntu Linux 18.04, Clang 6.0 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - clang-6.0
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
+      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, Clang 7 (1/4)
     os: linux
     dist: trusty
     addons:
@@ -1870,7 +2052,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 7 (2/3)
+  - name: Ubuntu Linux 14.04, Clang 7 (2/4)
     os: linux
     dist: trusty
     addons:
@@ -1893,7 +2075,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 7 (3/3)
+  - name: Ubuntu Linux 14.04, Clang 7 (3/4)
     os: linux
     dist: trusty
     addons:
@@ -1911,11 +2093,34 @@ matrix:
           - valgrind
     env:
       - MIN_TEST=2001
+      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 7 (4/4)
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+          - deadsnakes
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-7
+        packages:
+          - clang-7
+          - g++-6
+          - libxml2-utils
+          - ninja-build
+          - python3.6
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, Clang 7 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -1933,7 +2138,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (2/4)
+  - name: Ubuntu Linux 18.04, Clang 7 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -1952,7 +2157,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (3/4)
+  - name: Ubuntu Linux 18.04, Clang 7 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -1971,7 +2176,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (4/4)
+  - name: Ubuntu Linux 18.04, Clang 7 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -1985,11 +2190,30 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 8 (1/3)
+  - name: Ubuntu Linux 18.04, Clang 7 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - clang-7
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
+      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 14.04, Clang 8 (1/4)
     os: linux
     dist: trusty
     addons:
@@ -2011,7 +2235,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 8 (2/3)
+  - name: Ubuntu Linux 14.04, Clang 8 (2/4)
     os: linux
     dist: trusty
     addons:
@@ -2034,7 +2258,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 14.04, Clang 8 (3/3)
+  - name: Ubuntu Linux 14.04, Clang 8 (3/4)
     os: linux
     dist: trusty
     addons:
@@ -2052,11 +2276,34 @@ matrix:
           - valgrind
     env:
       - MIN_TEST=2001
+      - MAX_TEST=3000
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (1/4)
+  - name: Ubuntu Linux 14.04, Clang 8 (4/4)
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+          - deadsnakes
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-8
+        packages:
+          - clang-8
+          - g++-6
+          - libxml2-utils
+          - ninja-build
+          - python3.6
+          - valgrind
+    env:
+      - MIN_TEST=3001
+      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, Clang 8 (1/5)
     os: linux
     dist: bionic
     addons:
@@ -2074,7 +2321,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (2/4)
+  - name: Ubuntu Linux 18.04, Clang 8 (2/5)
     os: linux
     dist: bionic
     addons:
@@ -2093,7 +2340,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (3/4)
+  - name: Ubuntu Linux 18.04, Clang 8 (3/5)
     os: linux
     dist: bionic
     addons:
@@ -2112,7 +2359,7 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (4/4)
+  - name: Ubuntu Linux 18.04, Clang 8 (4/5)
     os: linux
     dist: bionic
     addons:
@@ -2126,6 +2373,25 @@ matrix:
           - z3
     env:
       - MIN_TEST=3001
+      - MAX_TEST=4000
+      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
+      - UBSAN_OPTIONS=print_stacktrace=1
+
+  - name: Ubuntu Linux 18.04, Clang 8 (5/5)
+    os: linux
+    dist: bionic
+    addons:
+      apt:
+        packages:
+          - clang-8
+          - libfl-dev
+          - libxml2-utils
+          - ninja-build
+          - valgrind
+          - z3
+    env:
+      - MIN_TEST=4001
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1

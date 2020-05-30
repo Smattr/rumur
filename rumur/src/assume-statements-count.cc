@@ -21,7 +21,7 @@ unsigned long assume_statements_count(const Model &model) {
     virtual ~AssumeCounter() = default;
   };
 
-  // use the counter to find how many assume statments we have
+  // use the counter to find how many assume statements we have
   AssumeCounter ac;
   ac.dispatch(model);
 
