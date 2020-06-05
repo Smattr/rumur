@@ -457,9 +457,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (1/5)
+  - name: Ubuntu Linux 20.04, GCC 7 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -475,9 +475,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (2/5)
+  - name: Ubuntu Linux 20.04, GCC 7 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -494,9 +494,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (3/5)
+  - name: Ubuntu Linux 20.04, GCC 7 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -513,9 +513,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (4/5)
+  - name: Ubuntu Linux 20.04, GCC 7 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -532,9 +532,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 7 (5/5)
+  - name: Ubuntu Linux 20.04, GCC 7 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -632,9 +632,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (1/5)
+  - name: Ubuntu Linux 20.04, GCC 8 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -650,9 +650,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (2/5)
+  - name: Ubuntu Linux 20.04, GCC 8 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -669,9 +669,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (3/5)
+  - name: Ubuntu Linux 20.04, GCC 8 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -688,9 +688,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (4/5)
+  - name: Ubuntu Linux 20.04, GCC 8 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -707,9 +707,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 8 (5/5)
+  - name: Ubuntu Linux 20.04, GCC 8 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -807,15 +807,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (1/5)
+  - name: Ubuntu Linux 20.04, GCC 9 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          # XXX: this PPA is not currently whitelisted on 18.04
-          # (https://github.com/travis-ci/apt-source-safelist/issues/410)
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
           - libfl-dev
@@ -829,13 +825,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (2/5)
+  - name: Ubuntu Linux 20.04, GCC 9 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
           - libfl-dev
@@ -850,13 +844,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (3/5)
+  - name: Ubuntu Linux 20.04, GCC 9 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
           - libfl-dev
@@ -871,13 +863,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (4/5)
+  - name: Ubuntu Linux 20.04, GCC 9 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
           - libfl-dev
@@ -892,13 +882,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 9 (5/5)
+  - name: Ubuntu Linux 20.04, GCC 9 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-9
           - libfl-dev
@@ -912,13 +900,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (1/5)
+  - name: Ubuntu Linux 20.04, GCC 10 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-10
           - libfl-dev
@@ -932,13 +918,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (2/5)
+  - name: Ubuntu Linux 20.04, GCC 10 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-10
           - libfl-dev
@@ -953,13 +937,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (3/5)
+  - name: Ubuntu Linux 20.04, GCC 10 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-10
           - libfl-dev
@@ -974,13 +956,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (4/5)
+  - name: Ubuntu Linux 20.04, GCC 10 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-10
           - libfl-dev
@@ -995,13 +975,11 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC 10 (5/5)
+  - name: Ubuntu Linux 20.04, GCC 10 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
-        sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
           - g++-10
           - libfl-dev
@@ -1015,9 +993,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC multilib (1/4)
+  - name: Ubuntu Linux 20.04, GCC multilib (1/4)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1033,9 +1011,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC multilib (2/4)
+  - name: Ubuntu Linux 20.04, GCC multilib (2/4)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1052,9 +1030,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC multilib (3/4)
+  - name: Ubuntu Linux 20.04, GCC multilib (3/4)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1071,9 +1049,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC multilib (4/4)
+  - name: Ubuntu Linux 20.04, GCC multilib (4/4)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1540,9 +1518,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (1/5)
+  - name: Ubuntu Linux 20.04, Clang 6.0 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1558,9 +1536,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (2/5)
+  - name: Ubuntu Linux 20.04, Clang 6.0 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1577,9 +1555,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (3/5)
+  - name: Ubuntu Linux 20.04, Clang 6.0 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1596,9 +1574,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (4/5)
+  - name: Ubuntu Linux 20.04, Clang 6.0 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1615,9 +1593,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 6.0 (5/5)
+  - name: Ubuntu Linux 20.04, Clang 6.0 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1723,9 +1701,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (1/5)
+  - name: Ubuntu Linux 20.04, Clang 7 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1741,9 +1719,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (2/5)
+  - name: Ubuntu Linux 20.04, Clang 7 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1760,9 +1738,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (3/5)
+  - name: Ubuntu Linux 20.04, Clang 7 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1779,9 +1757,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (4/5)
+  - name: Ubuntu Linux 20.04, Clang 7 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1798,9 +1776,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 7 (5/5)
+  - name: Ubuntu Linux 20.04, Clang 7 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1906,9 +1884,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (1/5)
+  - name: Ubuntu Linux 20.04, Clang 8 (1/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1924,9 +1902,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (2/5)
+  - name: Ubuntu Linux 20.04, Clang 8 (2/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1943,9 +1921,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (3/5)
+  - name: Ubuntu Linux 20.04, Clang 8 (3/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1962,9 +1940,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (4/5)
+  - name: Ubuntu Linux 20.04, Clang 8 (4/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1981,9 +1959,9 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, Clang 8 (5/5)
+  - name: Ubuntu Linux 20.04, Clang 8 (5/5)
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -1999,10 +1977,10 @@ matrix:
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 18.04, GCC, arm64
+  - name: Ubuntu Linux 20.04, GCC, arm64
     arch: arm64
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -2013,10 +1991,10 @@ matrix:
       - MATRIX_EVAL=""
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 18.04, GCC, ppc64le
+  - name: Ubuntu Linux 20.04, GCC, ppc64le
     arch: ppc64le
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
@@ -2027,10 +2005,10 @@ matrix:
       - MATRIX_EVAL=""
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
-  - name: Ubuntu Linux 18.04, GCC, s390x
+  - name: Ubuntu Linux 20.04, GCC, s390x
     arch: s390x
     os: linux
-    dist: bionic
+    dist: focal
     addons:
       apt:
         packages:
