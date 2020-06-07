@@ -2289,18 +2289,18 @@ matrix:
       - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
-  - name: Ubuntu Linux 20.04, GCC 9, AFL
+  - name: Ubuntu Linux 20.04, GCC 10, AFL
     os: linux
     dist: focal
     addons:
       apt:
         packages:
-          - g++-9
+          - g++-10
           - libfl-dev
           - ninja-build
     env:
       # install AFL and let it catch crashes via core dumps
-      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh && CC=gcc-9 && CXX=afl-g++"
+      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh && CC=gcc-10 && CXX=afl-g++"
 
       # quit if we succeed exhaustively fuzzing (unlikely)
       - AFL_EXIT_WHEN_DONE=1
