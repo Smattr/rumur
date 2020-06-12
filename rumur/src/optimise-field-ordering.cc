@@ -47,6 +47,14 @@ static void sort(std::vector<Ptr<VarDecl>> &fields) {
 namespace { class Reorderer : public Traversal {
 
  public:
+  // The default traversal does not descend into the referent of ExprIDs.
+  // However, we do need to because they may have a copy of a record type whose
+  // fields we have reordered. We need to also encounter the copy and reorder
+  // its fields the same way.
+  void visit_exprid(ExprID &n) final {
+    dispatch(*n.value);
+  }
+
   void visit_model(Model &n) final {
 
     // first act on our children
