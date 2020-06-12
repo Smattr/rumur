@@ -72,6 +72,14 @@ namespace { class Reorderer : public Traversal {
     // sort the variables
     sort(vars);
 
+    // the offset of each variable within the model state is now inaccurate, so
+    // update this information
+    mpz_class offset = 0;
+    for (Ptr<VarDecl> &v : vars) {
+      v->offset = offset;
+      offset += v->type->width();
+    }
+
     // overwrite our declarations with the new ordering
     other.insert(other.end(), vars.begin(), vars.end());
     n.decls = other;
