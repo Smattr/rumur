@@ -244,9 +244,10 @@ def optimisation_flags() -> [str]:
 def main(args: [str]) -> int:
 
   # Find the Rumur binary
-  rumur_bin = which('rumur')
+  rumur_bin = which(os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), 'rumur'))
   if rumur_bin is None:
-    rumur_bin = which(os.path.join(os.path.dirname(__file__), 'rumur'))
+    rumur_bin = which('rumur')
   if rumur_bin is None:
     sys.stderr.write('rumur binary not found\n')
     return -1
