@@ -154,6 +154,11 @@ namespace { class Reorderer : public Traversal {
 
     notify_changes(original, n.fields);
   }
+
+  // like ExprIDs, we also need to force descending into TypeExprID’s referents
+  void visit_typeexprid(TypeExprID &n) final {
+    dispatch(*n.referent);
+  }
 }; }
 
 void optimise_field_ordering(Model &m) {
