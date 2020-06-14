@@ -1,7 +1,9 @@
 #include <cstddef>
 #include <gmpxx.h>
+#include "log.h"
 #include "optimise-field-ordering.h"
 #include <rumur/rumur.h>
+#include <string>
 #include <vector>
 
 using namespace rumur;
@@ -43,6 +45,48 @@ static void sort(std::vector<Ptr<VarDecl>> &fields) {
   std::sort(fields.begin(), fields.end(), comp);
 }
 
+// extract a list of the names of fields within a list
+template<typename DECL>
+static std::vector<std::string> get_names(const std::vector<Ptr<DECL>> &decls) {
+  std::vector<std::string> r;
+  for (const Ptr<DECL> &d : decls) {
+    if (auto f = dynamic_cast<const VarDecl*>(d.get()))
+      r.push_back(f->name);
+  }
+  return r;
+}
+
+// generate debug output if a list of fields has changed
+template<typename DECL>
+static void notify_changes(const std::vector<std::string> &original,
+    const std::vector<Ptr<DECL>> &sorted) {
+
+  // extract the current order of the fields
+  const std::vector<std::string> current = get_names(sorted);
+
+  // if this has changed since the original, debug-print the changes
+  if (original != current) {
+
+    *debug << "sorted fields {";
+    {
+      std::string sep;
+      for (const std::string &f : original) {
+        *debug << sep << f;
+        sep = ", ";
+      }
+    }
+    *debug << "} -> {";
+    {
+      std::string sep = "";
+      for (const std::string &f : current) {
+        *debug << sep << f;
+        sep = ", ";
+      }
+    }
+    *debug << "}\n";
+  }
+}
+
 // a traversal that reorders fields
 namespace { class Reorderer : public Traversal {
 
@@ -77,8 +121,12 @@ namespace { class Reorderer : public Traversal {
       }
     }
 
+    const std::vector<std::string> original = get_names(vars);
+
     // sort the variables
     sort(vars);
+
+    notify_changes(original, vars);
 
     // the offset of each variable within the model state is now inaccurate, so
     // update this information
@@ -99,8 +147,12 @@ namespace { class Reorderer : public Traversal {
     for (Ptr<VarDecl> &f : n.fields)
       dispatch(*f);
 
+    const std::vector<std::string> original = get_names(n.fields);
+
     // sort the fields of the record itself
     sort(n.fields);
+
+    notify_changes(original, n.fields);
   }
 }; }
 
