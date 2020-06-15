@@ -110,6 +110,16 @@ small enough to comfortably fit in available memory, you may want to set this to
 Don't output any messages while generating the verifier.
 .RE
 .PP
+\fB--reorder-fields\fR [\fBon\fR | \fBoff\fR]
+.RS
+Control whether access to state variables and record fields is optimised by
+reordering them. By default this is \fBon\fR, causing the order of a model's
+state variables and fields within record types to be optimised to more likely
+result in naturally aligned memory accesses, which are assumed to be faster. You
+should never normally have cause to turn this \fBoff\fR, but this feature was
+buggy when first implemented so this option is provided for debugging purposes.
+.RE
+.PP
 \fB--sandbox\fR [\fBon\fR | \fBoff\fR]
 .RS
 Control whether the generated verifier uses your operating system's sandboxing

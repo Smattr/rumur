@@ -95,6 +95,9 @@ struct Options {
   // whether to bit-pack members of the state struct
   bool pack_state = true;
 
+  // whether to optimise state variable and record fields ordering
+  bool reorder_fields = true;
+
   // options related to SMT solver interaction
   struct {
 
