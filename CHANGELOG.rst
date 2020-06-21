@@ -1,6 +1,31 @@
 Change log
 ==========
 
+v2020.06.20
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: State variable offsets are now updated after reordering. Previously
+  this could cause erroneous reads or writes during checking (commit
+  3d8e551bf1c4873d570dc0a8adac7f52c0b9ea25).
+* Bug fix: fields within records are now reordered universally. Previously
+  inconsistencies could occur resulting in a record’s fields appearing in
+  differing orders across references to the same type (commits
+  cf03554574c7fd2fa78d461fbae95b97624b6f78,
+  8b74668d28cdc73718c7e5b8234c9a138456d3ce).
+* In light of bugs like the above two, there is a new command line argument,
+  ``--reorder-fields`` to control whether field reordering is enabled. This can
+  be used to turn it off in case further bugs are encountered. See the ``rumur``
+  manpage for details (commit 9a33888f2303a3d1bf0e9339a2fddc4570945b02).
+* ``rumur-run`` now preferences the ``rumur`` binary in the same directory as
+  itself, ahead of any ``rumur`` binary in your ``$PATH`` (commit
+  1f03555f89090e7de3e07dc5677380017a3762e9).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2020.05.27
 -----------
 
