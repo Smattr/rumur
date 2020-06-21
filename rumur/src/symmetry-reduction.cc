@@ -205,6 +205,30 @@ static void generate_swap(const Model &m, std::ostream &out,
   out << "}\n\n";
 }
 
+static void generate_schedule_reader(std::ostream &out, const TypeDecl &pivot,
+    const mpz_class &offset, const mpz_class &width) {
+
+  out
+    << "static __attribute__((unused)) size_t schedule_read_" << pivot.name
+      << "(const struct state *NONNULL s) {\n"
+    << "  assert(s != NULL);\n"
+    << "  return state_schedule_get(s, " << offset.get_str() << "ul, "
+      << width.get_str() << "ul);\n"
+    << "}\n";
+}
+
+static void generate_schedule_writer(std::ostream &out, const TypeDecl &pivot,
+    const mpz_class &offset, const mpz_class &width) {
+
+  out
+    << "static __attribute__((unused)) void schedule_write_" << pivot.name
+      << "(struct state *NONNULL s, size_t schedule_index) {\n"
+    << "  assert(s != NULL);\n"
+    << "  state_schedule_set(s, " << offset.get_str() << "ul, "
+      << width.get_str() << "ul, schedule_index);\n"
+    << "}\n";
+}
+
 static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     size_t level, std::ostream &out) {
 
@@ -635,6 +659,18 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
   // Generate functions to swap state elements with respect to each scalarset
   for (const TypeDecl *t : scalarsets)
     generate_swap(m, out, *t);
+
+  // generate functions to read and write schedule (which permutation was
+  // selected) data
+  {
+    mpz_class offset = 0;
+    for (const TypeDecl *t : scalarsets) {
+      const mpz_class width = get_schedule_width(*t);
+      generate_schedule_reader(out, *t, offset, width);
+      generate_schedule_writer(out, *t, offset, width);
+      offset += width;
+    }
+  }
 
   generate_canonicalise_exhaustive(scalarsets, out);
 
