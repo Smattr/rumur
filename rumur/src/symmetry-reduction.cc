@@ -521,7 +521,7 @@ static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
 
   out
     << "static void sort_" << pivot.name << "(struct state *s, "
-      << "size_t lower, size_t upper) {\n"
+      << "size_t *schedule, size_t lower, size_t upper) {\n"
     << "\n"
     << "  /* If we have nothing to sort, bail out. */\n"
     << "  if (lower >= upper) {\n"
@@ -553,6 +553,11 @@ static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
     << "\n"
     << "    /* Swap elements i and j. */\n"
     << "    swap_" << pivot.name << "(s, i, j);\n"
+    << "    {\n"
+    << "      size_t tmp = schedule[i];\n"
+    << "      schedule[i] = schedule[j]; \n"
+    << "      schedule[j] = tmp;\n"
+    << "    }\n"
     << "    if (i == pivot) {\n"
     << "      pivot = j;\n"
     << "    } else if (j == pivot) {\n"
@@ -560,8 +565,8 @@ static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
     << "    }\n"
     << "  }\n"
     << "\n"
-    << "  sort_" << pivot.name << "(s, lower, j);\n"
-    << "  sort_" << pivot.name << "(s, j + 1, upper);\n"
+    << "  sort_" << pivot.name << "(s, schedule, lower, j);\n"
+    << "  sort_" << pivot.name << "(s, schedule, j + 1, upper);\n"
     << "}\n";
 }
 
@@ -588,8 +593,16 @@ static void generate_canonicalise_heuristic(const Model &m,
 
     mpz_class bound = s->count() - 1;
 
-    out << "  sort_" << t->name << "(s, 0, ((size_t)" << bound.get_str()
-      << "ull) - 1);\n";
+    out
+      << "  {\n"
+      << "    size_t schedule[(size_t)" << bound.get_str() << "ull];\n"
+      << "    for (size_t i = 0; i < sizeof(schedule) / sizeof(schedule[0]); "
+        << "++i) {\n"
+      << "      schedule[i] = i;\n"
+      << "    }\n"
+      << "    sort_" << t->name << "(s, schedule, 0, ((size_t)"
+        << bound.get_str() << "ull) - 1);\n"
+      << "  }\n";
   }
 
   out
