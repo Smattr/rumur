@@ -9,6 +9,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include "symmetry-reduction.h"
 #include <utility>
 #include "utils.h"
 #include "ValueType.h"
@@ -152,6 +153,22 @@ static mpz_class rule_taken_limit(const Model &model) {
   return s_max > r_max ? s_max : r_max;
 }
 
+// number of bits required to store schedules (permutation indices) for all the
+// scalarsets in the model
+static mpz_class schedule_bits(const Model &model) {
+
+  mpz_class bits = 0;
+
+  // find all our scalarsets
+  const std::vector<const TypeDecl*> scalarsets = get_scalarsets(model);
+
+  // sum their schedule widths
+  for (const TypeDecl *t : scalarsets)
+    bits += get_schedule_width(*t);
+
+  return bits;
+}
+
 int output_checker(const std::string &path, const Model &model,
     const std::pair<ValueType, ValueType> &value_types) {
 
@@ -215,7 +232,8 @@ int output_checker(const std::string &path, const Model &model,
     << "#define RAW_VALUE_MAX " << value_types.second.int_max << "\n"
     << "#define PRIRAWVAL " << value_types.second.pri << "\n\n"
     << "#define RULE_TAKEN_LIMIT " << rule_taken_limit(model) << "\n"
-    << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n";
+    << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n"
+    << "#define SCHEDULE_BITS " << schedule_bits(model) << "ul\n";
 
   generate_cover_array(out, model);
 
