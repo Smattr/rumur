@@ -23,6 +23,25 @@ std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
   return ss;
 }
 
+mpz_class get_schedule_width(const TypeDecl &t) {
+
+  auto s = dynamic_cast<const Scalarset*>(t.value.get());
+  assert(s != nullptr && "non-scalarset passed to get_schedule_width()");
+
+  // how many unique non-undefined values of this scalarset are there?
+  mpz_class bound = s->count() - 1;
+  assert(bound > 0);
+
+  // how many permutations of this many values are there?
+  assert(bound.fits_ulong_p() && "scalarset bound does not fit in an unsigned "
+    "long; unvalidated model?");
+  mpz_class perm = mpz_class::factorial(bound.get_ui());
+  assert(perm > 0);
+
+  // and how many bits do we need to store this many values?
+  return bit_width(perm);
+}
+
 // Generate application of a swap of two state components
 static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
   const std::string &offset_b, const TypeExpr &type, size_t depth = 0) {
