@@ -2151,8 +2151,7 @@ static void reclaim(queue_handle_t h) {
     }
   }
 
-  assert(!"deferred more than `THREADS` reclamations");
-  __builtin_unreachable();
+  ASSERT(!"deferred more than `THREADS` reclamations");
 }
 
 /******************************************************************************/
