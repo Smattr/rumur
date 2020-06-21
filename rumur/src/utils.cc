@@ -1,5 +1,7 @@
+#include <cassert>
 #include <cstddef>
 #include "../../common/escape.h"
+#include <gmpxx.h>
 #include "options.h"
 #include <rumur/rumur.h>
 #include <sstream>
@@ -20,4 +22,27 @@ static std::string to_string(const location &location) {
 
 std::string to_C_string(const location &location) {
   return "\"" + escape(input_filename) + ":" + to_string(location) + ": \"";
+}
+
+mpz_class bit_width(const mpz_class &v) {
+
+  // FIXME: this replicates TypeExpr::width(). It would be nice to consolidate
+  // this functionality somewhere.
+
+  assert(v >= 0);
+
+  // if there are 0 or 1 values, the width is trivial
+  if (v <= 1)
+    return 0;
+
+  /* otherwise, we need the number of bits required to represent the largest
+   * value
+   */
+  mpz_class largest(v - 1);
+  mpz_class bits(0);
+  while (largest != 0) {
+    bits++;
+    largest >>= 1;
+  }
+  return bits;
 }
