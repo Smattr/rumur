@@ -64,7 +64,9 @@ enum { BOUND_BITS = BITS_FOR(BOUND) };
 #endif
 enum { STATE_OTHER_BYTES
   = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS
-  + (SYMMETRY_REDUCTION == SYMMETRY_REDUCTION_OFF ? 0 : SCHEDULE_BITS)) };
+  + (SYMMETRY_REDUCTION == SYMMETRY_REDUCTION_OFF
+     || (COUNTEREXAMPLE_TRACE == CEX_OFF && !PRINTS_SCALARSETS)
+     ? 0 : SCHEDULE_BITS)) };
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
