@@ -1929,6 +1929,110 @@ static __attribute__((unused)) value_t bnot(value_t v) {
   return (value_t)~(raw_value_t)v;
 }
 
+/* use Heap's algorithm for generating permutations to implement a
+ * permutation-to-number mapping
+ */
+static __attribute__((unused)) size_t permutation_to_index(
+    const size_t *NONNULL permutation, size_t *NONNULL stack,
+    size_t *NONNULL working, size_t count) {
+
+  /* byte extent of the permutation arrays */
+  size_t bytes = sizeof(permutation[0]) * count;
+
+  size_t index = 0;
+
+  /* clear our stack */
+  memset(stack, 0, bytes);
+
+  /* initialise the first (identity) permutation */
+  for (size_t i = 0; i < count; ++i) {
+    working[i] = i;
+  }
+
+  if (memcmp(permutation, working, bytes) == 0) {
+    return index;
+  }
+
+  size_t i = 0;
+  while (i < count) {
+    if (stack[i] < i) {
+      ++index;
+      if (i % 2 == 0) {
+        /* swap working[0] and working[i] */
+        size_t tmp = working[0];
+        working[0] = working[i];
+        working[i] = tmp;
+      } else {
+        /* swap working[stack[i]] and working[i] */
+        size_t tmp = working[stack[i]];
+        working[stack[i]] = working[i];
+        working[i] = tmp;
+      }
+      if (memcmp(permutation, working, bytes) == 0) {
+        return index;
+      }
+      ++stack[i];
+      i = 0;
+    } else {
+      stack[i] = 0;
+      ++i;
+    }
+  }
+
+  /* the permutation should have been one of the possible ones */
+  ASSERT(!"invalid permutation passed to permutation_to_index");
+}
+static __attribute__((unused)) void index_to_permutation(size_t index,
+    size_t *NONNULL permutation, size_t *NONNULL stack,
+    size_t count) {
+
+  /* byte extent of the permutation arrays */
+  size_t bytes = sizeof(permutation[0]) * count;
+
+  size_t ind = 0;
+
+  /* clear our stack */
+  memset(stack, 0, bytes);
+
+  /* initialise the first (identity) permutation */
+  for (size_t i = 0; i < count; ++i) {
+    permutation[i] = i;
+  }
+
+  if (ind == index) {
+    return;
+  }
+
+  size_t i = 0;
+  while (i < count) {
+    if (stack[i] < i) {
+      ++ind;
+      if (i % 2 == 0) {
+        /* swap permutation[0] and permutation[i] */
+        size_t tmp = permutation[0];
+        permutation[0] = permutation[i];
+        permutation[i] = tmp;
+      } else {
+        /* swap permutation[stack[i]] and permutation[i] */
+        size_t tmp = permutation[stack[i]];
+        permutation[stack[i]] = permutation[i];
+        permutation[i] = tmp;
+      }
+      if (ind == index) {
+        return;
+      }
+      ++stack[i];
+      i = 0;
+    } else {
+      stack[i] = 0;
+      ++i;
+    }
+  }
+
+  /* the target permutation should have been one of the possible ones */
+  ASSERT(!"invalid index passed to index_to_permutation");
+}
+
 /*******************************************************************************
  * State queue node                                                            *
  *                                                                             *
