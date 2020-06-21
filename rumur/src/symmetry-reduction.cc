@@ -12,8 +12,7 @@
 
 using namespace rumur;
 
-// Find all the named scalarset declarations in a model.
-static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
+std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
   for (const Ptr<Decl> &d : m.decls) {
     if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
