@@ -265,8 +265,14 @@ void Scalarset::validate() const {
   if (!bound->constant())
     throw Error("bound of scalarset is not a constant", bound->loc);
 
-  if (bound->constant_fold() <= 0)
+  mpz_class b = bound->constant_fold();
+
+  if (b <= 0)
     throw Error("bound of scalarset is not positive", bound->loc);
+
+  if (!b.fits_ulong_p())
+    throw Error("scalarsets with bounds that do not fit in an unsigned long are"
+      "not supported", bound->loc);
 }
 
 std::string Scalarset::lower_bound() const {
