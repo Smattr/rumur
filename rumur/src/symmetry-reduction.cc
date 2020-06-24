@@ -656,8 +656,24 @@ static void generate_canonicalise_heuristic(const Model &m,
         << "++i) {\n"
       << "      schedule[i] = i;\n"
       << "    }\n"
+      << "    if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+      << "      size_t index = schedule_read_" << t->name << "(s);\n"
+      << "      size_t stack[(size_t)" << bound.get_str() << "ull];\n"
+      << "      index_to_permutation(index, schedule, stack, " << bound.get_str()
+        << "ull);\n"
+      << "    }\n"
       << "    sort_" << t->name << "(s, schedule, 0, ((size_t)"
         << bound.get_str() << "ull) - 1);\n"
+      << "    /* save selected schedule to map this back for later more\n"
+      << "     * comprehensible counterexample traces\n"
+      << "     */\n"
+      << "    if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+      << "      size_t stack[(size_t)" << bound.get_str() << "ull];\n"
+      << "      size_t working[(size_t)" << bound.get_str() << "ull];\n"
+      << "      size_t index = permutation_to_index(schedule, stack, working, "
+        << bound.get_str() << "ull);\n"
+      << "      schedule_write_" << t->name << "(s, index);\n"
+      << "    }\n"
       << "  }\n";
   }
 
