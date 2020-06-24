@@ -209,7 +209,7 @@ static void generate_schedule_reader(std::ostream &out, const TypeDecl &pivot,
     const mpz_class &offset, const mpz_class &width) {
 
   out
-    << "static __attribute__((unused)) size_t schedule_read_" << pivot.name
+    << "static size_t schedule_read_" << pivot.name
       << "(const struct state *NONNULL s) {\n"
     << "  assert(s != NULL);\n"
     << "  return state_schedule_get(s, " << offset.get_str() << "ul, "
