@@ -263,14 +263,14 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     << indent << "}\n\n"
 
     << indent << "{\n"
-    << indent << "  size_t schedule_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
+    << indent << "  size_t stack_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
 
     << indent << "  for (size_t " << i << " = 0; " << i << " < " << bound << "; ) {\n"
-    << indent << "    if (schedule_" << scalarset.name << "[" << i << "] < " << i << ") {\n"
+    << indent << "    if (stack_" << scalarset.name << "[" << i << "] < " << i << ") {\n"
     << indent << "      if (" << i << " % 2 == 0) {\n"
     << indent << "        swap_" << scalarset.name << "(&candidate, 0, " << i << ");\n"
     << indent << "      } else {\n"
-    << indent << "        swap_" << scalarset.name << "(&candidate, schedule_"
+    << indent << "        swap_" << scalarset.name << "(&candidate, stack_"
       << scalarset.name << "[" << i << "], " << i << ");\n"
     << indent << "      }\n";
 }
@@ -285,10 +285,10 @@ static void generate_loop_footer(const TypeDecl &scalarset, size_t index,
   const std::string i = "i" + std::to_string(index);
 
   out
-    << indent << "      schedule_" << scalarset.name << "[" << i << "]++;\n"
+    << indent << "      stack_" << scalarset.name << "[" << i << "]++;\n"
     << indent << "      " << i << " = 0;\n"
     << indent << "    } else {\n"
-    << indent << "      schedule_" << scalarset.name << "[" << i << "] = 0;\n"
+    << indent << "      stack_" << scalarset.name << "[" << i << "] = 0;\n"
     << indent << "      " << i << "++;\n"
     << indent << "    }\n"
     << indent << "  }\n"
