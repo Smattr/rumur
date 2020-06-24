@@ -235,7 +235,7 @@ static void generate_schedule_writer(std::ostream &out, const TypeDecl &pivot,
     const mpz_class &offset, const mpz_class &width) {
 
   out
-    << "static __attribute__((unused)) void schedule_write_" << pivot.name
+    << "static void schedule_write_" << pivot.name
       << "(struct state *NONNULL s, size_t schedule_index) {\n"
     << "  assert(s != NULL);\n"
     << "  state_schedule_set(s, " << offset.get_str() << "ul, "
