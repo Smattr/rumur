@@ -251,13 +251,42 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     << indent << "{\n"
     << indent << "  size_t stack_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
 
+    << indent << "  size_t schedule_" << scalarset.name << "[" << bound << "] = { 0 };\n"
+    << indent << "  if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+    << indent << "    size_t stack[" << bound << "];\n"
+    << indent << "    size_t index = schedule_read_" << scalarset.name
+      << "(&candidate);\n"
+    << indent << "    index_to_permutation(index, schedule_" << scalarset.name
+      << ", stack, " << bound << ");\n"
+    << indent << "  }\n\n"
+
     << indent << "  for (size_t " << i << " = 0; " << i << " < " << bound << "; ) {\n"
     << indent << "    if (stack_" << scalarset.name << "[" << i << "] < " << i << ") {\n"
     << indent << "      if (" << i << " % 2 == 0) {\n"
     << indent << "        swap_" << scalarset.name << "(&candidate, 0, " << i << ");\n"
+    << indent << "        size_t tmp = schedule_" << scalarset.name << "[0];\n"
+    << indent << "        schedule_" << scalarset.name << "[0] = schedule_"
+      << scalarset.name << "[" << i << "];\n"
+    << indent << "        schedule_" << scalarset.name << "[" << i << "] = tmp;\n"
     << indent << "      } else {\n"
     << indent << "        swap_" << scalarset.name << "(&candidate, stack_"
       << scalarset.name << "[" << i << "], " << i << ");\n"
+    << indent << "        size_t tmp = schedule_" << scalarset.name << "[stack_"
+      << scalarset.name << "[" << i << "]];\n"
+    << indent << "        schedule_" << scalarset.name << "[stack_"
+      << scalarset.name << "[" << i << "]] = schedule_" << scalarset.name << "["
+      << i << "];\n"
+    << indent << "        schedule_" << scalarset.name << "[" << i << "] = tmp;\n"
+    << indent << "      }\n"
+    << indent << "      /* save selected schedule to map this back for later more\n"
+    << indent << "       * comprehensible counterexample traces\n"
+    << indent << "       */\n"
+    << indent << "      if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+    << indent << "        size_t stack[" << bound << "];\n"
+    << indent << "        size_t working[" << bound << "];\n"
+    << indent << "        size_t index = permutation_to_index(schedule_"
+      << scalarset.name << ", stack, working, " << bound << ");\n"
+    << indent << "        schedule_write_" << scalarset.name << "(&candidate, index);\n"
     << indent << "      }\n";
 }
 
