@@ -69,6 +69,9 @@ class Generator : public ConstTypeTraversal {
   // a counter used for creating unique symbols
   mpz_class var_counter = 0;
 
+  // declaration for reading the schedule of the scalarset we are printing
+  const TypeDecl *schedule_type = nullptr;
+
  public:
   Generator(std::ostream &o, const Printf &p, const std::string &h, bool s,
     bool x):
@@ -274,8 +277,11 @@ class Generator : public ConstTypeTraversal {
     }
   }
 
-  void visit_scalarset(const Scalarset&) final {
+  void visit_scalarset(const Scalarset &n) final {
     const std::string previous_handle = to_previous();
+
+    const std::string bound
+      = "((size_t)" + n.bound->constant_fold().get_str() + "ull)";
 
     *out
       << "{\n"
@@ -297,7 +303,35 @@ class Generator : public ConstTypeTraversal {
       << "      printf(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\");\n"
+      << "      printf(\"Undefined\");\n";
+
+    // did we identify the schedule mapping for this type?
+    if (schedule_type != nullptr) {
+      *out
+        << "    } else if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF) {\n"
+        << "      if (COUNTEREXAMPLE_TRACE == CEX_OFF) {\n"
+        << "        assert(PRINTS_SCALARSETS && \"accessing a scalarset \"\n"
+        << "          \"schedule which was unanticipated; bug in\"\n"
+        << "          \"prints_scalarsets()?\");\n"
+        << "      }\n"
+        << "      /* we can use the saved schedule to map this value back to a\n"
+        << "       * more intuitive string for the user\n"
+        << "       */\n"
+        << "      size_t index = schedule_read_" << schedule_type->name << "(s);\n"
+        << "      size_t schedule[" << bound << "];\n"
+        << "      size_t stack[" << bound << "];\n"
+        << "      index_to_permutation(index, schedule, stack, " << bound << ");\n"
+        << "      if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
+        << "        xml_printf(\"" << escape(schedule_type->name) << "\");\n"
+        << "      } else {\n"
+        << "        printf(\"%s\", \"" << escape(schedule_type->name) << "\");\n"
+        << "      }\n"
+        << "      ASSERT((size_t)v - 1 < " << bound << " && \"illegal scalarset \"\n"
+        << "        \"value found during printing\");\n"
+        << "      printf(\"_%zu\", schedule[(size_t)v - 1]);\n";
+    }
+
+    *out
       << "    } else {\n"
       << "      printf(\"%\" PRIVAL, value_to_string(v - 1));\n"
       << "    }\n"
@@ -312,6 +346,14 @@ class Generator : public ConstTypeTraversal {
   void visit_typeexprid(const TypeExprID &n) final {
     if (n.referent == nullptr)
       throw Error("unresolved type symbol \"" + n.name + "\"", n.loc);
+
+    // is this type a reference to a (symmetry reduced) scalarset?
+    auto s = dynamic_cast<const Scalarset*>(n.referent->value.get());
+    if (s != nullptr) {
+      // save this declaration for later reading the schedule of this type
+      schedule_type = n.referent.get();
+    }
+
     dispatch(*n.referent->value);
   }
 
