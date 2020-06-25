@@ -1,4 +1,4 @@
--- checker_output: None if self.xml else re.compile(r'^y:\s*Undefined$(.|\n)*?^y:\s*9$', re.MULTILINE)
+-- checker_output: None if self.xml else re.compile(r'^y:\s*Undefined$(.|\n)*?^y:\s*t_9$', re.MULTILINE)
 
 -- Test that we can print a scalarset variable. The initial implementation of
 -- scalarset remapping caused code to be emitted in an order that had put
