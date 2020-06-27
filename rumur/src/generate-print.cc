@@ -279,9 +279,13 @@ class Generator : public ConstTypeTraversal {
 
  private:
   std::string derive_handle(mpz_class offset, mpz_class width) const {
+    return derive_handle("((size_t)" + offset.get_str() + ")", width);
+  }
+
+  std::string derive_handle(const std::string &offset, mpz_class width) const {
     return "((struct handle){ .base = " + handle + ".base + (" + handle
-      + ".offset + ((size_t)" + offset.get_str() + ")) / CHAR_BIT, .offset = ("
-      + handle + ".offset + ((size_t)" + offset.get_str() + ")) % CHAR_BIT, "
+      + ".offset + " + offset + ") / CHAR_BIT, .offset = ("
+      + handle + ".offset + " + offset + ") % CHAR_BIT, "
       + ".width = " + width.get_str() + "ull })";
   }
 
