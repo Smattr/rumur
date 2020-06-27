@@ -170,8 +170,8 @@ class Generator : public ConstTypeTraversal {
     for (auto &f : n.fields) {
       mpz_class w = f->width();
       const std::string h = derive_handle(preceding_offset, w);
-      generate_print(*out, *f->type, prefix + "." + f->name, h, support_diff,
-        support_xml);
+      Generator g(*this, prefix + "." + f->name, h);
+      g.dispatch(*f->type);
       preceding_offset += w;
     }
   }
