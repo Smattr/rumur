@@ -261,7 +261,7 @@ class Generator : public ConstStmtTraversal {
       std::ostringstream buffer;
       generate_lvalue(buffer, *s.expr);
 
-      generate_print(*out, *s.expr->type(), escape(s.expr->to_string()), buffer.str(),
+      generate_print(*out, *s.expr->type(), s.expr->to_string(), buffer.str(),
         false, false);
 
       return;

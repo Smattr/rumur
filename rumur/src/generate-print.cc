@@ -1,31 +1,67 @@
 #include <cassert>
 #include <cstddef>
+#include "../../common/escape.h"
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>
 #include <rumur/rumur.h>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 using namespace rumur;
 
 namespace {
 
+// dynamically constructed printf call
+class Printf {
+
+ private:
+  std::vector<std::string> parameters;
+
+ public:
+  Printf() { }
+
+  explicit Printf(const std::string &s) {
+    add_str(s);
+  }
+
+  void add_str(const std::string &s) {
+    parameters.push_back(escape(s));
+  }
+
+  Printf &operator<<(const std::string &s) {
+    add_str(s);
+    return *this;
+  }
+
+  // construct the final printf call
+  std::string str() const {
+    std::ostringstream r;
+    r << "printf(\"%s\", \"";
+    for (const std::string &p : parameters)
+      r << p;
+    r << "\")";
+    return r.str();
+  }
+};
+
 class Generator : public ConstTypeTraversal {
 
  private:
   std::ostream *out;
-  const std::string prefix;
+  const Printf prefix;
   const std::string handle;
   const bool support_diff;
   const bool support_xml;
 
  public:
-  Generator(std::ostream &o, const std::string &p, const std::string &h,
-    bool s, bool x):
+  Generator(std::ostream &o, const Printf &p, const std::string &h, bool s,
+    bool x):
     out(&o), prefix(p), handle(h), support_diff(s), support_xml(x) { }
 
-  Generator(const Generator &caller, const std::string &p, const std::string &h):
+  Generator(const Generator &caller, const Printf &p, const std::string &h):
     out(caller.out), prefix(p), handle(h), support_diff(caller.support_diff),
     support_xml(caller.support_xml) { }
 
@@ -44,8 +80,10 @@ class Generator : public ConstTypeTraversal {
       mpz_class preceding_offset = 0;
       mpz_class w = n.element_type->width();
       for (mpz_class i = lb; i <= ub; i++) {
+        Printf p = prefix;
+        p << "[" << i.get_str() << "]";
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*this, prefix + "[" + i.get_str() + "]", h);
+        Generator g(*this, p, h);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -60,8 +98,10 @@ class Generator : public ConstTypeTraversal {
       mpz_class preceding_offset = 0;
       mpz_class w = n.element_type->width();
       for (mpz_class i = 0; i < b; i++) {
+        Printf p = prefix;
+        p << "[" << i.get_str() << "]";
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*this, prefix + "[" + i.get_str() + "]", h);
+        Generator g(*this, p, h);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -74,8 +114,10 @@ class Generator : public ConstTypeTraversal {
       mpz_class preceding_offset = 0;
       mpz_class w = n.element_type->width();
       for (const std::pair<std::string, location> &m : e->members) {
+        Printf p = prefix;
+        p << "[" << m.first << "]";
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*this, prefix + "[" + m.first + "]", h);
+        Generator g(*this, p, h);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -101,10 +143,12 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"%s\\\" value=\\\"\", \""
-        << prefix << "\");\n"
+      << "      printf(\"<state_component name=\\\"\");\n"
+      << "      " << prefix.str() << ";\n"
+      << "      printf(\"\\\" value=\\\"\");\n"
       << "    } else {\n"
-      << "      printf(\"%s:\", \"" << prefix << "\");\n"
+      << "      " << prefix.str() << ";\n"
+      << "      printf(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
       << "      printf(\"Undefined\");\n";
@@ -117,7 +161,7 @@ class Generator : public ConstTypeTraversal {
     }
     *out
       << "    } else {\n"
-      << "      assert(!\"illegal value for " << prefix << "\");\n"
+      << "      assert(!\"illegal value for enum\");\n"
       << "    }\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
       << "      printf(\"\\\"/>\");\n"
@@ -146,10 +190,12 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"%s\\\" value=\\\"\", \""
-        << prefix << "\");\n"
+      << "      printf(\"<state_component name=\\\"\");\n"
+      << "      " << prefix.str() << ";\n"
+      << "      printf(\"\\\" value=\\\"\");\n"
       << "    } else {\n"
-      << "      printf(\"%s:\", \"" << prefix << "\");\n"
+      << "      " << prefix.str() << ";\n"
+      << "      printf(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
       << "      printf(\"Undefined\");\n"
@@ -169,8 +215,10 @@ class Generator : public ConstTypeTraversal {
     mpz_class preceding_offset = 0;
     for (auto &f : n.fields) {
       mpz_class w = f->width();
+      Printf p = prefix;
+      p << "." << f->name;
       const std::string h = derive_handle(preceding_offset, w);
-      Generator g(*this, prefix + "." + f->name, h);
+      Generator g(*this, p, h);
       g.dispatch(*f->type);
       preceding_offset += w;
     }
@@ -191,10 +239,12 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"%s\\\" value=\\\"\", \""
-        << prefix << "\");\n"
+      << "      printf(\"<state_component name=\\\"\");\n"
+      << "      " << prefix.str() << ";\n"
+      << "      printf(\"\\\" value=\\\"\");\n"
       << "    } else {\n"
-      << "      printf(\"%s:\", \"" << prefix << "\");\n"
+      << "      " << prefix.str() << ";\n"
+      << "      printf(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
       << "      printf(\"Undefined\");\n"
@@ -238,6 +288,6 @@ void generate_print(std::ostream &out, const TypeExpr &e,
   const std::string &prefix, const std::string &handle, bool support_diff,
   bool support_xml) {
 
-  Generator g(out, prefix, handle, support_diff, support_xml);
+  Generator g(out, Printf(prefix), handle, support_diff, support_xml);
   g.dispatch(e);
 }
