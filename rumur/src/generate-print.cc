@@ -18,6 +18,7 @@ namespace {
 class Printf {
 
  private:
+  std::vector<std::string> format;
   std::vector<std::string> parameters;
 
  public:
@@ -28,7 +29,13 @@ class Printf {
   }
 
   void add_str(const std::string &s) {
-    parameters.push_back(escape(s));
+    format.push_back("%s");
+    parameters.push_back("\"" + escape(s) + "\"");
+  }
+
+  void add_val(const std::string &s) {
+    format.push_back("%\" PRIVAL \"");
+    parameters.push_back("value_to_string(" + s + ")");
   }
 
   Printf &operator<<(const std::string &s) {
@@ -39,10 +46,13 @@ class Printf {
   // construct the final printf call
   std::string str() const {
     std::ostringstream r;
-    r << "printf(\"%s\", \"";
+    r << "printf(\"";
+    for (const std::string &f : format)
+      r << f;
+    r << "\"";
     for (const std::string &p : parameters)
-      r << p;
-    r << "\")";
+      r << ", " << p;
+    r << ")";
     return r.str();
   }
 };
