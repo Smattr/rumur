@@ -6,6 +6,7 @@
 #include "generate.h"
 #include "max-simple-width.h"
 #include "options.h"
+#include "prints-scalarsets.h"
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
@@ -233,7 +234,8 @@ int output_checker(const std::string &path, const Model &model,
     << "#define PRIRAWVAL " << value_types.second.pri << "\n\n"
     << "#define RULE_TAKEN_LIMIT " << rule_taken_limit(model) << "\n"
     << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n"
-    << "#define SCHEDULE_BITS " << schedule_bits(model) << "ul\n";
+    << "#define SCHEDULE_BITS " << schedule_bits(model) << "ul\n"
+    << "#define PRINTS_SCALARSETS " << (prints_scalarsets(model) ? "1" : "0") << "\n";
 
   generate_cover_array(out, model);
 
