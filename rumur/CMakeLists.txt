@@ -43,6 +43,7 @@ add_executable(rumur
   src/optimise-field-ordering.cc
   src/options.cc
   src/output.cc
+  src/prints-scalarsets.cc
   src/process.cc
   src/smt/define-enum-members.cc
   src/smt/define-records.cc
