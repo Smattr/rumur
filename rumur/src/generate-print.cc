@@ -66,6 +66,9 @@ class Generator : public ConstTypeTraversal {
   const bool support_diff;
   const bool support_xml;
 
+  // a counter used for creating unique symbols
+  mpz_class var_counter = 0;
+
  public:
   Generator(std::ostream &o, const Printf &p, const std::string &h, bool s,
     bool x):
@@ -73,7 +76,7 @@ class Generator : public ConstTypeTraversal {
 
   Generator(const Generator &caller, const Printf &p, const std::string &h):
     out(caller.out), prefix(p), handle(h), support_diff(caller.support_diff),
-    support_xml(caller.support_xml) { }
+    support_xml(caller.support_xml), var_counter(caller.var_counter) { }
 
   void visit_array(const Array &n) final {
 
@@ -81,40 +84,77 @@ class Generator : public ConstTypeTraversal {
 
     if (auto r = dynamic_cast<const Range*>(t.get())) {
 
-      mpz_class lb = r->min->constant_fold();
-      mpz_class ub = r->max->constant_fold();
+      const mpz_class lb = r->min->constant_fold();
+      const mpz_class ub = r->max->constant_fold();
+      const mpz_class bound = ub - lb + 1;
 
-      // FIXME: Unrolling this loop at generation time is not great if the index
-      // type is big. E.g. if someone has an 'array [0..10000] of ...' this is
-      // going to generate quite unpleasant code.
-      mpz_class preceding_offset = 0;
+      // invent a loop counter
+      const std::string i = "i" + var_counter.get_str();
+      ++var_counter;
+
+      // generate a loop that spans the index type
+      *out
+        << "{\n"
+        << "  for (size_t " << i << " = 0; " << i << " < " << bound.get_str()
+          << "ull; ++" << i << ") {\n";
+
+      // construct a textual description of the current element
+      Printf p = prefix;
+      p << "[";
+      p.add_val(
+        "(raw_value_t)" + i + " + (raw_value_t)VALUE_C(" + lb.get_str() + ")");
+      p << "]";
+
+      // construct a dynamic handle to the current element
       mpz_class w = n.element_type->width();
-      for (mpz_class i = lb; i <= ub; i++) {
-        Printf p = prefix;
-        p << "[" << i.get_str() << "]";
-        const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*this, p, h);
-        g.dispatch(*n.element_type);
-        preceding_offset += w;
-      }
+      const std::string o = "(" + i + " * ((size_t)" + w.get_str() + "ull))";
+      const std::string h = derive_handle(o, w);
+
+      // generate the body of the loop (printing of the current element)
+      Generator g(*this, p, h);
+      g.dispatch(*n.element_type);
+
+      // close the loop
+      *out
+        << "  }\n"
+        << "}\n";
 
       return;
     }
 
     if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
 
-      mpz_class b = s->bound->constant_fold();
+      const mpz_class b = s->bound->constant_fold();
 
-      mpz_class preceding_offset = 0;
+      // invent a loop counter
+      const std::string i = "i" + var_counter.get_str();
+      ++var_counter;
+
+      // generate a loop that spans the index type
+      *out
+        << "{\n"
+        << "  for (size_t " << i << " = 0; " << i << " < " << b.get_str()
+          << "ull; ++" << i << ") {\n";
+
+      // construct a textual description of the current element
+      Printf p = prefix;
+      p << "[";
+      p.add_val(i);
+      p << "]";
+
+      // construct a dynamic handle to the current element
       mpz_class w = n.element_type->width();
-      for (mpz_class i = 0; i < b; i++) {
-        Printf p = prefix;
-        p << "[" << i.get_str() << "]";
-        const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*this, p, h);
-        g.dispatch(*n.element_type);
-        preceding_offset += w;
-      }
+      const std::string o = "(" + i + " * ((size_t)" + w.get_str() + "ull))";
+      const std::string h = derive_handle(o, w);
+
+      // generate the body of the loop (printing of the current element)
+      Generator g(*this, p, h);
+      g.dispatch(*n.element_type);
+
+      // close the loop
+      *out
+        << "  }\n"
+        << "}\n";
 
       return;
     }
