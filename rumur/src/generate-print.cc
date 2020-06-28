@@ -127,7 +127,40 @@ class Generator : public ConstTypeTraversal {
 
     if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
 
+      // figure out if this is a named scalarset (i.e. one eligible for symmetry
+      // reduction)
+      auto id = dynamic_cast<const TypeExprID*>(n.index_type.get());
+
+      if (id != nullptr) {
+        // remove any indirection (TypeExprID of a TypeExprID)
+        while (auto inner = dynamic_cast<const TypeExprID*>(id->referent->value.get()))
+          id = inner;
+      }
+
+      // invent a symbol we can use for the retrieved schedule
+      const std::string sch = "schedule" + var_counter.get_str();
+      ++var_counter;
+
       const mpz_class b = s->bound->constant_fold();
+
+      if (id != nullptr) {
+        // generate schedule retrieval
+        *out
+          << "{\n"
+          << "  size_t " << sch << "[" << b.get_str() << "ull];\n"
+          << "  /* setup a default identity mapping for when symmetry\n"
+          << "   * reduction is off\n"
+          << "   */\n"
+          << "  for (size_t i = 0; i < " << b.get_str() << "ull; ++i) {\n"
+          << "    " << sch << "[i] = i;\n"
+          << "  }\n"
+          << "  if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF) {\n"
+          << "    size_t index = schedule_read_" << id->name << "(s);\n"
+          << "    size_t stack[" << b.get_str() << "ull];\n"
+          << "    index_to_permutation(index, " << sch << ", stack, (size_t)"
+            << b.get_str() << "ull);\n"
+          << "  }\n";
+      }
 
       // invent a loop counter
       const std::string i = "i" + var_counter.get_str();
@@ -139,15 +172,38 @@ class Generator : public ConstTypeTraversal {
         << "  for (size_t " << i << " = 0; " << i << " < " << b.get_str()
           << "ull; ++" << i << ") {\n";
 
+      // invent a variable for the permuted value of the counter
+      const std::string j = "j" + var_counter.get_str();
+      ++var_counter;
+
+      // determine permuted index of the current element
+      *out << "    size_t " << j << ";\n";
+      if (id != nullptr) {
+        *out
+          << "    for (" << j << " = 0; " << j << " < " << b.get_str()
+            << "ull; ++" << j << ") {\n"
+          << "      if (" << sch << "[" << j << "] == " << i << ") {\n"
+          << "        break;\n"
+          << "      }\n"
+          << "    }\n"
+          << "    assert(" << j << " < " << b.get_str() << "ull &&\n"
+          << "      \"failed to find permuted scalarset index\");\n";
+      } else {
+        *out
+          << "    " << j << " = " << i << ";\n";
+      }
+
       // construct a textual description of the current element
       Printf p = prefix;
       p << "[";
+      if (id != nullptr)
+        p << id->name << "_";
       p.add_val(i);
       p << "]";
 
       // construct a dynamic handle to the current element
       mpz_class w = n.element_type->width();
-      const std::string o = "(" + i + " * ((size_t)" + w.get_str() + "ull))";
+      const std::string o = "(" + j + " * ((size_t)" + w.get_str() + "ull))";
       const std::string h = derive_handle(o, w);
 
       // generate the body of the loop (printing of the current element)
@@ -158,6 +214,10 @@ class Generator : public ConstTypeTraversal {
       *out
         << "  }\n"
         << "}\n";
+
+      // close the scope opened for schedule retrieval
+      if (id != nullptr)
+        *out << "}\n";
 
       return;
     }
