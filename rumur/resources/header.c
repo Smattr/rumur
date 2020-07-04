@@ -3287,19 +3287,10 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
     *target |= mask;
   }
 
-  /* The following looks a little odd. Why do we only initialise this pointer
-   * properly when we have liveness properties? The answer is that the
-   * `previous` pointer in the state struct only exists when we have liveness
-   * properties, so the access would cause a compile error if we did it
-   * unconditionally. We leave the rest of this function visible to the compiler
-   * even when we have no liveness properties to confirm it is syntactically
-   * valid.
-   */
-  struct state *previous = NULL;
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
-  previous = state_drop_const(state_previous_get(s));
+  struct state *previous = state_drop_const(state_previous_get(s));
 
   /* If the given bit was already set, we know all the predecessors of this
    * state have already had their corresponding bit marked. However, if it was
