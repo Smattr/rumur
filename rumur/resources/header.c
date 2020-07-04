@@ -1420,7 +1420,7 @@ static bool state_eq(const struct state *NONNULL a,
   return state_cmp(a, b) == 0;
 }
 
-static __attribute__((unused)) void handle_copy(struct handle a, struct handle b);
+static void handle_copy(struct handle a, struct handle b);
 
 static struct state *state_dup(const struct state *NONNULL s) {
   struct state *n = state_new();
@@ -1715,8 +1715,7 @@ static __attribute__((unused)) void handle_zero(struct handle h) {
   }
 }
 
-static __attribute__((unused)) void handle_copy(struct handle a,
-    struct handle b) {
+static void handle_copy(struct handle a, struct handle b) {
 
   ASSERT(a.width == b.width && "copying between handles of different sizes");
 
