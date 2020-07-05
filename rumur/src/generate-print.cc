@@ -351,7 +351,31 @@ class Generator : public ConstTypeTraversal {
       *out << "  const struct state *previous = NULL;\n";
     *out
       << "  if (previous != NULL) {\n"
-      << "    v_previous = handle_read_raw(previous, " << previous_handle << ");\n"
+      << "    v_previous = handle_read_raw(previous, " << previous_handle << ");\n";
+
+    // did we identify the schedule mapping for this type?
+    if (schedule_type != nullptr) {
+      *out
+        << "    if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && v_previous != 0) {\n"
+        << "      if (COUNTEREXAMPLE_TRACE == CEX_OFF) {\n"
+        << "        assert(PRINTS_SCALARSETS && \"accessing a scalarset \"\n"
+        << "          \"schedule which was unanticipated; bug in\"\n"
+        << "          \"prints_scalarsets()?\");\n"
+        << "      }\n"
+        << "      /* we can use the saved schedule to map this value back to a\n"
+        << "       * more intuitive string for the user\n"
+        << "       */\n"
+        << "      size_t index = schedule_read_" << schedule_type->name << "(previous);\n"
+        << "      size_t schedule[" << bound << "];\n"
+        << "      size_t stack[" << bound << "];\n"
+        << "      index_to_permutation(index, schedule, stack, " << bound << ");\n"
+        << "      ASSERT((size_t)v_previous - 1 < " << bound << " && \"illegal scalarset \"\n"
+        << "        \"value found during printing\");\n"
+        << "      v_previous = (raw_value_t)schedule[(size_t)v_previous - 1];\n"
+        << "    }\n";
+    }
+
+    *out
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
