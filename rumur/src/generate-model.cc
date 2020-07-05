@@ -20,6 +20,10 @@ static std::string rule_name_string(const Rule &r, size_t index) {
 
 void generate_model(std::ostream &out, const Model &m) {
 
+  // Write out the symmetry reduction canonicalisation function
+  generate_canonicalise(m, out);
+  out << "\n\n";
+
   // Generate each defined constant.
   for (const Ptr<Decl> &d : m.decls) {
     if (isa<ConstDecl>(d)) {
@@ -730,10 +734,6 @@ void generate_model(std::ostream &out, const Model &m) {
       << "#endif\n"
       << "\n";
   }
-
-  // Write out the symmetry reduction canonicalisation function
-  generate_canonicalise(m, out);
-  out << "\n\n";
 
   // Write initialisation
   {
