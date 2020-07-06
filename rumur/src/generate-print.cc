@@ -63,6 +63,10 @@ class Generator : public ConstTypeTraversal {
   std::ostream *out;
   const Printf prefix;
   const std::string handle;
+
+  // generated handle to our target in the previous state
+  const std::string previous_handle;
+
   const bool support_diff;
   const bool support_xml;
 
@@ -73,13 +77,16 @@ class Generator : public ConstTypeTraversal {
   const TypeDecl *schedule_type = nullptr;
 
  public:
-  Generator(std::ostream &o, const Printf &p, const std::string &h, bool s,
-    bool x):
-    out(&o), prefix(p), handle(h), support_diff(s), support_xml(x) { }
+  Generator(std::ostream &o, const Printf &p, const std::string &h,
+    const std::string &ph, bool s, bool x):
+    out(&o), prefix(p), handle(h), previous_handle(ph), support_diff(s),
+    support_xml(x) { }
 
-  Generator(const Generator &caller, const Printf &p, const std::string &h):
-    out(caller.out), prefix(p), handle(h), support_diff(caller.support_diff),
-    support_xml(caller.support_xml), var_counter(caller.var_counter) { }
+  Generator(const Generator &caller, const Printf &p, const std::string &h,
+    const std::string &ph):
+    out(caller.out), prefix(p), handle(h), previous_handle(ph),
+    support_diff(caller.support_diff), support_xml(caller.support_xml),
+    var_counter(caller.var_counter) { }
 
   void visit_array(const Array &n) final {
 
@@ -112,9 +119,10 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       const std::string o = "(" + i + " * ((size_t)" + w.get_str() + "ull))";
       const std::string h = derive_handle(o, w);
+      const std::string ph = to_previous(h);
 
       // generate the body of the loop (printing of the current element)
-      Generator g(*this, p, h);
+      Generator g(*this, p, h, ph);
       g.dispatch(*n.element_type);
 
       // close the loop
@@ -205,9 +213,10 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       const std::string o = "(" + j + " * ((size_t)" + w.get_str() + "ull))";
       const std::string h = derive_handle(o, w);
+      const std::string ph = to_previous(h);
 
       // generate the body of the loop (printing of the current element)
-      Generator g(*this, p, h);
+      Generator g(*this, p, h, ph);
       g.dispatch(*n.element_type);
 
       // close the loop
@@ -230,7 +239,8 @@ class Generator : public ConstTypeTraversal {
         Printf p = prefix;
         p << "[" << m.first << "]";
         const std::string h = derive_handle(preceding_offset, w);
-        Generator g(*this, p, h);
+        const std::string ph = to_previous(h);
+        Generator g(*this, p, h, ph);
         g.dispatch(*n.element_type);
         preceding_offset += w;
       }
@@ -242,7 +252,6 @@ class Generator : public ConstTypeTraversal {
   }
 
   void visit_enum(const Enum &n) final {
-    const std::string previous_handle = to_previous();
 
     *out
       << "{\n"
@@ -289,8 +298,6 @@ class Generator : public ConstTypeTraversal {
     const std::string lb = n.lower_bound();
     const std::string ub = n.upper_bound();
 
-    const std::string previous_handle = to_previous();
-
     *out
       << "{\n"
       << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
@@ -331,14 +338,14 @@ class Generator : public ConstTypeTraversal {
       Printf p = prefix;
       p << "." << f->name;
       const std::string h = derive_handle(preceding_offset, w);
-      Generator g(*this, p, h);
+      const std::string ph = to_previous(h);
+      Generator g(*this, p, h, ph);
       g.dispatch(*f->type);
       preceding_offset += w;
     }
   }
 
   void visit_scalarset(const Scalarset &n) final {
-    const std::string previous_handle = to_previous();
 
     const std::string bound
       = "((size_t)" + n.bound->constant_fold().get_str() + "ull)";
@@ -455,10 +462,10 @@ class Generator : public ConstTypeTraversal {
       + ".width = " + width.get_str() + "ull })";
   }
 
-  std::string to_previous() const {
-    return "((struct handle){ .base = (uint8_t*)previous->data + (" + handle
+  std::string to_previous(const std::string &h) const {
+    return "((struct handle){ .base = (uint8_t*)previous->data + (" + h
       + ".base - (const uint8_t*)s->data), .offset = "
-      + handle + ".offset, .width = " + handle + ".width })";
+      + h + ".offset, .width = " + h + ".width })";
   }
 };
 
@@ -468,6 +475,11 @@ void generate_print(std::ostream &out, const TypeExpr &e,
   const std::string &prefix, const std::string &handle, bool support_diff,
   bool support_xml) {
 
-  Generator g(out, Printf(prefix), handle, support_diff, support_xml);
+  // construct an equivalent handle to this data in the previous state
+  const std::string ph = "((struct handle){ .base = (uint8_t*)previous->data "
+    "+ (" + handle + ".base - (const uint8_t*)s->data), .offset = " + handle +
+    ".offset, .width = " + handle + ".width })";
+
+  Generator g(out, Printf(prefix), handle, ph, support_diff, support_xml);
   g.dispatch(e);
 }
