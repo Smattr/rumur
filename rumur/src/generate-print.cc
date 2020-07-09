@@ -144,7 +144,7 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       const std::string o = "(" + i + " * ((size_t)" + w.get_str() + "ull))";
       const std::string h = derive_handle(current_handle, o, w);
-      const std::string ph = to_previous(h);
+      const std::string ph = derive_handle(previous_handle, o, w);
 
       // generate the body of the loop (printing of the current element)
       Generator g(*this, p, h, ph);
@@ -238,7 +238,7 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       const std::string o = "(" + j + " * ((size_t)" + w.get_str() + "ull))";
       const std::string h = derive_handle(current_handle, o, w);
-      const std::string ph = to_previous(h);
+      const std::string ph = derive_handle(previous_handle, o, w);
 
       // generate the body of the loop (printing of the current element)
       Generator g(*this, p, h, ph);
@@ -264,7 +264,7 @@ class Generator : public ConstTypeTraversal {
         Printf p = prefix;
         p << "[" << m.first << "]";
         const std::string h = derive_handle(current_handle, preceding_offset, w);
-        const std::string ph = to_previous(h);
+        const std::string ph = derive_handle(previous_handle, preceding_offset, w);
         Generator g(*this, p, h, ph);
         g.dispatch(*n.element_type);
         preceding_offset += w;
@@ -363,7 +363,7 @@ class Generator : public ConstTypeTraversal {
       Printf p = prefix;
       p << "." << f->name;
       const std::string h = derive_handle(current_handle, preceding_offset, w);
-      const std::string ph = to_previous(h);
+      const std::string ph = derive_handle(previous_handle, preceding_offset, w);
       Generator g(*this, p, h, ph);
       g.dispatch(*f->type);
       preceding_offset += w;
