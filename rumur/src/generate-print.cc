@@ -57,12 +57,37 @@ class Printf {
   }
 };
 
+// derive a handle from the given containing handle at the given offset and
+// width
+static std::string derive_handle(const std::string &handle,
+    const std::string &offset, mpz_class width) {
+  return "((struct handle){ .base = " + handle + ".base + (" + handle
+    + ".offset + " + offset + ") / CHAR_BIT, .offset = ("
+    + handle + ".offset + " + offset + ") % CHAR_BIT, "
+    + ".width = " + width.get_str() + "ull })";
+}
+
+static std::string derive_handle(const std::string &handle, mpz_class offset,
+    mpz_class width) {
+  return derive_handle(handle, "((size_t)" + offset.get_str() + ")", width);
+}
+
+// from a handle pointing into the current state, derive a corresponding handle
+// pointing into the previous state
+static std::string to_previous(const std::string &h) {
+  return "((struct handle){ .base = (uint8_t*)previous->data + (" + h
+    + ".base - (const uint8_t*)s->data), .offset = "
+    + h + ".offset, .width = " + h + ".width })";
+}
+
 class Generator : public ConstTypeTraversal {
 
  private:
   std::ostream *out;
   const Printf prefix;
-  const std::string handle;
+
+  // generated handle to our target in the current state
+  const std::string current_handle;
 
   // generated handle to our target in the previous state
   const std::string previous_handle;
@@ -79,12 +104,12 @@ class Generator : public ConstTypeTraversal {
  public:
   Generator(std::ostream &o, const Printf &p, const std::string &h,
     const std::string &ph, bool s, bool x):
-    out(&o), prefix(p), handle(h), previous_handle(ph), support_diff(s),
+    out(&o), prefix(p), current_handle(h), previous_handle(ph), support_diff(s),
     support_xml(x) { }
 
   Generator(const Generator &caller, const Printf &p, const std::string &h,
     const std::string &ph):
-    out(caller.out), prefix(p), handle(h), previous_handle(ph),
+    out(caller.out), prefix(p), current_handle(h), previous_handle(ph),
     support_diff(caller.support_diff), support_xml(caller.support_xml),
     var_counter(caller.var_counter) { }
 
@@ -118,7 +143,7 @@ class Generator : public ConstTypeTraversal {
       // construct a dynamic handle to the current element
       mpz_class w = n.element_type->width();
       const std::string o = "(" + i + " * ((size_t)" + w.get_str() + "ull))";
-      const std::string h = derive_handle(o, w);
+      const std::string h = derive_handle(current_handle, o, w);
       const std::string ph = to_previous(h);
 
       // generate the body of the loop (printing of the current element)
@@ -212,7 +237,7 @@ class Generator : public ConstTypeTraversal {
       // construct a dynamic handle to the current element
       mpz_class w = n.element_type->width();
       const std::string o = "(" + j + " * ((size_t)" + w.get_str() + "ull))";
-      const std::string h = derive_handle(o, w);
+      const std::string h = derive_handle(current_handle, o, w);
       const std::string ph = to_previous(h);
 
       // generate the body of the loop (printing of the current element)
@@ -238,7 +263,7 @@ class Generator : public ConstTypeTraversal {
       for (const std::pair<std::string, location> &m : e->members) {
         Printf p = prefix;
         p << "[" << m.first << "]";
-        const std::string h = derive_handle(preceding_offset, w);
+        const std::string h = derive_handle(current_handle, preceding_offset, w);
         const std::string ph = to_previous(h);
         Generator g(*this, p, h, ph);
         g.dispatch(*n.element_type);
@@ -255,7 +280,7 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
+      << "  raw_value_t v = handle_read_raw(s, " << current_handle << ");\n"
       << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
@@ -300,7 +325,7 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
+      << "  raw_value_t v = handle_read_raw(s, " << current_handle << ");\n"
       << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
@@ -337,7 +362,7 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = f->width();
       Printf p = prefix;
       p << "." << f->name;
-      const std::string h = derive_handle(preceding_offset, w);
+      const std::string h = derive_handle(current_handle, preceding_offset, w);
       const std::string ph = to_previous(h);
       Generator g(*this, p, h, ph);
       g.dispatch(*f->type);
@@ -352,7 +377,7 @@ class Generator : public ConstTypeTraversal {
 
     *out
       << "{\n"
-      << "  raw_value_t v = handle_read_raw(s, " << handle << ");\n"
+      << "  raw_value_t v = handle_read_raw(s, " << current_handle << ");\n"
       << "  raw_value_t v_previous = 0;\n";
     if (!support_diff)
       *out << "  const struct state *previous = NULL;\n";
@@ -449,24 +474,6 @@ class Generator : public ConstTypeTraversal {
   }
 
   virtual ~Generator() = default;
-
- private:
-  std::string derive_handle(mpz_class offset, mpz_class width) const {
-    return derive_handle("((size_t)" + offset.get_str() + ")", width);
-  }
-
-  std::string derive_handle(const std::string &offset, mpz_class width) const {
-    return "((struct handle){ .base = " + handle + ".base + (" + handle
-      + ".offset + " + offset + ") / CHAR_BIT, .offset = ("
-      + handle + ".offset + " + offset + ") % CHAR_BIT, "
-      + ".width = " + width.get_str() + "ull })";
-  }
-
-  std::string to_previous(const std::string &h) const {
-    return "((struct handle){ .base = (uint8_t*)previous->data + (" + h
-      + ".base - (const uint8_t*)s->data), .offset = "
-      + h + ".offset, .width = " + h + ".width })";
-  }
 };
 
 }
@@ -476,9 +483,7 @@ void generate_print(std::ostream &out, const TypeExpr &e,
   bool support_xml) {
 
   // construct an equivalent handle to this data in the previous state
-  const std::string ph = "((struct handle){ .base = (uint8_t*)previous->data "
-    "+ (" + handle + ".base - (const uint8_t*)s->data), .offset = " + handle +
-    ".offset, .width = " + handle + ".width })";
+  const std::string ph = to_previous(handle);
 
   Generator g(out, Printf(prefix), handle, ph, support_diff, support_xml);
   g.dispatch(e);
