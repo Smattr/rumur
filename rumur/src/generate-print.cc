@@ -174,12 +174,38 @@ class Generator : public ConstTypeTraversal {
       const std::string sch = "schedule" + var_counter.get_str();
       ++var_counter;
 
+      // invent a symbol we can use for the retrieved previous schedule
+      const std::string p_sch = "schedule" + var_counter.get_str();
+      ++var_counter;
+
       const mpz_class b = s->bound->constant_fold();
 
       if (id != nullptr) {
+
+        // open a scope to contain the schedule arrays
+        *out << "{\n";
+
+        // generate previous schedule retrieval
+        *out
+          << "  size_t " << p_sch << "[" << b.get_str() << "ull];\n"
+          << "  /* setup a default identity mapping for when symmetry\n"
+          << "   * reduction is off\n"
+          << "   */\n"
+          << "  for (size_t i = 0; i < " << b.get_str() << "ull; ++i) {\n"
+          << "    " << p_sch << "[i] = i;\n"
+          << "  }\n";
+        if (support_diff) {
+          *out
+            << "  if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && previous != NULL) {\n"
+            << "    size_t index = schedule_read_" << id->name << "(previous);\n"
+            << "    size_t stack[" << b.get_str() << "ull];\n"
+            << "    index_to_permutation(index, " << p_sch << ", stack, (size_t)"
+              << b.get_str() << "ull);\n"
+            << "  }\n";
+        }
+
         // generate schedule retrieval
         *out
-          << "{\n"
           << "  size_t " << sch << "[" << b.get_str() << "ull];\n"
           << "  /* setup a default identity mapping for when symmetry\n"
           << "   * reduction is off\n"
@@ -226,6 +252,27 @@ class Generator : public ConstTypeTraversal {
           << "    " << j << " = " << i << ";\n";
       }
 
+      // invent a variable for the previous permuted value of the counter
+      const std::string k = "k" + var_counter.get_str();
+      ++var_counter;
+
+      // determine previous permuted index of the current element
+      *out << "    size_t " << k << ";\n";
+      if (id != nullptr) {
+        *out
+          << "    for (" << k << " = 0; " << k << " < " << b.get_str()
+            << "ull; ++" << k << ") {\n"
+          << "      if (" << p_sch << "[" << k << "] == " << i << ") {\n"
+          << "        break;\n"
+          << "      }\n"
+          << "    }\n"
+          << "    assert(" << k << " < " << b.get_str() << "ull &&\n"
+          << "      \"failed to find permuted scalarset index\");\n";
+      } else {
+        *out
+          << "    " << k << " = " << i << ";\n";
+      }
+
       // construct a textual description of the current element
       Printf p = prefix;
       p << "[";
@@ -238,7 +285,10 @@ class Generator : public ConstTypeTraversal {
       mpz_class w = n.element_type->width();
       const std::string o = "(" + j + " * ((size_t)" + w.get_str() + "ull))";
       const std::string h = derive_handle(current_handle, o, w);
-      const std::string ph = derive_handle(previous_handle, o, w);
+
+      // construct a dynamic handle to the previous value of the current element
+      const std::string po = "(" + k + " * ((size_t)" + w.get_str() + "ull))";
+      const std::string ph = derive_handle(previous_handle, po, w);
 
       // generate the body of the loop (printing of the current element)
       Generator g(*this, p, h, ph);
