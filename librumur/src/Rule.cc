@@ -85,8 +85,7 @@ std::vector<Ptr<Rule>> AliasRule::flatten() const {
   std::vector<Ptr<Rule>> rs;
   for (const Ptr<Rule> &r : rules) {
     for (Ptr<Rule> &f : r->flatten()) {
-      for (const Ptr<AliasDecl> &a : aliases)
-        f->aliases.insert(f->aliases.begin(), a);
+      f->aliases.insert(f->aliases.begin(), aliases.begin(), aliases.end());
       rs.push_back(f);
     }
   }
