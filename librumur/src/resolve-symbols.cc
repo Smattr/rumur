@@ -400,6 +400,13 @@ class Resolver : public Traversal {
     symtab.declare(n.name, n.decl);
   }
 
+  void visit_return(Return &n) final {
+    if (n.expr != nullptr) {
+      dispatch(*n.expr);
+      disambiguate(n.expr);
+    }
+  }
+
   void visit_ruleset(Ruleset &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
