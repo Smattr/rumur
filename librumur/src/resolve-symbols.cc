@@ -407,6 +407,10 @@ class Resolver : public Traversal {
     }
   }
 
+  void visit_rsh(Rsh &n) final {
+    visit_bexpr(n);
+  }
+
   void visit_ruleset(Ruleset &n) final {
     symtab.open_scope();
     for (Quantifier &q : n.quantifiers)
