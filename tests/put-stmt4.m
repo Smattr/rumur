@@ -48,7 +48,7 @@ startstate begin
   put "\n";
 
   for i: 2 .. 7 do z[i] := false; end;
-  put "printing a fully initialiased array\n";
+  put "printing a fully initialised array\n";
   put z;
   put "\n";
 
