@@ -400,6 +400,13 @@ class Resolver : public Traversal {
     symtab.declare(n.name, n.decl);
   }
 
+  void visit_range(Range &n) final {
+    dispatch(*n.min);
+    disambiguate(n.min);
+    dispatch(*n.max);
+    disambiguate(n.max);
+  }
+
   void visit_return(Return &n) final {
     if (n.expr != nullptr) {
       dispatch(*n.expr);
