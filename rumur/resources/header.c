@@ -432,6 +432,26 @@ static const char *reset() {
   }
 #endif
 
+/* Is value_t a signed type? We need this as a function because value_t is a
+ * typedef that can be tweaked by the user.
+ */
+static __attribute__((const)) bool value_is_signed(void) {
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  return (value_t)-1 < 0;
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+}
+
 /*******************************************************************************
  * MurmurHash by Austin Appleby                                                *
  *                                                                             *
@@ -1878,7 +1898,11 @@ static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+  if (value_is_signed() && b <= -(value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b >= (value_t)(sizeof(a) * 8)) {
     return 0;
   }
 
@@ -1904,7 +1928,11 @@ static value_t rsh(value_t a, value_t b) {
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+  if (value_is_signed() && b <= -(value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b >= (value_t)(sizeof(a) * 8)) {
     return 0;
   }
 
