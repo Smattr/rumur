@@ -28,8 +28,6 @@ struct Function : public Node {
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~Function() = default;
   Function *clone() const final;
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  bool operator==(const Node &other) const final;
   void validate() const final;
 
   // is this function side effect free?

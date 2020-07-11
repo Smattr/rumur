@@ -55,11 +55,6 @@ bool Ternary::constant() const {
   return cond->constant() && lhs->constant() && rhs->constant();
 }
 
-bool Ternary::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Ternary*>(&other);
-  return o != nullptr && *cond == *o->cond && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 Ptr<TypeExpr> Ternary::type() const {
   // TODO: assert lhs and rhs are compatible types.
   return lhs->type();
@@ -122,11 +117,6 @@ mpz_class Implication::constant_fold() const {
   return lhs->constant_fold() == 0 || rhs->constant_fold() != 0;
 }
 
-bool Implication::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Implication*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Implication::to_string() const {
   return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
 }
@@ -142,11 +132,6 @@ mpz_class Or::constant_fold() const {
   return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
 
-bool Or::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Or*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Or::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
@@ -160,11 +145,6 @@ And *And::clone() const {
 
 mpz_class And::constant_fold() const {
   return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
-}
-
-bool And::operator==(const Node &other) const {
-  auto o = dynamic_cast<const And*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string And::to_string() const {
@@ -190,11 +170,6 @@ mpz_class AmbiguousAmp::constant_fold() const {
   throw Error("cannot constant fold an unresolved '&' expression", loc);
 }
 
-bool AmbiguousAmp::operator==(const Node &other) const {
-  auto o = dynamic_cast<const AmbiguousAmp*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string AmbiguousAmp::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
@@ -216,11 +191,6 @@ mpz_class AmbiguousPipe::constant_fold() const {
   // we cannot constant fold this if we do not yet know whether it is a logical
   // OR or a bitwise OR
   throw Error("cannot constant fold an unresolved '|' expression", loc);
-}
-
-bool AmbiguousPipe::operator==(const Node &other) const {
-  auto o = dynamic_cast<const AmbiguousPipe*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string AmbiguousPipe::to_string() const {
@@ -251,11 +221,6 @@ Ptr<TypeExpr> Not::type() const {
 
 mpz_class Not::constant_fold() const {
   return rhs->constant_fold() == 0;
-}
-
-bool Not::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Not*>(&other);
-  return o != nullptr && *rhs == *o->rhs;
 }
 
 void Not::validate() const {
@@ -303,11 +268,6 @@ mpz_class Lt::constant_fold() const {
   return lhs->constant_fold() < rhs->constant_fold();
 }
 
-bool Lt::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Lt*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Lt::to_string() const {
   return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
 }
@@ -325,11 +285,6 @@ Ptr<TypeExpr> Leq::type() const {
 
 mpz_class Leq::constant_fold() const {
   return lhs->constant_fold() <= rhs->constant_fold();
-}
-
-bool Leq::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Leq*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Leq::to_string() const {
@@ -351,11 +306,6 @@ mpz_class Gt::constant_fold() const {
   return lhs->constant_fold() > rhs->constant_fold();
 }
 
-bool Gt::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Gt*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Gt::to_string() const {
   return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
 }
@@ -373,11 +323,6 @@ Ptr<TypeExpr> Geq::type() const {
 
 mpz_class Geq::constant_fold() const {
   return lhs->constant_fold() >= rhs->constant_fold();
-}
-
-bool Geq::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Geq*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Geq::to_string() const {
@@ -407,11 +352,6 @@ mpz_class Eq::constant_fold() const {
   return lhs->constant_fold() == rhs->constant_fold();
 }
 
-bool Eq::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Eq*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Eq::to_string() const {
   return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
 }
@@ -429,11 +369,6 @@ Ptr<TypeExpr> Neq::type() const {
 
 mpz_class Neq::constant_fold() const {
   return lhs->constant_fold() != rhs->constant_fold();
-}
-
-bool Neq::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Neq*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Neq::to_string() const {
@@ -475,11 +410,6 @@ mpz_class Add::constant_fold() const {
   return lhs->constant_fold() + rhs->constant_fold();
 }
 
-bool Add::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Add*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Add::to_string() const {
   return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
 }
@@ -493,11 +423,6 @@ Sub *Sub::clone() const {
 
 mpz_class Sub::constant_fold() const {
   return lhs->constant_fold() - rhs->constant_fold();
-}
-
-bool Sub::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Sub*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Sub::to_string() const {
@@ -524,11 +449,6 @@ mpz_class Negative::constant_fold() const {
   return -rhs->constant_fold();
 }
 
-bool Negative::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Negative*>(&other);
-  return o != nullptr && *rhs == *o->rhs;
-}
-
 std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
@@ -553,11 +473,6 @@ mpz_class Bnot::constant_fold() const {
   return ~rhs->constant_fold();
 }
 
-bool Bnot::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Bnot*>(&other);
-  return o != nullptr && *rhs == *o->rhs;
-}
-
 std::string Bnot::to_string() const {
   return "(~" + rhs->to_string() + ")";
 }
@@ -571,11 +486,6 @@ Mul *Mul::clone() const {
 
 mpz_class Mul::constant_fold() const {
   return lhs->constant_fold() * rhs->constant_fold();
-}
-
-bool Mul::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Mul*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Mul::to_string() const {
@@ -597,11 +507,6 @@ mpz_class Div::constant_fold() const {
   return a / b;
 }
 
-bool Div::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Div*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Div::to_string() const {
   return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
 }
@@ -619,11 +524,6 @@ mpz_class Mod::constant_fold() const {
   if (b == 0)
     throw Error("mod by 0 in " + a.get_str() + " % " + b.get_str(), loc);
   return a % b;
-}
-
-bool Mod::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Mod*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Mod::to_string() const {
@@ -693,11 +593,6 @@ mpz_class Lsh::constant_fold() const {
   return lshift(a, b);
 }
 
-bool Lsh::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Lsh*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Lsh::to_string() const {
   return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
 }
@@ -713,11 +608,6 @@ mpz_class Rsh::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return rshift(a, b);
-}
-
-bool Rsh::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Rsh*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Rsh::to_string() const {
@@ -737,11 +627,6 @@ mpz_class Band::constant_fold() const {
   return a & b;
 }
 
-bool Band::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Band*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Band::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
@@ -759,11 +644,6 @@ mpz_class Bor::constant_fold() const {
   return a | b;
 }
 
-bool Bor::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Bor*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
-}
-
 std::string Bor::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
@@ -779,11 +659,6 @@ mpz_class Xor::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return a ^ b;
-}
-
-bool Xor::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Xor*>(&other);
-  return o != nullptr && *lhs == *o->lhs && *rhs == *o->rhs;
 }
 
 std::string Xor::to_string() const {
@@ -826,23 +701,6 @@ mpz_class ExprID::constant_fold() const {
     return a->value->constant_fold();
 
   throw Error("symbol \"" + id + "\" is not a constant", loc);
-}
-
-bool ExprID::operator==(const Node &other) const {
-  auto o = dynamic_cast<const ExprID*>(&other);
-  if (o == nullptr)
-    return false;
-  if (id != o->id)
-    return false;
-  if (value == nullptr) {
-    if (o->value != nullptr)
-      return false;
-  } else if (o->value == nullptr) {
-    return false;
-  } else if (*value != *o->value) {
-    return false;
-  }
-  return true;
 }
 
 void ExprID::validate() const {
@@ -918,11 +776,6 @@ mpz_class Field::constant_fold() const {
   throw Error("field expression used in constant", loc);
 }
 
-bool Field::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Field*>(&other);
-  return o != nullptr && *record == *o->record && field == o->field;
-}
-
 void Field::validate() const {
 
   const Ptr<TypeExpr> root = record->type()->resolve();
@@ -985,11 +838,6 @@ mpz_class Element::constant_fold() const {
   throw Error("array element used in constant", loc);
 }
 
-bool Element::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Element*>(&other);
-  return o != nullptr && *array == *o->array && *index == *o->index;
-}
-
 void Element::validate() const {
 
   const Ptr<TypeExpr> t = array->type()->resolve();;
@@ -1048,27 +896,6 @@ Ptr<TypeExpr> FunctionCall::type() const {
 mpz_class FunctionCall::constant_fold() const {
   // See FunctionCall::constant() regarding conservatism here.
   throw Error("function call used in a constant", loc);
-}
-
-bool FunctionCall::operator==(const Node &other) const {
-  auto o = dynamic_cast<const FunctionCall*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (function == nullptr) {
-    if (o->function != nullptr)
-      return false;
-  } else if (o->function == nullptr) {
-    return false;
-  } else if (*function != *o->function) {
-    return false;
-  }
-  if (!vector_eq(arguments, o->arguments))
-    return false;
-  if (within_procedure_call != o->within_procedure_call)
-    return false;
-  return true;
 }
 
 void FunctionCall::validate() const {
@@ -1171,47 +998,6 @@ Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
 
 Quantifier *Quantifier::clone() const {
   return new Quantifier(*this);
-}
-
-bool Quantifier::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Quantifier*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (type == nullptr) {
-    if (o->type != nullptr)
-      return false;
-  } else if (o->type == nullptr) {
-    return false;
-  } else if (*type != *o->type) {
-    return false;
-  }
-  if (from == nullptr) {
-    if (o->from != nullptr)
-      return false;
-  } else if (o->from == nullptr) {
-    return false;
-  } else if (*from != *o->from) {
-    return false;
-  }
-  if (to == nullptr) {
-    if (o->to != nullptr)
-      return false;
-  } else if (o->to == nullptr) {
-    return false;
-  } else if (*to != *o->to) {
-    return false;
-  }
-  if (step == nullptr) {
-    if (o->step != nullptr)
-      return false;
-  } else if (o->step == nullptr) {
-    return false;
-  } else if (*step != *o->step) {
-    return false;
-  }
-  return true;
 }
 
 void Quantifier::validate() const {
@@ -1356,11 +1142,6 @@ Ptr<TypeExpr> Exists::type() const {
   return Boolean;
 }
 
-bool Exists::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Exists*>(&other);
-  return o != nullptr && quantifier == o->quantifier && *expr == *o->expr;
-}
-
 mpz_class Exists::constant_fold() const {
   throw Error("exists expression used in constant", loc);
 }
@@ -1399,11 +1180,6 @@ mpz_class Forall::constant_fold() const {
   throw Error("forall expression used in constant", loc);
 }
 
-bool Forall::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Forall*>(&other);
-  return o != nullptr && quantifier == o->quantifier && *expr == *o->expr;
-}
-
 void Forall::validate() const {
   if (!expr->is_boolean())
     throw Error("expression in forall is not boolean", expr->loc);
@@ -1435,15 +1211,6 @@ Ptr<TypeExpr> IsUndefined::type() const {
 
 mpz_class IsUndefined::constant_fold() const {
   throw Error("isundefined used in constant", loc);
-}
-
-bool IsUndefined::operator==(const Node &other) const {
-  auto o = dynamic_cast<const IsUndefined*>(&other);
-  if (o == nullptr)
-    return false;
-  if (*rhs != *o->rhs)
-    return false;
-  return true;
 }
 
 void IsUndefined::validate() const {

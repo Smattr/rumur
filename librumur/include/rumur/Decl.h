@@ -52,8 +52,6 @@ struct AliasDecl : public ExprDecl {
   AliasDecl *clone() const final;
   virtual ~AliasDecl() = default;
 
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
   Ptr<TypeExpr> get_type() const final;
@@ -75,8 +73,6 @@ struct ConstDecl : public ExprDecl {
   ConstDecl *clone() const final;
   virtual ~ConstDecl() = default;
 
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
   void validate() const final;
@@ -91,9 +87,6 @@ struct TypeDecl : public Decl {
     const location &loc);
   TypeDecl *clone() const final;
   virtual ~TypeDecl() = default;
-
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  bool operator==(const Node &other) const final;
 };
 
 struct VarDecl : public ExprDecl {
@@ -124,8 +117,6 @@ struct VarDecl : public ExprDecl {
    */
   bool is_in_state() const;
 
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  bool operator==(const Node &other) const final;
   bool is_lvalue() const final;
   bool is_readonly() const final;
   Ptr<TypeExpr> get_type() const final;

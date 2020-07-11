@@ -66,21 +66,6 @@ AliasRule *AliasRule::clone() const {
   return new AliasRule(*this);
 }
 
-bool AliasRule::operator==(const Node &other) const {
-  auto o = dynamic_cast<const AliasRule*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (quantifiers != o->quantifiers)
-    return false;
-  if (!vector_eq(aliases, o->aliases))
-    return false;
-  if (!vector_eq(rules, o->rules))
-    return false;
-  return true;
-}
-
 std::vector<Ptr<Rule>> AliasRule::flatten() const {
   std::vector<Ptr<Rule>> rs;
   for (const Ptr<Rule> &r : rules) {
@@ -101,30 +86,6 @@ SimpleRule *SimpleRule::clone() const {
   return new SimpleRule(*this);
 }
 
-bool SimpleRule::operator==(const Node &other) const {
-  auto o = dynamic_cast<const SimpleRule*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (quantifiers != o->quantifiers)
-    return false;
-  if (!vector_eq(aliases, o->aliases))
-    return false;
-  if (guard == nullptr) {
-    if (o->guard != nullptr)
-      return false;
-  } else {
-    if (o->guard == nullptr || *guard != *o->guard)
-      return false;
-  }
-  if (!vector_eq(decls, o->decls))
-    return false;
-  if (!vector_eq(body, o->body))
-    return false;
-  return true;
-}
-
 void SimpleRule::validate() const {
   ReturnChecker::check(*this);
 }
@@ -136,23 +97,6 @@ StartState::StartState(const std::string &name_,
 
 StartState *StartState::clone() const {
   return new StartState(*this);
-}
-
-bool StartState::operator==(const Node &other) const {
-  auto o = dynamic_cast<const StartState*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (quantifiers != o->quantifiers)
-    return false;
-  if (!vector_eq(aliases, o->aliases))
-    return false;
-  if (!vector_eq(decls, o->decls))
-    return false;
-  if (!vector_eq(body, o->body))
-    return false;
-  return true;
 }
 
 void StartState::validate() const {
@@ -167,21 +111,6 @@ PropertyRule *PropertyRule::clone() const {
   return new PropertyRule(*this);
 }
 
-bool PropertyRule::operator==(const Node &other) const {
-  auto o = dynamic_cast<const PropertyRule*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (quantifiers != o->quantifiers)
-    return false;
-  if (!vector_eq(aliases, o->aliases))
-    return false;
-  if (property != o->property)
-    return false;
-  return true;
-}
-
 Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,
   const std::vector<Ptr<Rule>> &rules_, const location &loc_):
   Rule("", loc_), rules(rules_) {
@@ -190,21 +119,6 @@ Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,
 
 Ruleset *Ruleset::clone() const {
   return new Ruleset(*this);
-}
-
-bool Ruleset::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Ruleset*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (quantifiers != o->quantifiers)
-    return false;
-  if (!vector_eq(aliases, o->aliases))
-    return false;
-  if (!vector_eq(rules, o->rules))
-    return false;
-  return true;
 }
 
 void Ruleset::validate() const {

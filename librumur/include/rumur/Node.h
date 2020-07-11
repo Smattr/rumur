@@ -18,13 +18,6 @@ struct Node {
 
   virtual Node *clone() const = 0;
 
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  virtual bool operator==(const Node &other) const = 0;
-  // __attribute__((deprecated("operator!= will be removed in a future release")))
-  bool operator!=(const Node &other) const {
-    return !(*this == other);
-  }
-
   /* Confirm that data structure invariants hold. This function throws
    * rumur::Errors if invariants are violated.
    */

@@ -26,30 +26,6 @@ Function *Function::clone() const {
   return new Function(*this);
 }
 
-bool Function::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Function*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (!vector_eq(parameters, o->parameters))
-    return false;
-  if (return_type == nullptr) {
-    if (o->return_type != nullptr)
-      return false;
-  } else {
-    if (o->return_type == nullptr)
-      return false;
-    if (*return_type != *o->return_type)
-      return false;
-  }
-  if (!vector_eq(decls, o->decls))
-    return false;
-  if (!vector_eq(body, o->body))
-    return false;
-  return true;
-}
-
 void Function::validate() const {
 
   /*Define a traversal that checks our contained return statements for

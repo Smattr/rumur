@@ -41,19 +41,6 @@ mpz_class Model::size_bits() const {
   return s;
 }
 
-bool Model::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Model*>(&other);
-  if (o == nullptr)
-    return false;
-  if (!vector_eq(decls, o->decls))
-    return false;
-  if (!vector_eq(functions, o->functions))
-    return false;
-  if (!vector_eq(rules, o->rules))
-    return false;
-  return true;
-}
-
 void Model::validate() const {
 
   // Check all state variable names are distinct.

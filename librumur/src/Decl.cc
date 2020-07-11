@@ -30,17 +30,6 @@ AliasDecl *AliasDecl::clone() const {
   return new AliasDecl(*this);
 }
 
-bool AliasDecl::operator==(const Node &other) const {
-  auto o = dynamic_cast<const AliasDecl*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (*value != *o->value)
-    return false;
-  return true;
-}
-
 bool AliasDecl::is_lvalue() const {
   return value->is_lvalue();
 }
@@ -63,26 +52,6 @@ ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
 
 ConstDecl *ConstDecl::clone() const {
   return new ConstDecl(*this);
-}
-
-bool ConstDecl::operator==(const Node &other) const {
-  auto o = dynamic_cast<const ConstDecl*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (*value != *o->value)
-    return false;
-  if (type == nullptr) {
-    if (o->type != nullptr)
-      return false;
-  } else {
-    if (o->type == nullptr)
-      return false;
-    if (*type != *o->type)
-      return false;
-  }
-  return true;
 }
 
 bool ConstDecl::is_lvalue() const {
@@ -120,11 +89,6 @@ TypeDecl *TypeDecl::clone() const {
   return new TypeDecl(*this);
 }
 
-bool TypeDecl::operator==(const Node &other) const {
-  auto o = dynamic_cast<const TypeDecl*>(&other);
-  return o != nullptr && name == o->name && *value == *o->value;
-}
-
 VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
   const location &loc_):
   ExprDecl(name_, loc_), type(type_) {
@@ -132,21 +96,6 @@ VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
 
 VarDecl *VarDecl::clone() const {
   return new VarDecl(*this);
-}
-
-bool VarDecl::operator==(const Node &other) const {
-  auto o = dynamic_cast<const VarDecl*>(&other);
-  if (o == nullptr)
-    return false;
-  if (name != o->name)
-    return false;
-  if (*type != *o->type)
-    return false;
-  if (offset != o->offset)
-    return false;
-  if (readonly != o->readonly)
-    return false;
-  return true;
 }
 
 bool VarDecl::is_lvalue() const {

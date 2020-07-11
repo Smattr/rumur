@@ -191,17 +191,6 @@ mpz_class Range::count() const {
   return ub - lb + 2;
 }
 
-bool Range::operator==(const Node &other) const {
-  if (auto o = dynamic_cast<const Range*>(&other))
-    return min->constant_fold() == o->min->constant_fold() &&
-           max->constant_fold() == o->max->constant_fold();
-
-  if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *o == *this;
-
-  return false;
-}
-
 bool Range::is_simple() const {
   return true;
 }
@@ -247,16 +236,6 @@ mpz_class Scalarset::count() const {
   return b + 1;
 }
 
-bool Scalarset::operator==(const Node &other) const {
-  if (auto o = dynamic_cast<const Scalarset*>(&other))
-    return bound->constant_fold() == o->bound->constant_fold();
-
-  if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *o == *this;
-
-  return false;
-}
-
 bool Scalarset::is_simple() const {
   return true;
 }
@@ -297,28 +276,6 @@ Enum *Enum::clone() const {
 mpz_class Enum::count() const {
   mpz_class members_size = members.size();
   return members_size + 1;
-}
-
-bool Enum::operator==(const Node &other) const {
-  if (auto o = dynamic_cast<const Enum*>(&other)) {
-    for (auto it = members.begin(), it2 = o->members.begin(); ; it++, it2++) {
-      if (it == members.end()) {
-        if (it2 != o->members.end())
-          return false;
-        break;
-      }
-      if (it2 == o->members.end())
-        return false;
-      if ((*it).first != (*it2).first)
-        return false;
-    }
-    return true;
-  }
-
-  if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *o == *this;
-
-  return false;
 }
 
 bool Enum::is_simple() const {
@@ -399,19 +356,6 @@ mpz_class Record::count() const {
   return s;
 }
 
-bool Record::operator==(const Node &other) const {
-  if (auto o = dynamic_cast<const Record*>(&other)) {
-    if (!vector_eq(fields, o->fields))
-      return false;
-    return true;
-  }
-
-  if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *o == *this;
-
-  return false;
-}
-
 std::string Record::to_string() const {
   std::string s = "record ";
   for (const Ptr<VarDecl> &v : fields)
@@ -455,17 +399,6 @@ mpz_class Array::count() const {
   return s;
 }
 
-bool Array::operator==(const Node &other) const {
-  if (auto o = dynamic_cast<const Array*>(&other))
-    return *index_type == *o->index_type
-        && *element_type == *o->element_type;
-
-  if (auto o = dynamic_cast<const TypeExprID*>(&other))
-    return *o == *this;
-
-  return false;
-}
-
 void Array::validate() const {
   if (!index_type->is_simple())
     throw Error("array indices must be simple types", loc);
@@ -494,26 +427,6 @@ mpz_class TypeExprID::count() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->count();
-}
-
-bool TypeExprID::operator==(const Node &other) const {
-  if (referent != nullptr)
-    return *referent->value == other;
-
-  auto o = dynamic_cast<const TypeExprID*>(&other);
-  if (o == nullptr)
-    return false;
-
-  if (o->referent != nullptr)
-    return false;
-
-  // Compare by name if we got to this point. Note that the name is irrelevant
-  // if either type was resolved, as we want to consider resolved types to be
-  // equal if they have equal referents.
-  if (name != o->name)
-    return false;
-
-  return true;
 }
 
 bool TypeExprID::is_simple() const {
