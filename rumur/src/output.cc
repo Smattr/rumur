@@ -209,7 +209,7 @@ int output_checker(const std::string &path, const Model &model,
     << "  SYMMETRY_REDUCTION_HEURISTIC = 1,\n"
     << "  SYMMETRY_REDUCTION_EXHAUSTIVE = 2,\n"
     << "};\n"
-    << "enum { SYMMETRY_REDUCTION = " << options.symmetry_reduction << " };\n\n"
+    << "#define SYMMETRY_REDUCTION " << options.symmetry_reduction << "\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
     << "enum { THREADS = " << options.threads << "ul };\n\n"
