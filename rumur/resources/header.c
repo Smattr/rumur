@@ -2011,473 +2011,389 @@ static size_t permutation_to_index_unrolled(const size_t *NONNULL permutation,
 
   switch (count) {
 
-    case 2:
-      if (permutation[0] == 0 && permutation[1] == 1) {
-        return 0;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0) {
-        return 1;
-      }
-      break;
+    case 2: {
+      static const size_t index[2] = {
+        0,
+        1,
+      };
+      return index[permutation[0]];
+    }
 
-    case 3:
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 2) {
-        return 0;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 2) {
-        return 1;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 1) {
-        return 2;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 1) {
-        return 3;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 0) {
-        return 4;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 0) {
-        return 5;
-      }
-      break;
+    case 3: {
+      static const size_t index[3][2] = {
+        {
+          0,
+          3,
+        },
+        {
+          1,
+          4,
+        },
+        {
+          2,
+          5,
+        },
+      };
+      return index[permutation[0]][permutation[1]];
+    }
 
-    case 4:
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 3) {
-        return 0;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 3) {
-        return 1;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 3) {
-        return 2;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 3) {
-        return 3;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 3) {
-        return 4;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 3) {
-        return 5;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 2) {
-        return 6;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 2) {
-        return 7;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 2) {
-        return 8;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 2) {
-        return 9;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 2) {
-        return 10;
-      }
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 2) {
-        return 11;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 1) {
-        return 12;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 1) {
-        return 13;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 1) {
-        return 14;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 1) {
-        return 15;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 1) {
-        return 16;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 1) {
-        return 17;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 0) {
-        return 18;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 0) {
-        return 19;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 0) {
-        return 20;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 0) {
-        return 21;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 0) {
-        return 22;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 0) {
-        return 23;
-      }
-      break;
+    case 4: {
+      static const size_t index[4][3][2] = {
+        {
+          {
+            0,
+            11,
+          },
+          {
+            3,
+            12,
+          },
+          {
+            8,
+            15,
+          },
+        },
+        {
+          {
+            1,
+            10,
+          },
+          {
+            4,
+            23,
+          },
+          {
+            7,
+            20,
+          },
+        },
+        {
+          {
+            2,
+            13,
+          },
+          {
+            5,
+            22,
+          },
+          {
+            16,
+            19,
+          },
+        },
+        {
+          {
+            9,
+            14,
+          },
+          {
+            6,
+            21,
+          },
+          {
+            17,
+            18,
+          },
+        },
+      };
+      return index[permutation[0]][permutation[1]][permutation[2]];
+    }
 
-    case 5:
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 3 && permutation[4] == 4) {
-        return 0;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 3 && permutation[4] == 4) {
-        return 1;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 3 && permutation[4] == 4) {
-        return 2;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 3 && permutation[4] == 4) {
-        return 3;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 3 && permutation[4] == 4) {
-        return 4;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 3 && permutation[4] == 4) {
-        return 5;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 2 && permutation[4] == 4) {
-        return 6;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 2 && permutation[4] == 4) {
-        return 7;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 2 && permutation[4] == 4) {
-        return 8;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 2 && permutation[4] == 4) {
-        return 9;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 2 && permutation[4] == 4) {
-        return 10;
-      }
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 2 && permutation[4] == 4) {
-        return 11;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 1 && permutation[4] == 4) {
-        return 12;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 1 && permutation[4] == 4) {
-        return 13;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 1 && permutation[4] == 4) {
-        return 14;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 1 && permutation[4] == 4) {
-        return 15;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 1 && permutation[4] == 4) {
-        return 16;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 1 && permutation[4] == 4) {
-        return 17;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 0 && permutation[4] == 4) {
-        return 18;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 0 && permutation[4] == 4) {
-        return 19;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 0 && permutation[4] == 4) {
-        return 20;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 0 && permutation[4] == 4) {
-        return 21;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 0 && permutation[4] == 4) {
-        return 22;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 0 && permutation[4] == 4) {
-        return 23;
-      }
-      if (permutation[0] == 4 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 0 && permutation[4] == 1) {
-        return 24;
-      }
-      if (permutation[0] == 2 && permutation[1] == 4 && permutation[2] == 3 && permutation[3] == 0 && permutation[4] == 1) {
-        return 25;
-      }
-      if (permutation[0] == 3 && permutation[1] == 4 && permutation[2] == 2 && permutation[3] == 0 && permutation[4] == 1) {
-        return 26;
-      }
-      if (permutation[0] == 4 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 0 && permutation[4] == 1) {
-        return 27;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 4 && permutation[3] == 0 && permutation[4] == 1) {
-        return 28;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 4 && permutation[3] == 0 && permutation[4] == 1) {
-        return 29;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 4 && permutation[3] == 3 && permutation[4] == 1) {
-        return 30;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 4 && permutation[3] == 3 && permutation[4] == 1) {
-        return 31;
-      }
-      if (permutation[0] == 4 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 3 && permutation[4] == 1) {
-        return 32;
-      }
-      if (permutation[0] == 0 && permutation[1] == 4 && permutation[2] == 2 && permutation[3] == 3 && permutation[4] == 1) {
-        return 33;
-      }
-      if (permutation[0] == 2 && permutation[1] == 4 && permutation[2] == 0 && permutation[3] == 3 && permutation[4] == 1) {
-        return 34;
-      }
-      if (permutation[0] == 4 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 3 && permutation[4] == 1) {
-        return 35;
-      }
-      if (permutation[0] == 4 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 2 && permutation[4] == 1) {
-        return 36;
-      }
-      if (permutation[0] == 3 && permutation[1] == 4 && permutation[2] == 0 && permutation[3] == 2 && permutation[4] == 1) {
-        return 37;
-      }
-      if (permutation[0] == 0 && permutation[1] == 4 && permutation[2] == 3 && permutation[3] == 2 && permutation[4] == 1) {
-        return 38;
-      }
-      if (permutation[0] == 4 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 2 && permutation[4] == 1) {
-        return 39;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 4 && permutation[3] == 2 && permutation[4] == 1) {
-        return 40;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 4 && permutation[3] == 2 && permutation[4] == 1) {
-        return 41;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 4 && permutation[4] == 1) {
-        return 42;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 4 && permutation[4] == 1) {
-        return 43;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 4 && permutation[4] == 1) {
-        return 44;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 4 && permutation[4] == 1) {
-        return 45;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 4 && permutation[4] == 1) {
-        return 46;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 4 && permutation[4] == 1) {
-        return 47;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 4 && permutation[4] == 2) {
-        return 48;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 4 && permutation[4] == 2) {
-        return 49;
-      }
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 4 && permutation[4] == 2) {
-        return 50;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 4 && permutation[4] == 2) {
-        return 51;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 4 && permutation[4] == 2) {
-        return 52;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 4 && permutation[4] == 2) {
-        return 53;
-      }
-      if (permutation[0] == 4 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 0 && permutation[4] == 2) {
-        return 54;
-      }
-      if (permutation[0] == 3 && permutation[1] == 4 && permutation[2] == 1 && permutation[3] == 0 && permutation[4] == 2) {
-        return 55;
-      }
-      if (permutation[0] == 1 && permutation[1] == 4 && permutation[2] == 3 && permutation[3] == 0 && permutation[4] == 2) {
-        return 56;
-      }
-      if (permutation[0] == 4 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 0 && permutation[4] == 2) {
-        return 57;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 4 && permutation[3] == 0 && permutation[4] == 2) {
-        return 58;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 4 && permutation[3] == 0 && permutation[4] == 2) {
-        return 59;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 4 && permutation[3] == 3 && permutation[4] == 2) {
-        return 60;
-      }
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 4 && permutation[3] == 3 && permutation[4] == 2) {
-        return 61;
-      }
-      if (permutation[0] == 4 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 3 && permutation[4] == 2) {
-        return 62;
-      }
-      if (permutation[0] == 1 && permutation[1] == 4 && permutation[2] == 0 && permutation[3] == 3 && permutation[4] == 2) {
-        return 63;
-      }
-      if (permutation[0] == 0 && permutation[1] == 4 && permutation[2] == 1 && permutation[3] == 3 && permutation[4] == 2) {
-        return 64;
-      }
-      if (permutation[0] == 4 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 3 && permutation[4] == 2) {
-        return 65;
-      }
-      if (permutation[0] == 4 && permutation[1] == 0 && permutation[2] == 3 && permutation[3] == 1 && permutation[4] == 2) {
-        return 66;
-      }
-      if (permutation[0] == 0 && permutation[1] == 4 && permutation[2] == 3 && permutation[3] == 1 && permutation[4] == 2) {
-        return 67;
-      }
-      if (permutation[0] == 3 && permutation[1] == 4 && permutation[2] == 0 && permutation[3] == 1 && permutation[4] == 2) {
-        return 68;
-      }
-      if (permutation[0] == 4 && permutation[1] == 3 && permutation[2] == 0 && permutation[3] == 1 && permutation[4] == 2) {
-        return 69;
-      }
-      if (permutation[0] == 0 && permutation[1] == 3 && permutation[2] == 4 && permutation[3] == 1 && permutation[4] == 2) {
-        return 70;
-      }
-      if (permutation[0] == 3 && permutation[1] == 0 && permutation[2] == 4 && permutation[3] == 1 && permutation[4] == 2) {
-        return 71;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 4 && permutation[3] == 1 && permutation[4] == 3) {
-        return 72;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 4 && permutation[3] == 1 && permutation[4] == 3) {
-        return 73;
-      }
-      if (permutation[0] == 4 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 1 && permutation[4] == 3) {
-        return 74;
-      }
-      if (permutation[0] == 2 && permutation[1] == 4 && permutation[2] == 0 && permutation[3] == 1 && permutation[4] == 3) {
-        return 75;
-      }
-      if (permutation[0] == 0 && permutation[1] == 4 && permutation[2] == 2 && permutation[3] == 1 && permutation[4] == 3) {
-        return 76;
-      }
-      if (permutation[0] == 4 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 1 && permutation[4] == 3) {
-        return 77;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 2 && permutation[3] == 4 && permutation[4] == 3) {
-        return 78;
-      }
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 4 && permutation[4] == 3) {
-        return 79;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 4 && permutation[4] == 3) {
-        return 80;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 0 && permutation[3] == 4 && permutation[4] == 3) {
-        return 81;
-      }
-      if (permutation[0] == 0 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 4 && permutation[4] == 3) {
-        return 82;
-      }
-      if (permutation[0] == 2 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 4 && permutation[4] == 3) {
-        return 83;
-      }
-      if (permutation[0] == 2 && permutation[1] == 4 && permutation[2] == 1 && permutation[3] == 0 && permutation[4] == 3) {
-        return 84;
-      }
-      if (permutation[0] == 4 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 0 && permutation[4] == 3) {
-        return 85;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 4 && permutation[3] == 0 && permutation[4] == 3) {
-        return 86;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 4 && permutation[3] == 0 && permutation[4] == 3) {
-        return 87;
-      }
-      if (permutation[0] == 4 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 0 && permutation[4] == 3) {
-        return 88;
-      }
-      if (permutation[0] == 1 && permutation[1] == 4 && permutation[2] == 2 && permutation[3] == 0 && permutation[4] == 3) {
-        return 89;
-      }
-      if (permutation[0] == 1 && permutation[1] == 4 && permutation[2] == 0 && permutation[3] == 2 && permutation[4] == 3) {
-        return 90;
-      }
-      if (permutation[0] == 4 && permutation[1] == 1 && permutation[2] == 0 && permutation[3] == 2 && permutation[4] == 3) {
-        return 91;
-      }
-      if (permutation[0] == 0 && permutation[1] == 1 && permutation[2] == 4 && permutation[3] == 2 && permutation[4] == 3) {
-        return 92;
-      }
-      if (permutation[0] == 1 && permutation[1] == 0 && permutation[2] == 4 && permutation[3] == 2 && permutation[4] == 3) {
-        return 93;
-      }
-      if (permutation[0] == 4 && permutation[1] == 0 && permutation[2] == 1 && permutation[3] == 2 && permutation[4] == 3) {
-        return 94;
-      }
-      if (permutation[0] == 0 && permutation[1] == 4 && permutation[2] == 1 && permutation[3] == 2 && permutation[4] == 3) {
-        return 95;
-      }
-      if (permutation[0] == 3 && permutation[1] == 4 && permutation[2] == 1 && permutation[3] == 2 && permutation[4] == 0) {
-        return 96;
-      }
-      if (permutation[0] == 4 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 2 && permutation[4] == 0) {
-        return 97;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 4 && permutation[3] == 2 && permutation[4] == 0) {
-        return 98;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 4 && permutation[3] == 2 && permutation[4] == 0) {
-        return 99;
-      }
-      if (permutation[0] == 4 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 2 && permutation[4] == 0) {
-        return 100;
-      }
-      if (permutation[0] == 1 && permutation[1] == 4 && permutation[2] == 3 && permutation[3] == 2 && permutation[4] == 0) {
-        return 101;
-      }
-      if (permutation[0] == 2 && permutation[1] == 4 && permutation[2] == 3 && permutation[3] == 1 && permutation[4] == 0) {
-        return 102;
-      }
-      if (permutation[0] == 4 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 1 && permutation[4] == 0) {
-        return 103;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 4 && permutation[3] == 1 && permutation[4] == 0) {
-        return 104;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 4 && permutation[3] == 1 && permutation[4] == 0) {
-        return 105;
-      }
-      if (permutation[0] == 4 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 1 && permutation[4] == 0) {
-        return 106;
-      }
-      if (permutation[0] == 3 && permutation[1] == 4 && permutation[2] == 2 && permutation[3] == 1 && permutation[4] == 0) {
-        return 107;
-      }
-      if (permutation[0] == 3 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 4 && permutation[4] == 0) {
-        return 108;
-      }
-      if (permutation[0] == 1 && permutation[1] == 3 && permutation[2] == 2 && permutation[3] == 4 && permutation[4] == 0) {
-        return 109;
-      }
-      if (permutation[0] == 2 && permutation[1] == 3 && permutation[2] == 1 && permutation[3] == 4 && permutation[4] == 0) {
-        return 110;
-      }
-      if (permutation[0] == 3 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 4 && permutation[4] == 0) {
-        return 111;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 3 && permutation[3] == 4 && permutation[4] == 0) {
-        return 112;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 3 && permutation[3] == 4 && permutation[4] == 0) {
-        return 113;
-      }
-      if (permutation[0] == 2 && permutation[1] == 1 && permutation[2] == 4 && permutation[3] == 3 && permutation[4] == 0) {
-        return 114;
-      }
-      if (permutation[0] == 1 && permutation[1] == 2 && permutation[2] == 4 && permutation[3] == 3 && permutation[4] == 0) {
-        return 115;
-      }
-      if (permutation[0] == 4 && permutation[1] == 2 && permutation[2] == 1 && permutation[3] == 3 && permutation[4] == 0) {
-        return 116;
-      }
-      if (permutation[0] == 2 && permutation[1] == 4 && permutation[2] == 1 && permutation[3] == 3 && permutation[4] == 0) {
-        return 117;
-      }
-      if (permutation[0] == 1 && permutation[1] == 4 && permutation[2] == 2 && permutation[3] == 3 && permutation[4] == 0) {
-        return 118;
-      }
-      if (permutation[0] == 4 && permutation[1] == 1 && permutation[2] == 2 && permutation[3] == 3 && permutation[4] == 0) {
-        return 119;
-      }
-      break;
+    case 5: {
+      static const size_t index[5][4][3][2] = {
+        {
+          {
+            {
+              0,
+              79,
+            },
+            {
+              11,
+              50,
+            },
+            {
+              92,
+              61,
+            },
+          },
+          {
+            {
+              3,
+              82,
+            },
+            {
+              12,
+              45,
+            },
+            {
+              73,
+              30,
+            },
+          },
+          {
+            {
+              8,
+              53,
+            },
+            {
+              15,
+              42,
+            },
+            {
+              70,
+              41,
+            },
+          },
+          {
+            {
+              95,
+              64,
+            },
+            {
+              76,
+              33,
+            },
+            {
+              67,
+              38,
+            },
+          },
+        },
+        {
+          {
+            {
+              1,
+              78,
+            },
+            {
+              10,
+              51,
+            },
+            {
+              93,
+              60,
+            },
+          },
+          {
+            {
+              4,
+              81,
+            },
+            {
+              23,
+              112,
+            },
+            {
+              86,
+              115,
+            },
+          },
+          {
+            {
+              7,
+              48,
+            },
+            {
+              20,
+              109,
+            },
+            {
+              59,
+              98,
+            },
+          },
+          {
+            {
+              90,
+              63,
+            },
+            {
+              89,
+              118,
+            },
+            {
+              56,
+              101,
+            },
+          },
+        },
+        {
+          {
+            {
+              2,
+              83,
+            },
+            {
+              13,
+              44,
+            },
+            {
+              72,
+              31,
+            },
+          },
+          {
+            {
+              5,
+              80,
+            },
+            {
+              22,
+              113,
+            },
+            {
+              87,
+              114,
+            },
+          },
+          {
+            {
+              16,
+              47,
+            },
+            {
+              19,
+              110,
+            },
+            {
+              28,
+              105,
+            },
+          },
+          {
+            {
+              75,
+              34,
+            },
+            {
+              84,
+              117,
+            },
+            {
+              25,
+              102,
+            },
+          },
+        },
+        {
+          {
+            {
+              9,
+              52,
+            },
+            {
+              14,
+              43,
+            },
+            {
+              71,
+              40,
+            },
+          },
+          {
+            {
+              6,
+              49,
+            },
+            {
+              21,
+              108,
+            },
+            {
+              58,
+              99,
+            },
+          },
+          {
+            {
+              17,
+              46,
+            },
+            {
+              18,
+              111,
+            },
+            {
+              29,
+              104,
+            },
+          },
+          {
+            {
+              68,
+              37,
+            },
+            {
+              55,
+              96,
+            },
+            {
+              26,
+              107,
+            },
+          },
+        },
+        {
+          {
+            {
+              94,
+              65,
+            },
+            {
+              77,
+              32,
+            },
+            {
+              66,
+              39,
+            },
+          },
+          {
+            {
+              91,
+              62,
+            },
+            {
+              88,
+              119,
+            },
+            {
+              57,
+              100,
+            },
+          },
+          {
+            {
+              74,
+              35,
+            },
+            {
+              85,
+              116,
+            },
+            {
+              24,
+              103,
+            },
+          },
+          {
+            {
+              69,
+              36,
+            },
+            {
+              54,
+              97,
+            },
+            {
+              27,
+              106,
+            },
+          },
+        },
+      };
+      return index[permutation[0]][permutation[1]][permutation[2]][permutation[3]];
+    }
 
   }
 
@@ -2546,1206 +2462,188 @@ static __attribute__((unused)) size_t permutation_to_index(
 /* unrolled version of index_to_permutation() generated by
  * unroll-heaps-algorithm.py
  */
-static void index_to_permutation_unrolled(size_t index,
-    size_t *NONNULL permutation, size_t count) {
+static const size_t *index_to_permutation_unrolled(size_t index,
+    size_t count) {
 
   ASSERT(count <= 5);
 
   switch (count) {
 
-    case 2:
-      switch (index) {
-        case 0:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            return;
-
-        case 1:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            return;
-
-      }
-      break;
-
-    case 3:
-      switch (index) {
-        case 0:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            return;
-
-        case 1:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            return;
-
-        case 2:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            return;
-
-        case 3:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            return;
-
-        case 4:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            return;
-
-        case 5:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            return;
-
-      }
-      break;
-
-    case 4:
-      switch (index) {
-        case 0:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            return;
-
-        case 1:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            return;
-
-        case 2:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            return;
-
-        case 3:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            return;
-
-        case 4:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            return;
-
-        case 5:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            return;
-
-        case 6:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            return;
-
-        case 7:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            return;
-
-        case 8:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            return;
-
-        case 9:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            return;
-
-        case 10:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            return;
-
-        case 11:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            return;
-
-        case 12:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            return;
-
-        case 13:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            return;
-
-        case 14:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            return;
-
-        case 15:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            return;
-
-        case 16:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            return;
-
-        case 17:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            return;
-
-        case 18:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            return;
-
-        case 19:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            return;
-
-        case 20:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            return;
-
-        case 21:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            return;
-
-        case 22:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            return;
-
-        case 23:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            return;
-
-      }
-      break;
-
-    case 5:
-      switch (index) {
-        case 0:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            permutation[4] = 4;
-            return;
-
-        case 1:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            permutation[4] = 4;
-            return;
-
-        case 2:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            permutation[4] = 4;
-            return;
-
-        case 3:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            permutation[4] = 4;
-            return;
-
-        case 4:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            permutation[4] = 4;
-            return;
-
-        case 5:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            permutation[4] = 4;
-            return;
-
-        case 6:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            permutation[4] = 4;
-            return;
-
-        case 7:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            permutation[4] = 4;
-            return;
-
-        case 8:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            permutation[4] = 4;
-            return;
-
-        case 9:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            permutation[4] = 4;
-            return;
-
-        case 10:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            permutation[4] = 4;
-            return;
-
-        case 11:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            permutation[4] = 4;
-            return;
-
-        case 12:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            permutation[4] = 4;
-            return;
-
-        case 13:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            permutation[4] = 4;
-            return;
-
-        case 14:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            permutation[4] = 4;
-            return;
-
-        case 15:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            permutation[4] = 4;
-            return;
-
-        case 16:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            permutation[4] = 4;
-            return;
-
-        case 17:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            permutation[4] = 4;
-            return;
-
-        case 18:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            permutation[4] = 4;
-            return;
-
-        case 19:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            permutation[4] = 4;
-            return;
-
-        case 20:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            permutation[4] = 4;
-            return;
-
-        case 21:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            permutation[4] = 4;
-            return;
-
-        case 22:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            permutation[4] = 4;
-            return;
-
-        case 23:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            permutation[4] = 4;
-            return;
-
-        case 24:
-            permutation[0] = 4;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            permutation[4] = 1;
-            return;
-
-        case 25:
-            permutation[0] = 2;
-            permutation[1] = 4;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            permutation[4] = 1;
-            return;
-
-        case 26:
-            permutation[0] = 3;
-            permutation[1] = 4;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            permutation[4] = 1;
-            return;
-
-        case 27:
-            permutation[0] = 4;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            permutation[4] = 1;
-            return;
-
-        case 28:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 4;
-            permutation[3] = 0;
-            permutation[4] = 1;
-            return;
-
-        case 29:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 4;
-            permutation[3] = 0;
-            permutation[4] = 1;
-            return;
-
-        case 30:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 4;
-            permutation[3] = 3;
-            permutation[4] = 1;
-            return;
-
-        case 31:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 4;
-            permutation[3] = 3;
-            permutation[4] = 1;
-            return;
-
-        case 32:
-            permutation[0] = 4;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            permutation[4] = 1;
-            return;
-
-        case 33:
-            permutation[0] = 0;
-            permutation[1] = 4;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            permutation[4] = 1;
-            return;
-
-        case 34:
-            permutation[0] = 2;
-            permutation[1] = 4;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            permutation[4] = 1;
-            return;
-
-        case 35:
-            permutation[0] = 4;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            permutation[4] = 1;
-            return;
-
-        case 36:
-            permutation[0] = 4;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            permutation[4] = 1;
-            return;
-
-        case 37:
-            permutation[0] = 3;
-            permutation[1] = 4;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            permutation[4] = 1;
-            return;
-
-        case 38:
-            permutation[0] = 0;
-            permutation[1] = 4;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            permutation[4] = 1;
-            return;
-
-        case 39:
-            permutation[0] = 4;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            permutation[4] = 1;
-            return;
-
-        case 40:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 4;
-            permutation[3] = 2;
-            permutation[4] = 1;
-            return;
-
-        case 41:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 4;
-            permutation[3] = 2;
-            permutation[4] = 1;
-            return;
-
-        case 42:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 4;
-            permutation[4] = 1;
-            return;
-
-        case 43:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 4;
-            permutation[4] = 1;
-            return;
-
-        case 44:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 4;
-            permutation[4] = 1;
-            return;
-
-        case 45:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 4;
-            permutation[4] = 1;
-            return;
-
-        case 46:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 4;
-            permutation[4] = 1;
-            return;
-
-        case 47:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 4;
-            permutation[4] = 1;
-            return;
-
-        case 48:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 4;
-            permutation[4] = 2;
-            return;
-
-        case 49:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 4;
-            permutation[4] = 2;
-            return;
-
-        case 50:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 4;
-            permutation[4] = 2;
-            return;
-
-        case 51:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 4;
-            permutation[4] = 2;
-            return;
-
-        case 52:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 4;
-            permutation[4] = 2;
-            return;
-
-        case 53:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 4;
-            permutation[4] = 2;
-            return;
-
-        case 54:
-            permutation[0] = 4;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            permutation[4] = 2;
-            return;
-
-        case 55:
-            permutation[0] = 3;
-            permutation[1] = 4;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            permutation[4] = 2;
-            return;
-
-        case 56:
-            permutation[0] = 1;
-            permutation[1] = 4;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            permutation[4] = 2;
-            return;
-
-        case 57:
-            permutation[0] = 4;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 0;
-            permutation[4] = 2;
-            return;
-
-        case 58:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 4;
-            permutation[3] = 0;
-            permutation[4] = 2;
-            return;
-
-        case 59:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 4;
-            permutation[3] = 0;
-            permutation[4] = 2;
-            return;
-
-        case 60:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 4;
-            permutation[3] = 3;
-            permutation[4] = 2;
-            return;
-
-        case 61:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 4;
-            permutation[3] = 3;
-            permutation[4] = 2;
-            return;
-
-        case 62:
-            permutation[0] = 4;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            permutation[4] = 2;
-            return;
-
-        case 63:
-            permutation[0] = 1;
-            permutation[1] = 4;
-            permutation[2] = 0;
-            permutation[3] = 3;
-            permutation[4] = 2;
-            return;
-
-        case 64:
-            permutation[0] = 0;
-            permutation[1] = 4;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            permutation[4] = 2;
-            return;
-
-        case 65:
-            permutation[0] = 4;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            permutation[4] = 2;
-            return;
-
-        case 66:
-            permutation[0] = 4;
-            permutation[1] = 0;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            permutation[4] = 2;
-            return;
-
-        case 67:
-            permutation[0] = 0;
-            permutation[1] = 4;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            permutation[4] = 2;
-            return;
-
-        case 68:
-            permutation[0] = 3;
-            permutation[1] = 4;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            permutation[4] = 2;
-            return;
-
-        case 69:
-            permutation[0] = 4;
-            permutation[1] = 3;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            permutation[4] = 2;
-            return;
-
-        case 70:
-            permutation[0] = 0;
-            permutation[1] = 3;
-            permutation[2] = 4;
-            permutation[3] = 1;
-            permutation[4] = 2;
-            return;
-
-        case 71:
-            permutation[0] = 3;
-            permutation[1] = 0;
-            permutation[2] = 4;
-            permutation[3] = 1;
-            permutation[4] = 2;
-            return;
-
-        case 72:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 4;
-            permutation[3] = 1;
-            permutation[4] = 3;
-            return;
-
-        case 73:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 4;
-            permutation[3] = 1;
-            permutation[4] = 3;
-            return;
-
-        case 74:
-            permutation[0] = 4;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            permutation[4] = 3;
-            return;
-
-        case 75:
-            permutation[0] = 2;
-            permutation[1] = 4;
-            permutation[2] = 0;
-            permutation[3] = 1;
-            permutation[4] = 3;
-            return;
-
-        case 76:
-            permutation[0] = 0;
-            permutation[1] = 4;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            permutation[4] = 3;
-            return;
-
-        case 77:
-            permutation[0] = 4;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            permutation[4] = 3;
-            return;
-
-        case 78:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 2;
-            permutation[3] = 4;
-            permutation[4] = 3;
-            return;
-
-        case 79:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 4;
-            permutation[4] = 3;
-            return;
-
-        case 80:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 4;
-            permutation[4] = 3;
-            return;
-
-        case 81:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 0;
-            permutation[3] = 4;
-            permutation[4] = 3;
-            return;
-
-        case 82:
-            permutation[0] = 0;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 4;
-            permutation[4] = 3;
-            return;
-
-        case 83:
-            permutation[0] = 2;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 4;
-            permutation[4] = 3;
-            return;
-
-        case 84:
-            permutation[0] = 2;
-            permutation[1] = 4;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            permutation[4] = 3;
-            return;
-
-        case 85:
-            permutation[0] = 4;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 0;
-            permutation[4] = 3;
-            return;
-
-        case 86:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 4;
-            permutation[3] = 0;
-            permutation[4] = 3;
-            return;
-
-        case 87:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 4;
-            permutation[3] = 0;
-            permutation[4] = 3;
-            return;
-
-        case 88:
-            permutation[0] = 4;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            permutation[4] = 3;
-            return;
-
-        case 89:
-            permutation[0] = 1;
-            permutation[1] = 4;
-            permutation[2] = 2;
-            permutation[3] = 0;
-            permutation[4] = 3;
-            return;
-
-        case 90:
-            permutation[0] = 1;
-            permutation[1] = 4;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            permutation[4] = 3;
-            return;
-
-        case 91:
-            permutation[0] = 4;
-            permutation[1] = 1;
-            permutation[2] = 0;
-            permutation[3] = 2;
-            permutation[4] = 3;
-            return;
-
-        case 92:
-            permutation[0] = 0;
-            permutation[1] = 1;
-            permutation[2] = 4;
-            permutation[3] = 2;
-            permutation[4] = 3;
-            return;
-
-        case 93:
-            permutation[0] = 1;
-            permutation[1] = 0;
-            permutation[2] = 4;
-            permutation[3] = 2;
-            permutation[4] = 3;
-            return;
-
-        case 94:
-            permutation[0] = 4;
-            permutation[1] = 0;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            permutation[4] = 3;
-            return;
-
-        case 95:
-            permutation[0] = 0;
-            permutation[1] = 4;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            permutation[4] = 3;
-            return;
-
-        case 96:
-            permutation[0] = 3;
-            permutation[1] = 4;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            permutation[4] = 0;
-            return;
-
-        case 97:
-            permutation[0] = 4;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 2;
-            permutation[4] = 0;
-            return;
-
-        case 98:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 4;
-            permutation[3] = 2;
-            permutation[4] = 0;
-            return;
-
-        case 99:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 4;
-            permutation[3] = 2;
-            permutation[4] = 0;
-            return;
-
-        case 100:
-            permutation[0] = 4;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            permutation[4] = 0;
-            return;
-
-        case 101:
-            permutation[0] = 1;
-            permutation[1] = 4;
-            permutation[2] = 3;
-            permutation[3] = 2;
-            permutation[4] = 0;
-            return;
-
-        case 102:
-            permutation[0] = 2;
-            permutation[1] = 4;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            permutation[4] = 0;
-            return;
-
-        case 103:
-            permutation[0] = 4;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 1;
-            permutation[4] = 0;
-            return;
-
-        case 104:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 4;
-            permutation[3] = 1;
-            permutation[4] = 0;
-            return;
-
-        case 105:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 4;
-            permutation[3] = 1;
-            permutation[4] = 0;
-            return;
-
-        case 106:
-            permutation[0] = 4;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            permutation[4] = 0;
-            return;
-
-        case 107:
-            permutation[0] = 3;
-            permutation[1] = 4;
-            permutation[2] = 2;
-            permutation[3] = 1;
-            permutation[4] = 0;
-            return;
-
-        case 108:
-            permutation[0] = 3;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 4;
-            permutation[4] = 0;
-            return;
-
-        case 109:
-            permutation[0] = 1;
-            permutation[1] = 3;
-            permutation[2] = 2;
-            permutation[3] = 4;
-            permutation[4] = 0;
-            return;
-
-        case 110:
-            permutation[0] = 2;
-            permutation[1] = 3;
-            permutation[2] = 1;
-            permutation[3] = 4;
-            permutation[4] = 0;
-            return;
-
-        case 111:
-            permutation[0] = 3;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 4;
-            permutation[4] = 0;
-            return;
-
-        case 112:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 3;
-            permutation[3] = 4;
-            permutation[4] = 0;
-            return;
-
-        case 113:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 3;
-            permutation[3] = 4;
-            permutation[4] = 0;
-            return;
-
-        case 114:
-            permutation[0] = 2;
-            permutation[1] = 1;
-            permutation[2] = 4;
-            permutation[3] = 3;
-            permutation[4] = 0;
-            return;
-
-        case 115:
-            permutation[0] = 1;
-            permutation[1] = 2;
-            permutation[2] = 4;
-            permutation[3] = 3;
-            permutation[4] = 0;
-            return;
-
-        case 116:
-            permutation[0] = 4;
-            permutation[1] = 2;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            permutation[4] = 0;
-            return;
-
-        case 117:
-            permutation[0] = 2;
-            permutation[1] = 4;
-            permutation[2] = 1;
-            permutation[3] = 3;
-            permutation[4] = 0;
-            return;
-
-        case 118:
-            permutation[0] = 1;
-            permutation[1] = 4;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            permutation[4] = 0;
-            return;
-
-        case 119:
-            permutation[0] = 4;
-            permutation[1] = 1;
-            permutation[2] = 2;
-            permutation[3] = 3;
-            permutation[4] = 0;
-            return;
-
-      }
-      break;
+    case 2: {
+      static const size_t permutation[2][2] = {
+        { 0, 1 },
+        { 1, 0 },
+      };
+      return permutation[index];
+    }
+
+    case 3: {
+      static const size_t permutation[6][3] = {
+        { 0, 1, 2 },
+        { 1, 0, 2 },
+        { 2, 0, 1 },
+        { 0, 2, 1 },
+        { 1, 2, 0 },
+        { 2, 1, 0 },
+      };
+      return permutation[index];
+    }
+
+    case 4: {
+      static const size_t permutation[24][4] = {
+        { 0, 1, 2, 3 },
+        { 1, 0, 2, 3 },
+        { 2, 0, 1, 3 },
+        { 0, 2, 1, 3 },
+        { 1, 2, 0, 3 },
+        { 2, 1, 0, 3 },
+        { 3, 1, 0, 2 },
+        { 1, 3, 0, 2 },
+        { 0, 3, 1, 2 },
+        { 3, 0, 1, 2 },
+        { 1, 0, 3, 2 },
+        { 0, 1, 3, 2 },
+        { 0, 2, 3, 1 },
+        { 2, 0, 3, 1 },
+        { 3, 0, 2, 1 },
+        { 0, 3, 2, 1 },
+        { 2, 3, 0, 1 },
+        { 3, 2, 0, 1 },
+        { 3, 2, 1, 0 },
+        { 2, 3, 1, 0 },
+        { 1, 3, 2, 0 },
+        { 3, 1, 2, 0 },
+        { 2, 1, 3, 0 },
+        { 1, 2, 3, 0 },
+      };
+      return permutation[index];
+    }
+
+    case 5: {
+      static const size_t permutation[120][5] = {
+        { 0, 1, 2, 3, 4 },
+        { 1, 0, 2, 3, 4 },
+        { 2, 0, 1, 3, 4 },
+        { 0, 2, 1, 3, 4 },
+        { 1, 2, 0, 3, 4 },
+        { 2, 1, 0, 3, 4 },
+        { 3, 1, 0, 2, 4 },
+        { 1, 3, 0, 2, 4 },
+        { 0, 3, 1, 2, 4 },
+        { 3, 0, 1, 2, 4 },
+        { 1, 0, 3, 2, 4 },
+        { 0, 1, 3, 2, 4 },
+        { 0, 2, 3, 1, 4 },
+        { 2, 0, 3, 1, 4 },
+        { 3, 0, 2, 1, 4 },
+        { 0, 3, 2, 1, 4 },
+        { 2, 3, 0, 1, 4 },
+        { 3, 2, 0, 1, 4 },
+        { 3, 2, 1, 0, 4 },
+        { 2, 3, 1, 0, 4 },
+        { 1, 3, 2, 0, 4 },
+        { 3, 1, 2, 0, 4 },
+        { 2, 1, 3, 0, 4 },
+        { 1, 2, 3, 0, 4 },
+        { 4, 2, 3, 0, 1 },
+        { 2, 4, 3, 0, 1 },
+        { 3, 4, 2, 0, 1 },
+        { 4, 3, 2, 0, 1 },
+        { 2, 3, 4, 0, 1 },
+        { 3, 2, 4, 0, 1 },
+        { 0, 2, 4, 3, 1 },
+        { 2, 0, 4, 3, 1 },
+        { 4, 0, 2, 3, 1 },
+        { 0, 4, 2, 3, 1 },
+        { 2, 4, 0, 3, 1 },
+        { 4, 2, 0, 3, 1 },
+        { 4, 3, 0, 2, 1 },
+        { 3, 4, 0, 2, 1 },
+        { 0, 4, 3, 2, 1 },
+        { 4, 0, 3, 2, 1 },
+        { 3, 0, 4, 2, 1 },
+        { 0, 3, 4, 2, 1 },
+        { 0, 3, 2, 4, 1 },
+        { 3, 0, 2, 4, 1 },
+        { 2, 0, 3, 4, 1 },
+        { 0, 2, 3, 4, 1 },
+        { 3, 2, 0, 4, 1 },
+        { 2, 3, 0, 4, 1 },
+        { 1, 3, 0, 4, 2 },
+        { 3, 1, 0, 4, 2 },
+        { 0, 1, 3, 4, 2 },
+        { 1, 0, 3, 4, 2 },
+        { 3, 0, 1, 4, 2 },
+        { 0, 3, 1, 4, 2 },
+        { 4, 3, 1, 0, 2 },
+        { 3, 4, 1, 0, 2 },
+        { 1, 4, 3, 0, 2 },
+        { 4, 1, 3, 0, 2 },
+        { 3, 1, 4, 0, 2 },
+        { 1, 3, 4, 0, 2 },
+        { 1, 0, 4, 3, 2 },
+        { 0, 1, 4, 3, 2 },
+        { 4, 1, 0, 3, 2 },
+        { 1, 4, 0, 3, 2 },
+        { 0, 4, 1, 3, 2 },
+        { 4, 0, 1, 3, 2 },
+        { 4, 0, 3, 1, 2 },
+        { 0, 4, 3, 1, 2 },
+        { 3, 4, 0, 1, 2 },
+        { 4, 3, 0, 1, 2 },
+        { 0, 3, 4, 1, 2 },
+        { 3, 0, 4, 1, 2 },
+        { 2, 0, 4, 1, 3 },
+        { 0, 2, 4, 1, 3 },
+        { 4, 2, 0, 1, 3 },
+        { 2, 4, 0, 1, 3 },
+        { 0, 4, 2, 1, 3 },
+        { 4, 0, 2, 1, 3 },
+        { 1, 0, 2, 4, 3 },
+        { 0, 1, 2, 4, 3 },
+        { 2, 1, 0, 4, 3 },
+        { 1, 2, 0, 4, 3 },
+        { 0, 2, 1, 4, 3 },
+        { 2, 0, 1, 4, 3 },
+        { 2, 4, 1, 0, 3 },
+        { 4, 2, 1, 0, 3 },
+        { 1, 2, 4, 0, 3 },
+        { 2, 1, 4, 0, 3 },
+        { 4, 1, 2, 0, 3 },
+        { 1, 4, 2, 0, 3 },
+        { 1, 4, 0, 2, 3 },
+        { 4, 1, 0, 2, 3 },
+        { 0, 1, 4, 2, 3 },
+        { 1, 0, 4, 2, 3 },
+        { 4, 0, 1, 2, 3 },
+        { 0, 4, 1, 2, 3 },
+        { 3, 4, 1, 2, 0 },
+        { 4, 3, 1, 2, 0 },
+        { 1, 3, 4, 2, 0 },
+        { 3, 1, 4, 2, 0 },
+        { 4, 1, 3, 2, 0 },
+        { 1, 4, 3, 2, 0 },
+        { 2, 4, 3, 1, 0 },
+        { 4, 2, 3, 1, 0 },
+        { 3, 2, 4, 1, 0 },
+        { 2, 3, 4, 1, 0 },
+        { 4, 3, 2, 1, 0 },
+        { 3, 4, 2, 1, 0 },
+        { 3, 1, 2, 4, 0 },
+        { 1, 3, 2, 4, 0 },
+        { 2, 3, 1, 4, 0 },
+        { 3, 2, 1, 4, 0 },
+        { 1, 2, 3, 4, 0 },
+        { 2, 1, 3, 4, 0 },
+        { 2, 1, 4, 3, 0 },
+        { 1, 2, 4, 3, 0 },
+        { 4, 2, 1, 3, 0 },
+        { 2, 4, 1, 3, 0 },
+        { 1, 4, 2, 3, 0 },
+        { 4, 1, 2, 3, 0 },
+      };
+      return permutation[index];
+    }
 
   }
 
@@ -3758,7 +2656,11 @@ static __attribute__((unused)) void index_to_permutation(size_t index,
 
   /* optimized fast path for smaller scalarsets */
   if (count >= 2 && count <= 5) {
-    return index_to_permutation_unrolled(index, permutation, count);
+    const size_t *p = index_to_permutation_unrolled(index, count);
+    for (size_t i = 0; i < count; ++i) {
+      permutation[i] = p[i];
+    }
+    return;
   }
 
   /* byte extent of the permutation arrays */
