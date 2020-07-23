@@ -75,7 +75,7 @@ def make_dict(count: int) -> Dict[int, Any]:
 
   return permutations
 
-def w_dict(permutations: Dict[int, Any], indentation: int) -> None:
+def w_dict(permutations: Dict[int, Any], count: int, indentation: int) -> None:
   '''
   print the contents of a permutation dictionary (see above)
   '''
@@ -89,8 +89,8 @@ def w_dict(permutations: Dict[int, Any], indentation: int) -> None:
   # otherwise, another level of indentation
   w(f'{{\n')
   for k in sorted(permutations.keys()):
-    w(f'{(indentation + 1) * 2 * " "}')
-    w_dict(permutations[k], indentation + 1)
+    w(f'{(indentation + 1) * 2 * " "}[{k}] = ')
+    w_dict(permutations[k], count, indentation + 1)
     w(',\n')
   w(f'{indentation * 2 * " "}}}')
 
@@ -118,10 +118,9 @@ def main(args: [str]) -> int:
     w(f'    case {limit}: {{\n')
 
     # construct a lookup table, mapping permutation to index
-    w('      static const size_t index'
-     f'{"".join(f"[{i + 1}]" for i in reversed(range(1, limit)))} = ')
+    w(f'      static const size_t index{f"[{limit}]" * (limit - 1)} = ')
     perms = make_dict(limit)
-    w_dict(perms, 3)
+    w_dict(perms, limit, 3)
     w(';\n')
 
     # emit the lookup itself
