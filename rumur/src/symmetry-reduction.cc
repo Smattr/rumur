@@ -266,7 +266,7 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     << indent << "  size_t stack_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
 
     << indent << "  size_t schedule_" << scalarset.name << "[" << bound << "] = { 0 };\n"
-    << indent << "  if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+    << indent << "  if (USE_SCALARSET_SCHEDULES) {\n"
     << indent << "    size_t stack[" << bound << "];\n"
     << indent << "    size_t index = schedule_read_" << scalarset.name
       << "(&candidate);\n"
@@ -295,7 +295,7 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     << indent << "      /* save selected schedule to map this back for later more\n"
     << indent << "       * comprehensible counterexample traces\n"
     << indent << "       */\n"
-    << indent << "      if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+    << indent << "      if (USE_SCALARSET_SCHEDULES) {\n"
     << indent << "        size_t stack[" << bound << "];\n"
     << indent << "        size_t working[" << bound << "];\n"
     << indent << "        size_t index = permutation_to_index(schedule_"
@@ -685,7 +685,7 @@ static void generate_canonicalise_heuristic(const Model &m,
         << "++i) {\n"
       << "      schedule[i] = i;\n"
       << "    }\n"
-      << "    if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+      << "    if (USE_SCALARSET_SCHEDULES) {\n"
       << "      size_t index = schedule_read_" << t->name << "(s);\n"
       << "      size_t stack[(size_t)" << bound.get_str() << "ull];\n"
       << "      index_to_permutation(index, schedule, stack, " << bound.get_str()
@@ -696,7 +696,7 @@ static void generate_canonicalise_heuristic(const Model &m,
       << "    /* save selected schedule to map this back for later more\n"
       << "     * comprehensible counterexample traces\n"
       << "     */\n"
-      << "    if (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS) {\n"
+      << "    if (USE_SCALARSET_SCHEDULES) {\n"
       << "      size_t stack[(size_t)" << bound.get_str() << "ull];\n"
       << "      size_t working[(size_t)" << bound.get_str() << "ull];\n"
       << "      size_t index = permutation_to_index(schedule, stack, working, "

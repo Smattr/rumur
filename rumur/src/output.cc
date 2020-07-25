@@ -236,7 +236,11 @@ int output_checker(const std::string &path, const Model &model,
     << "#define RULE_TAKEN_LIMIT " << rule_taken_limit(model) << "\n"
     << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n"
     << "#define SCHEDULE_BITS " << schedule_bits(model) << "ul\n"
-    << "#define PRINTS_SCALARSETS " << (prints_scalarsets(model) ? "1" : "0") << "\n";
+    << "#define PRINTS_SCALARSETS " << (prints_scalarsets(model) ? "1" : "0") << "\n"
+    << "\n"
+    << "/* whether scalarset schedules should be computed and used during printing */\n"
+    << "#define USE_SCALARSET_SCHEDULES (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && \\\n"
+    << "  (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS))\n";
 
   generate_cover_array(out, model);
 
