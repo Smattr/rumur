@@ -131,6 +131,21 @@ allowed to perform if you are using a model you did not write yourself. By
 default this is \fBoff\fR.
 .RE
 .PP
+\fB--scalarset-schedules\fR [\fBon\fR | \fBoff\fR]
+.RS
+Enable or disable tracking of the permutation of scalarset values for more
+comprehensible counterexample traces. The permuting of scalarset values that is
+performed during symmetry reduction leads to paths in the state space where a
+single scalarset identity does not have the same value throughout the trace.
+When this option is \fBon\fR (the default), Rumur tracks these permutations and
+takes them into account when printing scalarset values or reconstructing
+counterexample traces. The result is more intuitive and easily understandable
+traces. Turning this \fBoff\fR may gain runtime performance on models that use
+scalarsets. However counterexample traces will likely be confusing in this
+configuration, as scalarset variables will appear to have their values change
+arbitrarily.
+.RE
+.PP
 \fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
 .RS
 The size of the initial set to allocate for storing seen states. This is given
