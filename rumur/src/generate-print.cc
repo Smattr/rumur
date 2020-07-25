@@ -4,6 +4,7 @@
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>
+#include "options.h"
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
@@ -188,15 +189,15 @@ class Generator : public ConstTypeTraversal {
         // generate previous schedule retrieval
         *out
           << "  size_t " << p_sch << "[" << b.get_str() << "ull];\n"
-          << "  /* setup a default identity mapping for when symmetry\n"
-          << "   * reduction is off\n"
+          << "  /* setup a default identity mapping for when scalarset\n"
+          << "   * schedules are not in use\n"
           << "   */\n"
           << "  for (size_t i = 0; i < " << b.get_str() << "ull; ++i) {\n"
           << "    " << p_sch << "[i] = i;\n"
           << "  }\n";
         if (support_diff) {
           *out
-            << "  if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && previous != NULL) {\n"
+            << "  if (USE_SCALARSET_SCHEDULES && previous != NULL) {\n"
             << "    size_t index = schedule_read_" << id->name << "(previous);\n"
             << "    size_t stack[" << b.get_str() << "ull];\n"
             << "    index_to_permutation(index, " << p_sch << ", stack, (size_t)"
@@ -207,13 +208,13 @@ class Generator : public ConstTypeTraversal {
         // generate schedule retrieval
         *out
           << "  size_t " << sch << "[" << b.get_str() << "ull];\n"
-          << "  /* setup a default identity mapping for when symmetry\n"
-          << "   * reduction is off\n"
+          << "  /* setup a default identity mapping for when scalarset\n"
+          << "   * schedules are not in use\n"
           << "   */\n"
           << "  for (size_t i = 0; i < " << b.get_str() << "ull; ++i) {\n"
           << "    " << sch << "[i] = i;\n"
           << "  }\n"
-          << "  if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF) {\n"
+          << "  if (USE_SCALARSET_SCHEDULES) {\n"
           << "    size_t index = schedule_read_" << id->name << "(s);\n"
           << "    size_t stack[" << b.get_str() << "ull];\n"
           << "    index_to_permutation(index, " << sch << ", stack, (size_t)"
@@ -276,7 +277,7 @@ class Generator : public ConstTypeTraversal {
       // construct a textual description of the current element
       Printf p = prefix;
       p << "[";
-      if (id != nullptr)
+      if (options.scalarset_schedules && id != nullptr)
         p << id->name << "_";
       p.add_val(i);
       p << "]";
@@ -438,7 +439,7 @@ class Generator : public ConstTypeTraversal {
     // did we identify the schedule mapping for this type?
     if (schedule_type != nullptr) {
       *out
-        << "    if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && v_previous != 0) {\n"
+        << "    if (USE_SCALARSET_SCHEDULES && v_previous != 0) {\n"
         << "      if (COUNTEREXAMPLE_TRACE == CEX_OFF) {\n"
         << "        assert(PRINTS_SCALARSETS && \"accessing a scalarset \"\n"
         << "          \"schedule which was unanticipated; bug in\"\n"
@@ -474,7 +475,7 @@ class Generator : public ConstTypeTraversal {
     // did we identify the schedule mapping for this type?
     if (schedule_type != nullptr) {
       *out
-        << "    } else if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF) {\n"
+        << "    } else if (USE_SCALARSET_SCHEDULES) {\n"
         << "      if (COUNTEREXAMPLE_TRACE == CEX_OFF) {\n"
         << "        assert(PRINTS_SCALARSETS && \"accessing a scalarset \"\n"
         << "          \"schedule which was unanticipated; bug in\"\n"
