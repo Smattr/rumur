@@ -646,7 +646,7 @@ struct state {
   uint64_t bound;
   const struct state *previous;
   uint64_t rule_taken;
-  uint8_t schedules[BITS_TO_BYTES(SCHEDULE_BITS)];
+  uint8_t schedules[USE_SCALARSET_SCHEDULES ? BITS_TO_BYTES(SCHEDULE_BITS) : 0];
 #endif
 };
 
@@ -1463,10 +1463,12 @@ static struct state *state_dup(const struct state *NONNULL s) {
   memset(n->liveness, 0, sizeof(n->liveness));
 #endif
 
-  /* copy schedule data related to past scalarset permutations */
-  struct handle sch_src = state_schedule_handle(s, 0, SCHEDULE_BITS);
-  struct handle sch_dst = state_schedule_handle(n, 0, SCHEDULE_BITS);
-  handle_copy(sch_dst, sch_src);
+  if (USE_SCALARSET_SCHEDULES) {
+    /* copy schedule data related to past scalarset permutations */
+    struct handle sch_src = state_schedule_handle(s, 0, SCHEDULE_BITS);
+    struct handle sch_dst = state_schedule_handle(n, 0, SCHEDULE_BITS);
+    handle_copy(sch_dst, sch_src);
+  }
 
   return n;
 }
