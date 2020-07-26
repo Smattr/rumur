@@ -63,7 +63,8 @@ enum { BOUND_BITS = BITS_FOR(BOUND) };
   enum { RULE_TAKEN_BITS = 0 };
 #endif
 enum { STATE_OTHER_BYTES
-  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS) };
+  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS
+  + (USE_SCALARSET_SCHEDULES ? SCHEDULE_BITS : 0)) };
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
@@ -635,6 +636,7 @@ struct state {
    *  * uint64_t bound;
    *  * const struct state *previous;
    *  * uint64_t rule_taken;
+   *  * uint8_t schedules[BITS_TO_BYTES(SCHEDULE_BITS)];
    *
    * They are bit-packed, so may take up less space. E.g. if the maximum value
    * of `bound` is known to be 5, it will be stored in 3 bits instead of 64.
@@ -644,6 +646,7 @@ struct state {
   uint64_t bound;
   const struct state *previous;
   uint64_t rule_taken;
+  uint8_t schedules[BITS_TO_BYTES(SCHEDULE_BITS)];
 #endif
 };
 
@@ -1140,6 +1143,66 @@ static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
 }
 #endif
 
+static struct handle state_schedule_handle(const struct state *NONNULL s,
+    size_t offset, size_t width) {
+
+  /* the maximum schedule width handle ever derived should be SCHEDULE_BITS, and
+   * should only ever occur when writing the entire schedule
+   */
+#if !defined(__clang__) && defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  ASSERT(width <= SCHEDULE_BITS && (width < SCHEDULE_BITS || offset == 0)
+    && "out-of-bounds handle derived to access schedule data");
+#if !defined(__clang__) && defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  uint8_t *b;
+  size_t o;
+
+#if PACK_STATE
+  b = (uint8_t*)s->other;
+  o = BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS + offset;
+#else
+  b = (uint8_t*)s->schedules;
+  o = offset;
+#endif
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)b + o / 8,
+    .offset = o % 8,
+    .width = width,
+  };
+
+  return h;
+}
+
+static __attribute__((pure, unused)) size_t state_schedule_get(
+    const struct state *NONNULL s, size_t offset, size_t width) {
+  assert(s != NULL);
+
+  struct handle h = state_schedule_handle(s, offset, width);
+  return (size_t)read_raw(h);
+}
+
+static __attribute__((unused)) void state_schedule_set(
+    struct state *NONNULL s, size_t offset, size_t width, size_t v) {
+  assert(s != NULL);
+
+  /* we should never attempt to write an invalid schedule index that will be
+   * truncated
+   */
+  if (width < 64) {
+    ASSERT((((UINT64_C(1) << width) - 1) & (uint64_t)v) == (uint64_t)v
+      && "truncation in writing schedule data to state");
+  }
+
+  struct handle h = state_schedule_handle(s, offset, width);
+  write_raw(h, (uint64_t)v);
+}
+
 /*******************************************************************************
  * State allocator.                                                            *
  *                                                                             *
@@ -1384,6 +1447,8 @@ static bool state_eq(const struct state *NONNULL a,
   return state_cmp(a, b) == 0;
 }
 
+static void handle_copy(struct handle a, struct handle b);
+
 static struct state *state_dup(const struct state *NONNULL s) {
   struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
@@ -1397,6 +1462,12 @@ static struct state *state_dup(const struct state *NONNULL s) {
 #if LIVENESS_COUNT > 0
   memset(n->liveness, 0, sizeof(n->liveness));
 #endif
+
+  /* copy schedule data related to past scalarset permutations */
+  struct handle sch_src = state_schedule_handle(s, 0, SCHEDULE_BITS);
+  struct handle sch_dst = state_schedule_handle(n, 0, SCHEDULE_BITS);
+  handle_copy(sch_dst, sch_src);
+
   return n;
 }
 
@@ -1671,8 +1742,7 @@ static __attribute__((unused)) void handle_zero(struct handle h) {
   }
 }
 
-static __attribute__((unused)) void handle_copy(struct handle a,
-    struct handle b) {
+static void handle_copy(struct handle a, struct handle b) {
 
   ASSERT(a.width == b.width && "copying between handles of different sizes");
 
@@ -1955,6 +2025,110 @@ static value_t rsh(value_t a, value_t b) {
  */
 static __attribute__((unused)) value_t bnot(value_t v) {
   return (value_t)~(raw_value_t)v;
+}
+
+/* use Heap's algorithm for generating permutations to implement a
+ * permutation-to-number mapping
+ */
+static __attribute__((unused)) size_t permutation_to_index(
+    const size_t *NONNULL permutation, size_t *NONNULL stack,
+    size_t *NONNULL working, size_t count) {
+
+  /* byte extent of the permutation arrays */
+  size_t bytes = sizeof(permutation[0]) * count;
+
+  size_t index = 0;
+
+  /* clear our stack */
+  memset(stack, 0, bytes);
+
+  /* initialise the first (identity) permutation */
+  for (size_t i = 0; i < count; ++i) {
+    working[i] = i;
+  }
+
+  if (memcmp(permutation, working, bytes) == 0) {
+    return index;
+  }
+
+  size_t i = 0;
+  while (i < count) {
+    if (stack[i] < i) {
+      ++index;
+      if (i % 2 == 0) {
+        /* swap working[0] and working[i] */
+        size_t tmp = working[0];
+        working[0] = working[i];
+        working[i] = tmp;
+      } else {
+        /* swap working[stack[i]] and working[i] */
+        size_t tmp = working[stack[i]];
+        working[stack[i]] = working[i];
+        working[i] = tmp;
+      }
+      if (memcmp(permutation, working, bytes) == 0) {
+        return index;
+      }
+      ++stack[i];
+      i = 0;
+    } else {
+      stack[i] = 0;
+      ++i;
+    }
+  }
+
+  /* the permutation should have been one of the possible ones */
+  ASSERT(!"invalid permutation passed to permutation_to_index");
+}
+static __attribute__((unused)) void index_to_permutation(size_t index,
+    size_t *NONNULL permutation, size_t *NONNULL stack,
+    size_t count) {
+
+  /* byte extent of the permutation arrays */
+  size_t bytes = sizeof(permutation[0]) * count;
+
+  size_t ind = 0;
+
+  /* clear our stack */
+  memset(stack, 0, bytes);
+
+  /* initialise the first (identity) permutation */
+  for (size_t i = 0; i < count; ++i) {
+    permutation[i] = i;
+  }
+
+  if (ind == index) {
+    return;
+  }
+
+  size_t i = 0;
+  while (i < count) {
+    if (stack[i] < i) {
+      ++ind;
+      if (i % 2 == 0) {
+        /* swap permutation[0] and permutation[i] */
+        size_t tmp = permutation[0];
+        permutation[0] = permutation[i];
+        permutation[i] = tmp;
+      } else {
+        /* swap permutation[stack[i]] and permutation[i] */
+        size_t tmp = permutation[stack[i]];
+        permutation[stack[i]] = permutation[i];
+        permutation[i] = tmp;
+      }
+      if (ind == index) {
+        return;
+      }
+      ++stack[i];
+      i = 0;
+    } else {
+      stack[i] = 0;
+      ++i;
+    }
+  }
+
+  /* the target permutation should have been one of the possible ones */
+  ASSERT(!"invalid index passed to index_to_permutation");
 }
 
 /*******************************************************************************

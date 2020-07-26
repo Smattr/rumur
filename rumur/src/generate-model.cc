@@ -20,6 +20,10 @@ static std::string rule_name_string(const Rule &r, size_t index) {
 
 void generate_model(std::ostream &out, const Model &m) {
 
+  // Write out the symmetry reduction canonicalisation function
+  generate_canonicalise(m, out);
+  out << "\n\n";
+
   // Generate each defined constant.
   for (const Ptr<Decl> &d : m.decls) {
     if (isa<ConstDecl>(d)) {
@@ -731,10 +735,6 @@ void generate_model(std::ostream &out, const Model &m) {
       << "\n";
   }
 
-  // Write out the symmetry reduction canonicalisation function
-  generate_canonicalise(m, out);
-  out << "\n\n";
-
   // Write initialisation
   {
     out
@@ -1078,6 +1078,34 @@ void generate_model(std::ostream &out, const Model &m) {
                 << "      else {\n"
                 << "        ASSERT(!\"illegal value for " << q.name << "\");\n"
                 << "      }\n";
+            } else if (isa<Scalarset>(t)) {
+
+              // figure out if this is a named scalarset (i.e. ony eligible for
+              // symmetry reduction)
+              auto id = dynamic_cast<const TypeExprID*>(q.type.get());
+
+              if (id != nullptr) {
+
+                // remove any levels of indirection (TypeExprIDs of TypeExprIDs)
+                while (auto inner = dynamic_cast<const TypeExprID*>(id->referent->value.get()))
+                  id = inner;
+
+                // We do not need to do any schedule reversal because this is a
+                // start state. I.e. the implicit schedule under which this
+                // parameter was chosen is the identity permutation.
+
+                // dump the symbolic value of this parameter
+                out
+                  << "        printf(\"%s_%\" PRIVAL, \"" << escape(id->name)
+                    << "\", value_to_string(v));\n";
+
+              } else {
+                // this scalarset seems not eligible for symmetry reduction
+                // (declared inline rather than as a TypeDecl), so fall back on
+                // just printing its value
+                out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
+              }
+
             } else {
               out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
             }
@@ -1187,6 +1215,61 @@ void generate_model(std::ostream &out, const Model &m) {
                 << "      else {\n"
                 << "        ASSERT(!\"illegal value for " << q.name << "\");\n"
                 << "      }\n";
+            } else if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
+
+              // open a scope to contain the schedule computation variables
+              out << "      {\n";
+
+              const std::string b
+                = "((size_t)" + s->bound->constant_fold().get_str() + "ull)";
+
+              // figure out if this is a named scalarset (i.e. ony eligible for
+              // symmetry reduction)
+              auto id = dynamic_cast<const TypeExprID*>(q.type.get());
+
+              if (id != nullptr) {
+
+                // remove any levels of indirection (TypeExprIDs of TypeExprIDs)
+                while (auto inner = dynamic_cast<const TypeExprID*>(id->referent->value.get()))
+                  id = inner;
+
+                // generate schedule retrieval
+                out
+                  << "        size_t schedule[" << b << "];\n"
+                  << "        /* setup a default identity mapping for when\n"
+                  << "         * symmetry reduction is off\n"
+                  << "         */\n"
+                  << "        for (size_t i = 0; i < " << b << "; ++i) {\n"
+                  << "          schedule[i] = i;\n"
+                  << "        }\n"
+                  << "        if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF) {\n"
+                  // note that we read from the *previous* state’s schedule here
+                  // because that is what this value is relative to
+                  << "          size_t index = schedule_read_" << id->name << "(state_previous_get(s));\n"
+                  << "          size_t stack[" << b << "];\n"
+                  << "          index_to_permutation(index, schedule, stack, " << b << ");\n"
+                  << "        }\n";
+
+                // map the parameter value through the retrieved permutation
+                out
+                  << "        assert((size_t)v < " << b << " && \"illegal scalarset "
+                    << " parameter recorded\");\n"
+                  << "        v = (value_t)schedule[(size_t)v];\n";
+
+                // dump the resulting symbolic value
+                out
+                  << "        printf(\"%s_%\" PRIVAL, \"" << escape(id->name)
+                    << "\", value_to_string(v));\n";
+
+              } else {
+                // this scalarset seems not eligible for symmetry reduction
+                // (declared inline rather than as a TypeDecl), so fall back on
+                // just printing its value
+                out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
+              }
+
+              out << "}\n";
+
             } else {
               out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
             }

@@ -12,8 +12,7 @@
 
 using namespace rumur;
 
-// Find all the named scalarset declarations in a model.
-static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
+std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
   for (const Ptr<Decl> &d : m.decls) {
     if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
@@ -22,6 +21,39 @@ static std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
     }
   }
   return ss;
+}
+
+// XXX: GMP 6.2.0 contains a function for this, but we want to retain
+// compatibility with older GMP
+static mpz_class factorial(mpz_class v) {
+
+  assert(v >= 0);
+
+  mpz_class r = 1;
+
+  while (v != 0) {
+    r *= v;
+    --v;
+  }
+
+  return r;
+}
+
+mpz_class get_schedule_width(const TypeDecl &t) {
+
+  auto s = dynamic_cast<const Scalarset*>(t.value.get());
+  assert(s != nullptr && "non-scalarset passed to get_schedule_width()");
+
+  // how many unique non-undefined values of this scalarset are there?
+  mpz_class bound = s->count() - 1;
+  assert(bound > 0);
+
+  // how many permutations of this many values are there?
+  mpz_class perm = factorial(bound);
+  assert(perm > 0);
+
+  // and how many bits do we need to store this many values?
+  return bit_width(perm);
 }
 
 // Generate application of a swap of two state components
@@ -187,6 +219,30 @@ static void generate_swap(const Model &m, std::ostream &out,
   out << "}\n\n";
 }
 
+static void generate_schedule_reader(std::ostream &out, const TypeDecl &pivot,
+    const mpz_class &offset, const mpz_class &width) {
+
+  out
+    << "static size_t schedule_read_" << pivot.name
+      << "(const struct state *NONNULL s) {\n"
+    << "  assert(s != NULL);\n"
+    << "  return state_schedule_get(s, " << offset.get_str() << "ul, "
+      << width.get_str() << "ul);\n"
+    << "}\n";
+}
+
+static void generate_schedule_writer(std::ostream &out, const TypeDecl &pivot,
+    const mpz_class &offset, const mpz_class &width) {
+
+  out
+    << "static void schedule_write_" << pivot.name
+      << "(struct state *NONNULL s, size_t schedule_index) {\n"
+    << "  assert(s != NULL);\n"
+    << "  state_schedule_set(s, " << offset.get_str() << "ul, "
+      << width.get_str() << "ul, schedule_index);\n"
+    << "}\n";
+}
+
 static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     size_t level, std::ostream &out) {
 
@@ -207,15 +263,44 @@ static void generate_loop_header(const TypeDecl &scalarset, size_t index,
     << indent << "}\n\n"
 
     << indent << "{\n"
-    << indent << "  size_t schedule_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
+    << indent << "  size_t stack_" << scalarset.name << "[" << bound << "] = { 0 };\n\n"
+
+    << indent << "  size_t schedule_" << scalarset.name << "[" << bound << "] = { 0 };\n"
+    << indent << "  if (USE_SCALARSET_SCHEDULES) {\n"
+    << indent << "    size_t stack[" << bound << "];\n"
+    << indent << "    size_t index = schedule_read_" << scalarset.name
+      << "(&candidate);\n"
+    << indent << "    index_to_permutation(index, schedule_" << scalarset.name
+      << ", stack, " << bound << ");\n"
+    << indent << "  }\n\n"
 
     << indent << "  for (size_t " << i << " = 0; " << i << " < " << bound << "; ) {\n"
-    << indent << "    if (schedule_" << scalarset.name << "[" << i << "] < " << i << ") {\n"
+    << indent << "    if (stack_" << scalarset.name << "[" << i << "] < " << i << ") {\n"
     << indent << "      if (" << i << " % 2 == 0) {\n"
     << indent << "        swap_" << scalarset.name << "(&candidate, 0, " << i << ");\n"
+    << indent << "        size_t tmp = schedule_" << scalarset.name << "[0];\n"
+    << indent << "        schedule_" << scalarset.name << "[0] = schedule_"
+      << scalarset.name << "[" << i << "];\n"
+    << indent << "        schedule_" << scalarset.name << "[" << i << "] = tmp;\n"
     << indent << "      } else {\n"
-    << indent << "        swap_" << scalarset.name << "(&candidate, schedule_"
+    << indent << "        swap_" << scalarset.name << "(&candidate, stack_"
       << scalarset.name << "[" << i << "], " << i << ");\n"
+    << indent << "        size_t tmp = schedule_" << scalarset.name << "[stack_"
+      << scalarset.name << "[" << i << "]];\n"
+    << indent << "        schedule_" << scalarset.name << "[stack_"
+      << scalarset.name << "[" << i << "]] = schedule_" << scalarset.name << "["
+      << i << "];\n"
+    << indent << "        schedule_" << scalarset.name << "[" << i << "] = tmp;\n"
+    << indent << "      }\n"
+    << indent << "      /* save selected schedule to map this back for later more\n"
+    << indent << "       * comprehensible counterexample traces\n"
+    << indent << "       */\n"
+    << indent << "      if (USE_SCALARSET_SCHEDULES) {\n"
+    << indent << "        size_t stack[" << bound << "];\n"
+    << indent << "        size_t working[" << bound << "];\n"
+    << indent << "        size_t index = permutation_to_index(schedule_"
+      << scalarset.name << ", stack, working, " << bound << ");\n"
+    << indent << "        schedule_write_" << scalarset.name << "(&candidate, index);\n"
     << indent << "      }\n";
 }
 
@@ -229,10 +314,10 @@ static void generate_loop_footer(const TypeDecl &scalarset, size_t index,
   const std::string i = "i" + std::to_string(index);
 
   out
-    << indent << "      schedule_" << scalarset.name << "[" << i << "]++;\n"
+    << indent << "      stack_" << scalarset.name << "[" << i << "]++;\n"
     << indent << "      " << i << " = 0;\n"
     << indent << "    } else {\n"
-    << indent << "      schedule_" << scalarset.name << "[" << i << "] = 0;\n"
+    << indent << "      stack_" << scalarset.name << "[" << i << "] = 0;\n"
     << indent << "      " << i << "++;\n"
     << indent << "    }\n"
     << indent << "  }\n"
@@ -521,7 +606,7 @@ static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
 
   out
     << "static void sort_" << pivot.name << "(struct state *s, "
-      << "size_t lower, size_t upper) {\n"
+      << "size_t *schedule, size_t lower, size_t upper) {\n"
     << "\n"
     << "  /* If we have nothing to sort, bail out. */\n"
     << "  if (lower >= upper) {\n"
@@ -553,6 +638,11 @@ static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
     << "\n"
     << "    /* Swap elements i and j. */\n"
     << "    swap_" << pivot.name << "(s, i, j);\n"
+    << "    {\n"
+    << "      size_t tmp = schedule[i];\n"
+    << "      schedule[i] = schedule[j]; \n"
+    << "      schedule[j] = tmp;\n"
+    << "    }\n"
     << "    if (i == pivot) {\n"
     << "      pivot = j;\n"
     << "    } else if (j == pivot) {\n"
@@ -560,8 +650,8 @@ static void generate_sort(std::ostream &out, const TypeDecl &pivot) {
     << "    }\n"
     << "  }\n"
     << "\n"
-    << "  sort_" << pivot.name << "(s, lower, j);\n"
-    << "  sort_" << pivot.name << "(s, j + 1, upper);\n"
+    << "  sort_" << pivot.name << "(s, schedule, lower, j);\n"
+    << "  sort_" << pivot.name << "(s, schedule, j + 1, upper);\n"
     << "}\n";
 }
 
@@ -588,8 +678,32 @@ static void generate_canonicalise_heuristic(const Model &m,
 
     mpz_class bound = s->count() - 1;
 
-    out << "  sort_" << t->name << "(s, 0, ((size_t)" << bound.get_str()
-      << "ull) - 1);\n";
+    out
+      << "  {\n"
+      << "    size_t schedule[(size_t)" << bound.get_str() << "ull];\n"
+      << "    for (size_t i = 0; i < sizeof(schedule) / sizeof(schedule[0]); "
+        << "++i) {\n"
+      << "      schedule[i] = i;\n"
+      << "    }\n"
+      << "    if (USE_SCALARSET_SCHEDULES) {\n"
+      << "      size_t index = schedule_read_" << t->name << "(s);\n"
+      << "      size_t stack[(size_t)" << bound.get_str() << "ull];\n"
+      << "      index_to_permutation(index, schedule, stack, " << bound.get_str()
+        << "ull);\n"
+      << "    }\n"
+      << "    sort_" << t->name << "(s, schedule, 0, ((size_t)"
+        << bound.get_str() << "ull) - 1);\n"
+      << "    /* save selected schedule to map this back for later more\n"
+      << "     * comprehensible counterexample traces\n"
+      << "     */\n"
+      << "    if (USE_SCALARSET_SCHEDULES) {\n"
+      << "      size_t stack[(size_t)" << bound.get_str() << "ull];\n"
+      << "      size_t working[(size_t)" << bound.get_str() << "ull];\n"
+      << "      size_t index = permutation_to_index(schedule, stack, working, "
+        << bound.get_str() << "ull);\n"
+      << "      schedule_write_" << t->name << "(s, index);\n"
+      << "    }\n"
+      << "  }\n";
   }
 
   out
@@ -604,6 +718,18 @@ void generate_canonicalise(const Model &m, std::ostream &out) {
   // Generate functions to swap state elements with respect to each scalarset
   for (const TypeDecl *t : scalarsets)
     generate_swap(m, out, *t);
+
+  // generate functions to read and write schedule (which permutation was
+  // selected) data
+  {
+    mpz_class offset = 0;
+    for (const TypeDecl *t : scalarsets) {
+      const mpz_class width = get_schedule_width(*t);
+      generate_schedule_reader(out, *t, offset, width);
+      generate_schedule_writer(out, *t, offset, width);
+      offset += width;
+    }
+  }
 
   generate_canonicalise_exhaustive(scalarsets, out);
 

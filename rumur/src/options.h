@@ -98,6 +98,9 @@ struct Options {
   // whether to optimise state variable and record fields ordering
   bool reorder_fields = true;
 
+  // whether to track schedules during scalarset permutation
+  bool scalarset_schedules = true;
+
   // options related to SMT solver interaction
   struct {
 

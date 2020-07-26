@@ -17,6 +17,7 @@ _arguments \
   {--quiet,-q}'[suppress output while generating verifier]' \
   '--reorder-fields[optimise state variable and record field order]: :(on off)' \
   '--sandbox[verifier privilege restriction]: :(on off)' \
+  '--scalarset-schedules[track scalarset permutations]: :(on off)' \
   {--set-capacity,-s}'[initial memory (in bytes) to allocate for the seen set]:SIZE' \
   {--set-expand-threshold,-e}'[limit at which to expand the seen set]:occupancy percentage' \
   '--smt-arg[argument to pass to SMT solver]:ARG' \

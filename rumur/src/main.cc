@@ -60,6 +60,7 @@ static void parse_args(int argc, char **argv) {
       OPT_PACK_STATE,
       OPT_REORDER_FIELDS,
       OPT_SANDBOX,
+      OPT_SCALARSET_SCHEDULES,
       OPT_SMT_ARG,
       OPT_SMT_BITVECTORS,
       OPT_SMT_BUDGET,
@@ -90,6 +91,7 @@ static void parse_args(int argc, char **argv) {
       { "quiet", no_argument, 0, 'q' },
       { "reorder-fields", required_argument, 0, OPT_REORDER_FIELDS },
       { "sandbox", required_argument, 0, OPT_SANDBOX },
+      { "scalarset-schedules", required_argument, 0, OPT_SCALARSET_SCHEDULES },
       { "set-capacity", required_argument, 0, 's' },
       { "set-expand-threshold", required_argument, 0, 'e' },
       { "smt-arg", required_argument, 0, OPT_SMT_ARG },
@@ -306,6 +308,18 @@ static void parse_args(int argc, char **argv) {
           options.sandbox_enabled = false;
         } else {
           std::cerr << "invalid argument to --sandbox, \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+        break;
+
+      case OPT_SCALARSET_SCHEDULES: // --scalarset-schedules ...
+        if (strcmp(optarg, "on") == 0) {
+          options.scalarset_schedules = true;
+        } else if (strcmp(optarg, "off") == 0) {
+          options.scalarset_schedules = false;
+        } else {
+          std::cerr << "invalid argument to --scalarset-schedules, \"" << optarg
+            << "\"\n";
           exit(EXIT_FAILURE);
         }
         break;
