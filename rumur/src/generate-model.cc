@@ -1242,7 +1242,7 @@ void generate_model(std::ostream &out, const Model &m) {
                   << "        for (size_t i = 0; i < " << b << "; ++i) {\n"
                   << "          schedule[i] = i;\n"
                   << "        }\n"
-                  << "        if (SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF) {\n"
+                  << "        if (USE_SCALARSET_SCHEDULES) {\n"
                   // note that we read from the *previous* state’s schedule here
                   // because that is what this value is relative to
                   << "          size_t index = schedule_read_" << id->name << "(state_previous_get(s));\n"
