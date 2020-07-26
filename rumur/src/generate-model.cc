@@ -1256,10 +1256,14 @@ void generate_model(std::ostream &out, const Model &m) {
                     << " parameter recorded\");\n"
                   << "        v = (value_t)schedule[(size_t)v];\n";
 
-                // dump the resulting symbolic value
+                // dump the resulting value
                 out
-                  << "        printf(\"%s_%\" PRIVAL, \"" << escape(id->name)
-                    << "\", value_to_string(v));\n";
+                  << "        if (USE_SCALARSET_SCHEDULES) {\n"
+                  << "          printf(\"%s_%\" PRIVAL, \"" << escape(id->name)
+                    << "\", value_to_string(v));\n"
+                  << "        } else {\n"
+                  << "          printf(\"%\" PRIVAL, value_to_string(v));\n"
+                  << "        }\n";
 
               } else {
                 // this scalarset seems not eligible for symmetry reduction
