@@ -1,6 +1,24 @@
 Change log
 ==========
 
+v2020.07.28
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The permutations applied when shuffling scalarsets are now tracked and later
+  used to reconstruct symbolic scalarset values for counterexample traces and
+  print statements. The effect is that counterexample traces now make more
+  intuitive sense because symmetry reduction does not interfere with
+  interpreting scalarset values. This behaviour is controllable via the
+  ``--scalarset-schedules`` command line option. See the manpage for more
+  information.
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Symtab::is_global_scope()`` which was previously deprecated has now been
+  removed (commit 7959973ce9345d16718a16b741d754c5e64bbc9e).
+
 v2020.07.11
 -----------
 
