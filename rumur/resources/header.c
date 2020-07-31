@@ -63,7 +63,8 @@ enum { BOUND_BITS = BITS_FOR(BOUND) };
   enum { RULE_TAKEN_BITS = 0 };
 #endif
 enum { STATE_OTHER_BYTES
-  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS) };
+  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS
+  + (USE_SCALARSET_SCHEDULES ? SCHEDULE_BITS : 0)) };
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
@@ -432,6 +433,26 @@ static const char *reset() {
   }
 #endif
 
+/* Is value_t a signed type? We need this as a function because value_t is a
+ * typedef that can be tweaked by the user.
+ */
+static __attribute__((const)) bool value_is_signed(void) {
+#ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-compare"
+  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  return (value_t)-1 < 0;
+#ifdef __clang__
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+}
+
 /*******************************************************************************
  * MurmurHash by Austin Appleby                                                *
  *                                                                             *
@@ -615,6 +636,7 @@ struct state {
    *  * uint64_t bound;
    *  * const struct state *previous;
    *  * uint64_t rule_taken;
+   *  * uint8_t schedules[BITS_TO_BYTES(SCHEDULE_BITS)];
    *
    * They are bit-packed, so may take up less space. E.g. if the maximum value
    * of `bound` is known to be 5, it will be stored in 3 bits instead of 64.
@@ -624,6 +646,7 @@ struct state {
   uint64_t bound;
   const struct state *previous;
   uint64_t rule_taken;
+  uint8_t schedules[USE_SCALARSET_SCHEDULES ? BITS_TO_BYTES(SCHEDULE_BITS) : 0];
 #endif
 };
 
@@ -1120,6 +1143,66 @@ static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
 }
 #endif
 
+static struct handle state_schedule_handle(const struct state *NONNULL s,
+    size_t offset, size_t width) {
+
+  /* the maximum schedule width handle ever derived should be SCHEDULE_BITS, and
+   * should only ever occur when writing the entire schedule
+   */
+#if !defined(__clang__) && defined(__GNUC__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+  ASSERT(width <= SCHEDULE_BITS && (width < SCHEDULE_BITS || offset == 0)
+    && "out-of-bounds handle derived to access schedule data");
+#if !defined(__clang__) && defined(__GNUC__)
+  #pragma GCC diagnostic pop
+#endif
+
+  uint8_t *b;
+  size_t o;
+
+#if PACK_STATE
+  b = (uint8_t*)s->other;
+  o = BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS + offset;
+#else
+  b = (uint8_t*)s->schedules;
+  o = offset;
+#endif
+
+  struct handle h = (struct handle){
+    .base = (uint8_t*)b + o / 8,
+    .offset = o % 8,
+    .width = width,
+  };
+
+  return h;
+}
+
+static __attribute__((pure, unused)) size_t state_schedule_get(
+    const struct state *NONNULL s, size_t offset, size_t width) {
+  assert(s != NULL);
+
+  struct handle h = state_schedule_handle(s, offset, width);
+  return (size_t)read_raw(h);
+}
+
+static __attribute__((unused)) void state_schedule_set(
+    struct state *NONNULL s, size_t offset, size_t width, size_t v) {
+  assert(s != NULL);
+
+  /* we should never attempt to write an invalid schedule index that will be
+   * truncated
+   */
+  if (width < 64) {
+    ASSERT((((UINT64_C(1) << width) - 1) & (uint64_t)v) == (uint64_t)v
+      && "truncation in writing schedule data to state");
+  }
+
+  struct handle h = state_schedule_handle(s, offset, width);
+  write_raw(h, (uint64_t)v);
+}
+
 /*******************************************************************************
  * State allocator.                                                            *
  *                                                                             *
@@ -1364,6 +1447,8 @@ static bool state_eq(const struct state *NONNULL a,
   return state_cmp(a, b) == 0;
 }
 
+static void handle_copy(struct handle a, struct handle b);
+
 static struct state *state_dup(const struct state *NONNULL s) {
   struct state *n = state_new();
   memcpy(n->data, s->data, sizeof(n->data));
@@ -1377,6 +1462,14 @@ static struct state *state_dup(const struct state *NONNULL s) {
 #if LIVENESS_COUNT > 0
   memset(n->liveness, 0, sizeof(n->liveness));
 #endif
+
+  if (USE_SCALARSET_SCHEDULES) {
+    /* copy schedule data related to past scalarset permutations */
+    struct handle sch_src = state_schedule_handle(s, 0, SCHEDULE_BITS);
+    struct handle sch_dst = state_schedule_handle(n, 0, SCHEDULE_BITS);
+    handle_copy(sch_dst, sch_src);
+  }
+
   return n;
 }
 
@@ -1651,8 +1744,7 @@ static __attribute__((unused)) void handle_zero(struct handle h) {
   }
 }
 
-static __attribute__((unused)) void handle_copy(struct handle a,
-    struct handle b) {
+static void handle_copy(struct handle a, struct handle b) {
 
   ASSERT(a.width == b.width && "copying between handles of different sizes");
 
@@ -1878,7 +1970,11 @@ static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+  if (value_is_signed() && b <= -(value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b >= (value_t)(sizeof(a) * 8)) {
     return 0;
   }
 
@@ -1904,7 +2000,11 @@ static value_t rsh(value_t a, value_t b) {
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-  if (b <= -(value_t)(sizeof(a) * 8) || b >= (value_t)(sizeof(a) * 8)) {
+  if (value_is_signed() && b <= -(value_t)(sizeof(a) * 8)) {
+    return 0;
+  }
+
+  if (b >= (value_t)(sizeof(a) * 8)) {
     return 0;
   }
 
@@ -1929,47 +2029,108 @@ static __attribute__((unused)) value_t bnot(value_t v) {
   return (value_t)~(raw_value_t)v;
 }
 
-/* A version of quicksort that operates on "schedules," arrays of indices that
- * serve as a proxy for the collection being sorted.
+/* use Heap's algorithm for generating permutations to implement a
+ * permutation-to-number mapping
  */
-static __attribute__((unused)) void sort(
-  int (*NONNULL compare)(const struct state *s, size_t a, size_t b),
-  size_t *NONNULL schedule, struct state *NONNULL s, size_t lower,
-  size_t upper) {
+static __attribute__((unused)) size_t permutation_to_index(
+    const size_t *NONNULL permutation, size_t *NONNULL stack,
+    size_t *NONNULL working, size_t count) {
 
-  /* If we have nothing to sort, bail out. */
-  if (lower >= upper) {
+  /* byte extent of the permutation arrays */
+  size_t bytes = sizeof(permutation[0]) * count;
+
+  size_t index = 0;
+
+  /* clear our stack */
+  memset(stack, 0, bytes);
+
+  /* initialise the first (identity) permutation */
+  for (size_t i = 0; i < count; ++i) {
+    working[i] = i;
+  }
+
+  if (memcmp(permutation, working, bytes) == 0) {
+    return index;
+  }
+
+  size_t i = 0;
+  while (i < count) {
+    if (stack[i] < i) {
+      ++index;
+      if (i % 2 == 0) {
+        /* swap working[0] and working[i] */
+        size_t tmp = working[0];
+        working[0] = working[i];
+        working[i] = tmp;
+      } else {
+        /* swap working[stack[i]] and working[i] */
+        size_t tmp = working[stack[i]];
+        working[stack[i]] = working[i];
+        working[i] = tmp;
+      }
+      if (memcmp(permutation, working, bytes) == 0) {
+        return index;
+      }
+      ++stack[i];
+      i = 0;
+    } else {
+      stack[i] = 0;
+      ++i;
+    }
+  }
+
+  /* the permutation should have been one of the possible ones */
+  ASSERT(!"invalid permutation passed to permutation_to_index");
+}
+static __attribute__((unused)) void index_to_permutation(size_t index,
+    size_t *NONNULL permutation, size_t *NONNULL stack,
+    size_t count) {
+
+  /* byte extent of the permutation arrays */
+  size_t bytes = sizeof(permutation[0]) * count;
+
+  size_t ind = 0;
+
+  /* clear our stack */
+  memset(stack, 0, bytes);
+
+  /* initialise the first (identity) permutation */
+  for (size_t i = 0; i < count; ++i) {
+    permutation[i] = i;
+  }
+
+  if (ind == index) {
     return;
   }
 
-  /* Use Hoare's partitioning algorithm to apply quicksort. */
-  size_t i = lower - 1;
-  size_t j = upper + 1;
-
-  for (;;) {
-
-    do {
-      i++;
-      assert(i >= lower && i <= upper && "out of bounds access in sort()");
-    } while (compare(s, schedule[i], schedule[lower]) < 0);
-
-    do {
-      j--;
-      assert(j >= lower && j <= upper && "out of bounds access in sort()");
-    } while (compare(s, schedule[j], schedule[lower]) > 0);
-
-    if (i >= j) {
-      break;
+  size_t i = 0;
+  while (i < count) {
+    if (stack[i] < i) {
+      ++ind;
+      if (i % 2 == 0) {
+        /* swap permutation[0] and permutation[i] */
+        size_t tmp = permutation[0];
+        permutation[0] = permutation[i];
+        permutation[i] = tmp;
+      } else {
+        /* swap permutation[stack[i]] and permutation[i] */
+        size_t tmp = permutation[stack[i]];
+        permutation[stack[i]] = permutation[i];
+        permutation[i] = tmp;
+      }
+      if (ind == index) {
+        return;
+      }
+      ++stack[i];
+      i = 0;
+    } else {
+      stack[i] = 0;
+      ++i;
     }
-
-    /* Swap elements i and j. */
-    size_t temp = schedule[i];
-    schedule[i] = schedule[j];
-    schedule[j] = temp;
   }
 
-  sort(compare, schedule, s, lower, j);
-  sort(compare, schedule, s, j + 1, upper);
+  /* the target permutation should have been one of the possible ones */
+  ASSERT(!"invalid index passed to index_to_permutation");
 }
 
 /*******************************************************************************
@@ -2194,8 +2355,7 @@ static void reclaim(queue_handle_t h) {
     }
   }
 
-  assert(!"deferred more than `THREADS` reclamations");
-  __builtin_unreachable();
+  ASSERT(!"deferred more than `THREADS` reclamations");
 }
 
 /******************************************************************************/
@@ -3331,19 +3491,10 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
     *target |= mask;
   }
 
-  /* The following looks a little odd. Why do we only initialise this pointer
-   * properly when we have liveness properties? The answer is that the
-   * `previous` pointer in the state struct only exists when we have liveness
-   * properties, so the access would cause a compile error if we did it
-   * unconditionally. We leave the rest of this function visible to the compiler
-   * even when we have no liveness properties to confirm it is syntactically
-   * valid.
-   */
-  struct state *previous = NULL;
   /* Cheat a little and cast away the constness of the previous state for which
    * we may need to update liveness data.
    */
-  previous = state_drop_const(state_previous_get(s));
+  struct state *previous = state_drop_const(state_previous_get(s));
 
   /* If the given bit was already set, we know all the predecessors of this
    * state have already had their corresponding bit marked. However, if it was

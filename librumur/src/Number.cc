@@ -40,11 +40,6 @@ mpz_class Number::constant_fold() const {
   return value;
 }
 
-bool Number::operator==(const Node &other) const {
-  auto o = dynamic_cast<const Number*>(&other);
-  return o != nullptr && value == o->value;
-}
-
 std::string Number::to_string() const {
   return value.get_str();
 }

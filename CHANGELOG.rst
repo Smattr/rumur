@@ -1,6 +1,53 @@
 Change log
 ==========
 
+v2020.07.28
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The permutations applied when shuffling scalarsets are now tracked and later
+  used to reconstruct symbolic scalarset values for counterexample traces and
+  print statements. The effect is that counterexample traces now make more
+  intuitive sense because symmetry reduction does not interfere with
+  interpreting scalarset values. This behaviour is controllable via the
+  ``--scalarset-schedules`` command line option. See the manpage for more
+  information.
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Symtab::is_global_scope()`` which was previously deprecated has now been
+  removed (commit 7959973ce9345d16718a16b741d754c5e64bbc9e).
+
+v2020.07.11
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: using ``&`` or ``|`` within a ``return`` statement would erroneously
+  cause the error “cannot retrieve the type of an unresolved '&' expression.”
+  This has now been corrected (commit 54c79e090a8bd5eb3939f15742e0c45d0c09187e).
+* Bug fix: similar to the above, this error would also occur when using ``&`` or
+  ``|`` within a right shift, ``>>``. This has now been corrected (commit
+  65f4d0d85ab1a1de530c9751a8a4af4b2da4b6b5).
+* Bug fix: similar to the above two items, this error would also occur when
+  using ``&`` or ``|`` within range bounds. This has now been corrected (commit
+  72d2ef5b7c12803af2d1102a11321cc19a77dd55).
+* Bug fix: defining an alias within an ``aliasrule`` whose target was another
+  alias previously defined in the same rule would result in generated code that
+  would not compile. This has now been corrected (commit
+  30408bde597f774330748309633e547f98041e0e).
+* Bug fix: During verification, certain shift operations would erroneously
+  return 0 on some platforms. These now return the correct value (commit
+  e065dcdda6d5d263b95a101ab2e353aed9e49c9f).
+* Printing an array within a model (using a ``put`` statement) results in more
+  efficient generated code (commit b2edcd1ae8408da6c647b7fa7698c2d37c2b8b73).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* ``Node::operator==`` which was previously deprecated has now been removed
+  (commit df26837f4fea6a7da7fa24858ce3383367e33e82).
+
 v2020.06.20
 -----------
 

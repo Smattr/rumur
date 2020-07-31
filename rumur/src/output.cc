@@ -6,9 +6,11 @@
 #include "generate.h"
 #include "max-simple-width.h"
 #include "options.h"
+#include "prints-scalarsets.h"
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include "symmetry-reduction.h"
 #include <utility>
 #include "utils.h"
 #include "ValueType.h"
@@ -152,6 +154,22 @@ static mpz_class rule_taken_limit(const Model &model) {
   return s_max > r_max ? s_max : r_max;
 }
 
+// number of bits required to store schedules (permutation indices) for all the
+// scalarsets in the model
+static mpz_class schedule_bits(const Model &model) {
+
+  mpz_class bits = 0;
+
+  // find all our scalarsets
+  const std::vector<const TypeDecl*> scalarsets = get_scalarsets(model);
+
+  // sum their schedule widths
+  for (const TypeDecl *t : scalarsets)
+    bits += get_schedule_width(*t);
+
+  return bits;
+}
+
 int output_checker(const std::string &path, const Model &model,
     const std::pair<ValueType, ValueType> &value_types) {
 
@@ -186,11 +204,12 @@ int output_checker(const std::string &path, const Model &model,
     << "  DEADLOCK_DETECTION_STUCK,\n"
     << "  DEADLOCK_DETECTION_STUTTERING,\n"
     << "} DEADLOCK_DETECTION = " << options.deadlock_detection << ";\n\n"
-    << "static const enum {\n"
-    << "  SYMMETRY_REDUCTION_OFF,\n"
-    << "  SYMMETRY_REDUCTION_HEURISTIC,\n"
-    << "  SYMMETRY_REDUCTION_EXHAUSTIVE,\n"
-    << "} SYMMETRY_REDUCTION = " << options.symmetry_reduction << ";\n\n"
+    << "enum {\n"
+    << "  SYMMETRY_REDUCTION_OFF = 0,\n"
+    << "  SYMMETRY_REDUCTION_HEURISTIC = 1,\n"
+    << "  SYMMETRY_REDUCTION_EXHAUSTIVE = 2,\n"
+    << "};\n"
+    << "#define SYMMETRY_REDUCTION " << options.symmetry_reduction << "\n\n"
     << "enum { SANDBOX_ENABLED = " << options.sandbox_enabled << " };\n\n"
     << "enum { MAX_ERRORS = " << options.max_errors << "ul };\n\n"
     << "enum { THREADS = " << options.threads << "ul };\n\n"
@@ -215,7 +234,14 @@ int output_checker(const std::string &path, const Model &model,
     << "#define RAW_VALUE_MAX " << value_types.second.int_max << "\n"
     << "#define PRIRAWVAL " << value_types.second.pri << "\n\n"
     << "#define RULE_TAKEN_LIMIT " << rule_taken_limit(model) << "\n"
-    << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n";
+    << "#define PACK_STATE " << (options.pack_state ? 1 : 0) << "\n"
+    << "#define SCHEDULE_BITS " << schedule_bits(model) << "ul\n"
+    << "#define PRINTS_SCALARSETS " << (prints_scalarsets(model) ? "1" : "0") << "\n"
+    << "\n"
+    << "/* whether scalarset schedules should be computed and used during printing */\n"
+    << "#define USE_SCALARSET_SCHEDULES (" << (options.scalarset_schedules ? "1" : "0")
+      << " && SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && \\\n"
+    << "  (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS))\n";
 
   generate_cover_array(out, model);
 

@@ -30,8 +30,6 @@ struct Model : public Node {
   // Get the size of the state data in bits.
   mpz_class size_bits() const;
 
-  // __attribute__((deprecated("operator== will be removed in a future release")))
-  bool operator==(const Node &other) const final;
   void validate() const final;
 
   /* Get the number of global liveness properties in the model. Unlike
