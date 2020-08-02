@@ -1367,8 +1367,8 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
           exit(EXIT_FAILURE);
         }
 
-        char *buffer = xmalloc(size);
-        if (__builtin_expect(vsnprintf(buffer, size, fmt, ap) != size, 0)) {
+        char *buffer = xmalloc(size + 1);
+        if (__builtin_expect(vsnprintf(buffer, size + 1, fmt, ap) != size, 0)) {
           fputs("vsnprintf failed", stderr);
           exit(EXIT_FAILURE);
         }
