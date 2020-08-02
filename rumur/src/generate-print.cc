@@ -19,24 +19,37 @@ namespace {
 class Printf {
 
  private:
-  std::vector<std::string> format;
-  std::vector<std::string> parameters;
+  std::ostringstream result;
 
  public:
-  Printf() { }
+  Printf() {
+    result << "do {";
+  }
 
   explicit Printf(const std::string &s) {
+    result << "do {";
     add_str(s);
   }
 
+  Printf(const Printf &other) {
+    result << other.result.str();
+  }
+
+  Printf &operator=(const Printf &other) {
+    result.str("");
+    result << other.result.str();
+    return *this;
+  }
+
+  Printf(Printf&&) = delete;
+  Printf &operator=(Printf&&) = delete;
+
   void add_str(const std::string &s) {
-    format.push_back("%s");
-    parameters.push_back("\"" + escape(s) + "\"");
+    result << " put(\"" << escape(s) << "\");";
   }
 
   void add_val(const std::string &s) {
-    format.push_back("%\" PRIVAL \"");
-    parameters.push_back("value_to_string(" + s + ")");
+    result << " put_val((value_t)(" << s << "));";
   }
 
   Printf &operator<<(const std::string &s) {
@@ -46,15 +59,7 @@ class Printf {
 
   // construct the final printf call
   std::string str() const {
-    std::ostringstream r;
-    r << "printf(\"";
-    for (const std::string &f : format)
-      r << f;
-    r << "\"";
-    for (const std::string &p : parameters)
-      r << ", " << p;
-    r << ")";
-    return r.str();
+    return result.str() + " } while (0)";
   }
 };
 
@@ -341,20 +346,20 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"\");\n"
+      << "      put(\"<state_component name=\\\"\");\n"
       << "      " << prefix.str() << ";\n"
-      << "      printf(\"\\\" value=\\\"\");\n"
+      << "      put(\"\\\" value=\\\"\");\n"
       << "    } else {\n"
       << "      " << prefix.str() << ";\n"
-      << "      printf(\":\");\n"
+      << "      put(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\");\n";
+      << "      put(\"Undefined\");\n";
     size_t i = 0;
     for (const std::pair<std::string, location> &m : n.members) {
       *out
         << "    } else if (v == VALUE_C(" << (i + 1) << ")) {\n"
-        << "      printf(\"%s\", \"" << m.first << "\");\n";
+        << "      put(\"" << m.first << "\");\n";
       i++;
     }
     *out
@@ -362,9 +367,9 @@ class Generator : public ConstTypeTraversal {
       << "      assert(!\"illegal value for enum\");\n"
       << "    }\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"\\\"/>\");\n"
+      << "      put(\"\\\"/>\");\n"
       << "    }\n"
-      << "    printf(\"\\n\");\n"
+      << "    put(\"\\n\");\n"
       << "  }\n"
       << "}\n";
   }
@@ -386,23 +391,22 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"\");\n"
+      << "      put(\"<state_component name=\\\"\");\n"
       << "      " << prefix.str() << ";\n"
-      << "      printf(\"\\\" value=\\\"\");\n"
+      << "      put(\"\\\" value=\\\"\");\n"
       << "    } else {\n"
       << "      " << prefix.str() << ";\n"
-      << "      printf(\":\");\n"
+      << "      put(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\");\n"
+      << "      put(\"Undefined\");\n"
       << "    } else {\n"
-      << "      printf(\"%\" PRIVAL, value_to_string(decode_value(" << lb << ", "
-        << ub << ", v)));\n"
+      << "      put_val(decode_value(" << lb << ", " << ub << ", v));\n"
       << "    }\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"\\\"/>\");\n"
+      << "      put(\"\\\"/>\");\n"
       << "    }\n"
-      << "    printf(\"\\n\");\n"
+      << "    put(\"\\n\");\n"
       << "  }\n"
       << "}\n";
   }
@@ -462,15 +466,15 @@ class Generator : public ConstTypeTraversal {
       << "  }\n"
       << "  if (previous == NULL || v != v_previous) {\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"<state_component name=\\\"\");\n"
+      << "      put(\"<state_component name=\\\"\");\n"
       << "      " << prefix.str() << ";\n"
-      << "      printf(\"\\\" value=\\\"\");\n"
+      << "      put(\"\\\" value=\\\"\");\n"
       << "    } else {\n"
       << "      " << prefix.str() << ";\n"
-      << "      printf(\":\");\n"
+      << "      put(\":\");\n"
       << "    }\n"
       << "    if (v == 0) {\n"
-      << "      printf(\"Undefined\");\n";
+      << "      put(\"Undefined\");\n";
 
     // did we identify the schedule mapping for this type?
     if (schedule_type != nullptr) {
@@ -491,21 +495,22 @@ class Generator : public ConstTypeTraversal {
         << "      if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
         << "        xml_printf(\"" << escape(schedule_type->name) << "\");\n"
         << "      } else {\n"
-        << "        printf(\"%s\", \"" << escape(schedule_type->name) << "\");\n"
+        << "        put(\"" << escape(schedule_type->name) << "\");\n"
         << "      }\n"
         << "      ASSERT((size_t)v - 1 < " << bound << " && \"illegal scalarset \"\n"
         << "        \"value found during printing\");\n"
-        << "      printf(\"_%zu\", schedule[(size_t)v - 1]);\n";
+        << "      put(\"_\");\n"
+        << "      put_uint(schedule[(size_t)v - 1]);\n";
     }
 
     *out
       << "    } else {\n"
-      << "      printf(\"%\" PRIVAL, value_to_string(v - 1));\n"
+      << "      put_val(v - 1);\n"
       << "    }\n"
       << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
-      << "      printf(\"\\\"/>\");\n"
+      << "      put(\"\\\"/>\");\n"
       << "    }\n"
-      << "    printf(\"\\n\");\n"
+      << "    put(\"\\n\");\n"
       << "  }\n"
       << "}\n";
   }

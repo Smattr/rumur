@@ -498,7 +498,7 @@ void generate_model(std::ostream &out, const Model &m) {
       << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
       << "\n"
       << "  if (!MACHINE_READABLE_OUTPUT) {\n"
-      << "    printf(\"trying to prove remaining liveness constraints...\\n\");\n"
+      << "    put(\"trying to prove remaining liveness constraints...\\n\");\n"
       << "  }\n"
       << "\n"
       << "  /* find how many liveness bits are unknown */\n"
@@ -523,7 +523,9 @@ void generate_model(std::ostream &out, const Model &m) {
       << "\n"
       << "      remaining += unknown_liveness(s);\n"
       << "    }\n"
-      << "    printf(\"\\t %lu constraints remaining\\n\", remaining);\n"
+      << "    put(\"\\t \");\n"
+      << "    put_uint(remaining);\n"
+      << "    put(\" constraints remaining\\n\");\n"
       << "    last_update = gettime();\n"
       << "  }\n"
       << "\n"
@@ -623,8 +625,13 @@ void generate_model(std::ostream &out, const Model &m) {
           << "                remaining -= learned;\n"
           << "                unsigned long long t = gettime();\n"
           << "                if (t > last_update) {\n"
-          << "                  printf(\"\\t %lu further liveness constraints proved in %llus, with %s%lu%s remaining\\n\",\n"
-          << "                    learned_since_last, t - last_update, green(), remaining, reset());\n"
+          << "                  put(\"\\t \");\n"
+          << "                  put_uint(learned_since_last);\n"
+          << "                  put(\" further liveness constraints proved in \");\n"
+          << "                  put_uint(t - last_update);\n"
+          << "                  put(\"s, with \");\n"
+          << "                  put(green()); put_uint(remaining); put(reset());\n"
+          << "                  put(\" remaining\\n\");\n"
           << "                  learned_since_last = 0;\n"
           << "                  last_update = t;\n"
           << "                }\n"
@@ -692,17 +699,21 @@ void generate_model(std::ostream &out, const Model &m) {
             << "        /* missed */\n"
             << "        missed[index] = true;\n"
             << "        if (MACHINE_READABLE_OUTPUT) {\n"
-            << "          printf(\"<error includes_trace=\\\"%s\\\">\\n<message>liveness property \", "
-              << "COUNTEREXAMPLE_TRACE == CEX_OFF ? \"false\" : \"true\");\n"
+            << "          put(\"<error includes_trace=\\\"\");\n"
+            << "          put(COUNTEREXAMPLE_TRACE == CEX_OFF ? \"false\" : \"true\");\n"
+            << "          put(\"\\\">\\n<message>liveness property \");\n"
             << "          xml_printf(\"" << rule_name_string(*p, index) << "\");\n"
-            << "          printf(\" violated</message>\\n\");\n"
+            << "          put(\" violated</message>\\n\");\n"
             << "        } else {\n"
-            << "          printf(\"\\t%s%sliveness property %s violated:%s\\n\", red(), bold(), \""
-              << rule_name_string(*p, index) << "\", reset());\n"
+            << "          put(\"\\t\");\n"
+            << "          put(red()); put(bold());\n"
+            << "          put(\"liveness property " << rule_name_string(*p, index)
+              << " violated:\");\n"
+            << "          put(reset()); put(\"\\n\");\n"
             << "        }\n"
             << "        print_counterexample(s);\n"
             << "        if (MACHINE_READABLE_OUTPUT) {\n"
-            << "          printf(\"</error>\\n\");\n"
+            << "          put(\"</error>\\n\");\n"
             << "        }\n"
             << "      }\n"
             << "      index++;\n";
@@ -917,23 +928,38 @@ void generate_model(std::ostream &out, const Model &m) {
           << "            size_t queue_size = queue_enqueue(n, thread_id);\n"
           << "            queue_id = thread_id;\n"
           << "\n"
-          << "            if (size % 10000 == 0 && print_trylock()) {\n"
+          << "            if (size % 10000 == 0 && ftrylockfile(stdout) == 0) {\n"
           << "              if (MACHINE_READABLE_OUTPUT) {\n"
-          << "                printf(\"<progress states=\\\"%zu\\\" "
-            << "duration_seconds=\\\"%llu\\\" rules_fired=\\\"%\" PRIuMAX \"\\\" "
-            << "queue_size=\\\"%zu\\\" thread_id=\\\"%zu\\\"/>\\n\", size, "
-            << "gettime(), rules_fired_local, queue_size, thread_id);\n"
+          << "                put(\"<progress states=\\\"\");\n"
+          << "                put_uint(size);\n"
+          << "                put(\"\\\" duration_seconds=\\\"\");\n"
+          << "                put_uint(gettime());\n"
+          << "                put(\"\\\" rules_fired=\\\"\");\n"
+          << "                put_uint(rules_fired_local);\n"
+          << "                put(\"\\\" queue_size=\\\"\");\n"
+          << "                put_uint(queue_size);\n"
+          << "                put(\"\\\" thread_id=\\\"\");\n"
+          << "                put_uint(thread_id);\n"
+          << "                put(\"\\\"/>\\n\");\n"
           << "              } else {\n"
-          << "                printf(\"\\t \");\n"
+          << "                put(\"\\t \");\n"
           << "                if (THREADS > 1) {\n"
-          << "                  printf(\"thread %zu: \", thread_id);\n"
+          << "                  put(\"thread \");\n"
+          << "                  put_uint(thread_id);\n"
+          << "                  put(\": \");\n"
           << "                }\n"
-          << "                printf(\"%zu states explored in %llus, with %\" PRIuMAX \" rules \"\n"
-          << "                  \"fired and %s%zu%s states in the queue.\\n\", size, gettime(),\n"
-          << "                  rules_fired_local, queue_size > last_queue_size ? yellow() : green(),\n"
-          << "                  queue_size, reset());\n"
+          << "                put_uint(size);\n"
+          << "                put(\" states explored in \");\n"
+          << "                put_uint(gettime());\n"
+          << "                put(\"s, with \");\n"
+          << "                put_uint(rules_fired_local);\n"
+          << "                put(\" rules fired and \");\n"
+          << "                put(queue_size > last_queue_size ? yellow() : green());\n"
+          << "                put_uint(queue_size);\n"
+          << "                put(reset());\n"
+          << "                put(\" states in the queue.\\n\");\n"
           << "              }\n"
-          << "              print_unlock();\n"
+          << "              funlockfile(stdout);\n"
           << "              last_queue_size = queue_size;\n"
           << "            }\n"
           << "\n"
@@ -1027,12 +1053,11 @@ void generate_model(std::ostream &out, const Model &m) {
         out
           << "  if (state_rule_taken_get(s) == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
-          << "      printf(\"<transition>\");\n"
+          << "      put(\"<transition>\");\n"
           << "      xml_printf(\"Startstate "
             << rule_name_string(*r, index) << "\");\n"
           << "    } else {\n"
-          << "      printf(\"Startstate %s\", \"" << rule_name_string(*r, index)
-            << "\");\n"
+          << "      put(\"Startstate " << rule_name_string(*r, index) << "\");\n"
           << "    }\n";
         {
           size_t i = 0;
@@ -1051,11 +1076,11 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
 
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        printf(\"<parameter name=\\\"\");\n"
+              << "        put(\"<parameter name=\\\"\");\n"
               << "        xml_printf(\"" << q.name << "\");\n"
-              << "        printf(\"\\\">\");\n"
+              << "        put(\"\\\">\");\n"
               << "      } else {\n"
-              << "        printf(\", %s: \", \"" << q.name << "\");\n"
+              << "        put(\", " << q.name << ": \");\n"
               << "      }\n";
 
             const Ptr<TypeExpr> t = q.type->resolve();
@@ -1069,7 +1094,7 @@ void generate_model(std::ostream &out, const Model &m) {
                   << "        if (MACHINE_READABLE_OUTPUT) {\n"
                   << "          xml_printf(\"" << member.first << "\");\n"
                   << "        } else {\n"
-                  << "          printf(\"%s\", \"" << member.first << "\");\n"
+                  << "          put(\"" << member.first << "\");\n"
                   << "        }\n"
                   << "      }\n";
                 member_index++;
@@ -1097,26 +1122,26 @@ void generate_model(std::ostream &out, const Model &m) {
                 // dump the symbolic value of this parameter
                 out
                   << "        if (USE_SCALARSET_SCHEDULES) {\n"
-                  << "          printf(\"%s_%\" PRIVAL, \"" << escape(id->name)
-                    << "\", value_to_string(v));\n"
+                  << "          put(\"" << escape(id->name) << "_\");\n"
+                  << "          put_val(v);\n"
                   << "        } else {\n"
-                  << "          printf(\"%\" PRIVAL, value_to_string(v));\n"
+                  << "          put_val(v);\n"
                   << "        }\n";
 
               } else {
                 // this scalarset seems not eligible for symmetry reduction
                 // (declared inline rather than as a TypeDecl), so fall back on
                 // just printing its value
-                out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
+                out << "      put_val(v);\n";
               }
 
             } else {
-              out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
+              out << "      put_val(v);\n";
             }
 
             out
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        printf(\"</parameter>\");\n"
+              << "        put(\"</parameter>\");\n"
               << "      }\n"
               << "    }\n";
             i++;
@@ -1124,9 +1149,9 @@ void generate_model(std::ostream &out, const Model &m) {
         }
         out
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
-          << "      printf(\"</transition>\\n\");\n"
+          << "      put(\"</transition>\\n\");\n"
           << "    } else {\n"
-          << "      printf(\" fired.\\n\");\n"
+          << "      put(\" fired.\\n\");\n"
           << "    }\n"
           << "    return;\n"
           << "  }\n";
@@ -1169,12 +1194,11 @@ void generate_model(std::ostream &out, const Model &m) {
         out
           << "  if (state_rule_taken_get(s) == rule_taken) {\n"
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
-          << "      printf(\"<transition>\");\n"
+          << "      put(\"<transition>\");\n"
           << "      xml_printf(\"Rule " << rule_name_string(*r, index)
             << "\");\n"
           << "    } else {\n"
-          << "      printf(\"Rule %s\", \"" << rule_name_string(*r, index)
-            << "\");\n"
+          << "      put(\"Rule " << rule_name_string(*r, index) << "\");\n"
           << "    }\n";
         {
           size_t i = 0;
@@ -1192,11 +1216,11 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
 
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        printf(\"<parameter name=\\\"\");\n"
+              << "        put(\"<parameter name=\\\"\");\n"
               << "        xml_printf(\"" << q.name << "\");\n"
-              << "        printf(\"\\\">\");\n"
+              << "        put(\"\\\">\");\n"
               << "      } else {\n"
-              << "        printf(\", %s: \", \"" << q.name << "\");\n"
+              << "        put(\", " << q.name << ": \");\n"
               << "      }\n";
 
             const Ptr<TypeExpr> t = q.type->resolve();
@@ -1210,7 +1234,7 @@ void generate_model(std::ostream &out, const Model &m) {
                   << "        if (MACHINE_READABLE_OUTPUT) {\n"
                   << "          xml_printf(\"" << member.first << "\");\n"
                   << "        } else {\n"
-                  << "          printf(\"%s\", \"" << member.first << "\");\n"
+                  << "          put(\"" << member.first << "\");\n"
                   << "        }\n"
                   << "      }\n";
                 member_index++;
@@ -1263,28 +1287,28 @@ void generate_model(std::ostream &out, const Model &m) {
                 // dump the resulting value
                 out
                   << "        if (USE_SCALARSET_SCHEDULES) {\n"
-                  << "          printf(\"%s_%\" PRIVAL, \"" << escape(id->name)
-                    << "\", value_to_string(v));\n"
+                  << "          put(\"" << escape(id->name) << "_\");\n"
+                  << "          put_val(v);\n"
                   << "        } else {\n"
-                  << "          printf(\"%\" PRIVAL, value_to_string(v));\n"
+                  << "          put_val(v);\n"
                   << "        }\n";
 
               } else {
                 // this scalarset seems not eligible for symmetry reduction
                 // (declared inline rather than as a TypeDecl), so fall back on
                 // just printing its value
-                out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
+                out << "      put_val(v);\n";
               }
 
               out << "}\n";
 
             } else {
-              out << "      printf(\"%\" PRIVAL, value_to_string(v));\n";
+              out << "      put_val(v);\n";
             }
 
             out
               << "      if (MACHINE_READABLE_OUTPUT) {\n"
-              << "        printf(\"</parameter>\");\n"
+              << "        put(\"</parameter>\");\n"
               << "      }\n"
               << "    }\n";
             i++;
@@ -1292,9 +1316,9 @@ void generate_model(std::ostream &out, const Model &m) {
         }
         out
           << "    if (MACHINE_READABLE_OUTPUT) {\n"
-          << "      printf(\"</transition>\\n\");\n"
+          << "      put(\"</transition>\\n\");\n"
           << "    } else {\n"
-          << "      printf(\" fired.\\n\");\n"
+          << "      put(\" fired.\\n\");\n"
           << "    }\n"
           << "    return;\n"
           << "  }\n";
@@ -1330,14 +1354,15 @@ void generate_model(std::ostream &out, const Model &m) {
   // Generate a function used during debugging
   out
     << "static void state_print_field_offsets(void) {\n"
-    << "  printf(\"\t* state struct is %zu-byte aligned\\n\", "
-      "__alignof__(struct state));\n";
+    << "  put(\"\t* state struct is \");\n"
+    << "  put_uint(__alignof__(struct state));\n"
+    << "  put(\"-byte aligned\\n\");\n";
   for (const Ptr<Decl> &d : m.decls) {
     if (auto v = dynamic_cast<const VarDecl*>(d.get()))
-      out << "  printf(\"\t* field %s is located at state offset " << v->offset
-        << " bits\\n\", \"" << v->name << "\");\n";
+      out << "  put(\"\t* field " << v->name << " is located at state offset "
+        << v->offset << " bits\\n\");\n";
   }
   out
-    << "  printf(\"\\n\");\n"
+    << "  put(\"\\n\");\n"
     << "}\n\n";
 }
