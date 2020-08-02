@@ -92,6 +92,10 @@ Then:
     `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
     get a reply from an interested party.
 
+14. When/if the package is accepted into Debian unstable, tag the commit used to
+    produce it with the Debian version number in “debian/vYYYY.MM.DD-1” format.
+    Push this upstream.
+
 Note that there could still be problems with the package that a sponsor may
 request you fix. For example, there is currently no easy way to smoke test the
 autopkgtests and these could fail, preventing migration of the package to the
