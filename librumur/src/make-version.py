@@ -10,9 +10,19 @@ import subprocess as sp
 import sys
 from typing import Optional
 
-# The version of the last tagged release of Rumur. This will be used as the
-# version number if no Git information is available.
-LAST_RELEASE = 'v2020.07.28'
+def last_release() -> str:
+  '''
+  The version of the last tagged release of Rumur. This will be used as the
+  version number if no Git information is available.
+  '''
+  with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+      '../../CHANGELOG.rst'), 'rt') as f:
+    for line in f:
+      m = re.match(r'(v\d{4}\.\d{2}\.\d{2})$', line)
+      if m is not None:
+        return m.group(1)
+
+  raise Exception('version heading not found in changelog')
 
 def has_git() -> bool:
   '''
@@ -108,7 +118,7 @@ def main(args: [str]) -> int:
 
   # Finally, fall back to our known release version.
   if version is None:
-    version = LAST_RELEASE
+    version = last_release()
 
   new =  '#pragma once\n' \
          '\n' \
