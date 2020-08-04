@@ -251,7 +251,7 @@ class Generator : public ConstStmtTraversal {
   void visit_put(const Put &s) final {
 
     if (s.expr == nullptr) {
-      *out << "printf(\"%s\", \"" << s.value << "\")";
+      *out << "put(\"" << s.value << "\")";
       return;
     }
 
@@ -282,7 +282,7 @@ class Generator : public ConstStmtTraversal {
         if (i != 0)
           *out << "else ";
         *out << "if (v == " << i << ") {\n"
-          << "    printf(\"%s\", \"" << m.first << "\");\n"
+          << "    put(\"" << m.first << "\");\n"
           << "  }\n";
         i++;
       }
@@ -296,9 +296,9 @@ class Generator : public ConstStmtTraversal {
       return;
     }
 
-    *out << "printf(\"%\" PRIVAL, value_to_string(";
+    *out << "put_val(";
     generate_rvalue(*out, *s.expr);
-    *out << "))";
+    *out << ")";
   }
 
   void visit_return(const Return &s) final {
