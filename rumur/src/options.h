@@ -101,6 +101,9 @@ struct Options {
   // whether to track schedules during scalarset permutation
   bool scalarset_schedules = true;
 
+  // number of relevant bits in a pointer on the target platform (0 == auto)
+  mpz_class pointer_bits = 0;
+
   // options related to SMT solver interaction
   struct {
 

@@ -241,7 +241,8 @@ int output_checker(const std::string &path, const Model &model,
     << "/* whether scalarset schedules should be computed and used during printing */\n"
     << "#define USE_SCALARSET_SCHEDULES (" << (options.scalarset_schedules ? "1" : "0")
       << " && SYMMETRY_REDUCTION != SYMMETRY_REDUCTION_OFF && \\\n"
-    << "  (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS))\n";
+    << "  (COUNTEREXAMPLE_TRACE != CEX_OFF || PRINTS_SCALARSETS))\n"
+    << "#define POINTER_BITS " << options.pointer_bits << "\n";
 
   generate_cover_array(out, model);
 
