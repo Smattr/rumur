@@ -290,6 +290,10 @@ static void sandbox(void) {
       /* on platforms without vDSO support, time() makes an actual syscall, so
        * we need to allow them
        */
+#ifdef __NR_clock_gettime
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clock_gettime, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 #ifdef __NR_gettimeofday
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_gettimeofday, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
