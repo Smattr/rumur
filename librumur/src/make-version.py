@@ -79,7 +79,7 @@ def is_dirty() -> bool:
     stderr=sp.DEVNULL)
   dirty |= p.returncode != 0
 
-  p = sp.Popen(['git', 'diff', '--cached', '--exit-code'], stdout=sp.DEVNULL,
+  p = sp.run(['git', 'diff', '--cached', '--exit-code'], stdout=sp.DEVNULL,
     stderr=sp.DEVNULL)
   dirty |= p.returncode != 0
 
