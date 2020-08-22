@@ -9,7 +9,6 @@ import multiprocessing
 import os
 import platform
 import re
-import shutil
 import subprocess as sp
 import sys
 import tempfile
@@ -62,17 +61,6 @@ VERIFIER_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__),
   '../misc/verifier.rng'))
 MURPHI2XML_RNG = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'misc',
       'murphi2xml.rng'))
-
-class TemporaryDirectory(object):
-  'an mkdtemp() that cleans up after itself'
-  def __init__(self):
-    self.tmp = None
-  def __enter__(self) -> str:
-    self.tmp = tempfile.mkdtemp()
-    return self.tmp
-  def __exit__(self, *_):
-    if self.tmp is not None:
-      shutil.rmtree(self.tmp)
 
 class Result(abc.ABC): pass
 class Skip(Result):
@@ -164,7 +152,7 @@ class Model(Tweakable):
 
     model_c = stdout
 
-    with TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp:
 
       # build up arguments to call the C compiler
       model_bin = os.path.join(tmp, 'model.exe')
@@ -299,7 +287,7 @@ class Murphi2CHeaderTest(Tweakable):
     if ret != 0:
       return None
 
-    with TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory() as tmp:
 
       # write the header to a temporary file
       header = os.path.join(tmp, 'header.h')
