@@ -17,10 +17,6 @@ namespace rumur {
 
 struct Model : public Node {
 
-  std::vector<Ptr<Decl>> decls;
-  std::vector<Ptr<Function>> functions;
-  std::vector<Ptr<Rule>> rules;
-
   // declarations, functions and rules in the order in which they appeared in
   // the source
   std::vector<Ptr<Node>> children;
