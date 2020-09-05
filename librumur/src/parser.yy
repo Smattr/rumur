@@ -227,7 +227,12 @@
 %%
 
 model: decls procdecls rules {
-  output = rumur::Ptr<rumur::Model>::make($1, $2, $3, @$);
+  std::vector<rumur::Ptr<rumur::Node>> children;
+  children.reserve($1.size() + $2.size() + $3.size());
+  children.insert(children.end(), $1.begin(), $1.end());
+  children.insert(children.end(), $2.begin(), $2.end());
+  children.insert(children.end(), $3.begin(), $3.end());
+  output = rumur::Ptr<rumur::Model>::make(children, @$);
 };
 
 aliasrule: ALIAS exprdecls DO rules endalias {
