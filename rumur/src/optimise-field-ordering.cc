@@ -46,10 +46,9 @@ static void sort(std::vector<Ptr<VarDecl>> &fields) {
 }
 
 // extract a list of the names of fields within a list
-template<typename DECL>
-static std::vector<std::string> get_names(const std::vector<Ptr<DECL>> &decls) {
+static std::vector<std::string> get_names(const std::vector<Ptr<VarDecl>> &decls) {
   std::vector<std::string> r;
-  for (const Ptr<DECL> &d : decls) {
+  for (const Ptr<VarDecl> &d : decls) {
     if (auto f = dynamic_cast<const VarDecl*>(d.get()))
       r.push_back(f->name);
   }
@@ -57,9 +56,8 @@ static std::vector<std::string> get_names(const std::vector<Ptr<DECL>> &decls) {
 }
 
 // generate debug output if a list of fields has changed
-template<typename DECL>
 static void notify_changes(const std::vector<std::string> &original,
-    const std::vector<Ptr<DECL>> &sorted) {
+    const std::vector<Ptr<VarDecl>> &sorted) {
 
   // extract the current order of the fields
   const std::vector<std::string> current = get_names(sorted);
