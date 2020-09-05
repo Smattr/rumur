@@ -32,6 +32,10 @@ struct Model : public Node {
 
   void validate() const final;
 
+  // dispatch to the appropriate traversal method (see traverse.h)
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   /* Get the number of global liveness properties in the model. Unlike
    * assumption_count, this considers the "flat" model. That is, a
    * ruleset-contained liveness property may count for more than one.

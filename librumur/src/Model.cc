@@ -56,6 +56,14 @@ void Model::validate() const {
   }
 }
 
+void Model::visit(BaseTraversal &visitor) {
+  visitor.visit_model(*this);
+}
+
+void Model::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_model(*this);
+}
+
 mpz_class Model::liveness_count() const {
 
   // Define a traversal for counting liveness properties.

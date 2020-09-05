@@ -13,6 +13,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
 #include <rumur/Ptr.h>
+#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
@@ -49,6 +50,14 @@ Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
 
 Ternary *Ternary::clone() const {
   return new Ternary(*this);
+}
+
+void Ternary::visit(BaseTraversal &visitor) {
+  return visitor.visit_ternary(*this);
+}
+
+void Ternary::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_ternary(*this);
 }
 
 bool Ternary::constant() const {
@@ -113,6 +122,14 @@ Implication *Implication::clone() const {
   return new Implication(*this);
 }
 
+void Implication::visit(BaseTraversal &visitor) {
+  return visitor.visit_implication(*this);
+}
+
+void Implication::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_implication(*this);
+}
+
 mpz_class Implication::constant_fold() const {
   return lhs->constant_fold() == 0 || rhs->constant_fold() != 0;
 }
@@ -126,6 +143,14 @@ Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Or *Or::clone() const {
   return new Or(*this);
+}
+
+void Or::visit(BaseTraversal &visitor) {
+  return visitor.visit_or(*this);
+}
+
+void Or::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_or(*this);
 }
 
 mpz_class Or::constant_fold() const {
@@ -143,6 +168,14 @@ And *And::clone() const {
   return new And(*this);
 }
 
+void And::visit(BaseTraversal &visitor) {
+  return visitor.visit_and(*this);
+}
+
+void And::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_and(*this);
+}
+
 mpz_class And::constant_fold() const {
   return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
@@ -156,6 +189,14 @@ AmbiguousAmp::AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
 
 AmbiguousAmp *AmbiguousAmp::clone() const {
   return new AmbiguousAmp(*this);
+}
+
+void AmbiguousAmp::visit(BaseTraversal &visitor) {
+  return visitor.visit_ambiguousamp(*this);
+}
+
+void AmbiguousAmp::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_ambiguousamp(*this);
 }
 
 Ptr<TypeExpr> AmbiguousAmp::type() const {
@@ -179,6 +220,14 @@ AmbiguousPipe::AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
 
 AmbiguousPipe *AmbiguousPipe::clone() const {
   return new AmbiguousPipe(*this);
+}
+
+void AmbiguousPipe::visit(BaseTraversal &visitor) {
+  return visitor.visit_ambiguouspipe(*this);
+}
+
+void AmbiguousPipe::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_ambiguouspipe(*this);
 }
 
 Ptr<TypeExpr> AmbiguousPipe::type() const {
@@ -213,6 +262,14 @@ Not::Not(const Ptr<Expr> &rhs_, const location &loc_): UnaryExpr(rhs_, loc_) { }
 
 Not *Not::clone() const {
   return new Not(*this);
+}
+
+void Not::visit(BaseTraversal &visitor) {
+  return visitor.visit_not(*this);
+}
+
+void Not::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_not(*this);
 }
 
 Ptr<TypeExpr> Not::type() const {
@@ -260,6 +317,14 @@ Lt *Lt::clone() const {
   return new Lt(*this);
 }
 
+void Lt::visit(BaseTraversal &visitor) {
+  return visitor.visit_lt(*this);
+}
+
+void Lt::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_lt(*this);
+}
+
 Ptr<TypeExpr> Lt::type() const {
   return Boolean;
 }
@@ -277,6 +342,14 @@ Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Leq *Leq::clone() const {
   return new Leq(*this);
+}
+
+void Leq::visit(BaseTraversal &visitor) {
+  return visitor.visit_leq(*this);
+}
+
+void Leq::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_leq(*this);
 }
 
 Ptr<TypeExpr> Leq::type() const {
@@ -298,6 +371,14 @@ Gt *Gt::clone() const {
   return new Gt(*this);
 }
 
+void Gt::visit(BaseTraversal &visitor) {
+  return visitor.visit_gt(*this);
+}
+
+void Gt::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_gt(*this);
+}
+
 Ptr<TypeExpr> Gt::type() const {
   return Boolean;
 }
@@ -315,6 +396,14 @@ Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Geq *Geq::clone() const {
   return new Geq(*this);
+}
+
+void Geq::visit(BaseTraversal &visitor) {
+  return visitor.visit_geq(*this);
+}
+
+void Geq::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_geq(*this);
 }
 
 Ptr<TypeExpr> Geq::type() const {
@@ -344,6 +433,14 @@ Eq *Eq::clone() const {
   return new Eq(*this);
 }
 
+void Eq::visit(BaseTraversal &visitor) {
+  return visitor.visit_eq(*this);
+}
+
+void Eq::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_eq(*this);
+}
+
 Ptr<TypeExpr> Eq::type() const {
   return Boolean;
 }
@@ -361,6 +458,14 @@ Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Neq *Neq::clone() const {
   return new Neq(*this);
+}
+
+void Neq::visit(BaseTraversal &visitor) {
+  return visitor.visit_neq(*this);
+}
+
+void Neq::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_neq(*this);
 }
 
 Ptr<TypeExpr> Neq::type() const {
@@ -406,6 +511,14 @@ Add *Add::clone() const {
   return new Add(*this);
 }
 
+void Add::visit(BaseTraversal &visitor) {
+  return visitor.visit_add(*this);
+}
+
+void Add::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_add(*this);
+}
+
 mpz_class Add::constant_fold() const {
   return lhs->constant_fold() + rhs->constant_fold();
 }
@@ -419,6 +532,14 @@ Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Sub *Sub::clone() const {
   return new Sub(*this);
+}
+
+void Sub::visit(BaseTraversal &visitor) {
+  return visitor.visit_sub(*this);
+}
+
+void Sub::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_sub(*this);
 }
 
 mpz_class Sub::constant_fold() const {
@@ -439,6 +560,14 @@ void Negative::validate() const {
 
 Negative *Negative::clone() const {
   return new Negative(*this);
+}
+
+void Negative::visit(BaseTraversal &visitor) {
+  return visitor.visit_negative(*this);
+}
+
+void Negative::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_negative(*this);
 }
 
 Ptr<TypeExpr> Negative::type() const {
@@ -465,6 +594,14 @@ Bnot *Bnot::clone() const {
   return new Bnot(*this);
 }
 
+void Bnot::visit(BaseTraversal &visitor) {
+  return visitor.visit_bnot(*this);
+}
+
+void Bnot::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_bnot(*this);
+}
+
 Ptr<TypeExpr> Bnot::type() const {
   return Ptr<Range>::make(nullptr, nullptr, location());
 }
@@ -484,6 +621,14 @@ Mul *Mul::clone() const {
   return new Mul(*this);
 }
 
+void Mul::visit(BaseTraversal &visitor) {
+  return visitor.visit_mul(*this);
+}
+
+void Mul::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_mul(*this);
+}
+
 mpz_class Mul::constant_fold() const {
   return lhs->constant_fold() * rhs->constant_fold();
 }
@@ -497,6 +642,14 @@ Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Div *Div::clone() const {
   return new Div(*this);
+}
+
+void Div::visit(BaseTraversal &visitor) {
+  return visitor.visit_div(*this);
+}
+
+void Div::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_div(*this);
 }
 
 mpz_class Div::constant_fold() const {
@@ -518,6 +671,14 @@ Mod *Mod::clone() const {
   return new Mod(*this);
 }
 
+void Mod::visit(BaseTraversal &visitor) {
+  return visitor.visit_mod(*this);
+}
+
+void Mod::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_mod(*this);
+}
+
 mpz_class Mod::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
@@ -535,6 +696,14 @@ Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Lsh *Lsh::clone() const {
   return new Lsh(*this);
+}
+
+void Lsh::visit(BaseTraversal &visitor) {
+  return visitor.visit_lsh(*this);
+}
+
+void Lsh::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_lsh(*this);
 }
 
 // right shift an mpz value
@@ -604,6 +773,14 @@ Rsh *Rsh::clone() const {
   return new Rsh(*this);
 }
 
+void Rsh::visit(BaseTraversal &visitor) {
+  return visitor.visit_rsh(*this);
+}
+
+void Rsh::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_rsh(*this);
+}
+
 mpz_class Rsh::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
@@ -619,6 +796,14 @@ Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Band *Band::clone() const {
   return new Band(*this);
+}
+
+void Band::visit(BaseTraversal &visitor) {
+  return visitor.visit_band(*this);
+}
+
+void Band::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_band(*this);
 }
 
 mpz_class Band::constant_fold() const {
@@ -638,6 +823,14 @@ Bor *Bor::clone() const {
   return new Bor(*this);
 }
 
+void Bor::visit(BaseTraversal &visitor) {
+  return visitor.visit_bor(*this);
+}
+
+void Bor::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_bor(*this);
+}
+
 mpz_class Bor::constant_fold() const {
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
@@ -653,6 +846,14 @@ Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
 
 Xor *Xor::clone() const {
   return new Xor(*this);
+}
+
+void Xor::visit(BaseTraversal &visitor) {
+  return visitor.visit_xor(*this);
+}
+
+void Xor::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_xor(*this);
 }
 
 mpz_class Xor::constant_fold() const {
@@ -672,6 +873,14 @@ ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
 
 ExprID *ExprID::clone() const {
   return new ExprID(*this);
+}
+
+void ExprID::visit(BaseTraversal &visitor) {
+  return visitor.visit_exprid(*this);
+}
+
+void ExprID::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_exprid(*this);
 }
 
 bool ExprID::constant() const {
@@ -747,6 +956,14 @@ Field *Field::clone() const {
   return new Field(*this);
 }
 
+void Field::visit(BaseTraversal &visitor) {
+  return visitor.visit_field(*this);
+}
+
+void Field::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_field(*this);
+}
+
 bool Field::constant() const {
   return false;
 }
@@ -818,6 +1035,14 @@ Element *Element::clone() const {
   return new Element(*this);
 }
 
+void Element::visit(BaseTraversal &visitor) {
+  return visitor.visit_element(*this);
+}
+
+void Element::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_element(*this);
+}
+
 bool Element::constant() const {
   return false;
 }
@@ -873,6 +1098,14 @@ FunctionCall::FunctionCall(const std::string &name_,
 
 FunctionCall *FunctionCall::clone() const {
   return new FunctionCall(*this);
+}
+
+void FunctionCall::visit(BaseTraversal &visitor) {
+  return visitor.visit_functioncall(*this);
+}
+
+void FunctionCall::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_functioncall(*this);
 }
 
 bool FunctionCall::constant() const {
@@ -998,6 +1231,14 @@ Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
 
 Quantifier *Quantifier::clone() const {
   return new Quantifier(*this);
+}
+
+void Quantifier::visit(BaseTraversal &visitor) {
+  return visitor.visit_quantifier(*this);
+}
+
+void Quantifier::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_quantifier(*this);
 }
 
 void Quantifier::validate() const {
@@ -1134,6 +1375,14 @@ Exists *Exists::clone() const {
   return new Exists(*this);
 }
 
+void Exists::visit(BaseTraversal &visitor) {
+  return visitor.visit_exists(*this);
+}
+
+void Exists::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_exists(*this);
+}
+
 bool Exists::constant() const {
   return expr->constant();
 }
@@ -1168,6 +1417,14 @@ Forall *Forall::clone() const {
   return new Forall(*this);
 }
 
+void Forall::visit(BaseTraversal &visitor) {
+  return visitor.visit_forall(*this);
+}
+
+void Forall::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_forall(*this);
+}
+
 bool Forall::constant() const {
   return expr->constant();
 }
@@ -1199,6 +1456,14 @@ IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_):
 
 IsUndefined *IsUndefined::clone() const {
   return new IsUndefined(*this);
+}
+
+void IsUndefined::visit(BaseTraversal &visitor) {
+  return visitor.visit_isundefined(*this);
+}
+
+void IsUndefined::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_isundefined(*this);
 }
 
 bool IsUndefined::constant() const {

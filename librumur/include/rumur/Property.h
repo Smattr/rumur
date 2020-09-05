@@ -26,6 +26,9 @@ struct Property : public Node {
     const location &loc_);
   Property *clone() const final;
   virtual ~Property() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 }

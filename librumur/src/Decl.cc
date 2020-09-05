@@ -8,6 +8,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
 #include <rumur/Ptr.h>
+#include <rumur/traverse.h>
 #include <string>
 
 namespace rumur {
@@ -28,6 +29,14 @@ AliasDecl::AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
 
 AliasDecl *AliasDecl::clone() const {
   return new AliasDecl(*this);
+}
+
+void AliasDecl::visit(BaseTraversal &visitor) {
+  visitor.visit_aliasdecl(*this);
+}
+
+void AliasDecl::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_aliasdecl(*this);
 }
 
 bool AliasDecl::is_lvalue() const {
@@ -52,6 +61,14 @@ ConstDecl::ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
 
 ConstDecl *ConstDecl::clone() const {
   return new ConstDecl(*this);
+}
+
+void ConstDecl::visit(BaseTraversal &visitor) {
+  visitor.visit_constdecl(*this);
+}
+
+void ConstDecl::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_constdecl(*this);
 }
 
 bool ConstDecl::is_lvalue() const {
@@ -89,6 +106,14 @@ TypeDecl *TypeDecl::clone() const {
   return new TypeDecl(*this);
 }
 
+void TypeDecl::visit(BaseTraversal &visitor) {
+  visitor.visit_typedecl(*this);
+}
+
+void TypeDecl::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_typedecl(*this);
+}
+
 VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
   const location &loc_):
   ExprDecl(name_, loc_), type(type_) {
@@ -96,6 +121,14 @@ VarDecl::VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
 
 VarDecl *VarDecl::clone() const {
   return new VarDecl(*this);
+}
+
+void VarDecl::visit(BaseTraversal &visitor) {
+  visitor.visit_vardecl(*this);
+}
+
+void VarDecl::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_vardecl(*this);
 }
 
 bool VarDecl::is_lvalue() const {

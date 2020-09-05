@@ -7,6 +7,9 @@
 
 namespace rumur {
 
+class BaseTraversal;
+class ConstBaseTraversal;
+
 struct Node {
 
   location loc;
@@ -22,6 +25,9 @@ struct Node {
    * rumur::Errors if invariants are violated.
    */
   virtual void validate() const { }
+
+  virtual void visit(BaseTraversal &visitor) = 0;
+  virtual void visit(ConstBaseTraversal &visitor) const = 0;
 
 };
 

@@ -65,6 +65,14 @@ void Function::validate() const {
     rt.dispatch(*s);
 }
 
+void Function::visit(BaseTraversal &visitor) {
+  visitor.visit_function(*this);
+}
+
+void Function::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_function(*this);
+}
+
 bool Function::is_pure() const {
 
   // if the function takes a var parameter, consider it impure
