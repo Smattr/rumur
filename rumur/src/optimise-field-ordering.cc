@@ -4,6 +4,7 @@
 #include "optimise-field-ordering.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using namespace rumur;
@@ -107,15 +108,12 @@ namespace { class Reorderer : public Traversal {
     for (Ptr<Rule> &r : n.rules)
       dispatch(*r);
 
-    // separate our fields into VarDecls and the rest
+    // extract out the VarDecls
     std::vector<Ptr<VarDecl>> vars;
-    std::vector<Ptr<Decl>> other;
     for (Ptr<Decl> &d : n.decls) {
       if (auto v = dynamic_cast<VarDecl*>(d.get())) {
          auto vp = Ptr<VarDecl>::make(*v);
          vars.push_back(vp);
-      } else {
-        other.push_back(d);
       }
     }
 
@@ -127,16 +125,19 @@ namespace { class Reorderer : public Traversal {
     notify_changes(original, vars);
 
     // the offset of each variable within the model state is now inaccurate, so
-    // update this information
+    // calculate the new VarDecl -> offset mapping
     mpz_class offset = 0;
+    std::unordered_map<std::string, mpz_class> offsets;
     for (Ptr<VarDecl> &v : vars) {
-      v->offset = offset;
+      offsets[v->name] = offset;
       offset += v->type->width();
     }
 
-    // overwrite our declarations with the new ordering
-    other.insert(other.end(), vars.begin(), vars.end());
-    n.decls = other;
+    // apply these updated offsets to the original VarDecls
+    for (Ptr<Decl> &d : n.decls) {
+      if (auto v = dynamic_cast<VarDecl*>(d.get()))
+        v->offset = offsets[v->name];
+    }
   }
 
   void visit_record(Record &n) final {
