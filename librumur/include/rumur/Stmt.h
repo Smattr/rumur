@@ -73,11 +73,11 @@ struct Clear : public Stmt {
 
 struct ErrorStmt : public Stmt {
 
-   std::string message;
+  std::string message;
 
-   ErrorStmt(const std::string &message_, const location &loc_);
-   ErrorStmt *clone() const final;
-   virtual ~ErrorStmt() = default;
+  ErrorStmt(const std::string &message_, const location &loc_);
+  ErrorStmt *clone() const final;
+  virtual ~ErrorStmt() = default;
 };
 
 struct For : public Stmt {
