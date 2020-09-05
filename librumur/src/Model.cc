@@ -34,6 +34,9 @@ Model::Model(const std::vector<Ptr<Decl>> &decls_,
   children.insert(children.end(), rules_.begin(), rules_.end());
 }
 
+Model::Model(const std::vector<Ptr<Node>> &children_, const location &loc_):
+  Node(loc_), children(children_) { }
+
 Model *Model::clone() const {
   return new Model(*this);
 }

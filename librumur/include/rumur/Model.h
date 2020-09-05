@@ -24,6 +24,7 @@ struct Model : public Node {
   Model(const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Function>> &functions_,
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
+  Model(const std::vector<Ptr<Node>> &children_, const location &loc_);
   virtual ~Model() = default;
   Model *clone() const final;
 
