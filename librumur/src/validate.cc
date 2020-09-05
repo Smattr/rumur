@@ -7,6 +7,7 @@
 #include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Property.h>
+#include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
@@ -240,12 +241,8 @@ class Validator : public ConstBaseTraversal {
   }
 
   void visit_model(const Model &n) final {
-    for (auto &d : n.decls)
-      dispatch(*d);
-    for (auto &f : n.functions)
-      dispatch(*f);
-    for (auto &r : n.rules)
-      dispatch(*r);
+    for (const Ptr<Node> &c : n.children)
+      dispatch(*c);
     n.validate();
   }
 

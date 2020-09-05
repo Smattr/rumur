@@ -105,23 +105,25 @@ static mpz_class rule_taken_max(const Model &model,
   mpz_class total = 0;
 
   // flatten all rules
-  for (const Ptr<Rule> &r : model.rules) {
-    const std::vector<Ptr<Rule>> flattened = r->flatten();
-    for (const Ptr<Rule> &f : flattened) {
+  for (const Ptr<Node> &c : model.children) {
+    if (auto r = dynamic_cast<const Rule*>(c.get())) {
+      const std::vector<Ptr<Rule>> flattened = r->flatten();
+      for (const Ptr<Rule> &f : flattened) {
 
-      // skip anything that does not match our criteria
-      if (!predicate(*f))
-        continue;
+        // skip anything that does not match our criteria
+        if (!predicate(*f))
+          continue;
 
-      // determine how many rules this generates when quantifiers are expanded
-      mpz_class rules = 1;
-      for (const Quantifier &q : f->quantifiers) {
-        assert(q.constant() && "non-constant quantifier used in rule "
-          "(unvalidated AST?)");
-        rules *= q.count();
+        // determine how many rules this generates when quantifiers are expanded
+        mpz_class rules = 1;
+        for (const Quantifier &q : f->quantifiers) {
+          assert(q.constant() && "non-constant quantifier used in rule "
+            "(unvalidated AST?)");
+          rules *= q.count();
+        }
+
+        total += rules;
       }
-
-      total += rules;
     }
   }
 

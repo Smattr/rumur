@@ -277,25 +277,11 @@ void Printer::visit_mod(const Mod &n) {
 }
 
 void Printer::visit_model(const Model &n) {
-  if (!n.decls.empty()) {
-    top->sync_to(*n.decls[0]);
-    for (auto &d : n.decls) {
-      top->sync_to(*d);
-      top->dispatch(*d);
-    }
-  }
-  if (!n.functions.empty()) {
-    top->sync_to(*n.functions[0]);
-    for (auto f : n.functions) {
-      top->sync_to(*f);
-      top->dispatch(*f);
-    }
-  }
-  if (!n.rules.empty()) {
-    top->sync_to(*n.rules[0]);
-    for (auto &r : n.rules) {
-      top->sync_to(*r);
-      top->dispatch(*r);
+  if (!n.children.empty()) {
+    top->sync_to(*n.children[0]);
+    for (const Ptr<Node> &c : n.children) {
+      top->sync_to(*c);
+      top->dispatch(*c);
     }
   }
   top->sync_to(n.loc.end);

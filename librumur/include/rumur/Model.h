@@ -21,7 +21,8 @@ struct Model : public Node {
   std::vector<Ptr<Function>> functions;
   std::vector<Ptr<Rule>> rules;
 
-  // XXX: not yet used
+  // declarations, functions and rules in the order in which they appeared in
+  // the source
   std::vector<Ptr<Node>> children;
 
   Model(const std::vector<Ptr<Decl>> &decls_,

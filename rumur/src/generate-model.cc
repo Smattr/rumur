@@ -25,17 +25,31 @@ void generate_model(std::ostream &out, const Model &m) {
   out << "\n\n";
 
   // Generate each defined constant.
-  for (const Ptr<Decl> &d : m.decls) {
-    if (isa<ConstDecl>(d)) {
+  for (const Ptr<Node> &c : m.children) {
+    if (auto d = dynamic_cast<const ConstDecl*>(c.get())) {
       generate_decl(out, *d);
       out << ";\n";
     }
   }
 
   // Generate each defined function or procedure.
-  for (const Ptr<Function> &f : m.functions) {
-    generate_function(out, *f, m.decls);
-    out << "\n\n";
+  for (const Ptr<Node> &c : m.children) {
+    if (auto f = dynamic_cast<const Function*>(c.get())) {
+
+      // create a list of the global declarations that are in scope (seen
+      // previously) for this function
+      std::vector<Ptr<Decl>> decls;
+      for (const Ptr<Node> &n : m.children) {
+        if (c.get() == n.get())
+          break;
+        if (auto d = dynamic_cast<const Decl*>(n.get()))
+          // FIXME: calling clone() directly here is messy and error prone
+          decls.push_back(Ptr<Decl>(d->clone()));
+      }
+
+      generate_function(out, *f, decls);
+      out << "\n\n";
+    }
   }
 
   /* Generate a set of flattened (non-hierarchical) rules. The purpose of this
@@ -43,9 +57,11 @@ void generate_model(std::ostream &out, const Model &m) {
    * below.
    */
   std::vector<Ptr<Rule>> flat_rules;
-  for (const Ptr<Rule> &r : m.rules) {
-    std::vector<Ptr<Rule>> rs = r->flatten();
-    flat_rules.insert(flat_rules.end(), rs.begin(), rs.end());
+  for (const Ptr<Node> &c : m.children) {
+    if (auto r = dynamic_cast<const Rule*>(c.get())) {
+      std::vector<Ptr<Rule>> rs = r->flatten();
+      flat_rules.insert(flat_rules.end(), rs.begin(), rs.end());
+    }
   }
 
   // Write out the start state rules.
@@ -72,8 +88,8 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this start state.
          */
-        for (const Ptr<Decl> &d : m.decls) {
-          if (isa<VarDecl>(d)) {
+        for (const Ptr<Node> &c : m.children) {
+          if (auto d = dynamic_cast<const VarDecl*>(c.get())) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -139,8 +155,8 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this property.
          */
-        for (const Ptr<Decl> &d : m.decls) {
-          if (isa<VarDecl>(d)) {
+        for (const Ptr<Node> &c : m.children) {
+          if (auto d = dynamic_cast<const VarDecl*>(c.get())) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -194,8 +210,8 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this guard.
          */
-        for (const Ptr<Decl> &d : m.decls) {
-          if (isa<VarDecl>(d)) {
+        for (const Ptr<Node> &c : m.children) {
+          if (auto d = dynamic_cast<const VarDecl*>(c.get())) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -241,8 +257,8 @@ void generate_model(std::ostream &out, const Model &m) {
         /* Output the state variable handles so we can reference them within
          * this rule.
          */
-        for (const Ptr<Decl> &d : m.decls) {
-          if (isa<VarDecl>(d)) {
+        for (const Ptr<Node> &c : m.children) {
+          if (auto d = dynamic_cast<const VarDecl*>(c.get())) {
             out << "  ";
             generate_decl(out, *d);
             out << ";\n";
@@ -1009,15 +1025,15 @@ void generate_model(std::ostream &out, const Model &m) {
   /* Output the state variable handles so we can reference them within this
    * function.
    */
-  for (const Ptr<Decl> &d : m.decls) {
-    if (isa<VarDecl>(d)) {
+  for (const Ptr<Node> &c : m.children) {
+    if (auto d = dynamic_cast<const VarDecl*>(c.get())) {
       out << "  ";
       generate_decl(out, *d);
       out << ";\n";
     }
   }
-  for (const Ptr<Decl> &d : m.decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
+  for (const Ptr<Node> &c : m.children) {
+    if (auto v = dynamic_cast<const VarDecl*>(c.get()))
       generate_print(out, *v->type, v->name, "ru_" + v->name, true, true);
   }
   out
@@ -1357,8 +1373,8 @@ void generate_model(std::ostream &out, const Model &m) {
     << "  put(\"\t* state struct is \");\n"
     << "  put_uint(__alignof__(struct state));\n"
     << "  put(\"-byte aligned\\n\");\n";
-  for (const Ptr<Decl> &d : m.decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
+  for (const Ptr<Node> &c : m.children) {
+    if (auto v = dynamic_cast<const VarDecl*>(c.get()))
       out << "  put(\"\t* field " << v->name << " is located at state offset "
         << v->offset << " bits\\n\");\n";
   }

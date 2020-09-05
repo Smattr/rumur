@@ -458,32 +458,12 @@ void XMLPrinter::visit_model(const Model &n) {
   o << "<model ";
   add_location(n);
   o << ">";
-  if (!n.decls.empty()) {
-    sync_to(*n.decls[0]);
-    o << "<decls>";
-    for (auto &d : n.decls) {
-      sync_to(*d);
-      dispatch(*d);
+  if (!n.children.empty()) {
+    sync_to(*n.children[0]);
+    for (auto &c : n.children) {
+      sync_to(*c);
+      dispatch(*c);
     }
-    o << "</decls>";
-  }
-  if (!n.functions.empty()) {
-    sync_to(*n.functions[0]);
-    o << "<functions>";
-    for (auto f : n.functions) {
-      sync_to(*f);
-      dispatch(*f);
-    }
-    o << "</functions>";
-  }
-  if (!n.rules.empty()) {
-    sync_to(*n.rules[0]);
-    o << "<rules>";
-    for (auto &r : n.rules) {
-      sync_to(*r);
-      dispatch(*r);
-    }
-    o << "</rules>";
   }
   sync_to(n.loc.end);
   o << "</model>";

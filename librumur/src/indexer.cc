@@ -4,7 +4,9 @@
 #include <rumur/Expr.h>
 #include <rumur/indexer.h>
 #include <rumur/Model.h>
+#include <rumur/Node.h>
 #include <rumur/Number.h>
+#include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
@@ -209,12 +211,8 @@ void Indexer::visit_mod(Mod &n) {
 
 void Indexer::visit_model(Model &n) {
   n.unique_id = next++;
-  for (auto &d : n.decls)
-    dispatch(*d);
-  for (auto &f : n.functions)
-    dispatch(*f);
-  for (auto &r : n.rules)
-    dispatch(*r);
+  for (Ptr<Node> &c : n.children)
+    dispatch(*c);
 }
 
 void Indexer::visit_mul(Mul &n) {

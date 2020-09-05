@@ -40,8 +40,8 @@ Model *Model::clone() const {
 
 mpz_class Model::size_bits() const {
   mpz_class s = 0;
-  for (const Ptr<Decl> &d : decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
+  for (const Ptr<Node> &n : children) {
+    if (auto v = dynamic_cast<const VarDecl*>(n.get()))
       s += v->type->width();
   }
   return s;
@@ -52,8 +52,8 @@ void Model::validate() const {
   // Check all state variable names are distinct.
   {
     std::unordered_set<std::string> names;
-    for (const Ptr<Decl> &d : decls) {
-      if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
+    for (const Ptr<Node> &c : children) {
+      if (auto v = dynamic_cast<const VarDecl*>(c.get())) {
         if (!names.insert(v->name).second)
           throw Error("duplicate state variable name \"" + v->name + "\"",
             v->loc);

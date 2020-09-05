@@ -101,19 +101,15 @@ namespace { class Reorderer : public Traversal {
   void visit_model(Model &n) final {
 
     // first act on our children
-    for (Ptr<Decl> &d : n.decls)
-      dispatch(*d);
-    for (Ptr<Function> &f : n.functions)
-      dispatch(*f);
-    for (Ptr<Rule> &r : n.rules)
-      dispatch(*r);
+    for (Ptr<Node> &c : n.children)
+      dispatch(*c);
 
     // extract out the VarDecls
     std::vector<Ptr<VarDecl>> vars;
-    for (Ptr<Decl> &d : n.decls) {
-      if (auto v = dynamic_cast<VarDecl*>(d.get())) {
-         auto vp = Ptr<VarDecl>::make(*v);
-         vars.push_back(vp);
+    for (Ptr<Node> &c : n.children) {
+      if (auto v = dynamic_cast<VarDecl*>(c.get())) {
+        auto vp = Ptr<VarDecl>::make(*v);
+        vars.push_back(vp);
       }
     }
 
@@ -134,8 +130,8 @@ namespace { class Reorderer : public Traversal {
     }
 
     // apply these updated offsets to the original VarDecls
-    for (Ptr<Decl> &d : n.decls) {
-      if (auto v = dynamic_cast<VarDecl*>(d.get()))
+    for (Ptr<Node> &c : n.children) {
+      if (auto v = dynamic_cast<VarDecl*>(c.get()))
         v->offset = offsets[v->name];
     }
   }

@@ -3,7 +3,9 @@
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Model.h>
+#include <rumur/Node.h>
 #include <rumur/Number.h>
+#include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
@@ -186,12 +188,8 @@ void Traversal::visit_mod(Mod &n) {
 }
 
 void Traversal::visit_model(Model &n) {
-  for (auto &d : n.decls)
-    dispatch(*d);
-  for (auto &f : n.functions)
-    dispatch(*f);
-  for (auto &r : n.rules)
-    dispatch(*r);
+  for (Ptr<Node> &c : n.children)
+    dispatch(*c);
 }
 
 void Traversal::visit_mul(Mul &n) {
@@ -529,12 +527,8 @@ void ConstTraversal::visit_mod(const Mod &n) {
 }
 
 void ConstTraversal::visit_model(const Model &n) {
-  for (auto &d : n.decls)
-    dispatch(*d);
-  for (auto &f : n.functions)
-    dispatch(*f);
-  for (auto &r : n.rules)
-    dispatch(*r);
+  for (const Ptr<Node> &c : n.children)
+    dispatch(*c);
 }
 
 void ConstTraversal::visit_mul(const Mul &n) {
@@ -767,12 +761,8 @@ void ConstExprTraversal::visit_ifclause(const IfClause &n) {
 }
 
 void ConstExprTraversal::visit_model(const Model &n) {
-  for (auto &d : n.decls)
-    dispatch(*d);
-  for (auto &f : n.functions)
-    dispatch(*f);
-  for (auto &r : n.rules)
-    dispatch(*r);
+  for (const Ptr<Node> &c : n.children)
+    dispatch(*c);
 }
 
 void ConstExprTraversal::visit_procedurecall(const ProcedureCall &n) {
@@ -1021,12 +1011,8 @@ void ConstStmtTraversal::visit_mod(const Mod &n) {
 }
 
 void ConstStmtTraversal::visit_model(const Model &n) {
-  for (auto &d : n.decls)
-    dispatch(*d);
-  for (auto &f : n.functions)
-    dispatch(*f);
-  for (auto &r : n.rules)
-    dispatch(*r);
+  for (const Ptr<Node> &c : n.children)
+    dispatch(*c);
 }
 
 void ConstStmtTraversal::visit_mul(const Mul &n) {
@@ -1307,12 +1293,8 @@ void ConstTypeTraversal::visit_mod(const Mod &n) {
 }
 
 void ConstTypeTraversal::visit_model(const Model &n) {
-  for (auto &d : n.decls)
-    dispatch(*d);
-  for (auto &f : n.functions)
-    dispatch(*f);
-  for (auto &r : n.rules)
-    dispatch(*r);
+  for (const Ptr<Node> &c : n.children)
+    dispatch(*c);
 }
 
 void ConstTypeTraversal::visit_mul(const Mul &n) {
