@@ -571,6 +571,21 @@
         <ref name="rules"/>
         <ref name="content"/>
       </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="aliasdecl"/>
+          <ref name="constdecl"/>
+          <ref name="typedecl"/>
+          <ref name="vardecl"/>
+          <ref name="function"/>
+          <ref name="aliasrule"/>
+          <ref name="propertyrule"/>
+          <ref name="ruleset"/>
+          <ref name="simplerule"/>
+          <ref name="startstate"/>
+          <ref name="content"/>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
 
