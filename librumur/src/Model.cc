@@ -24,9 +24,15 @@
 namespace rumur {
 
 Model::Model(const std::vector<Ptr<Decl>> &decls_,
-  const std::vector<Ptr<Function>> &functions_,
-  const std::vector<Ptr<Rule>> &rules_, const location &loc_):
-  Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
+    const std::vector<Ptr<Function>> &functions_,
+    const std::vector<Ptr<Rule>> &rules_, const location &loc_):
+    Node(loc_), decls(decls_), functions(functions_), rules(rules_) {
+
+  children.reserve(decls.size() + functions.size() + rules.size());
+  children.insert(children.end(), decls.begin(), decls.end());
+  children.insert(children.end(), functions.begin(), functions.end());
+  children.insert(children.end(), rules.begin(), rules.end());
+}
 
 Model *Model::clone() const {
   return new Model(*this);

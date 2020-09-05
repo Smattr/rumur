@@ -21,6 +21,9 @@ struct Model : public Node {
   std::vector<Ptr<Function>> functions;
   std::vector<Ptr<Rule>> rules;
 
+  // XXX: not yet used
+  std::vector<Ptr<Node>> children;
+
   Model(const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Function>> &functions_,
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
