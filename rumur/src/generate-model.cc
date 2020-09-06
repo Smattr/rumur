@@ -38,13 +38,12 @@ void generate_model(std::ostream &out, const Model &m) {
 
       // create a list of the global declarations that are in scope (seen
       // previously) for this function
-      std::vector<Ptr<Decl>> decls;
+      std::vector<const Decl*> decls;
       for (const Ptr<Node> &n : m.children) {
         if (c.get() == n.get())
           break;
         if (auto d = dynamic_cast<const Decl*>(n.get()))
-          // FIXME: calling clone() directly here is messy and error prone
-          decls.push_back(Ptr<Decl>(d->clone()));
+          decls.push_back(d);
       }
 
       generate_function(out, *f, decls);
