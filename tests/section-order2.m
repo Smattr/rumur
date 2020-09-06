@@ -1,6 +1,4 @@
--- rumur_exit_code: 1
-
--- test that defining a function after rules is rejected
+-- test that defining a function after rules (Rumur extension) is accepted
 
 var
   x: boolean;

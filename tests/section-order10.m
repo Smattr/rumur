@@ -1,5 +1,3 @@
--- rumur_exit_code: 1
-
 -- The following tests an edge case where function parameters do *not* shadow
 -- global symbols, but *do* shadow global symbols if sections are reordered.
 -- I.e. if all variable and constant definitions were hoisted to the top of the

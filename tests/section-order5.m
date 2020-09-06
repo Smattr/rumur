@@ -1,5 +1,3 @@
--- rumur_exit_code: 1
-
 -- similar to section-order4.m, but the function references a state variable
 
 var

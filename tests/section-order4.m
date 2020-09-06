@@ -1,5 +1,3 @@
--- rumur_exit_code: 1
-
 -- similar to section-order2.m, but the function is used
 
 var

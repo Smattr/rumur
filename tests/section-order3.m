@@ -1,6 +1,4 @@
--- rumur_exit_code: 1
-
--- test that defining a const after rules is rejected
+-- test that defining a const after rules (Rumur extension) is allowed
 
 var
   x: boolean;
