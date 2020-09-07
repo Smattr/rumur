@@ -1,3 +1,11 @@
+rumur (2020.09.06-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * Fix armel, armhf, mipsel, mips64el sandboxing. Closes: #969156.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Mon, 07 Sep 2020 09:43:16 -0700
+
 rumur (2020.07.28-1) unstable; urgency=medium
 
   * New upstream release.
