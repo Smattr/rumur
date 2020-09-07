@@ -4,6 +4,7 @@
 #include "optimise-field-ordering.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using namespace rumur;
@@ -46,10 +47,9 @@ static void sort(std::vector<Ptr<VarDecl>> &fields) {
 }
 
 // extract a list of the names of fields within a list
-template<typename DECL>
-static std::vector<std::string> get_names(const std::vector<Ptr<DECL>> &decls) {
+static std::vector<std::string> get_names(const std::vector<Ptr<VarDecl>> &decls) {
   std::vector<std::string> r;
-  for (const Ptr<DECL> &d : decls) {
+  for (const Ptr<VarDecl> &d : decls) {
     if (auto f = dynamic_cast<const VarDecl*>(d.get()))
       r.push_back(f->name);
   }
@@ -57,9 +57,8 @@ static std::vector<std::string> get_names(const std::vector<Ptr<DECL>> &decls) {
 }
 
 // generate debug output if a list of fields has changed
-template<typename DECL>
 static void notify_changes(const std::vector<std::string> &original,
-    const std::vector<Ptr<DECL>> &sorted) {
+    const std::vector<Ptr<VarDecl>> &sorted) {
 
   // extract the current order of the fields
   const std::vector<std::string> current = get_names(sorted);
@@ -102,22 +101,15 @@ namespace { class Reorderer : public Traversal {
   void visit_model(Model &n) final {
 
     // first act on our children
-    for (Ptr<Decl> &d : n.decls)
-      dispatch(*d);
-    for (Ptr<Function> &f : n.functions)
-      dispatch(*f);
-    for (Ptr<Rule> &r : n.rules)
-      dispatch(*r);
+    for (Ptr<Node> &c : n.children)
+      dispatch(*c);
 
-    // separate our fields into VarDecls and the rest
+    // extract out the VarDecls
     std::vector<Ptr<VarDecl>> vars;
-    std::vector<Ptr<Decl>> other;
-    for (Ptr<Decl> &d : n.decls) {
-      if (auto v = dynamic_cast<VarDecl*>(d.get())) {
-         auto vp = Ptr<VarDecl>::make(*v);
-         vars.push_back(vp);
-      } else {
-        other.push_back(d);
+    for (Ptr<Node> &c : n.children) {
+      if (auto v = dynamic_cast<VarDecl*>(c.get())) {
+        auto vp = Ptr<VarDecl>::make(*v);
+        vars.push_back(vp);
       }
     }
 
@@ -129,16 +121,19 @@ namespace { class Reorderer : public Traversal {
     notify_changes(original, vars);
 
     // the offset of each variable within the model state is now inaccurate, so
-    // update this information
+    // calculate the new VarDecl -> offset mapping
     mpz_class offset = 0;
+    std::unordered_map<std::string, mpz_class> offsets;
     for (Ptr<VarDecl> &v : vars) {
-      v->offset = offset;
+      offsets[v->name] = offset;
       offset += v->type->width();
     }
 
-    // overwrite our declarations with the new ordering
-    other.insert(other.end(), vars.begin(), vars.end());
-    n.decls = other;
+    // apply these updated offsets to the original VarDecls
+    for (Ptr<Node> &c : n.children) {
+      if (auto v = dynamic_cast<VarDecl*>(c.get()))
+        v->offset = offsets[v->name];
+    }
   }
 
   void visit_record(Record &n) final {

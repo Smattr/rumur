@@ -202,16 +202,13 @@ namespace { class Simplifier : public BaseTraversal {
 
   void visit_model(Model &n) final {
     solver->open_scope();
-    for (Ptr<Decl> &decl : n.decls) {
-      dispatch(*decl);
-      declare_decl(*decl);
+    for (Ptr<Node> &c : n.children) {
+      dispatch(*c);
+      if (auto d = dynamic_cast<Decl*>(c.get()))
+        declare_decl(*d);
+      if (auto f = dynamic_cast<Function*>(c.get()))
+        declare_func(*f);
     }
-    for (Ptr<Function> &function : n.functions) {
-      dispatch(*function);
-      declare_func(*function);
-    }
-    for (Ptr<Rule> &rule : n.rules)
-      dispatch(*rule);
     solver->open_scope();
   }
 

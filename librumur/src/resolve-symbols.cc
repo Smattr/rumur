@@ -7,6 +7,7 @@
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Model.h>
+#include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
 #include <rumur/resolve-symbols.h>
@@ -281,14 +282,14 @@ class Resolver : public Traversal {
      */
     bool ok = true;
 
-    for (auto &d : n.decls) {
-      dispatch(*d);
+    for (Ptr<Node> &c : n.children) {
+      dispatch(*c);
 
       /* if this was a variable declaration, we now know enough to determine its
        * offset in the global state data
        */
       if (ok) {
-        if (auto v = dynamic_cast<VarDecl*>(d.get())) {
+        if (auto v = dynamic_cast<VarDecl*>(c.get())) {
 
           /* If the declaration or one of its children does not validate, it is
            * unsafe to call width().
@@ -310,14 +311,11 @@ class Resolver : public Traversal {
         }
       }
 
-      symtab.declare(d->name, d);
+      if (auto d = dynamic_cast<Decl*>(c.get()))
+        symtab.declare(d->name, c);
+      if (auto f = dynamic_cast<Function*>(c.get()))
+        symtab.declare(f->name, c);
     }
-    for (auto &f : n.functions) {
-      dispatch(*f);
-      symtab.declare(f->name, f);
-    }
-    for (auto &r : n.rules)
-      dispatch(*r);
   }
 
   void visit_mod(Mod &n) final {

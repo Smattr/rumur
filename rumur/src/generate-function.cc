@@ -9,7 +9,7 @@
 using namespace rumur;
 
 void generate_function(std::ostream &out, const Function &f,
-    const std::vector<Ptr<Decl>> &decls) {
+    const std::vector<const Decl*> &decls) {
 
   out << "static ";
 
@@ -55,7 +55,7 @@ void generate_function(std::ostream &out, const Function &f,
   /* Output the state variable handles so we can reference them within
    * this start state.
    */
-  for (const Ptr<Decl> &d : decls) {
+  for (const Decl *d : decls) {
     if (isa<VarDecl>(d)) {
 
       /* Exciting kludge: we need to suppress the definition of state variables

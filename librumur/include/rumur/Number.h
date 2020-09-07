@@ -26,6 +26,9 @@ struct Number : public Expr {
   virtual ~Number() = default;
   Number *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;

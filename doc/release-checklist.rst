@@ -11,9 +11,7 @@ The process of cutting a new Rumur release should follow these steps:
     them prior to release. The buildd tests are only run each time there is a
     new Debian package uploaded, so the turn around time on seeing a failure
     here and having an opportunity to fix it can be long.
-3.  Update ``LAST_RELEASE`` in ../librumur/src/make-version.py. For version
-    numbers, we use “vYYYY.MM.DD” with the date of the release.
-4.  Update ../CHANGELOG.rst with information about the changes in the new
+3.  Update ../CHANGELOG.rst with information about the changes in the new
     release. Changes should be separated into “user-facing” and “internal,”
     providing commit hash(es) as a reference where possible. The ordering in
     which changes are listed should firstly prioritise bug fixes (which should
@@ -21,20 +19,20 @@ The process of cutting a new Rumur release should follow these steps:
     change will have. Code changes that are only of relevance to people hacking
     on Rumur can be omitted, and this audience can read about them in the Git
     log.
-5.  Commit this to master.
-6.  Push this to `upstream on Github`_.
-7.  Wait for the `Travis CI regression tests`_ to pass. Travis is not very
+4.  Commit this to master.
+5.  Push this to `upstream on Github`_.
+6.  Wait for the `Travis CI regression tests`_ to pass. Travis is not very
     reliable and many errors are caused by infrastructure failures rather than
     your actual changes. So if you get a failure, check the logs to make sure
     it is not a false positive.
-8.  Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
+7.  Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
     release to work on FreeBSD because Rumur is in
     `FreeBSD’s package repository`_ and new releases are pulled in
     automatically. If one of these tests fail, you may need to look at the raw
     log because the summary output hides some stderr lines.
-9.  Tag the commit with the version number in “vYYYY.MM.DD” format.
-10. Push the new version tag upstream.
-11. Package Rumur for Debian (see below).
+8.  Tag the commit with the version number in “vYYYY.MM.DD” format.
+9.  Push the new version tag upstream.
+10. Package Rumur for Debian (see below).
 
 Github’s automated release process should notice the version tag and show the
 new release as a downloadable zip/tarball on the “releases” tab of
@@ -91,6 +89,10 @@ Then:
 13. Follow the instructions included in the confirmation email to send a
     `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
     get a reply from an interested party.
+
+14. When/if the package is accepted into Debian unstable, tag the commit used to
+    produce it with the Debian version number in “debian/vYYYY.MM.DD-1” format.
+    Push this upstream.
 
 Note that there could still be problems with the package that a sponsor may
 request you fix. For example, there is currently no easy way to smoke test the

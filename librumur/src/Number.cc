@@ -8,6 +8,7 @@
 #include <rumur/Expr.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
+#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
 #include <stdexcept>
 #include <string>
@@ -26,6 +27,14 @@ Number::Number(const mpz_class &value_, const location &loc_):
 
 Number *Number::clone() const {
   return new Number(*this);
+}
+
+void Number::visit(BaseTraversal &visitor) {
+  visitor.visit_number(*this);
+}
+
+void Number::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_number(*this);
 }
 
 bool Number::constant() const {

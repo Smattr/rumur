@@ -30,6 +30,9 @@ struct Function : public Node {
   Function *clone() const final;
   void validate() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   // is this function side effect free?
   bool is_pure() const;
 

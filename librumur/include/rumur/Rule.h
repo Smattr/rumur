@@ -38,6 +38,9 @@ struct AliasRule : public Rule {
   virtual ~AliasRule() = default;
   AliasRule *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   std::vector<Ptr<Rule>> flatten() const final;
 };
 
@@ -53,6 +56,9 @@ struct SimpleRule : public Rule {
   virtual ~SimpleRule() = default;
   SimpleRule *clone() const override;
   void validate() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct StartState : public Rule {
@@ -66,6 +72,9 @@ struct StartState : public Rule {
   virtual ~StartState() = default;
   StartState *clone() const final;
   void validate() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct PropertyRule : public Rule {
@@ -76,6 +85,9 @@ struct PropertyRule : public Rule {
     const location &loc_);
   virtual ~PropertyRule() = default;
   PropertyRule *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Ruleset : public Rule {
@@ -87,6 +99,9 @@ struct Ruleset : public Rule {
   virtual ~Ruleset() = default;
   Ruleset *clone() const final;
   void validate() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   std::vector<Ptr<Rule>> flatten() const final;
 };

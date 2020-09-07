@@ -185,6 +185,14 @@ Range *Range::clone() const {
   return new Range(*this);
 }
 
+void Range::visit(BaseTraversal &visitor) {
+  visitor.visit_range(*this);
+}
+
+void Range::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_range(*this);
+}
+
 mpz_class Range::count() const {
   mpz_class lb = min->constant_fold();
   mpz_class ub = max->constant_fold();
@@ -229,6 +237,14 @@ Scalarset *Scalarset::clone() const {
   return new Scalarset(*this);
 }
 
+void Scalarset::visit(BaseTraversal &visitor) {
+  visitor.visit_scalarset(*this);
+}
+
+void Scalarset::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_scalarset(*this);
+}
+
 mpz_class Scalarset::count() const {
   mpz_class b = bound->constant_fold();
   assert(b > 0 && "non-positive bound for scalarset");
@@ -271,6 +287,14 @@ Enum::Enum(const std::vector<std::pair<std::string, location>> &members_,
 
 Enum *Enum::clone() const {
   return new Enum(*this);
+}
+
+void Enum::visit(BaseTraversal &visitor) {
+  visitor.visit_enum(*this);
+}
+
+void Enum::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_enum(*this);
 }
 
 mpz_class Enum::count() const {
@@ -342,6 +366,14 @@ Record *Record::clone() const {
   return new Record(*this);
 }
 
+void Record::visit(BaseTraversal &visitor) {
+  visitor.visit_record(*this);
+}
+
+void Record::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_record(*this);
+}
+
 mpz_class Record::width() const {
   mpz_class s = 0;
   for (const Ptr<VarDecl> &v : fields)
@@ -369,6 +401,14 @@ Array::Array(const Ptr<TypeExpr> &index_type_,
 
 Array *Array::clone() const {
   return new Array(*this);
+}
+
+void Array::visit(BaseTraversal &visitor) {
+  visitor.visit_array(*this);
+}
+
+void Array::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_array(*this);
 }
 
 mpz_class Array::width() const {
@@ -415,6 +455,14 @@ TypeExprID::TypeExprID(const std::string &name_,
 
 TypeExprID *TypeExprID::clone() const {
   return new TypeExprID(*this);
+}
+
+void TypeExprID::visit(BaseTraversal &visitor) {
+  visitor.visit_typeexprid(*this);
+}
+
+void TypeExprID::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_typeexprid(*this);
 }
 
 mpz_class TypeExprID::width() const {

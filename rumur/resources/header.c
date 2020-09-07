@@ -45,7 +45,9 @@ enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 /* the size of auxliary members of the state struct */
 enum { BOUND_BITS = BITS_FOR(BOUND) };
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  #if defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
+  #if POINTER_BITS != 0
+    enum { PREVIOUS_BITS = POINTER_BITS };
+  #elif defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
     /* assume 5-level paging, and hence the top 2 bytes of any user pointer are
      * always 0 and not required.
      * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
@@ -288,6 +290,14 @@ static void sandbox(void) {
       /* on platforms without vDSO support, time() makes an actual syscall, so
        * we need to allow them
        */
+#ifdef __NR_clock_gettime
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clock_gettime, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
+#ifdef __NR_clock_gettime64
+      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clock_gettime64, 0, 1),
+      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+#endif
 #ifdef __NR_gettimeofday
       BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_gettimeofday, 0, 1),
       BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
@@ -529,34 +539,40 @@ static void *xcalloc(size_t count, size_t size) {
   return p;
 }
 
-/* A lock that should be held whenever printing to stdout or stderr. This is a
- * way to prevent the output of one thread being interleaved with the output of
- * another.
- */
-static pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-static void print_lock(void) {
-  int r __attribute__((unused)) = pthread_mutex_lock(&print_mutex);
-  assert(r == 0);
+static void put(const char *NONNULL s) {
+  for (; *s != '\0'; ++s) {
+    putchar_unlocked(*s);
+  }
 }
 
-static bool print_trylock(void) {
-  return pthread_mutex_trylock(&print_mutex) == 0;
+static void put_int(intmax_t u) {
+  char buffer[128] = { 0 };
+  snprintf(buffer, sizeof(buffer), "%" PRIdMAX, u);
+  put(buffer);
 }
 
-static void print_unlock(void) {
-  int r __attribute__((unused)) = pthread_mutex_unlock(&print_mutex);
-  assert(r == 0);
+static void put_uint(uintmax_t u) {
+  char buffer[128] = { 0 };
+  snprintf(buffer, sizeof(buffer), "%" PRIuMAX, u);
+  put(buffer);
+}
+
+static __attribute__((unused)) void put_val(value_t v) {
+  if (value_is_signed()) {
+    put_int((intmax_t)v);
+  } else {
+    put_uint((uintmax_t)v);
+  }
 }
 
 static void xml_printf(const char *NONNULL s) {
   while (*s != '\0') {
     switch (*s) {
-      case '"': printf("&quot;"); break;
-      case '<': printf("&lt;");   break;
-      case '>': printf("&gt;");   break;
-      case '&': printf("&amp;");  break;
-      default:  printf("%c", *s); break;
+      case '"': put("&quot;"); break;
+      case '<': put("&lt;");   break;
+      case '>': put("&gt;");   break;
+      case '&': put("&amp;");  break;
+      default:  putchar_unlocked(*s); break;
     }
     s++;
   }
@@ -571,13 +587,13 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
   va_list ap;
   va_start(ap, fmt);
 
-  print_lock();
+  flockfile(stdout);
 
   (void)fprintf(stderr, "%sTRACE%s:", yellow(), reset());
   (void)vfprintf(stderr, fmt, ap);
   (void)fprintf(stderr, "\n");
 
-  print_unlock();
+  funlockfile(stdout);
   va_end(ap);
 }
 
@@ -1093,10 +1109,8 @@ static __attribute__((pure)) const struct state *state_previous_get(
 static void state_previous_set(struct state *NONNULL s,
     const struct state *previous) {
 #if PACK_STATE
-#if defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
-  ASSERT(((uintptr_t)previous >> PREVIOUS_BITS) == 0
-    && "upper 2 bytes of pointer are non-zero (not using 5-level paging?)");
-#endif
+  ASSERT((PREVIOUS_BITS == sizeof(void*) * 8 || ((uintptr_t)previous >> PREVIOUS_BITS) == 0)
+    && "upper bits of pointer are non-zero (incorrect --pointer-bits setting?)");
   struct handle h = state_previous_handle(s);
   write_raw(h, (uint64_t)(uintptr_t)previous);
 #else
@@ -1327,7 +1341,7 @@ static void print_allocation_summary(void) {
 /******************************************************************************/
 
 /* Print a counterexample trace terminating at the given state. This function
- * assumes that the caller already holds print_mutex.
+ * assumes that the caller already holds a lock on stdout.
  */
 static void print_counterexample(
   const struct state *NONNULL s __attribute__((unused)));
@@ -1346,16 +1360,17 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 
   if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 
-    print_lock();
+    flockfile(stdout);
 
     va_list ap;
     va_start(ap, fmt);
 
     if (MACHINE_READABLE_OUTPUT) {
-      printf("<error includes_trace=\"%s\">\n",
-        (s == NULL || COUNTEREXAMPLE_TRACE == CEX_OFF) ? "false" : "true");
+      put("<error includes_trace=\"");
+      put((s == NULL || COUNTEREXAMPLE_TRACE == CEX_OFF) ? "false" : "true");
+      put("\">\n");
 
-      printf("<message>");
+      put("<message>");
       {
         va_list ap2;
         va_copy(ap2, ap);
@@ -1367,8 +1382,8 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
           exit(EXIT_FAILURE);
         }
 
-        char *buffer = xmalloc(size);
-        if (__builtin_expect(vsnprintf(buffer, size, fmt, ap) != size, 0)) {
+        char *buffer = xmalloc(size + 1);
+        if (__builtin_expect(vsnprintf(buffer, size + 1, fmt, ap) != size, 0)) {
           fputs("vsnprintf failed", stderr);
           exit(EXIT_FAILURE);
         }
@@ -1376,34 +1391,53 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
         xml_printf(buffer);
         free(buffer);
       }
-      printf("</message>\n");
+      put("</message>\n");
 
       if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
         print_counterexample(s);
       }
 
-      printf("</error>\n");
+      put("</error>\n");
 
     } else {
       if (s != NULL) {
-        printf("The following is the error trace for the error:\n\n");
+        put("The following is the error trace for the error:\n\n");
       } else {
-        printf("Result:\n\n");
+        put("Result:\n\n");
       }
 
-      printf("\t%s%s", red(), bold());
-      vprintf(fmt, ap);
-      printf("%s\n\n", reset());
+      put("\t"); put(red()); put(bold());
+      {
+        va_list ap2;
+        va_copy(ap2, ap);
+
+        int size = vsnprintf(NULL, 0, fmt, ap2);
+        va_end(ap2);
+        if (__builtin_expect(size < 0, 0)) {
+          fputs("vsnprintf failed", stderr);
+          exit(EXIT_FAILURE);
+        }
+
+        char *buffer = xmalloc(size + 1);
+        if (__builtin_expect(vsnprintf(buffer, size + 1, fmt, ap) != size, 0)) {
+          fputs("vsnprintf failed", stderr);
+          exit(EXIT_FAILURE);
+        }
+
+        put(buffer);
+        free(buffer);
+      }
+      put(reset()); put("\n\n");
 
       if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
         print_counterexample(s);
-        printf("End of the error trace.\n\n");
+        put("End of the error trace.\n\n");
       }
     }
 
     va_end(ap);
 
-    print_unlock();
+    funlockfile(stdout);;
   }
 
 #ifdef __clang__
@@ -1528,13 +1562,13 @@ static void state_canonicalise(struct state *NONNULL s) {
 static __attribute__((unused)) void state_print_field_offsets(void);
 
 /* Print a state to stderr. This function is generated. This function assumes
- * that the caller already holds print_mutex.
+ * that the caller already holds a lock on stdout.
  */
 static __attribute__((unused)) void state_print(const struct state *previous,
   const struct state *NONNULL s);
 
 /* Print the first rule that resulted in s. This function is generated. This
- * function assumes that the caller holds print_mutex.
+ * function assumes that the caller holds a lock on stdout.
  */
 static __attribute__((unused)) void print_transition(
     const struct state *NONNULL s);
@@ -1570,13 +1604,13 @@ static void print_counterexample(
     print_transition(current);
 
     if (MACHINE_READABLE_OUTPUT) {
-      printf("<state>\n");
+      put("<state>\n");
     }
     state_print(COUNTEREXAMPLE_TRACE == FULL ? NULL : previous, current);
     if (MACHINE_READABLE_OUTPUT) {
-      printf("</state>\n");
+      put("</state>\n");
     } else {
-      printf("----------\n\n");
+      put("----------\n\n");
     }
   }
 
@@ -3612,9 +3646,9 @@ static int exit_with(int status) {
       void *ret;
       int r = pthread_join(threads[i], &ret);
       if (__builtin_expect(r != 0, 0)) {
-        print_lock();
+        flockfile(stdout);
         fprintf(stderr, "failed to join thread: %s\n", strerror(r));
-        print_unlock();
+        funlockfile(stdout);
         continue;
       }
       status |= (int)(intptr_t)ret;
@@ -3645,20 +3679,23 @@ static int exit_with(int status) {
   #pragma GCC diagnostic pop
 #endif
         if (MACHINE_READABLE_OUTPUT) {
-          printf("<cover_result message=\"");
+          put("<cover_result message=\"");
           xml_printf(COVER_MESSAGES[i]);
-          printf("\" count=\"%" PRIuMAX "\"/>\n", covers[i]);
+          put("\" count=\""); put_uint(covers[i]); put("\"/>\n");
         }
         if (covers[i] == 0) {
           if (!MACHINE_READABLE_OUTPUT) {
-            printf("\t%s%scover \"%s\" not hit%s\n", red(), bold(),
-              COVER_MESSAGES[i], reset());
+            put("\t"); put(red()); put(bold());
+            put("cover \""); put(COVER_MESSAGES[i]); put("\" not hit");
+            put(reset()); put("\n");
           }
           error_count++;
           status = EXIT_FAILURE;
         } else if (!MACHINE_READABLE_OUTPUT) {
-          printf("\t%s%scover \"%s\" hit %" PRIuMAX " times%s\n", green(),
-            bold(), COVER_MESSAGES[i], covers[i], reset());
+          put("\t"); put(green()); put(bold());
+          put("cover \""); put(COVER_MESSAGES[i]); put("\" hit ");
+          put_uint(covers[i]); put(" times");
+          put(reset()); put("\n");
         }
       }
     }
@@ -3679,17 +3716,21 @@ static int exit_with(int status) {
 #endif
 
     if (!MACHINE_READABLE_OUTPUT) {
-      printf("\n"
-             "==========================================================================\n"
-             "\n"
-             "Status:\n"
-             "\n");
+      put("\n"
+          "==========================================================================\n"
+          "\n"
+          "Status:\n"
+          "\n");
       if (error_count == 0) {
-        printf("\t%s%sNo error found.%s\n", green(), bold(), reset());
+        put("\t"); put(green()); put(bold());
+        put("No error found.");
+        put(reset()); put("\n");
       } else {
-        printf("\t%s%s%lu error(s) found.%s\n", red(), bold(), error_count, reset());
+        put("\t"); put(red()); put(bold());
+        put_uint(error_count); put(" error(s) found.");
+        put(reset()); put("\n");
       }
-      printf("\n");
+      put("\n");
     }
 
     /* Calculate the total number of rules fired. */
@@ -3711,15 +3752,26 @@ static int exit_with(int status) {
     assert(count == seen_count && "seen set count is inconsistent at exit");
 
     if (MACHINE_READABLE_OUTPUT) {
-      printf("<summary states=\"%zu\" rules_fired=\"%" PRIuMAX "\" errors=\"%lu\" "
-        "duration_seconds=\"%llu\"/>\n", seen_count, fire_count, error_count,
-        gettime());
-      printf("</rumur_run>\n");
+      put("<summary states=\"");
+      put_uint(seen_count);
+      put("\" rules_fired=\"");
+      put_uint(fire_count);
+      put("\" errors=\"");
+      put_uint(error_count);
+      put("\" duration_seconds=\"");
+      put_uint(gettime());
+      put("\"/>\n");
+      put("</rumur_run>\n");
     } else {
-      printf("State Space Explored:\n"
-             "\n"
-             "\t%zu states, %" PRIuMAX " rules fired in %llus.\n",
-             seen_count, fire_count, gettime());
+      put("State Space Explored:\n"
+          "\n"
+          "\t");
+      put_uint(seen_count);
+      put(" states, ");
+      put_uint(fire_count);
+      put(" rules fired in ");
+      put_uint(gettime());
+      put("s.\n");
     }
 
     /* print memory usage statistics if `--trace memory_usage` is in effect */
@@ -3790,19 +3842,27 @@ int main(void) {
   sandbox();
 
   if (MACHINE_READABLE_OUTPUT) {
-    printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-           "<rumur_run>\n"
-           "<information state_size_bits=\"%zu\" state_size_bytes=\"%zu\" "
-      "hash_table_slots=\"%zu\"/>\n", (size_t)STATE_SIZE_BITS,
-      (size_t)STATE_SIZE_BYTES, ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+    put("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+        "<rumur_run>\n"
+        "<information state_size_bits=\"");
+    put_uint(STATE_SIZE_BITS);
+    put("\" state_size_bytes=\"");
+    put_uint(STATE_SIZE_BYTES);
+    put("\" hash_table_slots=\"");
+    put_uint(((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+    put("\"/>\n");
   } else {
-    printf("Memory usage:\n"
-           "\n"
-           "\t* The size of each state is %zu bits (rounded up to %zu bytes).\n"
-           "\t* The size of the hash table is %zu slots.\n"
-           "\n",
-           (size_t)STATE_SIZE_BITS, (size_t)STATE_SIZE_BYTES,
-           ((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+    put("Memory usage:\n"
+        "\n"
+        "\t* The size of each state is ");
+    put_uint(STATE_SIZE_BITS);
+    put(" bits (rounded up to ");
+    put_uint(STATE_SIZE_BYTES);
+    put(" bytes).\n"
+        "\t* The size of the hash table is ");
+    put_uint(((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+    put(" slots.\n"
+        "\n");
   }
 
 #ifndef NDEBUG
@@ -3820,7 +3880,7 @@ int main(void) {
   init();
 
   if (!MACHINE_READABLE_OUTPUT) {
-    printf("Progress Report:\n\n");
+    put("Progress Report:\n\n");
   }
 
   explore();

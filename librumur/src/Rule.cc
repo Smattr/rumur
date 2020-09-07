@@ -66,6 +66,14 @@ AliasRule *AliasRule::clone() const {
   return new AliasRule(*this);
 }
 
+void AliasRule::visit(BaseTraversal &visitor) {
+  visitor.visit_aliasrule(*this);
+}
+
+void AliasRule::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_aliasrule(*this);
+}
+
 std::vector<Ptr<Rule>> AliasRule::flatten() const {
   std::vector<Ptr<Rule>> rs;
   for (const Ptr<Rule> &r : rules) {
@@ -90,6 +98,14 @@ void SimpleRule::validate() const {
   ReturnChecker::check(*this);
 }
 
+void SimpleRule::visit(BaseTraversal &visitor) {
+  visitor.visit_simplerule(*this);
+}
+
+void SimpleRule::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_simplerule(*this);
+}
+
 StartState::StartState(const std::string &name_,
   const std::vector<Ptr<Decl>> &decls_,
   const std::vector<Ptr<Stmt>> &body_, const location &loc_):
@@ -103,12 +119,28 @@ void StartState::validate() const {
   ReturnChecker::check(*this);
 }
 
+void StartState::visit(BaseTraversal &visitor) {
+  visitor.visit_startstate(*this);
+}
+
+void StartState::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_startstate(*this);
+}
+
 PropertyRule::PropertyRule(const std::string &name_, const Property &property_,
   const location &loc_):
   Rule(name_, loc_), property(property_) { }
 
 PropertyRule *PropertyRule::clone() const {
   return new PropertyRule(*this);
+}
+
+void PropertyRule::visit(BaseTraversal &visitor) {
+  visitor.visit_propertyrule(*this);
+}
+
+void PropertyRule::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_propertyrule(*this);
 }
 
 Ruleset::Ruleset(const std::vector<Quantifier> &quantifiers_,
@@ -127,6 +159,14 @@ void Ruleset::validate() const {
       throw Error("non-constant quantifier expression as ruleset parameter",
         q.loc);
   }
+}
+
+void Ruleset::visit(BaseTraversal &visitor) {
+  visitor.visit_ruleset(*this);
+}
+
+void Ruleset::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_ruleset(*this);
 }
 
 std::vector<Ptr<Rule>> Ruleset::flatten() const {

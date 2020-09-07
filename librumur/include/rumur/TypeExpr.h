@@ -64,6 +64,9 @@ struct Range : public TypeExpr {
   Range *clone() const final;
   virtual ~Range() = default;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class count() const final;
   bool is_simple() const final;
   void validate() const final;
@@ -81,6 +84,9 @@ struct Scalarset : public TypeExpr {
   Scalarset(const Ptr<Expr> &bound_, const location &loc_);
   Scalarset *clone() const final;
   virtual ~Scalarset() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class count() const final;
   bool is_simple() const final;
@@ -106,6 +112,9 @@ struct Enum : public TypeExpr {
   Enum *clone() const final;
   virtual ~Enum() = default;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class count() const final;
   bool is_simple() const final;
   void validate() const final;
@@ -125,6 +134,9 @@ struct Record : public TypeExpr {
   Record *clone() const final;
   virtual ~Record() = default;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class width() const final;
   mpz_class count() const final;
   std::string to_string() const final;
@@ -139,6 +151,9 @@ struct Array : public TypeExpr {
     const location &loc_);
   Array *clone() const final;
   virtual ~Array() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class width() const final;
   mpz_class count() const final;
@@ -155,6 +170,9 @@ struct TypeExprID : public TypeExpr {
     const location &loc_);
   TypeExprID *clone() const final;
   virtual ~TypeExprID() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class width() const final;
   mpz_class count() const final;

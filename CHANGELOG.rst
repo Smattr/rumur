@@ -1,6 +1,64 @@
 Change log
 ==========
 
+v2020.09.06
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: when using XML output (``--output-format machine-readable``) error
+  messages no longer have their last character truncated (commit
+  6133e71b65c53cec050cdf5d40f735f2b9b3b525).
+* Bug fix: ``clock_gettim64()`` is now allowed within a sandboxed checker,
+  fixing sandboxing on armel, armhf, and mipsel (commit
+  68683c4742b380421936a703c4b9262dac1e68dc).
+* Bug fix: ``clock_gettime()`` is now allowed within a sandboxed checker, fixing
+  sandboxing on mips64el (commit af121b2a9bb7f7dcdd63fbc2716b314c408abf2c).
+* Declarations, functions/procedures, and rules no longer need to appear in this
+  precise order within a model. E.g. a constant declaration can now appear in
+  the middle of your model, after the definition of some functions. Expressions
+  can still only refer to entities that have been defined prior in the source
+  file (commits a77dc6d63e5f8bed9c39aa37209ec0b430aff67d,
+  c99b0a604d45bedc9a1d8680912371d0a76783b6,
+  d984fb9ad4bbedc8e99ded8aa3081bf4eba9a0ef,
+  40114146920f6bef44b84532f5ff6ed1f24dd454,
+  0a1dd7c6f476df1d7dcdd760722bff5343762609,
+  501e02d288532c32c236875977e65b99bdb3ebb1,
+  aa2a9a8774af651fe46410aee2405385c23c1a28,
+  2d712b5838c638b6e90e0e0e34529d62b16319db,
+  92ca08a13ba5c40fe459733d10ae1819fc9f0796,
+  67a01344ad7a197887bc59ad3726847a2f2f530b).
+* The Murphi AST XML format emitted by ``murphi2xml`` now allows declarations,
+  functions, procedures, and rules as direct children of ``model``. This new
+  alternative hierarchy is what ``murphi2xml`` now emits (commits
+  d984fb9ad4bbedc8e99ded8aa3081bf4eba9a0ef,
+  40114146920f6bef44b84532f5ff6ed1f24dd454).
+* ``rumur`` gained a new command line flag, ``--pointer-bits``, for indicating
+  how many low bits of a pointer on the target platform are meaningful. You can
+  use this to get extra memory optimisations through pointer compression. See
+  the manpage for more information (commit
+  bc90b807687ac20af9fd025a46493832977ec9aa).
+* On x86-64 Linux, ``rumur-run`` now auto-detects when your CPU does not support
+  5-level paging and enables pointer compression optimisations (commit
+  b34bf4f2843c60c916bdafb9a95ad901f2aad5de).
+* In debug output during checking, the initial printing of state variables and
+  their offsets now lists them in the order they appeared in the source file,
+  regardless of whether they were rearranged for efficiency (commit
+  a77dc6d63e5f8bed9c39aa37209ec0b430aff67d).
+* There are some minor white space changes to the C code emitted by ``murphi2c``
+  (commit 40114146920f6bef44b84532f5ff6ed1f24dd454).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The ``Model`` constructor, ``Model::Model`` that takes four arguments has been
+  deprecated in favour of a new constructor that takes two arguments (commits
+  501e02d288532c32c236875977e65b99bdb3ebb1,
+  f375d67d929e789d22f9df882c23d774f4e60518).
+* The AST node members of ``Model`` have been removed in favour of a new unified
+  collection, ``Model::children`` (commits
+  c99b0a604d45bedc9a1d8680912371d0a76783b6,
+  0a1dd7c6f476df1d7dcdd760722bff5343762609).
+
 v2020.07.28
 -----------
 

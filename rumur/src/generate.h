@@ -23,7 +23,7 @@ void generate_allocations(std::ostream &out,
 void generate_decl(std::ostream &out, const rumur::Decl &d);
 
 void generate_function(std::ostream &out, const rumur::Function &f,
-  const std::vector<rumur::Ptr<rumur::Decl>> &decls);
+  const std::vector<const rumur::Decl*> &decls);
 
 void generate_model(std::ostream &out, const rumur::Model &m);
 

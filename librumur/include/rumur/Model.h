@@ -17,13 +17,17 @@ namespace rumur {
 
 struct Model : public Node {
 
-  std::vector<Ptr<Decl>> decls;
-  std::vector<Ptr<Function>> functions;
-  std::vector<Ptr<Rule>> rules;
+  // declarations, functions and rules in the order in which they appeared in
+  // the source
+  std::vector<Ptr<Node>> children;
 
+  __attribute__((deprecated("the 4-argument constructor of Model is "
+    "deprecated; please use the newer 2-argument constructor")))
   Model(const std::vector<Ptr<Decl>> &decls_,
     const std::vector<Ptr<Function>> &functions_,
     const std::vector<Ptr<Rule>> &rules_, const location &loc_);
+
+  Model(const std::vector<Ptr<Node>> &children_, const location &loc_);
   virtual ~Model() = default;
   Model *clone() const final;
 
@@ -31,6 +35,10 @@ struct Model : public Node {
   mpz_class size_bits() const;
 
   void validate() const final;
+
+  // dispatch to the appropriate traversal method (see traverse.h)
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   /* Get the number of global liveness properties in the model. Unlike
    * assumption_count, this considers the "flat" model. That is, a

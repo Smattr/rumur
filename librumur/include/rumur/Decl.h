@@ -52,6 +52,9 @@ struct AliasDecl : public ExprDecl {
   AliasDecl *clone() const final;
   virtual ~AliasDecl() = default;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool is_lvalue() const final;
   bool is_readonly() const final;
   Ptr<TypeExpr> get_type() const final;
@@ -73,6 +76,9 @@ struct ConstDecl : public ExprDecl {
   ConstDecl *clone() const final;
   virtual ~ConstDecl() = default;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool is_lvalue() const final;
   bool is_readonly() const final;
   void validate() const final;
@@ -87,6 +93,9 @@ struct TypeDecl : public Decl {
     const location &loc);
   TypeDecl *clone() const final;
   virtual ~TypeDecl() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct VarDecl : public ExprDecl {
@@ -108,6 +117,9 @@ struct VarDecl : public ExprDecl {
     const location &loc_);
   VarDecl *clone() const final;
   virtual ~VarDecl() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class count() const;
   mpz_class width() const;

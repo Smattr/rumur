@@ -198,10 +198,10 @@
 %type <rumur::Ptr<rumur::Expr>>                              guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
+%type <std::vector<rumur::Ptr<rumur::Node>>>                 nodes
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameter
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameters
 %type <rumur::Ptr<rumur::Function>>                          procdecl
-%type <std::vector<rumur::Ptr<rumur::Function>>>             procdecls
 %type <rumur::Ptr<rumur::PropertyRule>>                      property
 %type <std::shared_ptr<rumur::Quantifier>>                   quantifier
 %type <std::vector<rumur::Quantifier>>                       quantifiers
@@ -226,8 +226,20 @@
 
 %%
 
-model: decls procdecls rules {
-  output = rumur::Ptr<rumur::Model>::make($1, $2, $3, @$);
+model: nodes {
+  output = rumur::Ptr<rumur::Model>::make($1, @$);
+};
+
+nodes: nodes decl {
+  $$ = $1;
+  std::move($2.begin(), $2.end(), std::back_inserter($$));
+} | nodes procdecl {
+  $$ = $1;
+  $$.push_back($2);
+} | nodes rule semi_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
 };
 
 aliasrule: ALIAS exprdecls DO rules endalias {
@@ -450,12 +462,6 @@ parameters: parameters parameter semi_opt {
 
 procdecl: function ID '(' parameters ')' return_type decls begin_opt stmts endfunction semi_opt {
   $$ = rumur::Ptr<rumur::Function>::make($2, $4, $6, $7, $9, @$);
-};
-
-procdecls: procdecls procdecl {
-  $$ = $1;
-  $$.push_back($2);
-} | %empty {
 };
 
 property: category STRING expr {

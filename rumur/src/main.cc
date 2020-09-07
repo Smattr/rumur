@@ -58,6 +58,7 @@ static void parse_args(int argc, char **argv) {
       OPT_MONOPOLISE,
       OPT_OUTPUT_FORMAT,
       OPT_PACK_STATE,
+      OPT_POINTER_BITS,
       OPT_REORDER_FIELDS,
       OPT_SANDBOX,
       OPT_SCALARSET_SCHEDULES,
@@ -88,6 +89,7 @@ static void parse_args(int argc, char **argv) {
       { "output", required_argument, 0, 'o' },
       { "output-format", required_argument, 0, OPT_OUTPUT_FORMAT },
       { "pack-state", required_argument, 0, OPT_PACK_STATE },
+      { "pointer-bits", required_argument, 0, OPT_POINTER_BITS },
       { "quiet", no_argument, 0, 'q' },
       { "reorder-fields", required_argument, 0, OPT_REORDER_FIELDS },
       { "sandbox", required_argument, 0, OPT_SANDBOX },
@@ -286,6 +288,26 @@ static void parse_args(int argc, char **argv) {
           exit(EXIT_FAILURE);
         }
         break;
+
+      case OPT_POINTER_BITS: // --pointer-bits ...
+        if (strcmp(optarg, "auto") == 0) {
+          options.pointer_bits = 0;
+        } else {
+          bool valid = true;
+          try {
+            options.pointer_bits = optarg;
+            if (options.pointer_bits <= 0)
+              valid = false;
+          } catch (std::invalid_argument&) {
+            valid = false;
+          }
+          if (!valid) {
+            std::cerr << "invalid --pointer-bits argument \"" << optarg << "\"\n";
+            exit(EXIT_FAILURE);
+          }
+        }
+        break;
+
 
       case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
         if (strcmp(optarg, "off") == 0) {

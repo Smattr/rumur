@@ -70,8 +70,11 @@ struct Ternary : public Expr {
   Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
     const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Ternary() = default;
-
   Ternary *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -115,6 +118,9 @@ struct Implication : public BooleanBinaryExpr {
   Implication *clone() const final;
   virtual ~Implication() = default;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -126,6 +132,9 @@ struct Or : public BooleanBinaryExpr {
   virtual ~Or() = default;
   Or *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -136,6 +145,9 @@ struct And : public BooleanBinaryExpr {
   And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~And() = default;
   And *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -149,6 +161,9 @@ struct AmbiguousAmp : public BinaryExpr {
   AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~AmbiguousAmp() = default;
   AmbiguousAmp *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -164,6 +179,9 @@ struct AmbiguousPipe : public BinaryExpr {
     const location &loc_);
   virtual ~AmbiguousPipe() = default;
   AmbiguousPipe *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -188,6 +206,9 @@ struct Not : public UnaryExpr {
   virtual ~Not() = default;
   Not *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   void validate() const final;
@@ -208,6 +229,9 @@ struct Lt : public ComparisonBinaryExpr {
   virtual ~Lt() = default;
   Lt *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -218,6 +242,9 @@ struct Leq : public ComparisonBinaryExpr {
   Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Leq() = default;
   Leq *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -230,6 +257,9 @@ struct Gt : public ComparisonBinaryExpr {
   virtual ~Gt() = default;
   Gt *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -240,6 +270,9 @@ struct Geq : public ComparisonBinaryExpr {
   Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Geq() = default;
   Geq *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -260,6 +293,9 @@ struct Eq : public EquatableBinaryExpr {
   virtual ~Eq() = default;
   Eq *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -270,6 +306,9 @@ struct Neq : public EquatableBinaryExpr {
   Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Neq() = default;
   Neq *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -291,6 +330,9 @@ struct Add : public ArithmeticBinaryExpr {
   virtual ~Add() = default;
   Add *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -301,6 +343,9 @@ struct Sub : public ArithmeticBinaryExpr {
   virtual ~Sub() = default;
   Sub *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -310,6 +355,9 @@ struct Negative : public UnaryExpr {
   Negative(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Negative() = default;
   Negative *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -323,6 +371,9 @@ struct Bnot : public UnaryExpr {
   virtual ~Bnot() = default;
   Bnot *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
   void validate() const final;
@@ -335,6 +386,9 @@ struct Mul : public ArithmeticBinaryExpr {
   virtual ~Mul() = default;
   Mul *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -344,6 +398,9 @@ struct Div : public ArithmeticBinaryExpr {
   Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Div() = default;
   Div *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -355,6 +412,9 @@ struct Mod : public ArithmeticBinaryExpr {
   virtual ~Mod() = default;
   Mod *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -365,6 +425,9 @@ struct Lsh : public ArithmeticBinaryExpr {
   virtual ~Lsh() = default;
   Lsh *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -374,6 +437,9 @@ struct Rsh : public ArithmeticBinaryExpr {
   Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Rsh() = default;
   Rsh *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -386,6 +452,9 @@ struct Band : public ArithmeticBinaryExpr {
   virtual ~Band() = default;
   Band *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -397,6 +466,9 @@ struct Bor : public ArithmeticBinaryExpr {
   virtual ~Bor() = default;
   Bor *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   mpz_class constant_fold() const final;
   std::string to_string() const final;
 };
@@ -406,6 +478,9 @@ struct Xor : public ArithmeticBinaryExpr {
   Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Xor() = default;
   Xor *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   mpz_class constant_fold() const final;
   std::string to_string() const final;
@@ -421,6 +496,9 @@ struct ExprID : public Expr {
     const location &loc_);
   virtual ~ExprID() = default;
   ExprID *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
@@ -444,6 +522,9 @@ struct Field : public Expr {
   virtual ~Field() = default;
   Field *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -463,6 +544,9 @@ struct Element : public Expr {
     const location &loc_);
   virtual ~Element() = default;
   Element *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
@@ -487,6 +571,9 @@ struct FunctionCall : public Expr {
     const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~FunctionCall() = default;
   FunctionCall *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
@@ -521,6 +608,9 @@ struct Quantifier : public Node {
   void validate() const final;
   std::string to_string() const;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   // whether the quantifier's range can be constant folded
   bool constant() const;
 
@@ -546,6 +636,9 @@ struct Exists : public Expr {
   virtual ~Exists() = default;
   Exists *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -564,6 +657,9 @@ struct Forall : public Expr {
   virtual ~Forall() = default;
   Forall *clone() const final;
 
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
+
   bool constant() const final;
   Ptr<TypeExpr> type() const final;
   mpz_class constant_fold() const final;
@@ -577,6 +673,9 @@ struct IsUndefined : public UnaryExpr {
   IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
   virtual ~IsUndefined() = default;
   IsUndefined *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 
   bool constant() const final;
   Ptr<TypeExpr> type() const final;

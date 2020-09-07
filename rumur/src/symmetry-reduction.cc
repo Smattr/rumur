@@ -14,8 +14,8 @@ using namespace rumur;
 
 std::vector<const TypeDecl*> get_scalarsets(const Model &m) {
   std::vector<const TypeDecl*> ss;
-  for (const Ptr<Decl> &d : m.decls) {
-    if (auto t = dynamic_cast<const TypeDecl*>(d.get())) {
+  for (const Ptr<Node> &c : m.children) {
+    if (auto t = dynamic_cast<const TypeDecl*>(c.get())) {
       if (isa<Scalarset>(t->value))
         ss.push_back(t);
     }
@@ -209,8 +209,8 @@ static void generate_swap(const Model &m, std::ostream &out,
     << "size_t x __attribute__((unused)), "
     << "size_t y __attribute__((unused))) {\n";
 
-  for (const Ptr<Decl> &d : m.decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
+  for (const Ptr<Node> &c : m.children) {
+    if (auto v = dynamic_cast<const VarDecl*>(c.get())) {
       std::string offset = "((size_t)" + v->offset.get_str() + "ull)";
       generate_swap_chunk(out, *v->type, offset, pivot);
     }
@@ -587,8 +587,8 @@ static void generate_compare(std::ostream &out, const TypeDecl &pivot,
     << "  }\n"
     << "\n";
 
-  for (const Ptr<Decl> &d : m.decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
+  for (const Ptr<Node> &c : m.children) {
+    if (auto v = dynamic_cast<const VarDecl*>(c.get())) {
       const std::string offset = "((size_t)" + v->offset.get_str() + "ull)";
       generate_compare_chunk(out, *v->type, offset, pivot);
     }

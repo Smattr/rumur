@@ -24,9 +24,18 @@
 namespace rumur {
 
 Model::Model(const std::vector<Ptr<Decl>> &decls_,
-  const std::vector<Ptr<Function>> &functions_,
-  const std::vector<Ptr<Rule>> &rules_, const location &loc_):
-  Node(loc_), decls(decls_), functions(functions_), rules(rules_) { }
+    const std::vector<Ptr<Function>> &functions_,
+    const std::vector<Ptr<Rule>> &rules_, const location &loc_):
+    Node(loc_) {
+
+  children.reserve(decls_.size() + functions_.size() + rules_.size());
+  children.insert(children.end(), decls_.begin(), decls_.end());
+  children.insert(children.end(), functions_.begin(), functions_.end());
+  children.insert(children.end(), rules_.begin(), rules_.end());
+}
+
+Model::Model(const std::vector<Ptr<Node>> &children_, const location &loc_):
+  Node(loc_), children(children_) { }
 
 Model *Model::clone() const {
   return new Model(*this);
@@ -34,8 +43,8 @@ Model *Model::clone() const {
 
 mpz_class Model::size_bits() const {
   mpz_class s = 0;
-  for (const Ptr<Decl> &d : decls) {
-    if (auto v = dynamic_cast<const VarDecl*>(d.get()))
+  for (const Ptr<Node> &n : children) {
+    if (auto v = dynamic_cast<const VarDecl*>(n.get()))
       s += v->type->width();
   }
   return s;
@@ -46,14 +55,22 @@ void Model::validate() const {
   // Check all state variable names are distinct.
   {
     std::unordered_set<std::string> names;
-    for (const Ptr<Decl> &d : decls) {
-      if (auto v = dynamic_cast<const VarDecl*>(d.get())) {
+    for (const Ptr<Node> &c : children) {
+      if (auto v = dynamic_cast<const VarDecl*>(c.get())) {
         if (!names.insert(v->name).second)
           throw Error("duplicate state variable name \"" + v->name + "\"",
             v->loc);
       }
     }
   }
+}
+
+void Model::visit(BaseTraversal &visitor) {
+  visitor.visit_model(*this);
+}
+
+void Model::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_model(*this);
 }
 
 mpz_class Model::liveness_count() const {

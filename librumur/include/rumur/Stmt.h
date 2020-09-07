@@ -32,6 +32,9 @@ struct AliasStmt : public Stmt {
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   AliasStmt *clone() const final;
   virtual ~AliasStmt() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct PropertyStmt : public Stmt {
@@ -45,6 +48,8 @@ struct PropertyStmt : public Stmt {
   virtual ~PropertyStmt() = default;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Assignment : public Stmt {
@@ -58,6 +63,8 @@ struct Assignment : public Stmt {
   virtual ~Assignment() = default;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Clear : public Stmt {
@@ -69,15 +76,20 @@ struct Clear : public Stmt {
   Clear *clone() const final;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct ErrorStmt : public Stmt {
 
-   std::string message;
+  std::string message;
 
-   ErrorStmt(const std::string &message_, const location &loc_);
-   ErrorStmt *clone() const final;
-   virtual ~ErrorStmt() = default;
+  ErrorStmt(const std::string &message_, const location &loc_);
+  ErrorStmt *clone() const final;
+  virtual ~ErrorStmt() = default;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct For : public Stmt {
@@ -89,6 +101,9 @@ struct For : public Stmt {
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~For() = default;
   For *clone() const final;
+
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct IfClause : public Node {
@@ -102,6 +117,8 @@ struct IfClause : public Node {
   IfClause *clone() const final;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct If : public Stmt {
@@ -111,6 +128,8 @@ struct If : public Stmt {
   If(const std::vector<IfClause> &clauses_, const location &loc_);
   virtual ~If() = default;
   If *clone() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct ProcedureCall : public Stmt {
@@ -121,6 +140,8 @@ struct ProcedureCall : public Stmt {
     const std::vector<Ptr<Expr>> &arguments, const location &loc_);
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Put : public Stmt {
@@ -134,6 +155,8 @@ struct Put : public Stmt {
   Put *clone() const final;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Return : public Stmt {
@@ -143,6 +166,8 @@ struct Return : public Stmt {
   Return(const Ptr<Expr> &expr_, const location &loc_);
   virtual ~Return() = default;
   Return *clone() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct SwitchCase : public Node {
@@ -154,6 +179,8 @@ struct SwitchCase : public Node {
     const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~SwitchCase() = default;
   SwitchCase *clone() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Switch : public Stmt {
@@ -167,6 +194,8 @@ struct Switch : public Stmt {
   Switch *clone() const final;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct Undefine : public Stmt {
@@ -178,6 +207,8 @@ struct Undefine : public Stmt {
   Undefine *clone() const final;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 struct While : public Stmt {
@@ -191,6 +222,8 @@ struct While : public Stmt {
   While *clone() const final;
 
   void validate() const final;
+  void visit(BaseTraversal &visitor) final;
+  void visit(ConstBaseTraversal &visitor) const final;
 };
 
 }
