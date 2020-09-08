@@ -18,7 +18,6 @@ matrix:
         packages:
           - g++-4.7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -40,7 +39,6 @@ matrix:
         packages:
           - g++-4.7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -60,7 +58,6 @@ matrix:
         packages:
           - g++-4.7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -79,7 +76,6 @@ matrix:
         packages:
           - g++-4.8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -98,7 +94,6 @@ matrix:
         packages:
           - g++-4.8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -118,7 +113,6 @@ matrix:
         packages:
           - g++-4.8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -137,7 +131,6 @@ matrix:
         packages:
           - g++-4.9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -160,7 +153,6 @@ matrix:
         packages:
           - g++-4.9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -181,7 +173,6 @@ matrix:
         packages:
           - g++-4.9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -202,7 +193,6 @@ matrix:
         packages:
           - g++-4.9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -222,7 +212,6 @@ matrix:
         packages:
           - g++-5
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -242,7 +231,6 @@ matrix:
         packages:
           - g++-5
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -263,7 +251,6 @@ matrix:
         packages:
           - g++-5
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -284,7 +271,6 @@ matrix:
         packages:
           - g++-5
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -304,7 +290,6 @@ matrix:
         packages:
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -324,7 +309,6 @@ matrix:
         packages:
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -345,7 +329,6 @@ matrix:
         packages:
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -366,7 +349,6 @@ matrix:
         packages:
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -386,7 +368,6 @@ matrix:
         packages:
           - g++-7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -406,7 +387,6 @@ matrix:
         packages:
           - g++-7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -427,7 +407,6 @@ matrix:
         packages:
           - g++-7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -448,7 +427,6 @@ matrix:
         packages:
           - g++-7
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -466,7 +444,6 @@ matrix:
           - g++-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -484,7 +461,6 @@ matrix:
           - g++-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -503,7 +479,6 @@ matrix:
           - g++-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -522,7 +497,6 @@ matrix:
           - g++-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -541,7 +515,6 @@ matrix:
           - g++-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -561,7 +534,6 @@ matrix:
         packages:
           - g++-8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -581,7 +553,6 @@ matrix:
         packages:
           - g++-8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -602,7 +573,6 @@ matrix:
         packages:
           - g++-8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -623,7 +593,6 @@ matrix:
         packages:
           - g++-8
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -641,7 +610,6 @@ matrix:
           - g++-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -659,7 +627,6 @@ matrix:
           - g++-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -678,7 +645,6 @@ matrix:
           - g++-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -697,7 +663,6 @@ matrix:
           - g++-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -716,7 +681,6 @@ matrix:
           - g++-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -736,7 +700,6 @@ matrix:
         packages:
           - g++-9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -756,7 +719,6 @@ matrix:
         packages:
           - g++-9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -777,7 +739,6 @@ matrix:
         packages:
           - g++-9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -798,7 +759,6 @@ matrix:
         packages:
           - g++-9
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -816,7 +776,6 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -834,7 +793,6 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -853,7 +811,6 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -872,7 +829,6 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -891,7 +847,6 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -909,7 +864,6 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -927,7 +881,6 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -946,7 +899,6 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -965,7 +917,6 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -984,7 +935,6 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1003,7 +953,6 @@ matrix:
           - libc6-dev-i386
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MAX_TEST=1000
@@ -1021,7 +970,6 @@ matrix:
           - libc6-dev-i386
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MIN_TEST=1001
@@ -1040,7 +988,6 @@ matrix:
           - libc6-dev-i386
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MIN_TEST=2001
@@ -1059,7 +1006,6 @@ matrix:
           - libc6-dev-i386
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MIN_TEST=3001
@@ -1080,7 +1026,6 @@ matrix:
           - clang-3.8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1102,7 +1047,6 @@ matrix:
           - clang-3.8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1125,7 +1069,6 @@ matrix:
           - clang-3.8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1148,7 +1091,6 @@ matrix:
           - clang-3.8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1171,7 +1113,6 @@ matrix:
           - clang-3.8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1193,7 +1134,6 @@ matrix:
           - clang-3.9
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1217,7 +1157,6 @@ matrix:
           - clang-3.9
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1238,7 +1177,6 @@ matrix:
           - clang-4.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1260,7 +1198,6 @@ matrix:
           - clang-4.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1283,7 +1220,6 @@ matrix:
           - clang-4.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1306,7 +1242,6 @@ matrix:
           - clang-4.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1329,7 +1264,6 @@ matrix:
           - clang-4.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1351,7 +1285,6 @@ matrix:
           - clang-5.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1373,7 +1306,6 @@ matrix:
           - clang-5.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1396,7 +1328,6 @@ matrix:
           - clang-5.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1419,7 +1350,6 @@ matrix:
           - clang-5.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1441,7 +1371,6 @@ matrix:
           - clang-6.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1463,7 +1392,6 @@ matrix:
           - clang-6.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1486,7 +1414,6 @@ matrix:
           - clang-6.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1509,7 +1436,6 @@ matrix:
           - clang-6.0
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1527,7 +1453,6 @@ matrix:
           - clang-6.0
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1545,7 +1470,6 @@ matrix:
           - clang-6.0
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1564,7 +1488,6 @@ matrix:
           - clang-6.0
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1583,7 +1506,6 @@ matrix:
           - clang-6.0
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1602,7 +1524,6 @@ matrix:
           - clang-6.0
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1624,7 +1545,6 @@ matrix:
           - clang-7
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1646,7 +1566,6 @@ matrix:
           - clang-7
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1669,7 +1588,6 @@ matrix:
           - clang-7
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1692,7 +1610,6 @@ matrix:
           - clang-7
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1710,7 +1627,6 @@ matrix:
           - clang-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1728,7 +1644,6 @@ matrix:
           - clang-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1747,7 +1662,6 @@ matrix:
           - clang-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1766,7 +1680,6 @@ matrix:
           - clang-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1785,7 +1698,6 @@ matrix:
           - clang-7
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1807,7 +1719,6 @@ matrix:
           - clang-8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1829,7 +1740,6 @@ matrix:
           - clang-8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1852,7 +1762,6 @@ matrix:
           - clang-8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1875,7 +1784,6 @@ matrix:
           - clang-8
           - g++-6
           - libxml2-utils
-          - ninja-build
           - python3.6
           - valgrind
     env:
@@ -1893,7 +1801,6 @@ matrix:
           - clang-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1911,7 +1818,6 @@ matrix:
           - clang-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1930,7 +1836,6 @@ matrix:
           - clang-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1949,7 +1854,6 @@ matrix:
           - clang-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1968,7 +1872,6 @@ matrix:
           - clang-8
           - libfl-dev
           - libxml2-utils
-          - ninja-build
           - valgrind
           - z3
     env:
@@ -1985,7 +1888,6 @@ matrix:
       apt:
         packages:
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MATRIX_EVAL=""
@@ -1999,7 +1901,6 @@ matrix:
       apt:
         packages:
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MATRIX_EVAL=""
@@ -2013,7 +1914,6 @@ matrix:
       apt:
         packages:
           - libxml2-utils
-          - ninja-build
           - valgrind
     env:
       - MATRIX_EVAL=""
@@ -2035,7 +1935,7 @@ matrix:
       # some of the flags/features we use. To install newer versions and make
       # them available to CMake we need to link them into the system
       # directories.
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.0 Clang, Homebrew
@@ -2043,7 +1943,7 @@ matrix:
     osx_image: xcode9
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.1 Clang, Homebrew
@@ -2051,7 +1951,7 @@ matrix:
     osx_image: xcode9.1
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.2 Clang, Homebrew
@@ -2059,7 +1959,7 @@ matrix:
     osx_image: xcode9.2
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.3 Clang, Homebrew
@@ -2067,7 +1967,7 @@ matrix:
     osx_image: xcode9.3
     env:
       - PATH=/usr/local/opt/bison/bin:/Users/travis/.pyenv/versions/3.6.0/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && pyenv install 3.6.0 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.4 Clang, Homebrew
@@ -2075,7 +1975,7 @@ matrix:
     osx_image: xcode9.4
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.0 Clang, Homebrew
@@ -2083,7 +1983,7 @@ matrix:
     osx_image: xcode10
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.1 Clang, Homebrew
@@ -2091,7 +1991,7 @@ matrix:
     osx_image: xcode10.1
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.2 Clang, Homebrew
@@ -2099,7 +1999,7 @@ matrix:
     osx_image: xcode10.2
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.3 Clang, Homebrew
@@ -2107,7 +2007,7 @@ matrix:
     osx_image: xcode10.3
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.0 Clang, Homebrew
@@ -2115,7 +2015,7 @@ matrix:
     osx_image: xcode11
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.1 Clang, Homebrew
@@ -2123,7 +2023,7 @@ matrix:
     osx_image: xcode11.1
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.2 Clang, Homebrew
@@ -2131,7 +2031,7 @@ matrix:
     osx_image: xcode11.2
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.3 Clang, Homebrew
@@ -2139,7 +2039,7 @@ matrix:
     osx_image: xcode11.3
     env:
       - PATH=/usr/local/opt/bison/bin:${PATH}
-      - MATRIX_EVAL="brew update && brew install bison ninja && brew link bison --force && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 7.3.1 Clang, Macports
@@ -2151,7 +2051,7 @@ matrix:
       - COLUMNS=80
 
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 8.0 Clang, Macports
@@ -2160,7 +2060,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 8.3.3 Clang, Macports
@@ -2169,7 +2069,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.0 Clang, Macports
@@ -2178,7 +2078,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.1 Clang, Macports
@@ -2187,7 +2087,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.2 Clang, Macports
@@ -2196,7 +2096,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.3 Clang, Macports
@@ -2205,7 +2105,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison python38 && sudo port select --set python3 python38 && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 9.4 Clang, Macports
@@ -2214,7 +2114,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.0 Clang, Macports
@@ -2223,7 +2123,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.1 Clang, Macports
@@ -2232,7 +2132,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.2 Clang, Macports
@@ -2241,7 +2141,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 10.3 Clang, Macports
@@ -2250,7 +2150,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.0 Clang, Macports
@@ -2259,7 +2159,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.1 Clang, Macports
@@ -2268,7 +2168,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.2 Clang, Macports
@@ -2277,7 +2177,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: macOS, XCode 11.3 Clang, Macports
@@ -2286,7 +2186,7 @@ matrix:
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
-      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison ninja && CC=clang && CXX=clang++"
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
   - name: Ubuntu Linux 20.04, GCC 10, AFL
@@ -2298,7 +2198,6 @@ matrix:
           - afl++
           - g++-10
           - libfl-dev
-          - ninja-build
     env:
       # let AFL catch crashes via core dumps
       - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && CC=gcc-10 && CXX=afl-g++"
