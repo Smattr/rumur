@@ -439,6 +439,7 @@ matrix:
         packages:
           - g++-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -456,6 +457,7 @@ matrix:
         packages:
           - g++-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -474,6 +476,7 @@ matrix:
         packages:
           - g++-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -492,6 +495,7 @@ matrix:
         packages:
           - g++-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -510,6 +514,7 @@ matrix:
         packages:
           - g++-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -605,6 +610,7 @@ matrix:
         packages:
           - g++-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -622,6 +628,7 @@ matrix:
         packages:
           - g++-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -640,6 +647,7 @@ matrix:
         packages:
           - g++-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -658,6 +666,7 @@ matrix:
         packages:
           - g++-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -676,6 +685,7 @@ matrix:
         packages:
           - g++-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -771,6 +781,7 @@ matrix:
         packages:
           - g++-9
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -788,6 +799,7 @@ matrix:
         packages:
           - g++-9
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -806,6 +818,7 @@ matrix:
         packages:
           - g++-9
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -824,6 +837,7 @@ matrix:
         packages:
           - g++-9
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -842,6 +856,7 @@ matrix:
         packages:
           - g++-9
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -859,6 +874,7 @@ matrix:
         packages:
           - g++-10
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -876,6 +892,7 @@ matrix:
         packages:
           - g++-10
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -894,6 +911,7 @@ matrix:
         packages:
           - g++-10
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -912,6 +930,7 @@ matrix:
         packages:
           - g++-10
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -930,6 +949,7 @@ matrix:
         packages:
           - g++-10
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -948,6 +968,7 @@ matrix:
           - g++-multilib
           - libc6-dev-i386
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
     env:
@@ -965,6 +986,7 @@ matrix:
           - g++-multilib
           - libc6-dev-i386
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
     env:
@@ -983,6 +1005,7 @@ matrix:
           - g++-multilib
           - libc6-dev-i386
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
     env:
@@ -1001,6 +1024,7 @@ matrix:
           - g++-multilib
           - libc6-dev-i386
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
     env:
@@ -1448,6 +1472,7 @@ matrix:
         packages:
           - clang-6.0
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1465,6 +1490,7 @@ matrix:
         packages:
           - clang-6.0
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1483,6 +1509,7 @@ matrix:
         packages:
           - clang-6.0
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1501,6 +1528,7 @@ matrix:
         packages:
           - clang-6.0
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1519,6 +1547,7 @@ matrix:
         packages:
           - clang-6.0
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1622,6 +1651,7 @@ matrix:
         packages:
           - clang-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1639,6 +1669,7 @@ matrix:
         packages:
           - clang-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1657,6 +1688,7 @@ matrix:
         packages:
           - clang-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1675,6 +1707,7 @@ matrix:
         packages:
           - clang-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1693,6 +1726,7 @@ matrix:
         packages:
           - clang-7
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1796,6 +1830,7 @@ matrix:
         packages:
           - clang-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1813,6 +1848,7 @@ matrix:
         packages:
           - clang-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1831,6 +1867,7 @@ matrix:
         packages:
           - clang-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1849,6 +1886,7 @@ matrix:
         packages:
           - clang-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -1867,6 +1905,7 @@ matrix:
         packages:
           - clang-8
           - libfl-dev
+          - libgmp-dev
           - libxml2-utils
           - valgrind
           - z3
@@ -2193,6 +2232,7 @@ matrix:
         packages:
           - afl++
           - g++-10
+          - libgmp-dev
           - libfl-dev
     env:
       # let AFL catch crashes via core dumps
