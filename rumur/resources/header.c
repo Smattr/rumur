@@ -3175,18 +3175,23 @@ static _Thread_local struct set *local_seen;
  * quiescent prior to being read to determine the final reported seen count by
  * collecting all the secondary threads, which forms a fence.
  */
-static size_t seen_count[THREADS];
+static struct {
+  /* anonymous struct wrapper to facilitate cache-aligning array members, to
+   * remove false cache line sharing between threads
+   */
+  _Alignas(64) size_t value;
+} seen_count[THREADS];
 
 static size_t seen_count_read(void) {
   size_t total = 0;
   for (size_t i = 0; i < sizeof(seen_count) / sizeof(seen_count[0]); ++i) {
-    total += __atomic_load_n(&seen_count[i], __ATOMIC_RELAXED);
+    total += __atomic_load_n(&seen_count[i].value, __ATOMIC_RELAXED);
   }
   return total;
 }
 
 static size_t seen_count_inc(void) {
-  return __atomic_add_fetch(&seen_count[thread_id], 1, __ATOMIC_RELAXED);
+  return __atomic_add_fetch(&seen_count[thread_id].value, 1, __ATOMIC_RELAXED);
 }
 
 /* The "next" 'global_seen' value. See below for an explanation. */
