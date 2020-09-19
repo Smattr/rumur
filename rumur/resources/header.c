@@ -3167,8 +3167,27 @@ static size_t set_index(const struct set *NONNULL set, size_t index) {
 static refcounted_ptr_t global_seen;
 static _Thread_local struct set *local_seen;
 
-/* Number of elements in the global set (i.e. occupancy). */
-static size_t seen_count;
+/* Per-thread count of number of elements in the global set (i.e. occupancy). We
+ * count this per-thread to avoid concurrency bottlenecks. This extends to
+ * operating on these counters using relaxed atomics (see seen_count_read(),
+ * seen_count_inc()), because the global count (the sum of this array) is
+ * allowed to be a little "slippy" or temporarily inaccurate. The array is made
+ * quiescent prior to being read to determine the final reported seen count by
+ * collecting all the secondary threads, which forms a fence.
+ */
+static size_t seen_count[THREADS];
+
+static size_t seen_count_read(void) {
+  size_t total = 0;
+  for (size_t i = 0; i < sizeof(seen_count) / sizeof(seen_count[0]); ++i) {
+    total += __atomic_load_n(&seen_count[i], __ATOMIC_RELAXED);
+  }
+  return total;
+}
+
+static size_t seen_count_inc(void) {
+  return __atomic_add_fetch(&seen_count[thread_id], 1, __ATOMIC_RELAXED);
+}
 
 /* The "next" 'global_seen' value. See below for an explanation. */
 static refcounted_ptr_t next_global_seen;
@@ -3378,8 +3397,7 @@ static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
-  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100
-      / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
+  if (seen_count_read() * 100 / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
     set_expand();
 
   size_t index = set_index(local_seen, state_hash(s));
@@ -3392,7 +3410,7 @@ restart:;
     if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
         state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
       /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
+      *count = seen_count_inc();
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
@@ -3749,11 +3767,12 @@ static int exit_with(int status) {
       }
     }
 #endif
-    assert(count == seen_count && "seen set count is inconsistent at exit");
+    assert(count == seen_count_read()
+      && "seen set count is inconsistent at exit");
 
     if (MACHINE_READABLE_OUTPUT) {
       put("<summary states=\"");
-      put_uint(seen_count);
+      put_uint(seen_count_read());
       put("\" rules_fired=\"");
       put_uint(fire_count);
       put("\" errors=\"");
@@ -3766,7 +3785,7 @@ static int exit_with(int status) {
       put("State Space Explored:\n"
           "\n"
           "\t");
-      put_uint(seen_count);
+      put_uint(seen_count_read());
       put(" states, ");
       put_uint(fire_count);
       put(" rules fired in ");
