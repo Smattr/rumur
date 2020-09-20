@@ -386,7 +386,7 @@ void CLikeGenerator::visit_put(const Put &n) {
   if (n.expr == nullptr) {
     *this << "printf(\"%s\\n\", \"" << escape(n.value) << "\")";
   } else {
-    *this << "print" << value_type << "(" << *n.expr << ")";
+    *this << "print_" << value_type << "(" << *n.expr << ")";
   }
   *this << ";\n";
 }
