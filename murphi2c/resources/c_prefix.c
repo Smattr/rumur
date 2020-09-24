@@ -44,18 +44,18 @@ static void liveness_(const char *message __attribute__((unused))) {
 void (*liveness)(const char*) = liveness_;
 
 // various printf wrappers to deal with the user having passed --value-type
-static __attribute__((unused)) void print_int     (int v)      { printf("%d\n",          v); }
-static __attribute__((unused)) void print_unsigned(unsigned v) { printf("%u\n",          v); }
-static __attribute__((unused)) void print_short   (short v)    { printf("%hd\n",         v); }
-static __attribute__((unused)) void print_long    (long v)     { printf("%ld\n",         v); }
-static __attribute__((unused)) void print_int8_t  (int8_t v)   { printf("%" PRId8  "\n", v); }
-static __attribute__((unused)) void print_uint8_t (uint8_t v)  { printf("%" PRIu8  "\n", v); }
-static __attribute__((unused)) void print_int16_t (int16_t v)  { printf("%" PRId16 "\n", v); }
-static __attribute__((unused)) void print_uint16_t(uint16_t v) { printf("%" PRIu16 "\n", v); }
-static __attribute__((unused)) void print_int32_t (int32_t v)  { printf("%" PRId32 "\n", v); }
-static __attribute__((unused)) void print_uint32_t(uint32_t v) { printf("%" PRIu32 "\n", v); }
-static __attribute__((unused)) void print_int64_t (int64_t v)  { printf("%" PRId64 "\n", v); }
-static __attribute__((unused)) void print_uint64_t(uint64_t v) { printf("%" PRIu64 "\n", v); }
+static __attribute__((unused)) void print_int     (int v)      { printf("%d",          v); }
+static __attribute__((unused)) void print_unsigned(unsigned v) { printf("%u",          v); }
+static __attribute__((unused)) void print_short   (short v)    { printf("%hd",         v); }
+static __attribute__((unused)) void print_long    (long v)     { printf("%ld",         v); }
+static __attribute__((unused)) void print_int8_t  (int8_t v)   { printf("%" PRId8 , v); }
+static __attribute__((unused)) void print_uint8_t (uint8_t v)  { printf("%" PRIu8 , v); }
+static __attribute__((unused)) void print_int16_t (int16_t v)  { printf("%" PRId16, v); }
+static __attribute__((unused)) void print_uint16_t(uint16_t v) { printf("%" PRIu16, v); }
+static __attribute__((unused)) void print_int32_t (int32_t v)  { printf("%" PRId32, v); }
+static __attribute__((unused)) void print_uint32_t(uint32_t v) { printf("%" PRIu32, v); }
+static __attribute__((unused)) void print_int64_t (int64_t v)  { printf("%" PRId64, v); }
+static __attribute__((unused)) void print_uint64_t(uint64_t v) { printf("%" PRIu64, v); }
 
 // wrappers for producing literal expressions of value type
 #define int_VALUE_C(v)      (v)
