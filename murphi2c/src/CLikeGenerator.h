@@ -86,4 +86,10 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
 
   // make this class abstract
   virtual ~CLikeGenerator() = 0;
+
+ private:
+  // generate a print statement of the given expression and (possibly
+  // not-terminal) type
+  void print(const std::string &suffix, const rumur::TypeExpr &t,
+    const rumur::Expr &e, size_t counter);
 };

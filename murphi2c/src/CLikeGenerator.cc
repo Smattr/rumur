@@ -381,13 +381,137 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
   }
 }
 
-void CLikeGenerator::visit_put(const Put &n) {
-  *this << indentation();
-  if (n.expr == nullptr) {
-    *this << "printf(\"%s\\n\", \"" << n.value << "\")";
-  } else {
-    *this << "print_" << value_type << "(" << *n.expr << ")";
+void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
+    const Expr &e, size_t counter) {
+
+  const Ptr<TypeExpr> type = t.resolve();
+
+  // if this is boolean, handle it separately to other Enums to avoid
+  // -Wswitch-bool warnings and cope with badly behaved users setting non-0/1
+  // values
+  if (type->is_boolean()) {
+
+    *this << indentation() << "printf(\"%s\", ((" << e << suffix
+      << ") ? \"true\" : \"false\"))";
+
+    return;
   }
+
+  // if this is an enum, print the member corresponding to its value
+  if (auto en = dynamic_cast<const Enum*>(type.get())) {
+
+    *this << indentation() << "do {\n";
+    indent();
+
+    *this << indentation() << "switch (" << e << suffix << ") {\n";
+    indent();
+    size_t i = 0;
+    for (const std::pair<std::string, location> &m : en->members) {
+      *this << indentation() << "case " << std::to_string(i) << ":\n";
+      indent();
+      *this << indentation() << "printf(\"%s\", \"" << m.first << "\");\n"
+            << indentation() << "break;\n";
+      dedent();
+      ++i;
+    }
+    *this << indentation() << "default:\n";
+    indent();
+    *this << indentation() << "assert(!\"invalid enum value\");\n"
+          << indentation() << "__builtin_unreachable();\n";
+    dedent();
+    dedent();
+    *this << indentation() << "}\n";
+
+    dedent();
+    *this << indentation() << "} while (0)";
+
+    return;
+  }
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
+
+    // printing opening “[”
+    *this << indentation() << "do {\n";
+    indent();
+    *this << indentation() << "printf(\"[\");\n";
+
+    // invent a unique symbol using our counter
+    const std::string i = "array_index" + std::to_string(counter);
+
+    // get the bounds of the index and hackily prepend the value type to produce
+    // something corresponding to one of the macros in ../resources/c_prefix.c
+    const std::string lb = value_type + "_" + a->index_type->lower_bound();
+    const std::string ub = value_type + "_" + a->index_type->upper_bound();
+
+    *this
+      << indentation() << "for (size_t " << i << " = 0; ; ++" << i << ") {\n";
+    indent();
+
+    // construct a print statement of the element at this index
+    print(suffix + ".data[" + i + "]", *a->element_type, e, counter + 1);
+    *this << ";\n";
+
+    *this << indentation() << "if (" << i << " == (size_t)" << ub
+      << " - (size_t)" << lb << ") {\n";
+    indent();
+    *this << indentation() << "break;\n";
+    dedent();
+    *this << indentation() << "} else {\n";
+    indent();
+    *this << indentation() << "printf(\", \");\n";
+    dedent();
+    *this << indentation() << "}\n";
+    dedent();
+    *this << indentation() << "}\n";
+
+    // print closing “]”
+    *this << indentation() << "printf(\"]\");\n";
+    dedent();
+    *this << indentation() << "} while (0)";
+
+    return;
+  }
+
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
+
+    // print opening “{”
+    *this << indentation() << "do {\n";
+    indent();
+    *this << indentation() << "printf(\"{\");\n";
+
+    // print contained fields as a comma-separated list
+    std::string sep;
+    for (const Ptr<VarDecl> &f : r->fields) {
+      *this << indentation() << "printf(\"%s\", \"" << sep << "\");\n";
+      const Ptr<TypeExpr> ft = f->get_type();
+      print(suffix + "." + f->name, *ft, e, counter);
+      *this << ";\n";
+      sep = ", ";
+    }
+
+    // print closing “}”
+    *this << indentation() << "printf(\"}\");\n";
+    dedent();
+    *this << indentation() << "} while (0)";
+
+    return;
+  }
+
+  // fall back case, for Ranges and Scalarsets
+  *this
+    << indentation() << "print_" << value_type << "(" << e << suffix << ")";
+}
+
+void CLikeGenerator::visit_put(const Put &n) {
+
+  // is this a put of a literal string?
+  if (n.expr == nullptr) {
+    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");\n";
+    return;
+  }
+
+  const Ptr<TypeExpr> type = n.expr->type();
+  print("", *type, *n.expr, 0);
   *this << ";\n";
 }
 
