@@ -93,7 +93,22 @@ void CLikeGenerator::visit_div(const Div &n) {
 }
 
 void CLikeGenerator::visit_element(const Element &n) {
-  *this << "(" << *n.array << ".data[" << *n.index << "])";
+
+  // rather than simply indexing into the array based on the value of the index
+  // expression, we need to account for the fact that the generated C array will
+  // start from 0 while the Murphi array will start from a custom lower bound
+
+  // find the type of the array expression
+  const Ptr<TypeExpr> t = n.array->type()->resolve();
+  auto a = dynamic_cast<const Array*>(t.get());
+  assert(a != nullptr && "non-array on LHS of array indexing expression");
+
+  // find the lower bound of its index type, using some hacky mangling to align
+  // with one of the macros from ../resources/c_prefix.c
+  const std::string lb = value_type + "_" + a->index_type->lower_bound();
+
+  // emit an indexing operation, now account for this
+  *this << "(" << *n.array << ".data[(" << *n.index << ") - " << lb << "])";
 }
 
 void CLikeGenerator::visit_enum(const Enum &n) {
