@@ -57,4 +57,18 @@ static __attribute__((unused)) void print_uint32_t(uint32_t v) { printf("%" PRIu
 static __attribute__((unused)) void print_int64_t (int64_t v)  { printf("%" PRId64 "\n", v); }
 static __attribute__((unused)) void print_uint64_t(uint64_t v) { printf("%" PRIu64 "\n", v); }
 
+// wrappers for producing literal expressions of value type
+#define int_VALUE_C(v)      (v)
+#define unsigned_VALUE_C(v) (v ## u)
+#define short_VALUE_C(v)    ((short)(v))
+#define long_VALUE_C(v)     (v ## l)
+#define int8_t_VALUE_C(v)   INT8_C(v)
+#define uint8_t_VALUE_C(v)  UINT8_C(v)
+#define int16_t_VALUE_C(v)  INT16_C(v)
+#define uint16_t_VALUE_C(v) UINT16_C(v)
+#define int32_t_VALUE_C(v)  INT32_C(v)
+#define uint32_t_VALUE_C(v) UINT32_C(v)
+#define int64_t_VALUE_C(v)  INT64_C(v)
+#define uint64_t_VALUE_C(v) UINT64_C(v)
+
 
