@@ -2975,6 +2975,61 @@ static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
 /******************************************************************************/
 
 /*******************************************************************************
+ * State set seen count                                                        *
+ *                                                                             *
+ * These counters are relevant to the "State set" section below, but we define *
+ * them here because they need to be referenced during rendezvous.             *
+ ******************************************************************************/
+
+/* number of elements in the global seen set (i.e. occupancy) at the last
+ * synchronisation point
+ */
+static size_t seen_count_base;
+
+/* Per-thread count of extra elements added to the global seen set since the
+ * last sync with seen_count_base. By spreading the count in this way, we can
+ * achieve better scalability through less inter-thread contention, at the
+ * expense of some inaccuracy in any thread's estimation of the current global
+ * seen count.
+ */
+static struct {
+  /* anonymous struct wrapper to facilitate cache-aligning array members, to
+   * remove false cache line sharing between threads
+   */
+  _Alignas(64) size_t value;
+} seen_count_extra[THREADS];
+
+/* derive an approximation of the global seen set occupancy */
+static size_t seen_count_read(void) {
+  /* use our own count to estimate to estimate the global total */
+  return __atomic_load_n(&seen_count_base, __ATOMIC_SEQ_CST)
+    + seen_count_extra[thread_id].value * THREADS;
+}
+
+/* derive the exact global seen set occupancy */
+static size_t seen_count_read_exact(void) {
+  /* assume there has been an appropriate thread fence prior to this and we are
+   * running single threaded, so we do not need our accesses to be atomic
+   */
+  size_t total = seen_count_base;
+  static const size_t SEEN_COUNT_EXTRA_LEN
+    = sizeof(seen_count_extra) / sizeof(seen_count_extra[0]);
+  for (size_t i = 0; i < SEEN_COUNT_EXTRA_LEN; ++i) {
+    total += seen_count_extra[i].value;
+  }
+  return total;
+}
+
+static size_t seen_count_inc(void) {
+  /* assume there has been an appropriate thread fence prior to this and there
+   * will be another fence after this in-between any other thread accessing our
+   * counter, so we do not need our accesses to be atomic
+   */
+  ++seen_count_extra[thread_id].value;
+  return seen_count_read();
+}
+
+/*******************************************************************************
  * Thread rendezvous support                                                   *
  ******************************************************************************/
 
@@ -3016,7 +3071,16 @@ static bool rendezvous_arrive(void) {
   /* If we were the last to arrive then it was our arrival that dropped the
    * counter to zero.
    */
-  return rendezvous_pending == 0;
+  bool i_am_leader = rendezvous_pending == 0;
+
+  if (!i_am_leader) {
+    /* ensure our prior stores to seen_count_extra are visible to the 'leader'
+     * who will flush these into seen_count_base
+     */
+    __atomic_thread_fence(__ATOMIC_RELEASE);
+  }
+
+  return i_am_leader;
 }
 
 /* Call this at the end of a rendezvous point.
@@ -3036,6 +3100,19 @@ static void rendezvous_depart(bool leader, void (*action)(void)) {
       action();
     }
 
+    /* synchronise the global seen set count */
+    static const size_t SEEN_COUNT_EXTRA_LEN
+      = sizeof(seen_count_extra) / sizeof(seen_count_extra[0]);
+    for (size_t i = 0; i < SEEN_COUNT_EXTRA_LEN; ++i) {
+      seen_count_base += seen_count_extra[i].value;
+      seen_count_extra[i].value = 0;
+    }
+
+    /* ensure the stores we just performed will be visible to other threads when
+     * they wake up
+     */
+    __atomic_thread_fence(__ATOMIC_RELEASE);
+
     /* Reset the counter for the next rendezvous. */
     assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
       "while some participating threads have yet to arrive");
@@ -3050,6 +3127,11 @@ static void rendezvous_depart(bool leader, void (*action)(void)) {
     /* Wait on the 'leader' to wake us up. */
     r = pthread_cond_wait(&rendezvous_cond, &rendezvous_lock);
     assert(r == 0);
+
+    /* ensure stores to seen_count_extra performed by the 'leader' will be
+     * visible to our subsequent loads
+     */
+    __atomic_thread_fence(__ATOMIC_ACQUIRE);
   }
 
   r = pthread_mutex_unlock(&rendezvous_lock);
@@ -3166,33 +3248,6 @@ static size_t set_index(const struct set *NONNULL set, size_t index) {
  */
 static refcounted_ptr_t global_seen;
 static _Thread_local struct set *local_seen;
-
-/* Per-thread count of number of elements in the global set (i.e. occupancy). We
- * count this per-thread to avoid concurrency bottlenecks. This extends to
- * operating on these counters using relaxed atomics (see seen_count_read(),
- * seen_count_inc()), because the global count (the sum of this array) is
- * allowed to be a little "slippy" or temporarily inaccurate. The array is made
- * quiescent prior to being read to determine the final reported seen count by
- * collecting all the secondary threads, which forms a fence.
- */
-static struct {
-  /* anonymous struct wrapper to facilitate cache-aligning array members, to
-   * remove false cache line sharing between threads
-   */
-  _Alignas(64) size_t value;
-} seen_count[THREADS];
-
-static size_t seen_count_read(void) {
-  size_t total = 0;
-  for (size_t i = 0; i < sizeof(seen_count) / sizeof(seen_count[0]); ++i) {
-    total += __atomic_load_n(&seen_count[i].value, __ATOMIC_RELAXED);
-  }
-  return total;
-}
-
-static size_t seen_count_inc(void) {
-  return __atomic_add_fetch(&seen_count[thread_id].value, 1, __ATOMIC_RELAXED);
-}
 
 /* The "next" 'global_seen' value. See below for an explanation. */
 static refcounted_ptr_t next_global_seen;
@@ -3418,15 +3473,6 @@ restart:;
       *count = seen_count_inc();
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
-      /* The maximum possible size of the seen state set should be constrained
-       * by the number of possible states based on how many bits we are using to
-       * represent the state data.
-       */
-      if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= ((size_t)1) << STATE_SIZE_BITS && "seen set size "
-          "exceeds total possible number of states");
-      }
-
       /* Update statistics if `--trace memory_usage` is in effect. Note that we
        * do this here (when a state is being added to the seen set) rather than
        * when the state was originally allocated to ensure that the final
@@ -3649,6 +3695,11 @@ static int exit_with(int status) {
   /* Make fired rule count visible globally. */
   rules_fired[thread_id] = rules_fired_local;
 
+  /* we would need to fence our previous stores to seen_count_extra here in
+   * order to ensure they are globally visible, but rendezvous_opt_out() has
+   * already done this
+   */
+
   if (thread_id == 0) {
     /* We are the initial thread. Wait on the others before exiting. */
 #ifdef __clang__
@@ -3772,12 +3823,12 @@ static int exit_with(int status) {
       }
     }
 #endif
-    assert(count == seen_count_read()
+    assert(count == seen_count_read_exact()
       && "seen set count is inconsistent at exit");
 
     if (MACHINE_READABLE_OUTPUT) {
       put("<summary states=\"");
-      put_uint(seen_count_read());
+      put_uint(seen_count_read_exact());
       put("\" rules_fired=\"");
       put_uint(fire_count);
       put("\" errors=\"");
@@ -3790,7 +3841,7 @@ static int exit_with(int status) {
       put("State Space Explored:\n"
           "\n"
           "\t");
-      put_uint(seen_count_read());
+      put_uint(seen_count_read_exact());
       put(" states, ");
       put_uint(fire_count);
       put(" rules fired in ");
