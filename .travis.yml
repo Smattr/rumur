@@ -2010,6 +2010,38 @@ matrix:
       - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
       - CXXFLAGS="-fsanitize=address -Werror"
 
+  - name: macOS, XCode 11.4 Clang, Homebrew
+    os: osx
+    osx_image: xcode11.4
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 11.5 Clang, Homebrew
+    os: osx
+    osx_image: xcode11.5
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 11.6 Clang, Homebrew
+    os: osx
+    osx_image: xcode11.6
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 12.0 Clang, Homebrew
+    os: osx
+    osx_image: xcode12
+    env:
+      - PATH=/usr/local/opt/bison/bin:${PATH}
+      - MATRIX_EVAL="brew update && brew install bison && brew link bison --force && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
   - name: macOS, XCode 7.3.1 Clang, Macports
     os: osx
     osx_image: xcode7.3
@@ -2151,6 +2183,42 @@ matrix:
   - name: macOS, XCode 11.3 Clang, Macports
     os: osx
     osx_image: xcode11.3
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 11.4 Clang, Macports
+    os: osx
+    osx_image: xcode11.4
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 11.5 Clang, Macports
+    os: osx
+    osx_image: xcode11.5
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 11.6 Clang, Macports
+    os: osx
+    osx_image: xcode11.6
+    env:
+      - COLUMNS=80
+      - PATH=/opt/local/bin:${PATH}
+      - MATRIX_EVAL="./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && CC=clang && CXX=clang++"
+      - CXXFLAGS="-fsanitize=address -Werror"
+
+  - name: macOS, XCode 12.0 Clang, Macports
+    os: osx
+    osx_image: xcode12
     env:
       - COLUMNS=80
       - PATH=/opt/local/bin:${PATH}
