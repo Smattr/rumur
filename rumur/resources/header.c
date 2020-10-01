@@ -3006,18 +3006,18 @@ static size_t seen_count_read(void) {
     + seen_count_extra[thread_id].value * THREADS;
 }
 
-/* make seen_count quiescent, i.e. make seen_count_read() precise */
-static void seen_count_sync(void) {
-  /* we assume that we are running single threaded here, and appropriate fences
-   * have been placed before and after to propagate to our loads and from our
-   * stores
+/* derive the exact global seen set occupancy */
+static size_t seen_count_read_exact(void) {
+  /* assume there has been an appropriate thread fence prior to this and we are
+   * running single threaded, so we do not need our accesses to be atomic
    */
+  size_t total = seen_count_base;
   static const size_t SEEN_COUNT_EXTRA_LEN
     = sizeof(seen_count_extra) / sizeof(seen_count_extra[0]);
   for (size_t i = 0; i < SEEN_COUNT_EXTRA_LEN; ++i) {
-    seen_count_base += seen_count_extra[i].value;
-    seen_count_extra[i].value = 0;
+    total += seen_count_extra[i].value;
   }
+  return total;
 }
 
 static size_t seen_count_inc(void) {
@@ -3100,8 +3100,13 @@ static void rendezvous_depart(bool leader, void (*action)(void)) {
       action();
     }
 
-    /* quiesce the global seen set count */
-    seen_count_sync();
+    /* synchronise the global seen set count */
+    static const size_t SEEN_COUNT_EXTRA_LEN
+      = sizeof(seen_count_extra) / sizeof(seen_count_extra[0]);
+    for (size_t i = 0; i < SEEN_COUNT_EXTRA_LEN; ++i) {
+      seen_count_base += seen_count_extra[i].value;
+      seen_count_extra[i].value = 0;
+    }
 
     /* ensure the stores we just performed will be visible to other threads when
      * they wake up
@@ -3731,13 +3736,6 @@ static int exit_with(int status) {
      */
     local_seen = refcounted_ptr_get(&global_seen);
 
-    /* quiesce the seen_count value */
-    seen_count_sync();
-
-    /* no need to fence the stores from seen_count_sync() above because all
-     * other threads have exited
-     */
-
     if (error_count == 0) {
       /* If we didn't see any other errors, print cover information. */
 #ifdef __clang__
@@ -3825,12 +3823,12 @@ static int exit_with(int status) {
       }
     }
 #endif
-    assert(count == seen_count_read()
+    assert(count == seen_count_read_exact()
       && "seen set count is inconsistent at exit");
 
     if (MACHINE_READABLE_OUTPUT) {
       put("<summary states=\"");
-      put_uint(seen_count_read());
+      put_uint(seen_count_read_exact());
       put("\" rules_fired=\"");
       put_uint(fire_count);
       put("\" errors=\"");
@@ -3843,7 +3841,7 @@ static int exit_with(int status) {
       put("State Space Explored:\n"
           "\n"
           "\t");
-      put_uint(seen_count_read());
+      put_uint(seen_count_read_exact());
       put(" states, ");
       put_uint(fire_count);
       put(" rules fired in ");
