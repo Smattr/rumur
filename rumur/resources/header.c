@@ -38,6 +38,9 @@
     } while (0)
 #endif
 
+/* size of a cache line */
+#define CACHE_LINE_SIZE 64 /* bytes */
+
 #define BITS_TO_BYTES(size) ((size) / 8 + ((size) % 8 == 0 ? 0 : 1))
 #define BITS_FOR(value) \
   ((value) == 0 ? 0 : (sizeof(unsigned long long) * 8 - __builtin_clzll(value)))
@@ -2998,7 +3001,7 @@ static struct {
   /* anonymous struct wrapper to facilitate cache-aligning array members, to
    * remove false cache line sharing between threads
    */
-  _Alignas(64) size_t value;
+  _Alignas(CACHE_LINE_SIZE) size_t value;
 } seen_count_local[THREADS];
 
 /* derive the global seen set occupancy */
@@ -3954,6 +3957,41 @@ static void start_secondary_threads(void) {
   }
 }
 
+static size_t get_cache_line_size(void) {
+
+#if defined(__APPLE__)
+
+  /* FIXME: This looks like a perfectly reasonable way to check L1-D line size
+   * on macOS. However, sys/sysctl.h that needs to be #included for this
+   * incorrectly uses kernel-defined types like u_char, so it causes compilation
+   * errors when #included. As of XCode 12.0.
+   */
+#if 0
+  {
+    int64_t cache_line;
+    size_t cl_size = sizeof(cache_line);
+    if (sysctlbyname("hw.l1dcachesize", &cache_line, &cl_size, NULL, 0) == 0
+        && cl_size == sizeof(cache_line) && cache_line > 0) {
+      return (size_t)cache_line;
+    }
+  }
+#endif
+
+#endif
+
+#ifdef _SC_LEVEL1_DCACHE_LINESIZE
+  {
+    long r = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+    if (r > 0) {
+      return (size_t)r;
+    }
+  }
+#endif
+
+  /* no way to get cache line size, or we failed */
+  return 0;
+}
+
 int main(void) {
 
   if (COLOR == AUTO)
@@ -3961,6 +3999,18 @@ int main(void) {
 
   /* We don't need to read anything from stdin, so discard it. */
   (void)fclose(stdin);
+
+  /* sanity check CACHE_LINE_SIZE */
+  {
+    size_t cache_line_size = get_cache_line_size();
+    if (cache_line_size != 0) {
+      if (cache_line_size > CACHE_LINE_SIZE || CACHE_LINE_SIZE % cache_line_size != 0) {
+        fprintf(stderr, "warning: L1-D cache appears to have a line size of "
+          "%zu bytes, which was unexpected. False sharing and degraded "
+          "performance may occur.\n", cache_line_size);
+      }
+    }
+  }
 
   sandbox();
 
