@@ -2556,7 +2556,7 @@ static double_ptr_t double_ptr_make(uintptr_t q1, uintptr_t q2) {
  ******************************************************************************/
 
 static struct {
-  double_ptr_t ends;
+  _Alignas(64) double_ptr_t ends;
   size_t count;
 } q[THREADS];
 
