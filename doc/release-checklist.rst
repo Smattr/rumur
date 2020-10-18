@@ -105,6 +105,6 @@ main repositories.
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
 .. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
 .. _`packaged in Debian unstable`: https://packages.debian.org/sid/rumur
-.. _`Request For Sponsorship`: https://mentors.debian.net/sponsor/rfs-howto
+.. _`Request For Sponsorship`: https://mentors.debian.net/sponsors/rfs-howto
 .. _`upstream on Github`: https://github.com/Smattr/rumur
 .. _`Travis CI regression tests`: https://travis-ci.org/Smattr/rumur/builds/
