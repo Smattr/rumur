@@ -2252,7 +2252,6 @@ matrix:
 # a way that is ABI-incompatible with linking against GCC-compiled code.
 
 before_install:
-  - if [ "$(uname -s)" = "Linux" ]; then travis_retry sudo apt-get -qq update; fi
   - eval "${MATRIX_EVAL}"
 
 script:
