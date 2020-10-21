@@ -2231,12 +2231,11 @@ matrix:
     addons:
       apt:
         packages:
-          - afl++
           - g++-10
           - libfl-dev
     env:
-      # let AFL catch crashes via core dumps
-      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && CC=gcc-10 && CXX=afl-g++"
+      # install AFL and let it catch crashes via core dumps
+      - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh && CC=gcc-10 && CXX=afl-g++"
 
       # quit if we succeed exhaustively fuzzing (unlikely)
       - AFL_EXIT_WHEN_DONE=1
