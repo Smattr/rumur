@@ -2243,6 +2243,9 @@ matrix:
       # suppress normal animated UI and use periodic text output
       - AFL_NO_UI=1
 
+      # enable ASan and UBSan
+      - CXXFLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=undefined -O3"
+
       - CUSTOM_COMMAND="travis_wait 60 ../misc/afl-wrapper.sh"
 
 # This file initially contained entries to test GCC on macOS as well, but I
