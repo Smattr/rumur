@@ -58,6 +58,7 @@ add_custom_command(
 add_library(librumur
   ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   src/Boolean.cc
+  src/Context.cc
   src/Decl.cc
   src/except.cc
   src/Expr.cc
