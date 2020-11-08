@@ -256,10 +256,10 @@ namespace { class Translator : public ConstTraversal {
 
     std::ostringstream buf;
 
-    if (auto i = dynamic_cast<const ExprID*>(&stump)) {
+    if (isa<ExprID>(&stump)) {
       buf << rhs;
 
-    } else if (auto f = dynamic_cast<const Field*>(&stump)) {
+    } else if (dynamic_cast<const Field*>(&stump)) {
       buf << "(mk_TODO ...";
 
     } else if (auto e = dynamic_cast<const Element*>(&stump)) {
