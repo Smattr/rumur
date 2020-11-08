@@ -1,8 +1,5 @@
 task:
 
-  # only test the master branch and pull requests
-  only_if: $CIRRUS_BRANCH == "master" || $CIRRUS_PR != ""
-
   # increase timeout to the maximum limit
   timeout_in: 120m
 
