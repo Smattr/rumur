@@ -3,8 +3,6 @@ task:
   # increase timeout to the maximum limit
   timeout_in: 120m
 
-  install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
@@ -14,12 +12,15 @@ task:
     - name: FreeBSD 13.0
       freebsd_instance:
         image_family: freebsd-13-0-snap
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 12.1
       freebsd_instance:
         image_family: freebsd-12-1-snap
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 11.3
       freebsd_instance:
         image_family: freebsd-11-3-snap
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: Linux GCC 4.7
       container:
         image: gcc:4.7
