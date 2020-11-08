@@ -17,48 +17,13 @@ task:
         image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
-    - name: macOS, XCode 11.3.1, Homebrew
-      osx_instance:
-        image: catalina-xcode-11.3.1
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 11.4.1, Homebrew
-      osx_instance:
-        image: catalina-xcode-11.4.1
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 11.5, Homebrew
-      osx_instance:
-        image: catalina-xcode-11.5
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 11.6, Homebrew
-      osx_instance:
-        image: catalina-xcode-11.6
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 12.0, Homebrew
+    - name: macOS, XCode 12.0, Macports
       osx_instance:
         image: catalina-xcode-12.0
       environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
+        PATH: /usr/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 12.1, Homebrew
-      osx_instance:
-        image: catalina-xcode-12.1
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
+      install_script: sudo port -v selfupdate && sudo port -N install bison
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
