@@ -24,6 +24,8 @@ task:
     - name: macOS, XCode 11.3.1
       osx_instance:
         image: catalina-xcode-11.3.1
-      install_script: brew update && brew install bison && brew link bison --force && PATH=/usr/local/opt/bison/bin:${PATH}
+      environment:
+        PATH: /usr/local/opt/bison/bin:${PATH}
+      install_script: brew update && brew install bison && brew link bison --force
 
   test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && ../tests/run-tests.py --jobs 1
