@@ -23,3 +23,7 @@ task:
     - name: FreeBSD 11.3
       freebsd_instance:
         image_family: freebsd-11-3-snap
+    - name: Linux GCC 4.7
+      container:
+        image: gcc:4.7
+      install_script: echo hello
