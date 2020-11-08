@@ -6,7 +6,6 @@ task:
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && ../tests/run-tests.py --jobs 1
 
   matrix:
     - name: FreeBSD 13.0
@@ -25,3 +24,5 @@ task:
       container:
         image: gcc:4.7
       install_script: echo hello
+
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && ../tests/run-tests.py --jobs 1
