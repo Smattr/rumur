@@ -3,10 +3,6 @@ task:
   # increase timeout to the maximum limit
   timeout_in: 120m
 
-  # we limit the test suite to a single thread because the Cirrus CI VMs claim
-  # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
-  # time and we end up having some of the SMT tests time out
-
   matrix:
     - name: FreeBSD 13.0
       freebsd_instance:
@@ -21,11 +17,15 @@ task:
         image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
-    - name: macOS, XCode 11.3.1
+    - name: macOS, XCode 11.3.1, Homebrew
       osx_instance:
         image: catalina-xcode-11.3.1
       environment:
         PATH: /usr/local/opt/bison/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
       install_script: brew update && brew install bison && brew link bison --force
 
+  # we limit the test suite to a single thread because the Cirrus CI VMs claim
+  # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
+  # time and we end up having some of the SMT tests time out
   test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && ../tests/run-tests.py --jobs 1
