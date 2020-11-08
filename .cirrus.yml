@@ -20,9 +20,10 @@ task:
       freebsd_instance:
         image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+
     - name: macOS, XCode 11.3.1
       osx_instance:
         image: catalina-xcode-11.3.1
-      install_script: echo hello
+      install_script: brew update && brew install bison && brew link bison --force
 
   test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && ../tests/run-tests.py --jobs 1
