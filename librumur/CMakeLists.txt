@@ -70,6 +70,7 @@ add_library(librumur
   src/Property.cc
   src/resolve-symbols.cc
   src/Rule.cc
+  src/smt.cc
   src/Stmt.cc
   src/traverse.cc
   src/TypeExpr.cc
