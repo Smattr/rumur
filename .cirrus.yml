@@ -23,7 +23,7 @@ task:
       environment:
         PATH: /usr/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
-      install_script: sudo port -v selfupdate && sudo port -N install bison
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
