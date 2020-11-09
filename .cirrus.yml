@@ -21,7 +21,7 @@ task:
       osx_instance:
         image: catalina-xcode-12.0
       environment:
-        PATH: /usr/local/bin:${PATH}
+        PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
       install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
 
