@@ -70,6 +70,49 @@ task:
         CXXFLAGS: -fsanitize=address -Werror
       install_script: brew update && brew install bison && brew link bison --force
 
+    - name: macOS, XCode 11.3.1, Macports
+      osx_instance:
+        image: catalina-xcode-11.3.1
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+    - name: macOS, XCode 11.4.1, Macports
+      osx_instance:
+        image: catalina-xcode-11.4.1
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+    - name: macOS, XCode 11.5, Macports
+      osx_instance:
+        image: catalina-xcode-11.5
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+    - name: macOS, XCode 11.6, Macports
+      osx_instance:
+        image: catalina-xcode-11.6
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+    - name: macOS, XCode 12.0, Macports
+      osx_instance:
+        image: catalina-xcode-12.0
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+    - name: macOS, XCode 12.1, Macports
+      osx_instance:
+        image: catalina-xcode-12.1
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
