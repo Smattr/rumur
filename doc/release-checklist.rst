@@ -25,11 +25,12 @@ The process of cutting a new Rumur release should follow these steps:
     reliable and many errors are caused by infrastructure failures rather than
     your actual changes. So if you get a failure, check the logs to make sure
     it is not a false positive.
-7.  Wait for the `Cirrus CI FreeBSD tests`_ to pass. It is important for the new
-    release to work on FreeBSD because Rumur is in
+7.  Wait for the `Cirrus CI FreeBSD and macOS tests`_ to pass. It is important
+    for the new release to work on FreeBSD because Rumur is in
     `FreeBSD’s package repository`_ and new releases are pulled in
-    automatically. If one of these tests fail, you may need to look at the raw
-    log because the summary output hides some stderr lines.
+    automatically. We also have macOS Rumur users, so it is important that the
+    tests pass there too. If one of these tests fail, you may need to look at
+    the raw log because the summary output hides some stderr lines.
 8.  Tag the commit with the version number in “vYYYY.MM.DD” format.
 9.  Push the new version tag upstream.
 10. Package Rumur for Debian (see below).
