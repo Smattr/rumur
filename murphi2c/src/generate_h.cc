@@ -6,6 +6,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <vector>
 
 using namespace rumur;
 
@@ -14,7 +15,8 @@ namespace {
 class HGenerator : public CLikeGenerator {
 
  public:
-  HGenerator(std::ostream &out_, bool pack_): CLikeGenerator(out_, pack_) { }
+  HGenerator(const std::vector<Comment> &comments_, std::ostream &out_,
+    bool pack_): CLikeGenerator(comments_, out_, pack_) { }
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "extern const ";
@@ -163,13 +165,14 @@ class HGenerator : public CLikeGenerator {
 
 }
 
-void generate_h(const Node &n, bool pack, std::ostream &out) {
+void generate_h(const Node &n, const std::vector<Comment> &comments, bool pack,
+    std::ostream &out) {
 
   // write the static prefix to the beginning of the source file
   for (size_t i = 0; i < resources_h_prefix_h_len; i++)
     out << (char)resources_h_prefix_h[i];
 
-  HGenerator gen(out, pack);
+  HGenerator gen(comments, out, pack);
   gen.dispatch(n);
 
   // close the `extern "C"` block opened in ../resources/h_prefix.h

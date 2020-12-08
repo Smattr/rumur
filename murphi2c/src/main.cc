@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <utility>
+#include <vector>
 
 // a pair of input streams
 using dup_t = std::pair<std::shared_ptr<std::istream>,
@@ -174,11 +175,14 @@ int main(int argc, char **argv) {
   // case we will need to pack structs. See generate_c() for why.
   bool pack = compares_complex_values(*m);
 
+  // parse comments from the source code
+  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+
   // output code
   if (source) {
-    generate_c(*m, pack, out == nullptr ? std::cout : *out);
+    generate_c(*m, comments, pack, out == nullptr ? std::cout : *out);
   } else {
-    generate_h(*m, pack, out == nullptr ? std::cout : *out);
+    generate_h(*m, comments, pack, out == nullptr ? std::cout : *out);
   }
 
   return EXIT_SUCCESS;
