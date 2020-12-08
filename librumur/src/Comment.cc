@@ -27,15 +27,9 @@ class File {
   explicit File(std::istream &in_): in(in_) { }
 
   /// read a new character from the file
-  int getchar() {
+  char getchar() {
 
-    // do we need to read a new character from the stream?
-    if (buffered.empty())
-      (void)peek();
-
-    // did peek() fail?
-    if (buffered.empty())
-      return EOF;
+    assert(!buffered.empty());
 
     char c = buffered[0];
     buffered = buffered.substr(1);
@@ -47,7 +41,7 @@ class File {
       ++colno;
     }
 
-    return static_cast<int>(c);
+    return c;
   }
 
   /// read the next `count` characters
