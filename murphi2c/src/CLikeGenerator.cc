@@ -16,7 +16,9 @@ void CLikeGenerator::visit_add(const Add &n) {
 }
 
 void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
-  *this << "#define " << n.name << " " << *n.value << "\n";
+  *this << "#define " << n.name << " " << *n.value;
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_aliasrule(const AliasRule&) {
@@ -36,6 +38,8 @@ void CLikeGenerator::visit_aliasstmt(const AliasStmt &n) {
   for (const Ptr<AliasDecl> &a : n.aliases) {
     *this << "#undef " << a->name << "\n";
   }
+  if (emit_line_comments(n) > 0)
+    *this << "\n";
 }
 
 void CLikeGenerator::visit_and(const And &n) {
@@ -68,7 +72,9 @@ void CLikeGenerator::visit_array(const Array &n) {
 }
 
 void CLikeGenerator::visit_assignment(const Assignment &n) {
-  *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
+  *this << indentation() << *n.lhs << " = " << *n.rhs << ";";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_band(const Band &n) {
@@ -85,7 +91,9 @@ void CLikeGenerator::visit_bor(const Bor &n) {
 
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-    << "));\n";
+    << "));";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_div(const Div &n) {
@@ -137,7 +145,9 @@ void CLikeGenerator::visit_eq(const Eq &n) {
 }
 
 void CLikeGenerator::visit_errorstmt(const ErrorStmt &n) {
-  *this << indentation() << "error(\"" << escape(n.message) << "\");\n";
+  *this << indentation() << "error(\"" << escape(n.message) << "\");";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_exists(const Exists &n) {
@@ -176,7 +186,9 @@ void CLikeGenerator::visit_for(const For &n) {
   *this << indentation() << "}\n";
 
   dedent();
-  *this << indentation() << "} while (0);\n";
+  *this << indentation() << "} while (0);";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_forall(const Forall &n) {
@@ -231,6 +243,7 @@ void CLikeGenerator::visit_if(const If &n) {
     dispatch(c);
     first = false;
   }
+  emit_line_comments(n);
   *this << "\n";
 }
 
@@ -339,7 +352,9 @@ void CLikeGenerator::visit_or(const Or &n) {
 }
 
 void CLikeGenerator::visit_procedurecall(const ProcedureCall &n) {
-  *this << indentation() << n.call << ";\n";
+  *this << indentation() << n.call << ";";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_property(const Property&) {
@@ -360,7 +375,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
     case Property::ASSUMPTION:
@@ -370,7 +385,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
     case Property::COVER:
@@ -380,7 +395,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
     case Property::LIVENESS:
@@ -390,10 +405,13 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
   }
+
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
@@ -521,13 +539,16 @@ void CLikeGenerator::visit_put(const Put &n) {
 
   // is this a put of a literal string?
   if (n.expr == nullptr) {
-    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");\n";
-    return;
+    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+
+  } else {
+    const Ptr<TypeExpr> type = n.expr->type();
+    print("", *type, *n.expr, 0);
+    *this << ";";
   }
 
-  const Ptr<TypeExpr> type = n.expr->type();
-  print("", *type, *n.expr, 0);
-  *this << ";\n";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_quantifier(const Quantifier &n) {
@@ -597,7 +618,9 @@ void CLikeGenerator::visit_return(const Return &n) {
   if (n.expr != nullptr) {
     *this << " " << *n.expr;
   }
-  *this << ";\n";
+  *this << ";";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_rsh(const Rsh &n) {
@@ -664,7 +687,9 @@ void CLikeGenerator::visit_switch(const Switch &n) {
   *this << "\n";
 
   dedent();
-  *this << indentation() << "} while (0);\n";
+  *this << indentation() << "} while (0);";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_switchcase(const SwitchCase &n) {
@@ -694,7 +719,9 @@ void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
   if (auto e = dynamic_cast<const Enum*>(n.value.get()))
     enum_typedefs[e->unique_id] = n.name;
 
-  *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
+  *this << indentation() << "typedef " << *n.value << " " << n.name << ";";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
@@ -703,7 +730,9 @@ void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
 
 void CLikeGenerator::visit_undefine(const Undefine &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-    << "));\n";
+    << "));";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_while(const While &n) {
@@ -713,7 +742,9 @@ void CLikeGenerator::visit_while(const While &n) {
     *this << *s;
   }
   dedent();
-  *this << indentation() << "}\n";
+  *this << indentation() << "}";
+  emit_line_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_xor(const Xor &n) {
@@ -728,6 +759,17 @@ CLikeGenerator &CLikeGenerator::operator<<(const std::string &s) {
 CLikeGenerator &CLikeGenerator::operator<<(const Node &n) {
   dispatch(n);
   return *this;
+}
+
+size_t CLikeGenerator::emit_line_comments(const Node &n) {
+  size_t emitted = 0;
+  for (const Comment &c : comments) {
+    if (!c.multiline && c.loc.begin.line == n.loc.end.line) {
+      *this << " //" << c.content;
+      ++emitted;
+    }
+  }
+  return emitted;
 }
 
 CLikeGenerator::~CLikeGenerator() { }

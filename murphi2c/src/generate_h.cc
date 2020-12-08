@@ -34,7 +34,9 @@ class HGenerator : public CLikeGenerator {
       }
     }
 
-    *this << " " << n.name << ";\n";
+    *this << " " << n.name << ";";
+    emit_line_comments(n);
+    *this << "\n";
   }
 
   void visit_function(const Function &n) final {
@@ -159,7 +161,9 @@ class HGenerator : public CLikeGenerator {
     *this << indentation();
     if (n.is_in_state())
       *this << "extern ";
-    *this << *n.type << " " << n.name << ";\n";
+    *this << *n.type << " " << n.name << ";";
+    emit_line_comments(n);
+    *this << "\n";
   }
 };
 

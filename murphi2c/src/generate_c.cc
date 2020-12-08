@@ -39,7 +39,9 @@ class CGenerator : public CLikeGenerator {
         *this << "__typeof__(" << *n.value << ")";
       }
     }
-    *this << " " << n.name << " = " << *n.value << ";\n";
+    *this << " " << n.name << " = " << *n.value << ";";
+    emit_line_comments(n);
+    *this << "\n";
   }
 
   void visit_function(const Function &n) final {
@@ -272,7 +274,9 @@ class CGenerator : public CLikeGenerator {
   }
 
   void visit_vardecl(const VarDecl &n) final {
-    *this << indentation() << *n.type << " " << n.name << ";\n";
+    *this << indentation() << *n.type << " " << n.name << ";";
+    emit_line_comments(n);
+    *this << "\n";
   }
 
   virtual ~CGenerator() = default;

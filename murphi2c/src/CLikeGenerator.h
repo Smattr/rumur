@@ -98,4 +98,8 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   // not-terminal) type
   void print(const std::string &suffix, const rumur::TypeExpr &t,
     const rumur::Expr &e, size_t counter);
+
+ protected:
+  // output single comments in the given range
+  size_t emit_line_comments(const rumur::Node &n);
 };
