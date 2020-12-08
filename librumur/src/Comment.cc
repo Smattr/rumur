@@ -133,10 +133,10 @@ std::vector<Comment> parse_comments(std::istream &input) {
     }
 
     // single line comment?
-    if (in.next_is("//")) {
+    if (in.next_is("--")) {
       position begin = in.pos();
       // discard the comment starter
-      (void)in.read(strlen("//"));
+      (void)in.read(strlen("--"));
       // consume the comment body
       std::ostringstream content;
       while (!in.eof() && !in.next_is("\n"))
