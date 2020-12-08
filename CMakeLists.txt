@@ -42,6 +42,7 @@ add_subdirectory(murphi2c)
 add_subdirectory(murphi2murphi)
 add_subdirectory(murphi2xml)
 add_subdirectory(rumur)
+add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check
   COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:$ENV{PATH}
