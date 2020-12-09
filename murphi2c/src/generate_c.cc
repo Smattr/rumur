@@ -40,7 +40,7 @@ class CGenerator : public CLikeGenerator {
       }
     }
     *this << " " << n.name << " = " << *n.value << ";";
-    emit_line_comments(n);
+    emit_trailing_comments(n);
     *this << "\n";
   }
 
@@ -275,7 +275,7 @@ class CGenerator : public CLikeGenerator {
 
   void visit_vardecl(const VarDecl &n) final {
     *this << indentation() << *n.type << " " << n.name << ";";
-    emit_line_comments(n);
+    emit_trailing_comments(n);
     *this << "\n";
   }
 

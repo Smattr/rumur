@@ -35,7 +35,7 @@ class HGenerator : public CLikeGenerator {
     }
 
     *this << " " << n.name << ";";
-    emit_line_comments(n);
+    emit_trailing_comments(n);
     *this << "\n";
   }
 
@@ -162,7 +162,7 @@ class HGenerator : public CLikeGenerator {
     if (n.is_in_state())
       *this << "extern ";
     *this << *n.type << " " << n.name << ";";
-    emit_line_comments(n);
+    emit_trailing_comments(n);
     *this << "\n";
   }
 };
