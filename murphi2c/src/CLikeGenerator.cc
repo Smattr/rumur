@@ -761,6 +761,49 @@ CLikeGenerator &CLikeGenerator::operator<<(const Node &n) {
   return *this;
 }
 
+size_t CLikeGenerator::emit_leading_comments(const Node &n) {
+  size_t count = 0;
+  size_t i = 0;
+  for (const Comment &c : comments) {
+    // has this not yet been printed?
+    if (!emitted[i]) {
+      // does this precede the given node?
+      if (c.loc.end.line < n.loc.begin.line ||
+          (c.loc.end.line == n.loc.begin.line &&
+           c.loc.end.column <= n.loc.begin.column)) {
+
+        // do some white space adjustment for multiline comments
+        if (c.multiline) {
+          *this << indentation() << "/*";
+          bool dropping = false;
+          for (const char &b : c.content) {
+            if (b == '\n') {
+              *this << "\n" << indentation() << " ";
+              dropping = true;
+            } else if (dropping) {
+              if (!isspace(b)) {
+                out << b;
+                dropping = false;
+              }
+            } else {
+              out << b;
+            }
+          }
+          *this << "*/\n";
+
+        // single line comments can be emitted simpler
+        } else {
+          *this << indentation() << "//" << c.content << "\n";
+        }
+
+        emitted[i] = true;
+      }
+    }
+    ++i;
+  }
+  return count;
+}
+
 size_t CLikeGenerator::emit_trailing_comments(const Node &n) {
   size_t count = 0;
   size_t i = 0;

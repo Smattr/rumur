@@ -103,6 +103,9 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
     const rumur::Expr &e, size_t counter);
 
  protected:
+  // output comments preceding the given node
+  size_t emit_leading_comments(const rumur::Node &n);
+
   // output single line comments following the given node
   size_t emit_trailing_comments(const rumur::Node &n);
 };
