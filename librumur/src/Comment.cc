@@ -23,7 +23,7 @@ class File {
   std::string buffered;
 
  public:
-  explicit File(std::istream &in_): pos(nullptr, 1, 1), in(in_) { }
+  explicit File(std::istream &in_): pos{nullptr, 1, 1}, in{in_} { }
 
   /// read a new character from the file
   char getchar() {
@@ -92,7 +92,7 @@ std::vector<Comment> parse_comments(std::istream &input) {
 
   std::vector<Comment> result;
 
-  for (File in(input); !in.eof();) {
+  for (File in{input}; !in.eof();) {
 
     // string?
     {
