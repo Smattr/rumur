@@ -815,6 +815,22 @@ size_t CLikeGenerator::emit_leading_comments(const Node &n) {
   return count;
 }
 
+size_t CLikeGenerator::drop_leading_comments(const Node &n) {
+  size_t count = 0;
+  size_t i = 0;
+  for (const Comment &c : comments) {
+    // does this precede the given node?
+    if (c.loc.end.line < n.loc.begin.line ||
+        (c.loc.end.line == n.loc.begin.line &&
+         c.loc.end.column <= n.loc.begin.column)) {
+      // mark it as emitted so it will be skipped in future
+      emitted[i] = true;
+    }
+    ++i;
+  }
+  return count;
+}
+
 size_t CLikeGenerator::emit_trailing_comments(const Node &n) {
   size_t count = 0;
   size_t i = 0;
