@@ -17,14 +17,13 @@ namespace {
 class File {
 
  private:
-  uint64_t lineno = 1;
-  uint64_t colno = 1;
+  position pos;
 
   std::istream &in;
   std::string buffered;
 
  public:
-  explicit File(std::istream &in_): in(in_) { }
+  explicit File(std::istream &in_): pos(nullptr, 1, 1), in(in_) { }
 
   /// read a new character from the file
   char getchar() {
@@ -35,10 +34,9 @@ class File {
     buffered = buffered.substr(1);
 
     if (c == '\n') {
-      ++lineno;
-      colno = 1;
+      pos.lines();
     } else {
-      ++colno;
+      pos.columns();
     }
 
     return c;
@@ -83,17 +81,8 @@ class File {
     return buffered.empty() && in.eof();
   }
 
-  uint64_t line() const {
-    return lineno;
-  }
-
-  uint64_t col() const {
-    return colno;
-  }
-
-  position pos() const {
-    return position{nullptr, static_cast<position::counter_type>(line()),
-      static_cast<position::counter_type>(col())};
+  position position() const {
+    return pos;
   }
 };
 
@@ -134,19 +123,19 @@ std::vector<Comment> parse_comments(std::istream &input) {
 
     // single line comment?
     if (in.next_is("--")) {
-      position begin = in.pos();
+      position begin = in.position();
       // discard the comment starter
       (void)in.read(strlen("--"));
       // consume the comment body
       std::ostringstream content;
       while (!in.eof() && !in.next_is("\n"))
         content << in.getchar();
-      result.push_back(Comment{content.str(), false, location{begin, in.pos()}});
+      result.push_back(Comment{content.str(), false, location{begin, in.position()}});
       continue;
 
     // multiline comment?
     } else if (in.next_is("/*")) {
-      position begin = in.pos();
+      position begin = in.position();
       // discard the comment starter
       (void)in.read(strlen("/*"));
       // consume the comment body;
@@ -158,7 +147,7 @@ std::vector<Comment> parse_comments(std::istream &input) {
         }
         content << in.getchar();
       }
-      result.push_back(Comment{content.str(), true, location{begin, in.pos()}});
+      result.push_back(Comment{content.str(), true, location{begin, in.position()}});
 
     // otherwise, something irrelevant
     } else {
