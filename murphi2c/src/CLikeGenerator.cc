@@ -30,9 +30,11 @@ void CLikeGenerator::visit_aliasrule(const AliasRule&) {
 
 void CLikeGenerator::visit_aliasstmt(const AliasStmt &n) {
   for (const Ptr<AliasDecl> &a : n.aliases) {
+    emit_leading_comments(*a);
     *this << *a;
   }
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   for (const Ptr<AliasDecl> &a : n.aliases) {
@@ -180,6 +182,7 @@ void CLikeGenerator::visit_for(const For &n) {
   *this << indentation() << n.quantifier << " {\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   dedent();
@@ -266,6 +269,7 @@ void CLikeGenerator::visit_ifclause(const IfClause &n) {
   *this << "{\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   dedent();
@@ -301,7 +305,11 @@ void CLikeGenerator::visit_mod(const Mod &n) {
 
 void CLikeGenerator::visit_model(const Model &n) {
 
+  emit_leading_comments(n);
+
   for (const Ptr<Node> &c : n.children) {
+
+    emit_leading_comments(*c);
 
     // if this is a rule, first flatten it so we do not have to deal with the
     // hierarchy of rulesets, aliasrules, etc.
@@ -678,6 +686,7 @@ void CLikeGenerator::visit_switch(const Switch &n) {
     *this << "{\n";
     indent();
     for (const Ptr<Stmt> &s : c.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
     dedent();
@@ -702,6 +711,7 @@ void CLikeGenerator::visit_switchcase(const SwitchCase &n) {
   }
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   *this << indentation() << "break;\n";
@@ -739,6 +749,7 @@ void CLikeGenerator::visit_while(const While &n) {
   *this << indentation() << "while " << *n.condition << " {\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   dedent();

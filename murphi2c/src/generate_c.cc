@@ -76,9 +76,11 @@ class CGenerator : public CLikeGenerator {
       }
     }
     for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
     }
     for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
     // clean up var aliases
@@ -200,13 +202,16 @@ class CGenerator : public CLikeGenerator {
 
     // aliases, variables, local types, etc.
     for (const Ptr<AliasDecl> &a : n.aliases) {
+      emit_leading_comments(*a);
       *this << *a;
     }
     for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
     }
 
     for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
 
@@ -249,13 +254,16 @@ class CGenerator : public CLikeGenerator {
 
     // aliases, variables, local types, etc.
     for (const Ptr<AliasDecl> &a : n.aliases) {
+      emit_leading_comments(*a);
       *this << *a;
     }
     for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
     }
 
     for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
 
