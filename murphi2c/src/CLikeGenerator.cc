@@ -762,14 +762,17 @@ CLikeGenerator &CLikeGenerator::operator<<(const Node &n) {
 }
 
 size_t CLikeGenerator::emit_line_comments(const Node &n) {
-  size_t emitted = 0;
+  size_t count = 0;
+  size_t i = 0;
   for (const Comment &c : comments) {
-    if (!c.multiline && c.loc.begin.line == n.loc.end.line) {
+    if (!emitted[i] && !c.multiline && c.loc.begin.line == n.loc.end.line) {
       *this << " //" << c.content;
-      ++emitted;
+      emitted[i] = true;
+      ++count;
     }
+    ++i;
   }
-  return emitted;
+  return count;
 }
 
 CLikeGenerator::~CLikeGenerator() { }

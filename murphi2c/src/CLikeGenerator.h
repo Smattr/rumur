@@ -21,10 +21,13 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   // list of comments from the original source
   std::vector<rumur::Comment> comments;
 
+  // whether each comment has been written to the output yet
+  std::vector<bool> emitted;
+
  public:
   CLikeGenerator(const std::vector<rumur::Comment> &comments_,
-    std::ostream &out_, bool pack_): out(out_), pack(pack_), comments(comments_)
-    { }
+    std::ostream &out_, bool pack_): out(out_), pack(pack_),
+    comments(comments_), emitted(comments_.size(), false) { }
 
   void visit_add(const rumur::Add &n) final;
   void visit_aliasdecl(const rumur::AliasDecl &n) final;
