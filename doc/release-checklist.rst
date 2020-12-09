@@ -101,7 +101,7 @@ autopkgtests and these could fail, preventing migration of the package to the
 main repositories.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
-.. _`Cirrus CI FreeBSD tests`: https://cirrus-ci.com/github/Smattr/rumur
+.. _`Cirrus CI FreeBSD and macOS tests`: https://cirrus-ci.com/github/Smattr/rumur
 .. _`Debian buildd results`: https://buildd.debian.org/status/package.php?p=rumur
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
 .. _`FreeBSD’s package repository`: https://svnweb.freebsd.org/ports/head/math/rumur/
