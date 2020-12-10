@@ -756,6 +756,13 @@ int main(int argc, char **argv) {
     }
 
     assert(WIFEXITED(stat_loc));
+
+    // we should have generated code that was compilable
+    int exit_status = WEXITSTATUS(stat_loc);
+    if (exit_status != 0) {
+      std::cerr << "compiler returned " << exit_status << "\n";
+      abort();
+    }
   }
 
   return EXIT_SUCCESS;
