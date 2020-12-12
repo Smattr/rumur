@@ -4,7 +4,6 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
-#include "utils.h"
 
 using namespace rumur;
 
