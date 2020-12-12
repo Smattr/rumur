@@ -81,7 +81,7 @@ class File {
     return buffered.empty() && in.eof();
   }
 
-  position position() const {
+  position get_position() const {
     return pos;
   }
 };
@@ -123,19 +123,19 @@ std::vector<Comment> parse_comments(std::istream &input) {
 
     // single line comment?
     if (in.next_is("--")) {
-      position begin = in.position();
+      position begin = in.get_position();
       // discard the comment starter
       (void)in.read(strlen("--"));
       // consume the comment body
       std::ostringstream content;
       while (!in.eof() && !in.next_is("\n"))
         content << in.getchar();
-      result.push_back(Comment{content.str(), false, location{begin, in.position()}});
+      result.push_back(Comment{content.str(), false, location{begin, in.get_position()}});
       continue;
 
     // multiline comment?
     } else if (in.next_is("/*")) {
-      position begin = in.position();
+      position begin = in.get_position();
       // discard the comment starter
       (void)in.read(strlen("/*"));
       // consume the comment body;
@@ -147,7 +147,7 @@ std::vector<Comment> parse_comments(std::istream &input) {
         }
         content << in.getchar();
       }
-      result.push_back(Comment{content.str(), true, location{begin, in.position()}});
+      result.push_back(Comment{content.str(), true, location{begin, in.get_position()}});
 
     // otherwise, something irrelevant
     } else {
