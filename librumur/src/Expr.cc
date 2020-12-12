@@ -1,5 +1,6 @@
 #include <cassert>
 #include <climits>
+#include "../../common/isa.h"
 #include <cstddef>
 #include <cstdint>
 #include <gmpxx.h>
@@ -17,7 +18,6 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
-#include "utils.h"
 #include <vector>
 
 namespace rumur {

@@ -1,4 +1,5 @@
 #include <cstddef>
+#include "../../../common/isa.h"
 #include <rumur/rumur.h>
 #include "except.h"
 #include <locale>
@@ -7,7 +8,6 @@
 #include <sstream>
 #include <string>
 #include "translate.h"
-#include "../utils.h"
 
 using namespace rumur;
 

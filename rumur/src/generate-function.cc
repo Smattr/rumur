@@ -1,9 +1,9 @@
 #include <cstddef>
+#include "../../common/isa.h"
 #include "generate.h"
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
-#include "utils.h"
 #include <vector>
 
 using namespace rumur;

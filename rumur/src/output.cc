@@ -1,5 +1,6 @@
 #include "assume-statements-count.h"
 #include <cassert>
+#include "../../common/isa.h"
 #include <cstddef>
 #include <fstream>
 #include <iostream>
@@ -12,7 +13,6 @@
 #include <string>
 #include "symmetry-reduction.h"
 #include <utility>
-#include "utils.h"
 #include "ValueType.h"
 
 using namespace rumur;

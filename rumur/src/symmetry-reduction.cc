@@ -1,4 +1,5 @@
 #include <cassert>
+#include "../../common/isa.h"
 #include <cstddef>
 #include <gmpxx.h>
 #include <iostream>

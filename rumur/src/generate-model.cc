@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cassert>
 #include "../../common/escape.h"
+#include "../../common/isa.h"
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>
@@ -8,7 +9,6 @@
 #include <rumur/rumur.h>
 #include <string>
 #include "symmetry-reduction.h"
-#include "utils.h"
 #include <vector>
 
 using namespace rumur;
