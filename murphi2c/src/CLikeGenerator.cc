@@ -2,6 +2,7 @@
 #include <cassert>
 #include "CLikeGenerator.h"
 #include "../../common/escape.h"
+#include "../../common/isa.h"
 #include <gmpxx.h>
 #include "options.h"
 #include <rumur/rumur.h>
@@ -16,7 +17,7 @@ void CLikeGenerator::visit_add(const Add &n) {
 }
 
 void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
-  *this << "#define " << n.name << " " << *n.value << "\n";
+  *this << "#define " << n.name << "() " << *n.value << "\n";
 }
 
 void CLikeGenerator::visit_aliasrule(const AliasRule&) {
@@ -146,7 +147,12 @@ void CLikeGenerator::visit_exists(const Exists &n) {
 }
 
 void CLikeGenerator::visit_exprid(const ExprID &n) {
-  *this << "(" << n.id << ")";
+  *this << "(" << n.id;
+  // if this refers to an alias, it will have been emitted as a macro
+  if (isa<AliasDecl>(n.value)) {
+    *this << "()";
+  }
+  *this << ")";
 }
 
 void CLikeGenerator::visit_field(const Field &n) {
