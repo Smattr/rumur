@@ -147,7 +147,11 @@ void CLikeGenerator::visit_exists(const Exists &n) {
 }
 
 void CLikeGenerator::visit_exprid(const ExprID &n) {
-  *this << "(" << n.id;
+  *this << "(";
+  if (is_pointer.count(n.value->unique_id) > 0) {
+    *this << "*";
+  }
+  *this << n.id;
   // if this refers to an alias, it will have been emitted as a macro
   if (isa<AliasDecl>(n.value)) {
     *this << "()";

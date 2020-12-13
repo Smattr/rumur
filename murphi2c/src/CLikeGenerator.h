@@ -6,6 +6,7 @@
 #include <rumur/rumur.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 // generator for C-like code
 class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
@@ -16,6 +17,10 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
 
   // mapping of Enum unique_ids to the name of a TypeDecl to them
   std::unordered_map<size_t, std::string> enum_typedefs;
+
+  // collection of unique_ids that were emitted as pointers instead of standard
+  // variables
+  std::unordered_set<size_t> is_pointer;
 
  public:
   CLikeGenerator(std::ostream &out_, bool pack_): out(out_), pack(pack_) { }
