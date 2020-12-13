@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
   if (argc > 1) {
 
-    std::ifstream in{argv[1]};
+    std::ifstream in(argv[1]);
     if (!in) {
       std::cerr << "failed to open " << argv[1] << "\n";
       return EXIT_FAILURE;
