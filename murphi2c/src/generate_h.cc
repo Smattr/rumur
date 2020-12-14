@@ -51,10 +51,10 @@ class HGenerator : public CLikeGenerator {
         *this << sep << *p->type << " ";
         // if this is a var parameter, it needs to be a pointer
         if (!p->readonly) {
-          *this << "*" << p->name << "_";
-        } else {
-          *this << p->name;
+          (void)is_pointer.insert(p->unique_id);
+          *this << "*";
         }
+        *this << p->name;
         sep = ", ";
       }
     }

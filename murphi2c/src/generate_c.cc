@@ -56,32 +56,20 @@ class CGenerator : public CLikeGenerator {
         *this << sep << *p->type << " ";
         // if this is a var parameter, it needs to be a pointer
         if (!p->readonly) {
-          *this << "*" << p->name << "_";
-        } else {
-          *this << p->name;
+          (void)is_pointer.insert(p->unique_id);
+          *this << "*";
         }
+        *this << p->name;
         sep = ", ";
       }
     }
     *this << ") {\n";
     indent();
-    // provide aliases of var parameters under their original name
-    for (const Ptr<VarDecl> &p : n.parameters) {
-      if (!p->readonly) {
-        *this << "#define " << p->name << " (*" << p->name << "_)\n";
-      }
-    }
     for (const Ptr<Decl> &d : n.decls) {
       *this << *d;
     }
     for (const Ptr<Stmt> &s : n.body) {
       *this << *s;
-    }
-    // clean up var aliases
-    for (const Ptr<VarDecl> &p : n.parameters) {
-      if (!p->readonly) {
-        *this << "#undef " << p->name << "\n";
-      }
     }
     dedent();
     *this << "}\n";
