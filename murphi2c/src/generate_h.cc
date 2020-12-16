@@ -66,12 +66,7 @@ class HGenerator : public CLikeGenerator {
 
     // discard any comments related to declarations and statements within this
     // function
-    for (const Ptr<Decl> &d : n.decls) {
-      drop_leading_comments(*d);
-    }
-    for (const Ptr<Stmt> &s : n.body) {
-      drop_leading_comments(*s);
-    }
+    drop_comments(n.loc.end);
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -143,15 +138,7 @@ class HGenerator : public CLikeGenerator {
     *this << ");\n";
 
     // discard any comments associated with things within this rule
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      drop_leading_comments(*a);
-    }
-    for (const Ptr<Decl> &d : n.decls) {
-      drop_leading_comments(*d);
-    }
-    for (const Ptr<Stmt> &s : n.body) {
-      drop_leading_comments(*s);
-    }
+    drop_comments(n.loc.end);
   }
 
   void visit_startstate(const StartState &n) final {
@@ -177,15 +164,7 @@ class HGenerator : public CLikeGenerator {
     *this << ");\n";
 
     // discard any comments associated with things within this rule
-    for (const Ptr<AliasDecl> &a : n.aliases) {
-      drop_leading_comments(*a);
-    }
-    for (const Ptr<Decl> &d : n.decls) {
-      drop_leading_comments(*d);
-    }
-    for (const Ptr<Stmt> &s : n.body) {
-      drop_leading_comments(*s);
-    }
+    drop_comments(n.loc.end);
   }
 
   void visit_vardecl(const VarDecl &n) final {
