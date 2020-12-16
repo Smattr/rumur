@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cassert>
 #include "CLikeGenerator.h"
+#include <ctype.h>
 #include "../../common/escape.h"
 #include <gmpxx.h>
 #include "options.h"
@@ -772,6 +773,33 @@ CLikeGenerator &CLikeGenerator::operator<<(const Node &n) {
   return *this;
 }
 
+// write out a single line comment, accounting for the fact that '\' is an
+// escape leader in C that we should suppress if it is escaping the trailing new
+// line
+static void write_content(const Comment &c, std::ostream &out) {
+  assert(!c.multiline);
+
+  // detect if we have a trailing backslash
+  size_t i = 0;
+  for (; i < c.content.size(); ++i) {
+    if (c.content[i] == '\\') {
+      bool remainder_is_space = true;
+      for (size_t j = i + 1; j < c.content.size(); ++j) {
+        remainder_is_space &= isspace(c.content[j]);
+        if (!remainder_is_space) {
+          break;
+        }
+      }
+      if (remainder_is_space) {
+        break;
+      }
+      ++i; // skip escape
+    }
+  }
+
+  out << c.content.substr(0, i);
+}
+
 size_t CLikeGenerator::emit_leading_comments(const Node &n) {
   size_t count = 0;
   size_t i = 0;
@@ -804,7 +832,9 @@ size_t CLikeGenerator::emit_leading_comments(const Node &n) {
 
         // single line comments can be emitted simpler
         } else {
-          *this << indentation() << "//" << c.content << "\n";
+          *this << indentation() << "//";
+          write_content(c, out);
+          *this << "\n";
         }
 
         emitted[i] = true;
@@ -835,7 +865,8 @@ size_t CLikeGenerator::emit_trailing_comments(const Node &n) {
   size_t i = 0;
   for (const Comment &c : comments) {
     if (!emitted[i] && !c.multiline && c.loc.begin.line == n.loc.end.line) {
-      *this << " //" << c.content;
+      *this << " //";
+      write_content(c, out);
       emitted[i] = true;
       ++count;
     }
