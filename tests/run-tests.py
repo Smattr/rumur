@@ -247,9 +247,9 @@ class Murphi2CTest(Tweakable):
     # ask the C compiler if this is valid
     args = [self.config['CC']] + self.config['C_FLAGS'] + ['-c', '-o',
       os.devnull, '-']
-    ret, stdout, stderr = run(args, self.env(), stdout)
+    ret, out, err = run(args, self.env(), stdout)
     if ret != 0:
-      return Fail(f'C compilation failed:\n{stdout}{stderr}')
+      return Fail(f'C compilation failed:\n{out}{err}\nProgram:\n{stdout}')
 
 class Murphi2CHeaderTest(Tweakable):
   def __init__(self, model: str, config: Dict[str, Any]):
