@@ -785,8 +785,8 @@ static void write_content(const Comment &c, std::ostream &out) {
     if (c.content[i] == '\\') {
       bool remainder_is_space = true;
       for (size_t j = i + 1; j < c.content.size(); ++j) {
-        remainder_is_space &= isspace(c.content[j]);
-        if (!remainder_is_space) {
+        if (!isspace(c.content[j])) {
+          remainder_is_space = false;
           break;
         }
       }
