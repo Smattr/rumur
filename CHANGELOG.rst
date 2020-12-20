@@ -1,6 +1,32 @@
 Change log
 ==========
 
+v2020.12.20
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: a number of issues in ``murphi2c`` translation of ``put`` statements
+  have been fixed (commits 60c804a6cc5d04191788fc1756d1c9046cb09091,
+  0df3eb85f3932eb91c92c43d94d02e11a5846629,
+  4b7b5dfd3534aabd266fb3614b55d047526bae26,
+  652b50b7fc9f811ed206aa50398a5656acae0eef).
+* Bug fix: ``murphi2c`` no longer produces malformed code when referencing a
+  record field within an alias statement where an alias has the same name as the
+  field (commit 43f0dec2e112ff0adc05ab6267b8752e683d591d).
+* Bug fix: ``murphi2c`` no longer produces malformed code when referencing a
+  record field within a function with a var parameter with the same name as the
+  field (commit 074946937005c908cb7ace5ef65f3779d12420d2).
+* ``murphi2c`` makes a best effort to preserve comments during translation,
+  emitting these as C comments.
+* Translated ``put`` statements by ``murphi2c`` no longer print a trailing
+  newline (commit 338fa7b38a2e3224b76c095b54ef6dd869a6dd32).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* A new API ``parse_comments()`` has been introduced for extracting the source
+  comments from a Murphi model.
+
 v2020.09.06
 -----------
 
