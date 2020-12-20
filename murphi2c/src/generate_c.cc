@@ -6,6 +6,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <vector>
 
 using namespace rumur;
 
@@ -14,7 +15,8 @@ namespace {
 class CGenerator : public CLikeGenerator {
 
  public:
-  CGenerator(std::ostream &out_, bool pack_): CLikeGenerator(out_, pack_) { }
+  CGenerator(const std::vector<rumur::Comment> &comments_, std::ostream &out_,
+    bool pack_): CLikeGenerator(comments_, out_, pack_) { }
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
@@ -37,7 +39,9 @@ class CGenerator : public CLikeGenerator {
         *this << "__typeof__(" << *n.value << ")";
       }
     }
-    *this << " " << n.name << " = " << *n.value << ";\n";
+    *this << " " << n.name << " = " << *n.value << ";";
+    emit_trailing_comments(n);
+    *this << "\n";
   }
 
   void visit_function(const Function &n) final {
@@ -66,9 +70,11 @@ class CGenerator : public CLikeGenerator {
     *this << ") {\n";
     indent();
     for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
     }
     for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
     dedent();
@@ -184,13 +190,16 @@ class CGenerator : public CLikeGenerator {
 
     // aliases, variables, local types, etc.
     for (const Ptr<AliasDecl> &a : n.aliases) {
+      emit_leading_comments(*a);
       *this << *a;
     }
     for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
     }
 
     for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
 
@@ -233,13 +242,16 @@ class CGenerator : public CLikeGenerator {
 
     // aliases, variables, local types, etc.
     for (const Ptr<AliasDecl> &a : n.aliases) {
+      emit_leading_comments(*a);
       *this << *a;
     }
     for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
     }
 
     for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
 
@@ -258,7 +270,9 @@ class CGenerator : public CLikeGenerator {
   }
 
   void visit_vardecl(const VarDecl &n) final {
-    *this << indentation() << *n.type << " " << n.name << ";\n";
+    *this << indentation() << *n.type << " " << n.name << ";";
+    emit_trailing_comments(n);
+    *this << "\n";
   }
 
   virtual ~CGenerator() = default;
@@ -266,12 +280,13 @@ class CGenerator : public CLikeGenerator {
 
 }
 
-void generate_c(const Node &n, bool pack, std::ostream &out) {
+void generate_c(const Node &n, const std::vector<Comment> &comments, bool pack,
+    std::ostream &out) {
 
   // write the static prefix to the beginning of the source file
   for (size_t i = 0; i < resources_c_prefix_c_len; i++)
     out << (char)resources_c_prefix_c[i];
 
-  CGenerator gen(out, pack);
+  CGenerator gen(comments, out, pack);
   gen.dispatch(n);
 }
