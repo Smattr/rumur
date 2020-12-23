@@ -6,6 +6,8 @@
 #include <rumur/rumur.h>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 // generator for C-like code
 class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
@@ -17,8 +19,20 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
   // mapping of Enum unique_ids to the name of a TypeDecl to them
   std::unordered_map<size_t, std::string> enum_typedefs;
 
+  // collection of unique_ids that were emitted as pointers instead of standard
+  // variables
+  std::unordered_set<size_t> is_pointer;
+
+  // list of comments from the original source
+  std::vector<rumur::Comment> comments;
+
+  // whether each comment has been written to the output yet
+  std::vector<bool> emitted;
+
  public:
-  CLikeGenerator(std::ostream &out_, bool pack_): out(out_), pack(pack_) { }
+  CLikeGenerator(const std::vector<rumur::Comment> &comments_,
+    std::ostream &out_, bool pack_): out(out_), pack(pack_),
+    comments(comments_), emitted(comments_.size(), false) { }
 
   void visit_add(const rumur::Add &n) final;
   void visit_aliasdecl(const rumur::AliasDecl &n) final;
@@ -86,4 +100,20 @@ class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
 
   // make this class abstract
   virtual ~CLikeGenerator() = 0;
+
+ private:
+  // generate a print statement of the given expression and (possibly
+  // not-terminal) type
+  void print(const std::string &suffix, const rumur::TypeExpr &t,
+    const rumur::Expr &e, size_t counter);
+
+ protected:
+  // output comments preceding the given node
+  size_t emit_leading_comments(const rumur::Node &n);
+
+  // discard any un-emitted comments preceding the given position
+  size_t drop_comments(const rumur::position &pos);
+
+  // output single line comments following the given node
+  size_t emit_trailing_comments(const rumur::Node &n);
 };

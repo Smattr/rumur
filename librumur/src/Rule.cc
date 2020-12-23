@@ -12,7 +12,6 @@
 #include <rumur/Stmt.h>
 #include <rumur/traverse.h>
 #include <string>
-#include "utils.h"
 #include <vector>
 
 namespace rumur {

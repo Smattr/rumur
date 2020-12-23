@@ -7,15 +7,17 @@ gradually build upon.
 
 Overview
 --------
-Murphi models consist of three sections:
+Murphi models consist of three classes of definitions:
 
 1. Definitions of constants, types and state variables;
 2. Functions and procedures; and
 3. State transition rules and invariants.
 
-There are no specific characters that mark the transition between these sections
-but the order in which model elements can appear is constrained by this. For
-example, state variables cannot be defined after a function.
+Rumur’s predecessors required these to appear strictly in order. That is, all
+constants, types and state variables had to be defined before any functions or
+procedures, and all functions and procedures had to be defined before any rules
+or invariants. Rumur does not have this restriction, but it is a good habit to
+observe this if you want your model to be compatible with other Murphi tools.
 
 The Dining Philosophers
 -----------------------

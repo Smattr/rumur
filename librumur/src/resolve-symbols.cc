@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cassert>
+#include "../../common/isa.h"
 #include <gmpxx.h>
 #include "location.hh"
 #include <memory>
@@ -19,7 +20,6 @@
 #include <rumur/validate.h>
 #include <string>
 #include <utility>
-#include "utils.h"
 
 namespace rumur {
 

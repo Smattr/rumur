@@ -1,7 +1,9 @@
 #include <cstddef>
 #include <cassert>
 #include "CLikeGenerator.h"
+#include <ctype.h>
 #include "../../common/escape.h"
+#include "../../common/isa.h"
 #include <gmpxx.h>
 #include "options.h"
 #include <rumur/rumur.h>
@@ -16,7 +18,9 @@ void CLikeGenerator::visit_add(const Add &n) {
 }
 
 void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
-  *this << "#define " << n.name << " " << *n.value << "\n";
+  *this << "#define " << n.name << "() " << *n.value;
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_aliasrule(const AliasRule&) {
@@ -28,14 +32,18 @@ void CLikeGenerator::visit_aliasrule(const AliasRule&) {
 
 void CLikeGenerator::visit_aliasstmt(const AliasStmt &n) {
   for (const Ptr<AliasDecl> &a : n.aliases) {
+    emit_leading_comments(*a);
     *this << *a;
   }
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   for (const Ptr<AliasDecl> &a : n.aliases) {
     *this << "#undef " << a->name << "\n";
   }
+  if (emit_trailing_comments(n) > 0)
+    *this << "\n";
 }
 
 void CLikeGenerator::visit_and(const And &n) {
@@ -68,7 +76,9 @@ void CLikeGenerator::visit_array(const Array &n) {
 }
 
 void CLikeGenerator::visit_assignment(const Assignment &n) {
-  *this << indentation() << *n.lhs << " = " << *n.rhs << ";\n";
+  *this << indentation() << *n.lhs << " = " << *n.rhs << ";";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_band(const Band &n) {
@@ -85,7 +95,9 @@ void CLikeGenerator::visit_bor(const Bor &n) {
 
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-    << "));\n";
+    << "));";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_div(const Div &n) {
@@ -93,7 +105,22 @@ void CLikeGenerator::visit_div(const Div &n) {
 }
 
 void CLikeGenerator::visit_element(const Element &n) {
-  *this << "(" << *n.array << ".data[" << *n.index << "])";
+
+  // rather than simply indexing into the array based on the value of the index
+  // expression, we need to account for the fact that the generated C array will
+  // start from 0 while the Murphi array will start from a custom lower bound
+
+  // find the type of the array expression
+  const Ptr<TypeExpr> t = n.array->type()->resolve();
+  auto a = dynamic_cast<const Array*>(t.get());
+  assert(a != nullptr && "non-array on LHS of array indexing expression");
+
+  // find the lower bound of its index type, using some hacky mangling to align
+  // with one of the macros from ../resources/c_prefix.c
+  const std::string lb = value_type + "_" + a->index_type->lower_bound();
+
+  // emit an indexing operation, now account for this
+  *this << "(" << *n.array << ".data[(" << *n.index << ") - " << lb << "])";
 }
 
 void CLikeGenerator::visit_enum(const Enum &n) {
@@ -122,7 +149,9 @@ void CLikeGenerator::visit_eq(const Eq &n) {
 }
 
 void CLikeGenerator::visit_errorstmt(const ErrorStmt &n) {
-  *this << indentation() << "error(\"" << escape(n.message) << "\");\n";
+  *this << indentation() << "error(\"" << escape(n.message) << "\");";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_exists(const Exists &n) {
@@ -131,7 +160,16 @@ void CLikeGenerator::visit_exists(const Exists &n) {
 }
 
 void CLikeGenerator::visit_exprid(const ExprID &n) {
-  *this << "(" << n.id << ")";
+  *this << "(";
+  if (is_pointer.count(n.value->unique_id) > 0) {
+    *this << "*";
+  }
+  *this << n.id;
+  // if this refers to an alias, it will have been emitted as a macro
+  if (isa<AliasDecl>(n.value)) {
+    *this << "()";
+  }
+  *this << ")";
 }
 
 void CLikeGenerator::visit_field(const Field &n) {
@@ -155,13 +193,16 @@ void CLikeGenerator::visit_for(const For &n) {
   *this << indentation() << n.quantifier << " {\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   dedent();
   *this << indentation() << "}\n";
 
   dedent();
-  *this << indentation() << "} while (0);\n";
+  *this << indentation() << "} while (0);";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_forall(const Forall &n) {
@@ -216,6 +257,7 @@ void CLikeGenerator::visit_if(const If &n) {
     dispatch(c);
     first = false;
   }
+  emit_trailing_comments(n);
   *this << "\n";
 }
 
@@ -238,6 +280,7 @@ void CLikeGenerator::visit_ifclause(const IfClause &n) {
   *this << "{\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   dedent();
@@ -273,7 +316,11 @@ void CLikeGenerator::visit_mod(const Mod &n) {
 
 void CLikeGenerator::visit_model(const Model &n) {
 
+  emit_leading_comments(n);
+
   for (const Ptr<Node> &c : n.children) {
+
+    emit_leading_comments(*c);
 
     // if this is a rule, first flatten it so we do not have to deal with the
     // hierarchy of rulesets, aliasrules, etc.
@@ -324,7 +371,9 @@ void CLikeGenerator::visit_or(const Or &n) {
 }
 
 void CLikeGenerator::visit_procedurecall(const ProcedureCall &n) {
-  *this << indentation() << n.call << ";\n";
+  *this << indentation() << n.call << ";";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_property(const Property&) {
@@ -345,7 +394,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
     case Property::ASSUMPTION:
@@ -355,7 +404,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
     case Property::COVER:
@@ -365,7 +414,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
     case Property::LIVENESS:
@@ -375,20 +424,150 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
         << escape(n.message == "" ? n.property.expr->to_string() : n.message)
         << "\");\n";
       dedent();
-      *this << indentation() << "}\n";
+      *this << indentation() << "}";
       break;
 
   }
+
+  emit_trailing_comments(n);
+  *this << "\n";
+}
+
+void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
+    const Expr &e, size_t counter) {
+
+  const Ptr<TypeExpr> type = t.resolve();
+
+  // if this is boolean, handle it separately to other Enums to avoid
+  // -Wswitch-bool warnings and cope with badly behaved users setting non-0/1
+  // values
+  if (type->is_boolean()) {
+
+    *this << indentation() << "printf(\"%s\", ((" << e << suffix
+      << ") ? \"true\" : \"false\"))";
+
+    return;
+  }
+
+  // if this is an enum, print the member corresponding to its value
+  if (auto en = dynamic_cast<const Enum*>(type.get())) {
+
+    *this << indentation() << "do {\n";
+    indent();
+
+    *this << indentation() << "switch (" << e << suffix << ") {\n";
+    indent();
+    size_t i = 0;
+    for (const std::pair<std::string, location> &m : en->members) {
+      *this << indentation() << "case " << std::to_string(i) << ":\n";
+      indent();
+      *this << indentation() << "printf(\"%s\", \"" << m.first << "\");\n"
+            << indentation() << "break;\n";
+      dedent();
+      ++i;
+    }
+    *this << indentation() << "default:\n";
+    indent();
+    *this << indentation() << "assert(!\"invalid enum value\");\n"
+          << indentation() << "__builtin_unreachable();\n";
+    dedent();
+    dedent();
+    *this << indentation() << "}\n";
+
+    dedent();
+    *this << indentation() << "} while (0)";
+
+    return;
+  }
+
+  if (auto a = dynamic_cast<const Array*>(type.get())) {
+
+    // printing opening “[”
+    *this << indentation() << "do {\n";
+    indent();
+    *this << indentation() << "printf(\"[\");\n";
+
+    // invent a unique symbol using our counter
+    const std::string i = "array_index" + std::to_string(counter);
+
+    // get the bounds of the index and hackily prepend the value type to produce
+    // something corresponding to one of the macros in ../resources/c_prefix.c
+    const std::string lb = value_type + "_" + a->index_type->lower_bound();
+    const std::string ub = value_type + "_" + a->index_type->upper_bound();
+
+    *this
+      << indentation() << "for (size_t " << i << " = 0; ; ++" << i << ") {\n";
+    indent();
+
+    // construct a print statement of the element at this index
+    print(suffix + ".data[" + i + "]", *a->element_type, e, counter + 1);
+    *this << ";\n";
+
+    *this << indentation() << "if (" << i << " == (size_t)" << ub
+      << " - (size_t)" << lb << ") {\n";
+    indent();
+    *this << indentation() << "break;\n";
+    dedent();
+    *this << indentation() << "} else {\n";
+    indent();
+    *this << indentation() << "printf(\", \");\n";
+    dedent();
+    *this << indentation() << "}\n";
+    dedent();
+    *this << indentation() << "}\n";
+
+    // print closing “]”
+    *this << indentation() << "printf(\"]\");\n";
+    dedent();
+    *this << indentation() << "} while (0)";
+
+    return;
+  }
+
+  if (auto r = dynamic_cast<const Record*>(type.get())) {
+
+    // print opening “{”
+    *this << indentation() << "do {\n";
+    indent();
+    *this << indentation() << "printf(\"{\");\n";
+
+    // print contained fields as a comma-separated list
+    std::string sep;
+    for (const Ptr<VarDecl> &f : r->fields) {
+      *this << indentation() << "printf(\"%s\", \"" << sep << "\");\n";
+      const Ptr<TypeExpr> ft = f->get_type();
+      print(suffix + "." + f->name, *ft, e, counter);
+      *this << ";\n";
+      sep = ", ";
+    }
+
+    // print closing “}”
+    *this << indentation() << "printf(\"}\");\n";
+    dedent();
+    *this << indentation() << "} while (0)";
+
+    return;
+  }
+
+  // fall back case, for Ranges and Scalarsets
+  *this
+    << indentation() << "print_" << value_type << "(" << e << suffix << ")";
 }
 
 void CLikeGenerator::visit_put(const Put &n) {
-  *this << indentation();
+
+  // is this a put of a literal string?
   if (n.expr == nullptr) {
-    *this << "printf(\"%s\\n\", \"" << escape(n.value) << "\")";
+    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+
   } else {
-    *this << "print" << value_type << "(" << *n.expr << ")";
+    const Ptr<TypeExpr> type = n.expr->type();
+    print("", *type, *n.expr, 0);
+    *this << ";";
   }
-  *this << ";\n";
+
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_quantifier(const Quantifier &n) {
@@ -458,7 +637,9 @@ void CLikeGenerator::visit_return(const Return &n) {
   if (n.expr != nullptr) {
     *this << " " << *n.expr;
   }
-  *this << ";\n";
+  *this << ";";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_rsh(const Rsh &n) {
@@ -516,6 +697,7 @@ void CLikeGenerator::visit_switch(const Switch &n) {
     *this << "{\n";
     indent();
     for (const Ptr<Stmt> &s : c.body) {
+      emit_leading_comments(*s);
       *this << *s;
     }
     dedent();
@@ -525,7 +707,9 @@ void CLikeGenerator::visit_switch(const Switch &n) {
   *this << "\n";
 
   dedent();
-  *this << indentation() << "} while (0);\n";
+  *this << indentation() << "} while (0);";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_switchcase(const SwitchCase &n) {
@@ -538,6 +722,7 @@ void CLikeGenerator::visit_switchcase(const SwitchCase &n) {
   }
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   *this << indentation() << "break;\n";
@@ -555,7 +740,9 @@ void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
   if (auto e = dynamic_cast<const Enum*>(n.value.get()))
     enum_typedefs[e->unique_id] = n.name;
 
-  *this << indentation() << "typedef " << *n.value << " " << n.name << ";\n";
+  *this << indentation() << "typedef " << *n.value << " " << n.name << ";";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
@@ -564,17 +751,22 @@ void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
 
 void CLikeGenerator::visit_undefine(const Undefine &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-    << "));\n";
+    << "));";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_while(const While &n) {
   *this << indentation() << "while " << *n.condition << " {\n";
   indent();
   for (const Ptr<Stmt> &s : n.body) {
+    emit_leading_comments(*s);
     *this << *s;
   }
   dedent();
-  *this << indentation() << "}\n";
+  *this << indentation() << "}";
+  emit_trailing_comments(n);
+  *this << "\n";
 }
 
 void CLikeGenerator::visit_xor(const Xor &n) {
@@ -589,6 +781,108 @@ CLikeGenerator &CLikeGenerator::operator<<(const std::string &s) {
 CLikeGenerator &CLikeGenerator::operator<<(const Node &n) {
   dispatch(n);
   return *this;
+}
+
+// write out a single line comment, accounting for the fact that '\' is an
+// escape leader in C that we should suppress if it is escaping the trailing new
+// line
+static void write_content(const Comment &c, std::ostream &out) {
+  assert(!c.multiline);
+
+  // detect if we have a trailing backslash
+  size_t i = 0;
+  for (; i < c.content.size(); ++i) {
+    if (c.content[i] == '\\') {
+      bool remainder_is_space = true;
+      for (size_t j = i + 1; j < c.content.size(); ++j) {
+        if (!isspace(c.content[j])) {
+          remainder_is_space = false;
+          break;
+        }
+      }
+      if (remainder_is_space) {
+        break;
+      }
+      ++i; // skip escape
+    }
+  }
+
+  out << c.content.substr(0, i);
+}
+
+size_t CLikeGenerator::emit_leading_comments(const Node &n) {
+  size_t count = 0;
+  size_t i = 0;
+  for (const Comment &c : comments) {
+    // has this not yet been printed?
+    if (!emitted[i]) {
+      // does this precede the given node?
+      if (c.loc.end.line < n.loc.begin.line ||
+          (c.loc.end.line == n.loc.begin.line &&
+           c.loc.end.column <= n.loc.begin.column)) {
+
+        // do some white space adjustment for multiline comments
+        if (c.multiline) {
+          *this << indentation() << "/*";
+          bool dropping = false;
+          for (const char &b : c.content) {
+            if (b == '\n') {
+              *this << "\n" << indentation() << " ";
+              dropping = true;
+            } else if (dropping) {
+              if (!isspace(b)) {
+                out << b;
+                dropping = false;
+              }
+            } else {
+              out << b;
+            }
+          }
+          *this << "*/\n";
+
+        // single line comments can be emitted simpler
+        } else {
+          *this << indentation() << "//";
+          write_content(c, out);
+          *this << "\n";
+        }
+
+        emitted[i] = true;
+      }
+    }
+    ++i;
+  }
+  return count;
+}
+
+size_t CLikeGenerator::drop_comments(const position &pos) {
+  size_t count = 0;
+  size_t i = 0;
+  for (const Comment &c : comments) {
+    // does this precede the given node?
+    if (c.loc.end.line < pos.line ||
+        (c.loc.end.line == pos.line && c.loc.end.column <= pos.column)) {
+      // mark it as emitted so it will be skipped in future
+      emitted[i] = true;
+    }
+    ++i;
+  }
+  return count;
+}
+
+size_t CLikeGenerator::emit_trailing_comments(const Node &n) {
+  size_t count = 0;
+  size_t i = 0;
+  for (const Comment &c : comments) {
+    if (!emitted[i] && !c.multiline && c.loc.begin.line == n.loc.end.line) {
+      *this << " //";
+      write_content(c, out);
+      emitted[i] = true;
+      ++count;
+    }
+    ++i;
+  }
+  return count;
 }
 
 CLikeGenerator::~CLikeGenerator() { }

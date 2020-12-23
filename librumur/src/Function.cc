@@ -9,7 +9,6 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 #include <utility>
-#include "utils.h"
 #include <vector>
 
 namespace rumur {

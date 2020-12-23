@@ -184,7 +184,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
 
     // wait for an event
     if (select(nfds, &readfds, &writefds, nullptr, nullptr) < 0) {
-      // if our select call is correct, and any "error" should be an interrupt
+      // if our select call is correct, any “error” should be an interrupt
       assert(errno == EAGAIN || errno == EINTR);
     }
 

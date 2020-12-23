@@ -6,6 +6,7 @@
 #include "resources.h"
 #include <rumur/rumur.h>
 #include <string>
+#include <vector>
 
 using namespace rumur;
 
@@ -14,7 +15,8 @@ namespace {
 class HGenerator : public CLikeGenerator {
 
  public:
-  HGenerator(std::ostream &out_, bool pack_): CLikeGenerator(out_, pack_) { }
+  HGenerator(const std::vector<Comment> &comments_, std::ostream &out_,
+    bool pack_): CLikeGenerator(comments_, out_, pack_) { }
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "extern const ";
@@ -32,7 +34,9 @@ class HGenerator : public CLikeGenerator {
       }
     }
 
-    *this << " " << n.name << ";\n";
+    *this << " " << n.name << ";";
+    emit_trailing_comments(n);
+    *this << "\n";
   }
 
   void visit_function(const Function &n) final {
@@ -51,14 +55,18 @@ class HGenerator : public CLikeGenerator {
         *this << sep << *p->type << " ";
         // if this is a var parameter, it needs to be a pointer
         if (!p->readonly) {
-          *this << "*" << p->name << "_";
-        } else {
-          *this << p->name;
+          (void)is_pointer.insert(p->unique_id);
+          *this << "*";
         }
+        *this << p->name;
         sep = ", ";
       }
     }
     *this << ");\n";
+
+    // discard any comments related to declarations and statements within this
+    // function
+    drop_comments(n.loc.end);
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -128,6 +136,9 @@ class HGenerator : public CLikeGenerator {
     }
 
     *this << ");\n";
+
+    // discard any comments associated with things within this rule
+    drop_comments(n.loc.end);
   }
 
   void visit_startstate(const StartState &n) final {
@@ -151,25 +162,31 @@ class HGenerator : public CLikeGenerator {
     }
 
     *this << ");\n";
+
+    // discard any comments associated with things within this rule
+    drop_comments(n.loc.end);
   }
 
   void visit_vardecl(const VarDecl &n) final {
     *this << indentation();
     if (n.is_in_state())
       *this << "extern ";
-    *this << *n.type << " " << n.name << ";\n";
+    *this << *n.type << " " << n.name << ";";
+    emit_trailing_comments(n);
+    *this << "\n";
   }
 };
 
 }
 
-void generate_h(const Node &n, bool pack, std::ostream &out) {
+void generate_h(const Node &n, const std::vector<Comment> &comments, bool pack,
+    std::ostream &out) {
 
   // write the static prefix to the beginning of the source file
   for (size_t i = 0; i < resources_h_prefix_h_len; i++)
     out << (char)resources_h_prefix_h[i];
 
-  HGenerator gen(out, pack);
+  HGenerator gen(comments, out, pack);
   gen.dispatch(n);
 
   // close the `extern "C"` block opened in ../resources/h_prefix.h

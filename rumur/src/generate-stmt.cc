@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include "../../common/escape.h"
+#include "../../common/isa.h"
 #include "generate.h"
 #include <gmpxx.h>
 #include <iostream>

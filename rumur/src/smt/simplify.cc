@@ -12,7 +12,6 @@
 #include <string>
 #include "translate.h"
 #include "typeexpr-to-smt.h"
-#include "../utils.h"
 
 using namespace rumur;
 

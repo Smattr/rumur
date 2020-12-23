@@ -1,4 +1,5 @@
 #include <cassert>
+#include "../../common/isa.h"
 #include <cstddef>
 #include "generate.h"
 #include <gmpxx.h>

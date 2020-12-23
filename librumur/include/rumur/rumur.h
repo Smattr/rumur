@@ -6,6 +6,7 @@
 #include "parser.yy.hh"
 #include "position.hh"
 #include <rumur/Boolean.h>
+#include <rumur/Comment.h>
 #include <rumur/Decl.h>
 #include <rumur/except.h>
 #include <rumur/Expr.h>

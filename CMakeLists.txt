@@ -32,13 +32,22 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
 endif()
 
+# if we have a new enough CMake to have FindPython3, check for it
+if(${CMAKE_VERSION} VERSION_GREATER 3.11)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+endif()
+
 add_subdirectory(librumur)
 add_subdirectory(murphi2c)
 add_subdirectory(murphi2murphi)
 add_subdirectory(murphi2xml)
 add_subdirectory(rumur)
+add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check
-  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:$ENV{PATH}
+  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --jobs 1)
 add_dependencies(check murphi2c murphi2murphi murphi2xml rumur)
+if(NOT CMAKE_CROSSCOMPILING)
+  add_dependencies(check murphi-comment-ls)
+endif()
