@@ -2997,12 +2997,12 @@ static void rendezvous_init(void) {
   }
 }
 
-/* Call this at the start of a rendezvous point.
+/** call this at the start of a rendezvous point
  *
  * This is a low level function, not expected to be directly used outside of the
  * context of the rendezvous implementation.
  *
- * @return True if the caller was the last to arrive and henceforth dubbed the
+ * \return True if the caller was the last to arrive and henceforth dubbed the
  *   'leader'.
  */
 static bool rendezvous_arrive(void) {
@@ -3019,14 +3019,14 @@ static bool rendezvous_arrive(void) {
   return rendezvous_pending == 0;
 }
 
-/* Call this at the end of a rendezvous point.
+/** call this at the end of a rendezvous point
  *
  * This is a low level function, not expected to be directly used outside of the
  * context of the rendezvous implementation.
  *
- * @param leader Whether the caller is the 'leader'. If you call this when you
+ * \param leader Whether the caller is the 'leader'. If you call this when you
  *   are the 'leader' it will unblock all 'followers' at the rendezvous point.
- * @param action Optional code for the leader to run.
+ * \param action Optional code for the leader to run.
  */
 static void rendezvous_depart(bool leader, void (*action)(void)) {
   int r __attribute((unused));
@@ -3567,13 +3567,14 @@ static unsigned long unknown_liveness(const struct state *NONNULL s) {
   return unknown;
 }
 
-/* Learn new liveness information about the state `s` from its successor. Note
- * that typically `state_previous_get(successor) != s` because `successor` is
- * actually one of the de-duped aliases of the original successor to `s`.
+/** learn new liveness information about the state `s` from its successor
  *
- * @param s State to learn information about
- * @param successor Successor to s
- * @return Number of new liveness information facts learnt
+ * Note that typically `state_previous_get(successor) != s` because `successor`
+ * is actually one of the de-duped aliases of the original successor to `s`.
+ *
+ * \param s State to learn information about
+ * \param successor Successor to s
+ * \return Number of new liveness information facts learnt
  */
 static unsigned long learn_liveness(struct state *NONNULL s,
     const struct state *NONNULL successor) {
