@@ -8,7 +8,7 @@ task:
     - name: Linux, AFL
       container:
         image: gcc:latest
-      install_script: apt-get update && env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bison cmake libfl-dev && echo core | tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh
+      install_script: apt-get update && env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bison cmake libfl-dev && ./misc/install-afl.sh
       test_script: uname -sr && python3 --version && mkdir build && cd build && env CC=gcc CXX=afl-g++ CXXFLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=undefined -O3" cmake .. && cmake --build . && cmake --build . -- install && ../misc/afl-wrapper.sh
 
 
