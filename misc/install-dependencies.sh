@@ -13,7 +13,7 @@ if which apt-get &>/dev/null; then
 
   apt-get update
 
-  if ! which cmake &>/dev/null then
+  if ! which cmake &>/dev/null; then
     apt-get install cmake
   fi
 else
