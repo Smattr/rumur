@@ -29,7 +29,12 @@ cd afl*
 make
 
 # install
-sudo make install
+if which sudo &>/dev/null; then
+  SUDO=sudo
+else
+  SUDO=
+fi
+${SUDO} make install
 
 # clean up
 popd
