@@ -12,7 +12,7 @@ export AFL_EXIT_WHEN_DONE=1
 export AFL_NO_UI=1
 
 # run AFL fuzzing for 40m
-timeout --preserve-status 2400s afl-fuzz -m 8192 -i ../tests -o findings_dir -- rumur --output /tmp/model.c @@
+timeout --preserve-status 200s afl-fuzz -m 8192 -i ../tests -o findings_dir -- rumur --output /tmp/model.c @@
 
 # remove the crashes dir if it is empty; this will fail if not empty
 rmdir findings_dir/crashes &>/dev/null
