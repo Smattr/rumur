@@ -13,15 +13,32 @@ set -e
 # echo commands
 set -x
 
-# Debian
-if which apt-get &>/dev/null; then
-
-  apt-get update
-
-  if ! which cmake &>/dev/null; then
-    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends cmake
+function update() {
+  # Debian
+  if which apt-get &>/dev/null; then
+    apt-get update
+  # FreeBSD
+  elif which pkg &>/dev/null; then
+    pkg upgrade -y
   fi
-else
-  printf 'no supported package manager found\n' >&2
-  exit 1
-fi
+}
+
+function install() {
+  # Debian
+  if which apt-get &>/dev/null; then
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${1}"
+  elif
+    pkg install -y "${1}"
+  else
+    printf 'no supported package manager found\n' >&2
+    exit 1
+  fi
+}
+
+# update package manager database
+update
+
+# install dependencies
+install bison
+install cmake
+install flex

@@ -8,7 +8,7 @@ task:
     - name: Linux, AFL
       container:
         image: gcc:latest
-      install_script: ./misc/install-dependencies.sh
+      install_script: apt-get update && env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bison cmake libfl-dev
 
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
