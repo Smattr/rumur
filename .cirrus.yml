@@ -20,6 +20,7 @@ task:
     - name: Linux, AFL
       container:
         image: gcc:latest
+      install_script: apt-get install cmake
 
     - name: macOS, XCode 11.3.1, Homebrew
       osx_instance:
