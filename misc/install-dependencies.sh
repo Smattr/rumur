@@ -2,6 +2,11 @@
 
 # CI script for installing build dependencies
 
+if [ -z "${CI}" ]; then
+  printf '$CI unset; refusing to run\n' >&2
+  exit 1
+fi
+
 # fail on error
 set -e
 
