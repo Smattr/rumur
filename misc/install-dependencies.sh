@@ -14,7 +14,7 @@ if which apt-get &>/dev/null; then
   apt-get update
 
   if ! which cmake &>/dev/null; then
-    apt-get install cmake
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends cmake
   fi
 else
   printf 'no supported package manager found\n' >&2
