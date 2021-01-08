@@ -1931,12 +1931,6 @@ matrix:
       # install AFL and let it catch crashes via core dumps
       - MATRIX_EVAL="echo core | sudo tee /proc/sys/kernel/core_pattern && ./misc/install-afl.sh && CC=gcc-10 && CXX=afl-g++"
 
-      # quit if we succeed exhaustively fuzzing (unlikely)
-      - AFL_EXIT_WHEN_DONE=1
-
-      # suppress normal animated UI and use periodic text output
-      - AFL_NO_UI=1
-
       # enable ASan and UBSan
       - CXXFLAGS="-g -fsanitize=address,undefined -fno-sanitize-recover=undefined -O3"
 

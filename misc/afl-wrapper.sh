@@ -5,6 +5,12 @@
 # echo commands
 set -x
 
+# quit if we succeed exhaustively fuzzing (unlikely)
+export AFL_EXIT_WHEN_DONE=1
+
+# suppress normal animated UI and use periodic text output
+export AFL_NO_UI=1
+
 # run AFL fuzzing for 40m
 timeout --preserve-status 2400s afl-fuzz -m 8192 -i ../tests -o findings_dir -- rumur --output /tmp/model.c @@
 
