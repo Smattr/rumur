@@ -67,8 +67,8 @@ struct Ternary : public Expr {
   Ptr<Expr> lhs;
   Ptr<Expr> rhs;
 
-  Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
-    const Ptr<Expr> &rhs_, const location &loc_);
+  Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+          const location &loc_);
   virtual ~Ternary() = default;
   Ternary *clone() const final;
 
@@ -93,7 +93,7 @@ struct BinaryExpr : public Expr {
   Ptr<Expr> rhs;
 
   BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+             const location &loc_);
   virtual ~BinaryExpr() = default;
 
   BinaryExpr *clone() const override = 0;
@@ -104,7 +104,7 @@ struct BinaryExpr : public Expr {
 struct BooleanBinaryExpr : public BinaryExpr {
 
   BooleanBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+                    const location &loc_);
   BooleanBinaryExpr() = delete;
 
   Ptr<TypeExpr> type() const final;
@@ -114,7 +114,7 @@ struct BooleanBinaryExpr : public BinaryExpr {
 struct Implication : public BooleanBinaryExpr {
 
   Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+              const location &loc_);
   Implication *clone() const final;
   virtual ~Implication() = default;
 
@@ -158,7 +158,8 @@ struct And : public BooleanBinaryExpr {
 // AST prior to symbol resolution.
 struct AmbiguousAmp : public BinaryExpr {
 
-  AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
+  AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
+               const location &loc_);
   virtual ~AmbiguousAmp() = default;
   AmbiguousAmp *clone() const final;
 
@@ -176,7 +177,7 @@ struct AmbiguousAmp : public BinaryExpr {
 struct AmbiguousPipe : public BinaryExpr {
 
   AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+                const location &loc_);
   virtual ~AmbiguousPipe() = default;
   AmbiguousPipe *clone() const final;
 
@@ -218,7 +219,7 @@ struct Not : public UnaryExpr {
 struct ComparisonBinaryExpr : public BinaryExpr {
 
   ComparisonBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+                       const location &loc_);
 
   void validate() const final;
 };
@@ -282,7 +283,7 @@ struct Geq : public ComparisonBinaryExpr {
 struct EquatableBinaryExpr : public BinaryExpr {
 
   EquatableBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+                      const location &loc_);
 
   void validate() const final;
 };
@@ -318,7 +319,7 @@ struct Neq : public EquatableBinaryExpr {
 struct ArithmeticBinaryExpr : public BinaryExpr {
 
   ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+                       const location &loc_);
 
   Ptr<TypeExpr> type() const final;
   void validate() const final;
@@ -486,14 +487,13 @@ struct Xor : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-
 struct ExprID : public Expr {
 
   std::string id;
   Ptr<ExprDecl> value;
 
   ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
-    const location &loc_);
+         const location &loc_);
   virtual ~ExprID() = default;
   ExprID *clone() const final;
 
@@ -518,7 +518,7 @@ struct Field : public Expr {
   std::string field;
 
   Field(const Ptr<Expr> &record_, const std::string &field_,
-    const location &loc_);
+        const location &loc_);
   virtual ~Field() = default;
   Field *clone() const final;
 
@@ -541,7 +541,7 @@ struct Element : public Expr {
   Ptr<Expr> index;
 
   Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
-    const location &loc_);
+          const location &loc_);
   virtual ~Element() = default;
   Element *clone() const final;
 
@@ -568,7 +568,7 @@ struct FunctionCall : public Expr {
   bool within_procedure_call = false;
 
   FunctionCall(const std::string &name_,
-    const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
+               const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~FunctionCall() = default;
   FunctionCall *clone() const final;
 
@@ -597,12 +597,12 @@ struct Quantifier : public Node {
   Ptr<VarDecl> decl;
 
   Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
-    const location &loc);
+             const location &loc);
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
-    const Ptr<Expr> &to_, const location &loc_);
+             const Ptr<Expr> &to_, const location &loc_);
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
-    const Ptr<Expr> &to_, const Ptr<Expr> &step_,
-    const location &loc_);
+             const Ptr<Expr> &to_, const Ptr<Expr> &step_,
+             const location &loc_);
   virtual ~Quantifier() = default;
   Quantifier *clone() const final;
   void validate() const final;
@@ -632,7 +632,7 @@ struct Exists : public Expr {
   Ptr<Expr> expr;
 
   Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
-    const location &loc_);
+         const location &loc_);
   virtual ~Exists() = default;
   Exists *clone() const final;
 
@@ -653,7 +653,7 @@ struct Forall : public Expr {
   Ptr<Expr> expr;
 
   Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
-    const location &loc_);
+         const location &loc_);
   virtual ~Forall() = default;
   Forall *clone() const final;
 
@@ -684,4 +684,4 @@ struct IsUndefined : public UnaryExpr {
   std::string to_string() const final;
 };
 
-}
+} // namespace rumur

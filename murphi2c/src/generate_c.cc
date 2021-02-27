@@ -1,9 +1,9 @@
-#include <cstddef>
-#include "CLikeGenerator.h"
 #include "generate_c.h"
-#include <iostream>
+#include "CLikeGenerator.h"
 #include "options.h"
 #include "resources.h"
+#include <cstddef>
+#include <iostream>
 #include <rumur/rumur.h>
 #include <string>
 #include <vector>
@@ -14,9 +14,10 @@ namespace {
 
 class CGenerator : public CLikeGenerator {
 
- public:
+public:
   CGenerator(const std::vector<rumur::Comment> &comments_, std::ostream &out_,
-    bool pack_): CLikeGenerator(comments_, out_, pack_) { }
+             bool pack_)
+      : CLikeGenerator(comments_, out_, pack_) {}
 
   void visit_constdecl(const ConstDecl &n) final {
     *this << indentation() << "const ";
@@ -34,8 +35,7 @@ class CGenerator : public CLikeGenerator {
       if (it != enum_typedefs.end()) {
         *this << it->second;
 
-      // fallback on the type of the right hand side
-      } else {
+      } else { // fallback on the type of the right hand side
         *this << "__typeof__(" << *n.value << ")";
       }
     }
@@ -93,7 +93,7 @@ class CGenerator : public CLikeGenerator {
       std::string sep;
       for (const Quantifier &q : n.quantifiers) {
         *this << sep;
-        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        if (auto t = dynamic_cast<const TypeExprID *>(q.type.get())) {
           *this << t->name;
         } else {
           *this << value_type;
@@ -132,7 +132,7 @@ class CGenerator : public CLikeGenerator {
       std::string sep;
       for (const Quantifier &q : n.quantifiers) {
         *this << sep;
-        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        if (auto t = dynamic_cast<const TypeExprID *>(q.type.get())) {
           *this << t->name;
         } else {
           *this << value_type;
@@ -175,7 +175,7 @@ class CGenerator : public CLikeGenerator {
       std::string sep;
       for (const Quantifier &q : n.quantifiers) {
         *this << sep;
-        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        if (auto t = dynamic_cast<const TypeExprID *>(q.type.get())) {
           *this << t->name;
         } else {
           *this << value_type;
@@ -205,7 +205,7 @@ class CGenerator : public CLikeGenerator {
 
     // clean up any aliases we defined
     for (const Ptr<Decl> &d : n.decls) {
-      if (auto a = dynamic_cast<const AliasDecl*>(d.get())) {
+      if (auto a = dynamic_cast<const AliasDecl *>(d.get())) {
         *this << "#undef " << a->name << "\n";
       }
     }
@@ -227,7 +227,7 @@ class CGenerator : public CLikeGenerator {
       std::string sep;
       for (const Quantifier &q : n.quantifiers) {
         *this << sep;
-        if (auto t = dynamic_cast<const TypeExprID*>(q.type.get())) {
+        if (auto t = dynamic_cast<const TypeExprID *>(q.type.get())) {
           *this << t->name;
         } else {
           *this << value_type;
@@ -257,7 +257,7 @@ class CGenerator : public CLikeGenerator {
 
     // clean up any aliases we defined
     for (const Ptr<Decl> &d : n.decls) {
-      if (auto a = dynamic_cast<const AliasDecl*>(d.get())) {
+      if (auto a = dynamic_cast<const AliasDecl *>(d.get())) {
         *this << "#undef " << a->name << "\n";
       }
     }
@@ -278,10 +278,10 @@ class CGenerator : public CLikeGenerator {
   virtual ~CGenerator() = default;
 };
 
-}
+} // namespace
 
 void generate_c(const Node &n, const std::vector<Comment> &comments, bool pack,
-    std::ostream &out) {
+                std::ostream &out) {
 
   // write the static prefix to the beginning of the source file
   for (size_t i = 0; i < resources_c_prefix_c_len; i++)

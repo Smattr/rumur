@@ -22,8 +22,7 @@ struct Property : public Node {
   Category category;
   Ptr<Expr> expr;
 
-  Property(Category category_, const Ptr<Expr> &expr_,
-    const location &loc_);
+  Property(Category category_, const Ptr<Expr> &expr_, const location &loc_);
   Property *clone() const final;
   virtual ~Property() = default;
 
@@ -31,4 +30,4 @@ struct Property : public Node {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-}
+} // namespace rumur

@@ -3,8 +3,6 @@
 
 namespace rumur {
 
-Node::Node(const location &loc_):
-  loc(loc_) {
-}
+Node::Node(const location &loc_) : loc(loc_) {}
 
-}
+} // namespace rumur

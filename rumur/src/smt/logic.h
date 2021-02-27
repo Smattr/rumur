@@ -27,4 +27,4 @@ std::string neg ();
 std::string rsh ();
 std::string sub ();
 
-}
+} // namespace smt

@@ -1,26 +1,27 @@
-#include <cstddef>
-#include <cassert>
 #include "define-enum-members.h"
-#include <gmpxx.h>
-#include "logic.h"
 #include "../options.h"
-#include <rumur/rumur.h>
+#include "logic.h"
 #include "solver.h"
-#include <string>
 #include "translate.h"
+#include <cassert>
+#include <cstddef>
+#include <gmpxx.h>
+#include <rumur/rumur.h>
+#include <string>
 #include <utility>
 
 using namespace rumur;
 
 namespace smt {
 
-namespace { class Definer : public ConstTypeTraversal {
+namespace {
+class Definer : public ConstTypeTraversal {
 
- private:
+private:
   Solver *solver;
 
- public:
-  explicit Definer(Solver &solver_): solver(&solver_) { }
+public:
+  explicit Definer(Solver &solver_) : solver(&solver_) {}
 
   void visit_array(const Array &n) final {
     // define any enum members that occur in the index or element types
@@ -41,15 +42,14 @@ namespace { class Definer : public ConstTypeTraversal {
       const std::string name = mangle(member.first, id);
       const std::string type = integer_type();
       const std::string value = numeric_literal(index);
-      *solver
-        << "(declare-fun " << name << " () " << type << ")\n"
-        << "(assert (= " << name << " " << value << "))\n";
+      *solver << "(declare-fun " << name << " () " << type << ")\n"
+              << "(assert (= " << name << " " << value << "))\n";
       index++;
       id++;
     }
   }
 
-  void visit_range(const Range&) final {
+  void visit_range(const Range &) final {
     // as a primitive, ranges can't contain any enum members
   }
 
@@ -59,20 +59,21 @@ namespace { class Definer : public ConstTypeTraversal {
       dispatch(*field->type);
   }
 
-  void visit_typeexprid(const TypeExprID&) final {
+  void visit_typeexprid(const TypeExprID &) final {
     /* the referent of a TypeExprID will have occurred earlier in the AST and
      * already resulted in the relevant enum members being defined.
      */
   }
 
-  void visit_scalarset(const Scalarset&) final {
+  void visit_scalarset(const Scalarset &) final {
     // as a primitive, scalarsets can't contain any enum members
   }
-}; }
+};
+} // namespace
 
 void define_enum_members(Solver &solver, const TypeExpr &type) {
   Definer definer(solver);
   definer.dispatch(type);
 }
 
-}
+} // namespace smt

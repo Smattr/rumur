@@ -1,5 +1,5 @@
-#include <cstddef>
 #include "generate.h"
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
@@ -11,11 +11,11 @@ namespace {
 
 class Generator : public ConstTraversal {
 
- private:
+private:
   std::ostream *out;
 
- public:
-  Generator(std::ostream &o): out(&o) { }
+public:
+  Generator(std::ostream &o) : out(&o) {}
 
   void visit_functioncall(const FunctionCall &n) final {
     if (n.function == nullptr)
@@ -29,15 +29,15 @@ class Generator : public ConstTraversal {
 
   virtual ~Generator() = default;
 
- private:
+private:
   void define_backing_mem(size_t id, const TypeExpr *t) {
     if (t != nullptr && !t->is_simple())
       *out << "  uint8_t ret" << id << "[BITS_TO_BYTES(" << t->width()
-        << ")];\n";
+           << ")];\n";
   }
 };
 
-}
+} // namespace
 
 void generate_allocations(std::ostream &out, const Stmt &stmt) {
   Generator g(out);
@@ -45,7 +45,7 @@ void generate_allocations(std::ostream &out, const Stmt &stmt) {
 }
 
 void generate_allocations(std::ostream &out,
-    const std::vector<Ptr<Stmt>> &stmts) {
+                          const std::vector<Ptr<Stmt>> &stmts) {
 
   for (auto &s : stmts)
     generate_allocations(out, *s);

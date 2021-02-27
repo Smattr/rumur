@@ -6,11 +6,10 @@
 // some common supporting code used by code generation functions
 class CodeGenerator {
 
- private:
+private:
   size_t indent_level = 0; // current indentation level
 
- protected:
-
+protected:
   // get a white space string for the current indentation level
   std::string indentation() const;
 
@@ -20,7 +19,7 @@ class CodeGenerator {
   // decrease the current indentation level
   void dedent();
 
- public:
+public:
   // make this class abstract
   virtual ~CodeGenerator() = 0;
 };

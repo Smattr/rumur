@@ -11,4 +11,4 @@ namespace rumur {
  */
 void validate(const Node &n);
 
-}
+} // namespace rumur

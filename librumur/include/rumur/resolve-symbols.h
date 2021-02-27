@@ -10,4 +10,4 @@ namespace rumur {
  */
 void resolve_symbols(Model &m);
 
-}
+} // namespace rumur

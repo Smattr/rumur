@@ -1,22 +1,23 @@
-#include <cstddef>
 #include "define-records.h"
-#include <rumur/rumur.h>
 #include "solver.h"
-#include <string>
 #include "translate.h"
 #include "typeexpr-to-smt.h"
+#include <cstddef>
+#include <rumur/rumur.h>
+#include <string>
 
 using namespace rumur;
 
 namespace smt {
 
-namespace { class Definer : public ConstTypeTraversal {
+namespace {
+class Definer : public ConstTypeTraversal {
 
- private:
+private:
   Solver *solver;
 
- public:
-  explicit Definer(Solver &solver_): solver(&solver_) { }
+public:
+  explicit Definer(Solver &solver_) : solver(&solver_) {}
 
   void visit_array(const Array &n) final {
     // the index has to be a simple type, so can't contain any records, but the
@@ -24,11 +25,11 @@ namespace { class Definer : public ConstTypeTraversal {
     dispatch(*n.element_type);
   }
 
-  void visit_enum(const Enum&) final {
+  void visit_enum(const Enum &) final {
     // nothing to do
   }
 
-  void visit_range(const Range&) final {
+  void visit_range(const Range &) final {
     // nothing to do
   }
 
@@ -55,18 +56,19 @@ namespace { class Definer : public ConstTypeTraversal {
     *solver << "))))\n";
   }
 
-  void visit_typeexprid(const TypeExprID&) final {
+  void visit_typeexprid(const TypeExprID &) final {
     // nothing to do
   }
 
-  void visit_scalarset(const Scalarset&) final {
+  void visit_scalarset(const Scalarset &) final {
     // nothing to do
   }
-}; }
+};
+} // namespace
 
 void define_records(Solver &solver, const TypeExpr &type) {
   Definer definer(solver);
   definer.dispatch(type);
 }
 
-}
+} // namespace smt

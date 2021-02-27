@@ -8,31 +8,27 @@
 namespace rumur {
 
 // An implementation of a managed pointer that understands *::clone()
-template<typename TARGET>
-class Ptr {
+template <typename TARGET> class Ptr {
 
- private:
+private:
   std::unique_ptr<TARGET> t = std::unique_ptr<TARGET>(nullptr);
 
- public:
+public:
   Ptr() = default;
 
-  Ptr(std::nullptr_t) { }
+  Ptr(std::nullptr_t) {}
 
-  explicit Ptr(TARGET *t_)
-    : t(t_) { }
+  explicit Ptr(TARGET *t_) : t(t_) {}
 
-  Ptr(const Ptr &p)
-    : t(p.t == nullptr ? nullptr : p.t->clone()) { }
+  Ptr(const Ptr &p) : t(p.t == nullptr ? nullptr : p.t->clone()) {}
 
   Ptr(Ptr &&p) noexcept {
     using std::swap;
     swap(t, p.t);
   }
 
-  template<typename SUBTYPE>
-  Ptr(const Ptr<SUBTYPE> &p)
-    : t(p.get() == nullptr ? nullptr : p->clone()) { }
+  template <typename SUBTYPE>
+  Ptr(const Ptr<SUBTYPE> &p) : t(p.get() == nullptr ? nullptr : p->clone()) {}
 
   Ptr &operator=(const Ptr &p) {
     t.reset(p.t == nullptr ? nullptr : p.t->clone());
@@ -45,19 +41,14 @@ class Ptr {
     return *this;
   }
 
-  template<typename SUBTYPE>
-  Ptr &operator=(const Ptr<SUBTYPE> &p) {
+  template <typename SUBTYPE> Ptr &operator=(const Ptr<SUBTYPE> &p) {
     t.reset(p.get() == nullptr ? nullptr : p->clone());
     return *this;
   }
 
-  const TARGET *get() const {
-    return t.get();
-  }
+  const TARGET *get() const { return t.get(); }
 
-  TARGET *get() {
-    return t.get();
-  }
+  TARGET *get() { return t.get(); }
 
   TARGET &operator*() {
     assert(t != nullptr && "dereferencing a null pointer");
@@ -79,26 +70,17 @@ class Ptr {
     return t.get();
   }
 
-  bool operator==(const Ptr &other) const {
-    return t == other.t;
-  }
+  bool operator==(const Ptr &other) const { return t == other.t; }
 
-  bool operator==(const TARGET *other) const {
-    return t.get() == other;
-  }
+  bool operator==(const TARGET *other) const { return t.get() == other; }
 
-  bool operator!=(const Ptr &other) const {
-    return t != other.t;
-  }
+  bool operator!=(const Ptr &other) const { return t != other.t; }
 
-  bool operator!=(const TARGET *other) const {
-    return t.get() != other;
-  }
+  bool operator!=(const TARGET *other) const { return t.get() != other; }
 
-  template<typename... Args>
-  static Ptr<TARGET> make(Args&&... args) {
+  template <typename... Args> static Ptr<TARGET> make(Args &&...args) {
     return Ptr<TARGET>(new TARGET(std::forward<Args>(args)...));
   }
 };
 
-}
+} // namespace rumur

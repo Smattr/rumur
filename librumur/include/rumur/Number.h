@@ -19,10 +19,10 @@ struct Number : public Expr {
   Number() = delete;
   Number(const std::string &value_, const location &loc_);
   Number(const mpz_class &value_, const location &loc_);
-  Number(const Number&) = default;
-  Number(Number&&) = default;
-  Number &operator=(const Number&) = default;
-  Number &operator=(Number&&) = default;
+  Number(const Number &) = default;
+  Number(Number &&) = default;
+  Number &operator=(const Number &) = default;
+  Number &operator=(Number &&) = default;
   virtual ~Number() = default;
   Number *clone() const final;
 
@@ -36,4 +36,4 @@ struct Number : public Expr {
   bool is_pure() const final;
 };
 
-}
+} // namespace rumur

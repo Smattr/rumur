@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Stage.h"
 #include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
-#include "Stage.h"
 
 class Printer : public Stage {
 
- private:
+private:
   std::istream &in;
   std::ostream &out;
 
@@ -15,7 +15,7 @@ class Printer : public Stage {
   unsigned long line = 1;
   unsigned long column = 1;
 
- public:
+public:
   Printer(std::istream &in_, std::ostream &out_);
 
   void visit_add(const rumur::Add &n) final;
@@ -96,7 +96,7 @@ class Printer : public Stage {
 
   virtual ~Printer() = default;
 
- private:
+private:
   void visit_bexpr(const rumur::BinaryExpr &n);
   void visit_uexpr(const rumur::UnaryExpr &n);
 };

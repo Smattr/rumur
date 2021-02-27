@@ -31,4 +31,4 @@ struct Comment {
 /// \return List of parsed comments
 std::vector<Comment> parse_comments(std::istream &input);
 
-}
+} // namespace rumur

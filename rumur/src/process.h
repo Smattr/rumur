@@ -9,4 +9,4 @@
  * is currently no reporting of the exit status of the process.
  */
 int run(const std::vector<std::string> &args, const std::string &input,
-  std::string &output);
+        std::string &output);

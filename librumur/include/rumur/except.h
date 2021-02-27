@@ -12,12 +12,11 @@ namespace rumur {
  */
 class Error : public std::runtime_error {
 
- public:
+public:
   location loc;
 
   Error(const std::string &message, const location &loc_);
   Error(const std::string &prefix, const Error &sub);
-
 };
 
-}
+} // namespace rumur

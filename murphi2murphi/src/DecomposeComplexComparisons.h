@@ -3,13 +3,13 @@
 
 #pragma once
 
+#include "Stage.h"
 #include <cstddef>
 #include <rumur/rumur.h>
-#include "Stage.h"
 
 class DecomposeComplexComparisons : public IntermediateStage {
 
- public:
+public:
   explicit DecomposeComplexComparisons(Stage &next_);
 
   void visit_eq(const rumur::Eq &n) final;
@@ -17,6 +17,6 @@ class DecomposeComplexComparisons : public IntermediateStage {
 
   virtual ~DecomposeComplexComparisons() = default;
 
- private:
+private:
   void rewrite(const rumur::EquatableBinaryExpr &n, bool is_eq);
 };

@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include <cstddef>
 #include "Stage.h"
+#include <cstddef>
 
 class ToAscii : public IntermediateStage {
 
- private:
+private:
   // states for process() state machine
   enum State {
     IDLE,
@@ -25,7 +25,7 @@ class ToAscii : public IntermediateStage {
   // do we need to insert a space if we do not see one next?
   bool pending_space = false;
 
- public:
+public:
   explicit ToAscii(Stage &next_);
 
   void process(const Token &t) final;

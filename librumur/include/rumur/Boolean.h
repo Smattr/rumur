@@ -18,4 +18,4 @@ extern const Ptr<Enum> Boolean;
 extern const Ptr<Expr> False;
 extern const Ptr<Expr> True;
 
-}
+} // namespace rumur

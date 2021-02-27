@@ -1,25 +1,25 @@
-#include <cstddef>
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
+#include "../../common/help.h"
 #include "DecomposeComplexComparisons.h"
 #include "ExplicitSemicolons.h"
-#include <fstream>
-#include <getopt.h>
-#include "../../common/help.h"
-#include <iostream>
-#include <memory>
-#include "options.h"
 #include "Pipeline.h"
 #include "Printer.h"
 #include "RemoveLiveness.h"
-#include "resources.h"
-#include <rumur/rumur.h>
-#include <sstream>
 #include "Stage.h"
 #include "SwitchToIf.h"
-#include <sys/stat.h>
 #include "ToAscii.h"
+#include "options.h"
+#include "resources.h"
+#include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <getopt.h>
+#include <iostream>
+#include <memory>
+#include <rumur/rumur.h>
+#include <sstream>
+#include <sys/stat.h>
 
 using namespace rumur;
 
@@ -70,83 +70,85 @@ static void parse_args(int argc, char **argv) {
 
     switch (c) {
 
-      case 128: // --decompose-complex-comparisons
-        options.decompose_complex_comparisons = true;
-        break;
+    case 128: // --decompose-complex-comparisons
+      options.decompose_complex_comparisons = true;
+      break;
 
-      case 129: // --explicit-semicolons
-        options.explicit_semicolons = true;
-        break;
+    case 129: // --explicit-semicolons
+      options.explicit_semicolons = true;
+      break;
 
-      case '?':
-        std::cerr << "run `" << argv[0] << " --help` to see available options\n";
-        exit(EXIT_SUCCESS);
+    case '?':
+      std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+      exit(EXIT_SUCCESS);
 
-      case 'h': // --help
-        help(doc_murphi2murphi_1, doc_murphi2murphi_1_len);
-        exit(EXIT_SUCCESS);
+    case 'h': // --help
+      help(doc_murphi2murphi_1, doc_murphi2murphi_1_len);
+      exit(EXIT_SUCCESS);
 
-      case 130: // --no-decompose-complex-comparisons
-        options.decompose_complex_comparisons = false;
-        break;
+    case 130: // --no-decompose-complex-comparisons
+      options.decompose_complex_comparisons = false;
+      break;
 
-      case 131: // --no-explicit-semicolons
-        options.explicit_semicolons = false;
-        break;
+    case 131: // --no-explicit-semicolons
+      options.explicit_semicolons = false;
+      break;
 
-      case 132: // --no-remove-liveness
-        options.remove_liveness = false;
-        break;
+    case 132: // --no-remove-liveness
+      options.remove_liveness = false;
+      break;
 
-      case 133: // --no-switch-to-if
-        options.switch_to_if = false;
-        break;
+    case 133: // --no-switch-to-if
+      options.switch_to_if = false;
+      break;
 
-      case 134: // --no-to-ascii
-        options.to_ascii = false;
-        break;
+    case 134: // --no-to-ascii
+      options.to_ascii = false;
+      break;
 
-      case 'o': { // --output
-        auto o = std::make_shared<std::ofstream>(optarg);
-        if (!o->is_open()) {
-          std::cerr << "failed to open " << optarg << "\n";
-          exit(EXIT_FAILURE);
-        }
-        out = o;
-        break;
-      }
-
-      case 135: // --remove-liveness
-        options.remove_liveness = true;
-        break;
-
-      case 136: // --switch-to-if
-        options.switch_to_if = true;
-        break;
-
-      case 137: // --to-ascii
-        options.to_ascii = true;
-        break;
-
-      case 138: // --version
-        std::cout << "Murphi2Murphi version " << get_version() << "\n";
-        exit(EXIT_SUCCESS);
-
-      default:
-        std::cerr << "unexpected error\n";
+    case 'o': { // --output
+      auto o = std::make_shared<std::ofstream>(optarg);
+      if (!o->is_open()) {
+        std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
+      }
+      out = o;
+      break;
+    }
+
+    case 135: // --remove-liveness
+      options.remove_liveness = true;
+      break;
+
+    case 136: // --switch-to-if
+      options.switch_to_if = true;
+      break;
+
+    case 137: // --to-ascii
+      options.to_ascii = true;
+      break;
+
+    case 138: // --version
+      std::cout << "Murphi2Murphi version " << get_version() << "\n";
+      exit(EXIT_SUCCESS);
+
+    default:
+      std::cerr << "unexpected error\n";
+      exit(EXIT_FAILURE);
     }
   }
 
   if (optind == argc - 1) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
-      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno) << "\n";
+      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
+                << "\n";
       exit(EXIT_FAILURE);
     }
 
     if (S_ISDIR(buf.st_mode)) {
-      std::cerr << "failed to open " << argv[optind] << ": this is a directory\n";
+      std::cerr << "failed to open " << argv[optind]
+                << ": this is a directory\n";
       exit(EXIT_FAILURE);
     }
 

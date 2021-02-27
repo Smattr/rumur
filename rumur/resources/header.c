@@ -1,17 +1,17 @@
 #ifndef __OPTIMIZE__
-  #ifdef __clang__
-    #ifdef __x86_64__
-      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -mcx16.
-    #else
-      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3.
-    #endif
-  #else
-    #ifdef __x86_64__
-      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -fwhole-program -mcx16.
-    #else
-      #warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -fwhole-program.
-    #endif
-  #endif
+#ifdef __clang__
+#ifdef __x86_64__
+#warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -mcx16.
+#else
+#warning you are compiling without optimizations enabled. I would suggest -march=native -O3.
+#endif
+#else
+#ifdef __x86_64__
+#warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -fwhole-program -mcx16.
+#else
+#warning you are compiling without optimizations enabled. I would suggest -march=native -O3 -fwhole-program.
+#endif
+#endif
 #endif
 
 #define value_to_string(v) ((value_t)(v))
@@ -21,22 +21,22 @@
  * assertions are disabled.
  */
 #ifndef NDEBUG
-  #define ASSERT(expr) assert(expr)
+#define ASSERT(expr) assert(expr)
 #elif defined(__clang__)
-  #define ASSERT(expr) __builtin_assume(expr)
+#define ASSERT(expr) __builtin_assume(expr)
 #else
-  /* GCC doesn't have __builtin_assume, so we need something else. */
-  #define ASSERT(expr) \
-    do { \
-      /* The following is an idiom for teaching the compiler an assumption. */ \
-      if (!(expr)) { \
-        __builtin_unreachable(); \
-      } \
-    } while (0)
+/* GCC doesn't have __builtin_assume, so we need something else. */
+#define ASSERT(expr)                                                           \
+  do {                                                                         \
+    /* The following is an idiom for teaching the compiler an assumption. */   \
+    if (!(expr)) {                                                             \
+      __builtin_unreachable();                                                 \
+    }                                                                          \
+  } while (0)
 #endif
 
 #define BITS_TO_BYTES(size) ((size) / 8 + ((size) % 8 == 0 ? 0 : 1))
-#define BITS_FOR(value) \
+#define BITS_FOR(value)                                                        \
   ((value) == 0 ? 0 : (sizeof(unsigned long long) * 8 - __builtin_clzll(value)))
 
 /* The size of the compressed state data in bytes. */
@@ -45,40 +45,42 @@ enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 /* the size of auxliary members of the state struct */
 enum { BOUND_BITS = BITS_FOR(BOUND) };
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
-  #if POINTER_BITS != 0
-    enum { PREVIOUS_BITS = POINTER_BITS };
-  #elif defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
-    /* assume 5-level paging, and hence the top 2 bytes of any user pointer are
-     * always 0 and not required.
-     * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
-     */
-    enum { PREVIOUS_BITS = 56 };
-  #else
-    enum { PREVIOUS_BITS = sizeof(void*) * 8 };
-  #endif
+#if POINTER_BITS != 0
+enum { PREVIOUS_BITS = POINTER_BITS };
+#elif defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
+/* assume 5-level paging, and hence the top 2 bytes of any user pointer are
+ * always 0 and not required.
+ * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
+ */
+enum { PREVIOUS_BITS = 56 };
 #else
-  enum { PREVIOUS_BITS = 0 };
+enum { PREVIOUS_BITS = sizeof(void *) * 8 };
+#endif
+#else
+enum { PREVIOUS_BITS = 0 };
 #endif
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
-  enum { RULE_TAKEN_BITS = BITS_FOR(RULE_TAKEN_LIMIT) };
+enum { RULE_TAKEN_BITS = BITS_FOR(RULE_TAKEN_LIMIT) };
 #else
-  enum { RULE_TAKEN_BITS = 0 };
+enum { RULE_TAKEN_BITS = 0 };
 #endif
-enum { STATE_OTHER_BYTES
-  = BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS
-  + (USE_SCALARSET_SCHEDULES ? SCHEDULE_BITS : 0)) };
+enum {
+  STATE_OTHER_BYTES =
+      BITS_TO_BYTES(BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS +
+                    (USE_SCALARSET_SCHEDULES ? SCHEDULE_BITS : 0))
+};
 
 /* Implement _Thread_local for GCC <4.9, which is missing this. */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
-  #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
-    #define _Thread_local __thread
-  #endif
+#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+#define _Thread_local __thread
+#endif
 #endif
 
 #ifdef __clang__
-  #define NONNULL _Nonnull
+#define NONNULL _Nonnull
 #else
-  #define NONNULL /* nothing; other compilers don't have _Nonnull */
+#define NONNULL /* nothing; other compilers don't have _Nonnull */
 #endif
 
 /* A word about atomics... There are two different atomic operation mechanisms
@@ -191,7 +193,7 @@ static void sandbox(void) {
 #endif
 
 #if defined(__linux__)
-  #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
   {
     /* Disable the addition of new privileges via execve and friends. */
     int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
@@ -203,122 +205,134 @@ static void sandbox(void) {
     /* A BPF program that traps on any syscall we want to disallow. */
     static struct sock_filter filter[] = {
 
-      /* Load syscall number. */
-      BPF_STMT(BPF_LD|BPF_W|BPF_ABS, offsetof(struct seccomp_data, nr)),
+        /* Load syscall number. */
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, nr)),
 
-      /* Enable exiting. */
+    /* Enable exiting. */
 #ifdef __NR_exit_group
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit_group, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit_group, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
-      /* Enable syscalls used by printf. */
+    /* Enable syscalls used by printf. */
 #ifdef __NR_fstat
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_fstat, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_fstat64
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_fstat64, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_fstat64, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_write
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_write, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_write, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
-      /* Enable syscalls used by malloc. */
+    /* Enable syscalls used by malloc. */
 #ifdef __NR_brk
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_brk, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_brk, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_mmap
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mmap, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_mmap2
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mmap2, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mmap2, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_munmap
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_munmap, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_munmap, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
-      /* If we're running multithreaded, enable syscalls used by pthreads. */
+    /* If we're running multithreaded, enable syscalls used by pthreads. */
 #ifdef __NR_clone
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clone, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_clone, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_close
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_close, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_close, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_exit
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_exit, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_exit, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_futex
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_futex, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_futex, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_get_robust_list
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_get_robust_list, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_get_robust_list, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_madvise
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_madvise, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_madvise, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_mprotect
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_mprotect, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mprotect, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_open
-      // XXX: it would be nice to avoid open() but pthreads seems to open libgcc.
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_open, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        /* XXX: it would be nice to avoid open() but pthreads seems to open
+         * libgcc.
+         */
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_open, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_read
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_read, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_read, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 #ifdef __NR_set_robust_list
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_set_robust_list, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_set_robust_list, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
 
-      /* on platforms without vDSO support, time() makes an actual syscall, so
-       * we need to allow them
-       */
+    /* on platforms without vDSO support, time() makes an actual syscall, so
+     * we need to allow them
+     */
 #ifdef __NR_clock_gettime
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clock_gettime, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_clock_gettime, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_clock_gettime64
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_clock_gettime64, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_clock_gettime64, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_gettimeofday
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_gettimeofday, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_gettimeofday, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 #ifdef __NR_time
-      BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, __NR_time, 0, 1),
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_time, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
-      /* Deny everything else. On a disallowed syscall, we trap instead of
-       * killing to allow the user to debug the failure. If you are debugging
-       * seccomp denials, strace the checker and find the number of the denied
-       * syscall in the first si_value parameter reported in the terminating
-       * SIG_SYS.
-       */
-      BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_TRAP),
+        /* Deny everything else. On a disallowed syscall, we trap instead of
+         * killing to allow the user to debug the failure. If you are debugging
+         * seccomp denials, strace the checker and find the number of the denied
+         * syscall in the first si_value parameter reported in the terminating
+         * SIG_SYS.
+         */
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRAP),
     };
 
     static const struct sock_fprog filter_program = {
-      .len = sizeof(filter) / sizeof(filter[0]),
-      .filter = filter,
+        .len = sizeof(filter) / sizeof(filter[0]),
+        .filter = filter,
     };
 
     /* Apply the above filter to ourselves. */
@@ -330,7 +344,7 @@ static void sandbox(void) {
 
     return;
   }
-  #endif
+#endif
 #endif
 
 #ifdef __OpenBSD__
@@ -350,7 +364,7 @@ static void sandbox(void) {
 
 /******************************************************************************/
 
-// ANSI colour code support.
+/* ANSI colour code support */
 
 static bool istty;
 
@@ -386,61 +400,61 @@ static const char *reset() {
 
 #ifdef __SIZEOF_INT128__ /* if we have the type `__int128` */
 
-  #define UINT128_MAX \
-    ((((unsigned __int128)UINT64_MAX) << 64) | ((unsigned __int128)UINT64_MAX))
+#define UINT128_MAX                                                            \
+  ((((unsigned __int128)UINT64_MAX) << 64) | ((unsigned __int128)UINT64_MAX))
 
-  #define INT128_MAX ((((__int128)INT64_MAX) << 64) | ((__int128)UINT64_MAX))
-  #define INT128_MIN (-INT128_MAX - 1)
+#define INT128_MAX ((((__int128)INT64_MAX) << 64) | ((__int128)UINT64_MAX))
+#define INT128_MIN (-INT128_MAX - 1)
 
-  struct string_buffer {
-    char data[41];
-  };
+struct string_buffer {
+  char data[41];
+};
 
-  static struct string_buffer value_u128_to_string(unsigned __int128 v) {
+static struct string_buffer value_u128_to_string(unsigned __int128 v) {
 
+  struct string_buffer buffer;
+
+  if (v == 0) {
+    buffer.data[0] = '0';
+    buffer.data[1] = '\0';
+    return buffer;
+  }
+
+  size_t i = sizeof(buffer.data);
+  while (v != 0) {
+    i--;
+    buffer.data[i] = '0' + v % 10;
+    v /= 10;
+  }
+
+  memmove(buffer.data, &buffer.data[i], sizeof(buffer) - i);
+  buffer.data[sizeof(buffer) - i] = '\0';
+
+  return buffer;
+}
+static __attribute__((unused)) struct string_buffer
+value_128_to_string(__int128 v) {
+
+  if (v == INT128_MIN) {
     struct string_buffer buffer;
-
-    if (v == 0) {
-      buffer.data[0] = '0';
-      buffer.data[1] = '\0';
-      return buffer;
-    }
-
-    size_t i = sizeof(buffer.data);
-    while (v != 0) {
-      i--;
-      buffer.data[i] = '0' + v % 10;
-      v /= 10;
-    }
-
-    memmove(buffer.data, &buffer.data[i], sizeof(buffer) - i);
-    buffer.data[sizeof(buffer) - i] = '\0';
-
+    strcpy(buffer.data, "-170141183460469231731687303715884105728");
     return buffer;
   }
-  static __attribute__((unused)) struct string_buffer value_128_to_string(
-      __int128 v) {
 
-    if (v == INT128_MIN) {
-      struct string_buffer buffer;
-      strcpy(buffer.data, "-170141183460469231731687303715884105728");
-      return buffer;
-    }
-
-    bool negative = v < 0;
-    if (negative) {
-      v = -v;
-    }
-
-    struct string_buffer buffer = value_u128_to_string(v);
-
-    if (negative) {
-      memmove(&buffer.data[1], buffer.data, strlen(buffer.data) + 1);
-      buffer.data[0] = '-';
-    }
-
-    return buffer;
+  bool negative = v < 0;
+  if (negative) {
+    v = -v;
   }
+
+  struct string_buffer buffer = value_u128_to_string(v);
+
+  if (negative) {
+    memmove(&buffer.data[1], buffer.data, strlen(buffer.data) + 1);
+    buffer.data[0] = '-';
+  }
+
+  return buffer;
+}
 #endif
 
 /* Is value_t a signed type? We need this as a function because value_t is a
@@ -448,18 +462,18 @@ static const char *reset() {
  */
 static __attribute__((const)) bool value_is_signed(void) {
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
   return (value_t)-1 < 0;
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 }
 
@@ -546,13 +560,13 @@ static void put(const char *NONNULL s) {
 }
 
 static void put_int(intmax_t u) {
-  char buffer[128] = { 0 };
+  char buffer[128] = {0};
   snprintf(buffer, sizeof(buffer), "%" PRIdMAX, u);
   put(buffer);
 }
 
 static void put_uint(uintmax_t u) {
-  char buffer[128] = { 0 };
+  char buffer[128] = {0};
   snprintf(buffer, sizeof(buffer), "%" PRIuMAX, u);
   put(buffer);
 }
@@ -582,7 +596,7 @@ static void xml_printf(const char *NONNULL s) {
  * generation with '--trace ...' and is useful for debugging Rumur itself.
  */
 static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
-    ...) {
+                                                        ...) {
 
   va_list ap;
   va_start(ap, fmt);
@@ -621,9 +635,9 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
 
 #if defined(__clang__) || (defined(__GNUC__) && __GNUC__ >= 5)
 
-  #define ADD(a, b, c) __builtin_add_overflow((a), (b), (c))
-  #define MUL(a, b, c) __builtin_mul_overflow((a), (b), (c))
-  #define SUB(a, b, c) __builtin_sub_overflow((a), (b), (c))
+#define ADD(a, b, c) __builtin_add_overflow((a), (b), (c))
+#define MUL(a, b, c) __builtin_mul_overflow((a), (b), (c))
+#define SUB(a, b, c) __builtin_sub_overflow((a), (b), (c))
 
 #else
 
@@ -640,8 +654,10 @@ struct state {
 
 #if LIVENESS_COUNT > 0
   uintptr_t liveness[LIVENESS_COUNT / sizeof(uintptr_t) / CHAR_BIT +
-    (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
-     LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0 ? 0 : 1)];
+                     (LIVENESS_COUNT % sizeof(uintptr_t) == 0 &&
+                              LIVENESS_COUNT / sizeof(uintptr_t) % CHAR_BIT == 0
+                          ? 0
+                          : 1)];
 #endif
 
   uint8_t data[STATE_SIZE_BYTES];
@@ -682,9 +698,9 @@ static struct handle handle_align(struct handle h) {
   }
 
   return (struct handle){
-    .base = h.base,
-    .offset = 0,
-    .width = width,
+      .base = h.base,
+      .offset = 0,
+      .width = width,
   };
 }
 
@@ -940,7 +956,8 @@ static void write_raw(struct handle h, uint64_t v) {
       unsigned __int128 and_mask = (((unsigned __int128)1) << h.offset) - 1;
       if (h.width + h.offset < sizeof(low) * 8) {
         size_t high_bits = aligned.width - h.offset - h.width;
-        and_mask |= ((((unsigned __int128)1) << high_bits) - 1) << (low_size * 8 - high_bits);
+        and_mask |= ((((unsigned __int128)1) << high_bits) - 1)
+                    << (low_size * 8 - high_bits);
       }
 
       low = (low & and_mask) | or_mask;
@@ -964,10 +981,11 @@ static void write_raw(struct handle h, uint64_t v) {
       }
 
       {
-        unsigned __int128 or_mask
-          = ((unsigned __int128)v) >> (sizeof(low) * 8 - h.offset);
-        unsigned __int128 and_mask
-          = ~((((unsigned __int128)1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
+        unsigned __int128 or_mask =
+            ((unsigned __int128)v) >> (sizeof(low) * 8 - h.offset);
+        unsigned __int128 and_mask = ~(
+            (((unsigned __int128)1) << (h.width + h.offset - sizeof(low) * 8)) -
+            1);
 
         high = (high & and_mask) | or_mask;
       }
@@ -1003,7 +1021,8 @@ static void write_raw(struct handle h, uint64_t v) {
     uint64_t and_mask = (UINT64_C(1) << h.offset) - 1;
     if (h.width + h.offset < sizeof(low) * 8) {
       size_t high_bits = aligned.width - h.offset - h.width;
-      and_mask |= ((UINT64_C(1) << high_bits) - 1) << (low_size * 8 - high_bits);
+      and_mask |= ((UINT64_C(1) << high_bits) - 1)
+                  << (low_size * 8 - high_bits);
     }
 
     low = (low & and_mask) | or_mask;
@@ -1026,8 +1045,8 @@ static void write_raw(struct handle h, uint64_t v) {
 
     {
       uint64_t or_mask = ((uint64_t)v) >> (sizeof(low) * 8 - h.offset);
-      uint64_t and_mask
-        = ~((UINT64_C(1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
+      uint64_t and_mask =
+          ~((UINT64_C(1) << (h.width + h.offset - sizeof(low) * 8)) - 1);
 
       high = (high & and_mask) | or_mask;
     }
@@ -1044,9 +1063,9 @@ static void write_raw(struct handle h, uint64_t v) {
 static struct handle state_bound_handle(const struct state *NONNULL s) {
 
   struct handle h = (struct handle){
-    .base = (uint8_t*)s->other,
-    .offset = 0,
-    .width = BITS_FOR(BOUND),
+      .base = (uint8_t *)s->other,
+      .offset = 0,
+      .width = BITS_FOR(BOUND),
   };
 
   return h;
@@ -1054,10 +1073,10 @@ static struct handle state_bound_handle(const struct state *NONNULL s) {
 #endif
 
 _Static_assert((uintmax_t)BOUND <= UINT64_MAX,
-  "bound limit does not fit in a uint64_t");
+               "bound limit does not fit in a uint64_t");
 
-static __attribute__((pure)) uint64_t state_bound_get(
-    const struct state *NONNULL s) {
+static __attribute__((pure)) uint64_t
+state_bound_get(const struct state *NONNULL s) {
   assert(s != NULL);
 
 #if PACK_STATE
@@ -1087,30 +1106,32 @@ static struct handle state_previous_handle(const struct state *NONNULL s) {
   size_t offset = BOUND_BITS;
 
   struct handle h = (struct handle){
-    .base = (uint8_t*)s->other + offset / 8,
-    .offset = offset % 8,
-    .width = PREVIOUS_BITS,
+      .base = (uint8_t *)s->other + offset / 8,
+      .offset = offset % 8,
+      .width = PREVIOUS_BITS,
   };
 
   return h;
 }
 #endif
 
-static __attribute__((pure)) const struct state *state_previous_get(
-    const struct state *NONNULL s) {
+static __attribute__((pure)) const struct state *
+state_previous_get(const struct state *NONNULL s) {
 #if PACK_STATE
   struct handle h = state_previous_handle(s);
-  return (const struct state*)(uintptr_t)read_raw(h);
+  return (const struct state *)(uintptr_t)read_raw(h);
 #else
   return s->previous;
 #endif
 }
 
 static void state_previous_set(struct state *NONNULL s,
-    const struct state *previous) {
+                               const struct state *previous) {
 #if PACK_STATE
-  ASSERT((PREVIOUS_BITS == sizeof(void*) * 8 || ((uintptr_t)previous >> PREVIOUS_BITS) == 0)
-    && "upper bits of pointer are non-zero (incorrect --pointer-bits setting?)");
+  ASSERT(
+      (PREVIOUS_BITS == sizeof(void *) * 8 ||
+       ((uintptr_t)previous >> PREVIOUS_BITS) == 0) &&
+      "upper bits of pointer are non-zero (incorrect --pointer-bits setting?)");
   struct handle h = state_previous_handle(s);
   write_raw(h, (uint64_t)(uintptr_t)previous);
 #else
@@ -1126,17 +1147,17 @@ static struct handle state_rule_taken_handle(const struct state *NONNULL s) {
   size_t offset = BOUND_BITS + PREVIOUS_BITS;
 
   struct handle h = (struct handle){
-    .base = (uint8_t*)s->other + offset / 8,
-    .offset = offset % 8,
-    .width = RULE_TAKEN_BITS,
+      .base = (uint8_t *)s->other + offset / 8,
+      .offset = offset % 8,
+      .width = RULE_TAKEN_BITS,
   };
 
   return h;
 }
 #endif
 
-static __attribute__((pure)) uint64_t state_rule_taken_get(
-    const struct state *NONNULL s) {
+static __attribute__((pure)) uint64_t
+state_rule_taken_get(const struct state *NONNULL s) {
   assert(s != NULL);
 #if PACK_STATE
   struct handle h = state_rule_taken_handle(s);
@@ -1158,59 +1179,60 @@ static void state_rule_taken_set(struct state *NONNULL s, uint64_t rule_taken) {
 #endif
 
 static struct handle state_schedule_handle(const struct state *NONNULL s,
-    size_t offset, size_t width) {
+                                           size_t offset, size_t width) {
 
   /* the maximum schedule width handle ever derived should be SCHEDULE_BITS, and
    * should only ever occur when writing the entire schedule
    */
 #if !defined(__clang__) && defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-  ASSERT(width <= SCHEDULE_BITS && (width < SCHEDULE_BITS || offset == 0)
-    && "out-of-bounds handle derived to access schedule data");
+  ASSERT(width <= SCHEDULE_BITS && (width < SCHEDULE_BITS || offset == 0) &&
+         "out-of-bounds handle derived to access schedule data");
 #if !defined(__clang__) && defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
   uint8_t *b;
   size_t o;
 
 #if PACK_STATE
-  b = (uint8_t*)s->other;
+  b = (uint8_t *)s->other;
   o = BOUND_BITS + PREVIOUS_BITS + RULE_TAKEN_BITS + offset;
 #else
-  b = (uint8_t*)s->schedules;
+  b = (uint8_t *)s->schedules;
   o = offset;
 #endif
 
   struct handle h = (struct handle){
-    .base = (uint8_t*)b + o / 8,
-    .offset = o % 8,
-    .width = width,
+      .base = (uint8_t *)b + o / 8,
+      .offset = o % 8,
+      .width = width,
   };
 
   return h;
 }
 
-static __attribute__((pure, unused)) size_t state_schedule_get(
-    const struct state *NONNULL s, size_t offset, size_t width) {
+static __attribute__((pure, unused)) size_t
+state_schedule_get(const struct state *NONNULL s, size_t offset, size_t width) {
   assert(s != NULL);
 
   struct handle h = state_schedule_handle(s, offset, width);
   return (size_t)read_raw(h);
 }
 
-static __attribute__((unused)) void state_schedule_set(
-    struct state *NONNULL s, size_t offset, size_t width, size_t v) {
+static __attribute__((unused)) void state_schedule_set(struct state *NONNULL s,
+                                                       size_t offset,
+                                                       size_t width, size_t v) {
   assert(s != NULL);
 
   /* we should never attempt to write an invalid schedule index that will be
    * truncated
    */
   if (width < 64) {
-    ASSERT((((UINT64_C(1) << width) - 1) & (uint64_t)v) == (uint64_t)v
-      && "truncation in writing schedule data to state");
+    ASSERT((((UINT64_C(1) << width) - 1) & (uint64_t)v) == (uint64_t)v &&
+           "truncation in writing schedule data to state");
   }
 
   struct handle h = state_schedule_handle(s, offset, width);
@@ -1228,9 +1250,9 @@ static __attribute__((unused)) void state_schedule_set(
 
 /* An initial size of thread-local allocator pools ~8MB. */
 static _Thread_local size_t arena_count =
-  (sizeof(struct state) > 8 * 1024 * 1024)
-    ? 1
-    : (8 * 1024 * 1024 / sizeof(struct state));
+    (sizeof(struct state) > 8 * 1024 * 1024)
+        ? 1
+        : (8 * 1024 * 1024 / sizeof(struct state));
 
 static _Thread_local struct state *arena_base;
 static _Thread_local struct state *arena_limit;
@@ -1295,7 +1317,7 @@ static void register_allocation(size_t depth) {
   }
 
   ASSERT(depth < sizeof(allocated) / sizeof(allocated[0]) &&
-    "out of range access to allocated array");
+         "out of range access to allocated array");
 
   /* increment the number of known allocated states, avoiding an expensive
    * atomic if we are single-threaded
@@ -1315,8 +1337,9 @@ static void print_allocation_summary(void) {
    */
 
   if (BOUND == 0) {
-    TRACE(TC_MEMORY_USAGE, "allocated %zu state structure(s), totaling %zu "
-      "bytes", allocated[0], allocated[0] * sizeof(struct state));
+    TRACE(TC_MEMORY_USAGE,
+          "allocated %zu state structure(s), totaling %zu bytes",
+          allocated[0], allocated[0] * sizeof(struct state));
   } else {
     for (size_t i = 0; i < sizeof(allocated) / sizeof(allocated[0]); i++) {
 
@@ -1324,16 +1347,17 @@ static void print_allocation_summary(void) {
         /* no state at this depth was reached, therefore no states at deeper
          * depths were reached either and we are done
          */
-        for (size_t j = i + 1; j < sizeof(allocated) / sizeof(allocated[0]); j++) {
+        for (size_t j = i + 1; j < sizeof(allocated) / sizeof(allocated[0]);
+             j++) {
           assert(allocated[j] == 0 &&
-            "state allocated at a deeper depth than an empty level");
+                 "state allocated at a deeper depth than an empty level");
         }
         break;
       }
 
-      TRACE(TC_MEMORY_USAGE, "depth %zu: allocated %zu state structure(s), "
-        "totaling %zu bytes", i, allocated[i],
-        allocated[i] * sizeof(struct state));
+      TRACE(TC_MEMORY_USAGE,
+            "depth %zu: allocated %zu state structure(s), totaling %zu bytes",
+            i, allocated[i], allocated[i] * sizeof(struct state));
     }
   }
 }
@@ -1343,8 +1367,8 @@ static void print_allocation_summary(void) {
 /* Print a counterexample trace terminating at the given state. This function
  * assumes that the caller already holds a lock on stdout.
  */
-static void print_counterexample(
-  const struct state *NONNULL s __attribute__((unused)));
+static void print_counterexample(const struct state *NONNULL s
+                                 __attribute__((unused)));
 
 /* "Exit" the current thread. This takes into account which thread we are. I.e.
  * the correct way to exit the checker is for every thread to eventually call
@@ -1352,11 +1376,11 @@ static void print_counterexample(
  */
 static _Noreturn int exit_with(int status);
 
-static __attribute__((format(printf, 2, 3))) _Noreturn void error(
-  const struct state *NONNULL s, const char *NONNULL fmt, ...) {
+static __attribute__((format(printf, 2, 3))) _Noreturn void
+error(const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
-  unsigned long prior_errors = __atomic_fetch_add(&error_count, 1,
-    __ATOMIC_SEQ_CST);
+  unsigned long prior_errors =
+      __atomic_fetch_add(&error_count, 1, __ATOMIC_SEQ_CST);
 
   if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 
@@ -1406,7 +1430,9 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
         put("Result:\n\n");
       }
 
-      put("\t"); put(red()); put(bold());
+      put("\t");
+      put(red());
+      put(bold());
       {
         va_list ap2;
         va_copy(ap2, ap);
@@ -1427,7 +1453,8 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
         put(buffer);
         free(buffer);
       }
-      put(reset()); put("\n\n");
+      put(reset());
+      put("\n\n");
 
       if (s != NULL && COUNTEREXAMPLE_TRACE != CEX_OFF) {
         print_counterexample(s);
@@ -1437,22 +1464,22 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void error(
 
     va_end(ap);
 
-    funlockfile(stdout);;
+    funlockfile(stdout);
   }
 
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
   if (prior_errors < MAX_ERRORS - 1) {
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
     assert(JMP_BUF_NEEDED && "longjmping without a setup jmp_buf");
     siglongjmp(checkpoint, 1);
@@ -1472,12 +1499,12 @@ static void deadlock(const struct state *NONNULL s) {
 }
 
 static int state_cmp(const struct state *NONNULL a,
-    const struct state *NONNULL b) {
+                     const struct state *NONNULL b) {
   return memcmp(a->data, b->data, sizeof(a->data));
 }
 
 static bool state_eq(const struct state *NONNULL a,
-    const struct state *NONNULL b) {
+                     const struct state *NONNULL b) {
   return state_cmp(a, b) == 0;
 }
 
@@ -1512,8 +1539,8 @@ static size_t state_hash(const struct state *NONNULL s) {
 }
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
-static __attribute__((unused)) size_t state_depth(
-    const struct state *NONNULL s) {
+static __attribute__((unused)) size_t
+state_depth(const struct state *NONNULL s) {
 #if BOUND > 0
   uint64_t bound = state_bound_get(s);
   ASSERT(bound <= BOUND && "claimed state bound exceeds limit");
@@ -1530,8 +1557,9 @@ static __attribute__((unused)) size_t state_depth(
 #endif
 
 /* A type-safe const cast. */
-static __attribute__((unused)) struct state *state_drop_const(const struct state *s) {
-  return (struct state*)s;
+static __attribute__((unused)) struct state *
+state_drop_const(const struct state *s) {
+  return (struct state *)s;
 }
 
 /* These functions are generated. */
@@ -1544,17 +1572,16 @@ static void state_canonicalise(struct state *NONNULL s) {
 
   switch (SYMMETRY_REDUCTION) {
 
-    case SYMMETRY_REDUCTION_OFF:
-      break;
+  case SYMMETRY_REDUCTION_OFF:
+    break;
 
-    case SYMMETRY_REDUCTION_HEURISTIC:
-      state_canonicalise_heuristic(s);
-      break;
+  case SYMMETRY_REDUCTION_HEURISTIC:
+    state_canonicalise_heuristic(s);
+    break;
 
-    case SYMMETRY_REDUCTION_EXHAUSTIVE:
-      state_canonicalise_exhaustive(s);
-      break;
-
+  case SYMMETRY_REDUCTION_EXHAUSTIVE:
+    state_canonicalise_exhaustive(s);
+    break;
   }
 }
 
@@ -1565,16 +1592,16 @@ static __attribute__((unused)) void state_print_field_offsets(void);
  * that the caller already holds a lock on stdout.
  */
 static __attribute__((unused)) void state_print(const struct state *previous,
-  const struct state *NONNULL s);
+                                                const struct state *NONNULL s);
 
 /* Print the first rule that resulted in s. This function is generated. This
  * function assumes that the caller holds a lock on stdout.
  */
-static __attribute__((unused)) void print_transition(
-    const struct state *NONNULL s);
+static __attribute__((unused)) void
+print_transition(const struct state *NONNULL s);
 
-static void print_counterexample(
-    const struct state *NONNULL s __attribute__((unused))) {
+static void print_counterexample(const struct state *NONNULL s
+                                 __attribute__((unused))) {
 
   assert(s != NULL && "missing state in request for counterexample trace");
 
@@ -1589,8 +1616,8 @@ static void print_counterexample(
   {
     size_t i = trace_length - 1;
     for (const struct state *p = s; p != NULL; p = state_previous_get(p)) {
-      assert(i < trace_length && "error in counterexample trace traversal "
-        "logic");
+      assert(i < trace_length &&
+             "error in counterexample trace traversal logic");
       cex[i] = p;
       i--;
     }
@@ -1618,21 +1645,21 @@ static void print_counterexample(
 #endif
 }
 
-static __attribute__((unused)) struct handle state_handle(
-    const struct state *NONNULL s, size_t offset, size_t width) {
+static __attribute__((unused)) struct handle
+state_handle(const struct state *NONNULL s, size_t offset, size_t width) {
 
-  assert(sizeof(s->data) * CHAR_BIT - width >= offset && "generating an out of "
-    "bounds handle in state_handle()");
+  assert(sizeof(s->data) * CHAR_BIT - width >= offset &&
+         "generating an out of bounds handle in state_handle()");
 
   return (struct handle){
-    .base = (uint8_t*)s->data + offset / CHAR_BIT,
-    .offset = offset % CHAR_BIT,
-    .width = width,
+      .base = (uint8_t *)s->data + offset / CHAR_BIT,
+      .offset = offset % CHAR_BIT,
+      .width = width,
   };
 }
 
 static raw_value_t handle_read_raw(const struct state *NONNULL s,
-    struct handle h) {
+                                   struct handle h) {
 
   /* Check if this read is larger than the variable we will store it in. This
    * can only occur if the user has manually overridden value_t with the
@@ -1642,13 +1669,15 @@ static raw_value_t handle_read_raw(const struct state *NONNULL s,
     error(s, "read of a handle that is wider than the value type");
   }
 
-  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "read of a handle that is larger than "
-    "the maximum width of a simple type in this model");
+  ASSERT(h.width <= MAX_SIMPLE_WIDTH &&
+         "read of a handle that is larger than "
+         "the maximum width of a simple type in this model");
 
   uint64_t raw = (raw_value_t)read_raw(h);
 
-  TRACE(TC_HANDLE_READS, "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
-    raw_value_to_string(raw), h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_READS,
+        "read value %" PRIRAWVAL " from handle { %p, %zu, %zu }",
+        raw_value_to_string(raw), h.base, h.offset, h.width);
 
   return raw;
 }
@@ -1657,17 +1686,18 @@ static value_t decode_value(value_t lb, value_t ub, raw_value_t v) {
 
   value_t dest = 0;
 
-  bool r __attribute__((unused)) = SUB(v, 1, &v) || ADD(v, lb, &dest)
-    || dest < lb || dest > ub;
+  bool r __attribute__((unused)) =
+      SUB(v, 1, &v) || ADD(v, lb, &dest) || dest < lb || dest > ub;
 
   ASSERT(!r && "read of out-of-range value");
 
   return dest;
 }
 
-static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL name,
-    const struct state *NONNULL s, value_t lb, value_t ub, struct handle h) {
+static __attribute__((unused)) value_t
+handle_read(const char *NONNULL context, const char *rule_name,
+            const char *NONNULL name, const struct state *NONNULL s, value_t lb,
+            value_t ub, struct handle h) {
 
   assert(context != NULL);
   assert(name != NULL);
@@ -1675,22 +1705,23 @@ static __attribute__((unused)) value_t handle_read(const char *NONNULL context,
   /* If we happen to be reading from the current state, do a sanity check that
    * we're only reading within bounds.
    */
-  assert((h.base != (uint8_t*)s->data /* not a read from the current state */
-    || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
-    && "out of bounds read in handle_read()");
+  assert((h.base != (uint8_t *)s->data /* not a read from the current state */
+          || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
+         && "out of bounds read in handle_read()");
 
   raw_value_t dest = handle_read_raw(s, h);
 
   if (__builtin_expect(dest == 0, 0)) {
     error(s, "%sread of undefined value in %s%s%s", context, name,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+          rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   return decode_value(lb, ub, dest);
 }
 
 static void handle_write_raw(const struct state *NONNULL s, struct handle h,
-    raw_value_t value) {
+                             raw_value_t value) {
 
   /* Check if this write is larger than the variable we will are reading from.
    * This can only occur if the user has manually overridden value_t with the
@@ -1700,33 +1731,36 @@ static void handle_write_raw(const struct state *NONNULL s, struct handle h,
     error(s, "write of a handle that is wider than the value type");
   }
 
-  ASSERT(h.width <= MAX_SIMPLE_WIDTH && "write to a handle that is larger than "
-    "the maximum width of a simple type in this model");
+  ASSERT(h.width <= MAX_SIMPLE_WIDTH &&
+         "write to a handle that is larger than "
+         "the maximum width of a simple type in this model");
 
-  TRACE(TC_HANDLE_WRITES, "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
-    raw_value_to_string(value), h.base, h.offset, h.width);
+  TRACE(TC_HANDLE_WRITES,
+        "writing value %" PRIRAWVAL " to handle { %p, %zu, %zu }",
+        raw_value_to_string(value), h.base, h.offset, h.width);
 
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-  ASSERT((uintmax_t)value <= UINT64_MAX && "truncating value during handle_write_raw");
+  ASSERT((uintmax_t)value <= UINT64_MAX &&
+         "truncating value during handle_write_raw");
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
   write_raw(h, (uint64_t)value);
 }
 
-static __attribute__((unused)) void handle_write(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL name,
-    const struct state *NONNULL s, value_t lb, value_t ub, struct handle h,
-    value_t value) {
+static __attribute__((unused)) void
+handle_write(const char *NONNULL context, const char *rule_name,
+             const char *NONNULL name, const struct state *NONNULL s,
+             value_t lb, value_t ub, struct handle h, value_t value) {
 
   assert(context != NULL);
   assert(name != NULL);
@@ -1734,15 +1768,16 @@ static __attribute__((unused)) void handle_write(const char *NONNULL context,
   /* If we happen to be writing to the current state, do a sanity check that
    * we're only writing within bounds.
    */
-  assert((h.base != (uint8_t*)s->data /* not a write to the current state */
-    || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
-    && "out of bounds write in handle_write()");
+  assert((h.base != (uint8_t *)s->data /* not a write to the current state */
+          || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
+         && "out of bounds write in handle_write()");
 
   raw_value_t r;
-  if (__builtin_expect(value < lb || value > ub || SUB(value, lb, &r)
-      || ADD(r, 1, &r), 0)) {
+  if (__builtin_expect(
+          value < lb || value > ub || SUB(value, lb, &r) || ADD(r, 1, &r), 0)) {
     error(s, "%swrite of out-of-range value into %s%s%s", context, name,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+          rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   handle_write_raw(s, h, r);
@@ -1803,7 +1838,7 @@ static void handle_copy(struct handle a, struct handle b) {
 }
 
 static __attribute__((unused)) bool handle_eq(struct handle a,
-    struct handle b) {
+                                              struct handle b) {
 
   ASSERT(a.width == b.width && "comparing handles of different sizes");
 
@@ -1829,55 +1864,56 @@ static __attribute__((unused)) bool handle_eq(struct handle a,
   return true;
 }
 
-static __attribute__((unused)) struct handle handle_narrow(struct handle h,
-  size_t offset, size_t width) {
+static __attribute__((unused)) struct handle
+handle_narrow(struct handle h, size_t offset, size_t width) {
 
   ASSERT(h.offset + offset + width <= h.offset + h.width &&
-    "narrowing a handle with values that actually expand it");
+         "narrowing a handle with values that actually expand it");
 
   size_t r __attribute__((unused));
   assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
 
   return (struct handle){
-    .base = h.base + (h.offset + offset) / CHAR_BIT,
-    .offset = (h.offset + offset) % CHAR_BIT,
-    .width = width,
+      .base = h.base + (h.offset + offset) / CHAR_BIT,
+      .offset = (h.offset + offset) % CHAR_BIT,
+      .width = width,
   };
 }
 
-static __attribute__((unused)) struct handle handle_index(
-    const char *NONNULL context, const char *rule_name,
-    const char *NONNULL expr, const struct state *NONNULL s,
-    size_t element_width, value_t index_min, value_t index_max,
-    struct handle root, value_t index) {
+static __attribute__((unused)) struct handle
+handle_index(const char *NONNULL context, const char *rule_name,
+             const char *NONNULL expr, const struct state *NONNULL s,
+             size_t element_width, value_t index_min, value_t index_max,
+             struct handle root, value_t index) {
 
   assert(expr != NULL);
 
   if (__builtin_expect(index < index_min || index > index_max, 0)) {
     error(s, "%sindex out of range in expression %s%s%s", context, expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+          rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   size_t r1, r2;
-  if (__builtin_expect(SUB(index, index_min, &r1)
-      || MUL(r1, element_width, &r2), 0)) {
+  if (__builtin_expect(
+          SUB(index, index_min, &r1) || MUL(r1, element_width, &r2), 0)) {
     error(s, "%soverflow when indexing array in expression %s%s%s", context,
-      expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+          expr, rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   size_t r __attribute__((unused));
   assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
 
   return (struct handle){
-    .base = root.base + (root.offset + r2) / CHAR_BIT,
-    .offset = (root.offset + r2) % CHAR_BIT,
-    .width = element_width,
+      .base = root.base + (root.offset + r2) / CHAR_BIT,
+      .offset = (root.offset + r2) % CHAR_BIT,
+      .width = element_width,
   };
 }
 
-static __attribute__((unused)) value_t handle_isundefined(
-    const struct state *NONNULL s, struct handle h) {
+static __attribute__((unused)) value_t
+handle_isundefined(const struct state *NONNULL s, struct handle h) {
   raw_value_t v = handle_read_raw(s, h);
 
   return v == 0;
@@ -1886,8 +1922,10 @@ static __attribute__((unused)) value_t handle_isundefined(
 /* Overflow-safe helpers for doing bounded arithmetic. */
 
 static __attribute__((unused)) value_t add(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL expr,
-    const struct state *NONNULL s, value_t a, value_t b) {
+                                           const char *rule_name,
+                                           const char *NONNULL expr,
+                                           const struct state *NONNULL s,
+                                           value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1895,15 +1933,17 @@ static __attribute__((unused)) value_t add(const char *NONNULL context,
   value_t r;
   if (__builtin_expect(ADD(a, b, &r), 0)) {
     error(s, "%sinteger overflow in addition in expression %s%s%s", context,
-      expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+          expr, rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
 static __attribute__((unused)) value_t sub(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL expr,
-    const struct state *NONNULL s, value_t a, value_t b) {
+                                           const char *rule_name,
+                                           const char *NONNULL expr,
+                                           const struct state *NONNULL s,
+                                           value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1911,15 +1951,17 @@ static __attribute__((unused)) value_t sub(const char *NONNULL context,
   value_t r;
   if (__builtin_expect(SUB(a, b, &r), 0)) {
     error(s, "%sinteger overflow in subtraction in expression %s%s%s", context,
-      expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+          expr, rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
 static __attribute__((unused)) value_t mul(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL expr,
-    const struct state *NONNULL s, value_t a, value_t b) {
+                                           const char *rule_name,
+                                           const char *NONNULL expr,
+                                           const struct state *NONNULL s,
+                                           value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
@@ -1927,66 +1969,74 @@ static __attribute__((unused)) value_t mul(const char *NONNULL context,
   value_t r;
   if (__builtin_expect(MUL(a, b, &r), 0)) {
     error(s, "%sinteger overflow in multiplication in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+          context, expr, rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
   return r;
 }
 
 static __attribute__((unused)) value_t divide(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL expr,
-    const struct state *NONNULL s, value_t a, value_t b) {
+                                              const char *rule_name,
+                                              const char *NONNULL expr,
+                                              const struct state *NONNULL s,
+                                              value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
 
   if (__builtin_expect(b == 0, 0)) {
     error(s, "%sdivision by zero in expression %s%s%s", context, expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+          rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
-  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1, 0)) {
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1,
+                       0)) {
     error(s, "%sinteger overflow in division in expression %s%s%s", context,
-      expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+          expr, rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   return a / b;
 }
 
 static __attribute__((unused)) value_t mod(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL expr,
-    const struct state *NONNULL s, value_t a, value_t b) {
+                                           const char *rule_name,
+                                           const char *NONNULL expr,
+                                           const struct state *NONNULL s,
+                                           value_t a, value_t b) {
 
   assert(context != NULL);
   assert(expr != NULL);
 
   if (__builtin_expect(b == 0, 0)) {
     error(s, "%smodulus by zero in expression %s%s%s", context, expr,
-      rule_name == NULL ? "" : " within ", rule_name == NULL ? "" : rule_name);
+          rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
-  // Is INT_MIN % -1 UD? Reading the C spec I'm not sure.
-  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1, 0)) {
-    error(s, "%sinteger overflow in modulo in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+  /* Is INT_MIN % -1 UD? Reading the C spec I am not sure. */
+  if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1,
+                       0)) {
+    error(s, "%sinteger overflow in modulo in expression %s%s%s", context, expr,
+          rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   return a % b;
 }
 
-static __attribute__((unused)) value_t negate(const char *NONNULL context,
-    const char *rule_name, const char *NONNULL expr,
-    const struct state *NONNULL s, value_t a) {
+static __attribute__((unused)) value_t
+negate(const char *NONNULL context, const char *rule_name,
+       const char *NONNULL expr, const struct state *NONNULL s, value_t a) {
 
   assert(context != NULL);
   assert(expr != NULL);
 
   if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN, 0)) {
-    error(s, "%sinteger overflow in negation in expression %s%s%s",
-      context, expr, rule_name == NULL ? "" : " within ",
-      rule_name == NULL ? "" : rule_name);
+    error(s, "%sinteger overflow in negation in expression %s%s%s", context,
+          expr, rule_name == NULL ? "" : " within ",
+          rule_name == NULL ? "" : rule_name);
   }
 
   return -a;
@@ -1997,12 +2047,12 @@ static __attribute__((unused)) value_t rsh(value_t a, value_t b);
 static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
 
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
   if (value_is_signed() && b <= -(value_t)(sizeof(a) * 8)) {
     return 0;
@@ -2016,9 +2066,9 @@ static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
     return rsh(a, -b);
   }
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
   return (value_t)((raw_value_t)a << b);
@@ -2027,12 +2077,12 @@ static __attribute__((unused)) value_t lsh(value_t a, value_t b) {
 static value_t rsh(value_t a, value_t b) {
 
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
   if (value_is_signed() && b <= -(value_t)(sizeof(a) * 8)) {
     return 0;
@@ -2046,9 +2096,9 @@ static value_t rsh(value_t a, value_t b) {
     return lsh(a, -b);
   }
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
   return a >> b;
@@ -2066,9 +2116,9 @@ static __attribute__((unused)) value_t bnot(value_t v) {
 /* use Heap's algorithm for generating permutations to implement a
  * permutation-to-number mapping
  */
-static __attribute__((unused)) size_t permutation_to_index(
-    const size_t *NONNULL permutation, size_t *NONNULL stack,
-    size_t *NONNULL working, size_t count) {
+static __attribute__((unused)) size_t
+permutation_to_index(const size_t *NONNULL permutation, size_t *NONNULL stack,
+                     size_t *NONNULL working, size_t count) {
 
   /* byte extent of the permutation arrays */
   size_t bytes = sizeof(permutation[0]) * count;
@@ -2116,9 +2166,9 @@ static __attribute__((unused)) size_t permutation_to_index(
   /* the permutation should have been one of the possible ones */
   ASSERT(!"invalid permutation passed to permutation_to_index");
 }
-static __attribute__((unused)) void index_to_permutation(size_t index,
-    size_t *NONNULL permutation, size_t *NONNULL stack,
-    size_t count) {
+static __attribute__((unused)) void
+index_to_permutation(size_t index, size_t *NONNULL permutation,
+                     size_t *NONNULL stack, size_t count) {
 
   /* byte extent of the permutation arrays */
   size_t bytes = sizeof(permutation[0]) * count;
@@ -2175,17 +2225,18 @@ static __attribute__((unused)) void index_to_permutation(size_t index,
  ******************************************************************************/
 
 struct queue_node {
-  struct state *s[(4096 - sizeof(struct queue_node*)) / sizeof(struct state*)];
+  struct state
+      *s[(4096 - sizeof(struct queue_node *)) / sizeof(struct state *)];
   struct queue_node *next;
 };
 
 _Static_assert(sizeof(struct queue_node) == 4096,
-  "incorrect queue_node size calculation");
+               "incorrect queue_node size calculation");
 
 static struct queue_node *queue_node_new(void) {
   struct queue_node *p = NULL;
 
-  int r = posix_memalign((void**)&p, sizeof(*p), sizeof(*p));
+  int r = posix_memalign((void **)&p, sizeof(*p), sizeof(*p));
 
   assert((r == 0 || r == ENOMEM) && "invalid alignment to posix_memalign");
 
@@ -2198,9 +2249,7 @@ static struct queue_node *queue_node_new(void) {
   return p;
 }
 
-static void queue_node_free(struct queue_node *p) {
-  free(p);
-}
+static void queue_node_free(struct queue_node *p) { free(p); }
 
 /******************************************************************************/
 
@@ -2221,30 +2270,30 @@ static queue_handle_t queue_handle_from_node_ptr(const struct queue_node *n) {
 }
 
 static struct queue_node *queue_handle_base(queue_handle_t h) {
-  return (struct queue_node*)(h - h % sizeof(struct queue_node));
+  return (struct queue_node *)(h - h % sizeof(struct queue_node));
 }
 
 static bool queue_handle_is_state_pptr(queue_handle_t h) {
-  return h % sizeof(struct queue_node)
-    < __builtin_offsetof(struct queue_node, next);
+  return h % sizeof(struct queue_node) <
+         __builtin_offsetof(struct queue_node, next);
 }
 
 static struct state **queue_handle_to_state_pptr(queue_handle_t h) {
   assert(queue_handle_is_state_pptr(h) &&
-    "invalid use of queue_handle_to_state_pptr");
+         "invalid use of queue_handle_to_state_pptr");
 
-  return (struct state**)h;
+  return (struct state **)h;
 }
 
 static struct queue_node **queue_handle_to_node_pptr(queue_handle_t h) {
   assert(!queue_handle_is_state_pptr(h) &&
-    "invalid use of queue_handle_to_node_pptr");
+         "invalid use of queue_handle_to_node_pptr");
 
-  return (struct queue_node**)h;
+  return (struct queue_node **)h;
 }
 
 static queue_handle_t queue_handle_next(queue_handle_t h) {
-  return h + sizeof(struct state*);
+  return h + sizeof(struct state *);
 }
 
 /******************************************************************************/
@@ -2276,8 +2325,8 @@ static void hazard(queue_handle_t h) {
   assert(p != NULL && "attempt to hazard an invalid pointer");
 
   /* Each thread is only allowed a single hazarded pointer at a time. */
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
-    && "hazarding multiple pointers at once");
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL &&
+         "hazarding multiple pointers at once");
 
   __atomic_store_n(&hazarded[thread_id], p, __ATOMIC_SEQ_CST);
 }
@@ -2290,11 +2339,11 @@ static void unhazard(queue_handle_t h) {
 
   assert(p != NULL && "attempt to unhazard an invalid pointer");
 
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) != NULL
-    && "unhazarding a pointer when none are hazarded");
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) != NULL &&
+         "unhazarding a pointer when none are hazarded");
 
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == p
-    && "unhazarding a pointer that differs from the one hazarded");
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == p &&
+         "unhazarding a pointer that differs from the one hazarded");
 
   __atomic_store_n(&hazarded[thread_id], NULL, __ATOMIC_SEQ_CST);
 }
@@ -2310,8 +2359,8 @@ static void reclaim(queue_handle_t h) {
   /* The reclaimer is not allowed to be freeing something while also holding a
    * hazarded pointer.
    */
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL
-    && "reclaiming a pointer while holding a hazarded pointer");
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL &&
+         "reclaiming a pointer while holding a hazarded pointer");
 
   /* Pointers that we failed to free initially because they were in use
    * (hazarded) at the time they were passed to reclaim().
@@ -2399,11 +2448,11 @@ static void reclaim(queue_handle_t h) {
  ******************************************************************************/
 
 #if __SIZEOF_POINTER__ <= 4
-  typedef uint64_t dword_t;
+typedef uint64_t dword_t;
 #elif __SIZEOF_POINTER__ <= 8
-  typedef unsigned __int128 dword_t;
+typedef unsigned __int128 dword_t;
 #else
-  #error "unexpected pointer size; what scalar type to use for dword_t?"
+#error "unexpected pointer size; what scalar type to use for dword_t?"
 #endif
 
 static dword_t atomic_read(dword_t *p) {
@@ -2467,7 +2516,7 @@ static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
 #endif
 
   return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
+                                     __ATOMIC_SEQ_CST);
 }
 
 static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
@@ -2487,9 +2536,8 @@ static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
   return __sync_val_compare_and_swap(p, expected, new);
 #endif
 
-
   (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
+                                    __ATOMIC_SEQ_CST);
   return expected;
 }
 
@@ -2502,17 +2550,17 @@ static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
  ******************************************************************************/
 
 #if __SIZEOF_POINTER__ <= 4
-  typedef uint64_t double_ptr_t;
+typedef uint64_t double_ptr_t;
 #elif __SIZEOF_POINTER__ <= 8
-  typedef unsigned __int128 double_ptr_t;
+typedef unsigned __int128 double_ptr_t;
 #else
-  #error "unexpected pointer size; what scalar type to use for double_ptr_t?"
+#error "unexpected pointer size; what scalar type to use for double_ptr_t?"
 #endif
 
 static uintptr_t double_ptr_extract1(double_ptr_t p) {
 
-  _Static_assert(sizeof(p) > sizeof(uintptr_t), "double_ptr_t is not big "
-    "enough to fit a pointer");
+  _Static_assert(sizeof(p) > sizeof(uintptr_t),
+                 "double_ptr_t is not big enough to fit a pointer");
 
   uintptr_t q;
   memcpy(&q, &p, sizeof(q));
@@ -2522,11 +2570,11 @@ static uintptr_t double_ptr_extract1(double_ptr_t p) {
 
 static uintptr_t double_ptr_extract2(double_ptr_t p) {
 
-  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t), "double_ptr_t is not big "
-    "enough to fit two pointers");
+  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t),
+                 "double_ptr_t is not big enough to fit two pointers");
 
   uintptr_t q;
-  memcpy(&q, (unsigned char*)&p + sizeof(void*), sizeof(q));
+  memcpy(&q, (unsigned char *)&p + sizeof(void *), sizeof(q));
 
   return q;
 }
@@ -2535,11 +2583,11 @@ static double_ptr_t double_ptr_make(uintptr_t q1, uintptr_t q2) {
 
   double_ptr_t p = 0;
 
-  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t), "double_ptr_t is not big "
-    "enough to fit two pointers");
+  _Static_assert(sizeof(p) >= 2 * sizeof(uintptr_t),
+                 "double_ptr_t is not big enough to fit two pointers");
 
   memcpy(&p, &q1, sizeof(q1));
-  memcpy((unsigned char*)&p + sizeof(q1), &q2, sizeof(q2));
+  memcpy((unsigned char *)&p + sizeof(q1), &q2, sizeof(q2));
 
   return p;
 }
@@ -2573,8 +2621,8 @@ retry:;
   if (tail == 0) {
     /* There's nothing currently in the queue. */
 
-    assert(double_ptr_extract1(ends) == 0 && "tail of queue 0 while head is "
-      "non-0");
+    assert(double_ptr_extract1(ends) == 0 &&
+           "tail of queue 0 while head is non-0");
 
     struct queue_node *n = queue_node_new();
     n->s[0] = s;
@@ -2621,7 +2669,7 @@ retry:;
         struct state **target = queue_handle_to_state_pptr(next_tail);
         struct state *null = NULL;
         if (!__atomic_compare_exchange_n(target, &null, s, false,
-            __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+                                         __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
           goto retry;
@@ -2644,7 +2692,7 @@ retry:;
       struct queue_node **target = queue_handle_to_node_pptr(next_tail);
       struct queue_node *null = NULL;
       if (!__atomic_compare_exchange_n(target, &null, new_node, false,
-          __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+                                       __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
         /* Failed. Someone else enqueued before we could. */
         queue_node_free(new_node);
         unhazard(tail);
@@ -2677,15 +2725,15 @@ retry:;
           /* We previously wrote into an existing queue node. */
           struct state **target = queue_handle_to_state_pptr(next_tail);
           struct state *temp = s;
-          bool r __attribute__((unused)) = __atomic_compare_exchange_n(target,
-            &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+          bool r __attribute__((unused)) = __atomic_compare_exchange_n(
+              target, &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
           assert(r && "undo of write to next_tail failed");
         } else {
           /* We previously wrote into a new queue node. */
           struct queue_node **target = queue_handle_to_node_pptr(next_tail);
           struct queue_node *temp = new_node;
-          bool r __attribute__((unused)) = __atomic_compare_exchange_n(target,
-            &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+          bool r __attribute__((unused)) = __atomic_compare_exchange_n(
+              target, &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
           assert(r && "undo of write to next_tail failed");
 
           queue_node_free(new_node);
@@ -2705,14 +2753,14 @@ retry:;
   size_t count = __atomic_add_fetch(&q[queue_id].count, 1, __ATOMIC_SEQ_CST);
 
   TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
-    s, queue_id, count);
+        s, queue_id, count);
 
   return count;
 }
 
 static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
   assert(queue_id != NULL && *queue_id < sizeof(q) / sizeof(q[0]) &&
-    "out of bounds queue access");
+         "out of bounds queue access");
 
   const struct state *s = NULL;
 
@@ -2720,7 +2768,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
 
     double_ptr_t ends = atomic_read(&q[*queue_id].ends);
 
-retry:;
+  retry:;
     queue_handle_t head = double_ptr_extract1(ends);
 
     if (head != 0) {
@@ -2808,11 +2856,12 @@ retry:;
         continue;
       }
 
-      size_t count = __atomic_sub_fetch(&q[*queue_id].count, 1,
-        __ATOMIC_SEQ_CST);
+      size_t count =
+          __atomic_sub_fetch(&q[*queue_id].count, 1, __ATOMIC_SEQ_CST);
 
-      TRACE(TC_QUEUE, "dequeued state %p from queue %zu, queue length is now "
-        "%zu", s, *queue_id, count);
+      TRACE(TC_QUEUE,
+            "dequeued state %p from queue %zu, queue length is now %zu",
+            s, *queue_id, count);
 
       return s;
     }
@@ -2854,16 +2903,16 @@ struct refcounted_ptr {
 };
 
 #if __SIZEOF_POINTER__ <= 4
-  typedef uint64_t refcounted_ptr_t;
+typedef uint64_t refcounted_ptr_t;
 #elif __SIZEOF_POINTER__ <= 8
-  typedef unsigned __int128 refcounted_ptr_t;
+typedef unsigned __int128 refcounted_ptr_t;
 #else
-  #error "unexpected pointer size; what scalar type to use for refcounted_ptr_t?"
+#error "unexpected pointer size; what scalar type to use for refcounted_ptr_t?"
 #endif
 
 _Static_assert(sizeof(struct refcounted_ptr) <= sizeof(refcounted_ptr_t),
-  "refcounted_ptr does not fit in a refcounted_ptr_t, which we need to operate "
-  "on it atomically");
+               "refcounted_ptr does not fit in a refcounted_ptr_t, which we "
+               "need to operate on it atomically");
 
 static void refcounted_ptr_set(refcounted_ptr_t *NONNULL p, void *ptr) {
 
@@ -2873,7 +2922,7 @@ static void refcounted_ptr_set(refcounted_ptr_t *NONNULL p, void *ptr) {
   struct refcounted_ptr p2;
   memcpy(&p2, &old, sizeof(old));
   assert(p2.count == 0 && "overwriting a pointer source while someone still "
-    "has a reference to this pointer");
+                          "has a reference to this pointer");
 #endif
 
   /* Set the current source pointer with no outstanding references. */
@@ -2913,7 +2962,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
 }
 
 static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
-  void *ptr __attribute__((unused))) {
+                               void *ptr __attribute__((unused))) {
 
   refcounted_ptr_t old, new;
   bool r;
@@ -2927,9 +2976,9 @@ static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
 
     /* Release our reference to it. */
     ASSERT(p2.ptr == ptr && "releasing a reference to a pointer after someone "
-      "has changed the pointer source");
+                            "has changed the pointer source");
     ASSERT(p2.count > 0 && "releasing a reference to a pointer when it had no "
-      "outstanding references");
+                           "outstanding references");
     p2.count--;
 
     /* Try to commit our results. */
@@ -2946,14 +2995,14 @@ static void *refcounted_ptr_peek(refcounted_ptr_t *NONNULL p) {
    * count -- we can afford to just atomically read the first word.
    */
   void *ptr = __atomic_load_n(
-    (void**)((void*)p + __builtin_offsetof(struct refcounted_ptr, ptr)),
-    __ATOMIC_SEQ_CST);
+      (void **)((void *)p + __builtin_offsetof(struct refcounted_ptr, ptr)),
+      __ATOMIC_SEQ_CST);
 
   return ptr;
 }
 
 static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
-    refcounted_ptr_t *NONNULL next) {
+                                 refcounted_ptr_t *NONNULL next) {
 
   /* None of the operations in this function are performed atomically because we
    * assume the caller has synchronised with other threads via other means.
@@ -2963,7 +3012,7 @@ static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
   struct refcounted_ptr p __attribute__((unused));
   memcpy(&p, current, sizeof(*current));
   ASSERT(p.count == 0 && "overwriting a pointer that still has outstanding "
-    "references");
+                         "references");
 
   /* Shift the next value into the current pointer. */
   *current = *next;
@@ -2980,7 +3029,7 @@ static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
 
 static pthread_mutex_t rendezvous_lock; /* mutual exclusion mechanism for below. */
 static pthread_cond_t rendezvous_cond;  /* sleep mechanism for below. */
-static size_t running_count = 1;            /* how many threads are opted in to rendezvous? */
+static size_t running_count = 1;        /* how many threads are opted in to rendezvous? */
 static size_t rendezvous_pending = 1;   /* how many threads are opted in and not sleeping? */
 
 static void rendezvous_init(void) {
@@ -3037,8 +3086,9 @@ static void rendezvous_depart(bool leader, void (*action)(void)) {
     }
 
     /* Reset the counter for the next rendezvous. */
-    assert(rendezvous_pending == 0 && "a rendezvous point is being exited "
-      "while some participating threads have yet to arrive");
+    assert(rendezvous_pending == 0 &&
+           "a rendezvous point is being exited "
+           "while some participating threads have yet to arrive");
     rendezvous_pending = running_count;
 
     /* Wake up the 'followers'. */
@@ -3105,9 +3155,7 @@ retry:;
 
 typedef uintptr_t slot_t;
 
-static __attribute__((const)) slot_t slot_empty(void) {
-  return 0;
-}
+static __attribute__((const)) slot_t slot_empty(void) { return 0; }
 
 static __attribute__((const)) bool slot_is_empty(slot_t s) {
   return s == slot_empty();
@@ -3125,12 +3173,10 @@ static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
 static struct state *slot_to_state(slot_t s) {
   ASSERT(!slot_is_empty(s));
   ASSERT(!slot_is_tombstone(s));
-  return (struct state*)s;
+  return (struct state *)s;
 }
 
-static slot_t state_to_slot(const struct state *s) {
-  return (slot_t)s;
-}
+static slot_t state_to_slot(const struct state *s) { return (slot_t)s; }
 
 /******************************************************************************/
 
@@ -3142,8 +3188,12 @@ static slot_t state_to_slot(const struct state *s) {
  * elements.                                                                   *
  ******************************************************************************/
 
-enum { INITIAL_SET_SIZE_EXPONENT = sizeof(unsigned long long) * 8 - 1 -
-  __builtin_clzll(SET_CAPACITY / sizeof(struct state*) / sizeof(struct state)) };
+enum {
+  INITIAL_SET_SIZE_EXPONENT =
+      sizeof(unsigned long long) * 8 - 1 -
+      __builtin_clzll(SET_CAPACITY / sizeof(struct state *) /
+                      sizeof(struct state))
+};
 
 struct set {
   slot_t *bucket;
@@ -3204,7 +3254,6 @@ static void set_expand_unlock(void) {
     ASSERT(r == 0);
   }
 }
-
 
 static void set_init(void) {
 
@@ -3281,16 +3330,17 @@ static void set_migrate(void) {
       break;
     }
 
-    // TODO: The following algorithm assumes insertions can collide. That is, it
-    // operates atomically on slots because another thread could be migrating
-    // and also targeting the same slot. If we were to more closely wick to the
-    // Maier design this would not be required.
+    /* TODO: The following algorithm assumes insertions can collide. That is, it
+     * operates atomically on slots because another thread could be migrating
+     * and also targeting the same slot. If we were to more closely wick to the
+     * Maier design this would not be required.
+     */
 
     for (size_t i = start; i < end; i++) {
 
       /* retrieve the slot element and mark it as migrated */
       slot_t s = __atomic_exchange_n(&local_seen->bucket[i], slot_tombstone(),
-        __ATOMIC_SEQ_CST);
+                                     __ATOMIC_SEQ_CST);
       ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
 
       /* If the current slot contained a state, rehash it and insert it into the
@@ -3305,7 +3355,6 @@ static void set_migrate(void) {
         }
       }
     }
-
   }
 
   /* Release our reference to the old set now we're done with it. */
@@ -3339,7 +3388,7 @@ static void set_expand(void) {
   if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
     /* Someone else already expanded it. Join them in the migration effort. */
     TRACE(TC_SET, "attempted expansion failed because another thread got there "
-      "first");
+                  "first");
     set_migrate();
     return;
   }
@@ -3350,14 +3399,14 @@ static void set_expand(void) {
   if (THREADS > 1 && refcounted_ptr_peek(&next_global_seen) != NULL) {
     set_expand_unlock();
     TRACE(TC_SET, "attempted expansion failed because another thread got there "
-      "first");
+                  "first");
     set_migrate();
     return;
   }
 
   TRACE(TC_SET, "expanding set from %zu slots to %zu slots...",
-    (((size_t)1) << local_seen->size_exponent) / sizeof(slot_t),
-    (((size_t)1) << (local_seen->size_exponent + 1)) / sizeof(slot_t));
+        (((size_t)1) << local_seen->size_exponent) / sizeof(slot_t),
+        (((size_t)1) << (local_seen->size_exponent + 1)) / sizeof(slot_t));
 
   /* Create a set of double the size. */
   struct set *set = xmalloc(sizeof(*set));
@@ -3378,19 +3427,22 @@ static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
-  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100
-      / set_size(local_seen) >= SET_EXPAND_THRESHOLD)
+  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100 /
+          set_size(local_seen) >=
+      SET_EXPAND_THRESHOLD)
     set_expand();
 
   size_t index = set_index(local_seen, state_hash(s));
 
   size_t attempts = 0;
-  for (size_t i = index; attempts < set_size(local_seen); i = set_index(local_seen, i + 1)) {
+  for (size_t i = index; attempts < set_size(local_seen);
+       i = set_index(local_seen, i + 1)) {
 
     /* Guess that the current slot is empty and try to insert here. */
     slot_t c = slot_empty();
     if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
-        state_to_slot(s), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+                                    state_to_slot(s), false, __ATOMIC_SEQ_CST,
+                                    __ATOMIC_SEQ_CST)) {
       /* Success */
       *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
@@ -3400,8 +3452,9 @@ restart:;
        * represent the state data.
        */
       if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= ((size_t)1) << STATE_SIZE_BITS && "seen set size "
-          "exceeds total possible number of states");
+        assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
+               "seen set size "
+               "exceeds total possible number of states");
       }
 
       /* Update statistics if `--trace memory_usage` is in effect. Note that we
@@ -3410,11 +3463,11 @@ restart:;
        * allocation figures do not include transient states that we allocated
        * and then discarded as duplicates.
        */
-       size_t depth = 0;
+      size_t depth = 0;
 #if BOUND > 0
-       depth = (size_t)state_bound_get(s);
+      depth = (size_t)state_bound_get(s);
 #endif
-       register_allocation(depth);
+      register_allocation(depth);
 
       return true;
     }
@@ -3449,15 +3502,16 @@ restart:;
  * already contained in the state set might know some of the liveness properties
  * are satisfied that your current state considers unknown.
  */
-static __attribute__((unused)) const struct state *set_find(
-    const struct state *NONNULL s) {
+static __attribute__((unused)) const struct state *
+set_find(const struct state *NONNULL s) {
 
   assert(s != NULL);
 
   size_t index = set_index(local_seen, state_hash(s));
 
   size_t attempts = 0;
-  for (size_t i = index; attempts < set_size(local_seen); i = set_index(local_seen, i + 1)) {
+  for (size_t i = index; attempts < set_size(local_seen);
+       i = set_index(local_seen, i + 1)) {
 
     slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
 
@@ -3465,8 +3519,8 @@ static __attribute__((unused)) const struct state *set_find(
      * scan, in which all threads participate. So we should never encounter a
      * set undergoing migration.
      */
-    ASSERT(!slot_is_tombstone(slot)
-      && "tombstone encountered during final phase");
+    ASSERT(!slot_is_tombstone(slot) &&
+           "tombstone encountered during final phase");
 
     if (slot_is_empty(slot)) {
       /* reached the end of the linear block in which this state could lie */
@@ -3501,11 +3555,11 @@ static unsigned long long gettime() {
  * state and all its predecessors.
  */
 static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
-    size_t index, bool shared) {
+                                                  size_t index, bool shared) {
 
   assert(s != NULL);
-  ASSERT(index < sizeof(s->liveness) * CHAR_BIT
-    && "out of range liveness write");
+  ASSERT(index < sizeof(s->liveness) * CHAR_BIT &&
+         "out of range liveness write");
 
   size_t word_index = index / (sizeof(s->liveness[0]) * CHAR_BIT);
   size_t bit_index = index % (sizeof(s->liveness[0]) * CHAR_BIT);
@@ -3577,7 +3631,7 @@ static unsigned long unknown_liveness(const struct state *NONNULL s) {
  * \return Number of new liveness information facts learnt
  */
 static unsigned long learn_liveness(struct state *NONNULL s,
-    const struct state *NONNULL successor) {
+                                    const struct state *NONNULL successor) {
 
   assert(s != NULL);
   assert(successor != NULL);
@@ -3586,8 +3640,8 @@ static unsigned long learn_liveness(struct state *NONNULL s,
 
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
 
-    uintptr_t word_src = __atomic_load_n(&successor->liveness[i],
-      __ATOMIC_SEQ_CST);
+    uintptr_t word_src =
+        __atomic_load_n(&successor->liveness[i], __ATOMIC_SEQ_CST);
     uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
@@ -3630,19 +3684,19 @@ static int exit_with(int status) {
   if (thread_id == 0) {
     /* We are the initial thread. Wait on the others before exiting. */
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
-    for (size_t i = 0; phase == RUN &&
-         i < sizeof(threads) / sizeof(threads[0]); i++) {
+    for (size_t i = 0; phase == RUN && i < sizeof(threads) / sizeof(threads[0]);
+         i++) {
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
       void *ret;
       int r = pthread_join(threads[i], &ret);
@@ -3666,37 +3720,50 @@ static int exit_with(int status) {
     if (error_count == 0) {
       /* If we didn't see any other errors, print cover information. */
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
       for (size_t i = 0; i < sizeof(covers) / sizeof(covers[0]); i++) {
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
         if (MACHINE_READABLE_OUTPUT) {
           put("<cover_result message=\"");
           xml_printf(COVER_MESSAGES[i]);
-          put("\" count=\""); put_uint(covers[i]); put("\"/>\n");
+          put("\" count=\"");
+          put_uint(covers[i]);
+          put("\"/>\n");
         }
         if (covers[i] == 0) {
           if (!MACHINE_READABLE_OUTPUT) {
-            put("\t"); put(red()); put(bold());
-            put("cover \""); put(COVER_MESSAGES[i]); put("\" not hit");
-            put(reset()); put("\n");
+            put("\t");
+            put(red());
+            put(bold());
+            put("cover \"");
+            put(COVER_MESSAGES[i]);
+            put("\" not hit");
+            put(reset());
+            put("\n");
           }
           error_count++;
           status = EXIT_FAILURE;
         } else if (!MACHINE_READABLE_OUTPUT) {
-          put("\t"); put(green()); put(bold());
-          put("cover \""); put(COVER_MESSAGES[i]); put("\" hit ");
-          put_uint(covers[i]); put(" times");
-          put(reset()); put("\n");
+          put("\t");
+          put(green());
+          put(bold());
+          put("cover \"");
+          put(COVER_MESSAGES[i]);
+          put("\" hit ");
+          put_uint(covers[i]);
+          put(" times");
+          put(reset());
+          put("\n");
         }
       }
     }
@@ -3718,18 +3785,26 @@ static int exit_with(int status) {
 
     if (!MACHINE_READABLE_OUTPUT) {
       put("\n"
-          "==========================================================================\n"
+          "===================================================================="
+          "======\n"
           "\n"
           "Status:\n"
           "\n");
       if (error_count == 0) {
-        put("\t"); put(green()); put(bold());
+        put("\t");
+        put(green());
+        put(bold());
         put("No error found.");
-        put(reset()); put("\n");
+        put(reset());
+        put("\n");
       } else {
-        put("\t"); put(red()); put(bold());
-        put_uint(error_count); put(" error(s) found.");
-        put(reset()); put("\n");
+        put("\t");
+        put(red());
+        put(bold());
+        put_uint(error_count);
+        put(" error(s) found.");
+        put(reset());
+        put("\n");
       }
       put("\n");
     }
@@ -3780,7 +3855,7 @@ static int exit_with(int status) {
 
     exit(status);
   } else {
-    pthread_exit((void*)(intptr_t)status);
+    pthread_exit((void *)(intptr_t)status);
   }
 }
 
@@ -3810,21 +3885,21 @@ static void start_secondary_threads(void) {
   rendezvous_pending = THREADS;
 
 #ifdef __clang__
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wtautological-compare"
-  #pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-compare"
+#pragma clang diagnostic ignored "-Wtautological-unsigned-zero-compare"
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
   for (size_t i = 0; i < sizeof(threads) / sizeof(threads[0]); i++) {
 #ifdef __clang__
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-  #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
     int r = pthread_create(&threads[i], NULL, thread_main,
-      (void*)(uintptr_t)(i + 1));
+                           (void *)(uintptr_t)(i + 1));
     if (__builtin_expect(r != 0, 0)) {
       fprintf(stderr, "pthread_create failed: %s\n", strerror(r));
       exit(EXIT_FAILURE);

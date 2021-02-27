@@ -1,7 +1,7 @@
+#include "optimise-field-ordering.h"
+#include "log.h"
 #include <cstddef>
 #include <gmpxx.h>
-#include "log.h"
-#include "optimise-field-ordering.h"
 #include <rumur/rumur.h>
 #include <string>
 #include <unordered_map>
@@ -47,10 +47,11 @@ static void sort(std::vector<Ptr<VarDecl>> &fields) {
 }
 
 // extract a list of the names of fields within a list
-static std::vector<std::string> get_names(const std::vector<Ptr<VarDecl>> &decls) {
+static std::vector<std::string>
+get_names(const std::vector<Ptr<VarDecl>> &decls) {
   std::vector<std::string> r;
   for (const Ptr<VarDecl> &d : decls) {
-    if (auto f = dynamic_cast<const VarDecl*>(d.get()))
+    if (auto f = dynamic_cast<const VarDecl *>(d.get()))
       r.push_back(f->name);
   }
   return r;
@@ -58,7 +59,7 @@ static std::vector<std::string> get_names(const std::vector<Ptr<VarDecl>> &decls
 
 // generate debug output if a list of fields has changed
 static void notify_changes(const std::vector<std::string> &original,
-    const std::vector<Ptr<VarDecl>> &sorted) {
+                           const std::vector<Ptr<VarDecl>> &sorted) {
 
   // extract the current order of the fields
   const std::vector<std::string> current = get_names(sorted);
@@ -87,16 +88,15 @@ static void notify_changes(const std::vector<std::string> &original,
 }
 
 // a traversal that reorders fields
-namespace { class Reorderer : public Traversal {
+namespace {
+class Reorderer : public Traversal {
 
- public:
+public:
   // The default traversal does not descend into the referent of ExprIDs.
   // However, we do need to because they may have a copy of a record type whose
   // fields we have reordered. We need to also encounter the copy and reorder
   // its fields the same way.
-  void visit_exprid(ExprID &n) final {
-    dispatch(*n.value);
-  }
+  void visit_exprid(ExprID &n) final { dispatch(*n.value); }
 
   void visit_model(Model &n) final {
 
@@ -107,7 +107,7 @@ namespace { class Reorderer : public Traversal {
     // extract out the VarDecls
     std::vector<Ptr<VarDecl>> vars;
     for (Ptr<Node> &c : n.children) {
-      if (auto v = dynamic_cast<VarDecl*>(c.get())) {
+      if (auto v = dynamic_cast<VarDecl *>(c.get())) {
         auto vp = Ptr<VarDecl>::make(*v);
         vars.push_back(vp);
       }
@@ -131,7 +131,7 @@ namespace { class Reorderer : public Traversal {
 
     // apply these updated offsets to the original VarDecls
     for (Ptr<Node> &c : n.children) {
-      if (auto v = dynamic_cast<VarDecl*>(c.get()))
+      if (auto v = dynamic_cast<VarDecl *>(c.get()))
         v->offset = offsets[v->name];
     }
   }
@@ -151,10 +151,9 @@ namespace { class Reorderer : public Traversal {
   }
 
   // like ExprIDs, we also need to force descending into TypeExprID’s referents
-  void visit_typeexprid(TypeExprID &n) final {
-    dispatch(*n.referent);
-  }
-}; }
+  void visit_typeexprid(TypeExprID &n) final { dispatch(*n.referent); }
+};
+} // namespace
 
 void optimise_field_ordering(Model &m) {
   Reorderer r;

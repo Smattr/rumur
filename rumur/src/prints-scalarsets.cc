@@ -1,14 +1,15 @@
-#include <cstddef>
-#include "../../common/isa.h"
 #include "prints-scalarsets.h"
+#include "../../common/isa.h"
+#include <cstddef>
 #include <rumur/rumur.h>
 
 using namespace rumur;
 
 // a traversal that recognises types containing scalarset references
-namespace { class ContainsScalarset : public ConstTraversal {
+namespace {
+class ContainsScalarset : public ConstTraversal {
 
- public:
+public:
   bool result = false;
 
   void visit_typeexprid(const TypeExprID &n) final {
@@ -19,7 +20,8 @@ namespace { class ContainsScalarset : public ConstTraversal {
     // with a scalarset index
     dispatch(*n.referent);
   }
-}; }
+};
+} // namespace
 
 static bool contains_scalarset(const TypeExpr &t) {
   ContainsScalarset c;
@@ -28,9 +30,10 @@ static bool contains_scalarset(const TypeExpr &t) {
 }
 
 // a traversal that recognises put statements that rely on scalarsets
-namespace { class PutsScalarset : public ConstTraversal {
+namespace {
+class PutsScalarset : public ConstTraversal {
 
- public:
+public:
   bool result = false;
 
   void visit_put(const Put &n) final {
@@ -38,7 +41,8 @@ namespace { class PutsScalarset : public ConstTraversal {
     if (n.expr != nullptr)
       result |= contains_scalarset(*n.expr->type());
   }
-}; }
+};
+} // namespace
 
 bool prints_scalarsets(const Model &m) {
   PutsScalarset p;

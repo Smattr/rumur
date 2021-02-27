@@ -108,7 +108,7 @@ struct Enum : public TypeExpr {
   size_t unique_id_limit = SIZE_MAX;
 
   Enum(const std::vector<std::pair<std::string, location>> &members_,
-    const location &loc_);
+       const location &loc_);
   Enum *clone() const final;
   virtual ~Enum() = default;
 
@@ -148,7 +148,7 @@ struct Array : public TypeExpr {
   Ptr<TypeExpr> element_type;
 
   Array(const Ptr<TypeExpr> &index_type_, const Ptr<TypeExpr> &element_type_,
-    const location &loc_);
+        const location &loc_);
   Array *clone() const final;
   virtual ~Array() = default;
 
@@ -167,7 +167,7 @@ struct TypeExprID : public TypeExpr {
   Ptr<TypeDecl> referent;
 
   TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
-    const location &loc_);
+             const location &loc_);
   TypeExprID *clone() const final;
   virtual ~TypeExprID() = default;
 
@@ -186,4 +186,4 @@ struct TypeExprID : public TypeExpr {
   bool constant() const final;
 };
 
-}
+} // namespace rumur

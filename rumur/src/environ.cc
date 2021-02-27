@@ -1,8 +1,8 @@
-#include <cstdlib>
 #include "environ.h"
+#include <cstdlib>
 
 #ifdef __APPLE__
-    #include <crt_externs.h>
+#include <crt_externs.h>
 #endif
 
 char **get_environ(void) {

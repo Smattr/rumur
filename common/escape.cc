@@ -1,7 +1,7 @@
+#include "escape.h"
 #include <cstddef>
 #include <cstdio>
 #include <ctype.h>
-#include "escape.h"
 #include <string>
 
 static std::string octal(char c) {

@@ -1,8 +1,8 @@
 #pragma once
 
+#include "solver.h"
 #include <cstddef>
 #include <rumur/rumur.h>
-#include "solver.h"
 
 namespace smt {
 
@@ -11,4 +11,4 @@ namespace smt {
  */
 void define_enum_members(Solver &solver, const rumur::TypeExpr &type);
 
-}
+} // namespace smt

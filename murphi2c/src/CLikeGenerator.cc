@@ -1,11 +1,11 @@
-#include <cstddef>
-#include <cassert>
 #include "CLikeGenerator.h"
-#include <ctype.h>
 #include "../../common/escape.h"
 #include "../../common/isa.h"
-#include <gmpxx.h>
 #include "options.h"
+#include <cassert>
+#include <cstddef>
+#include <ctype.h>
+#include <gmpxx.h>
 #include <rumur/rumur.h>
 #include <string>
 #include <utility>
@@ -23,7 +23,7 @@ void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
   *this << "\n";
 }
 
-void CLikeGenerator::visit_aliasrule(const AliasRule&) {
+void CLikeGenerator::visit_aliasrule(const AliasRule &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and visit_model flattens all rules
   assert(!"unreachable");
@@ -59,7 +59,7 @@ void CLikeGenerator::visit_array(const Array &n) {
   // wrap the array in a struct so that we do not have the awkwardness of
   // having to emit its type and size on either size of another node
   *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
-    << *n.element_type << " data[" << count.get_str() << "];";
+        << *n.element_type << " data[" << count.get_str() << "];";
 
   // The index for this array may be an enum declared inline:
   //
@@ -68,11 +68,11 @@ void CLikeGenerator::visit_array(const Array &n) {
   // If so, we need to emit it somehow so that the enum’s members can be
   // referenced later. We define it within this struct to avoid any awkward
   // lexical issues.
-  if (auto e = dynamic_cast<const Enum*>(n.index_type.get())) {
+  if (auto e = dynamic_cast<const Enum *>(n.index_type.get())) {
     *this << " " << *e << ";";
   }
 
-   *this <<" }";
+  *this << " }";
 }
 
 void CLikeGenerator::visit_assignment(const Assignment &n) {
@@ -95,7 +95,7 @@ void CLikeGenerator::visit_bor(const Bor &n) {
 
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-    << "));";
+        << "));";
   emit_trailing_comments(n);
   *this << "\n";
 }
@@ -112,7 +112,7 @@ void CLikeGenerator::visit_element(const Element &n) {
 
   // find the type of the array expression
   const Ptr<TypeExpr> t = n.array->type()->resolve();
-  auto a = dynamic_cast<const Array*>(t.get());
+  auto a = dynamic_cast<const Array *>(t.get());
   assert(a != nullptr && "non-array on LHS of array indexing expression");
 
   // find the lower bound of its index type, using some hacky mangling to align
@@ -138,9 +138,9 @@ void CLikeGenerator::visit_eq(const Eq &n) {
     // == operator, so we use memcmp. This only works if all members are
     // packed, hence why `__attribute__((pack))` is emitted in other places.
     assert(pack && "comparison of complex types is present but structures "
-      "are not packed");
+                   "are not packed");
     *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
-      << ") == 0)";
+          << ") == 0)";
 
     return;
   }
@@ -155,8 +155,8 @@ void CLikeGenerator::visit_errorstmt(const ErrorStmt &n) {
 }
 
 void CLikeGenerator::visit_exists(const Exists &n) {
-  *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= "
-    << *n.expr << "; } res_; })";
+  *this << "({ bool res_ = false; " << n.quantifier << " { res_ |= " << *n.expr
+        << "; } res_; })";
 }
 
 void CLikeGenerator::visit_exprid(const ExprID &n) {
@@ -186,7 +186,7 @@ void CLikeGenerator::visit_for(const For &n) {
   // if the type of the quantifier is an enum defined inline, we need to
   // define this in advance because C does not permit this to be defined
   // within the for loop initialiser
-  if (auto e = dynamic_cast<const Enum*>(n.quantifier.type.get())) {
+  if (auto e = dynamic_cast<const Enum *>(n.quantifier.type.get())) {
     *this << indentation() << *e << ";\n";
   }
 
@@ -211,12 +211,12 @@ void CLikeGenerator::visit_forall(const Forall &n) {
   *this << "({ ";
 
   // see corresponding logic in visit_for() for an explanation
-  if (auto e = dynamic_cast<const Enum*>(n.quantifier.type.get())) {
+  if (auto e = dynamic_cast<const Enum *>(n.quantifier.type.get())) {
     *this << *e << "; ";
   }
 
-  *this << "bool res_ = true; " << n.quantifier << " { res_ &= "
-    << *n.expr << "; } res_; })";
+  *this << "bool res_ = true; " << n.quantifier << " { res_ &= " << *n.expr
+        << "; } res_; })";
 }
 
 void CLikeGenerator::visit_functioncall(const FunctionCall &n) {
@@ -266,8 +266,8 @@ void CLikeGenerator::visit_ifclause(const IfClause &n) {
 
     // we do not need to emit surrounding brackets for binary expressions
     // because they are already emitted with brackets
-    bool needs_bracketing
-      = dynamic_cast<const BinaryExpr*>(n.condition.get()) == nullptr;
+    bool needs_bracketing =
+        dynamic_cast<const BinaryExpr *>(n.condition.get()) == nullptr;
 
     *this << "if ";
     if (needs_bracketing)
@@ -291,7 +291,7 @@ void CLikeGenerator::visit_implication(const Implication &n) {
   *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
 }
 
-void CLikeGenerator::visit_isundefined(const IsUndefined&) {
+void CLikeGenerator::visit_isundefined(const IsUndefined &) {
   // check() prevents a model with isundefined expressions from making it
   // through to here
   assert(!"unreachable");
@@ -324,7 +324,7 @@ void CLikeGenerator::visit_model(const Model &n) {
 
     // if this is a rule, first flatten it so we do not have to deal with the
     // hierarchy of rulesets, aliasrules, etc.
-    if (auto r = dynamic_cast<const Rule*>(c.get())) {
+    if (auto r = dynamic_cast<const Rule *>(c.get())) {
       std::vector<Ptr<Rule>> rs = r->flatten();
       for (const Ptr<Rule> &r2 : rs)
         *this << *r2 << "\n";
@@ -348,9 +348,9 @@ void CLikeGenerator::visit_neq(const Neq &n) {
   if (!n.lhs->type()->is_simple()) {
     // see explanation in visit_eq()
     assert(pack && "comparison of complex types is present but structures "
-      "are not packed");
+                   "are not packed");
     *this << "(memcmp(&" << *n.lhs << ", &" << *n.rhs << ", sizeof" << *n.lhs
-      << ") != 0)";
+          << ") != 0)";
 
     return;
   }
@@ -358,9 +358,7 @@ void CLikeGenerator::visit_neq(const Neq &n) {
   *this << "(" << *n.lhs << " != " << *n.rhs << ")";
 }
 
-void CLikeGenerator::visit_not(const Not &n) {
-  *this << "(!" << *n.rhs << ")";
-}
+void CLikeGenerator::visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
 
 void CLikeGenerator::visit_number(const Number &n) {
   *this << "((" << value_type << ")(" << n.value.get_str() << "))";
@@ -376,7 +374,7 @@ void CLikeGenerator::visit_procedurecall(const ProcedureCall &n) {
   *this << "\n";
 }
 
-void CLikeGenerator::visit_property(const Property&) {
+void CLikeGenerator::visit_property(const Property &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and nothing that contains a Property descends into it
   assert(!"unreachable");
@@ -387,46 +385,45 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
 
   switch (n.property.category) {
 
-    case Property::ASSERTION:
-      *this << indentation() << "if (!" << *n.property.expr << ") {\n";
-      indent();
-      *this << indentation() << "failed_assertion(\""
-        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
-        << "\");\n";
-      dedent();
-      *this << indentation() << "}";
-      break;
+  case Property::ASSERTION:
+    *this << indentation() << "if (!" << *n.property.expr << ") {\n";
+    indent();
+    *this << indentation() << "failed_assertion(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+    dedent();
+    *this << indentation() << "}";
+    break;
 
-    case Property::ASSUMPTION:
-      *this << indentation() << "if (!" << *n.property.expr << ") {\n";
-      indent();
-      *this << indentation() << "failed_assumption(\""
-        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
-        << "\");\n";
-      dedent();
-      *this << indentation() << "}";
-      break;
+  case Property::ASSUMPTION:
+    *this << indentation() << "if (!" << *n.property.expr << ") {\n";
+    indent();
+    *this << indentation() << "failed_assumption(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+    dedent();
+    *this << indentation() << "}";
+    break;
 
-    case Property::COVER:
-      *this << indentation() << "if " << *n.property.expr << " {\n";
-      indent();
-      *this << indentation() << "cover(\""
-        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
-        << "\");\n";
-      dedent();
-      *this << indentation() << "}";
-      break;
+  case Property::COVER:
+    *this << indentation() << "if " << *n.property.expr << " {\n";
+    indent();
+    *this << indentation() << "cover(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+    dedent();
+    *this << indentation() << "}";
+    break;
 
-    case Property::LIVENESS:
-      *this << indentation() << "if " << *n.property.expr << " {\n";
-      indent();
-      *this << indentation() << "liveness(\""
-        << escape(n.message == "" ? n.property.expr->to_string() : n.message)
-        << "\");\n";
-      dedent();
-      *this << indentation() << "}";
-      break;
-
+  case Property::LIVENESS:
+    *this << indentation() << "if " << *n.property.expr << " {\n";
+    indent();
+    *this << indentation() << "liveness(\""
+          << escape(n.message == "" ? n.property.expr->to_string() : n.message)
+          << "\");\n";
+    dedent();
+    *this << indentation() << "}";
+    break;
   }
 
   emit_trailing_comments(n);
@@ -434,7 +431,7 @@ void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
 }
 
 void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
-    const Expr &e, size_t counter) {
+                           const Expr &e, size_t counter) {
 
   const Ptr<TypeExpr> type = t.resolve();
 
@@ -444,13 +441,13 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
   if (type->is_boolean()) {
 
     *this << indentation() << "printf(\"%s\", ((" << e << suffix
-      << ") ? \"true\" : \"false\"))";
+          << ") ? \"true\" : \"false\"))";
 
     return;
   }
 
   // if this is an enum, print the member corresponding to its value
-  if (auto en = dynamic_cast<const Enum*>(type.get())) {
+  if (auto en = dynamic_cast<const Enum *>(type.get())) {
 
     *this << indentation() << "do {\n";
     indent();
@@ -480,7 +477,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     return;
   }
 
-  if (auto a = dynamic_cast<const Array*>(type.get())) {
+  if (auto a = dynamic_cast<const Array *>(type.get())) {
 
     // printing opening “[”
     *this << indentation() << "do {\n";
@@ -495,8 +492,8 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     const std::string lb = value_type + "_" + a->index_type->lower_bound();
     const std::string ub = value_type + "_" + a->index_type->upper_bound();
 
-    *this
-      << indentation() << "for (size_t " << i << " = 0; ; ++" << i << ") {\n";
+    *this << indentation() << "for (size_t " << i << " = 0; ; ++" << i
+          << ") {\n";
     indent();
 
     // construct a print statement of the element at this index
@@ -504,7 +501,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     *this << ";\n";
 
     *this << indentation() << "if (" << i << " == (size_t)" << ub
-      << " - (size_t)" << lb << ") {\n";
+          << " - (size_t)" << lb << ") {\n";
     indent();
     *this << indentation() << "break;\n";
     dedent();
@@ -524,7 +521,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     return;
   }
 
-  if (auto r = dynamic_cast<const Record*>(type.get())) {
+  if (auto r = dynamic_cast<const Record *>(type.get())) {
 
     // print opening “{”
     *this << indentation() << "do {\n";
@@ -550,8 +547,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
   }
 
   // fall back case, for Ranges and Scalarsets
-  *this
-    << indentation() << "print_" << value_type << "(" << e << suffix << ")";
+  *this << indentation() << "print_" << value_type << "(" << e << suffix << ")";
 }
 
 void CLikeGenerator::visit_put(const Put &n) {
@@ -573,11 +569,11 @@ void CLikeGenerator::visit_put(const Put &n) {
 void CLikeGenerator::visit_quantifier(const Quantifier &n) {
 
   if (n.type == nullptr) {
-    bool down_count = n.from->constant() && n.to->constant()
-      && n.to->constant_fold() < n.from->constant_fold();
+    bool down_count = n.from->constant() && n.to->constant() &&
+                      n.to->constant_fold() < n.from->constant_fold();
     *this << "for (" << value_type << " " << n.name << " = " << *n.from << "; "
-      << n.name << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; "
-      << n.name << " += ";
+          << n.name << " " << (down_count ? ">=" : "<=") << " " << *n.to << "; "
+          << n.name << " += ";
     if (n.step == nullptr) {
       *this << "1";
     } else {
@@ -589,38 +585,37 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
 
   const Ptr<TypeExpr> resolved = n.type->resolve();
 
-  if (auto e = dynamic_cast<const Enum*>(resolved.get())) {
+  if (auto e = dynamic_cast<const Enum *>(resolved.get())) {
     if (e->members.empty()) {
       // degenerate loop
-      *this << "for (int " << n.name << " = 0; " << n.name << " < 0; "
-        << n.name << "++)";
+      *this << "for (int " << n.name << " = 0; " << n.name << " < 0; " << n.name
+            << "++)";
     } else {
       // common case
       *this << "for (__typeof__(" << e->members[0].first << ") " << n.name
-        << " = " << e->members[0].first << "; " << n.name << " <= "
-        << e->members[e->members.size() - 1].first << "; " << n.name << "++)";
+            << " = " << e->members[0].first << "; " << n.name
+            << " <= " << e->members[e->members.size() - 1].first << "; "
+            << n.name << "++)";
     }
     return;
   }
 
-  if (auto r = dynamic_cast<const Range*>(resolved.get())) {
+  if (auto r = dynamic_cast<const Range *>(resolved.get())) {
     *this << "for (" << value_type << " " << n.name << " = " << *r->min << "; "
-      << n.name << " <= " << *r->max << "; " << n.name << "++)";
+          << n.name << " <= " << *r->max << "; " << n.name << "++)";
     return;
   }
 
-  if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
+  if (auto s = dynamic_cast<const Scalarset *>(resolved.get())) {
     *this << "for (" << value_type << " " << n.name << " = 0; " << n.name
-      << " <= " << *s->bound << "; " << n.name << "++)";
+          << " <= " << *s->bound << "; " << n.name << "++)";
     return;
   }
 
   assert(!"missing case in visit_quantifier()");
 }
 
-void CLikeGenerator::visit_range(const Range&) {
-  *this << value_type;
-}
+void CLikeGenerator::visit_range(const Range &) { *this << value_type; }
 
 void CLikeGenerator::visit_record(const Record &n) {
   *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{\n";
@@ -646,16 +641,14 @@ void CLikeGenerator::visit_rsh(const Rsh &n) {
   *this << "(" << *n.lhs << " >> " << *n.rhs << ")";
 }
 
-void CLikeGenerator::visit_ruleset(const Ruleset&) {
+void CLikeGenerator::visit_ruleset(const Ruleset &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and all rule are flattened during visit_model
   assert(!"unreachable");
   __builtin_unreachable();
 }
 
-void CLikeGenerator::visit_scalarset(const Scalarset&) {
-  *this << value_type;
-}
+void CLikeGenerator::visit_scalarset(const Scalarset &) { *this << value_type; }
 
 void CLikeGenerator::visit_sub(const Sub &n) {
   *this << "(" << *n.lhs << " - " << *n.rhs << ")";
@@ -676,7 +669,7 @@ void CLikeGenerator::visit_switch(const Switch &n) {
   // be pure, so we cannot necessarily safely emit it repeatedly in the
   // if-then-else conditions
   *this << indentation() << "__typeof__(" << *n.expr << ") res_ = " << *n.expr
-    << ";\n";
+        << ";\n";
 
   bool first = true;
   for (const SwitchCase &c : n.cases) {
@@ -737,7 +730,7 @@ void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
 
   // If we are typedefing something that is an enum, save this for later lookup.
   // See CGenerator/HGenerator::visit_constdecl for the purpose of this.
-  if (auto e = dynamic_cast<const Enum*>(n.value.get()))
+  if (auto e = dynamic_cast<const Enum *>(n.value.get()))
     enum_typedefs[e->unique_id] = n.name;
 
   *this << indentation() << "typedef " << *n.value << " " << n.name << ";";
@@ -745,13 +738,11 @@ void CLikeGenerator::visit_typedecl(const TypeDecl &n) {
   *this << "\n";
 }
 
-void CLikeGenerator::visit_typeexprid(const TypeExprID &n) {
-  *this << n.name;
-}
+void CLikeGenerator::visit_typeexprid(const TypeExprID &n) { *this << n.name; }
 
 void CLikeGenerator::visit_undefine(const Undefine &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
-    << "));";
+        << "));";
   emit_trailing_comments(n);
   *this << "\n";
 }
@@ -840,8 +831,7 @@ size_t CLikeGenerator::emit_leading_comments(const Node &n) {
           }
           *this << "*/\n";
 
-        // single line comments can be emitted simpler
-        } else {
+        } else { // single line comments can be emitted simpler
           *this << indentation() << "//";
           write_content(c, out);
           *this << "\n";
@@ -885,4 +875,4 @@ size_t CLikeGenerator::emit_trailing_comments(const Node &n) {
   return count;
 }
 
-CLikeGenerator::~CLikeGenerator() { }
+CLikeGenerator::~CLikeGenerator() {}

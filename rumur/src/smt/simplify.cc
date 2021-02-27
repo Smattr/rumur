@@ -1,17 +1,17 @@
-#include <cassert>
-#include <cstddef>
+#include "simplify.h"
+#include "../log.h"
+#include "../options.h"
 #include "define-enum-members.h"
 #include "define-records.h"
 #include "except.h"
-#include "../log.h"
 #include "logic.h"
-#include "../options.h"
-#include <rumur/rumur.h>
-#include "simplify.h"
 #include "solver.h"
-#include <string>
 #include "translate.h"
 #include "typeexpr-to-smt.h"
+#include <cassert>
+#include <cstddef>
+#include <rumur/rumur.h>
+#include <string>
 
 using namespace rumur;
 
@@ -22,13 +22,14 @@ namespace smt {
  * code. We assume the C compiler building the generated verifier is clever
  * enough to make these transformations itself, so we leave them for it.
  */
-namespace { class Simplifier : public BaseTraversal {
+namespace {
+class Simplifier : public BaseTraversal {
 
- private:
+private:
   Solver *solver;
 
- public:
-  explicit Simplifier(Solver &solver_): solver(&solver_) { }
+public:
+  explicit Simplifier(Solver &solver_) : solver(&solver_) {}
 
   /* if you are editing the visitation logic, note that the calls to
    * open_scope/close_scope are intended to match the pattern in
@@ -107,12 +108,12 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.index);
   }
 
-  void visit_enum(Enum&) final {
+  void visit_enum(Enum &) final {
     // nothing required (see declare_decl)
   }
 
   void visit_eq(Eq &n) final { visit_bexpr(n); }
-  void visit_errorstmt(ErrorStmt&) final { }
+  void visit_errorstmt(ErrorStmt &) final {}
 
   void visit_exists(Exists &n) final {
     solver->open_scope();
@@ -123,7 +124,7 @@ namespace { class Simplifier : public BaseTraversal {
     solver->close_scope();
   }
 
-  void visit_exprid(ExprID&) final { }
+  void visit_exprid(ExprID &) final {}
 
   void visit_field(Field &n) final {
     dispatch(*n.record);
@@ -203,9 +204,9 @@ namespace { class Simplifier : public BaseTraversal {
     solver->open_scope();
     for (Ptr<Node> &c : n.children) {
       dispatch(*c);
-      if (auto d = dynamic_cast<Decl*>(c.get()))
+      if (auto d = dynamic_cast<Decl *>(c.get()))
         declare_decl(*d);
-      if (auto f = dynamic_cast<Function*>(c.get()))
+      if (auto f = dynamic_cast<Function *>(c.get()))
         declare_func(*f);
     }
     solver->open_scope();
@@ -215,14 +216,12 @@ namespace { class Simplifier : public BaseTraversal {
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }
-  void visit_number(Number&) final { }
+  void visit_number(Number &) final {}
   void visit_or(Or &n) final { visit_bexpr(n); }
 
-  void visit_procedurecall(ProcedureCall &n) final {
-    dispatch(n.call);
-  }
+  void visit_procedurecall(ProcedureCall &n) final { dispatch(n.call); }
 
-  void visit_property(Property&) final {
+  void visit_property(Property &) final {
     /* properties are printed to the user during verification, so don't simplify
      * the expression as it may confuse the user that it's not the same as what
      * they entered
@@ -237,11 +236,9 @@ namespace { class Simplifier : public BaseTraversal {
     dispatch(n.property);
   }
 
-  void visit_propertystmt(PropertyStmt &n) final {
-    dispatch(n.property);
-  }
+  void visit_propertystmt(PropertyStmt &n) final { dispatch(n.property); }
 
-  void visit_put(Put&) final {
+  void visit_put(Put &) final {
     /* deliberately do nothing here because the expression in a 'put' statement
      * is displayed to the user during verification and will surprise them if it
      * has been simplified into something other than what they wrote
@@ -384,19 +381,13 @@ namespace { class Simplifier : public BaseTraversal {
     simplify(n.rhs);
   }
 
-  void visit_typedecl(TypeDecl &n) final {
-    dispatch(*n.value);
-  }
+  void visit_typedecl(TypeDecl &n) final { dispatch(*n.value); }
 
-  void visit_typeexprid(TypeExprID&) final { }
+  void visit_typeexprid(TypeExprID &) final {}
 
-  void visit_undefine(Undefine &n) final {
-    dispatch(*n.rhs);
-  }
+  void visit_undefine(Undefine &n) final { dispatch(*n.rhs); }
 
-  void visit_vardecl(VarDecl &n) final {
-    dispatch(*n.type);
-  }
+  void visit_vardecl(VarDecl &n) final { dispatch(*n.type); }
 
   void visit_while(While &n) final {
     dispatch(*n.condition);
@@ -408,8 +399,7 @@ namespace { class Simplifier : public BaseTraversal {
 
   void visit_xor(Xor &n) final { visit_bexpr(n); }
 
- private:
-
+private:
   void visit_bexpr(BinaryExpr &n) {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -427,7 +417,7 @@ namespace { class Simplifier : public BaseTraversal {
   // try to squash a boolean expression to "True" or "False"
   void simplify(Ptr<Expr> &e) {
 
-    assert (e != nullptr && "attempt to simplify a NULL expression");
+    assert(e != nullptr && "attempt to simplify a NULL expression");
 
     // we currently only handle boolean expressions
     if (!e->is_boolean())
@@ -440,9 +430,9 @@ namespace { class Simplifier : public BaseTraversal {
     std::string claim;
     try {
       claim = translate(*e);
-    } catch (Unsupported&) {
+    } catch (Unsupported &) {
       *info << "skipping SMT simplification of unsupported expression \""
-        << e->to_string() << "\"\n";
+            << e->to_string() << "\"\n";
       return;
     }
 
@@ -456,37 +446,32 @@ namespace { class Simplifier : public BaseTraversal {
   }
 
   // invent a reference to "true"
-  static Ptr<Expr> make_true(void) {
-    return Ptr<Expr>(True);
-  }
+  static Ptr<Expr> make_true(void) { return Ptr<Expr>(True); }
 
   // invent a reference to "false"
-  static Ptr<Expr> make_false(void) {
-    return Ptr<Expr>(False);
-  }
+  static Ptr<Expr> make_false(void) { return Ptr<Expr>(False); }
 
   // declare a variable/type to the solver
   void declare_decl(const Decl &decl) {
 
-    if (auto v = dynamic_cast<const VarDecl*>(&decl)) {
+    if (auto v = dynamic_cast<const VarDecl *>(&decl)) {
       declare_var(v->name, v->unique_id, *v->type);
       return;
     }
 
-    if (auto c = dynamic_cast<const ConstDecl*>(&decl)) {
+    if (auto c = dynamic_cast<const ConstDecl *>(&decl)) {
 
       if (c->type == nullptr) {
         // integer constant
-        assert(c->value->constant()
-          && "non-constant value declared as constant");
+        assert(c->value->constant() &&
+               "non-constant value declared as constant");
 
         const std::string value = numeric_literal(c->value->constant_fold());
 
         const std::string name = mangle(c->name, c->unique_id);
 
-        *solver
-          << "(declare-fun " << name << " () " << integer_type() << ")\n"
-          << "(assert (= " << name << " " << value << "))\n";
+        *solver << "(declare-fun " << name << " () " << integer_type() << ")\n"
+                << "(assert (= " << name << " " << value << "))\n";
 
         return;
       }
@@ -494,7 +479,7 @@ namespace { class Simplifier : public BaseTraversal {
       // TODO: enum constants
     }
 
-    if (auto t = dynamic_cast<const TypeDecl*>(&decl)) {
+    if (auto t = dynamic_cast<const TypeDecl *>(&decl)) {
 
       // define any enum members that occur as part of this TypeDecl
       define_enum_members(*solver, *t->value);
@@ -505,14 +490,15 @@ namespace { class Simplifier : public BaseTraversal {
       const std::string my_name = mangle(t->name, t->unique_id);
 
       // nested TypeDecl (i.e. a typedecl of a typedecl)
-      if (auto ref = dynamic_cast<const TypeExprID*>(t->value.get())) {
-        const std::string ref_name = mangle(ref->name, ref->referent->unique_id);
+      if (auto ref = dynamic_cast<const TypeExprID *>(t->value.get())) {
+        const std::string ref_name =
+            mangle(ref->name, ref->referent->unique_id);
         *solver << "(define-sort " << my_name << " () " << ref_name << ")\n";
 
       } else {
         // generic type definition
         *solver << "(define-sort " << my_name << " () "
-          << typeexpr_to_smt(*t->value) << ")\n";
+                << typeexpr_to_smt(*t->value) << ")\n";
       }
 
       return;
@@ -532,7 +518,7 @@ namespace { class Simplifier : public BaseTraversal {
 
     const std::string mangled = mangle(name, id);
 
-    if (auto t = dynamic_cast<const TypeExprID*>(&type)) {
+    if (auto t = dynamic_cast<const TypeExprID *>(&type)) {
       // this has a previously defined type, so we know how to declare it
       const std::string tname = mangle(t->name, t->referent->unique_id);
       *solver << "(declare-fun " << mangled << " () " << tname << ")\n";
@@ -550,15 +536,15 @@ namespace { class Simplifier : public BaseTraversal {
 
     class ConstraintEmitter : public ConstTypeTraversal {
 
-     private:
+    private:
       Solver *solver;
       const std::string name;
 
-     public:
-      ConstraintEmitter(Solver &solver_, const std::string &name_):
-        solver(&solver_), name(name_) { }
+    public:
+      ConstraintEmitter(Solver &solver_, const std::string &name_)
+          : solver(&solver_), name(name_) {}
 
-      void visit_array(const Array&) final {
+      void visit_array(const Array &) final {
         // no constraints required
       }
 
@@ -577,13 +563,12 @@ namespace { class Simplifier : public BaseTraversal {
         if (n.constant()) {
           const std::string lb = numeric_literal(n.min->constant_fold());
           const std::string ub = numeric_literal(n.max->constant_fold());
-          *solver
-            << "(assert (" << geq() << " " << name << " " << lb << "))\n"
-            << "(assert (" << leq() << " " << name << " " << ub << "))\n";
+          *solver << "(assert (" << geq() << " " << name << " " << lb << "))\n"
+                  << "(assert (" << leq() << " " << name << " " << ub << "))\n";
         }
       }
 
-      void visit_record(const Record&) final {
+      void visit_record(const Record &) final {
         // no constraints required
       }
 
@@ -600,7 +585,7 @@ namespace { class Simplifier : public BaseTraversal {
         }
       }
 
-      void visit_typeexprid(const TypeExprID&) final {
+      void visit_typeexprid(const TypeExprID &) final {
         assert(!"unreachable");
       }
     };
@@ -609,10 +594,9 @@ namespace { class Simplifier : public BaseTraversal {
     emitter.dispatch(*t);
   }
 
-  void declare_func(const Function&) {
-    throw Unsupported();
-  }
-}; }
+  void declare_func(const Function &) { throw Unsupported(); }
+};
+} // namespace
 
 void simplify(Model &m) {
 
@@ -624,4 +608,4 @@ void simplify(Model &m) {
   simplifier.dispatch(m);
 }
 
-}
+} // namespace smt

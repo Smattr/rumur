@@ -1,5 +1,5 @@
-#include <cstddef>
 #include "name_rules.h"
+#include <cstddef>
 #include <rumur/rumur.h>
 #include <string>
 #include <unordered_set>
@@ -10,7 +10,7 @@ namespace {
 
 class RuleNamer : public Traversal {
 
- private:
+private:
   size_t index = 0;
   std::unordered_set<std::string> used; // names already taken
 
@@ -41,7 +41,7 @@ class RuleNamer : public Traversal {
     n.name = candidate;
   }
 
- public:
+public:
   void visit_aliasrule(AliasRule &n) final {
     name(n, "alias");
     for (Ptr<Rule> &r : n.rules) {
@@ -49,9 +49,7 @@ class RuleNamer : public Traversal {
     }
   }
 
-  void visit_propertyrule(PropertyRule &n) final {
-    name(n, "property");
-  }
+  void visit_propertyrule(PropertyRule &n) final { name(n, "property"); }
 
   void visit_ruleset(Ruleset &n) final {
     name(n, "ruleset");
@@ -60,16 +58,12 @@ class RuleNamer : public Traversal {
     }
   }
 
-  void visit_simplerule(SimpleRule &n) final {
-    name(n, "rule");
-  }
+  void visit_simplerule(SimpleRule &n) final { name(n, "rule"); }
 
-  void visit_startstate(StartState &n) final {
-    name(n, "startstate");
-  }
+  void visit_startstate(StartState &n) final { name(n, "startstate"); }
 };
 
-}
+} // namespace
 
 void name_rules(Node &n) {
   RuleNamer r;

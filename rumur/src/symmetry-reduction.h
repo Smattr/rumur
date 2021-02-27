@@ -7,7 +7,7 @@
 #include <vector>
 
 // find all the named scalarset declarations in a model
-std::vector<const rumur::TypeDecl*> get_scalarsets(const rumur::Model &m);
+std::vector<const rumur::TypeDecl *> get_scalarsets(const rumur::Model &m);
 
 // get the number of bits required to store a permutation index for the given
 // scalarset

@@ -1,9 +1,9 @@
-#include <cstddef>
+#include "Pipeline.h"
+#include "Stage.h"
 #include <cassert>
 #include <climits>
-#include "Pipeline.h"
+#include <cstddef>
 #include <rumur/rumur.h>
-#include "Stage.h"
 
 using namespace rumur;
 

@@ -1,14 +1,14 @@
-#include <cstddef>
-#include <algorithm>
-#include <cassert>
-#include <chrono>
-#include <gmpxx.h>
+#include "solver.h"
 #include "../log.h"
-#include <memory>
 #include "../options.h"
 #include "../process.h"
 #include "except.h"
-#include "solver.h"
+#include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <cstddef>
+#include <gmpxx.h>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -23,7 +23,7 @@ static timestamp_t get_timestamp(void) {
 }
 
 static mpz_class get_duration(const timestamp_t &start,
-    const timestamp_t &end) {
+                              const timestamp_t &end) {
   std::chrono::duration<double> duration = end - start;
   return duration.count() * 1000;
 }
@@ -53,18 +53,18 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
 
   // set up the main claim
   query << "(assert " << (expectation ? "(not " : "") << claim
-    << (expectation ? ")" : "") << ")\n"
-    << "(check-sat)\n";
+        << (expectation ? ")" : "") << ")\n"
+        << "(check-sat)\n";
 
   *debug << "checking SMT problem:\n" << query.str();
 
   // construct the call to the solver
   std::vector<std::string> args;
-  assert(options.smt.path != "" && "calling SMT solver without having supplied "
-    "a path to it");
+  assert(options.smt.path != "" &&
+         "calling SMT solver without having supplied a path to it");
   args.push_back(options.smt.path);
   std::copy(options.smt.args.begin(), options.smt.args.end(),
-    std::back_inserter(args));
+            std::back_inserter(args));
 
   auto start = get_timestamp();
 
@@ -84,7 +84,7 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
 
   // look for a "sat" or "unsat" line
   std::istringstream ss(output);
-  for (std::string line; std::getline(ss, line); ) {
+  for (std::string line; std::getline(ss, line);) {
     if (line == "sat")
       return SAT;
     if (line == "unsat")
@@ -124,4 +124,4 @@ void Solver::close_scope(void) {
   prelude.pop_back();
 }
 
-}
+} // namespace smt

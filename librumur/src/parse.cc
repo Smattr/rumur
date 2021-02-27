@@ -4,10 +4,10 @@
 #include "location.hh"
 #include "parser.yy.hh"
 #include <rumur/Decl.h>
-#include <rumur/except.h>
 #include <rumur/Model.h>
-#include <rumur/parse.h>
 #include <rumur/Ptr.h>
+#include <rumur/except.h>
+#include <rumur/parse.h>
 #include <rumur/scanner.h>
 
 namespace rumur {
@@ -27,4 +27,4 @@ Ptr<Model> parse(std::istream &input) {
   return m;
 }
 
-}
+} // namespace rumur

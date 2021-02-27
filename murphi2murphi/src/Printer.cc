@@ -1,18 +1,16 @@
-#include <cstddef>
-#include <cassert>
-#include <iostream>
 #include "Printer.h"
+#include <cassert>
+#include <cstddef>
+#include <iostream>
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
 
 using namespace rumur;
 
-Printer::Printer(std::istream &in_, std::ostream &out_): in(in_), out(out_) { }
+Printer::Printer(std::istream &in_, std::ostream &out_) : in(in_), out(out_) {}
 
-void Printer::visit_add(const Add &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_add(const Add &n) { visit_bexpr(n); }
 
 void Printer::visit_aliasdecl(const AliasDecl &n) {
   top->sync_to(n);
@@ -58,9 +56,7 @@ void Printer::visit_aliasstmt(const AliasStmt &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_and(const And &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_and(const And &n) { visit_bexpr(n); }
 
 void Printer::visit_array(const Array &n) {
   top->sync_to(n);
@@ -71,17 +67,11 @@ void Printer::visit_array(const Array &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_band(const Band &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_band(const Band &n) { visit_bexpr(n); }
 
-void Printer::visit_bnot(const Bnot &n) {
-  visit_uexpr(n);
-}
+void Printer::visit_bnot(const Bnot &n) { visit_uexpr(n); }
 
-void Printer::visit_bor(const Bor &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_bor(const Bor &n) { visit_bexpr(n); }
 
 void Printer::visit_assignment(const Assignment &n) {
   top->sync_to(n);
@@ -105,9 +95,7 @@ void Printer::visit_constdecl(const ConstDecl &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_div(const Div &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_div(const Div &n) { visit_bexpr(n); }
 
 void Printer::visit_element(const Element &n) {
   top->sync_to(n);
@@ -127,9 +115,7 @@ void Printer::visit_enum(const Enum &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_eq(const Eq &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_eq(const Eq &n) { visit_bexpr(n); }
 
 void Printer::visit_errorstmt(const ErrorStmt &n) {
   top->sync_to(n);
@@ -219,13 +205,9 @@ void Printer::visit_functioncall(const FunctionCall &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_geq(const Geq &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_geq(const Geq &n) { visit_bexpr(n); }
 
-void Printer::visit_gt(const Gt &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_gt(const Gt &n) { visit_bexpr(n); }
 
 void Printer::visit_if(const If &n) {
   top->sync_to(n);
@@ -252,29 +234,17 @@ void Printer::visit_ifclause(const IfClause &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_implication(const Implication &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_implication(const Implication &n) { visit_bexpr(n); }
 
-void Printer::visit_isundefined(const IsUndefined &n) {
-  visit_uexpr(n);
-}
+void Printer::visit_isundefined(const IsUndefined &n) { visit_uexpr(n); }
 
-void Printer::visit_leq(const Leq &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_leq(const Leq &n) { visit_bexpr(n); }
 
-void Printer::visit_lsh(const Lsh &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_lsh(const Lsh &n) { visit_bexpr(n); }
 
-void Printer::visit_lt(const Lt &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_lt(const Lt &n) { visit_bexpr(n); }
 
-void Printer::visit_mod(const Mod &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_mod(const Mod &n) { visit_bexpr(n); }
 
 void Printer::visit_model(const Model &n) {
   if (!n.children.empty()) {
@@ -287,30 +257,20 @@ void Printer::visit_model(const Model &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_mul(const Mul &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_mul(const Mul &n) { visit_bexpr(n); }
 
-void Printer::visit_negative(const Negative &n) {
-  visit_uexpr(n);
-}
+void Printer::visit_negative(const Negative &n) { visit_uexpr(n); }
 
-void Printer::visit_neq(const Neq &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_neq(const Neq &n) { visit_bexpr(n); }
 
-void Printer::visit_not(const Not &n) {
-  visit_uexpr(n);
-}
+void Printer::visit_not(const Not &n) { visit_uexpr(n); }
 
 void Printer::visit_number(const Number &n) {
   top->sync_to(n);
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_or(const Or &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_or(const Or &n) { visit_bexpr(n); }
 
 void Printer::visit_procedurecall(const ProcedureCall &n) {
   top->sync_to(n);
@@ -404,9 +364,7 @@ void Printer::visit_return(const Return &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_rsh(const Rsh &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_rsh(const Rsh &n) { visit_bexpr(n); }
 
 void Printer::visit_ruleset(const Ruleset &n) {
   top->sync_to(n);
@@ -490,9 +448,7 @@ void Printer::visit_startstate(const StartState &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_sub(const Sub &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_sub(const Sub &n) { visit_bexpr(n); }
 
 void Printer::visit_switch(const Switch &n) {
   top->sync_to(n);
@@ -578,21 +534,18 @@ void Printer::visit_while(const While &n) {
   top->sync_to(n.loc.end);
 }
 
-void Printer::visit_xor(const Xor &n) {
-  visit_bexpr(n);
-}
+void Printer::visit_xor(const Xor &n) { visit_bexpr(n); }
 
 void Printer::process(const Token &t) {
 
-  assert(t.type != Token::SUBJ && "an IntermediateStage did not put a shift "
-    "message in the processing pipe that they did not consume");
+  assert(t.type != Token::SUBJ &&
+         "an IntermediateStage did not put a shift "
+         "message in the processing pipe that they did not consume");
 
   out << t.character;
 }
 
-void Printer::sync_to(const Node &n) {
-  sync_to(n.loc.begin);
-}
+void Printer::sync_to(const Node &n) { sync_to(n.loc.begin); }
 
 void Printer::sync_to(const position &pos) {
 
@@ -603,8 +556,8 @@ void Printer::sync_to(const position &pos) {
 
   // buffer up to the given position
   std::ostringstream buffer;
-  while (in.good() && (line < pos_line ||
-         (line == pos_line && column < pos_col))) {
+  while (in.good() &&
+         (line < pos_line || (line == pos_line && column < pos_col))) {
 
     int c = in.get();
     if (c == EOF)
@@ -625,9 +578,7 @@ void Printer::sync_to(const position &pos) {
     *top << buffer.str();
 }
 
-void Printer::skip_to(const Node &n) {
-  skip_to(n.loc.begin);
-}
+void Printer::skip_to(const Node &n) { skip_to(n.loc.begin); }
 
 void Printer::skip_to(const position &pos) {
 
@@ -638,8 +589,8 @@ void Printer::skip_to(const position &pos) {
 
   // if this is ahead of our current position, seek forwards while dropping
   // characters
-  while (in.good() && (line < pos_line ||
-         (line == pos_line && column < pos_col))) {
+  while (in.good() &&
+         (line < pos_line || (line == pos_line && column < pos_col))) {
 
     int c = in.get();
     if (c == EOF)
@@ -654,9 +605,7 @@ void Printer::skip_to(const position &pos) {
   }
 }
 
-void Printer::finalise() {
-  out.flush();
-}
+void Printer::finalise() { out.flush(); }
 
 void Printer::visit_bexpr(const BinaryExpr &n) {
   top->sync_to(n);

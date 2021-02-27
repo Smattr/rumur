@@ -1,10 +1,10 @@
+#include "ToAscii.h"
+#include "Stage.h"
 #include <cstddef>
 #include <ctype.h>
-#include "Stage.h"
 #include <string>
-#include "ToAscii.h"
 
-ToAscii::ToAscii(Stage &next_): IntermediateStage(next_) { }
+ToAscii::ToAscii(Stage &next_) : IntermediateStage(next_) {}
 
 void ToAscii::process(const Token &t) {
 
@@ -41,80 +41,80 @@ void ToAscii::process(const Token &t) {
 
   switch (state) {
 
-    case IDLE:
-      next << s;
-      if (s == "-") {
-        state = IDLE_DASH;
-      } else if (s == "/") {
-        state = IDLE_SLASH;
-      } else if (s == "\"") {
-        state = IN_STRING;
-      }
-      break;
-
-    case IDLE_DASH:
-      next << s;
-      if (s == "-") {
-        state = IN_LINE_COMMENT;
-      } else if (s == "/") {
-        state = IDLE_SLASH;
-      } else if (s == "\"") {
-        state = IN_STRING;
-      } else {
-        state = IDLE;
-      }
-      break;
-
-    case IDLE_SLASH:
-      next << s;
-      if (s == "-") {
-        state = IDLE_DASH;
-      } else if (s == "/") {
-        // stay in IDLE_SLASH
-      } else if (s == "*") {
-        state = IN_MULTILINE_COMMENT;
-      } else if (s == "\"") {
-        state = IN_STRING;
-      } else {
-        state = IDLE;
-      }
-      break;
-
-    case IN_STRING:
-      if (s == "\"" || s == "”") {
-        next << "\"";
-        state = IDLE;
-      } else {
-        next << s;
-        if (s == "\\")
-          state = IN_STRING_SLASH;
-      }
-      break;
-
-    case IN_STRING_SLASH:
-      next << s;
+  case IDLE:
+    next << s;
+    if (s == "-") {
+      state = IDLE_DASH;
+    } else if (s == "/") {
+      state = IDLE_SLASH;
+    } else if (s == "\"") {
       state = IN_STRING;
-      break;
+    }
+    break;
 
-    case IN_LINE_COMMENT:
-      next << s;
-      if (s == "\n")
-        state = IDLE;
-      break;
+  case IDLE_DASH:
+    next << s;
+    if (s == "-") {
+      state = IN_LINE_COMMENT;
+    } else if (s == "/") {
+      state = IDLE_SLASH;
+    } else if (s == "\"") {
+      state = IN_STRING;
+    } else {
+      state = IDLE;
+    }
+    break;
 
-    case IN_MULTILINE_COMMENT:
-      next << s;
-      if (s == "*")
-        state = IN_MULTILINE_COMMENT_STAR;
-      break;
+  case IDLE_SLASH:
+    next << s;
+    if (s == "-") {
+      state = IDLE_DASH;
+    } else if (s == "/") {
+      // stay in IDLE_SLASH
+    } else if (s == "*") {
+      state = IN_MULTILINE_COMMENT;
+    } else if (s == "\"") {
+      state = IN_STRING;
+    } else {
+      state = IDLE;
+    }
+    break;
 
-    case IN_MULTILINE_COMMENT_STAR:
+  case IN_STRING:
+    if (s == "\"" || s == "”") {
+      next << "\"";
+      state = IDLE;
+    } else {
       next << s;
-      if (s == "*") {
-        // stay in IN_MULTILINE_COMMENT_STAR
-      } else if (s == "/") {
-        state = IDLE;
-      }
-      break;
+      if (s == "\\")
+        state = IN_STRING_SLASH;
+    }
+    break;
+
+  case IN_STRING_SLASH:
+    next << s;
+    state = IN_STRING;
+    break;
+
+  case IN_LINE_COMMENT:
+    next << s;
+    if (s == "\n")
+      state = IDLE;
+    break;
+
+  case IN_MULTILINE_COMMENT:
+    next << s;
+    if (s == "*")
+      state = IN_MULTILINE_COMMENT_STAR;
+    break;
+
+  case IN_MULTILINE_COMMENT_STAR:
+    next << s;
+    if (s == "*") {
+      // stay in IN_MULTILINE_COMMENT_STAR
+    } else if (s == "/") {
+      state = IDLE;
+    }
+    break;
   }
 }

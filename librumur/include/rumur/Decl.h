@@ -48,7 +48,7 @@ struct AliasDecl : public ExprDecl {
   Ptr<Expr> value;
 
   AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
-    const location &loc_);
+            const location &loc_);
   AliasDecl *clone() const final;
   virtual ~AliasDecl() = default;
 
@@ -70,9 +70,9 @@ struct ConstDecl : public ExprDecl {
   Ptr<TypeExpr> type;
 
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
-    const location &loc_);
+            const location &loc_);
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
-    const Ptr<TypeExpr> &type_, const location &loc_);
+            const Ptr<TypeExpr> &type_, const location &loc_);
   ConstDecl *clone() const final;
   virtual ~ConstDecl() = default;
 
@@ -90,7 +90,7 @@ struct TypeDecl : public Decl {
   Ptr<TypeExpr> value;
 
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
-    const location &loc);
+           const location &loc);
   TypeDecl *clone() const final;
   virtual ~TypeDecl() = default;
 
@@ -103,8 +103,8 @@ struct VarDecl : public ExprDecl {
   Ptr<TypeExpr> type;
 
   /* Offset within the model state. This is only relevant if this is a state
-   * variable. We initially set it to an invalid value and rely on Model::reindex
-   * setting this correctly later.
+   * variable. We initially set it to an invalid value and rely on
+   * Model::reindex setting this correctly later.
    */
   mpz_class offset = -1;
 
@@ -114,7 +114,7 @@ struct VarDecl : public ExprDecl {
   bool readonly = false;
 
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
-    const location &loc_);
+          const location &loc_);
   VarDecl *clone() const final;
   virtual ~VarDecl() = default;
 
@@ -134,4 +134,4 @@ struct VarDecl : public ExprDecl {
   Ptr<TypeExpr> get_type() const final;
 };
 
-}
+} // namespace rumur

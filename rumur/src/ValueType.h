@@ -17,4 +17,5 @@ struct ValueType {
   mpz_class max;       // maximum value that can be represented in this type
 };
 
-std::pair<ValueType, ValueType> get_value_type(const std::string &name, const rumur::Model &m);
+std::pair<ValueType, ValueType> get_value_type(const std::string &name,
+                                               const rumur::Model &m);

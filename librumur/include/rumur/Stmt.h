@@ -20,7 +20,6 @@ struct Stmt : public Node {
 
   virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
-
 };
 
 struct AliasStmt : public Stmt {
@@ -29,7 +28,7 @@ struct AliasStmt : public Stmt {
   std::vector<Ptr<Stmt>> body;
 
   AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+            const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   AliasStmt *clone() const final;
   virtual ~AliasStmt() = default;
 
@@ -43,7 +42,7 @@ struct PropertyStmt : public Stmt {
   std::string message;
 
   PropertyStmt(const Property &property_, const std::string &message_,
-    const location &loc_);
+               const location &loc_);
   PropertyStmt *clone() const final;
   virtual ~PropertyStmt() = default;
 
@@ -58,7 +57,7 @@ struct Assignment : public Stmt {
   Ptr<Expr> rhs;
 
   Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+             const location &loc_);
   Assignment *clone() const final;
   virtual ~Assignment() = default;
 
@@ -97,8 +96,8 @@ struct For : public Stmt {
   Quantifier quantifier;
   std::vector<Ptr<Stmt>> body;
 
-  For(const Quantifier &quantifier_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+  For(const Quantifier &quantifier_, const std::vector<Ptr<Stmt>> &body_,
+      const location &loc_);
   virtual ~For() = default;
   For *clone() const final;
 
@@ -111,8 +110,8 @@ struct IfClause : public Node {
   Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;
 
-  IfClause(const Ptr<Expr> &condition_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+  IfClause(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
+           const location &loc_);
   virtual ~IfClause() = default;
   IfClause *clone() const final;
 
@@ -137,7 +136,7 @@ struct ProcedureCall : public Stmt {
   FunctionCall call;
 
   ProcedureCall(const std::string &name,
-    const std::vector<Ptr<Expr>> &arguments, const location &loc_);
+                const std::vector<Ptr<Expr>> &arguments, const location &loc_);
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
   void visit(BaseTraversal &visitor) final;
@@ -176,7 +175,7 @@ struct SwitchCase : public Node {
   std::vector<Ptr<Stmt>> body;
 
   SwitchCase(const std::vector<Ptr<Expr>> &matches_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+             const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~SwitchCase() = default;
   SwitchCase *clone() const final;
   void visit(BaseTraversal &visitor) final;
@@ -189,7 +188,7 @@ struct Switch : public Stmt {
   std::vector<SwitchCase> cases;
 
   Switch(const Ptr<Expr> &expr_, const std::vector<SwitchCase> &cases_,
-    const location &loc_);
+         const location &loc_);
   virtual ~Switch() = default;
   Switch *clone() const final;
 
@@ -217,7 +216,7 @@ struct While : public Stmt {
   std::vector<Ptr<Stmt>> body;
 
   While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
-    const location &loc_);
+        const location &loc_);
   virtual ~While() = default;
   While *clone() const final;
 
@@ -226,4 +225,4 @@ struct While : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-}
+} // namespace rumur

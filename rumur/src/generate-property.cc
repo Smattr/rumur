@@ -1,5 +1,5 @@
-#include <cstddef>
 #include "generate.h"
+#include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
 

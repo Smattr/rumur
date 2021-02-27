@@ -1,14 +1,14 @@
 #pragma once
 
+#include "Stage.h"
 #include <cstddef>
 #include <rumur/rumur.h>
-#include "Stage.h"
 #include <string>
 
 // a stage for turning switch statements into if statements
 class SwitchToIf : public IntermediateStage {
 
- private:
+private:
   // have we figured out what character(s) are used for indentation?
   bool learned_indentation = false;
 
@@ -18,7 +18,7 @@ class SwitchToIf : public IntermediateStage {
   // the character(s) we believe to represent one level of indentation
   std::string indentation;
 
- public:
+public:
   explicit SwitchToIf(Stage &next_);
 
   void process(const Token &t) final;

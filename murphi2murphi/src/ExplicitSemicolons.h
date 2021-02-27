@@ -1,14 +1,14 @@
 #pragma once
 
+#include "Stage.h"
 #include <cstddef>
 #include <queue>
 #include <rumur/rumur.h>
-#include "Stage.h"
 #include <vector>
 
 class ExplicitSemicolons : public IntermediateStage {
 
- private:
+private:
   // does the next written character need to be a semicolon?
   bool pending_semi = false;
 
@@ -18,7 +18,7 @@ class ExplicitSemicolons : public IntermediateStage {
   // queued updates to .pending_semi
   std::queue<bool> state;
 
- public:
+public:
   explicit ExplicitSemicolons(Stage &next_);
 
   void process(const Token &t) final;
@@ -38,7 +38,7 @@ class ExplicitSemicolons : public IntermediateStage {
 
   virtual ~ExplicitSemicolons() = default;
 
- private:
+private:
   void flush();
 
   // queue an update of .pending_semi = true

@@ -1,14 +1,14 @@
-#include <cstddef>
+#include "SwitchToIf.h"
+#include "Stage.h"
 #include <cassert>
+#include <cstddef>
 #include <ctype.h>
 #include <rumur/rumur.h>
-#include "Stage.h"
 #include <string>
-#include "SwitchToIf.h"
 
 using namespace rumur;
 
-SwitchToIf::SwitchToIf(Stage &next_): IntermediateStage(next_) { }
+SwitchToIf::SwitchToIf(Stage &next_) : IntermediateStage(next_) {}
 
 void SwitchToIf::process(const Token &t) {
 
@@ -44,14 +44,13 @@ void SwitchToIf::process(const Token &t) {
   if (t.character.size() == 1 && isspace(t.character[0])) {
     indentation += t.character;
 
-  // otherwise, if we have found a non-zero offset, we know the indentation
+    // otherwise, if we have found a non-zero offset, we know the indentation
   } else if (indentation != "") {
     learned_indentation = true;
 
-  // otherwise, we are looking at a non-indented line
+    // otherwise, we are looking at a non-indented line
   } else {
     last_newline = false;
-
   }
 
   next.process(t);
@@ -63,7 +62,8 @@ void SwitchToIf::visit_switch(const Switch &n) {
   // to be side-effect free
   if (!n.expr->is_pure())
     throw Error("impure expression in switch statement expression prevents "
-      "transforming this into an if-then-else", n.loc);
+                "transforming this into an if-then-else",
+                n.loc);
 
   // write everything up to the start of this expression
   top->sync_to(n);

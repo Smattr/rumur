@@ -21,11 +21,12 @@ struct Model : public Node {
   // the source
   std::vector<Ptr<Node>> children;
 
-  __attribute__((deprecated("the 4-argument constructor of Model is "
-    "deprecated; please use the newer 2-argument constructor")))
+  __attribute__((
+      deprecated("the 4-argument constructor of Model is "
+                 "deprecated; please use the newer 2-argument constructor")))
   Model(const std::vector<Ptr<Decl>> &decls_,
-    const std::vector<Ptr<Function>> &functions_,
-    const std::vector<Ptr<Rule>> &rules_, const location &loc_);
+        const std::vector<Ptr<Function>> &functions_,
+        const std::vector<Ptr<Rule>> &rules_, const location &loc_);
 
   Model(const std::vector<Ptr<Node>> &children_, const location &loc_);
   virtual ~Model() = default;
@@ -52,4 +53,4 @@ struct Model : public Node {
   void reindex();
 };
 
-}
+} // namespace rumur

@@ -6,16 +6,16 @@
 #include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
-#include <rumur/except.h>
 #include <rumur/Function.h>
-#include <rumur/indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Property.h>
 #include <rumur/Ptr.h>
 #include <rumur/Rule.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/except.h>
+#include <rumur/indexer.h>
+#include <rumur/traverse.h>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -23,9 +23,9 @@
 namespace rumur {
 
 Model::Model(const std::vector<Ptr<Decl>> &decls_,
-    const std::vector<Ptr<Function>> &functions_,
-    const std::vector<Ptr<Rule>> &rules_, const location &loc_):
-    Node(loc_) {
+             const std::vector<Ptr<Function>> &functions_,
+             const std::vector<Ptr<Rule>> &rules_, const location &loc_)
+    : Node(loc_) {
 
   children.reserve(decls_.size() + functions_.size() + rules_.size());
   children.insert(children.end(), decls_.begin(), decls_.end());
@@ -33,17 +33,15 @@ Model::Model(const std::vector<Ptr<Decl>> &decls_,
   children.insert(children.end(), rules_.begin(), rules_.end());
 }
 
-Model::Model(const std::vector<Ptr<Node>> &children_, const location &loc_):
-  Node(loc_), children(children_) { }
+Model::Model(const std::vector<Ptr<Node>> &children_, const location &loc_)
+    : Node(loc_), children(children_) {}
 
-Model *Model::clone() const {
-  return new Model(*this);
-}
+Model *Model::clone() const { return new Model(*this); }
 
 mpz_class Model::size_bits() const {
   mpz_class s = 0;
   for (const Ptr<Node> &n : children) {
-    if (auto v = dynamic_cast<const VarDecl*>(n.get()))
+    if (auto v = dynamic_cast<const VarDecl *>(n.get()))
       s += v->type->width();
   }
   return s;
@@ -55,18 +53,16 @@ void Model::validate() const {
   {
     std::unordered_set<std::string> names;
     for (const Ptr<Node> &c : children) {
-      if (auto v = dynamic_cast<const VarDecl*>(c.get())) {
+      if (auto v = dynamic_cast<const VarDecl *>(c.get())) {
         if (!names.insert(v->name).second)
           throw Error("duplicate state variable name \"" + v->name + "\"",
-            v->loc);
+                      v->loc);
       }
     }
   }
 }
 
-void Model::visit(BaseTraversal &visitor) {
-  visitor.visit_model(*this);
-}
+void Model::visit(BaseTraversal &visitor) { visitor.visit_model(*this); }
 
 void Model::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_model(*this);
@@ -77,7 +73,7 @@ mpz_class Model::liveness_count() const {
   // Define a traversal for counting liveness properties.
   class LivenessCounter : public ConstTraversal {
 
-   public:
+  public:
     mpz_class count = 0;
     mpz_class multiplier = 1;
 
@@ -86,7 +82,7 @@ mpz_class Model::liveness_count() const {
        * we will eventually generate.
        */
       for (const Quantifier &q : n.quantifiers) {
-        assert (q.constant() && "non-constant quantifier in ruleset");
+        assert(q.constant() && "non-constant quantifier in ruleset");
 
         multiplier *= q.count();
       }
@@ -100,8 +96,8 @@ mpz_class Model::liveness_count() const {
        * rulesets.
        */
       for (const Quantifier &q : n.quantifiers) {
-        assert(multiplier % q.count() == 0 && "logic error in handling "
-          "LivenessCounter::multiplier");
+        assert(multiplier % q.count() == 0 &&
+              "logic error in handling LivenessCounter::multiplier");
 
         multiplier /= q.count();
       }
@@ -129,4 +125,4 @@ void Model::reindex() {
   i.dispatch(*this);
 }
 
-}
+} // namespace rumur

@@ -18,7 +18,7 @@ namespace rumur {
  */
 class BaseTraversal {
 
- public:
+public:
   virtual void visit_add(Add &n) = 0;
   virtual void visit_aliasdecl(AliasDecl &n) = 0;
   virtual void visit_aliasrule(AliasRule &n) = 0;
@@ -104,7 +104,7 @@ class BaseTraversal {
 
 class Traversal : public BaseTraversal {
 
- public:
+public:
   void visit_add(Add &n) override;
   void visit_aliasdecl(AliasDecl &n) override;
   void visit_aliasrule(AliasRule &n) override;
@@ -174,7 +174,7 @@ class Traversal : public BaseTraversal {
   // Force class to be abstract
   virtual ~Traversal() = 0;
 
- private:
+private:
   void visit_bexpr(BinaryExpr &n);
   void visit_uexpr(UnaryExpr &n);
 };
@@ -182,7 +182,7 @@ class Traversal : public BaseTraversal {
 // Read-only equivalent of BaseTraversal.
 class ConstBaseTraversal {
 
- public:
+public:
   virtual void visit_add(const Add &n) = 0;
   virtual void visit_aliasdecl(const AliasDecl &n) = 0;
   virtual void visit_aliasrule(const AliasRule &n) = 0;
@@ -257,11 +257,10 @@ class ConstBaseTraversal {
   virtual ~ConstBaseTraversal() = default;
 };
 
-
 // Read-only equivalent of Traversal.
 class ConstTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) override;
   void visit_aliasdecl(const AliasDecl &n) override;
   void visit_aliasrule(const AliasRule &n) override;
@@ -331,7 +330,7 @@ class ConstTraversal : public ConstBaseTraversal {
   // Force class to be abstract
   virtual ~ConstTraversal() = 0;
 
- private:
+private:
   void visit_bexpr(const BinaryExpr &n);
   void visit_uexpr(const UnaryExpr &n);
 };
@@ -342,7 +341,7 @@ class ConstTraversal : public ConstBaseTraversal {
  */
 class ConstExprTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_aliasdecl(const AliasDecl &n) final;
   void visit_aliasrule(const AliasRule &n) final;
   void visit_aliasstmt(const AliasStmt &n) final;
@@ -387,7 +386,7 @@ class ConstExprTraversal : public ConstBaseTraversal {
  */
 class ConstStmtTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) final;
   void visit_aliasdecl(const AliasDecl &n) final;
   void visit_aliasrule(const AliasRule &n) final;
@@ -443,7 +442,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
 
   virtual ~ConstStmtTraversal() = default;
 
- private:
+private:
   void visit_bexpr(const BinaryExpr &n);
   void visit_uexpr(const UnaryExpr &n);
 };
@@ -451,7 +450,7 @@ class ConstStmtTraversal : public ConstBaseTraversal {
 // Generic base for read-only traversals that only need to act on TypeExprs
 class ConstTypeTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) final;
   void visit_aliasdecl(const AliasDecl &n) final;
   void visit_aliasrule(const AliasRule &n) final;
@@ -514,8 +513,8 @@ class ConstTypeTraversal : public ConstBaseTraversal {
 
   virtual ~ConstTypeTraversal() = default;
 
- private:
+private:
   void visit_bexpr(const BinaryExpr &n);
   void visit_uexpr(const UnaryExpr &n);
 };
-}
+} // namespace rumur
