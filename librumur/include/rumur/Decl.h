@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include "location.hh"
 #include <gmpxx.h>
 #include <iostream>
 #include <limits>
-#include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>

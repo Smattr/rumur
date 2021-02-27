@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>

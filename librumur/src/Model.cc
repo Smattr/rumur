@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
-#include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Function.h>

@@ -2,11 +2,11 @@
 #include <cassert>
 #include <climits>
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
 #include <limits>
-#include "location.hh"
 #include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>

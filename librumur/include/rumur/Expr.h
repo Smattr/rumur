@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <memory>
 #include <rumur/Node.h>
 #include <rumur/Ptr.h>

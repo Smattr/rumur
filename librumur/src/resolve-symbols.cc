@@ -1,8 +1,8 @@
-#include <cstddef>
-#include <cassert>
 #include "../../common/isa.h"
-#include <gmpxx.h>
+#include <cassert>
+#include <cstddef>
 #include "location.hh"
+#include <gmpxx.h>
 #include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>

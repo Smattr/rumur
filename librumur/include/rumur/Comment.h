@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstddef>
-#include <iostream>
 #include "location.hh"
+#include <iostream>
 #include <string>
 #include <vector>
 

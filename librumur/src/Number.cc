@@ -1,9 +1,9 @@
 #include <cassert>
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Number.h>

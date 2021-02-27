@@ -2,8 +2,8 @@
 
 #include <climits>
 #include <cstddef>
-#include <iostream>
 #include "location.hh"
+#include <iostream>
 
 namespace rumur {
 

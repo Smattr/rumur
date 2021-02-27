@@ -1,7 +1,7 @@
 #include <cstddef>
+#include "location.hh"
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
