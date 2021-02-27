@@ -4,12 +4,12 @@
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
-#include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/except.h>
+#include <rumur/traverse.h>
 #include <stdexcept>
 #include <string>
 
