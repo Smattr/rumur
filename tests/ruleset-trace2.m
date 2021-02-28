@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if self.xml else re.compile(r'^Rule\s+2\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^Rule\s+2\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
 
 /* Similar to ruleset-trace.m, but with a benign first ruleset that ensures the
  * ruleset we're expecting to appear in the trace does not end up being index 1.

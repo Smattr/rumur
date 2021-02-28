@@ -1,5 +1,5 @@
 -- rumur_flags: ['--deadlock-detection', 'off']
--- checker_output: None if self.xml else re.compile(r'\b3 states\b')
+-- checker_output: None if xml else re.compile(r'\b3 states\b')
 
 /* This model tests that quantifiers that pass over zero (i.e. negative start
  * and positive end) function correctly. In

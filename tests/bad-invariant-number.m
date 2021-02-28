@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if self.xml else re.compile(r'\binvariant 1 failed\b')
+-- checker_output: None if xml else re.compile(r'\binvariant 1 failed\b')
 
 /* This test checks for the presence of a previous bug first observed in commit
  * e1b74738ba73df5352622464be47b69db688c633, wherein invariants are incorrectly

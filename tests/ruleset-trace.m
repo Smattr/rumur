@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if self.xml else re.compile(r'^Rule\s+1\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^Rule\s+1\s*,\s*y\s*:\s*1\s*,\s*z\s*:\s*8\s*,\s*w\s*:\s*-32\s+fired\b', re.MULTILINE)
 
 /* As of v2019.01.12, Rumur printed counterexample traces involving rulesets
  * without showing the values of the parameters to the ruleset rules. This made

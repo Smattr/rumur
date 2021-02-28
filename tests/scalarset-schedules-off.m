@@ -1,6 +1,6 @@
 -- checker_exit_code: 1
 -- rumur_flags: ['--scalarset-schedules', 'off']
--- checker_output: None if self.xml or getattr(self, 'multithreaded', False) else re.compile(r'^((?!t_)(.|\n))*$')
+-- checker_output: None if xml or multithreaded else re.compile(r'^((?!t_)(.|\n))*$')
 
 -- A variant of scalarset-cex.m to check that switching off scalarset schedules
 -- still produces a verifier that compiles and runs. The regex we use above

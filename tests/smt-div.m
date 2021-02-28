@@ -1,5 +1,5 @@
--- rumur_flags: self.config['SMT_ARGS']
--- skip_reason: 'no SMT solver available' if self.config['SMT_ARGS'] is None else None
+-- rumur_flags: CONFIG['SMT_ARGS']
+-- skip_reason: 'no SMT solver available' if CONFIG['SMT_ARGS'] is None else None
 
 -- test that the SMT bridge can cope with division
 

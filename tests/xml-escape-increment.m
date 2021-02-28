@@ -1,4 +1,4 @@
--- checker_output: re.compile(r'Rule &quot;foo&quot;') if self.xml else None
+-- checker_output: re.compile(r'Rule &quot;foo&quot;') if xml else None
 -- checker_exit_code: 1
 
 /* This tests for the presence of a bug first observed on commit

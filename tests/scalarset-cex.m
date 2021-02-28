@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if self.xml or getattr(self, 'multithreaded', False) else re.compile(r'\ba\b.*?\bz:\s*t_6\b(.|\n)*?\bx\[t_6]:\s*true\b(.|\n)*?\bc\b.*?\bz:\s*t_6\b(.|\n)*?\by:\s*t_6', re.MULTILINE)
+-- checker_output: None if xml or multithreaded else re.compile(r'\ba\b.*?\bz:\s*t_6\b(.|\n)*?\bx\[t_6]:\s*true\b(.|\n)*?\bc\b.*?\bz:\s*t_6\b(.|\n)*?\by:\s*t_6', re.MULTILINE)
 
 type
   t: scalarset(10);

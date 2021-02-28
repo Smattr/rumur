@@ -1,4 +1,4 @@
--- skip_reason: 'N/A in XML mode' if self.xml else 'N/A in non-debug mode' if hasattr(self, 'debug') and not self.debug else None
+-- skip_reason: 'N/A in XML mode' if xml else 'N/A in non-debug mode' if not debug else None
 -- checker_output: re.compile(r'\bfield x is located at state offset 2 bits$(.|\n)*\bfield y is located at state offset 0 bits$', re.MULTILINE)
 
 -- This tests for a regression of a problem first observed on commit
