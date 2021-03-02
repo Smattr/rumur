@@ -21,12 +21,16 @@ static std::string in_filename = "<stdin>";
 static dup_t in;
 static std::shared_ptr<std::ostream> out;
 
+// name to give output Uclid5 module
+static std::string module_name = "main";
+
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
         // clang-format off
         { "help",       no_argument,       0, 'h' },
+        { "module",     required_argument, 0, 'm' },
         { "output",     required_argument, 0, 'o' },
         { "version",    no_argument,       0, 128 },
         { 0, 0, 0, 0 },
@@ -48,6 +52,10 @@ static void parse_args(int argc, char **argv) {
     case 'h': // --help
       help(doc_murphi2uclid_1, doc_murphi2uclid_1_len);
       exit(EXIT_SUCCESS);
+
+    case 'm':
+      module_name = optarg;
+      break;
 
     case 'o': {
       auto o = std::make_shared<std::ofstream>(optarg);
@@ -107,6 +115,10 @@ static dup_t make_stdin_dup() {
   return dup_t(buffer, copy);
 }
 
+static std::ostream &output() {
+  return out == nullptr ? std::cout : *out;
+}
+
 int main(int argc, char **argv) {
 
   // parse command line options
@@ -139,6 +151,14 @@ int main(int argc, char **argv) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
+
+  // output module header
+  output() << "module " << module_name << " {\n";
+
+  // TODO: translate model
+
+  // close module
+  output() << "}\n";
 
   return EXIT_SUCCESS;
 }
