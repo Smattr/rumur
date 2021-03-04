@@ -161,7 +161,7 @@ public:
 
   void visit_model(const Model &n) final {
     for (const Ptr<Node> &c : n.children)
-      dispatch(*c);
+      *this << *c;
   }
 
   void visit_mul(const Mul &n) final {
