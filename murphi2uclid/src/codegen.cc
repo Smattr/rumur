@@ -187,7 +187,7 @@ public:
   }
 
   void visit_number(const Number &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << n.value.get_str();
   }
 
   void visit_or(const Or &n) final {
