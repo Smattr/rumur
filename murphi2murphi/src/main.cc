@@ -45,20 +45,22 @@ static void parse_args(int argc, char **argv) {
   for (;;) {
 
     static struct option opts[] = {
-      { "decompose-complex-comparisons",    no_argument,       0, 128 },
-      { "explicit-semicolons",              no_argument,       0, 129 },
-      { "help",                             no_argument,       0, 'h' },
-      { "no-decompose-complex-comparisons", no_argument,       0, 130 },
-      { "no-explicit-semicolons",           no_argument,       0, 131 },
-      { "no-remove-liveness",               no_argument,       0, 132 },
-      { "no-switch-to-if",                  no_argument,       0, 133 },
-      { "no-to-ascii",                      no_argument,       0, 134 },
-      { "output",                           required_argument, 0, 'o' },
-      { "remove-liveness",                  no_argument,       0, 135 },
-      { "switch-to-if",                     no_argument,       0, 136 },
-      { "to-ascii",                         no_argument,       0, 137 },
-      { "version",                          no_argument,       0, 138 },
-      { 0, 0, 0, 0 },
+        // clang-format off
+        { "decompose-complex-comparisons",    no_argument,       0, 128 },
+        { "explicit-semicolons",              no_argument,       0, 129 },
+        { "help",                             no_argument,       0, 'h' },
+        { "no-decompose-complex-comparisons", no_argument,       0, 130 },
+        { "no-explicit-semicolons",           no_argument,       0, 131 },
+        { "no-remove-liveness",               no_argument,       0, 132 },
+        { "no-switch-to-if",                  no_argument,       0, 133 },
+        { "no-to-ascii",                      no_argument,       0, 134 },
+        { "output",                           required_argument, 0, 'o' },
+        { "remove-liveness",                  no_argument,       0, 135 },
+        { "switch-to-if",                     no_argument,       0, 136 },
+        { "to-ascii",                         no_argument,       0, 137 },
+        { "version",                          no_argument,       0, 138 },
+        { 0, 0, 0, 0 },
+        // clang-format on
     };
 
     int option_index = 0;

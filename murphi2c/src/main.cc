@@ -36,13 +36,15 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
-      { "header",     no_argument,       0, 128 },
-      { "help",       no_argument,       0, 'h' },
-      { "output",     required_argument, 0, 'o' },
-      { "source",     no_argument,       0, 129 },
-      { "value-type", required_argument, 0, 130 },
-      { "version",    no_argument,       0, 131 },
-      { 0, 0, 0, 0 },
+        // clang-format off
+        { "header",     no_argument,       0, 128 },
+        { "help",       no_argument,       0, 'h' },
+        { "output",     required_argument, 0, 'o' },
+        { "source",     no_argument,       0, 129 },
+        { "value-type", required_argument, 0, 130 },
+        { "version",    no_argument,       0, 131 },
+        { 0, 0, 0, 0 },
+        // clang-format on
     };
 
     int option_index = 0;
