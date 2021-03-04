@@ -157,7 +157,8 @@ public:
   }
 
   void visit_model(const Model &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    for (const Ptr<Node> &c : n.children)
+      dispatch(*c);
   }
 
   void visit_mul(const Mul &n) final {
