@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
+#include <string>
 
 using namespace rumur;
 
@@ -16,6 +17,8 @@ class Printer : public ConstBaseTraversal {
 
 private:
   std::ostream &o; ///< output stream to emit code to
+
+  size_t indentation = 1; ///< current indentation level
 
 public:
   Printer(std::ostream &o_) : o(o_) {}
@@ -280,6 +283,16 @@ public:
   void visit_xor(const Xor &n) final {
     throw Error("unsupported Murphi node", n.loc);
   }
+
+private:
+  void indent() { ++indentation; }
+
+  void dedent() {
+    assert(indentation > 0);
+    --indentation;
+  }
+
+  std::string tab() { return std::string(indentation * 2, ' '); }
 };
 
 } // namespace
