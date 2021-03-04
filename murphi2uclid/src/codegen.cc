@@ -68,7 +68,13 @@ public:
   }
 
   void visit_constdecl(const ConstDecl &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    // emit as a symbolic constant
+    *this << tab() << "const " << n.name << " : " << *n.get_type() << ";\n";
+
+    // constrain it to have exactly its known value
+    *this << tab() << "assume " << n.name << "_value: " << n.name << " == "
+      << *n.value << ";\n";
   }
 
   void visit_div(const Div &n) final {
