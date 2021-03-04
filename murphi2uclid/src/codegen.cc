@@ -285,6 +285,16 @@ public:
   }
 
 private:
+  // wrappers to allow more readable code above
+  Printer &operator<<(const std::string &s) {
+    o << s;
+    return *this;
+  }
+  Printer &operator<<(const Node &n) {
+    dispatch(n);
+    return *this;
+  }
+
   void indent() { ++indentation; }
 
   void dedent() {
