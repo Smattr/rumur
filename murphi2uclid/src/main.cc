@@ -1,4 +1,5 @@
 #include "../../common/help.h"
+#include "codegen.h"
 #include "resources.h"
 #include <cstddef>
 #include <cstdio>
@@ -155,7 +156,12 @@ int main(int argc, char **argv) {
   // output module header
   output() << "module " << module_name << " {\n";
 
-  // TODO: translate model
+  try {
+    codegen(*m, output());
+  } catch (rumur::Error &e) {
+    std::cerr << e.loc << ":" << e.what() << "\n";
+    return EXIT_FAILURE;
+  }
 
   // close module
   output() << "}\n";

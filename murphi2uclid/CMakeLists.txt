@@ -8,6 +8,7 @@ add_custom_command(
 add_executable(murphi2uclid
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
   ../common/help.cc
+  src/codegen.cc
   src/main.cc)
 
 target_include_directories(murphi2uclid
