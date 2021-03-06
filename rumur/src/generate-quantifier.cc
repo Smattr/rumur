@@ -166,7 +166,7 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
       << "    }\n";
 
   // do the same for if it is a down-counting loop
-  will_overflow = RV_TO_V("min_ - step") + " > lb";
+  will_overflow = RV_TO_V("min_ - step") + " > ub";
   last_iteration = counter + " > RAW_VALUE_MIN - step";
   const std::string down_count = "ub <= lb && (value_t)step < 0";
 
