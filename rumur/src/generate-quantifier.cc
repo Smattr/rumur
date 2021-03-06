@@ -108,8 +108,9 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 // shorthands for converting between value_t and raw_value_t when we know the
 // value we have is in range
 #define V_TO_RV(x)                                                             \
-  ("(((raw_value_t)" + std::string(x) +                                        \
-   ") + (raw_value_t)1 - (raw_value_t)(" + q.decl->type->lower_bound() + "))")
+  ("((raw_value_t)((raw_value_t)(((raw_value_t)" + std::string(x) +            \
+   ") + (raw_value_t)1) - (raw_value_t)(" + q.decl->type->lower_bound() +      \
+   ")))")
 #define RV_TO_V(x)                                                             \
   ("((value_t)(" + std::string(x) + " - (raw_value_t)1 + (raw_value_t)(" +     \
    q.decl->type->lower_bound() + ")))")
