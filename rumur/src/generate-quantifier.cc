@@ -177,6 +177,7 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
       << "#elif defined(__GNUC__)\n"
       << "  #pragma GCC diagnostic push\n"
       << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+      << "  #pragma GCC diagnostic ignored \"-Wsign-compare\"\n"
       << "#endif\n"
       << "    {\n"
       << "      /* see above explanation of why we use an extra constant here "
