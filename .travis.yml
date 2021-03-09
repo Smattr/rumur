@@ -317,7 +317,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS="rumurDebugOptimisedSingleThreaded uumurOptimisedSingleThreaded"
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
