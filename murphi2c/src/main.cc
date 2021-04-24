@@ -3,7 +3,6 @@
 #include "compares_complex_values.h"
 #include "generate_c.h"
 #include "generate_h.h"
-#include "name_rules.h"
 #include "options.h"
 #include "resources.h"
 #include <cassert>
@@ -172,7 +171,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
-  name_rules(*m);
+  rumur::sanitise_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.
