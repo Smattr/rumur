@@ -21,6 +21,7 @@
 #include <rumur/Property.h>
 #include <rumur/Ptr.h>
 #include <rumur/Rule.h>
+#include <rumur/sanitise_rule_names.h>
 #include <rumur/Stmt.h>
 #include <rumur/Symtab.h>
 #include <rumur/TypeExpr.h>
