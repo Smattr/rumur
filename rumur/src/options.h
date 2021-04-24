@@ -119,9 +119,6 @@ struct Options {
     // use SMT solver for expression simplification?
     SmtSimplification simplification = SmtSimplification::AUTO;
 
-    // SMTLIB logic to use when building problems
-    std::string logic;
-
     // text to emit to the solver prior to a SAT problem
     std::vector<std::string> prelude;
 

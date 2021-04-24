@@ -38,10 +38,6 @@ Solver::Result Solver::solve(const std::string &claim, bool expectation) {
   // disable printing of "success" in response to commands
   query << "(set-option :print-success false)\n";
 
-  // set SMT logic
-  if (options.smt.logic != "")
-    query << "(set-logic " << options.smt.logic << ")\n";
-
   // write any prelude the user requested
   for (const std::string &text : options.smt.prelude) {
     query << text << "\n";
