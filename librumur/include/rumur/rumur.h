@@ -6,6 +6,13 @@
 #define RUMUR_API __attribute__((visibility("hidden")))
 #endif
 
+namespace rumur {
+
+// forward declaration to update visibility
+class RUMUR_API parser;
+
+}
+
 #include "rumur-get-version.h" // generated
 #include <cstddef>
 #include "location.hh"
