@@ -10,7 +10,9 @@
 #include <vector>
 
 // generator for C-like code
-class CLikeGenerator : public CodeGenerator, public rumur::ConstBaseTraversal {
+class __attribute__((visibility("hidden"))) CLikeGenerator
+    : public CodeGenerator,
+      public rumur::ConstBaseTraversal {
 
 protected:
   std::ostream &out;
