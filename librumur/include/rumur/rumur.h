@@ -1,6 +1,10 @@
-// A header for lazy folks who just want all of librumur's functionality.
+// Rumur exported API
 
 #pragma once
+
+#ifndef RUMUR_API
+#define RUMUR_API __attribute__((visibility("hidden")))
+#endif
 
 #include "rumur-get-version.h" // generated
 #include <cstddef>

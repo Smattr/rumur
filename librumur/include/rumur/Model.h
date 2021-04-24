@@ -13,9 +13,13 @@
 #include <rumur/Rule.h>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Model : public Node {
+struct RUMUR_API_WITH_RTTI Model : public Node {
 
   // declarations, functions and rules in the order in which they appeared in
   // the source

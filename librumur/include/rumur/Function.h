@@ -11,9 +11,13 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Function : public Node {
+struct RUMUR_API_WITH_RTTI Function : public Node {
 
   std::string name;
   std::vector<Ptr<VarDecl>> parameters;

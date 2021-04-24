@@ -10,9 +10,13 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Number : public Expr {
+struct RUMUR_API_WITH_RTTI Number : public Expr {
 
   mpz_class value;
 

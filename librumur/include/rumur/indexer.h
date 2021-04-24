@@ -9,9 +9,13 @@
 #include <rumur/TypeExpr.h>
 #include <rumur/traverse.h>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-class Indexer : public BaseTraversal {
+class RUMUR_API_WITH_RTTI Indexer : public BaseTraversal {
 
 private:
   size_t next = 0;

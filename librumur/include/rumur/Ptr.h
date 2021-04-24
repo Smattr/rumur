@@ -5,10 +5,14 @@
 #include <memory>
 #include <utility>
 
+#ifndef RUMUR_API
+#define RUMUR_API __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 // An implementation of a managed pointer that understands *::clone()
-template <typename TARGET> class Ptr {
+template <typename TARGET> class RUMUR_API Ptr {
 
 private:
   std::unique_ptr<TARGET> t = std::unique_ptr<TARGET>(nullptr);

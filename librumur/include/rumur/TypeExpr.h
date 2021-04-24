@@ -13,13 +13,17 @@
 #include <utility>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 // Forward declare to avoid circular #include
 struct TypeDecl;
 struct VarDecl;
 
-struct TypeExpr : public Node {
+struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
 
   TypeExpr(const location &loc_);
   virtual ~TypeExpr() = default;
@@ -55,7 +59,7 @@ struct TypeExpr : public Node {
   virtual bool is_boolean() const;
 };
 
-struct Range : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
 
   Ptr<Expr> min;
   Ptr<Expr> max;
@@ -77,7 +81,7 @@ struct Range : public TypeExpr {
   bool constant() const final;
 };
 
-struct Scalarset : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
 
   Ptr<Expr> bound;
 
@@ -98,7 +102,7 @@ struct Scalarset : public TypeExpr {
   bool constant() const final;
 };
 
-struct Enum : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
 
   std::vector<std::pair<std::string, location>> members;
 
@@ -126,7 +130,7 @@ struct Enum : public TypeExpr {
   bool is_boolean() const final;
 };
 
-struct Record : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Record : public TypeExpr {
 
   std::vector<Ptr<VarDecl>> fields;
 
@@ -142,7 +146,7 @@ struct Record : public TypeExpr {
   std::string to_string() const final;
 };
 
-struct Array : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
 
   Ptr<TypeExpr> index_type;
   Ptr<TypeExpr> element_type;
@@ -161,7 +165,7 @@ struct Array : public TypeExpr {
   std::string to_string() const final;
 };
 
-struct TypeExprID : public TypeExpr {
+struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
 
   std::string name;
   Ptr<TypeDecl> referent;

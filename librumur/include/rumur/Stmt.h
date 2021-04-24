@@ -12,9 +12,13 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Stmt : public Node {
+struct RUMUR_API_WITH_RTTI Stmt : public Node {
 
   Stmt(const location &loc_);
 
@@ -22,7 +26,7 @@ struct Stmt : public Node {
   virtual Stmt *clone() const = 0;
 };
 
-struct AliasStmt : public Stmt {
+struct RUMUR_API_WITH_RTTI AliasStmt : public Stmt {
 
   std::vector<Ptr<AliasDecl>> aliases;
   std::vector<Ptr<Stmt>> body;
@@ -36,7 +40,7 @@ struct AliasStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct PropertyStmt : public Stmt {
+struct RUMUR_API_WITH_RTTI PropertyStmt : public Stmt {
 
   Property property;
   std::string message;
@@ -51,7 +55,7 @@ struct PropertyStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Assignment : public Stmt {
+struct RUMUR_API_WITH_RTTI Assignment : public Stmt {
 
   Ptr<Expr> lhs;
   Ptr<Expr> rhs;
@@ -66,7 +70,7 @@ struct Assignment : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Clear : public Stmt {
+struct RUMUR_API_WITH_RTTI Clear : public Stmt {
 
   Ptr<Expr> rhs;
 
@@ -79,7 +83,7 @@ struct Clear : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct ErrorStmt : public Stmt {
+struct RUMUR_API_WITH_RTTI ErrorStmt : public Stmt {
 
   std::string message;
 
@@ -91,7 +95,7 @@ struct ErrorStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct For : public Stmt {
+struct RUMUR_API_WITH_RTTI For : public Stmt {
 
   Quantifier quantifier;
   std::vector<Ptr<Stmt>> body;
@@ -105,7 +109,7 @@ struct For : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct IfClause : public Node {
+struct RUMUR_API_WITH_RTTI IfClause : public Node {
 
   Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;
@@ -120,7 +124,7 @@ struct IfClause : public Node {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct If : public Stmt {
+struct RUMUR_API_WITH_RTTI If : public Stmt {
 
   std::vector<IfClause> clauses;
 
@@ -131,7 +135,7 @@ struct If : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct ProcedureCall : public Stmt {
+struct RUMUR_API_WITH_RTTI ProcedureCall : public Stmt {
 
   FunctionCall call;
 
@@ -143,7 +147,7 @@ struct ProcedureCall : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Put : public Stmt {
+struct RUMUR_API_WITH_RTTI Put : public Stmt {
 
   std::string value;
   Ptr<Expr> expr;
@@ -158,7 +162,7 @@ struct Put : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Return : public Stmt {
+struct RUMUR_API_WITH_RTTI Return : public Stmt {
 
   Ptr<Expr> expr;
 
@@ -169,7 +173,7 @@ struct Return : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct SwitchCase : public Node {
+struct RUMUR_API_WITH_RTTI SwitchCase : public Node {
 
   std::vector<Ptr<Expr>> matches;
   std::vector<Ptr<Stmt>> body;
@@ -182,7 +186,7 @@ struct SwitchCase : public Node {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Switch : public Stmt {
+struct RUMUR_API_WITH_RTTI Switch : public Stmt {
 
   Ptr<Expr> expr;
   std::vector<SwitchCase> cases;
@@ -197,7 +201,7 @@ struct Switch : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Undefine : public Stmt {
+struct RUMUR_API_WITH_RTTI Undefine : public Stmt {
 
   Ptr<Expr> rhs;
 
@@ -210,7 +214,7 @@ struct Undefine : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct While : public Stmt {
+struct RUMUR_API_WITH_RTTI While : public Stmt {
 
   Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;

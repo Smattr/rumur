@@ -9,9 +9,13 @@
 
 #include "parser.yy.hh"
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-class scanner : public yyFlexLexer {
+class RUMUR_API_WITH_RTTI scanner : public yyFlexLexer {
 
 public:
   // Delegate to yyFlexLexer's constructor
