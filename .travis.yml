@@ -3103,7 +3103,6 @@ matrix:
       - CUSTOM_COMMAND="travis_wait 60 ../misc/afl-wrapper.sh"
 
 before_install:
-  - if [ "$(uname -s)" = "Linux" ]; then travis_retry sudo apt-get -qq update; fi
   - eval "${MATRIX_EVAL}"
 
 script:
