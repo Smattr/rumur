@@ -114,7 +114,7 @@ public:
   }
 
   void visit_field(const Field &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << *n.record << "." << n.field;
   }
 
   void visit_for(const For &n) final {
