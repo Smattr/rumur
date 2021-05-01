@@ -8,6 +8,10 @@
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 /* Generic abstract syntax tree traversal interface with no implementation. If
@@ -16,7 +20,7 @@ namespace rumur {
  * that provides default implementations for the 'visit' methods you don't need
  * to override, inherit from Traversal below.
  */
-class BaseTraversal {
+class RUMUR_API_WITH_RTTI BaseTraversal {
 
 public:
   virtual void visit_add(Add &n) = 0;
@@ -102,7 +106,7 @@ public:
   virtual ~BaseTraversal() = default;
 };
 
-class Traversal : public BaseTraversal {
+class RUMUR_API_WITH_RTTI Traversal : public BaseTraversal {
 
 public:
   void visit_add(Add &n) override;
@@ -180,7 +184,7 @@ private:
 };
 
 // Read-only equivalent of BaseTraversal.
-class ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstBaseTraversal {
 
 public:
   virtual void visit_add(const Add &n) = 0;
@@ -258,7 +262,7 @@ public:
 };
 
 // Read-only equivalent of Traversal.
-class ConstTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstTraversal : public ConstBaseTraversal {
 
 public:
   void visit_add(const Add &n) override;
@@ -339,7 +343,7 @@ private:
  * This gives you a default implementation for visitation of any non-expression
  * node.
  */
-class ConstExprTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstExprTraversal : public ConstBaseTraversal {
 
 public:
   void visit_aliasdecl(const AliasDecl &n) final;
@@ -384,7 +388,7 @@ public:
  * This gives you a default implementation for visitation of any non-statement
  * node.
  */
-class ConstStmtTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstStmtTraversal : public ConstBaseTraversal {
 
 public:
   void visit_add(const Add &n) final;
@@ -448,7 +452,7 @@ private:
 };
 
 // Generic base for read-only traversals that only need to act on TypeExprs
-class ConstTypeTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstTypeTraversal : public ConstBaseTraversal {
 
 public:
   void visit_add(const Add &n) final;

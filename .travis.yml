@@ -42,25 +42,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.7 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -78,25 +60,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.7 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -114,25 +78,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.7 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -150,25 +96,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.7 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -186,25 +114,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.7 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -222,25 +132,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.7 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.7 && CXX=g++-4.7"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -276,25 +168,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -312,25 +186,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -348,25 +204,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (rumur debug multitheaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -384,25 +222,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -420,25 +240,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -456,25 +258,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
-
-  - name: Ubuntu Linux 14.04, GCC 4.8 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.8 && CXX=g++-4.8"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -514,26 +298,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 4.9 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -552,26 +317,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 4.9 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -590,26 +336,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 4.9 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -628,26 +355,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 4.9 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -666,26 +374,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 4.9 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -704,26 +393,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 4.9 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-4.9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-4.9 && CXX=g++-4.9"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -761,26 +431,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 5 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-5
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -799,26 +450,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 5 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-5
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -837,26 +469,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 5 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-5
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -875,26 +488,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 5 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-5
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -913,26 +507,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 5 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-5
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -951,26 +526,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
-      - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 5 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-5
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-5 && CXX=g++-5"
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1008,26 +564,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 6 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1046,26 +583,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 6 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1084,26 +602,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 6 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1122,26 +621,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 6 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1160,26 +640,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 6 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1198,26 +659,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 6 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-6 && CXX=g++-6"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1255,26 +697,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 7 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1293,26 +716,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 7 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1331,26 +735,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 7 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1369,26 +754,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 7 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1407,26 +773,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 7 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1445,26 +792,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 7 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-7
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1498,24 +826,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 7 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1532,24 +843,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 7 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1566,24 +860,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 7 (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1600,24 +877,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 7 (rumur debug optimised multitthreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1634,24 +894,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 7 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1668,24 +911,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 7 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1723,26 +949,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 8 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1761,26 +968,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 8 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1799,26 +987,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 8 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1837,26 +1006,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 8 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1875,26 +1025,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 8 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1913,26 +1044,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 8 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-8
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -1966,24 +1078,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 8 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2000,24 +1095,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 8 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2034,12 +1112,12 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
-  - name: Ubuntu Linux 20.04, GCC 8 (rumur debug multithreaded)
+  - name: Ubuntu Linux 20.04, GCC 8 (rumur optimised multithreaded)
     os: linux
     dist: focal
     addons:
@@ -2051,24 +1129,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurDebugMultithreaded
-      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 8 (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2085,24 +1146,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 8 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2119,24 +1163,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 8 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2174,26 +1201,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 9 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2212,26 +1220,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 9 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2250,26 +1239,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 9 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2288,26 +1258,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 9 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2326,26 +1277,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 9 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2364,26 +1296,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, GCC 9 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-9
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2417,24 +1330,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 9 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-9
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2451,24 +1347,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 9 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-9
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2485,24 +1364,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 9 (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-9
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2519,24 +1381,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 9 (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-9
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2553,24 +1398,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 9 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-9
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2587,24 +1415,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 9 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-9
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2638,24 +1449,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 10 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-10
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2672,24 +1466,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 10 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-10
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2706,24 +1483,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 10 (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-10
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2740,24 +1500,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 10 (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-10
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2774,24 +1517,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 10 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-10
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2808,24 +1534,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC 10 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-10
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2859,24 +1568,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=gcc && CXX=g++"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC multilib (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-multilib
-          - libc6-dev-i386
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc && CXX=g++"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2893,24 +1585,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=gcc && CXX=g++"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC multilib (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-multilib
-          - libc6-dev-i386
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc && CXX=g++"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2927,24 +1602,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=gcc && CXX=g++"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC multilib (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-multilib
-          - libc6-dev-i386
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc && CXX=g++"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2961,24 +1619,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=gcc && CXX=g++"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC multilib (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-multilib
-          - libc6-dev-i386
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc && CXX=g++"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -2995,24 +1636,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=gcc && CXX=g++"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC multilib (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-multilib
-          - libc6-dev-i386
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc && CXX=g++"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3029,24 +1653,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=gcc && CXX=g++"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, GCC multilib (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - g++-multilib
-          - libc6-dev-i386
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc && CXX=g++"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3088,28 +1695,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 3.8 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-        packages:
-          - clang-3.8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3130,28 +1716,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 3.8 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-        packages:
-          - clang-3.8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3172,28 +1737,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 3.8 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-        packages:
-          - clang-3.8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3214,28 +1758,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 3.8 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-        packages:
-          - clang-3.8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3256,28 +1779,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 3.8 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-        packages:
-          - clang-3.8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3298,28 +1800,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 3.8 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-        packages:
-          - clang-3.8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.8 && CXX=clang++-3.8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3363,27 +1844,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
-      - CXXFLAGS="-pedantic -Werror"
-
-  - name: Ubuntu Linux 14.04, Clang 3.9 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-3.9
-        packages:
-          - clang-3.9
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -3403,27 +1864,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
-      - CXXFLAGS="-pedantic -Werror"
-
-  - name: Ubuntu Linux 14.04, Clang 3.9 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-3.9
-        packages:
-          - clang-3.9
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -3443,27 +1884,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
-      - CXXFLAGS="-pedantic -Werror"
-
-  - name: Ubuntu Linux 14.04, Clang 3.9 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-3.9
-        packages:
-          - clang-3.9
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -3483,27 +1904,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
-      - CXXFLAGS="-pedantic -Werror"
-
-  - name: Ubuntu Linux 14.04, Clang 3.9 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-3.9
-        packages:
-          - clang-3.9
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -3523,27 +1924,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
-      - CXXFLAGS="-pedantic -Werror"
-
-  - name: Ubuntu Linux 14.04, Clang 3.9 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-3.9
-        packages:
-          - clang-3.9
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -3563,27 +1944,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
-      - CXXFLAGS="-pedantic -Werror"
-
-  - name: Ubuntu Linux 14.04, Clang 3.9 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-3.9
-        packages:
-          - clang-3.9
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-3.9 && CXX=clang++-3.9"
       - CXXFLAGS="-pedantic -Werror"
 
@@ -3624,28 +1985,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 4.0 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3666,28 +2006,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 4.0 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3708,28 +2027,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 4.0 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3750,28 +2048,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 4.0 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3792,28 +2069,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 4.0 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3834,28 +2090,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 4.0 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-4.0
-        packages:
-          - clang-4.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-4.0 && CXX=clang++-4.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3897,28 +2132,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 5.0 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3939,28 +2153,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 5.0 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -3981,28 +2174,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 5.0 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4023,28 +2195,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 5.0 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4065,28 +2216,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 5.0 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4107,28 +2237,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 5.0 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-5.0
-        packages:
-          - clang-5.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-5.0 && CXX=clang++-5.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4170,28 +2279,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 6.0 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4212,28 +2300,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 6.0 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4254,28 +2321,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 6.0 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4296,28 +2342,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 6.0 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4338,28 +2363,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 6.0 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4380,28 +2384,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 6.0 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
-        packages:
-          - clang-6.0
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4435,24 +2418,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 6.0 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-6.0
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4469,24 +2435,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 6.0 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-6.0
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4503,24 +2452,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 6.0 (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-6.0
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4537,24 +2469,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 6.0 (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-6.0
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4571,24 +2486,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 6.0 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-6.0
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4605,24 +2503,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 6.0 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-6.0
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4664,28 +2545,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 7 (rumur debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-        packages:
-          - clang-7
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4706,28 +2566,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 7 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-        packages:
-          - clang-7
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4748,28 +2587,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 7 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-        packages:
-          - clang-7
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4790,28 +2608,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 7 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-        packages:
-          - clang-7
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4832,28 +2629,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 7 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-        packages:
-          - clang-7
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4874,28 +2650,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 7 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-7
-        packages:
-          - clang-7
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4929,24 +2684,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 7 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4963,24 +2701,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 7 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -4997,24 +2718,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 7 (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5031,24 +2735,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 7 (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5065,24 +2752,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 7 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5099,24 +2769,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 7 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-7
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5158,28 +2811,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 8 (rumu debug single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-        packages:
-          - clang-8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5200,28 +2832,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 8 (rumur debug optimised single-threaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-        packages:
-          - clang-8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5242,28 +2853,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 8 (rumur debug multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-        packages:
-          - clang-8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5284,28 +2874,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 8 (rumur debug optimised multithreaded)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-        packages:
-          - clang-8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5326,28 +2895,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 8 (rumur optimised single-threaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-        packages:
-          - clang-8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5368,28 +2916,7 @@ matrix:
           - python3.6
           - valgrind
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 14.04, Clang 8 (rumur optimised multithreaded XML)
-    os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-          - deadsnakes
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
-        packages:
-          - clang-8
-          - g++-6
-          - libxml2-utils
-          - python3.6
-          - valgrind
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="sudo ln -sf /usr/bin/python3.6 /usr/bin/python3 && CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5423,24 +2950,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreaded
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 8 (rumur debug single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugSingleThreaded
+      - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5457,24 +2967,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedSingleThreaded
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 8 (rumur debug optimised single-threaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedSingleThreaded
+      - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5491,24 +2984,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreaded
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 8 (rumur debug multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugMultithreaded
+      - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5525,24 +3001,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurOptimisedMultithreaded
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 8 (rumur debug optimised multithreaded)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurDebugOptimisedMultithreaded
+      - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5559,24 +3018,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurSingleThreadedXML
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 8 (rumur optimised single-threaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedSingleThreadedXML
+      - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5593,24 +3035,7 @@ matrix:
           - valgrind
           - z3
     env:
-      - TEST_ARGS=rumurMultithreadedXML
-      - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
-      - UBSAN_OPTIONS=print_stacktrace=1
-
-  - name: Ubuntu Linux 20.04, Clang 8 (rumur optimised multithreaded XML)
-    os: linux
-    dist: focal
-    addons:
-      apt:
-        packages:
-          - clang-8
-          - libfl-dev
-          - libxml2-utils
-          - valgrind
-          - z3
-    env:
-      - TEST_ARGS=rumurOptimisedMultithreadedXML
+      - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
       - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined"
       - UBSAN_OPTIONS=print_stacktrace=1
@@ -5678,7 +3103,6 @@ matrix:
       - CUSTOM_COMMAND="travis_wait 60 ../misc/afl-wrapper.sh"
 
 before_install:
-  - if [ "$(uname -s)" = "Linux" ]; then travis_retry sudo apt-get -qq update; fi
   - eval "${MATRIX_EVAL}"
 
 script:

@@ -12,9 +12,13 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Decl : public Node {
+struct RUMUR_API_WITH_RTTI Decl : public Node {
 
   std::string name;
 
@@ -24,7 +28,7 @@ struct Decl : public Node {
   Decl *clone() const override = 0;
 };
 
-struct ExprDecl : public Decl {
+struct RUMUR_API_WITH_RTTI ExprDecl : public Decl {
 
   ExprDecl(const std::string &name_, const location &loc_);
   virtual ~ExprDecl() = default;
@@ -43,7 +47,7 @@ struct ExprDecl : public Decl {
   ExprDecl *clone() const override = 0;
 };
 
-struct AliasDecl : public ExprDecl {
+struct RUMUR_API_WITH_RTTI AliasDecl : public ExprDecl {
 
   Ptr<Expr> value;
 
@@ -60,7 +64,7 @@ struct AliasDecl : public ExprDecl {
   Ptr<TypeExpr> get_type() const final;
 };
 
-struct ConstDecl : public ExprDecl {
+struct RUMUR_API_WITH_RTTI ConstDecl : public ExprDecl {
 
   Ptr<Expr> value;
 
@@ -85,7 +89,7 @@ struct ConstDecl : public ExprDecl {
   Ptr<TypeExpr> get_type() const final;
 };
 
-struct TypeDecl : public Decl {
+struct RUMUR_API_WITH_RTTI TypeDecl : public Decl {
 
   Ptr<TypeExpr> value;
 
@@ -98,7 +102,7 @@ struct TypeDecl : public Decl {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct VarDecl : public ExprDecl {
+struct RUMUR_API_WITH_RTTI VarDecl : public ExprDecl {
 
   Ptr<TypeExpr> type;
 

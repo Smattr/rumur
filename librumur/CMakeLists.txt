@@ -71,6 +71,7 @@ add_library(librumur
   src/Property.cc
   src/resolve-symbols.cc
   src/Rule.cc
+  src/sanitise_rule_names.cc
   src/Stmt.cc
   src/traverse.cc
   src/TypeExpr.cc

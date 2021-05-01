@@ -65,7 +65,6 @@ static void parse_args(int argc, char **argv) {
       OPT_SMT_ARG,
       OPT_SMT_BITVECTORS,
       OPT_SMT_BUDGET,
-      OPT_SMT_LOGIC,
       OPT_SMT_PATH,
       OPT_SMT_PRELUDE,
       OPT_SMT_SIMPLIFICATION,
@@ -100,7 +99,6 @@ static void parse_args(int argc, char **argv) {
         {"smt-arg", required_argument, 0, OPT_SMT_ARG},
         {"smt-bitvectors", required_argument, 0, OPT_SMT_BITVECTORS},
         {"smt-budget", required_argument, 0, OPT_SMT_BUDGET},
-        {"smt-logic", required_argument, 0, OPT_SMT_LOGIC},
         {"smt-path", required_argument, 0, OPT_SMT_PATH},
         {"smt-prelude", required_argument, 0, OPT_SMT_PRELUDE},
         {"smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION},
@@ -465,14 +463,6 @@ static void parse_args(int argc, char **argv) {
       }
       break;
     }
-
-    case OPT_SMT_LOGIC: // --smt-logic ...
-      options.smt.logic = optarg;
-      if (options.smt.simplification == SmtSimplification::AUTO) {
-        options.smt.simplification = SmtSimplification::ON;
-      }
-      *warn << "the option --smt-logic is deprecated\n";
-      break;
 
     case OPT_SMT_PATH: // --smt-path ...
       options.smt.path = optarg;

@@ -22,17 +22,6 @@
 
 namespace rumur {
 
-Model::Model(const std::vector<Ptr<Decl>> &decls_,
-             const std::vector<Ptr<Function>> &functions_,
-             const std::vector<Ptr<Rule>> &rules_, const location &loc_)
-    : Node(loc_) {
-
-  children.reserve(decls_.size() + functions_.size() + rules_.size());
-  children.insert(children.end(), decls_.begin(), decls_.end());
-  children.insert(children.end(), functions_.begin(), functions_.end());
-  children.insert(children.end(), rules_.begin(), rules_.end());
-}
-
 Model::Model(const std::vector<Ptr<Node>> &children_, const location &loc_)
     : Node(loc_), children(children_) {}
 

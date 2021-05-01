@@ -13,9 +13,13 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Rule : public Node {
+struct RUMUR_API_WITH_RTTI Rule : public Node {
 
   std::string name;
   std::vector<Quantifier> quantifiers;
@@ -30,7 +34,7 @@ struct Rule : public Node {
   virtual ~Rule() = default;
 };
 
-struct AliasRule : public Rule {
+struct RUMUR_API_WITH_RTTI AliasRule : public Rule {
   std::vector<Ptr<Rule>> rules;
 
   AliasRule(const std::vector<Ptr<AliasDecl>> &aliases_,
@@ -44,7 +48,7 @@ struct AliasRule : public Rule {
   std::vector<Ptr<Rule>> flatten() const final;
 };
 
-struct SimpleRule : public Rule {
+struct RUMUR_API_WITH_RTTI SimpleRule : public Rule {
 
   Ptr<Expr> guard;
   std::vector<Ptr<Decl>> decls;
@@ -61,7 +65,7 @@ struct SimpleRule : public Rule {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct StartState : public Rule {
+struct RUMUR_API_WITH_RTTI StartState : public Rule {
 
   std::vector<Ptr<Decl>> decls;
   std::vector<Ptr<Stmt>> body;
@@ -76,7 +80,7 @@ struct StartState : public Rule {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct PropertyRule : public Rule {
+struct RUMUR_API_WITH_RTTI PropertyRule : public Rule {
 
   Property property;
 
@@ -89,7 +93,7 @@ struct PropertyRule : public Rule {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Ruleset : public Rule {
+struct RUMUR_API_WITH_RTTI Ruleset : public Rule {
 
   std::vector<Ptr<Rule>> rules;
 

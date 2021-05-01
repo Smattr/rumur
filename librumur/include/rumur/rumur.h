@@ -1,6 +1,17 @@
-// A header for lazy folks who just want all of librumur's functionality.
+// Rumur exported API
 
 #pragma once
+
+#ifndef RUMUR_API
+#define RUMUR_API __attribute__((visibility("hidden")))
+#endif
+
+namespace rumur {
+
+// forward declaration to update visibility
+class RUMUR_API parser;
+
+}
 
 #include "rumur-get-version.h" // generated
 #include <cstddef>
@@ -17,6 +28,7 @@
 #include <rumur/Property.h>
 #include <rumur/Ptr.h>
 #include <rumur/Rule.h>
+#include <rumur/sanitise_rule_names.h>
 #include <rumur/Stmt.h>
 #include <rumur/Symtab.h>
 #include <rumur/TypeExpr.h>

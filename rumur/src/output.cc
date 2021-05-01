@@ -231,7 +231,7 @@ int output_checker(const std::string &path, const Model &model,
       << "typedef " << value_types.first.c_type << " value_t;\n"
       << "#define VALUE_MIN " << value_types.first.int_min << "\n"
       << "#define VALUE_MAX " << value_types.first.int_max << "\n"
-      << "#define VALUE_C(x) " << value_types.first.int_c << "(x)\n"
+      << "#define VALUE_C(x) ((value_t)" << value_types.first.int_c << "(x))\n"
       << "#define PRIVAL " << value_types.first.pri << "\n"
       << "typedef " << value_types.second.c_type << " raw_value_t;\n"
       << "#define RAW_VALUE_MIN " << value_types.second.int_min << "\n"

@@ -8,9 +8,13 @@
 #include <rumur/Node.h>
 #include <rumur/Ptr.h>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Property : public Node {
+struct RUMUR_API_WITH_RTTI Property : public Node {
 
   enum Category {
     ASSERTION,

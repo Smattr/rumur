@@ -3,7 +3,6 @@
 #include "compares_complex_values.h"
 #include "generate_c.h"
 #include "generate_h.h"
-#include "name_rules.h"
 #include "options.h"
 #include "resources.h"
 #include <cassert>
@@ -36,13 +35,15 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
-      { "header",     no_argument,       0, 128 },
-      { "help",       no_argument,       0, 'h' },
-      { "output",     required_argument, 0, 'o' },
-      { "source",     no_argument,       0, 129 },
-      { "value-type", required_argument, 0, 130 },
-      { "version",    no_argument,       0, 131 },
-      { 0, 0, 0, 0 },
+        // clang-format off
+        { "header",     no_argument,       0, 128 },
+        { "help",       no_argument,       0, 'h' },
+        { "output",     required_argument, 0, 'o' },
+        { "source",     no_argument,       0, 129 },
+        { "value-type", required_argument, 0, 130 },
+        { "version",    no_argument,       0, 131 },
+        { 0, 0, 0, 0 },
+        // clang-format on
     };
 
     int option_index = 0;
@@ -170,7 +171,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
 
   // name any rules that are unnamed, so they get valid C symbols
-  name_rules(*m);
+  rumur::sanitise_rule_names(*m);
 
   // Determine if we have any == or != involving records or arrays, in which
   // case we will need to pack structs. See generate_c() for why.

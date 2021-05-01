@@ -11,6 +11,10 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 // Forward declarations to avoid a circular #include
@@ -19,7 +23,7 @@ struct Function;
 struct TypeExpr;
 struct VarDecl;
 
-struct Expr : public Node {
+struct RUMUR_API_WITH_RTTI Expr : public Node {
 
   Expr(const location &loc_);
   virtual ~Expr() = default;
@@ -61,7 +65,7 @@ struct Expr : public Node {
   virtual bool is_pure() const = 0;
 };
 
-struct Ternary : public Expr {
+struct RUMUR_API_WITH_RTTI Ternary : public Expr {
 
   Ptr<Expr> cond;
   Ptr<Expr> lhs;
@@ -87,7 +91,7 @@ struct Ternary : public Expr {
    */
 };
 
-struct BinaryExpr : public Expr {
+struct RUMUR_API_WITH_RTTI BinaryExpr : public Expr {
 
   Ptr<Expr> lhs;
   Ptr<Expr> rhs;
@@ -101,7 +105,7 @@ struct BinaryExpr : public Expr {
   bool is_pure() const final;
 };
 
-struct BooleanBinaryExpr : public BinaryExpr {
+struct RUMUR_API_WITH_RTTI BooleanBinaryExpr : public BinaryExpr {
 
   BooleanBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                     const location &loc_);
@@ -111,7 +115,7 @@ struct BooleanBinaryExpr : public BinaryExpr {
   void validate() const final;
 };
 
-struct Implication : public BooleanBinaryExpr {
+struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
 
   Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
               const location &loc_);
@@ -126,7 +130,7 @@ struct Implication : public BooleanBinaryExpr {
 };
 
 // logical OR
-struct Or : public BooleanBinaryExpr {
+struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
 
   Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Or() = default;
@@ -140,7 +144,7 @@ struct Or : public BooleanBinaryExpr {
 };
 
 // logical AND
-struct And : public BooleanBinaryExpr {
+struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
 
   And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~And() = default;
@@ -156,7 +160,7 @@ struct And : public BooleanBinaryExpr {
 // An 'x & y' expression where a decision has not yet been made as to whether
 // the '&' is a logical AND or a bitwise AND. These nodes can only occur in the
 // AST prior to symbol resolution.
-struct AmbiguousAmp : public BinaryExpr {
+struct RUMUR_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
 
   AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                const location &loc_);
@@ -174,7 +178,7 @@ struct AmbiguousAmp : public BinaryExpr {
 // An 'x | y' expression where a decision has not yet been made as to whether
 // the '|' is a logical OR or a bitwise OR. These nodes can only occur in the
 // AST prior to symbol resolution.
-struct AmbiguousPipe : public BinaryExpr {
+struct RUMUR_API_WITH_RTTI AmbiguousPipe : public BinaryExpr {
 
   AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                 const location &loc_);
@@ -189,7 +193,7 @@ struct AmbiguousPipe : public BinaryExpr {
   std::string to_string() const final;
 };
 
-struct UnaryExpr : public Expr {
+struct RUMUR_API_WITH_RTTI UnaryExpr : public Expr {
 
   Ptr<Expr> rhs;
 
@@ -201,7 +205,7 @@ struct UnaryExpr : public Expr {
   bool is_pure() const final;
 };
 
-struct Not : public UnaryExpr {
+struct RUMUR_API_WITH_RTTI Not : public UnaryExpr {
 
   Not(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Not() = default;
@@ -216,7 +220,7 @@ struct Not : public UnaryExpr {
   std::string to_string() const final;
 };
 
-struct ComparisonBinaryExpr : public BinaryExpr {
+struct RUMUR_API_WITH_RTTI ComparisonBinaryExpr : public BinaryExpr {
 
   ComparisonBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                        const location &loc_);
@@ -224,7 +228,7 @@ struct ComparisonBinaryExpr : public BinaryExpr {
   void validate() const final;
 };
 
-struct Lt : public ComparisonBinaryExpr {
+struct RUMUR_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
 
   Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Lt() = default;
@@ -238,7 +242,7 @@ struct Lt : public ComparisonBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Leq : public ComparisonBinaryExpr {
+struct RUMUR_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
 
   Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Leq() = default;
@@ -252,7 +256,7 @@ struct Leq : public ComparisonBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Gt : public ComparisonBinaryExpr {
+struct RUMUR_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
 
   Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Gt() = default;
@@ -266,7 +270,7 @@ struct Gt : public ComparisonBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Geq : public ComparisonBinaryExpr {
+struct RUMUR_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
 
   Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Geq() = default;
@@ -280,7 +284,7 @@ struct Geq : public ComparisonBinaryExpr {
   std::string to_string() const final;
 };
 
-struct EquatableBinaryExpr : public BinaryExpr {
+struct RUMUR_API_WITH_RTTI EquatableBinaryExpr : public BinaryExpr {
 
   EquatableBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                       const location &loc_);
@@ -288,7 +292,7 @@ struct EquatableBinaryExpr : public BinaryExpr {
   void validate() const final;
 };
 
-struct Eq : public EquatableBinaryExpr {
+struct RUMUR_API_WITH_RTTI Eq : public EquatableBinaryExpr {
 
   Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Eq() = default;
@@ -302,7 +306,7 @@ struct Eq : public EquatableBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Neq : public EquatableBinaryExpr {
+struct RUMUR_API_WITH_RTTI Neq : public EquatableBinaryExpr {
 
   Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Neq() = default;
@@ -316,7 +320,7 @@ struct Neq : public EquatableBinaryExpr {
   std::string to_string() const final;
 };
 
-struct ArithmeticBinaryExpr : public BinaryExpr {
+struct RUMUR_API_WITH_RTTI ArithmeticBinaryExpr : public BinaryExpr {
 
   ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                        const location &loc_);
@@ -325,7 +329,7 @@ struct ArithmeticBinaryExpr : public BinaryExpr {
   void validate() const final;
 };
 
-struct Add : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
 
   Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Add() = default;
@@ -338,7 +342,7 @@ struct Add : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Sub : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
 
   Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Sub() = default;
@@ -351,7 +355,7 @@ struct Sub : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Negative : public UnaryExpr {
+struct RUMUR_API_WITH_RTTI Negative : public UnaryExpr {
 
   Negative(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Negative() = default;
@@ -366,7 +370,7 @@ struct Negative : public UnaryExpr {
   std::string to_string() const final;
 };
 
-struct Bnot : public UnaryExpr {
+struct RUMUR_API_WITH_RTTI Bnot : public UnaryExpr {
 
   Bnot(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Bnot() = default;
@@ -381,7 +385,7 @@ struct Bnot : public UnaryExpr {
   std::string to_string() const final;
 };
 
-struct Mul : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
 
   Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mul() = default;
@@ -394,7 +398,7 @@ struct Mul : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Div : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
 
   Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Div() = default;
@@ -407,7 +411,7 @@ struct Div : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Mod : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
 
   Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mod() = default;
@@ -420,7 +424,7 @@ struct Mod : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Lsh : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
 
   Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Lsh() = default;
@@ -433,7 +437,7 @@ struct Lsh : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Rsh : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
 
   Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Rsh() = default;
@@ -447,7 +451,7 @@ struct Rsh : public ArithmeticBinaryExpr {
 };
 
 // bitwise AND
-struct Band : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
 
   Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Band() = default;
@@ -461,7 +465,7 @@ struct Band : public ArithmeticBinaryExpr {
 };
 
 // bitwise OR
-struct Bor : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
 
   Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Bor() = default;
@@ -474,7 +478,7 @@ struct Bor : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct Xor : public ArithmeticBinaryExpr {
+struct RUMUR_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
 
   Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Xor() = default;
@@ -487,7 +491,7 @@ struct Xor : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-struct ExprID : public Expr {
+struct RUMUR_API_WITH_RTTI ExprID : public Expr {
 
   std::string id;
   Ptr<ExprDecl> value;
@@ -512,7 +516,7 @@ struct ExprID : public Expr {
   bool is_pure() const final;
 };
 
-struct Field : public Expr {
+struct RUMUR_API_WITH_RTTI Field : public Expr {
 
   Ptr<Expr> record;
   std::string field;
@@ -535,7 +539,7 @@ struct Field : public Expr {
   bool is_pure() const final;
 };
 
-struct Element : public Expr {
+struct RUMUR_API_WITH_RTTI Element : public Expr {
 
   Ptr<Expr> array;
   Ptr<Expr> index;
@@ -558,7 +562,7 @@ struct Element : public Expr {
   bool is_pure() const final;
 };
 
-struct FunctionCall : public Expr {
+struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
 
   std::string name;
   Ptr<Function> function;
@@ -583,7 +587,7 @@ struct FunctionCall : public Expr {
   bool is_pure() const final;
 };
 
-struct Quantifier : public Node {
+struct RUMUR_API_WITH_RTTI Quantifier : public Node {
 
   std::string name;
 
@@ -626,7 +630,7 @@ struct Quantifier : public Node {
   bool is_pure() const;
 };
 
-struct Exists : public Expr {
+struct RUMUR_API_WITH_RTTI Exists : public Expr {
 
   Quantifier quantifier;
   Ptr<Expr> expr;
@@ -647,7 +651,7 @@ struct Exists : public Expr {
   bool is_pure() const final;
 };
 
-struct Forall : public Expr {
+struct RUMUR_API_WITH_RTTI Forall : public Expr {
 
   Quantifier quantifier;
   Ptr<Expr> expr;
@@ -668,7 +672,7 @@ struct Forall : public Expr {
   bool is_pure() const final;
 };
 
-struct IsUndefined : public UnaryExpr {
+struct RUMUR_API_WITH_RTTI IsUndefined : public UnaryExpr {
 
   IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
   virtual ~IsUndefined() = default;

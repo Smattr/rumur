@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API
+#define RUMUR_API __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 /// a Murphi source comment
@@ -13,7 +17,7 @@ namespace rumur {
 /// Note that this is not an AST node (does not inherit from Node) because
 /// comments do not fit into a strictly hierarchical AST. They can appear
 /// anywhere that is syntactically valid.
-struct Comment {
+struct RUMUR_API Comment {
 
   /// text of the comment
   std::string content;

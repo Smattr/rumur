@@ -11,9 +11,13 @@
 #include <unordered_map>
 #include <vector>
 
+#ifndef RUMUR_API
+#define RUMUR_API __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-class Symtab {
+class RUMUR_API Symtab {
 
 private:
   std::vector<std::unordered_map<std::string, Ptr<Node>>> scope;

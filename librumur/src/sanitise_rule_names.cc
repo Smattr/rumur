@@ -1,10 +1,13 @@
-#include "name_rules.h"
 #include <cstddef>
-#include <rumur/rumur.h>
+#include <rumur/Node.h>
+#include <rumur/Ptr.h>
+#include <rumur/Rule.h>
+#include <rumur/sanitise_rule_names.h>
+#include <rumur/traverse.h>
 #include <string>
 #include <unordered_set>
 
-using namespace rumur;
+namespace rumur {
 
 namespace {
 
@@ -65,7 +68,9 @@ public:
 
 } // namespace
 
-void name_rules(Node &n) {
+void sanitise_rule_names(Node &n) {
   RuleNamer r;
   r.dispatch(n);
 }
+
+} // namespace rumur

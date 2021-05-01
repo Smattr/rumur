@@ -213,7 +213,7 @@ class rumur(unittest.TestCase):
     tweaks = {k: v for k, v in parse_test_options(testcase, debug,
       multithreaded, xml)}
 
-    if 'skip_reason' in tweaks:
+    if tweaks.get('skip_reason') is not None:
       self.skipTest(tweaks['skip_reason'])
 
     # build up arguments to call rumur

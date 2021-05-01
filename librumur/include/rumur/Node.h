@@ -5,12 +5,16 @@
 #include "location.hh"
 #include <iostream>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 class BaseTraversal;
 class ConstBaseTraversal;
 
-struct Node {
+struct RUMUR_API_WITH_RTTI Node {
 
   location loc;
   size_t unique_id = SIZE_MAX;

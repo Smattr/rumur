@@ -108,8 +108,9 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 // shorthands for converting between value_t and raw_value_t when we know the
 // value we have is in range
 #define V_TO_RV(x)                                                             \
-  ("(((raw_value_t)" + std::string(x) +                                        \
-   ") + (raw_value_t)1 - (raw_value_t)(" + q.decl->type->lower_bound() + "))")
+  ("((raw_value_t)((raw_value_t)(((raw_value_t)" + std::string(x) +            \
+   ") + (raw_value_t)1) - (raw_value_t)(" + q.decl->type->lower_bound() +      \
+   ")))")
 #define RV_TO_V(x)                                                             \
   ("((value_t)(" + std::string(x) + " - (raw_value_t)1 + (raw_value_t)(" +     \
    q.decl->type->lower_bound() + ")))")
@@ -165,8 +166,8 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
       << "    }\n";
 
   // do the same for if it is a down-counting loop
-  will_overflow = RV_TO_V("min_ - step") + " > lb";
-  last_iteration = counter + " > RAW_VALUE_MIN - step";
+  will_overflow = RV_TO_V("min_ - step") + " > ub";
+  last_iteration = RV_TO_V(counter) + " < " + RV_TO_V("RAW_VALUE_MIN - step");
   const std::string down_count = "ub <= lb && (value_t)step < 0";
 
   out << "#ifdef __clang__\n"
@@ -176,6 +177,7 @@ void generate_quantifier_footer(std::ostream &out, const Quantifier &q) {
       << "#elif defined(__GNUC__)\n"
       << "  #pragma GCC diagnostic push\n"
       << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
+      << "  #pragma GCC diagnostic ignored \"-Wsign-compare\"\n"
       << "#endif\n"
       << "    {\n"
       << "      /* see above explanation of why we use an extra constant here "
