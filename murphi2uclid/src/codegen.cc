@@ -249,7 +249,18 @@ public:
   }
 
   void visit_startstate(const StartState &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // TODO: how to deal with models that have more than one startstate?
+    *this << "\n" << tab() << "init {\n";
+    indent();
+
+    for (const Ptr<Decl> &d : n.decls)
+      *this << *d;
+
+    for (const Ptr<Stmt> &s : n.body)
+      *this << *s;
+
+    dedent();
+    *this << tab() << "}\n";
   }
 
   void visit_sub(const Sub &n) final {
