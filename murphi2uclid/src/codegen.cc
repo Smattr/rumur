@@ -258,7 +258,18 @@ public:
   }
 
   void visit_record(const Record &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "record {\n";
+    indent();
+
+    std::string sep;
+    for (const Ptr<VarDecl> &f : n.fields) {
+      *this << sep << tab() << f->name << " : " << *f->get_type();
+      sep = ",\n";
+    }
+
+    *this << "\n";
+    dedent();
+    *this << tab() << "}";
   }
 
   void visit_return(const Return &n) final {
@@ -360,7 +371,6 @@ public:
   }
 
   void visit_vardecl(const VarDecl &n) final {
-    // TODO: this will not work for Record fields
     *this << tab() << "var " << n.name << " : " << *n.get_type() << ";\n";
 
     vars.push_back(n.name);
