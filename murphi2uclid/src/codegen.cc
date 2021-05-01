@@ -281,7 +281,8 @@ public:
   }
 
   void visit_vardecl(const VarDecl &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // TODO: this will not work for Record fields
+    *this << tab() << "var " << n.name << " : " << *n.get_type() << ";\n";
   }
 
   void visit_while(const While &n) final {
