@@ -266,8 +266,7 @@ void CLikeGenerator::visit_ifclause(const IfClause &n) {
 
     // we do not need to emit surrounding brackets for binary expressions
     // because they are already emitted with brackets
-    bool needs_bracketing =
-        dynamic_cast<const BinaryExpr *>(n.condition.get()) == nullptr;
+    bool needs_bracketing = !isa<BinaryExpr>(n.condition);
 
     *this << "if ";
     if (needs_bracketing)
