@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include <cstddef>
+#include <cassert>
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
@@ -134,11 +135,30 @@ public:
   }
 
   void visit_if(const If &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    assert(!n.clauses.empty() && "if statement with no content");
+    bool first = true;
+    for (const IfClause &c : n.clauses) {
+      if (first) {
+        *this << tab() << c;
+        first = false;
+      } else {
+        *this << " else {\n";
+        indent();
+        *this << tab() << c;
+      }
+    }
+    *this << "\n";
   }
 
   void visit_ifclause(const IfClause &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    if (n.condition != nullptr) {
+      *this << "if (" << *n.condition << ") {\n";
+      indent();
+    }
+    for (const Ptr<Stmt> &s : n.body)
+      *this << *s;
+    dedent();
+    *this << tab() << "}";
   }
 
   void visit_implication(const Implication &n) final {
