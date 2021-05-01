@@ -1,4 +1,5 @@
 #include "codegen.h"
+#include "../../common/isa.h"
 #include <cstddef>
 #include <cassert>
 #include <iostream>
@@ -157,7 +158,14 @@ public:
 
   void visit_ifclause(const IfClause &n) final {
     if (n.condition != nullptr) {
-      *this << "if (" << *n.condition << ") {\n";
+      bool needs_brackets = !isa<BinaryExpr>(n.condition);
+      *this << "if ";
+      if (needs_brackets)
+        *this << "(";
+      *this << *n.condition;
+      if (needs_brackets)
+        *this << ")";
+      *this << " {\n";
       indent();
     }
     for (const Ptr<Stmt> &s : n.body)
