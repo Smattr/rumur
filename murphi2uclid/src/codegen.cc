@@ -4,6 +4,7 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
+#include <vector>
 
 using namespace rumur;
 
@@ -20,6 +21,8 @@ private:
   std::ostream &o; ///< output stream to emit code to
 
   size_t indentation = 1; ///< current indentation level
+
+  std::vector<std::string> vars; ///< state variables we have seen
 
 public:
   Printer(std::ostream &o_) : o(o_) {}
@@ -267,7 +270,40 @@ public:
   }
 
   void visit_simplerule(const SimpleRule &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    if (n.guard != nullptr) {
+      *this << "\n" << tab() << "define guard_" << n.name << "() : boolean = "
+        << *n.guard << ";\n";
+    }
+
+    // emit rules as procedures, so we can use synchronous assignment
+    *this << "\n" << tab() << "procedure rule_" << n.name << "()\n";
+
+    // conservatively allow the rule to modify anything, to avoid having to
+    // inspect its body
+    if (!vars.empty()) {
+      indent();
+      *this << tab() << "modifies ";
+      std::string sep = "";
+      for (const std::string &v : vars) {
+        *this << sep << v;
+        sep = ", ";
+      }
+      *this << ";\n";
+      dedent();
+    }
+
+    *this << tab() << "{\n";
+    indent();
+
+    for (const Ptr<Decl> &d : n.decls)
+      *this << *d;
+
+    for (const Ptr<Stmt> &s : n.body)
+      *this << *s;
+
+    dedent();
+    *this << tab() << "}\n";
   }
 
   void visit_startstate(const StartState &n) final {
@@ -318,6 +354,8 @@ public:
   void visit_vardecl(const VarDecl &n) final {
     // TODO: this will not work for Record fields
     *this << tab() << "var " << n.name << " : " << *n.get_type() << ";\n";
+
+    vars.push_back(n.name);
   }
 
   void visit_while(const While &n) final {
