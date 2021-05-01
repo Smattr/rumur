@@ -9,6 +9,15 @@
 
 using namespace rumur;
 
+// is the given parameter, representing a for step, known to be 1?
+static bool is_one_step(const Ptr<Expr> &step) {
+  if (step == nullptr)
+    return true;
+  if (!step->constant())
+    return false;
+  return step->constant_fold() == 1;
+}
+
 namespace {
 
 /** a visitor that prints Uclid5 code
@@ -118,7 +127,44 @@ public:
   }
 
   void visit_for(const For &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    // do we need to generate a while loop instead of a for loop
+    bool needs_while = !is_one_step(n.quantifier.step);
+
+    // non-1 steps need to be handled as a while loop
+    if (needs_while) {
+      *this << tab() << "{\n";
+      indent();
+      const std::string &i = n.quantifier.name;
+      const Expr &from = *n.quantifier.from;
+      const Expr &to = *n.quantifier.to;
+      assert(n.quantifier.step != nullptr);
+      const Expr &step = *n.quantifier.step;
+      *this << tab() << "var " << i << " : integer;\n"
+            << tab() << i << " = " << from << ";\n"
+            << tab() << "while (" << i << " <= " << to << ") {\n";
+      indent();
+
+      for (const Ptr<Stmt> &s : n.body)
+        *this << *s;
+
+      *this << tab() << i << " = " << i << " + " << step << ";\n";
+
+      dedent();
+      *this << tab() << "}\n";
+      dedent();
+      *this << tab() << "}\n";
+      return;
+    }
+
+    *this << tab() << "for " << n.quantifier << " {\n";
+    indent();
+
+    for (const Ptr<Stmt> &s : n.body)
+      *this << *s;
+
+    dedent();
+    *this << tab() << "}\n";
   }
 
   void visit_forall(const Forall &n) final {
@@ -249,7 +295,12 @@ public:
   }
 
   void visit_quantifier(const Quantifier &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    assert(is_one_step(n.step) && "non-trivial step in quantifier visitation");
+    if (n.type == nullptr) {
+      *this << n.name << " in range(" << *n.from << ", " << *n.to << ")";
+    } else {
+      *this << "(" << n.name << " : " << *n.type << ")";
+    }
   }
 
   void visit_range(const Range&) final {
