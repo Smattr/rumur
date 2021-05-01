@@ -153,6 +153,9 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
+  // name any rules that are unnamed, so they get valid Uclid5 symbols
+  rumur::sanitise_rule_names(*m);
+
   // output module header
   output() << "module " << module_name << " {\n";
 
