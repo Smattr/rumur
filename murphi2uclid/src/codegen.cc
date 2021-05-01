@@ -40,7 +40,7 @@ public:
   Printer(std::ostream &o_) : o(o_) {}
 
   void visit_add(const Add &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " + " << *n.rhs << ")";
   }
 
   void visit_aliasdecl(const AliasDecl &n) final {
