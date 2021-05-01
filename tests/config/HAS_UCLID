@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# is Uclid5 available?
+
+
+which uclid &>/dev/null
+if [ $? -eq 0 ]; then
+  printf 'True\n'
+else
+  printf 'False\n'
+fi

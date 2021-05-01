@@ -164,6 +164,47 @@ class murphi2cHeader(unittest.TestCase):
       if ret != 0:
         self.fail(f'C++ compilation failed:\n{stdout}{stderr}')
 
+class murphi2uclid(unittest.TestCase):
+  '''
+  test cases for murphi2uclid
+  '''
+
+  def _run(self, testcase: Path):
+
+    tweaks = {k: v for k, v in parse_test_options(testcase)}
+
+    args = ['murphi2uclid', testcase]
+    if CONFIG['HAS_VALGRIND']:
+      args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
+        '--error-exitcode=42'] + args
+    ret, stdout, stderr = run(args)
+    if CONFIG['HAS_VALGRIND']:
+      if ret == 42:
+        self.fail(f'Memory leak:\n{stdout}{stderr}')
+
+    # if rumur was expected to reject this model, we allow murphi2uclid to fail
+    if tweaks.get('rumur_exit_code', 0) == 0 and ret != 0:
+      self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
+
+    if ret != 0:
+      return
+
+    # if we do not have Uclid5 available, skip the remainder of the test
+    if not CONFIG['HAS_UCLID']:
+      self.skipTest('uclid not available for validation')
+
+    with tempfile.TemporaryDirectory() as tmp:
+
+      # write the Uclid5 source to a temporary file
+      src = Path(tmp) / 'source.ucl'
+      with open(src, 'wt', encoding='utf-8') as f:
+        f.write(stdout)
+
+      # ask Uclid if the source is valid
+      ret, stdout, stderr = run(['uclid', src])
+      if ret != 0:
+        self.fail(f'uclid failed:\n{stdout}{stderr}')
+
 class murphi2xml(unittest.TestCase):
   '''
   test cases for murphi2xml
@@ -402,6 +443,10 @@ def main():
     assert not hasattr(murphi2cHeader, name), \
       f'name collision involving murphi2cHeader.{name}'
     setattr(murphi2cHeader, name, lambda self, p=p: self._run(p))
+
+    assert not hasattr(murphi2uclid, name), \
+      f'name collision involving murphi2uclid.{name}'
+    setattr(murphi2uclid, name, lambda self, p=p: self._run(p))
 
     assert not hasattr(murphi2xml, name), \
       f'name collision involving murphi2xml.{name}'
