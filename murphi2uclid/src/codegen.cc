@@ -346,7 +346,7 @@ public:
   }
 
   void visit_typedecl(const TypeDecl &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << tab() << "type " << n.name << " = " << *n.value << ";\n";
   }
 
   void visit_typeexprid(const TypeExprID &n) final {
