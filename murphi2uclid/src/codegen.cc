@@ -255,7 +255,7 @@ public:
   }
 
   void visit_negative(const Negative &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "-" << *n.rhs;
   }
 
   void visit_neq(const Neq &n) final {
