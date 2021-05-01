@@ -218,8 +218,10 @@ public:
     throw Error("unsupported Murphi node", n.loc);
   }
 
-  void visit_range(const Range &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_range(const Range&) final {
+    *this << "integer";
+
+    // TODO: range limits
   }
 
   void visit_record(const Record &n) final {
