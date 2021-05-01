@@ -105,7 +105,7 @@ public:
   }
 
   void visit_exprid(const ExprID &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << n.id;
   }
 
   void visit_field(const Field &n) final {
