@@ -96,7 +96,7 @@ public:
   }
 
   void visit_eq(const Eq &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " == " << *n.rhs << ")";
   }
 
   void visit_errorstmt(const ErrorStmt &n) final {
