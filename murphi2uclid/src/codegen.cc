@@ -299,7 +299,16 @@ public:
   }
 
   void visit_propertystmt(const PropertyStmt &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    switch (n.property.category) {
+    case Property::ASSERTION:
+      *this << tab() << "assert " << *n.property.expr << ";\n";
+      break;
+    case Property::ASSUMPTION:
+      *this << tab() << "assume " << *n.property.expr << ";\n";
+      break;
+    default:
+      throw Error("unsupported Murphi node", n.loc);
+    }
   }
 
   void visit_put(const Put &n) final {
