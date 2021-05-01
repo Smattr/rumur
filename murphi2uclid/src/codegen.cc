@@ -49,7 +49,9 @@ public:
   }
 
   void visit_assignment(const Assignment &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // assume we are within a procedure or init and so can use synchronous
+    // assignment
+    *this << tab() << *n.lhs << " = " << *n.rhs << ";\n";
   }
 
   void visit_band(const Band &n) final {
