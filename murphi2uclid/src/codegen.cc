@@ -299,6 +299,19 @@ public:
   }
 
   void visit_propertystmt(const PropertyStmt &n) final {
+
+    // there is no equivalent of property messages, so just emit this as a
+    // comment
+    if (n.message != "") {
+      *this << tab() << "// ";
+      for (const char &c : n.message) {
+        *this << c;
+        if (c == '\n')
+          *this << tab() << "// ";
+      }
+      *this << "\n";
+    }
+
     switch (n.property.category) {
     case Property::ASSERTION:
       *this << tab() << "assert " << *n.property.expr << ";\n";
@@ -463,6 +476,10 @@ private:
   // wrappers to allow more readable code above
   Printer &operator<<(const std::string &s) {
     o << s;
+    return *this;
+  }
+  Printer &operator<<(char c) {
+    o << c;
     return *this;
   }
   Printer &operator<<(const Node &n) {
