@@ -216,7 +216,7 @@ public:
   }
 
   void visit_not(const Not &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "!" << *n.rhs;
   }
 
   void visit_number(const Number &n) final {
