@@ -273,7 +273,9 @@ public:
   }
 
   void visit_typeexprid(const TypeExprID &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // no need for special “boolean” handling because it has the same
+    // spelling in Murphi and Uclid5
+    *this << n.name;
   }
 
   void visit_undefine(const Undefine &n) final {
