@@ -284,8 +284,10 @@ public:
     throw Error("unsupported Murphi node", n.loc);
   }
 
-  void visit_scalarset(const Scalarset &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_scalarset(const Scalarset&) final {
+    *this << "integer";
+
+    // TODO: range limits
   }
 
   void visit_simplerule(const SimpleRule &n) final {
