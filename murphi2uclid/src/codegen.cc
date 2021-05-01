@@ -49,7 +49,8 @@ public:
   }
 
   void visit_array(const Array &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // TODO: multi-dimensional arrays
+    *this << "[" << *n.index_type << "]" << *n.element_type;
   }
 
   void visit_assignment(const Assignment &n) final {
