@@ -283,7 +283,7 @@ public:
   }
 
   void visit_or(const Or &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " || " << *n.rhs << ")";
   }
 
   void visit_procedurecall(const ProcedureCall &n) final {
