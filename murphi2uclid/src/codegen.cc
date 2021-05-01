@@ -34,6 +34,8 @@ private:
 
   std::vector<std::string> vars; ///< state variables we have seen
 
+  size_t id = 0; ///< counter used for constructing unique symbols
+
 public:
   Printer(std::ostream &o_) : o(o_) {}
 
@@ -135,14 +137,24 @@ public:
     if (needs_while) {
       *this << tab() << "{\n";
       indent();
+
+      const std::string lb = make_symbol("lower");
+      *this << tab() << "var " << lb << " : integer;\n"
+            << tab() << lb << " = " << *n.quantifier.from << ";\n";
+
+      const std::string ub = make_symbol("upper");
+      *this << tab() << "var " << ub << " : integer;\n"
+            << tab() << ub << " = " << *n.quantifier.to << ";\n";
+
       const std::string &i = n.quantifier.name;
-      const Expr &from = *n.quantifier.from;
-      const Expr &to = *n.quantifier.to;
       assert(n.quantifier.step != nullptr);
       const Expr &step = *n.quantifier.step;
       *this << tab() << "var " << i << " : integer;\n"
-            << tab() << i << " = " << from << ";\n"
-            << tab() << "while (" << i << " <= " << to << ") {\n";
+            << tab() << i << " = " << lb << ";\n"
+            << tab() << "while ((" << lb << " <= " << ub << " && " << i
+              << " <= " << ub << ") ||\n"
+            << tab() << "       (" << lb << " > " << ub << " && " << i << " >= "
+              << ub << ")) {\n";
       indent();
 
       for (const Ptr<Stmt> &s : n.body)
@@ -457,6 +469,12 @@ private:
   }
 
   std::string tab() { return std::string(indentation * 2, ' '); }
+
+  /// create a unique symbol for use in generated code
+  std::string make_symbol(const std::string &name) {
+    // FIXME: better strategy for avoiding collisions with user symbols
+    return "__sym_" + name + std::to_string(id++);
+  }
 };
 
 } // namespace
