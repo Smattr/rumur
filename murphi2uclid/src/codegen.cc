@@ -101,7 +101,7 @@ public:
   }
 
   void visit_element(const Element &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << *n.array << "[" << *n.index << "]";
   }
 
   void visit_enum(const Enum &n) final {
