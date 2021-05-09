@@ -56,7 +56,7 @@ public:
   }
 
   void visit_and(const And &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " && " << *n.rhs << ")";
   }
 
   void visit_array(const Array &n) final {
@@ -71,15 +71,15 @@ public:
   }
 
   void visit_band(const Band &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " & " << *n.rhs << ")";
   }
 
   void visit_bnot(const Bnot &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(~" << *n.rhs << ")";
   }
 
   void visit_bor(const Bor &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " | " << *n.rhs << ")";
   }
 
   void visit_clear(const Clear &n) final {
@@ -97,7 +97,7 @@ public:
   }
 
   void visit_div(const Div &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " / " << *n.rhs << ")";
   }
 
   void visit_element(const Element &n) final {
@@ -192,11 +192,11 @@ public:
   }
 
   void visit_geq(const Geq &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " >= " << *n.rhs << ")";
   }
 
   void visit_gt(const Gt &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " > " << *n.rhs << ")";
   }
 
   void visit_if(const If &n) final {
@@ -234,7 +234,7 @@ public:
   }
 
   void visit_implication(const Implication &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " ==> " << *n.rhs << ")";
   }
 
   void visit_isundefined(const IsUndefined &n) final {
@@ -242,7 +242,7 @@ public:
   }
 
   void visit_leq(const Leq &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
   }
 
   void visit_lsh(const Lsh &n) final {
@@ -250,7 +250,7 @@ public:
   }
 
   void visit_lt(const Lt &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " < " << *n.rhs << ")";
   }
 
   void visit_mod(const Mod &n) final {
@@ -263,7 +263,7 @@ public:
   }
 
   void visit_mul(const Mul &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " * " << *n.rhs << ")";
   }
 
   void visit_negative(const Negative &n) final {
@@ -271,7 +271,7 @@ public:
   }
 
   void visit_neq(const Neq &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " != " << *n.rhs << ")";
   }
 
   void visit_not(const Not &n) final {
@@ -429,7 +429,7 @@ public:
   }
 
   void visit_sub(const Sub &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " - " << *n.rhs << ")";
   }
 
   void visit_switch(const Switch &n) final {
@@ -469,7 +469,7 @@ public:
   }
 
   void visit_xor(const Xor &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "(" << *n.lhs << " ^ " << *n.rhs << ")";
   }
 
 private:
