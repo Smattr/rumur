@@ -1,5 +1,6 @@
 #include "../../common/help.h"
 #include "codegen.h"
+#include "module_name.h"
 #include "resources.h"
 #include <cstddef>
 #include <cstdio>
@@ -22,8 +23,7 @@ static std::string in_filename = "<stdin>";
 static dup_t in;
 static std::shared_ptr<std::ostream> out;
 
-// name to give output Uclid5 module
-static std::string module_name = "main";
+std::string module_name = "main";
 
 static void parse_args(int argc, char **argv) {
 
