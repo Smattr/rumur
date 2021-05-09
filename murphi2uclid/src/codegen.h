@@ -8,8 +8,7 @@
  *
  * This function may throw rumur::Errors when encountering unsupported nodes.
  * Desired indentation is assumed to be two spaces with a starting indentation
- * level 1. I.e. it is assumed that the caller is surrounding this with a
- * `module { ... }` block.
+ * level 0.
  *
  * \param n The node to translate
  * \param out Stream to write the translation to

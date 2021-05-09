@@ -156,18 +156,12 @@ int main(int argc, char **argv) {
   // name any rules that are unnamed, so they get valid Uclid5 symbols
   rumur::sanitise_rule_names(*m);
 
-  // output module header
-  output() << "module " << module_name << " {\n";
-
   try {
     codegen(*m, output());
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
-
-  // close module
-  output() << "}\n";
 
   return EXIT_SUCCESS;
 }

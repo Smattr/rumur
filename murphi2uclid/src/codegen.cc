@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include "../../common/isa.h"
+#include "module_name.h"
 #include <cstddef>
 #include <cassert>
 #include <iostream>
@@ -30,7 +31,7 @@ class Printer : public ConstBaseTraversal {
 private:
   std::ostream &o; ///< output stream to emit code to
 
-  size_t indentation = 1; ///< current indentation level
+  size_t indentation = 0; ///< current indentation level
 
   std::vector<std::string> vars; ///< state variables we have seen
 
@@ -258,8 +259,16 @@ public:
   }
 
   void visit_model(const Model &n) final {
+    // output module header
+    *this << "module " << module_name << " {\n";
+    indent();
+
     for (const Ptr<Node> &c : n.children)
       *this << *c;
+
+    // close module
+    dedent();
+    *this << "}\n";
   }
 
   void visit_mul(const Mul &n) final {
