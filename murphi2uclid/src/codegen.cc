@@ -441,7 +441,14 @@ public:
   }
 
   void visit_ternary(const Ternary &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    bool needs_brackets = !isa<BinaryExpr>(n.cond);
+    *this << "(if ";
+    if (needs_brackets)
+      *this << "(";
+    *this << *n.cond;
+    if (needs_brackets)
+      *this << ")";
+    *this << " then " << *n.lhs << " else " << *n.rhs << ")";
   }
 
   void visit_typedecl(const TypeDecl &n) final {
