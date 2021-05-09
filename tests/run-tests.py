@@ -173,6 +173,10 @@ class murphi2uclid(unittest.TestCase):
 
     tweaks = {k: v for k, v in parse_test_options(testcase)}
 
+    # there is no Uclid5 equivalent of the modulo operator (%)
+    with open(testcase, 'rt', encoding='utf-8') as f:
+      should_fail = '%' in f.read()
+
     args = ['murphi2uclid', testcase]
     if CONFIG['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
@@ -183,7 +187,10 @@ class murphi2uclid(unittest.TestCase):
         self.fail(f'Memory leak:\n{stdout}{stderr}')
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
-    if tweaks.get('rumur_exit_code', 0) == 0 and ret != 0:
+    if tweaks.get('rumur_exit_code', 0) == 0 and not should_fail and ret != 0:
+      self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
+
+    if should_fail and ret == 0:
       self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
 
     if ret != 0:

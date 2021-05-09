@@ -268,7 +268,7 @@ public:
   }
 
   void visit_mod(const Mod &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    throw Error("Uclid5 has no equivalent of the modulo operator", n.loc);
   }
 
   void visit_model(const Model &n) final {
