@@ -260,7 +260,11 @@ public:
   }
 
   void visit_lsh(const Lsh &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // TODO: technically we could implement this as a Uclid5 function. However,
+    // it is a little awkward because Uclid5 does not support generic functions
+    // so we would have to detect which types << is used with and emit a
+    // function for each of these.
+    throw Error("Uclid5 has no equivalent of the left shift operator", n.loc);
   }
 
   void visit_lt(const Lt &n) final {
@@ -389,7 +393,11 @@ public:
   }
 
   void visit_rsh(const Rsh &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // TODO: technically we could implement this as a Uclid5 function. However,
+    // it is a little awkward because Uclid5 does not support generic functions
+    // so we would have to detect which types >> is used with and emit a
+    // function for each of these.
+    throw Error("Uclid5 has no equivalent of the right shift operator", n.loc);
   }
 
   void visit_ruleset(const Ruleset &n) final {
