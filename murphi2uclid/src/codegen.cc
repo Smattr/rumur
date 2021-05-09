@@ -37,8 +37,15 @@ private:
 
   size_t id = 0; ///< counter used for constructing unique symbols
 
+  const std::vector<Comment> &comments;
+  ///< comments from the original source file
+
+  std::vector<bool> emitted;
+  ///< whether each comment has been written to the output yet
+
 public:
-  Printer(std::ostream &o_) : o(o_) {}
+  Printer(std::ostream &o_, const std::vector<Comment> &comments_)
+      : o(o_), comments(comments_), emitted(comments_.size(), false) {}
 
   void visit_add(const Add &n) final {
     *this << "(" << *n.lhs << " + " << *n.rhs << ")";
@@ -158,8 +165,10 @@ public:
               << ub << ")) {\n";
       indent();
 
-      for (const Ptr<Stmt> &s : n.body)
+      for (const Ptr<Stmt> &s : n.body) {
+        emit_leading_comments(*s);
         *this << *s;
+      }
 
       *this << tab() << i << " = " << i << " + " << step << ";\n";
 
@@ -173,8 +182,10 @@ public:
     *this << tab() << "for " << n.quantifier << " {\n";
     indent();
 
-    for (const Ptr<Stmt> &s : n.body)
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
+    }
 
     dedent();
     *this << tab() << "}\n";
@@ -228,8 +239,10 @@ public:
       *this << " {\n";
       indent();
     }
-    for (const Ptr<Stmt> &s : n.body)
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
+    }
     dedent();
     *this << tab() << "}";
   }
@@ -259,12 +272,16 @@ public:
   }
 
   void visit_model(const Model &n) final {
+    emit_leading_comments(n);
+
     // output module header
     *this << "module " << module_name << " {\n";
     indent();
 
-    for (const Ptr<Node> &c : n.children)
+    for (const Ptr<Node> &c : n.children) {
+      emit_leading_comments(*c);
       *this << *c;
+    }
 
     // close module
     dedent();
@@ -412,11 +429,15 @@ public:
     *this << tab() << "{\n";
     indent();
 
-    for (const Ptr<Decl> &d : n.decls)
+    for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
+    }
 
-    for (const Ptr<Stmt> &s : n.body)
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
+    }
 
     dedent();
     *this << tab() << "}\n";
@@ -427,11 +448,15 @@ public:
     *this << "\n" << tab() << "init {\n";
     indent();
 
-    for (const Ptr<Decl> &d : n.decls)
+    for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
       *this << *d;
+    }
 
-    for (const Ptr<Stmt> &s : n.body)
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
       *this << *s;
+    }
 
     dedent();
     *this << tab() << "}\n";
@@ -517,11 +542,56 @@ private:
     // FIXME: better strategy for avoiding collisions with user symbols
     return "__sym_" + name + std::to_string(id++);
   }
+
+  /// print any source comments to prior to the given node that have not yet
+  /// been printed
+  size_t emit_leading_comments(const Node &n) {
+    size_t count = 0;
+    size_t i = 0;
+    for (const Comment &c : comments) {
+      // has this not yet been printed?
+      if (!emitted[i]) {
+        // does this precede the given node?
+        if (c.loc.end.line < n.loc.begin.line ||
+            (c.loc.end.line == n.loc.begin.line &&
+             c.loc.end.column <= n.loc.begin.column)) {
+
+          // do some white space adjustment for multiline comments
+          if (c.multiline) {
+            o << tab() << "/*";
+            bool dropping = false;
+            for (const char &b : c.content) {
+              if (b == '\n') {
+                o << "\n" << tab() << " ";
+                dropping = true;
+              } else if (dropping) {
+                if (!isspace(b)) {
+                  o << b;
+                  dropping = false;
+                }
+              } else {
+                o << b;
+              }
+            }
+            o << "*/\n";
+
+          } else { // single line comments can be emitted simpler
+            o << tab() << "//" << c.content << "\n";
+          }
+
+          emitted[i] = true;
+        }
+      }
+      ++i;
+    }
+    return count;
+  }
 };
 
 } // namespace
 
-void codegen(const Node &n, std::ostream &out) {
-  Printer p(out);
+void codegen(const Node &n, const std::vector<Comment> &comments,
+             std::ostream &out) {
+  Printer p(out, comments);
   p.dispatch(n);
 }

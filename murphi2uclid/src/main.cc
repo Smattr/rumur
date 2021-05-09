@@ -14,6 +14,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <utility>
+#include <vector>
 
 // a pair of input streams
 using dup_t =
@@ -156,8 +157,11 @@ int main(int argc, char **argv) {
   // name any rules that are unnamed, so they get valid Uclid5 symbols
   rumur::sanitise_rule_names(*m);
 
+  // parse comments from the source code
+  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+
   try {
-    codegen(*m, output());
+    codegen(*m, comments, output());
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;

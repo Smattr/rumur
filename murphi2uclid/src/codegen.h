@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
+#include <vector>
 
 /** translate a Murphi AST node to Uclid5 code
  *
@@ -11,6 +12,8 @@
  * level 0.
  *
  * \param n The node to translate
+ * \param comments Comments parsed from the source code
  * \param out Stream to write the translation to
  */
-void codegen(const rumur::Node &n, std::ostream &out);
+void codegen(const rumur::Node &n, const std::vector<rumur::Comment> &comments,
+             std::ostream &out);
