@@ -252,8 +252,9 @@ public:
     *this << "(" << *n.lhs << " ==> " << *n.rhs << ")";
   }
 
-  void visit_isundefined(const IsUndefined &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_isundefined(const IsUndefined &) final {
+    throw std::logic_error("isundefined should have been rejected during "
+                           "check()");
   }
 
   void visit_leq(const Leq &n) final {

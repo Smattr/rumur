@@ -9,6 +9,10 @@ namespace {
 class Checker : public ConstTraversal {
 
 public:
+  void visit_isundefined(const IsUndefined &n) final {
+    throw Error("Uclid5 has no equivalent of the isundefined operator", n.loc);
+  }
+
   void visit_lsh(const Lsh &n) final {
     // TODO: technically we could implement this as a Uclid5 function. However,
     // it is a little awkward because Uclid5 does not support generic functions
