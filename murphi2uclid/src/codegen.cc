@@ -315,7 +315,7 @@ public:
   }
 
   void visit_procedurecall(const ProcedureCall &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << tab() << "call " << n.call << ";\n";
   }
 
   void visit_property(const Property &n) final {
