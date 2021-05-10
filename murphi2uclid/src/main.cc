@@ -23,6 +23,7 @@ using dup_t =
 
 static std::string in_filename = "<stdin>";
 static dup_t in;
+static std::string out_filename = "-";
 static std::shared_ptr<std::ostream> out;
 
 std::string module_name = "main";
@@ -60,15 +61,9 @@ static void parse_args(int argc, char **argv) {
       module_name = optarg;
       break;
 
-    case 'o': {
-      auto o = std::make_shared<std::ofstream>(optarg);
-      if (!o->is_open()) {
-        std::cerr << "failed to open " << optarg << "\n";
-        exit(EXIT_FAILURE);
-      }
-      out = o;
+    case 'o':
+      out_filename = optarg;
       break;
-    }
 
     case 128: // --version
       std::cout << "Murphi2Uclid version " << rumur::get_version() << "\n";
@@ -168,6 +163,17 @@ int main(int argc, char **argv) {
 
   // parse comments from the source code
   std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+
+  // only *now* open the output file, to avoid creating an empty file if any of
+  // the preceding steps fail
+  if (out_filename != "-") {
+    auto o = std::make_shared<std::ofstream>(out_filename);
+    if (!o->is_open()) {
+      std::cerr << "failed to open " << out_filename << "\n";
+      exit(EXIT_FAILURE);
+    }
+    out = o;
+  }
 
   // generate Uclid5 source code
   codegen(*m, comments, output());
