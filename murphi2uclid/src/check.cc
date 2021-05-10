@@ -38,5 +38,5 @@ public:
 
 void check(const Node &n) {
   Checker c;
-  c.dispatch(n);
+  n.visit(c);
 }

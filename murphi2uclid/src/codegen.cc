@@ -551,7 +551,7 @@ private:
     return *this;
   }
   Printer &operator<<(const Node &n) {
-    dispatch(n);
+    n.visit(*this);
     return *this;
   }
 
@@ -620,5 +620,5 @@ private:
 void codegen(const Node &n, const std::vector<Comment> &comments,
              std::ostream &out) {
   Printer p(out, comments);
-  p.dispatch(n);
+  n.visit(p);
 }
