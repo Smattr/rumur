@@ -122,7 +122,10 @@ public:
   }
 
   void visit_errorstmt(const ErrorStmt &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // no direct equivalent of this, so just emit the message as a comment and
+    // then an always-failing assertion
+    *this << tab() << "// " << n.message << "\n"
+          << tab() << "assert (false);\n";
   }
 
   void visit_exists(const Exists &n) final {
