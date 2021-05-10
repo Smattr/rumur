@@ -497,7 +497,12 @@ public:
   }
 
   void visit_undefine(const Undefine &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // Uclid5 has no direct equivalent of the Murphi `undefine` statement.
+    // However, it is hoped that havocking the variable has a similar effect.
+    // Namely, encouraging the model checker to treat any following read without
+    // an intervening write as an error. Obviously this is not exactly what
+    // happens. See the murphi2uclid man page for some further discussion.
+    *this << tab() << "havoc " << *n.rhs << ";\n";
   }
 
   void visit_vardecl(const VarDecl &n) final {

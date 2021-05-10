@@ -30,5 +30,15 @@ output is written to standard out.
 .RS
 Display version information and exit.
 .RE
+.SH NOTES
+Translation to Uclid5 is imprecise in the case where there is no direct Uclid5
+equivalent for a Murphi concept. For example, an \fBundefine\fR statement in
+Murphi has no equivalent in Uclid5. This is translated to a \fBhavoc\fR
+statement. Obviously this is not exactly equivalent. However the hope is that in
+real world models this achieves a similar effect. Namely, any read of an
+undefined variable results in the verifier exploring unintended behavior. To get
+reasonable utility out of translation of a model using \fBundefine\fR, you will
+likely need an assertion-heavy model. Or, put another way, defensive programming
+is advised.
 .SH SEE ALSO
 rumur(1)
