@@ -512,7 +512,24 @@ public:
   }
 
   void visit_while(const While &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    bool needs_brackets = !isa<BinaryExpr>(n.condition);
+    *this << tab() << "while ";
+    if (needs_brackets)
+      *this << "(";
+    *this << *n.condition;
+    if (needs_brackets)
+      *this << ")";
+    *this << " {\n";
+    indent();
+
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
+      *this << *s;
+    }
+
+    dedent();
+    *this << tab() << "}\n";
   }
 
   void visit_xor(const Xor &n) final {
