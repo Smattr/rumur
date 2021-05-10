@@ -5,6 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <rumur/rumur.h>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -259,20 +260,16 @@ public:
     *this << "(" << *n.lhs << " <= " << *n.rhs << ")";
   }
 
-  void visit_lsh(const Lsh &n) final {
-    // TODO: technically we could implement this as a Uclid5 function. However,
-    // it is a little awkward because Uclid5 does not support generic functions
-    // so we would have to detect which types << is used with and emit a
-    // function for each of these.
-    throw Error("Uclid5 has no equivalent of the left shift operator", n.loc);
+  void visit_lsh(const Lsh &) final {
+    throw std::logic_error("<< should have been rejected during check()");
   }
 
   void visit_lt(const Lt &n) final {
     *this << "(" << *n.lhs << " < " << *n.rhs << ")";
   }
 
-  void visit_mod(const Mod &n) final {
-    throw Error("Uclid5 has no equivalent of the modulo operator", n.loc);
+  void visit_mod(const Mod &) final {
+    throw std::logic_error("% should have been rejected during check()");
   }
 
   void visit_model(const Model &n) final {
@@ -392,12 +389,8 @@ public:
     throw Error("unsupported Murphi node", n.loc);
   }
 
-  void visit_rsh(const Rsh &n) final {
-    // TODO: technically we could implement this as a Uclid5 function. However,
-    // it is a little awkward because Uclid5 does not support generic functions
-    // so we would have to detect which types >> is used with and emit a
-    // function for each of these.
-    throw Error("Uclid5 has no equivalent of the right shift operator", n.loc);
+  void visit_rsh(const Rsh &) final {
+    throw std::logic_error(">> should have been rejected during check()");
   }
 
   void visit_ruleset(const Ruleset &n) final {

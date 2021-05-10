@@ -1,4 +1,5 @@
 #include "../../common/help.h"
+#include "check.h"
 #include "codegen.h"
 #include "module_name.h"
 #include "resources.h"
@@ -157,15 +158,19 @@ int main(int argc, char **argv) {
   // name any rules that are unnamed, so they get valid Uclid5 symbols
   rumur::sanitise_rule_names(*m);
 
-  // parse comments from the source code
-  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
-
+  // check this can be translated to Uclid5
   try {
-    codegen(*m, comments, output());
+    check(*m);
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
+
+  // parse comments from the source code
+  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+
+  // generate Uclid5 source code
+  codegen(*m, comments, output());
 
   return EXIT_SUCCESS;
 }
