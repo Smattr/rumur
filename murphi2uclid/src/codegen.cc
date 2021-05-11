@@ -7,6 +7,7 @@
 #include <rumur/rumur.h>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace rumur;
@@ -120,7 +121,18 @@ public:
   }
 
   void visit_enum(const Enum &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << "enum {";
+    indent();
+
+    std::string sep;
+    for (const std::pair<std::string, location> &m : n.members) {
+      *this << sep << "\n" << tab() << m.first;
+      sep = ",";
+    }
+    *this << "\n";
+
+    dedent();
+    *this << tab() << "}";
   }
 
   void visit_eq(const Eq &n) final {
