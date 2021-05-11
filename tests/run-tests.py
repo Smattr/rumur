@@ -173,12 +173,16 @@ class murphi2uclid(unittest.TestCase):
 
     tweaks = {k: v for k, v in parse_test_options(testcase)}
 
-    # there is no Uclid5 equivalent of the modulo (%), left shift (<<), right
-    # shift (>>), or isundefined operators or any alias functionality
     with open(testcase, 'rt', encoding='utf-8') as f:
       content = f.read()
+
+      # there is no Uclid5 equivalent of the modulo (%), left shift (<<), right
+      # shift (>>), or isundefined operators or any alias functionality
       should_fail = any(x in content for x in ('%', '<<', '>>', 'isundefined',
                                                'alias'))
+
+      # there is nothing we can use to model an early return in Uclid5
+      could_fail = should_fail or 'return' in content
 
     args = ['murphi2uclid', testcase]
     if CONFIG['HAS_VALGRIND']:
@@ -190,7 +194,7 @@ class murphi2uclid(unittest.TestCase):
         self.fail(f'Memory leak:\n{stdout}{stderr}')
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
-    if tweaks.get('rumur_exit_code', 0) == 0 and not should_fail and ret != 0:
+    if tweaks.get('rumur_exit_code', 0) == 0 and not could_fail and ret != 0:
       self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
 
     if should_fail and ret == 0:

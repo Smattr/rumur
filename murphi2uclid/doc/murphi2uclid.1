@@ -40,5 +40,12 @@ undefined variable results in the verifier exploring unintended behavior. To get
 reasonable utility out of translation of a model using \fBundefine\fR, you will
 likely need an assertion-heavy model. Or, put another way, defensive programming
 is advised.
+.SH LIMITATIONS
+The following Murphi concepts have no translation to Uclid5 and are rejected by
+murphi2uclid:
+.RS
+.IP \[bu] 2
+Early return statements, with or without an expression
+.RE
 .SH SEE ALSO
 rumur(1)
