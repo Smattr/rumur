@@ -52,16 +52,19 @@ public:
     *this << "(" << *n.lhs << " + " << *n.rhs << ")";
   }
 
-  void visit_aliasdecl(const AliasDecl &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_aliasdecl(const AliasDecl &) final {
+    throw std::logic_error("alias declaration should have been rejected during "
+                           "check()");
   }
 
-  void visit_aliasrule(const AliasRule &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_aliasrule(const AliasRule &) final {
+    throw std::logic_error("alias rule should have been rejected during "
+                           "check()");
   }
 
-  void visit_aliasstmt(const AliasStmt &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_aliasstmt(const AliasStmt &) final {
+    throw std::logic_error("alias statement should have been rejected during "
+                           "check()");
   }
 
   void visit_and(const And &n) final {

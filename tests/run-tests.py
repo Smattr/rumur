@@ -174,10 +174,11 @@ class murphi2uclid(unittest.TestCase):
     tweaks = {k: v for k, v in parse_test_options(testcase)}
 
     # there is no Uclid5 equivalent of the modulo (%), left shift (<<), right
-    # shift (>>), or isundefined operators
+    # shift (>>), or isundefined operators or any alias functionality
     with open(testcase, 'rt', encoding='utf-8') as f:
       content = f.read()
-      should_fail = any(x in content for x in ('%', '<<', '>>', 'isundefined'))
+      should_fail = any(x in content for x in ('%', '<<', '>>', 'isundefined',
+                                               'alias'))
 
     args = ['murphi2uclid', testcase]
     if CONFIG['HAS_VALGRIND']:

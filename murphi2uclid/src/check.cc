@@ -9,6 +9,21 @@ namespace {
 class Checker : public ConstTraversal {
 
 public:
+  void visit_aliasdecl(const AliasDecl &n) final {
+    // I think Uclid5 has nothing that could reasonably implement AliasDecl…?
+    throw Error("Uclid5 has no equivalent of alias declarations", n.loc);
+  }
+
+  void visit_aliasrule(const AliasRule &n) final {
+    // I think Uclid5 has nothing that could reasonably implement AliasRule…?
+    throw Error("Uclid5 has no equivalent of alias rules", n.loc);
+  }
+
+  void visit_aliasstmt(const AliasStmt &n) final {
+    // I think Uclid5 has nothing that could reasonably implement AliasStmt…?
+    throw Error("Uclid5 has no equivalent of alias statements", n.loc);
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     throw Error("Uclid5 has no equivalent of the isundefined operator", n.loc);
   }
