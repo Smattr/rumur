@@ -344,7 +344,41 @@ public:
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    *this << "\n" << tab();
+    switch (n.property.category) {
+
+    case Property::Category::ASSERTION:
+      *this << "invariant";
+      break;
+
+    case Property::Category::ASSUMPTION:
+      *this << "assume";
+      break;
+
+    case Property::Category::COVER:
+    case Property::Category::LIVENESS:
+      *this << "property[LTL] ";
+      break;
+
+    }
+    *this << n.name << ": ";
+
+    if (n.property.category == Property::Category::COVER) {
+      *this << "F(";
+    } else if (n.property.category == Property::Category::LIVENESS) {
+      *this << "G(F(";
+    }
+
+    *this << *n.property.expr;
+
+    if (n.property.category == Property::Category::COVER) {
+      *this << ")";
+    } else if (n.property.category == Property::Category::LIVENESS) {
+      *this << "))";
+    }
+
+    *this << ";\n";
   }
 
   void visit_propertystmt(const PropertyStmt &n) final {
