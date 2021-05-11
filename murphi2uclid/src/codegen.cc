@@ -44,6 +44,9 @@ private:
   std::vector<bool> emitted;
   ///< whether each comment has been written to the output yet
 
+  std::vector<const Quantifier*> params;
+  ///< parameters in the ruleset context we are currently within
+
 public:
   Printer(std::ostream &o_, const std::vector<Comment> &comments_)
       : o(o_), comments(comments_), emitted(comments_.size(), false) {}
@@ -401,7 +404,24 @@ public:
   }
 
   void visit_ruleset(const Ruleset &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    // make our parameters visible to children as we descend
+    for (const Quantifier &q : n.quantifiers)
+      params.push_back(&q);
+
+    for (const Ptr<Rule> &r : n.rules)
+      *this << *r;
+
+    assert(params.size() >= n.quantifiers.size() &&
+      "ruleset parameter management out of sync");
+    for (size_t i = 0; i < n.quantifiers.size(); ++i) {
+      size_t j [[gnu::unused]] = params.size() - n.quantifiers.size() + i;
+      assert(params[j] == &n.quantifiers[i] &&
+        "ruleset parameter management out of sync");
+    }
+
+    // remove the parameters as we ascend
+    params.resize(params.size() - n.quantifiers.size());
   }
 
   void visit_scalarset(const Scalarset&) final {
@@ -413,12 +433,15 @@ public:
   void visit_simplerule(const SimpleRule &n) final {
 
     if (n.guard != nullptr) {
-      *this << "\n" << tab() << "define guard_" << n.name << "() : boolean = "
-        << *n.guard << ";\n";
+      *this << "\n" << tab() << "define guard_" << n.name << "(";
+      emit_params();
+      *this << ") : boolean = " << *n.guard << ";\n";
     }
 
     // emit rules as procedures, so we can use synchronous assignment
-    *this << "\n" << tab() << "procedure rule_" << n.name << "()\n";
+    *this << "\n" << tab() << "procedure rule_" << n.name << "(";
+    emit_params();
+    *this << ")\n";
 
     // conservatively allow the rule to modify anything, to avoid having to
     // inspect its body
@@ -571,6 +594,21 @@ private:
   std::string make_symbol(const std::string &name) {
     // FIXME: better strategy for avoiding collisions with user symbols
     return "__sym_" + name + std::to_string(id++);
+  }
+
+  /// print the current list of enclosing parameters, assuming we are within
+  /// something like a procedure’s parameter list
+  void emit_params(void) {
+    std::string sep;
+    for (const Quantifier *q : params) {
+      *this << sep << q->name << " : ";
+      if (q->type == nullptr) {
+        *this << "integer";
+      } else {
+        *this << *q->type;
+      }
+      sep = ", ";
+    }
   }
 
   /// print any source comments to prior to the given node that have not yet
