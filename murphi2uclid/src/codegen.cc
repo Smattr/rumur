@@ -357,6 +357,9 @@ public:
       break;
 
     case Property::Category::COVER:
+      throw std::logic_error("cover property should have been rejected during "
+                             "check()");
+
     case Property::Category::LIVENESS:
       *this << "property[LTL] ";
       break;
@@ -364,19 +367,13 @@ public:
     }
     *this << n.name << ": ";
 
-    if (n.property.category == Property::Category::COVER) {
-      *this << "F(";
-    } else if (n.property.category == Property::Category::LIVENESS) {
+    if (n.property.category == Property::Category::LIVENESS)
       *this << "G(F(";
-    }
 
     *this << *n.property.expr;
 
-    if (n.property.category == Property::Category::COVER) {
-      *this << ")";
-    } else if (n.property.category == Property::Category::LIVENESS) {
+    if (n.property.category == Property::Category::LIVENESS)
       *this << "))";
-    }
 
     *this << ";\n";
   }

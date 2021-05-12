@@ -177,9 +177,10 @@ class murphi2uclid(unittest.TestCase):
       content = f.read()
 
       # there is no Uclid5 equivalent of the modulo (%), left shift (<<), right
-      # shift (>>), or isundefined operators or any alias functionality
+      # shift (>>), or isundefined operators, any alias functionality, or cover
+      # properties
       should_fail = any(x in content for x in ('%', '<<', '>>', 'isundefined',
-                                               'alias'))
+                                               'alias', 'cover'))
 
       # there is nothing we can use to model an early return in Uclid5
       could_fail = should_fail or 'return' in content

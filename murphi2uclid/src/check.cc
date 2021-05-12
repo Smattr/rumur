@@ -100,6 +100,13 @@ public:
     throw Error("Uclid5 has no equivalent of the modulo operator", n.loc);
   }
 
+  void visit_propertyrule(const PropertyRule &n) final {
+    if (n.property.category == Property::Category::COVER)
+      throw Error("cover properties have no LTL equivalent in Uclid5", n.loc);
+
+    n.property.visit(*this);
+  }
+
   void visit_return(const Return &n) final {
 
     // there seems to be no way to return early from a Uclid5 procedure
