@@ -83,6 +83,13 @@ public:
   void visit_assignment(const Assignment &n) final {
     // assume we are within a procedure or init and so can use synchronous
     // assignment
+
+    // special case function call assignment that has its own syntax
+    if (isa<FunctionCall>(n.rhs)) {
+      *this << tab() << "call (" << *n.lhs <<  ") = " << *n.rhs << ";\n";
+      return;
+    }
+
     *this << tab() << *n.lhs << " = " << *n.rhs << ";\n";
   }
 
@@ -222,7 +229,15 @@ public:
   }
 
   void visit_functioncall(const FunctionCall &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    *this << n.name << "(";
+
+    std::string sep;
+    for (const Ptr<Expr> &a : n.arguments) {
+      *this << sep << *a;
+      sep = ", ";
+    }
+
+    *this << ")";
   }
 
   void visit_geq(const Geq &n) final {
