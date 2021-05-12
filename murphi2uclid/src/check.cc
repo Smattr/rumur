@@ -107,6 +107,17 @@ public:
     n.property.visit(*this);
   }
 
+  void visit_propertystmt(const PropertyStmt &n) final {
+
+    if (n.property.category == Property::Category::COVER)
+      throw Error("Uclid5 has no equivalent of cover statements", n.loc);
+
+    if (n.property.category == Property::Category::LIVENESS)
+      throw Error("Ucild5 has no equivalent of liveness statements", n.loc);
+
+    n.property.visit(*this);
+  }
+
   void visit_return(const Return &n) final {
 
     // there seems to be no way to return early from a Uclid5 procedure

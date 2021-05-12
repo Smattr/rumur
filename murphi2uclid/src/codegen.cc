@@ -399,8 +399,12 @@ public:
     case Property::ASSUMPTION:
       *this << tab() << "assume " << *n.property.expr << ";\n";
       break;
-    default:
-      throw Error("unsupported Murphi node", n.loc);
+    case Property::COVER:
+      throw std::logic_error("cover statement should have been rejected during "
+                             "check()");
+    case Property::LIVENESS:
+      throw std::logic_error("liveness statement should have been rejected "
+                             "during check()");
     }
   }
 

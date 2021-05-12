@@ -185,6 +185,9 @@ class murphi2uclid(unittest.TestCase):
       # there is nothing we can use to model an early return in Uclid5
       could_fail = should_fail or 'return' in content
 
+      # there is no Uclid5 equivalent of liveness statements
+      could_fail = could_fail or 'liveness' in content
+
     args = ['murphi2uclid', testcase]
     if CONFIG['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
