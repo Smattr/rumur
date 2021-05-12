@@ -101,7 +101,7 @@ public:
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
-    if (n.property.category == Property::Category::COVER)
+    if (n.property.category == Property::COVER)
       throw Error("cover properties have no LTL equivalent in Uclid5", n.loc);
 
     n.property.visit(*this);
@@ -109,10 +109,10 @@ public:
 
   void visit_propertystmt(const PropertyStmt &n) final {
 
-    if (n.property.category == Property::Category::COVER)
+    if (n.property.category == Property::COVER)
       throw Error("Uclid5 has no equivalent of cover statements", n.loc);
 
-    if (n.property.category == Property::Category::LIVENESS)
+    if (n.property.category == Property::LIVENESS)
       throw Error("Ucild5 has no equivalent of liveness statements", n.loc);
 
     n.property.visit(*this);

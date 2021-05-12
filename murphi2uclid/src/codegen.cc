@@ -348,31 +348,31 @@ public:
     *this << "\n" << tab();
     switch (n.property.category) {
 
-    case Property::Category::ASSERTION:
+    case Property::ASSERTION:
       *this << "invariant";
       break;
 
-    case Property::Category::ASSUMPTION:
+    case Property::ASSUMPTION:
       *this << "assume";
       break;
 
-    case Property::Category::COVER:
+    case Property::COVER:
       throw std::logic_error("cover property should have been rejected during "
                              "check()");
 
-    case Property::Category::LIVENESS:
+    case Property::LIVENESS:
       *this << "property[LTL] ";
       break;
 
     }
     *this << n.name << ": ";
 
-    if (n.property.category == Property::Category::LIVENESS)
+    if (n.property.category == Property::LIVENESS)
       *this << "G(F(";
 
     *this << *n.property.expr;
 
-    if (n.property.category == Property::Category::LIVENESS)
+    if (n.property.category == Property::LIVENESS)
       *this << "))";
 
     *this << ";\n";
