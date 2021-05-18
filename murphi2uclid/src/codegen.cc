@@ -221,6 +221,13 @@ public:
   }
 
   void visit_forall(const Forall &n) final {
+
+    if (n.quantifier.type != nullptr) {
+      *this << "(forall (" << n.quantifier.name << " : " << *n.quantifier.type
+        << ") :: " << *n.expr << ")";
+      return;
+    }
+
     throw Error("unsupported Murphi node", n.loc);
   }
 
