@@ -429,10 +429,31 @@ public:
 
   void visit_quantifier(const Quantifier &n) final {
     assert(is_one_step(n.step) && "non-trivial step in quantifier visitation");
+
     if (n.type == nullptr) {
       *this << n.name << " in range(" << *n.from << ", " << *n.to << ")";
+
     } else {
-      *this << "(" << n.name << " : " << *n.type << ")";
+      *this << "(" << n.name << " : " << *n.type << ") in range(";
+
+      const Ptr<TypeExpr> resolved = n.type->resolve();
+
+      if (auto r = dynamic_cast<const Range*>(resolved.get())) {
+        *this << *r->min << ", " << *r->max;
+
+      } else if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
+        *this << "0, " << *s->bound << " - 1";
+
+      } else if (auto e = dynamic_cast<const Enum*>(resolved.get())) {
+        if (e->members.empty())
+          throw Error("you cannot iterate over an enum with no members", n.loc);
+        *this << e->members[0].first << ", " << e->members.back().first;
+
+      } else {
+        assert(!"unhandled simple type");
+      }
+
+      *this << ")";
     }
   }
 
