@@ -5,7 +5,8 @@ project(rumur LANGUAGES CXX)
 # This seems to be some magic to get libraries to install correctly.
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -W -Wall -Wextra -Wwrite-strings -Wmissing-declarations -Wshadow")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -W -Wall -Wextra -Wformat=2 \
+  -Wwrite-strings -Wmissing-declarations -Wshadow -Wundef")
 
 # enable even more warnings if the compiler supports them
 include(CheckCXXCompilerFlag)
