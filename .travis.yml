@@ -10,6 +10,7 @@ matrix:
       apt:
         packages:
           - g++-7
+          - libc6
           - libc6-dbg
           - libfl-dev
           - libxml2-utils
