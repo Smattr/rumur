@@ -10,11 +10,8 @@ matrix:
       apt:
         packages:
           - g++-7
-          - libc6
-          - libc6-dbg
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="executable murphi2c murphi2cHeader murphi2xml"
