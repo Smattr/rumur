@@ -1072,12 +1072,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="executable murphi2c murphi2cHeader murphi2xml"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 9 (rumur single-threaded)
@@ -1089,12 +1088,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 9 (rumur optimised single-threaded)
@@ -1106,12 +1104,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 9 (rumur multithreaded)
@@ -1123,12 +1120,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 9 (rumur optimised multithreaded)
@@ -1140,12 +1136,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 9 (rumur single-threaded XML)
@@ -1157,12 +1152,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 9 (rumur multithreaded XML)
@@ -1174,12 +1168,11 @@ matrix:
           - g++-9
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (executable, murphi2c, murphi2xml)
@@ -1191,12 +1184,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="executable murphi2c murphi2cHeader murphi2xml"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (rumur single-threaded)
@@ -1208,12 +1200,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugSingleThreaded rumurSingleThreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (rumur optimised single-threaded)
@@ -1225,12 +1216,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugOptimisedSingleThreaded rumurOptimisedSingleThreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (rumur multithreaded)
@@ -1242,12 +1232,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugMultithreaded rumurMultithreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (rumur optimised multithreaded)
@@ -1259,12 +1248,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurDebugOptimisedMultithreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (rumur single-threaded XML)
@@ -1276,12 +1264,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurOptimisedSingleThreadedXML rumurSingleThreadedXML"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC 10 (rumur multithreaded XML)
@@ -1293,12 +1280,11 @@ matrix:
           - g++-10
           - libfl-dev
           - libxml2-utils
-          - valgrind
           - z3
     env:
       - TEST_ARGS="rumurOptimisedMultithreadedXML rumurMultithreadedXML"
       - MATRIX_EVAL="CC=gcc-10 && CXX=g++-10"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
   - name: Ubuntu Linux 20.04, GCC multilib (executable, murphi2c, murphi2xml)
