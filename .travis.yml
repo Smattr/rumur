@@ -16,7 +16,7 @@ matrix:
     env:
       - TEST_ARGS="executable murphi2c murphi2cHeader murphi2xml"
       - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
+      - CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold"
       - UBSAN_OPTIONS=print_stacktrace=1
 
 before_install:
