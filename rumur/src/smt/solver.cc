@@ -101,7 +101,7 @@ bool Solver::is_false(const std::string &claim) {
 }
 
 Solver &Solver::operator<<(const std::string &s) {
-  assert(prelude.size() > 0 && "writing SMT content without an open scope");
+  assert(!prelude.empty() && "writing SMT content without an open scope");
   *prelude[prelude.size() - 1] << s;
   return *this;
 }
@@ -116,7 +116,7 @@ void Solver::open_scope(void) {
 }
 
 void Solver::close_scope(void) {
-  assert(prelude.size() > 0 && "closing a scope when none are open");
+  assert(!prelude.empty() && "closing a scope when none are open");
   prelude.pop_back();
 }
 
