@@ -28,7 +28,7 @@ static std::shared_ptr<std::istream> in_replay;
 static std::shared_ptr<std::ostream> out;
 
 // buffer the contents of stdin so we can read it twice
-static void buffer_stdin(void) {
+static void buffer_stdin() {
 
   // read in all of stdin
   std::ostringstream buf;

@@ -18,7 +18,7 @@ namespace smt {
 
 typedef std::chrono::time_point<std::chrono::system_clock> timestamp_t;
 
-static timestamp_t get_timestamp(void) {
+static timestamp_t get_timestamp() {
   return std::chrono::system_clock::now();
 }
 
@@ -111,11 +111,11 @@ Solver &Solver::operator<<(const std::string &s) {
  * solver in one-shot mode
  */
 
-void Solver::open_scope(void) {
+void Solver::open_scope() {
   prelude.push_back(std::make_shared<std::ostringstream>());
 }
 
-void Solver::close_scope(void) {
+void Solver::close_scope() {
   assert(!prelude.empty() && "closing a scope when none are open");
   prelude.pop_back();
 }

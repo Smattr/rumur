@@ -39,10 +39,10 @@ public:
   Solver &operator<<(const std::string &s);
 
   // open a new (nested) variable scope
-  void open_scope(void);
+  void open_scope();
 
   // close a scope
-  void close_scope(void);
+  void close_scope();
 };
 
 } // namespace smt

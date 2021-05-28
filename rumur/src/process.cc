@@ -43,7 +43,7 @@ static void handler(int sigchld __attribute__((unused))) {
 
 static bool inited = false;
 
-static int init(void) {
+static int init() {
 
   if (pipe(sigchld_pipe) < 0) {
     *debug << "failed to create SIGCHLD pipe\n";

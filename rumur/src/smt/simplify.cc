@@ -446,10 +446,10 @@ private:
   }
 
   // invent a reference to "true"
-  static Ptr<Expr> make_true(void) { return Ptr<Expr>(True); }
+  static Ptr<Expr> make_true() { return Ptr<Expr>(True); }
 
   // invent a reference to "false"
-  static Ptr<Expr> make_false(void) { return Ptr<Expr>(False); }
+  static Ptr<Expr> make_false() { return Ptr<Expr>(False); }
 
   // declare a variable/type to the solver
   void declare_decl(const Decl &decl) {

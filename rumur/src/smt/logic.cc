@@ -104,7 +104,7 @@ std::string geq() {
   return ">=";
 }
 
-std::string gt(void) {
+std::string gt() {
 
   if (options.smt.use_bitvectors) {
     return "bvsgt";
