@@ -107,4 +107,4 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
-  - uname -sr && python3 --version && printf "processors: " && getconf _NPROCESSORS_ONLN && mkdir build && cd build && cmake .. && cmake --build . -- -j$(getconf _NPROCESSORS_ONLN) && sudo env "PATH=$PATH" cmake --build . -- install && if [ -z "${CUSTOM_COMMAND}" ]; then env PATH=./rumur:./murphi2c:./murphi2murphi:./murphi2xml:./tests/murphi-comment-ls:${PATH} ../tests/run-tests.py --verbose ${TEST_ARGS}; else eval "${CUSTOM_COMMAND}"; fi
+  - uname -sr && python3 --version && printf "processors count " && getconf _NPROCESSORS_ONLN && mkdir build && cd build && cmake .. && cmake --build . -- -j$(getconf _NPROCESSORS_ONLN) && sudo env "PATH=$PATH" cmake --build . -- install && if [ -z "${CUSTOM_COMMAND}" ]; then env PATH=./rumur:./murphi2c:./murphi2murphi:./murphi2xml:./tests/murphi-comment-ls:${PATH} ../tests/run-tests.py --verbose ${TEST_ARGS}; else eval "${CUSTOM_COMMAND}"; fi
