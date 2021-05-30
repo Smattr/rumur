@@ -226,6 +226,21 @@ class murphi2uclid(unittest.TestCase):
       'return-from-startstate.m',
     )
 
+    # test cases fo which Uclid5 is expected to fail
+    UCLID_FAIL = (
+      # contains a record field with the same name as a variable
+      # https://github.com/uclid-org/uclid/issues/99
+      'compare-record.m',
+      'smt-array-of-record.m',
+      'smt-record-bool-field.m',
+      'smt-record-bool-field2.m',
+      'smt-record-enum-field.m',
+      'smt-record-enum-field2.m',
+      'smt-record-of-array.m',
+      'smt-record-range-field.m',
+      'smt-record-range-field2.m',
+    )
+
     args = ['murphi2uclid', testcase]
     if CONFIG['HAS_VALGRIND']:
       args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
@@ -261,7 +276,9 @@ class murphi2uclid(unittest.TestCase):
 
       # ask Uclid if the source is valid
       ret, stdout, stderr = run(['uclid', src])
-      if ret != 0:
+      if testcase.name in UCLID_FAIL and ret == 0:
+        self.fail(f'uclid unexpectedly succeeded:\n{stdout}{stderr}')
+      if testcase.name not in UCLID and ret != 0:
         self.fail(f'uclid failed:\n{stdout}{stderr}')
 
 class murphi2xml(unittest.TestCase):
