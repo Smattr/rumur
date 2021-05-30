@@ -28,6 +28,10 @@ public:
     throw Error("Uclid5 has no equivalent of alias statements", n.loc);
   }
 
+  void visit_div(const Div &n) final {
+    throw Error("Uclid5 has no equivalent of the division operator", n.loc);
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     throw Error("Uclid5 has no equivalent of the isundefined operator", n.loc);
   }

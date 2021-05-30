@@ -120,7 +120,7 @@ public:
   }
 
   void visit_div(const Div &n) final {
-    *this << "(" << *n.lhs << " / " << *n.rhs << ")";
+    throw std::logic_error("/ should have been rejected during check()");
   }
 
   void visit_element(const Element &n) final {
