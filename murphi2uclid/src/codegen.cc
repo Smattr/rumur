@@ -154,6 +154,21 @@ public:
   }
 
   void visit_exists(const Exists &n) final {
+
+    if (n.quantifier.type != nullptr) {
+      *this << "(exists (" << n.quantifier.name << " : " << *n.quantifier.type
+        << ") :: " << *n.expr << ")";
+      return;
+    }
+
+    if (is_one_step(n.quantifier.step)) {
+      *this << "(forall (" << n.quantifier.name << " : integer) :: ("
+        << "(" << n.quantifier.name << " >= " << *n.quantifier.from << ") && "
+        << "(" << n.quantifier.name << " <= " << *n.quantifier.to << ") && "
+        << *n.expr << "))";
+        return;
+    }
+
     throw Error("unsupported Murphi node", n.loc);
   }
 
