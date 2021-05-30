@@ -173,20 +173,58 @@ class murphi2uclid(unittest.TestCase):
 
     tweaks = {k: v for k, v in parse_test_options(testcase)}
 
-    with open(testcase, 'rt', encoding='utf-8') as f:
-      content = f.read()
+    # test cases for which murphi2uclid is expected to fail
+    MURPHI2UCLID_FAIL = (
+      # contains '<<' or '>>'
+      'lsh-basic.m',
+      'rsh-and.m',
+      'rsh-basic.m',
+      'smt-bv-lsh.m',
+      'smt-bv-rsh.m',
 
-      # there is no Uclid5 equivalent of the modulo (%), left shift (<<), right
-      # shift (>>), or isundefined operators, any alias functionality, or cover
-      # properties
-      should_fail = any(x in content for x in ('%', '<<', '>>', 'isundefined',
-                                               'alias', 'cover'))
+      # contains '%'
+      'put-string-injection.m',
+      'smt-bv-mod.m',
+      'smt-bv-mod2.m',
+      'smt-mod.m',
 
-      # there is nothing we can use to model an early return in Uclid5
-      could_fail = should_fail or 'return' in content
+      # contains alias statements
+      'alias-and-field.m',
+      'alias-in-bound.m',
+      'alias-in-bound2.m',
+      'alias-literal.m',
+      'alias-of-alias-rule.m',
+      'alias-of-alias-rule2.m',
+      'alias-of-alias-stmt.m',
+      'basic-aliasrule.m',
+      'mixed-aliases.m',
 
-      # there is no Uclid5 equivalent of liveness statements
-      could_fail = could_fail or 'liveness' in content
+      # contains 'cover'
+      'cover-basic.m',
+      'cover-basic2.m',
+      'cover-miss.m',
+      'cover-multiple.m',
+      'cover-stmt.m',
+      'cover-stmt-miss.m',
+      'cover-trivial.m',
+      'string-injection.m',
+
+      # contains 'isundefined'
+      'diff-trace-arrays.m',
+      'isundefined-basic.m',
+      'isundefined-decl.m',
+      'isundefined-element.m',
+      'isundefined-function.m',
+      'for-variants.m',
+      'scalarset-cex.m',
+      'scalarset-schedules-off.m',
+      'scalarset-schedules-off-2.m',
+
+      # contains early return from a function/procedure/rule
+      'return-from-rule.m',
+      'return-from-ruleset.m',
+      'return-from-startstate.m',
+    )
 
     args = ['murphi2uclid', testcase]
     if CONFIG['HAS_VALGRIND']:
@@ -198,7 +236,10 @@ class murphi2uclid(unittest.TestCase):
         self.fail(f'Memory leak:\n{stdout}{stderr}')
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
-    if tweaks.get('rumur_exit_code', 0) == 0 and not could_fail and ret != 0:
+    should_fail = testcase.name in MURPHI2UCLID_FAIL
+    could_fail = tweaks.get('rumur_exit_code', 0) != 0 or should_fail
+
+    if not could_fail and ret != 0:
       self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
 
     if should_fail and ret == 0:
