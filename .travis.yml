@@ -2560,6 +2560,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - TEST_ARGS="executable rumurDebugSingleThreaded rumurDebugMultithreaded rumurOptimisedSingleThreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL=""
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -2573,6 +2574,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - TEST_ARGS="executable rumurDebugSingleThreaded rumurDebugMultithreaded rumurOptimisedSingleThreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL=""
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
@@ -2586,6 +2588,7 @@ matrix:
           - libxml2-utils
           - valgrind
     env:
+      - TEST_ARGS="executable rumurDebugSingleThreaded rumurDebugMultithreaded rumurOptimisedSingleThreaded rumurOptimisedMultithreaded"
       - MATRIX_EVAL=""
       - CXXFLAGS="-Werror -g -fno-omit-frame-pointer"
 
