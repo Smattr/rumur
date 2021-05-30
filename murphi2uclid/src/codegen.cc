@@ -535,7 +535,9 @@ public:
   }
 
   void visit_return(const Return &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+    // only relevant if an actual value is being returned
+    if (n.expr != nullptr)
+      *this << tab() << "__return = " << *n.expr << ";\n";
   }
 
   void visit_rsh(const Rsh &) final {
