@@ -639,8 +639,26 @@ public:
   }
 
   void visit_startstate(const StartState &n) final {
-    // TODO: how to deal with models that have more than one startstate?
-    *this << "\n" << tab() << "init {\n";
+
+    *this << "\n" << tab() << "procedure startstate_" << n.name << "(";
+    emit_params();
+    *this << ")\n";
+
+    // conservatively allow the startstate to modify anything, to avoid having
+    // to inspect its body
+    if (!vars.empty()) {
+      indent();
+      *this << tab() << "modifies ";
+      std::string sep = "";
+      for (const std::string &v : vars) {
+        *this << sep << v;
+        sep = ", ";
+      }
+      *this << ";\n";
+      dedent();
+    }
+
+    *this << tab() << "{\n";
     indent();
 
     for (const Ptr<Decl> &d : n.decls) {
