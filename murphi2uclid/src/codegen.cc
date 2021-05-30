@@ -433,8 +433,9 @@ public:
     *this << tab() << "call " << n.call << ";\n";
   }
 
-  void visit_property(const Property &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_property(const Property &) final {
+    throw std::logic_error("property should have been handled in its parent ("
+      "either PropertyRule or PropertyStmt)");
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
