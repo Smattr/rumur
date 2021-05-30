@@ -283,7 +283,7 @@ class murphi2uclid(unittest.TestCase):
       ret, stdout, stderr = run(['uclid', src])
       if testcase.name in UCLID_FAIL and ret == 0:
         self.fail(f'uclid unexpectedly succeeded:\n{stdout}{stderr}')
-      if testcase.name not in UCLID and ret != 0:
+      if testcase.name not in UCLID_FAIL and ret != 0:
         self.fail(f'uclid failed:\n{stdout}{stderr}')
 
 class murphi2xml(unittest.TestCase):
