@@ -119,7 +119,7 @@ public:
       << *n.value << ";\n";
   }
 
-  void visit_div(const Div &n) final {
+  void visit_div(const Div &) final {
     throw std::logic_error("/ should have been rejected during check()");
   }
 
