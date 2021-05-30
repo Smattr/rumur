@@ -232,7 +232,56 @@ public:
   }
 
   void visit_function(const Function &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    // TODO
+    for (const Ptr<VarDecl> &p : n.parameters) {
+      if (!p->is_readonly()) {
+        throw Error("unsupported Murphi node", p->loc);
+      }
+    }
+
+    *this << tab() << "procedure " << n.name << "(";
+    {
+      std::string sep;
+      for (const Ptr<VarDecl> &p : n.parameters) {
+        *this << sep << p->name << ": " << *p->get_type();
+        sep = ", ";
+      }
+    }
+    *this << ")\n";
+    indent();
+
+    if (n.return_type != nullptr)
+      *this << tab() << "returns (__return: " << *n.return_type << ")\n";
+
+    // conservatively allow the function to modify anything, to avoid having to
+    // inspect its body
+    if (!vars.empty()) {
+      *this << tab() << "modifies ";
+      std::string sep = "";
+      for (const std::string &v : vars) {
+        *this << sep << v;
+        sep = ", ";
+      }
+      *this << ";\n";
+    }
+
+    dedent();
+    *this << tab() << "{\n";
+    indent();
+
+    for (const Ptr<Decl> &d : n.decls) {
+      emit_leading_comments(*d);
+      *this << *d;
+    }
+
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
+      *this << *s;
+    }
+
+    dedent();
+    *this << tab() << "}\n";
   }
 
   void visit_functioncall(const FunctionCall &n) final {
