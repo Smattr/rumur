@@ -387,7 +387,7 @@ public:
       break;
 
     }
-    *this << n.name << ": ";
+    *this << " " << n.name << ": ";
 
     if (n.property.category == Property::LIVENESS)
       *this << "G(F(";
