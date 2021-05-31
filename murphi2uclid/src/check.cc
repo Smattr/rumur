@@ -122,6 +122,11 @@ public:
     n.property.visit(*this);
   }
 
+  void visit_put(const Put &n) final {
+    throw Error("Uclid5 has no equivalent of put statements except print, "
+                "which is only permitted in control blocks", n.loc);
+  }
+
   void visit_return(const Return &n) final {
 
     // there seems to be no way to return early from a Uclid5 procedure

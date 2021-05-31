@@ -226,6 +226,14 @@ class murphi2uclid(unittest.TestCase):
       'scalarset-schedules-off.m',
       'scalarset-schedules-off-2.m',
 
+      # contains 'put'
+      'for-step-0-dynamic.m',
+      'put-stmt.m',
+      'put-stmt2.m',
+      'put-stmt3.m',
+      'put-stmt4.m',
+      'scalarset-put.m',
+
       # contains early return from a function/procedure/rule
       'return-from-rule.m',
       'return-from-ruleset.m',

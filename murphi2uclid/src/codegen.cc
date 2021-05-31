@@ -522,8 +522,9 @@ public:
     }
   }
 
-  void visit_put(const Put &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+  void visit_put(const Put &) final {
+    throw std::logic_error("put statement should have been rejected during "
+                           "check()");
   }
 
   void visit_quantifier(const Quantifier &n) final {
