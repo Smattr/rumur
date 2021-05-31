@@ -332,12 +332,12 @@ public:
     bool first = true;
     for (const IfClause &c : n.clauses) {
       if (first) {
-        *this << tab() << c;
+        *this << c;
         first = false;
       } else {
         *this << " else {\n";
         indent();
-        *this << tab() << c;
+        *this << c;
       }
     }
     *this << "\n";
@@ -346,7 +346,7 @@ public:
   void visit_ifclause(const IfClause &n) final {
     if (n.condition != nullptr) {
       bool needs_brackets = !isa<BinaryExpr>(n.condition);
-      *this << "if ";
+      *this << tab() << "if ";
       if (needs_brackets)
         *this << "(";
       *this << *n.condition;
