@@ -162,7 +162,7 @@ public:
     }
 
     if (is_one_step(n.quantifier.step)) {
-      *this << "(forall (" << n.quantifier.name << " : integer) :: ("
+      *this << "(exists (" << n.quantifier.name << " : integer) :: ("
         << "(" << n.quantifier.name << " >= " << *n.quantifier.from << ") && "
         << "(" << n.quantifier.name << " <= " << *n.quantifier.to << ") && "
         << *n.expr << "))";
