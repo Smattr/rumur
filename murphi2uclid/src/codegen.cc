@@ -462,12 +462,31 @@ public:
     }
     *this << " " << n.name << ": ";
 
+    for (const Quantifier *q : params) {
+      *this << "(forall (" << q->name << " : ";
+      if (q->type == nullptr) {
+        *this << "integer";
+      } else {
+        *this << *q->type;
+      }
+      *this << ") (";
+      if (q->type == nullptr) {
+        if (!is_one_step(q->step)) // TODO
+          throw Error("unsupported Murphi node", n.loc);
+        *this << q->name << " < " << *q->from << " || "
+          << q->name << " > " << *q->to << " || ";
+      }
+    }
+
     if (n.property.category == Property::LIVENESS)
       *this << "G(F(";
 
     *this << *n.property.expr;
 
     if (n.property.category == Property::LIVENESS)
+      *this << "))";
+
+    for (size_t i = 0; i < params.size(); ++i)
       *this << "))";
 
     *this << ";\n";
