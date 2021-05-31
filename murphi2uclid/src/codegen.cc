@@ -263,7 +263,7 @@ public:
       }
     }
 
-    *this << tab() << "procedure " << n.name << "(";
+    *this << "\n" << tab() << "procedure " << n.name << "(";
     {
       std::string sep;
       for (const Ptr<VarDecl> &p : n.parameters) {
