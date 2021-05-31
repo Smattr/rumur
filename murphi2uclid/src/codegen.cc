@@ -340,6 +340,15 @@ public:
         *this << c;
       }
     }
+    first = true;
+    for (const IfClause &c : n.clauses) {
+      if (first) {
+        first = false;
+      } else if (c.condition != nullptr) { // did we indent in visit_ifclause?
+        dedent();
+        *this << "\n" << tab() << "}";
+      }
+    }
     *this << "\n";
   }
 
