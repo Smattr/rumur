@@ -253,6 +253,10 @@ class murphi2uclid(unittest.TestCase):
       'smt-record-of-array.m',
       'smt-record-range-field.m',
       'smt-record-range-field2.m',
+
+      # recursive function calls
+      'recursion2.m',
+      'recursion4.m',
     )
 
     args = ['murphi2uclid', testcase]
