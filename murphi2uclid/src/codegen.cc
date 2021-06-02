@@ -750,7 +750,7 @@ public:
       for (const SwitchCase &c : n.cases) {
         emit_leading_comments(c);
         if (c.matches.empty()) {
-          *this << tab() << "default : ";
+          *this << tab() << "default";
         } else {
           *this << tab();
           std::string sep;
