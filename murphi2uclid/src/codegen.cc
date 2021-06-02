@@ -478,7 +478,7 @@ public:
       } else {
         *this << *q->type;
       }
-      *this << ") (";
+      *this << ") :: (";
       if (q->type == nullptr) {
         if (!is_one_step(q->step)) // TODO
           throw Error("unsupported Murphi node", n.loc);
