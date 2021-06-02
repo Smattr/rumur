@@ -710,11 +710,80 @@ public:
   }
 
   void visit_switch(const Switch &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    if (n.expr->is_pure()) {
+      *this << tab() << "case\n";
+      indent();
+
+      for (const SwitchCase &c : n.cases) {
+        emit_leading_comments(c);
+        if (c.matches.empty()) {
+          *this << tab() << "default : ";
+        } else {
+          *this << tab();
+          std::string sep;
+          for (const Ptr<Expr> &m : c.matches) {
+            *this << sep << *n.expr << " == " << *m;
+            sep = " || ";
+          }
+        }
+        *this << " : " << c;
+      }
+
+      dedent();
+      *this << tab() << "esac\n";
+
+    } else {
+      // this switch is on an expression with side effects, so we need to first
+      // store it in a temporary which we will then emit multiple times
+      std::string expr = make_symbol("");
+
+      *this << tab() << "{\n";
+      indent();
+
+      *this << tab() << "var " << expr << " : " << *n.expr->type() << ";\n"
+            << tab() << expr << " = " << *n.expr;
+
+      *this << tab() << "case\n";
+      indent();
+
+      for (const SwitchCase &c : n.cases) {
+        emit_leading_comments(c);
+        if (c.matches.empty()) {
+          *this << tab() << "default : ";
+        } else {
+          *this << tab();
+          std::string sep;
+          for (const Ptr<Expr> &m : c.matches) {
+            *this << sep << expr << " == " << *m;
+            sep = " || ";
+          }
+        }
+        *this << " : " << c;
+      }
+
+      dedent();
+      *this << tab() << "esac\n";
+
+      dedent();
+      *this << tab() << "}\n";
+    }
   }
 
   void visit_switchcase(const SwitchCase &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    // the match itself will have been handled by our parent (Switch)
+
+    *this << "{\n";
+    indent();
+
+    for (const Ptr<Stmt> &s : n.body) {
+      emit_leading_comments(*s);
+      *this << *s;
+    }
+
+    dedent();
+    *this << tab() << "}\n";
   }
 
   void visit_ternary(const Ternary &n) final {
