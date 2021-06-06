@@ -2,10 +2,14 @@
 #include "check.h"
 #include "codegen.h"
 #include "options.h"
+#include "pick_numeric_type.h"
 #include "resources.h"
 #include <cstddef>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <ctype.h>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -28,6 +32,21 @@ static std::shared_ptr<std::ostream> out;
 
 std::string module_name = "main";
 
+std::string numeric_type;
+
+static bool is_valid_numeric_type(const char *s) {
+  assert(s != NULL);
+  if (strcmp(s, "integer") == 0)
+    return true;
+  if (strncmp(s, "bv", strlen("bv")) != 0)
+    return false;
+  for (const char *p = s + strlen("bv"); *p != '\0'; ++p) {
+    if (!isdigit(*p))
+      return false;
+  }
+  return true;
+}
+
 verbosity_t verbosity = WARNINGS;
 
 static void parse_args(int argc, char **argv) {
@@ -35,12 +54,13 @@ static void parse_args(int argc, char **argv) {
   for (;;) {
     static struct option options[] = {
         // clang-format off
-        { "help",       no_argument,       0, 'h' },
-        { "module",     required_argument, 0, 'm' },
-        { "output",     required_argument, 0, 'o' },
-        { "quiet",      no_argument,       0, 'q' },
-        { "verbose",    no_argument,       0, 'v' },
-        { "version",    no_argument,       0, 128 },
+        { "help",         no_argument,       0, 'h' },
+        { "module",       required_argument, 0, 'm' },
+        { "numeric-type", required_argument, 0, 'n' },
+        { "output",       required_argument, 0, 'o' },
+        { "quiet",        no_argument,       0, 'q' },
+        { "verbose",      no_argument,       0, 'v' },
+        { "version",      no_argument,       0, 128 },
         { 0, 0, 0, 0 },
         // clange-format on
     };
@@ -63,6 +83,14 @@ static void parse_args(int argc, char **argv) {
 
     case 'm':
       module_name = optarg;
+      break;
+
+    case 'n': // --numeric-type
+      if (!is_valid_numeric_type(optarg)) {
+        std::cerr << "invalid argument to --numeric-type " << optarg << "\n";
+        exit(EXIT_FAILURE);
+      }
+      numeric_type = optarg;
       break;
 
     case 'o':
@@ -172,6 +200,9 @@ int main(int argc, char **argv) {
     std::cerr << e.loc << ":" << e.what() << "\n";
     return EXIT_FAILURE;
   }
+
+  // if the user did not select a numeric type, select one for them
+  numeric_type = pick_numeric_type(*m);
 
   // parse comments from the source code
   std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);

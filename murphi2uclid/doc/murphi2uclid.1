@@ -20,6 +20,14 @@ Set the name to use for the generated Uclid5 module. If you do not supply this,
 it defaults to \fBmain\fR.
 .RE
 .PP
+\fB--numeric-type\fR \fITYPE\fRR or \fB-n\fR \fITYPE\fR
+.RS
+Set the Uclid5 type used for ranges, scalarsets and numeric literals. This can
+be either \fIinteger\fR or a bit-vector type, for example, \fIbv8\fR. If this
+option is omitted, either \fIinteger\fR or \fIbv64\fR is chosen automatically
+based on the content of the input model.
+.RE
+.PP
 \fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
 .RS
 Set the path to write the output Uclid5 model to. If this argument is omitted,

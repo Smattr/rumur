@@ -162,7 +162,8 @@ public:
     }
 
     if (is_one_step(n.quantifier.step)) {
-      *this << "(exists (" << n.quantifier.name << " : integer) :: ("
+      *this
+        << "(exists (" << n.quantifier.name << " : " << numeric_type << ") :: ("
         << n.quantifier.name << " >= " << *n.quantifier.from << " && "
         << n.quantifier.name << " <= " << *n.quantifier.to << " && "
         << *n.expr << "))";
@@ -191,17 +192,17 @@ public:
       indent();
 
       const std::string lb = make_symbol("lower");
-      *this << tab() << "var " << lb << " : integer;\n"
+      *this << tab() << "var " << lb << " : " << numeric_type << ";\n"
             << tab() << lb << " = " << *n.quantifier.from << ";\n";
 
       const std::string ub = make_symbol("upper");
-      *this << tab() << "var " << ub << " : integer;\n"
+      *this << tab() << "var " << ub << " : " << numeric_type << ";\n"
             << tab() << ub << " = " << *n.quantifier.to << ";\n";
 
       const std::string &i = n.quantifier.name;
       assert(n.quantifier.step != nullptr);
       const Expr &step = *n.quantifier.step;
-      *this << tab() << "var " << i << " : integer;\n"
+      *this << tab() << "var " << i << " : " << numeric_type << ";\n"
             << tab() << i << " = " << lb << ";\n"
             << tab() << "while ((" << lb << " <= " << ub << " && " << i
               << " <= " << ub << ") ||\n"
@@ -244,7 +245,8 @@ public:
     }
 
     if (is_one_step(n.quantifier.step)) {
-      *this << "(forall (" << n.quantifier.name << " : integer) :: ("
+      *this
+        << "(forall (" << n.quantifier.name << " : " << numeric_type << ") :: ("
         << n.quantifier.name << " < " << *n.quantifier.from << " && "
         << n.quantifier.name << " > " << *n.quantifier.to << " && "
         << *n.expr << "))";
@@ -432,6 +434,11 @@ public:
 
   void visit_number(const Number &n) final {
     *this << n.value.get_str();
+
+    // if we are using a bit-vector type, we need to suffix numeric literals
+    // with it
+    if (numeric_type != "integer")
+      *this << numeric_type;
   }
 
   void visit_or(const Or &n) final {
@@ -474,7 +481,7 @@ public:
     for (const Quantifier *q : params) {
       *this << "(forall (" << q->name << " : ";
       if (q->type == nullptr) {
-        *this << "integer";
+        *this << numeric_type;
       } else {
         *this << *q->type;
       }
@@ -567,7 +574,7 @@ public:
   }
 
   void visit_range(const Range&) final {
-    *this << "integer";
+    *this << numeric_type;
 
     // TODO: range limits
   }
@@ -619,7 +626,7 @@ public:
   }
 
   void visit_scalarset(const Scalarset&) final {
-    *this << "integer";
+    *this << numeric_type;
 
     // TODO: range limits
   }
@@ -884,7 +891,7 @@ private:
     for (const Quantifier *q : params) {
       *this << sep << q->name << " : ";
       if (q->type == nullptr) {
-        *this << "integer";
+        *this << numeric_type;
       } else {
         *this << *q->type;
       }

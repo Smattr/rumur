@@ -10,7 +10,8 @@ add_executable(murphi2uclid
   ../common/help.cc
   src/check.cc
   src/codegen.cc
-  src/main.cc)
+  src/main.cc
+  src/pick_numeric_type.cc)
 
 target_include_directories(murphi2uclid
   PRIVATE
