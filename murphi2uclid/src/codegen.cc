@@ -192,17 +192,19 @@ public:
       indent();
 
       const std::string lb = make_symbol("lower");
-      *this << tab() << "var " << lb << " : " << numeric_type << ";\n"
-            << tab() << lb << " = " << *n.quantifier.from << ";\n";
+      *this << tab() << "var " << lb << " : " << numeric_type << ";\n";
 
       const std::string ub = make_symbol("upper");
-      *this << tab() << "var " << ub << " : " << numeric_type << ";\n"
-            << tab() << ub << " = " << *n.quantifier.to << ";\n";
+      *this << tab() << "var " << ub << " : " << numeric_type << ";\n";
 
       const std::string &i = n.quantifier.name;
       assert(n.quantifier.step != nullptr);
       const Expr &step = *n.quantifier.step;
-      *this << tab() << "var " << i << " : " << numeric_type << ";\n"
+      *this << tab() << "var " << i << " : " << numeric_type << ";\n";
+
+      *this
+            << tab() << lb << " = " << *n.quantifier.from << ";\n"
+            << tab() << ub << " = " << *n.quantifier.to << ";\n"
             << tab() << i << " = " << lb << ";\n"
             << tab() << "while ((" << lb << " <= " << ub << " && " << i
               << " <= " << ub << ") ||\n"
