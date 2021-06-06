@@ -1,7 +1,7 @@
 #include "../../common/help.h"
 #include "check.h"
 #include "codegen.h"
-#include "module_name.h"
+#include "options.h"
 #include "resources.h"
 #include <cstddef>
 #include <cstdio>
@@ -28,6 +28,8 @@ static std::shared_ptr<std::ostream> out;
 
 std::string module_name = "main";
 
+verbosity_t verbosity = WARNINGS;
+
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
@@ -36,6 +38,8 @@ static void parse_args(int argc, char **argv) {
         { "help",       no_argument,       0, 'h' },
         { "module",     required_argument, 0, 'm' },
         { "output",     required_argument, 0, 'o' },
+        { "quiet",      no_argument,       0, 'q' },
+        { "verbose",    no_argument,       0, 'v' },
         { "version",    no_argument,       0, 128 },
         { 0, 0, 0, 0 },
         // clange-format on
@@ -63,6 +67,14 @@ static void parse_args(int argc, char **argv) {
 
     case 'o':
       out_filename = optarg;
+      break;
+
+    case 'q': // --quiet
+      verbosity = QUIET;
+      break;
+
+    case 'v': // --verbose
+      verbosity = VERBOSE;
       break;
 
     case 128: // --version
