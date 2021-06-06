@@ -257,6 +257,9 @@ class murphi2uclid(unittest.TestCase):
       # recursive function calls
       'recursion2.m',
       'recursion4.m',
+
+      # reference to a field of an array element
+      '193.m',
     )
 
     args = ['murphi2uclid', testcase]
