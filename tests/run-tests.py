@@ -263,6 +263,22 @@ class murphi2uclid(unittest.TestCase):
 
       # reference to a field of an array element
       '193.m',
+
+      # function calls within expressions
+      'differing-type-return.m',
+      'differing-type-return3.m',
+      'function-call-in-if.m',
+      'function-in-guard.m',
+      'multiple-parameters.m',
+      'multiple-parameters2.m',
+      'non-const-parameters.m',
+      'recursion1.m',
+      'recursion5.m',
+      'reference-function-parameter.m',
+      'section-order4.m',
+      'section-order5.m',
+      'section-order10.m',
+      'type-shadowing2.m',
     )
 
     args = ['murphi2uclid', testcase]

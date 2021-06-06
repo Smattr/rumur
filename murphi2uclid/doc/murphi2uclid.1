@@ -79,5 +79,12 @@ Cover and liveness statements
 .IP \[bu]
 A \fBclear\fR statement with a value of complex type as its argument
 .RE
+.PP
+Function calls within expressions are translated as if they were calls to
+uninterpreted functions. Uclid5 does not support calling interpreted functions
+(procedures, in Uclid5 terminology) this way. The desirable mapping
+(uninterpreted function vs rephrasing the call site) cannot be determined
+automatically. So it is left to the user to tweak or post-process the output, as
+it will not be accepted by Uclid5 as-is.
 .SH SEE ALSO
 rumur(1)
