@@ -23,6 +23,11 @@ public:
     n.rhs->visit(*this);
   }
 
+  void visit_bnot(const Bnot &n) final {
+    needs_bv = true;
+    n.rhs->visit(*this);
+  }
+
   void visit_bor(const Bor &n) final {
     needs_bv = true;
     n.lhs->visit(*this);
