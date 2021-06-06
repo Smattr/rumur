@@ -28,6 +28,13 @@ public:
     throw Error("Uclid5 has no equivalent of alias statements", n.loc);
   }
 
+  void visit_clear(const Clear &n) final {
+    const Ptr<TypeExpr> type = n.rhs->type();
+
+    if (!type->is_simple())
+      throw Error("Clear of complex types is not supported", n.loc);
+  }
+
   void visit_div(const Div &n) final {
     throw Error("Uclid5 has no equivalent of the division operator", n.loc);
   }

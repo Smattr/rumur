@@ -106,7 +106,28 @@ public:
   }
 
   void visit_clear(const Clear &n) final {
-    throw Error("unsupported Murphi node", n.loc);
+
+    const Ptr<TypeExpr> type = n.rhs->type()->resolve();
+
+    if (auto r = dynamic_cast<const Range*>(type.get())) {
+      *this << tab() << *n.rhs << " = " << r->min->constant_fold().get_str()
+        << ";\n";
+      return;
+    }
+
+    if (isa<Scalarset>(type)) {
+      *this << tab() << *n.rhs << " = 0;\n";
+      return;
+    }
+
+    if (auto e = dynamic_cast<const Enum*>(type.get())) {
+      assert(!e->members.empty() && "enum with no members");
+      *this << tab() << *n.rhs << " = " << e->members[0].first << "\n;";
+      return;
+    }
+
+    throw std::logic_error("clear of complex type should have been rejected "
+                           "during check()");
   }
 
   void visit_constdecl(const ConstDecl &n) final {

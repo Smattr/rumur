@@ -205,6 +205,9 @@ class murphi2uclid(unittest.TestCase):
       'basic-aliasrule.m',
       'mixed-aliases.m',
 
+      # 'clear' of a complex type
+      'clear-complex.m',
+
       # contains 'cover'
       'cover-basic.m',
       'cover-basic2.m',
