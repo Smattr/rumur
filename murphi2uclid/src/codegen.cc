@@ -112,7 +112,15 @@ public:
   void visit_constdecl(const ConstDecl &n) final {
 
     // emit as a symbolic constant
-    *this << tab() << "const " << n.name << " : " << *n.get_type() << ";\n";
+    *this << tab() << "const " << n.name << " : ";
+
+    const Ptr<TypeExpr> type = n.get_type();
+    if (type->is_boolean()) {
+      *this << "boolean";
+    } else {
+      *this << *type;
+    }
+    *this << ";\n";
 
     // constrain it to have exactly its known value
     *this << tab() << "assume " << n.name << "_value: " << n.name << " == "
