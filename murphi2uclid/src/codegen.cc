@@ -189,7 +189,7 @@ public:
         return;
     }
 
-    throw Error("unsupported Murphi node", n.loc);
+    throw std::logic_error("exists should have been rejected during check()");
   }
 
   void visit_exprid(const ExprID &n) final { *this << n.id; }
@@ -272,7 +272,7 @@ public:
         return;
     }
 
-    throw Error("unsupported Murphi node", n.loc);
+    throw std::logic_error("forall should have been rejected during check()");
   }
 
   void visit_function(const Function &n) final {

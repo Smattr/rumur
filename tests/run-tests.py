@@ -241,6 +241,12 @@ class murphi2uclid(unittest.TestCase):
       'return-from-rule.m',
       'return-from-ruleset.m',
       'return-from-startstate.m',
+
+      # 'exists' or 'forall' with non-1 step
+      'smt-bv-exists4.m',
+      'smt-bv-forall4.m',
+      'smt-exists4.m',
+      'smt-forall4.m',
     )
 
     # test cases fo which Uclid5 is expected to fail

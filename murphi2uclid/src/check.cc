@@ -1,4 +1,5 @@
 #include "check.h"
+#include "is_one_step.h"
 #include <cstddef>
 #include <cassert>
 #include <rumur/rumur.h>
@@ -37,6 +38,18 @@ public:
 
   void visit_div(const Div &n) final {
     throw Error("Uclid5 has no equivalent of the division operator", n.loc);
+  }
+
+  void visit_exists(const Exists &n) final {
+    // we could support this, but it seems rarely used so reject it for now
+    if (n.quantifier.type == nullptr && !is_one_step(n.quantifier.step))
+      throw Error("exists with a non-1 stride are not supported", n.loc);
+  }
+
+  void visit_forall(const Forall &n) final {
+    // we could support this, but it seems rarely used so reject it for now
+    if (n.quantifier.type == nullptr && !is_one_step(n.quantifier.step))
+      throw Error("forall with a non-1 stride are not supported", n.loc);
   }
 
   void visit_isundefined(const IsUndefined &n) final {
