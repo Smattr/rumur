@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include "../../common/isa.h"
+#include "is_one_step.h"
 #include "options.h"
 #include <cstddef>
 #include <cassert>
@@ -11,15 +12,6 @@
 #include <vector>
 
 using namespace rumur;
-
-// is the given parameter, representing a for step, known to be 1?
-static bool is_one_step(const Ptr<Expr> &step) {
-  if (step == nullptr)
-    return true;
-  if (!step->constant())
-    return false;
-  return step->constant_fold() == 1;
-}
 
 namespace {
 
