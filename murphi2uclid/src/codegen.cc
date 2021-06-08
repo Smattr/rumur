@@ -513,9 +513,6 @@ public:
     }
     *this << " " << n.name << ": ";
 
-    if (n.property.category == Property::LIVENESS)
-      *this << "G(F(";
-
     for (const Quantifier *q : params) {
       *this << "(forall (" << q->name << " : ";
       if (q->type == nullptr) {
@@ -532,12 +529,15 @@ public:
       }
     }
 
+    if (n.property.category == Property::LIVENESS)
+      *this << "G(F(";
+
     *this << *n.property.expr;
 
-    for (size_t i = 0; i < params.size(); ++i)
+    if (n.property.category == Property::LIVENESS)
       *this << "))";
 
-    if (n.property.category == Property::LIVENESS)
+    for (size_t i = 0; i < params.size(); ++i)
       *this << "))";
 
     *this << ";\n";
