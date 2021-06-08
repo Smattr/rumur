@@ -247,6 +247,10 @@ class murphi2uclid(unittest.TestCase):
       'smt-bv-forall4.m',
       'smt-exists4.m',
       'smt-forall4.m',
+
+      # 'liveness' inside a 'ruleset'
+      'liveness-in-ruleset.m',
+      'liveness-in-ruleset2.m',
     )
 
     # test cases fo which Uclid5 is expected to fail

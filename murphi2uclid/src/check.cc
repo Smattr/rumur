@@ -13,6 +13,9 @@ class Checker : public ConstTraversal {
 private:
   bool is_tail = false;
 
+  bool in_ruleset = false;
+  ///< are we currently within a ruleset
+
 public:
   void visit_aliasdecl(const AliasDecl &n) final {
     // I think Uclid5 has nothing that could reasonably implement AliasDecl…?
@@ -128,6 +131,11 @@ public:
     if (n.property.category == Property::COVER)
       throw Error("cover properties have no LTL equivalent in Uclid5", n.loc);
 
+    // forall quantifiers outside `G(F(…))` does not work in Uclid5
+    if (in_ruleset && n.property.category == Property::LIVENESS)
+      throw Error("liveness properties within rulesets cannot be translated to "
+                  "Uclid5", n.loc);
+
     n.property.visit(*this);
   }
 
@@ -163,6 +171,18 @@ public:
     // so we would have to detect which types >> is used with and emit a
     // function for each of these.
     throw Error("Uclid5 has no equivalent of the right shift operator", n.loc);
+  }
+
+  void visit_ruleset(const Ruleset &n) final {
+    bool saved_in_ruleset = in_ruleset;
+    in_ruleset = true;
+
+    for (const Quantifier &q : n.quantifiers)
+      q.visit(*this);
+    for (const Ptr<Rule> &r : n.rules)
+      r->visit(*this);
+
+    in_ruleset = saved_in_ruleset;
   }
 
   void visit_simplerule(const SimpleRule &n) final {
