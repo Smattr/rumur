@@ -37,7 +37,7 @@ private:
   std::vector<bool> emitted;
   ///< whether each comment has been written to the output yet
 
-  std::vector<const Quantifier*> params;
+  std::vector<const Quantifier *> params;
   ///< parameters in the ruleset context we are currently within
 
 public:
@@ -78,7 +78,7 @@ public:
 
     // special case function call assignment that has its own syntax
     if (isa<FunctionCall>(n.rhs)) {
-      *this << tab() << "call (" << *n.lhs <<  ") = " << *n.rhs << ";\n";
+      *this << tab() << "call (" << *n.lhs << ") = " << *n.rhs << ";\n";
       return;
     }
 
@@ -89,9 +89,7 @@ public:
     *this << "(" << *n.lhs << " & " << *n.rhs << ")";
   }
 
-  void visit_bnot(const Bnot &n) final {
-    *this << "(~" << *n.rhs << ")";
-  }
+  void visit_bnot(const Bnot &n) final { *this << "(~" << *n.rhs << ")"; }
 
   void visit_bor(const Bor &n) final {
     *this << "(" << *n.lhs << " | " << *n.rhs << ")";
@@ -101,9 +99,9 @@ public:
 
     const Ptr<TypeExpr> type = n.rhs->type()->resolve();
 
-    if (auto r = dynamic_cast<const Range*>(type.get())) {
+    if (auto r = dynamic_cast<const Range *>(type.get())) {
       *this << tab() << *n.rhs << " = " << r->min->constant_fold().get_str()
-        << ";\n";
+            << ";\n";
       return;
     }
 
@@ -112,7 +110,7 @@ public:
       return;
     }
 
-    if (auto e = dynamic_cast<const Enum*>(type.get())) {
+    if (auto e = dynamic_cast<const Enum *>(type.get())) {
       assert(!e->members.empty() && "enum with no members");
       *this << tab() << *n.rhs << " = " << e->members[0].first << "\n;";
       return;
@@ -136,8 +134,8 @@ public:
     *this << ";\n";
 
     // constrain it to have exactly its known value
-    *this << tab() << "assume " << n.name << "_value: " << n.name << " == "
-      << *n.value << ";\n";
+    *this << tab() << "assume " << n.name << "_value: " << n.name
+          << " == " << *n.value << ";\n";
   }
 
   void visit_div(const Div &) final {
@@ -178,7 +176,7 @@ public:
 
     if (n.quantifier.type != nullptr) {
       *this << "(exists (" << n.quantifier.name << " : " << *n.quantifier.type
-        << ") :: " << *n.expr << ")";
+            << ") :: " << *n.expr << ")";
       return;
     }
 
@@ -194,9 +192,7 @@ public:
     throw Error("unsupported Murphi node", n.loc);
   }
 
-  void visit_exprid(const ExprID &n) final {
-    *this << n.id;
-  }
+  void visit_exprid(const ExprID &n) final { *this << n.id; }
 
   void visit_field(const Field &n) final {
     *this << *n.record << "." << n.field;
@@ -263,7 +259,7 @@ public:
 
     if (n.quantifier.type != nullptr) {
       *this << "(forall (" << n.quantifier.name << " : " << *n.quantifier.type
-        << ") :: " << *n.expr << ")";
+            << ") :: " << *n.expr << ")";
       return;
     }
 
@@ -443,17 +439,13 @@ public:
     *this << "(" << *n.lhs << " * " << *n.rhs << ")";
   }
 
-  void visit_negative(const Negative &n) final {
-    *this << "-" << *n.rhs;
-  }
+  void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }
 
   void visit_neq(const Neq &n) final {
     *this << "(" << *n.lhs << " != " << *n.rhs << ")";
   }
 
-  void visit_not(const Not &n) final {
-    *this << "!" << *n.rhs;
-  }
+  void visit_not(const Not &n) final { *this << "!" << *n.rhs; }
 
   void visit_number(const Number &n) final {
     *this << n.value.get_str();
@@ -474,7 +466,7 @@ public:
 
   void visit_property(const Property &) final {
     throw std::logic_error("property should have been handled in its parent ("
-      "either PropertyRule or PropertyStmt)");
+                           "either PropertyRule or PropertyStmt)");
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -497,7 +489,6 @@ public:
     case Property::LIVENESS:
       *this << "property[LTL] ";
       break;
-
     }
     *this << " " << n.name << ": ";
 
@@ -577,13 +568,13 @@ public:
 
       const Ptr<TypeExpr> resolved = n.type->resolve();
 
-      if (auto r = dynamic_cast<const Range*>(resolved.get())) {
+      if (auto r = dynamic_cast<const Range *>(resolved.get())) {
         *this << *r->min << ", " << *r->max;
 
-      } else if (auto s = dynamic_cast<const Scalarset*>(resolved.get())) {
+      } else if (auto s = dynamic_cast<const Scalarset *>(resolved.get())) {
         *this << "0, " << *s->bound << " - 1";
 
-      } else if (auto e = dynamic_cast<const Enum*>(resolved.get())) {
+      } else if (auto e = dynamic_cast<const Enum *>(resolved.get())) {
         if (e->members.empty())
           throw Error("you cannot iterate over an enum with no members", n.loc);
         *this << e->members[0].first << ", " << e->members.back().first;
@@ -596,7 +587,7 @@ public:
     }
   }
 
-  void visit_range(const Range&) final {
+  void visit_range(const Range &) final {
     *this << numeric_type;
 
     // TODO: range limits
@@ -637,18 +628,18 @@ public:
       *this << *r;
 
     assert(params.size() >= n.quantifiers.size() &&
-      "ruleset parameter management out of sync");
+           "ruleset parameter management out of sync");
     for (size_t i = 0; i < n.quantifiers.size(); ++i) {
       size_t j [[gnu::unused]] = params.size() - n.quantifiers.size() + i;
       assert(params[j] == &n.quantifiers[i] &&
-        "ruleset parameter management out of sync");
+             "ruleset parameter management out of sync");
     }
 
     // remove the parameters as we ascend
     params.resize(params.size() - n.quantifiers.size());
   }
 
-  void visit_scalarset(const Scalarset&) final {
+  void visit_scalarset(const Scalarset &) final {
     *this << numeric_type;
 
     // TODO: range limits
