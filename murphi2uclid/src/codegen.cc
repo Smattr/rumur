@@ -40,6 +40,10 @@ private:
   std::vector<const Quantifier *> params;
   ///< parameters in the ruleset context we are currently within
 
+  std::vector<std::string> to_return;
+  ///< function parameters that are 'var' (not read-only) and hence we need to
+  ///< track and then deal with in return statements
+
 public:
   Printer(std::ostream &o_, const std::vector<Comment> &comments_)
       : o(o_), comments(comments_), emitted(comments_.size(), false) {}
@@ -277,13 +281,6 @@ public:
 
   void visit_function(const Function &n) final {
 
-    // TODO
-    for (const Ptr<VarDecl> &p : n.parameters) {
-      if (!p->is_readonly()) {
-        throw Error("unsupported Murphi node", p->loc);
-      }
-    }
-
     *this << "\n" << tab() << "procedure " << n.name << "(";
     {
       std::string sep;
@@ -295,8 +292,24 @@ public:
     *this << ")\n";
     indent();
 
-    if (n.return_type != nullptr)
-      *this << tab() << "returns (__return: " << *n.return_type << ")\n";
+    {
+      std::string sep = tab() + "returns (";
+      std::string ender;
+      if (n.return_type != nullptr) {
+        *this << sep << "__return: " << *n.return_type;
+        sep = ", ";
+        ender = ")\n";
+      }
+      for (const Ptr<VarDecl> &p : n.parameters) {
+        if (!p->is_readonly()) {
+          *this << sep << "__" << p->name << ": " << *p->get_type();
+          sep = ", ";
+          ender = ")\n";
+          to_return.push_back(p->name);
+        }
+      }
+      *this << ender;
+    }
 
     // conservatively allow the function to modify anything, to avoid having to
     // inspect its body
@@ -324,8 +337,16 @@ public:
       *this << *s;
     }
 
+    // if we reached the end of the function, we may have seen no return
+    // statement but need to propagate parameters passed in by value to return
+    // values
+    for (const std::string &s : to_return)
+      *this << tab() << "__" << s << " = " << s << ";\n";
+
     dedent();
     *this << tab() << "}\n";
+
+    to_return.clear();
   }
 
   void visit_functioncall(const FunctionCall &n) final {
@@ -609,9 +630,24 @@ public:
   }
 
   void visit_return(const Return &n) final {
+
+    // do we need to propagate parameters passed in by value to return values?
+    if (!to_return.empty()) {
+      // use a block so anything containing sees us as a single statement
+      *this << tab() << "{\n";
+      indent();
+      for (const std::string &s : to_return)
+        *this << tab() << "__" << s << " = " << s << ";\n";
+    }
+
     // only relevant if an actual value is being returned
     if (n.expr != nullptr)
       *this << tab() << "__return = " << *n.expr << ";\n";
+
+    if (!to_return.empty()) {
+      dedent();
+      *this << tab() << "}\n";
+    }
   }
 
   void visit_rsh(const Rsh &) final {
