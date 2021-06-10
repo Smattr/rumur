@@ -81,8 +81,23 @@ public:
     // assignment
 
     // special case function call assignment that has its own syntax
-    if (isa<FunctionCall>(n.rhs)) {
-      *this << tab() << "call (" << *n.lhs << ") = " << *n.rhs << ";\n";
+    if (auto c = dynamic_cast<const FunctionCall*>(n.rhs.get())) {
+      *this << tab() << "call (" << *n.lhs;
+
+      // We need to also assign to any 'var' parameters. The function itself
+      // will have been translate to something that yields these as extra return
+      // values.
+      assert(c->arguments.size() == c->function->parameters.size() &&
+        "function call with a different number of arguments than its target");
+      for (size_t i = 0; i < c->arguments.size(); ++i) {
+        if (!c->function->parameters[i]->is_readonly()) {
+          // FIXME: not strictly safe to emit this and then emit it again in the
+          // call itself; this is not guaranteed to be a pure expression
+          *this << ", " << *c->arguments[i];
+        }
+      }
+
+      *this << ") = " << *c << ";\n";
       return;
     }
 
