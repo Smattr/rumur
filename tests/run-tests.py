@@ -289,6 +289,10 @@ class murphi2uclid(unittest.TestCase):
       'section-order5.m',
       'section-order10.m',
       'type-shadowing2.m',
+
+      # modifies a mutable parameter within a function, which is not valid
+      # within a Uclid5 procedure
+      'reference-function-parameter3.m',
     )
 
     args = ['murphi2uclid', testcase]
