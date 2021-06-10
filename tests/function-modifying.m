@@ -9,6 +9,7 @@
 
 var
   x: boolean;
+  z: boolean;
 
 function foo(var y: boolean): boolean; begin
   -- we cannot actually modify y and still have this model acceptable to
@@ -18,10 +19,12 @@ end;
 
 startstate begin
   x := true;
+  z := true;
 end;
 
 rule begin
   -- call the function and store its return value, but also pass it something
   -- mutable
-  x := foo(x);
+  z := foo(x);
+  x := z;
 end;
