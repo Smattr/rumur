@@ -285,6 +285,7 @@ class murphi2uclid(unittest.TestCase):
       'recursion1.m',
       'recursion5.m',
       'reference-function-parameter.m',
+      'reference-function-parameter2.m',
       'section-order4.m',
       'section-order5.m',
       'section-order10.m',
