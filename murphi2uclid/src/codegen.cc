@@ -536,7 +536,26 @@ public:
       return;
     }
 
-    *this << tab() << "call " << n.call << ";\n";
+    *this << tab() << "call ";
+
+    // handle any 'var' parameters this function may have
+    bool has_var = false;
+    assert(n.call.arguments.size() == n.call.function->parameters.size() &&
+      "function call with a different number of arguments than its target");
+    std::string sep = "(";
+    for (size_t i = 0; i < n.call.arguments.size(); ++i) {
+      if (!n.call.function->parameters[i]->is_readonly()) {
+        // FIXME: not strictly safe to emit this and then emit it again in the
+        // call itself; this is not guaranteed to be a pure expression
+        *this << sep << *n.call.arguments[i];
+        sep = ", ";
+        has_var = true;
+      }
+    }
+    if (has_var)
+      *this << ") = ";
+
+    *this << n.call << ";\n";
   }
 
   void visit_property(const Property &) final {
