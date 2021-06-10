@@ -482,6 +482,28 @@ public:
   }
 
   void visit_procedurecall(const ProcedureCall &n) final {
+
+    // Murphi permits calling a function that return a value and then
+    // discarding the result. However, this is an error in Uclid5. So if we have
+    // such a situation, work around this with an ignored local variable.
+    const Ptr<TypeExpr> &ret = n.call.function->return_type;
+    if (ret != nullptr) {
+
+      // open a scope so we can declare a new local
+      *this << tab() << "{\n";
+      indent();
+
+      const std::string s = make_symbol("ignored");
+      *this << tab() << "var " << s << " : " << *ret << ";\n";
+
+      *this << tab() << "call (" << s << ") = " << n.call << ";\n";
+
+      dedent();
+      *this << tab() << "}\n";
+
+      return;
+    }
+
     *this << tab() << "call " << n.call << ";\n";
   }
 
