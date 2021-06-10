@@ -442,6 +442,10 @@ public:
   void visit_model(const Model &n) final {
     emit_leading_comments(n);
 
+    // force more natural placement for file-leading comments
+    if (!n.children.empty())
+      emit_leading_comments(*n.children[0]);
+
     // output module header
     *this << "module " << module_name << " {\n";
     indent();
