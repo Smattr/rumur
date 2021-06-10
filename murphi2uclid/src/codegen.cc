@@ -515,7 +515,20 @@ public:
       const std::string s = make_symbol("ignored");
       *this << tab() << "var " << s << " : " << *ret << ";\n";
 
-      *this << tab() << "call (" << s << ") = " << n.call << ";\n";
+      *this << tab() << "call (" << s;
+
+      // also deal with any 'var' parameters
+      assert(n.call.arguments.size() == n.call.function->parameters.size() &&
+        "function call with a different number of arguments than its target");
+      for (size_t i = 0; i < n.call.arguments.size(); ++i) {
+        if (!n.call.function->parameters[i]->is_readonly()) {
+          // FIXME: not strictly safe to emit this and then emit it again in the
+          // call itself; this is not guaranteed to be a pure expression
+          *this << ", " << *n.call.arguments[i];
+        }
+      }
+
+      *this << ") = " << n.call << ";\n";
 
       dedent();
       *this << tab() << "}\n";
