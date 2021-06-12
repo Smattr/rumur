@@ -14,7 +14,7 @@
 #include <rumur/traverse.h>
 #include <rumur/validate.h>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
@@ -439,9 +439,7 @@ public:
 
 } // namespace
 
-void validate(const Node &n) {
+void rumur::validate(const Node &n) {
   Validator v;
   v.dispatch(n);
 }
-
-} // namespace rumur

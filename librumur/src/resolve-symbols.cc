@@ -21,7 +21,7 @@
 #include <util/isa.h>
 #include <utility>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
@@ -556,9 +556,7 @@ private:
 
 } // namespace
 
-void resolve_symbols(Model &m) {
+void rumur::resolve_symbols(Model &m) {
   Resolver r;
   r.dispatch(m);
 }
-
-} // namespace rumur

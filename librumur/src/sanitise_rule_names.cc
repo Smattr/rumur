@@ -7,7 +7,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
@@ -68,9 +68,7 @@ public:
 
 } // namespace
 
-void sanitise_rule_names(Node &n) {
+void rumur::sanitise_rule_names(Node &n) {
   RuleNamer r;
   r.dispatch(n);
 }
-
-} // namespace rumur

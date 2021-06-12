@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
@@ -86,7 +86,7 @@ public:
 
 } // namespace
 
-std::vector<Comment> parse_comments(std::istream &input) {
+std::vector<Comment> rumur::parse_comments(std::istream &input) {
 
   std::vector<Comment> result;
 
@@ -154,5 +154,3 @@ std::vector<Comment> parse_comments(std::istream &input) {
 
   return result;
 }
-
-} // namespace rumur

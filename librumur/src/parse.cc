@@ -10,9 +10,9 @@
 #include <rumur/parse.h>
 #include <rumur/scanner.h>
 
-namespace rumur {
+using namespace rumur;
 
-Ptr<Model> parse(std::istream &input) {
+Ptr<Model> rumur::parse(std::istream &input) {
 
   // Setup the parser
   scanner s(&input);
@@ -26,5 +26,3 @@ Ptr<Model> parse(std::istream &input) {
 
   return m;
 }
-
-} // namespace rumur
