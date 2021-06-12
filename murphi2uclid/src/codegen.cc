@@ -1,5 +1,4 @@
 #include "codegen.h"
-#include "../../common/isa.h"
 #include "is_one_step.h"
 #include "options.h"
 #include <cstddef>
@@ -8,6 +7,7 @@
 #include <rumur/rumur.h>
 #include <stdexcept>
 #include <string>
+#include <util/isa.h>
 #include <utility>
 #include <vector>
 

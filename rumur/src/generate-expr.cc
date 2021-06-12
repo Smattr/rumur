@@ -1,4 +1,3 @@
-#include "../../common/isa.h"
 #include "generate.h"
 #include "utils.h"
 #include <cassert>
@@ -8,6 +7,7 @@
 #include <memory>
 #include <rumur/rumur.h>
 #include <string>
+#include <util/isa.h>
 
 using namespace rumur;
 

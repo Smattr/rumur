@@ -1,4 +1,3 @@
-#include "../../common/help.h"
 #include "DecomposeComplexComparisons.h"
 #include "ExplicitSemicolons.h"
 #include "Pipeline.h"
@@ -20,6 +19,7 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <sys/stat.h>
+#include <util/help.h>
 
 using namespace rumur;
 

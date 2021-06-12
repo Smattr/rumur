@@ -43,6 +43,7 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.11)
 endif()
 
 add_subdirectory(librumur)
+add_subdirectory(libutil)
 add_subdirectory(murphi2c)
 add_subdirectory(murphi2murphi)
 add_subdirectory(murphi2uclid)

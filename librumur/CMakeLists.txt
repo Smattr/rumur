@@ -86,6 +86,7 @@ target_include_directories(librumur
   ${GMPXX_INCLUDE}
   PRIVATE
   src
+  ${CMAKE_CURRENT_SOURCE_DIR}/../libutil/include
   ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(librumur PUBLIC ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 

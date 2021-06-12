@@ -22,8 +22,6 @@ add_executable(murphi2c
   ${CMAKE_CURRENT_BINARY_DIR}/resources_c_prefix.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_h_prefix.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
-  ../common/escape.cc
-  ../common/help.cc
   src/check.cc
   src/CLikeGenerator.cc
   src/CodeGenerator.cc
@@ -39,7 +37,7 @@ target_include_directories(murphi2c
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(murphi2c
-  librumur)
+  librumur util)
 
 # Compress manpage
 add_custom_target(man-murphi2c

@@ -1,5 +1,4 @@
 #include "translate.h"
-#include "../../../common/isa.h"
 #include "../options.h"
 #include "except.h"
 #include "logic.h"
@@ -8,6 +7,7 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
+#include <util/isa.h>
 
 using namespace rumur;
 

@@ -1,4 +1,3 @@
-#include "../../common/help.h"
 #include "check.h"
 #include "codegen.h"
 #include "options.h"
@@ -18,6 +17,7 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <util/help.h>
 #include <utility>
 #include <vector>
 

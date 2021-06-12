@@ -8,7 +8,6 @@ add_custom_command(
 
 add_executable(murphi2murphi
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
-  ../common/help.cc
   src/DecomposeComplexComparisons.cc
   src/ExplicitSemicolons.cc
   src/main.cc
@@ -26,7 +25,7 @@ target_include_directories(murphi2murphi
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(murphi2murphi
-  librumur)
+  librumur util)
 
 # Compress manpage
 add_custom_target(man-murphi2murphi

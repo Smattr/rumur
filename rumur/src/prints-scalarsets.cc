@@ -1,7 +1,7 @@
 #include "prints-scalarsets.h"
-#include "../../common/isa.h"
 #include <cstddef>
 #include <rumur/rumur.h>
+#include <util/isa.h>
 
 using namespace rumur;
 

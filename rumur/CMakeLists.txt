@@ -22,8 +22,6 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
-  ../common/escape.cc
-  ../common/help.cc
   src/assume-statements-count.cc
   src/environ.cc
   src/generate-allocations.cc
@@ -65,7 +63,7 @@ target_include_directories(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(rumur
-  librumur)
+  librumur util)
 
 # Compress manpages
 add_custom_target(man-rumur
