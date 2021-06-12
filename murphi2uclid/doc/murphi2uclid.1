@@ -1,0 +1,94 @@
+.TH MURPHI2UCLID 1
+.SH NAME
+murphi2uclid \- translate a Murphi model to Uclid5
+.SH SYNOPSIS
+.B \fBmurphi2uclid\fR [\fB--output\fR \fIFILE\fR | \fB-o\fR \fIFILE\fR] \fIFILE\fR
+.SH DESCRIPTION
+The utility \fBmurphi2uclid\fR is bundled with the model checker Rumur and can
+be used to translate a Murphi model into a Uclid5 model. See
+.BR rumur(1)
+for more information about Rumur or Murphi.
+.SH OPTIONS
+\fB--help\fR or \fB-?\fR
+.RS
+Display usage information.
+.RE
+.PP
+\fB--module\fR \fINAME\fR or \fB-m\fR \fINAME\fR
+.RS
+Set the name to use for the generated Uclid5 module. If you do not supply this,
+it defaults to \fBmain\fR.
+.RE
+.PP
+\fB--numeric-type\fR \fITYPE\fRR or \fB-n\fR \fITYPE\fR
+.RS
+Set the Uclid5 type used for ranges, scalarsets and numeric literals. This can
+be either \fIinteger\fR or a bit-vector type, for example, \fIbv8\fR. If this
+option is omitted, either \fIinteger\fR or \fIbv64\fR is chosen automatically
+based on the content of the input model.
+.RE
+.PP
+\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+.RS
+Set the path to write the output Uclid5 model to. If this argument is omitted,
+output is written to standard out.
+.RE
+.PP
+\fB--quiet\fR or \fB-q\fR
+.RS
+Silence warning diagnostics.
+.RE
+.PP
+\fB--verbose or \fB-v\fR
+.RS
+Report extra debugging information.
+.RE
+.PP
+\fB--version\fR
+.RS
+Display version information and exit.
+.RE
+.SH NOTES
+Translation to Uclid5 is imprecise in the case where there is no direct Uclid5
+equivalent for a Murphi concept. For example, an \fBundefine\fR statement in
+Murphi has no equivalent in Uclid5. This is translated to a \fBhavoc\fR
+statement. Obviously this is not exactly equivalent. However the hope is that in
+real world models this achieves a similar effect. Namely, any read of an
+undefined variable results in the verifier exploring unintended behavior. To get
+reasonable utility out of translation of a model using \fBundefine\fR, you will
+likely need an assertion-heavy model. Or, put another way, defensive programming
+is advised.
+.SH LIMITATIONS
+The following Murphi concepts have no translation to Uclid5 and are rejected by
+murphi2uclid:
+.RS
+.IP \[bu] 2
+Aliases, in the form of declarations statements or rules
+.IP \[bu]
+The \fBisundefined\fR operator
+.IP \[bu]
+The modulo operator, \fB%\fR
+.IP \[bu]
+The left and shift shift operators, \fB<<\fR and \fB>>\fR
+.IP \[bu]
+Early return statements, with or without an expression
+.IP \[bu]
+Cover properties
+.IP \[bu]
+Liveness properties inside rulesets
+.IP \[bu]
+Cover and liveness statements
+.IP \[bu]
+A \fBclear\fR statement with a value of complex type as its argument
+.IP \[bu]
+Step sizes other than 1 in \fBexists\fR or \fBforall\fR expressions
+.RE
+.PP
+Function calls within expressions are translated as if they were calls to
+uninterpreted functions. Uclid5 does not support calling interpreted functions
+(procedures, in Uclid5 terminology) this way. The desirable mapping
+(uninterpreted function vs rephrasing the call site) cannot be determined
+automatically. So it is left to the user to tweak or post-process the output, as
+it will not be accepted by Uclid5 as-is.
+.SH SEE ALSO
+rumur(1)

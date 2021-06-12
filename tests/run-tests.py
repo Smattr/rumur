@@ -164,6 +164,178 @@ class murphi2cHeader(unittest.TestCase):
       if ret != 0:
         self.fail(f'C++ compilation failed:\n{stdout}{stderr}')
 
+class murphi2uclid(unittest.TestCase):
+  '''
+  test cases for murphi2uclid
+  '''
+
+  def _run(self, testcase: Path):
+
+    tweaks = {k: v for k, v in parse_test_options(testcase)}
+
+    # test cases for which murphi2uclid is expected to fail
+    MURPHI2UCLID_FAIL = (
+      # contains '<<' or '>>'
+      'lsh-basic.m',
+      'rsh-and.m',
+      'rsh-basic.m',
+      'smt-bv-lsh.m',
+      'smt-bv-rsh.m',
+
+      # contains '/'
+      'division.m',
+      'smt-bv-div.m',
+      'smt-bv-div2.m',
+      'smt-div.m',
+
+      # contains '%'
+      'put-string-injection.m',
+      'smt-bv-mod.m',
+      'smt-bv-mod2.m',
+      'smt-mod.m',
+
+      # contains alias statements
+      'alias-and-field.m',
+      'alias-in-bound.m',
+      'alias-in-bound2.m',
+      'alias-literal.m',
+      'alias-of-alias-rule.m',
+      'alias-of-alias-rule2.m',
+      'alias-of-alias-stmt.m',
+      'basic-aliasrule.m',
+      'mixed-aliases.m',
+
+      # 'clear' of a complex type
+      'clear-complex.m',
+
+      # contains 'cover'
+      'cover-basic.m',
+      'cover-basic2.m',
+      'cover-miss.m',
+      'cover-multiple.m',
+      'cover-stmt.m',
+      'cover-stmt-miss.m',
+      'cover-trivial.m',
+      'string-injection.m',
+
+      # contains 'isundefined'
+      'diff-trace-arrays.m',
+      'isundefined-basic.m',
+      'isundefined-decl.m',
+      'isundefined-element.m',
+      'isundefined-function.m',
+      'for-variants.m',
+      'scalarset-cex.m',
+      'scalarset-schedules-off.m',
+      'scalarset-schedules-off-2.m',
+
+      # contains 'put'
+      'for-step-0-dynamic.m',
+      'put-stmt.m',
+      'put-stmt2.m',
+      'put-stmt3.m',
+      'put-stmt4.m',
+      'scalarset-put.m',
+
+      # contains early return from a function/procedure/rule
+      'return-from-rule.m',
+      'return-from-ruleset.m',
+      'return-from-startstate.m',
+
+      # 'exists' or 'forall' with non-1 step
+      'smt-bv-exists4.m',
+      'smt-bv-forall4.m',
+      'smt-exists4.m',
+      'smt-forall4.m',
+
+      # 'liveness' inside a 'ruleset'
+      'liveness-in-ruleset.m',
+      'liveness-in-ruleset2.m',
+    )
+
+    # test cases fo which Uclid5 is expected to fail
+    UCLID_FAIL = (
+      # contains a record field with the same name as a variable
+      # https://github.com/uclid-org/uclid/issues/99
+      'compare-record.m',
+      'smt-array-of-record.m',
+      'smt-record-bool-field.m',
+      'smt-record-bool-field2.m',
+      'smt-record-enum-field.m',
+      'smt-record-enum-field2.m',
+      'smt-record-of-array.m',
+      'smt-record-range-field.m',
+      'smt-record-range-field2.m',
+
+      # recursive function calls
+      'recursion2.m',
+      'recursion4.m',
+
+      # reference to a field of an array element
+      '193.m',
+
+      # function calls within expressions
+      'differing-type-return.m',
+      'differing-type-return3.m',
+      'function-call-in-if.m',
+      'function-in-guard.m',
+      'multiple-parameters.m',
+      'multiple-parameters2.m',
+      'non-const-parameters.m',
+      'recursion1.m',
+      'recursion5.m',
+      'reference-function-parameter.m',
+      'reference-function-parameter2.m',
+      'section-order4.m',
+      'section-order5.m',
+      'section-order10.m',
+      'type-shadowing2.m',
+
+      # modifies a mutable parameter within a function, which is not valid
+      # within a Uclid5 procedure
+      'reference-function-parameter3.m',
+    )
+
+    args = ['murphi2uclid', testcase]
+    if CONFIG['HAS_VALGRIND']:
+      args = ['valgrind', '--leak-check=full', '--show-leak-kinds=all',
+        '--error-exitcode=42'] + args
+    ret, stdout, stderr = run(args)
+    if CONFIG['HAS_VALGRIND']:
+      if ret == 42:
+        self.fail(f'Memory leak:\n{stdout}{stderr}')
+
+    # if rumur was expected to reject this model, we allow murphi2uclid to fail
+    should_fail = testcase.name in MURPHI2UCLID_FAIL
+    could_fail = tweaks.get('rumur_exit_code', 0) != 0 or should_fail
+
+    if not could_fail and ret != 0:
+      self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
+
+    if should_fail and ret == 0:
+      self.fail(f'Unexpected murphi2uclid exit status {ret}:\n{stdout}{stderr}')
+
+    if ret != 0:
+      return
+
+    # if we do not have Uclid5 available, skip the remainder of the test
+    if not CONFIG['HAS_UCLID']:
+      self.skipTest('uclid not available for validation')
+
+    with tempfile.TemporaryDirectory() as tmp:
+
+      # write the Uclid5 source to a temporary file
+      src = Path(tmp) / 'source.ucl'
+      with open(src, 'wt', encoding='utf-8') as f:
+        f.write(stdout)
+
+      # ask Uclid if the source is valid
+      ret, stdout, stderr = run(['uclid', src])
+      if testcase.name in UCLID_FAIL and ret == 0:
+        self.fail(f'uclid unexpectedly succeeded:\n{stdout}{stderr}')
+      if testcase.name not in UCLID_FAIL and ret != 0:
+        self.fail(f'uclid failed:\n{stdout}{stderr}')
+
 class murphi2xml(unittest.TestCase):
   '''
   test cases for murphi2xml
@@ -402,6 +574,10 @@ def main():
     assert not hasattr(murphi2cHeader, name), \
       f'name collision involving murphi2cHeader.{name}'
     setattr(murphi2cHeader, name, lambda self, p=p: self._run(p))
+
+    assert not hasattr(murphi2uclid, name), \
+      f'name collision involving murphi2uclid.{name}'
+    setattr(murphi2uclid, name, lambda self, p=p: self._run(p))
 
     assert not hasattr(murphi2xml, name), \
       f'name collision involving murphi2xml.{name}'
