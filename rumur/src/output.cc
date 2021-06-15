@@ -1,3 +1,4 @@
+#include "../../common/isa.h"
 #include "ValueType.h"
 #include "assume-statements-count.h"
 #include "generate.h"
@@ -12,7 +13,6 @@
 #include <iostream>
 #include <rumur/rumur.h>
 #include <string>
-#include <util/isa.h>
 #include <utility>
 
 using namespace rumur;

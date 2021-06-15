@@ -7,6 +7,7 @@ add_custom_command(
 
 add_executable(murphi2uclid
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
+  ../common/help.cc
   src/check.cc
   src/codegen.cc
   src/main.cc
@@ -18,7 +19,7 @@ target_include_directories(murphi2uclid
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(murphi2uclid
-  librumur util)
+  librumur)
 
 add_custom_target(man-murphi2uclid
   ALL

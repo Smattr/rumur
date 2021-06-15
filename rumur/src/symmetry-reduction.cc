@@ -1,4 +1,5 @@
 #include "symmetry-reduction.h"
+#include "../../common/isa.h"
 #include "options.h"
 #include "utils.h"
 #include <cassert>
@@ -7,7 +8,6 @@
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
-#include <util/isa.h>
 #include <utility>
 #include <vector>
 

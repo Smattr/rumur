@@ -1,3 +1,5 @@
+#include "../../common/escape.h"
+#include "../../common/isa.h"
 #include "generate.h"
 #include "options.h"
 #include "utils.h"
@@ -8,8 +10,6 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
-#include <util/escape.h>
-#include <util/isa.h>
 
 using namespace rumur;
 

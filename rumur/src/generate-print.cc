@@ -1,3 +1,4 @@
+#include "../../common/escape.h"
 #include "generate.h"
 #include "options.h"
 #include <cassert>
@@ -7,7 +8,6 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
-#include <util/escape.h>
 #include <utility>
 #include <vector>
 

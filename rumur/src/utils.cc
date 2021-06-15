@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "../../common/escape.h"
 #include "options.h"
 #include <cassert>
 #include <cstddef>
@@ -6,7 +7,6 @@
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
-#include <util/escape.h>
 
 using namespace rumur;
 

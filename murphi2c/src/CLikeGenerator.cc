@@ -1,4 +1,6 @@
 #include "CLikeGenerator.h"
+#include "../../common/escape.h"
+#include "../../common/isa.h"
 #include "options.h"
 #include <cassert>
 #include <cstddef>
@@ -6,8 +8,6 @@
 #include <gmpxx.h>
 #include <rumur/rumur.h>
 #include <string>
-#include <util/escape.h>
-#include <util/isa.h>
 #include <utility>
 #include <vector>
 

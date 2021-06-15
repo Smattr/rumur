@@ -1,9 +1,9 @@
+#include "../../common/escape.h"
 #include "generate.h"
 #include "utils.h"
 #include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
-#include <util/escape.h>
 
 using namespace rumur;
 

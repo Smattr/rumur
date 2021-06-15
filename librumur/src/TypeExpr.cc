@@ -1,3 +1,4 @@
+#include "../../common/isa.h"
 #include <cassert>
 #include <cstddef>
 #include <gmpxx.h>
@@ -13,7 +14,6 @@
 #include <rumur/traverse.h>
 #include <string>
 #include <unordered_set>
-#include <util/isa.h>
 #include <utility>
 #include <vector>
 

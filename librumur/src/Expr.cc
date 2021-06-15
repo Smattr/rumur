@@ -1,3 +1,4 @@
+#include "../../common/isa.h"
 #include <cassert>
 #include <climits>
 #include <cstddef>
@@ -16,7 +17,6 @@
 #include <rumur/except.h>
 #include <rumur/traverse.h>
 #include <string>
-#include <util/isa.h>
 #include <utility>
 #include <vector>
 

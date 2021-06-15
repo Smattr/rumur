@@ -1,10 +1,10 @@
+#include "help.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <unistd.h>
-#include <util/help.h>
 
 /* The approach we take below is writing the manpage to a temporary location and
  * then asking man to display it. It would be nice to avoid the temporary file

@@ -1,3 +1,4 @@
+#include "../../common/isa.h"
 #include <cassert>
 #include <cstddef>
 #include "location.hh"
@@ -18,7 +19,6 @@
 #include <rumur/traverse.h>
 #include <rumur/validate.h>
 #include <string>
-#include <util/isa.h>
 #include <utility>
 
 using namespace rumur;

@@ -1,8 +1,8 @@
+#include "escape.h"
 #include <cstddef>
 #include <cstdio>
 #include <ctype.h>
 #include <string>
-#include <util/escape.h>
 
 static std::string octal(char c) {
   char buffer[sizeof("\\000")];

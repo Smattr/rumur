@@ -1,3 +1,4 @@
+#include "../../common/help.h"
 #include "check.h"
 #include "compares_complex_values.h"
 #include "generate_c.h"
@@ -16,7 +17,6 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <util/help.h>
 #include <utility>
 #include <vector>
 

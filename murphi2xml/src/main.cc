@@ -1,3 +1,4 @@
+#include "../../common/help.h"
 #include "XMLPrinter.h"
 #include "resources.h"
 #include <cassert>
@@ -11,7 +12,6 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <util/help.h>
 
 static std::string in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;

@@ -1,3 +1,4 @@
+#include "../../common/help.h"
 #include "ValueType.h"
 #include "environ.h"
 #include "generate.h"
@@ -26,7 +27,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <util/help.h>
 #include <utility>
 
 using namespace rumur;

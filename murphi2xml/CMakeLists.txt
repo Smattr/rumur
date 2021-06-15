@@ -7,6 +7,7 @@ add_custom_command(
 
 add_executable(murphi2xml
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
+  ../common/help.cc
   src/main.cc
   src/XMLPrinter.cc)
 
@@ -16,7 +17,7 @@ target_include_directories(murphi2xml
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(murphi2xml
-  librumur util)
+  librumur)
 
 # Compress manpages
 add_custom_target(man-murphi2xml
