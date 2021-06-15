@@ -739,7 +739,8 @@ public:
     assert(params.size() >= n.quantifiers.size() &&
            "ruleset parameter management out of sync");
     for (size_t i = 0; i < n.quantifiers.size(); ++i) {
-      size_t j [[gnu::unused]] = params.size() - n.quantifiers.size() + i;
+      size_t j __attribute__((unused))
+        = params.size() - n.quantifiers.size() + i;
       assert(params[j] == &n.quantifiers[i] &&
              "ruleset parameter management out of sync");
     }
