@@ -13,8 +13,8 @@ class Checker : public ConstTraversal {
 private:
   bool is_tail = false;
 
-  bool in_ruleset = false;
-  ///< are we currently within a ruleset
+  std::vector<const Quantifier *> params;
+  ///< parameters in the ruleset context we are currently within
 
 public:
   void visit_aliasdecl(const AliasDecl &n) final {
@@ -132,7 +132,7 @@ public:
       throw Error("cover properties have no LTL equivalent in Uclid5", n.loc);
 
     // forall quantifiers outside `G(F(…))` does not work in Uclid5
-    if (in_ruleset && n.property.category == Property::LIVENESS)
+    if (!params.empty() && n.property.category == Property::LIVENESS)
       throw Error("liveness properties within rulesets cannot be translated to "
                   "Uclid5", n.loc);
 
@@ -174,15 +174,27 @@ public:
   }
 
   void visit_ruleset(const Ruleset &n) final {
-    bool saved_in_ruleset = in_ruleset;
-    in_ruleset = true;
 
-    for (const Quantifier &q : n.quantifiers)
+    for (const Quantifier &q : n.quantifiers) {
       q.visit(*this);
+      // make each parameter visible to following children as we descend
+      params.push_back(&q);
+    }
+
     for (const Ptr<Rule> &r : n.rules)
       r->visit(*this);
 
-    in_ruleset = saved_in_ruleset;
+    assert(params.size() >= n.quantifiers.size() &&
+           "ruleset parameter management out of sync");
+    for (size_t i = 0; i < n.quantifiers.size(); ++i) {
+      size_t j __attribute__((unused))
+        = params.size() - n.quantifiers.size() + i;
+      assert(params[j] == &n.quantifiers[i] &&
+             "ruleset parameter management out of sync");
+    }
+
+    // remove the parameters as we ascend
+    params.resize(params.size() - n.quantifiers.size());
   }
 
   void visit_simplerule(const SimpleRule &n) final {
