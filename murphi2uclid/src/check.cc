@@ -136,6 +136,12 @@ public:
       throw Error("liveness properties within rulesets cannot be translated to "
                   "Uclid5", n.loc);
 
+    for (const Quantifier *q : params) {
+      if (q->type == nullptr && !is_one_step(q->step))
+        throw Error("properties within rulesets using quantifiers with non-1 "
+                    "steps are not supported", q->loc);
+    }
+
     n.property.visit(*this);
   }
 

@@ -596,7 +596,8 @@ public:
       *this << ") :: (";
       if (q->type == nullptr) {
         if (!is_one_step(q->step)) // TODO
-          throw Error("unsupported Murphi node", n.loc);
+          throw std::logic_error("property should have been rejected during "
+                                 "check()");
         *this << q->name << " < " << *q->from << " || "
           << q->name << " > " << *q->to << " || ";
       }
