@@ -26,6 +26,10 @@ struct RUMUR_API_WITH_RTTI Decl : public Node {
   virtual ~Decl() = 0;
 
   Decl *clone() const override = 0;
+
+protected:
+  Decl(const Decl &) = default;
+  Decl &operator=(const Decl &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI ExprDecl : public Decl {
@@ -45,6 +49,10 @@ struct RUMUR_API_WITH_RTTI ExprDecl : public Decl {
   virtual Ptr<TypeExpr> get_type() const = 0;
 
   ExprDecl *clone() const override = 0;
+
+protected:
+  ExprDecl(const ExprDecl &) = default;
+  ExprDecl &operator=(const ExprDecl &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI AliasDecl : public ExprDecl {

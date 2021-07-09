@@ -32,6 +32,10 @@ struct RUMUR_API_WITH_RTTI Node {
 
   virtual void visit(BaseTraversal &visitor) = 0;
   virtual void visit(ConstBaseTraversal &visitor) const = 0;
+
+protected:
+  Node(const Node&) = default;
+  Node &operator=(const Node &) = default;
 };
 
 } // namespace rumur

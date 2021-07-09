@@ -32,6 +32,10 @@ struct RUMUR_API_WITH_RTTI Rule : public Node {
   virtual std::vector<Ptr<Rule>> flatten() const;
 
   virtual ~Rule() = default;
+
+protected:
+  Rule(const Rule &) = default;
+  Rule &operator=(const Rule &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI AliasRule : public Rule {

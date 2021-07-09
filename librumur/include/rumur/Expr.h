@@ -63,6 +63,10 @@ struct RUMUR_API_WITH_RTTI Expr : public Node {
 
   // is this expression side-effect free?
   virtual bool is_pure() const = 0;
+
+protected:
+  Expr(const Expr &) = default;
+  Expr &operator=(const Expr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Ternary : public Expr {
@@ -103,6 +107,10 @@ struct RUMUR_API_WITH_RTTI BinaryExpr : public Expr {
   BinaryExpr *clone() const override = 0;
   bool constant() const final;
   bool is_pure() const final;
+
+protected:
+  BinaryExpr(const BinaryExpr &) = default;
+  BinaryExpr &operator=(const BinaryExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI BooleanBinaryExpr : public BinaryExpr {
@@ -113,6 +121,10 @@ struct RUMUR_API_WITH_RTTI BooleanBinaryExpr : public BinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   void validate() const final;
+
+protected:
+  BooleanBinaryExpr(const BooleanBinaryExpr &) = default;
+  BooleanBinaryExpr &operator=(const BooleanBinaryExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
@@ -203,6 +215,10 @@ struct RUMUR_API_WITH_RTTI UnaryExpr : public Expr {
 
   bool constant() const override;
   bool is_pure() const final;
+
+protected:
+  UnaryExpr(const UnaryExpr &) = default;
+  UnaryExpr &operator=(const UnaryExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Not : public UnaryExpr {
@@ -226,6 +242,10 @@ struct RUMUR_API_WITH_RTTI ComparisonBinaryExpr : public BinaryExpr {
                        const location &loc_);
 
   void validate() const final;
+
+protected:
+  ComparisonBinaryExpr(const ComparisonBinaryExpr &) = default;
+  ComparisonBinaryExpr &operator=(const ComparisonBinaryExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
@@ -290,6 +310,10 @@ struct RUMUR_API_WITH_RTTI EquatableBinaryExpr : public BinaryExpr {
                       const location &loc_);
 
   void validate() const final;
+
+protected:
+  EquatableBinaryExpr(const EquatableBinaryExpr &) = default;
+  EquatableBinaryExpr &operator=(const EquatableBinaryExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Eq : public EquatableBinaryExpr {
@@ -327,6 +351,10 @@ struct RUMUR_API_WITH_RTTI ArithmeticBinaryExpr : public BinaryExpr {
 
   Ptr<TypeExpr> type() const final;
   void validate() const final;
+
+protected:
+  ArithmeticBinaryExpr(const ArithmeticBinaryExpr &) = default;
+  ArithmeticBinaryExpr &operator=(const ArithmeticBinaryExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Add : public ArithmeticBinaryExpr {

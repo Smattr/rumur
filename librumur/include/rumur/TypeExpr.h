@@ -57,6 +57,10 @@ struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
   // Is this the type Boolean? Note that this only returns true for the actual
   // type Boolean, and not for TypeExprIDs that point at Boolean.
   virtual bool is_boolean() const;
+
+protected:
+  TypeExpr(const TypeExpr &) = default;
+  TypeExpr &operator=(const TypeExpr &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI Range : public TypeExpr {

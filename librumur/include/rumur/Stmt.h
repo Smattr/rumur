@@ -24,6 +24,10 @@ struct RUMUR_API_WITH_RTTI Stmt : public Node {
 
   virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
+
+protected:
+  Stmt(const Stmt &) = default;
+  Stmt &operator=(const Stmt &) = default;
 };
 
 struct RUMUR_API_WITH_RTTI AliasStmt : public Stmt {
