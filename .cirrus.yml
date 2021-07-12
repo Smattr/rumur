@@ -10,7 +10,7 @@ task:
         image: gcc:4.9
       environment:
         DDEBIAN_FRONTEND: noninteractive
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y python3
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y cmake python3
 
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
