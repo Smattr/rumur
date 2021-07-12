@@ -20,7 +20,7 @@ task:
     - name: Linux, GCC 4.9
       container:
         image: gcc:4.9
-      install_script: apt-get install python3
+      install_script: apt-get update && apt-get install python3
 
     - name: macOS, XCode 11.3.1, Homebrew
       osx_instance:
