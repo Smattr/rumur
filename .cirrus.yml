@@ -7,7 +7,7 @@ task:
 
     - name: Linux, GCC 4.9
       container:
-        image: gcc:4.9
+        image: gcc:5.5
       environment:
         DDEBIAN_FRONTEND: noninteractive
       install_script: apt-get update -y && apt-get install --no-install-recommends -y cmake python3
