@@ -88,9 +88,8 @@ def is_dirty() -> bool:
 def main(args: [str]) -> int:
 
   if len(args) != 2 or args[1] == '--help':
-    sys.stderr.write(
-      f'usage: {args[0]} file\n'
-       ' write version information as a C++ source file\n')
+    sys.stderr.write('usage: {} file\n'.format(args[0]))
+    sys.stderr.write(' write version information as a C++ source file\n')
     return -1
 
   # Get the contents of the old version file if it exists.
@@ -108,27 +107,27 @@ def main(args: [str]) -> int:
   if version is None and has_git():
     tag = get_tag()
     if tag is not None:
-      version = f'{tag}{" (dirty)" if is_dirty() else ""}'
+      version = '{}{}'.format(tag, ' (dirty)' if is_dirty() else '')
 
   # third, look for the commit hash as the version
   if version is None and has_git():
     rev = get_sha()
     assert rev is not None
-    version = f'Git commit {rev}{" (dirty)" if is_dirty() else ""}'
+    version = 'Git commit {}{}'.format(rev, ' (dirty)' if is_dirty() else '')
 
   # Finally, fall back to our known release version.
   if version is None:
     version = last_release()
 
-  new =  '#pragma once\n' \
-         '\n' \
-         'namespace rumur {\n' \
-         '\n' \
-         'static constexpr const char *get_version() {\n' \
-        f'  return "{version}";\n' \
-         '}\n' \
-         '\n' \
-         '}'
+  new = '#pragma once\n' \
+        '\n' \
+        'namespace rumur {{\n' \
+        '\n' \
+        'static constexpr const char *get_version() {{\n' \
+        '  return "{}";\n' \
+        '}}\n' \
+        '\n' \
+        '}}'.format(version)
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.
