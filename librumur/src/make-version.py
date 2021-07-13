@@ -23,7 +23,7 @@ def last_release(): # -> str:
 
   raise Exception('version heading not found in changelog')
 
-def has_git() # -> bool
+def has_git(): # -> bool
   '''
   Return True if we are in a Git repository and have Git.
   '''
