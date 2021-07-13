@@ -8,7 +8,6 @@ import os
 import re
 import subprocess as sp
 import sys
-from typing import Optional
 
 def last_release() -> str:
   '''
@@ -42,7 +41,7 @@ def has_git() -> bool:
 
   return True
 
-def get_tag() -> Optional[str]:
+def get_tag() -> 'Optional'[str]:
   '''
   Find the version tag of the current Git commit, e.g. v2020.05.03, if it
   exists.
