@@ -1,8 +1,5 @@
 task:
 
-  # only test the master branch and pull requests
-  only_if: $CIRRUS_BRANCH == "master" || $CIRRUS_PR != ""
-
   # increase timeout to the maximum limit
   timeout_in: 120m
 
@@ -116,4 +113,4 @@ task:
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && cmake --build . -- check
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && cmake --build . -- install && cmake --build . -- check
