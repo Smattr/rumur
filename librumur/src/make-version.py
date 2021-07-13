@@ -9,7 +9,7 @@ import re
 import subprocess as sp
 import sys
 
-def last_release() -> str:
+def last_release(): # -> str:
   '''
   The version of the last tagged release of Rumur. This will be used as the
   version number if no Git information is available.
@@ -23,7 +23,7 @@ def last_release() -> str:
 
   raise Exception('version heading not found in changelog')
 
-def has_git() -> bool:
+def has_git() # -> bool
   '''
   Return True if we are in a Git repository and have Git.
   '''
@@ -41,7 +41,7 @@ def has_git() -> bool:
 
   return True
 
-def get_tag() -> 'Optional'[str]:
+def get_tag(): # -> Optional[str]
   '''
   Find the version tag of the current Git commit, e.g. v2020.05.03, if it
   exists.
@@ -59,7 +59,7 @@ def get_tag() -> 'Optional'[str]:
 
   return tag
 
-def get_sha() -> str:
+def get_sha(): # -> str
   '''
   Find the hash of the current Git commit.
   '''
@@ -68,7 +68,7 @@ def get_sha() -> str:
 
   return rev
 
-def is_dirty() -> bool:
+def is_dirty(): # -> bool
   '''
   Determine whether the current working directory has uncommitted changes.
   '''
@@ -84,7 +84,7 @@ def is_dirty() -> bool:
 
   return dirty
 
-def main(args: [str]) -> int:
+def main(args): # -> int
 
   if len(args) != 2 or args[1] == '--help':
     sys.stderr.write('usage: {} file\n'.format(args[0]))
