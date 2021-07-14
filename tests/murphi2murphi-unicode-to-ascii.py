@@ -10,12 +10,12 @@ model = pathlib.Path(__file__).parent / 'unicode-assignment.m'
 assert model.exists()
 
 # use the ASCII transformation to remove ≔
-print(f'+ murphi2murphi --to-ascii {model}')
+print('+ murphi2murphi --to-ascii {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
   '--to-ascii', model])
 decoded = transformed.decode('utf-8', 'replace')
 
-print(f'transformed model:\n{decoded}')
+print('transformed model:\n{}'.format(decoded))
 
 # the ≔ operator should have become :=
 assert re.search(r'\bx := true\b', decoded)
@@ -23,4 +23,6 @@ assert re.search(r'\bx := !x\b', decoded)
 
 # the generated model also should be valid syntax for Rumur
 print('+ rumur --output /dev/null <(transformed model)')
-subprocess.run(['rumur', '--output', os.devnull], check=True, input=transformed)
+p = subprocess.Popen(['rumur', '--output', os.devnull], stdin=subprocess.PIPE)
+p.communicate(transformed)
+assert p.returncode == 0
