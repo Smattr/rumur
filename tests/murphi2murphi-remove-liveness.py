@@ -10,7 +10,7 @@ model = pathlib.Path(__file__).parent / 'liveness-miss1.m'
 assert model.exists()
 
 # confirm it contains the liveness property we expect
-with open(model, 'rt', encoding='utf-8') as f:
+with open(str(model), 'rt', encoding='utf-8') as f:
   assert re.search(r'liveness "x is 10" x = 10', f.read())
 
 # use the remove-liveness pass to remove the property
