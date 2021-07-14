@@ -13,7 +13,7 @@ assert model.exists()
 # this model
 print('+ murphi2murphi --decompose-complex-comparisons {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
-  '--decompose-complex-comparisons', model])
+  '--decompose-complex-comparisons', str(model)])
 decoded = transformed.decode('utf-8', 'replace')
 
 print('transformed model:\n{}'.format(decoded))

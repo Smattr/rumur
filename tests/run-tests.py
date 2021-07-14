@@ -81,7 +81,7 @@ class murphi2c(unittest.TestCase):
 
     # there is no C equivalent of isundefined, because an implicit assumption in
     # the C representation is that you do not rely on undefined values
-    with open(testcase, 'rt', encoding='utf-8') as f:
+    with open(str(testcase), 'rt', encoding='utf-8') as f:
       should_fail = re.search(r'\bisundefined\b', f.read()) is not None
 
     args = ['murphi2c', testcase]

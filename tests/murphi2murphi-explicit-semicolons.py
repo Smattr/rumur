@@ -12,7 +12,7 @@ assert model.exists()
 # use the explicit-semicolons pass to add semi-colons
 print('+ murphi2murphi --explicit-semicolons {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
-  '--explicit-semicolons', model])
+  '--explicit-semicolons', str(model)])
 decoded = transformed.decode('utf-8', 'replace')
 
 print('transformed model:\n{}'.format(decoded))

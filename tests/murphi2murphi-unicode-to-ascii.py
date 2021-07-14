@@ -12,7 +12,7 @@ assert model.exists()
 # use the ASCII transformation to remove ≔
 print('+ murphi2murphi --to-ascii {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
-  '--to-ascii', model])
+  '--to-ascii', str(model)])
 decoded = transformed.decode('utf-8', 'replace')
 
 print('transformed model:\n{}'.format(decoded))

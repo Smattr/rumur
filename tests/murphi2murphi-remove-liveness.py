@@ -16,7 +16,7 @@ with open(model, 'rt', encoding='utf-8') as f:
 # use the remove-liveness pass to remove the property
 print('+ murphi2murphi --remove-liveness {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
-  '--remove-liveness', model])
+  '--remove-liveness', str(model)])
 decoded = transformed.decode('utf-8', 'replace')
 
 print('transformed model:\n{}'.format(decoded))

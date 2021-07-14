@@ -12,7 +12,7 @@ assert model.exists()
 # use the switch-to-if pass to remove the switch statements
 print('+ murphi2murphi --switch-to-if {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
-  '--switch-to-if', model])
+  '--switch-to-if', str(model)])
 decoded = transformed.decode('utf-8', 'replace')
 
 print('transformed model:\n{}'.format(decoded))
