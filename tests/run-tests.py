@@ -44,7 +44,7 @@ def parse_test_options(src, debug = False, multithreaded = False, xml = False):
   '''
   extract test tweaks and directives from leading comments in a test input
   '''
-  with open(src, 'rt', encoding='utf-8') as f:
+  with open(str(src), 'rt', encoding='utf-8') as f:
     for line in f:
       # recognise '-- rumur_flags: …' etc lines
       m = re.match(r'\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$', line)
@@ -122,7 +122,7 @@ class murphi2cHeader(unittest.TestCase):
 
     # there is no C equivalent of isundefined, because an implicit assumption in
     # the C representation is that you do not rely on undefined values
-    with open(testcase, 'rt', encoding='utf-8') as f:
+    with open(str(testcase), 'rt', encoding='utf-8') as f:
       should_fail = re.search(r'\bisundefined\b', f.read()) is not None
 
     args = ['murphi2c', '--header', testcase]
@@ -150,7 +150,7 @@ class murphi2cHeader(unittest.TestCase):
 
       # write the header to a temporary file
       header = Path(tmp) / 'header.h'
-      with open(header, 'wt', encoding='utf-8') as f:
+      with open(str(header), 'wt', encoding='utf-8') as f:
         f.write(stdout)
 
       # ask the C compiler if the header is valid
@@ -331,7 +331,7 @@ class murphi2uclid(unittest.TestCase):
 
       # write the Uclid5 source to a temporary file
       src = Path(tmp) / 'source.ucl'
-      with open(src, 'wt', encoding='utf-8') as f:
+      with open(str(src), 'wt', encoding='utf-8') as f:
         f.write(stdout)
 
       # ask Uclid if the source is valid
@@ -448,7 +448,7 @@ class rumur(unittest.TestCase):
 
     # coarse grained check for whether the model contains a 'put' statement that
     # could screw up XML validation
-    with open(testcase, 'rt', encoding='utf-8') as f:
+    with open(str(testcase), 'rt', encoding='utf-8') as f:
       has_put = re.search(r'\bput\b', f.read()) is not None
 
     if xml and not has_put:
