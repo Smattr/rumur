@@ -544,7 +544,7 @@ def main():
     if p.is_dir(): continue
 
     # skip ourselves
-    if p.samefile(__file__): continue
+    if os.path.samefile(str(p), __file__): continue
 
     name = make_name(p)
 
