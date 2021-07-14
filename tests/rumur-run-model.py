@@ -38,7 +38,7 @@ end;
 '''
 
 def main():
-  p = sp.Popen(['python3', RUMUR_RUN], stdin=subprocess.PIPE)
+  p = sp.Popen(['python3', RUMUR_RUN], stdin=sp.PIPE)
   p.communicate(MODEL.encode('utf-8', 'replace'))
   return p.returncode
 
