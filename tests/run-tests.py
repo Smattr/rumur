@@ -59,7 +59,7 @@ class executable(unittest.TestCase):
 
   def _run(self, testcase):
 
-    assert os.access(testcase, os.X_OK), 'non-executable test case ' \
+    assert os.access(str(testcase), os.X_OK), 'non-executable test case ' \
       '{} attached to executable class'.format(testcase)
 
     ret, stdout, stderr = run([testcase])
@@ -532,7 +532,7 @@ def main():
     if p.is_dir(): continue
 
     # skip non-executable files
-    if not os.access(p, os.X_OK): continue
+    if not os.access(str(p), os.X_OK): continue
 
     CONFIG[p.name] = eval(sp.check_output([p]))
 
@@ -549,7 +549,7 @@ def main():
     name = make_name(p)
 
     # if this is executable, treat it as a test case
-    if os.access(p, os.X_OK):
+    if os.access(str(p), os.X_OK):
       assert not hasattr(executable, name), \
         'name collision involving executable.{}'.format(name)
       setattr(executable, name, lambda self, p=p: self._run(p))
