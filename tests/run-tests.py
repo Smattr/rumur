@@ -534,7 +534,7 @@ def main():
     # skip non-executable files
     if not os.access(str(p), os.X_OK): continue
 
-    CONFIG[p.name] = eval(sp.check_output([p]))
+    CONFIG[p.name] = eval(sp.check_output([str(p)]))
 
   # find files in our directory
   root = Path(__file__).parent
