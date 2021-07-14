@@ -36,7 +36,8 @@ def run(args, stdin = None):
     stdin = enc(stdin)
   env = {k: v for k, v in os.environ.items()}
   env.update({k: str(v) for k, v in CONFIG.items()})
-  p = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE, stdin=sp.PIPE, env=env)
+  p = sp.Popen([str(a) for a in args], stdout=sp.PIPE, stderr=sp.PIPE,
+               stdin=sp.PIPE, env=env)
   stdout, stderr = p.communicate(stdin)
   return p.returncode, dec(stdout), dec(stderr)
 
