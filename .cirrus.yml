@@ -5,7 +5,7 @@ task:
 
   matrix:
 
-    - name: Linux, GCC 4.9
+    - name: Linux, GCC 4.7
       container:
         image: gcc:4.9
       environment:
