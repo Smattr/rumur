@@ -11,7 +11,7 @@ task:
       environment:
         DDEBIAN_FRONTEND: noninteractive
         PATH: /opt/cmake-3.21.0-rc3-linux-x86_64/bin:${PATH}
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev libxml2-utils python3 valigrind && wget https://github.com/Kitware/CMake/releases/download/v3.21.0-rc3/cmake-3.21.0-rc3-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.21.0-rc3-linux-x86_64.tar.gz --directory /opt
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev libxml2-utils python3 valgrind && wget https://github.com/Kitware/CMake/releases/download/v3.21.0-rc3/cmake-3.21.0-rc3-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.21.0-rc3-linux-x86_64.tar.gz --directory /opt
 
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
