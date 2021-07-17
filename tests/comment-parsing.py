@@ -112,9 +112,8 @@ end;
 '''
 
 def process(input: str) -> str:
-  proc = subprocess.run(['murphi-comment-ls'], input=input,
-    stdout=subprocess.PIPE, check=True, universal_newlines=True)
-  return proc.stdout
+  return subprocess.check_output(['murphi-comment-ls'], input=input,
+    universal_newlines=True)
 
 def main():
 
