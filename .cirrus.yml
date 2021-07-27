@@ -20,6 +20,13 @@ task:
         image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
+    - name: Linux, GCC 10.3
+      container:
+        image: gcc:10.3
+      environment:
+        DDEBIAN_FRONTEND: noninteractive
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake flex libfl-dev libgmp-dev
+
     - name: macOS, XCode 11.3.1, Homebrew
       osx_instance:
         image: catalina-xcode-11.3.1
