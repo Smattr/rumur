@@ -11,9 +11,9 @@ task:
       freebsd_instance:
         image_family: freebsd-13-0-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 12.1
+    - name: FreeBSD 12.2
       freebsd_instance:
-        image_family: freebsd-12-1-snap
+        image_family: freebsd-12-2-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 11.3
       freebsd_instance:
