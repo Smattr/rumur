@@ -20,6 +20,13 @@ task:
         image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
+    - name: Linux, GCC 4.9
+      container:
+        image: gcc:4.9
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        PATH: /opt/cmake-3.21.0-rc3-linux-x86_64/bin:${PATH}
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev python3 && wget https://github.com/Kitware/CMake/releases/download/v3.21.0-rc3/cmake-3.21.0-rc3-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.21.0-rc3-linux-x86_64.tar.gz --directory /opt
     - name: Linux, GCC 8.5
       container:
         image: gcc:8.5

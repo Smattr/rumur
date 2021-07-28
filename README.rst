@@ -36,7 +36,7 @@ First you will need to have the following dependencies installed:
 * CMake_
 * Flex_
 * Libgmp_
-* Python_ ≥ 3.6
+* Python_ ≥ 3.4
 
 Then:
 
