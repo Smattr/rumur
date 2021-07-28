@@ -4,7 +4,7 @@ import argparse
 import re
 import sys
 
-def main(args: [str]) -> int:
+def main(args):
 
   # parse command line arguments
   parser = argparse.ArgumentParser(
@@ -15,12 +15,12 @@ def main(args: [str]) -> int:
   options = parser.parse_args(args[1:])
 
   array = re.sub(r'[^\w\d]', '_', options.input.name)
-  size = f'{array}_len'
+  size = '{}_len'.format(array)
 
   options.output.write(
-     '#include <cstddef>\n'
-     '\n'
-    f'extern const unsigned char {array}[] = {{')
+    '#include <cstddef>\n'
+    '\n'
+    'extern const unsigned char {}[] = {{'.format(array))
 
   index = 0
   while True:
@@ -32,14 +32,16 @@ def main(args: [str]) -> int:
     if index % 12 == 0:
       options.output.write('\n ')
 
-    options.output.write(f' 0x{int.from_bytes(c, byteorder="little"):02x},')
+    options.output.write(
+      ' 0x{:02x},'.format(int.from_bytes(c, byteorder='little')))
 
     index += 1
 
   options.output.write(
-     '\n'
-     '};\n'
-    f'extern const size_t {size} = sizeof({array}) / sizeof({array}[0]);\n')
+    '\n'
+    '}};\n'
+    'extern const size_t {} = sizeof({}) / sizeof({}[0]);\n'
+    .format(size, array, array))
 
   return 0
 
