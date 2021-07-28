@@ -38,7 +38,8 @@ end;
 '''
 
 def main():
-  p = sp.run(['python3', RUMUR_RUN], input=MODEL.encode('utf-8', 'replace'))
+  p = sp.Popen(['python3', RUMUR_RUN], stdin=sp.PIPE)
+  p.communicate(MODEL.encode('utf-8', 'replace'))
   return p.returncode
 
 if __name__ == '__main__':

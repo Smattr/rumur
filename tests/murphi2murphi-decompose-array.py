@@ -11,12 +11,12 @@ assert model.exists()
 
 # use the complex comparison decomposition to explode the array comparison in
 # this model
-print(f'+ murphi2murphi --decompose-complex-comparisons {model}')
+print('+ murphi2murphi --decompose-complex-comparisons {}'.format(model))
 transformed = subprocess.check_output(['murphi2murphi',
-  '--decompose-complex-comparisons', model])
+  '--decompose-complex-comparisons', str(model)])
 decoded = transformed.decode('utf-8', 'replace')
 
-print(f'transformed model:\n{decoded}')
+print('transformed model:\n{}'.format(decoded))
 
 # the comparisons should have been decomposed into element-wise comparison
 assert re.search(r'\bx\[i0\] = y\[i0\]', decoded)
@@ -24,4 +24,6 @@ assert re.search(r'\bx\[i0\] != y\[i0\]', decoded)
 
 # the generated model also should be valid syntax for Rumur
 print('+ rumur --output /dev/null <(transformed model)')
-subprocess.run(['rumur', '--output', os.devnull], check=True, input=transformed)
+p = subprocess.Popen(['rumur', '--output', os.devnull], stdin=subprocess.PIPE)
+p.communicate(transformed)
+assert p.returncode == 0

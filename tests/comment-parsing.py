@@ -111,9 +111,12 @@ rule begin
 end;
 '''
 
-def process(input: str) -> str:
-  return subprocess.check_output(['murphi-comment-ls'], input=input,
-    universal_newlines=True)
+def process(input):
+  proc = subprocess.Popen(['murphi-comment-ls'], stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE, universal_newlines=True)
+  stdout, _ = proc.communicate(input)
+  assert proc.returncode == 0
+  return stdout
 
 def main():
 
