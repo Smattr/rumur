@@ -8,9 +8,8 @@ import os
 import re
 import subprocess as sp
 import sys
-from typing import Optional
 
-def last_release() -> str:
+def last_release():
   '''
   The version of the last tagged release of Rumur. This will be used as the
   version number if no Git information is available.
@@ -24,7 +23,7 @@ def last_release() -> str:
 
   raise Exception('version heading not found in changelog')
 
-def has_git() -> bool:
+def has_git():
   '''
   Return True if we are in a Git repository and have Git.
   '''
@@ -42,7 +41,7 @@ def has_git() -> bool:
 
   return True
 
-def get_tag() -> Optional[str]:
+def get_tag():
   '''
   Find the version tag of the current Git commit, e.g. v2020.05.03, if it
   exists.
@@ -60,7 +59,7 @@ def get_tag() -> Optional[str]:
 
   return tag
 
-def get_sha() -> str:
+def get_sha():
   '''
   Find the hash of the current Git commit.
   '''
@@ -69,28 +68,27 @@ def get_sha() -> str:
 
   return rev
 
-def is_dirty() -> bool:
+def is_dirty():
   '''
   Determine whether the current working directory has uncommitted changes.
   '''
   dirty = False
 
-  p = sp.run(['git', 'diff', '--exit-code'], stdout=sp.DEVNULL,
+  ret = sp.call(['git', 'diff', '--exit-code'], stdout=sp.DEVNULL,
     stderr=sp.DEVNULL)
-  dirty |= p.returncode != 0
+  dirty |= ret != 0
 
-  p = sp.run(['git', 'diff', '--cached', '--exit-code'], stdout=sp.DEVNULL,
+  ret = sp.call(['git', 'diff', '--cached', '--exit-code'], stdout=sp.DEVNULL,
     stderr=sp.DEVNULL)
-  dirty |= p.returncode != 0
+  dirty |= ret != 0
 
   return dirty
 
-def main(args: [str]) -> int:
+def main(args):
 
   if len(args) != 2 or args[1] == '--help':
-    sys.stderr.write(
-      f'usage: {args[0]} file\n'
-       ' write version information as a C++ source file\n')
+    sys.stderr.write('usage: {} file\n'.format(args[0]))
+    sys.stderr.write(' write version information as a C++ source file\n')
     return -1
 
   # Get the contents of the old version file if it exists.
@@ -108,27 +106,27 @@ def main(args: [str]) -> int:
   if version is None and has_git():
     tag = get_tag()
     if tag is not None:
-      version = f'{tag}{" (dirty)" if is_dirty() else ""}'
+      version = '{}{}'.format(tag, ' (dirty)' if is_dirty() else '')
 
   # third, look for the commit hash as the version
   if version is None and has_git():
     rev = get_sha()
     assert rev is not None
-    version = f'Git commit {rev}{" (dirty)" if is_dirty() else ""}'
+    version = 'Git commit {}{}'.format(rev, ' (dirty)' if is_dirty() else '')
 
   # Finally, fall back to our known release version.
   if version is None:
     version = last_release()
 
-  new =  '#pragma once\n' \
-         '\n' \
-         'namespace rumur {\n' \
-         '\n' \
-         'static constexpr const char *get_version() {\n' \
-        f'  return "{version}";\n' \
-         '}\n' \
-         '\n' \
-         '}'
+  new = '#pragma once\n' \
+        '\n' \
+        'namespace rumur {{\n' \
+        '\n' \
+        'static constexpr const char *get_version() {{\n' \
+        '  return "{}";\n' \
+        '}}\n' \
+        '\n' \
+        '}}'.format(version)
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.
