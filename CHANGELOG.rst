@@ -1,6 +1,53 @@
 Change log
 ==========
 
+v2021.08.28
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: code generation of loop overflow checks was incorrect in a number of
+  cases. This has now been fixed (commits
+  c1e46b1267bd52cbb445466b2fa1aa7ccaca9a26,
+  a2a45efb689968de5440a1b419f070077f84d306,
+  9c898780ea30652f4beeb1e5694c4077ea972ba8,
+  27a9f27f35ca024ea0de1ae2038a4e66535043b0,
+  d69c6b51209c3e78eee4808c15501b0cbc325e5f,
+  2feee3e0382a561bdbdee1f0186de0db8e277e8e).
+* A new experimental binary, ``murphi2uclid``, is provided for translating
+  Murphi models to the `Uclid5 prover`_.
+* Syntax errors now refer to operators (e.g. ``>>``) rather than their internal
+  names (e.g. ``RSH``) (commit 7cf378f9711bbd19b4c4bdc648357b0043a57fc7).
+* GCC 4.7 and GCC 4.8 are no longer supported. If using GCC, the minimum
+  baseline is now GCC 4.9. An attempt will be made to not break compilation with
+  GCC 4.7 and 4.8, but no guarantee is provided going forwards (commits
+  201a7cab8d90b78696197c365d42d70998f16bd8,
+  517c2151e7a1923d6e625e7256e5da78d063ad6a).
+* The minimum required version of Python has been *decreased* from Python 3.6 to
+  Python 3.4 (commits 25cc3303434d048066c75e1242e8ef556c09c9e4,
+  0b68a69a702f1c7b518f425061c6657437e0c004,
+  b3288d12bd5d67e2ed5c23d30f0412ca0bcdda8c,
+  a27329276aa00c5e15ba9b1831c26c950412e68b,
+  162355d42b9dda960624548b4c95c0b9f8008af8).
+* The previously deprecated ``--smt-logic`` command line option has been removed
+  (commit bf5b076bbba95c1423e9a7c5a2b64b8ced55fb73).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Librumur now includes API functions for sanitising rule names to be
+  symbol-like. This can be useful for code generators that want to emit symbols
+  corresponding to rule names (commit 5d57a5a13a6f0c93e31bbddc4f22a066edb40658).
+* Copy constructors and assignment operators are now protected on AST node
+  classes (commit 45b27dbac7082e2b2dee85ee4ff7bb2f0c54d063).
+* Visibility of librumur symbols is now set via attributes. The ``RUMUR_API``
+  macro may be used to override this if necessary (commits
+  53344ec86e3a71725039de282d4307ca9af25fc0,
+  c0cdc06024adb23f94409449266fe220f3094de9).
+* A previously deprecated ``Model`` constructor has been removed (commit
+  902e4389fca623a68c9c6fbfe298e5561a6aef04).
+
+.. _`Uclid5 prover`: https://github.com/uclid-org/uclid
+
 v2020.12.20
 -----------
 
