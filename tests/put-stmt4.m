@@ -1,4 +1,4 @@
--- checker_output: None if self.xml else re.compile(r'z\[6\]:false')
+-- checker_output: None if xml else re.compile(r'z\[6\]:false')
 
 -- Test put statements get parsed correctly. The expected output is just chosen
 -- to match one of the array entries that is correlated with mis-implementing

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstddef>
-#include <iostream>
 #include "location.hh"
+#include <iostream>
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
@@ -12,24 +12,31 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Stmt : public Node {
+struct RUMUR_API_WITH_RTTI Stmt : public Node {
 
   Stmt(const location &loc_);
 
   virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
 
+protected:
+  Stmt(const Stmt &) = default;
+  Stmt &operator=(const Stmt &) = default;
 };
 
-struct AliasStmt : public Stmt {
+struct RUMUR_API_WITH_RTTI AliasStmt : public Stmt {
 
   std::vector<Ptr<AliasDecl>> aliases;
   std::vector<Ptr<Stmt>> body;
 
   AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+            const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   AliasStmt *clone() const final;
   virtual ~AliasStmt() = default;
 
@@ -37,13 +44,13 @@ struct AliasStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct PropertyStmt : public Stmt {
+struct RUMUR_API_WITH_RTTI PropertyStmt : public Stmt {
 
   Property property;
   std::string message;
 
   PropertyStmt(const Property &property_, const std::string &message_,
-    const location &loc_);
+               const location &loc_);
   PropertyStmt *clone() const final;
   virtual ~PropertyStmt() = default;
 
@@ -52,13 +59,13 @@ struct PropertyStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Assignment : public Stmt {
+struct RUMUR_API_WITH_RTTI Assignment : public Stmt {
 
   Ptr<Expr> lhs;
   Ptr<Expr> rhs;
 
   Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-    const location &loc_);
+             const location &loc_);
   Assignment *clone() const final;
   virtual ~Assignment() = default;
 
@@ -67,7 +74,7 @@ struct Assignment : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Clear : public Stmt {
+struct RUMUR_API_WITH_RTTI Clear : public Stmt {
 
   Ptr<Expr> rhs;
 
@@ -80,7 +87,7 @@ struct Clear : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct ErrorStmt : public Stmt {
+struct RUMUR_API_WITH_RTTI ErrorStmt : public Stmt {
 
   std::string message;
 
@@ -92,13 +99,13 @@ struct ErrorStmt : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct For : public Stmt {
+struct RUMUR_API_WITH_RTTI For : public Stmt {
 
   Quantifier quantifier;
   std::vector<Ptr<Stmt>> body;
 
-  For(const Quantifier &quantifier_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+  For(const Quantifier &quantifier_, const std::vector<Ptr<Stmt>> &body_,
+      const location &loc_);
   virtual ~For() = default;
   For *clone() const final;
 
@@ -106,13 +113,13 @@ struct For : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct IfClause : public Node {
+struct RUMUR_API_WITH_RTTI IfClause : public Node {
 
   Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;
 
-  IfClause(const Ptr<Expr> &condition_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+  IfClause(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
+           const location &loc_);
   virtual ~IfClause() = default;
   IfClause *clone() const final;
 
@@ -121,7 +128,7 @@ struct IfClause : public Node {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct If : public Stmt {
+struct RUMUR_API_WITH_RTTI If : public Stmt {
 
   std::vector<IfClause> clauses;
 
@@ -132,19 +139,19 @@ struct If : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct ProcedureCall : public Stmt {
+struct RUMUR_API_WITH_RTTI ProcedureCall : public Stmt {
 
   FunctionCall call;
 
   ProcedureCall(const std::string &name,
-    const std::vector<Ptr<Expr>> &arguments, const location &loc_);
+                const std::vector<Ptr<Expr>> &arguments, const location &loc_);
   virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const final;
   void visit(BaseTraversal &visitor) final;
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Put : public Stmt {
+struct RUMUR_API_WITH_RTTI Put : public Stmt {
 
   std::string value;
   Ptr<Expr> expr;
@@ -159,7 +166,7 @@ struct Put : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Return : public Stmt {
+struct RUMUR_API_WITH_RTTI Return : public Stmt {
 
   Ptr<Expr> expr;
 
@@ -170,26 +177,26 @@ struct Return : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct SwitchCase : public Node {
+struct RUMUR_API_WITH_RTTI SwitchCase : public Node {
 
   std::vector<Ptr<Expr>> matches;
   std::vector<Ptr<Stmt>> body;
 
   SwitchCase(const std::vector<Ptr<Expr>> &matches_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+             const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~SwitchCase() = default;
   SwitchCase *clone() const final;
   void visit(BaseTraversal &visitor) final;
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Switch : public Stmt {
+struct RUMUR_API_WITH_RTTI Switch : public Stmt {
 
   Ptr<Expr> expr;
   std::vector<SwitchCase> cases;
 
   Switch(const Ptr<Expr> &expr_, const std::vector<SwitchCase> &cases_,
-    const location &loc_);
+         const location &loc_);
   virtual ~Switch() = default;
   Switch *clone() const final;
 
@@ -198,7 +205,7 @@ struct Switch : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct Undefine : public Stmt {
+struct RUMUR_API_WITH_RTTI Undefine : public Stmt {
 
   Ptr<Expr> rhs;
 
@@ -211,13 +218,13 @@ struct Undefine : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct While : public Stmt {
+struct RUMUR_API_WITH_RTTI While : public Stmt {
 
   Ptr<Expr> condition;
   std::vector<Ptr<Stmt>> body;
 
   While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
-    const location &loc_);
+        const location &loc_);
   virtual ~While() = default;
   While *clone() const final;
 
@@ -226,4 +233,4 @@ struct While : public Stmt {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-}
+} // namespace rumur

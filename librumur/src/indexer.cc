@@ -2,21 +2,19 @@
 #include <cstddef>
 #include <memory>
 #include <rumur/Expr.h>
-#include <rumur/indexer.h>
 #include <rumur/Model.h>
 #include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/indexer.h>
+#include <rumur/traverse.h>
 
 namespace rumur {
 
-void Indexer::visit_add(Add &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_add(Add &n) { visit_bexpr(n); }
 
 void Indexer::visit_aliasdecl(AliasDecl &n) {
   n.unique_id = next++;
@@ -39,17 +37,11 @@ void Indexer::visit_aliasstmt(AliasStmt &n) {
     dispatch(*s);
 }
 
-void Indexer::visit_ambiguousamp(AmbiguousAmp &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_ambiguousamp(AmbiguousAmp &n) { visit_bexpr(n); }
 
-void Indexer::visit_ambiguouspipe(AmbiguousPipe &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_ambiguouspipe(AmbiguousPipe &n) { visit_bexpr(n); }
 
-void Indexer::visit_and(And &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_and(And &n) { visit_bexpr(n); }
 
 void Indexer::visit_array(Array &n) {
   n.unique_id = next++;
@@ -63,17 +55,11 @@ void Indexer::visit_assignment(Assignment &n) {
   dispatch(*n.rhs);
 }
 
-void Indexer::visit_band(Band &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_band(Band &n) { visit_bexpr(n); }
 
-void Indexer::visit_bnot(Bnot &n) {
-  visit_uexpr(n);
-}
+void Indexer::visit_bnot(Bnot &n) { visit_uexpr(n); }
 
-void Indexer::visit_bor(Bor &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_bor(Bor &n) { visit_bexpr(n); }
 
 void Indexer::visit_bexpr(BinaryExpr &n) {
   n.unique_id = next++;
@@ -91,9 +77,7 @@ void Indexer::visit_constdecl(ConstDecl &n) {
   dispatch(*n.value);
 }
 
-void Indexer::visit_div(Div &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_div(Div &n) { visit_bexpr(n); }
 
 void Indexer::visit_element(Element &n) {
   n.unique_id = next++;
@@ -109,13 +93,9 @@ void Indexer::visit_enum(Enum &n) {
   next = n.unique_id_limit;
 }
 
-void Indexer::visit_eq(Eq &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_eq(Eq &n) { visit_bexpr(n); }
 
-void Indexer::visit_errorstmt(ErrorStmt &n) {
-  n.unique_id = next++;
-}
+void Indexer::visit_errorstmt(ErrorStmt &n) { n.unique_id = next++; }
 
 void Indexer::visit_exists(Exists &n) {
   n.unique_id = next++;
@@ -123,9 +103,7 @@ void Indexer::visit_exists(Exists &n) {
   dispatch(*n.expr);
 }
 
-void Indexer::visit_exprid(ExprID &n) {
-  n.unique_id = next++;
-}
+void Indexer::visit_exprid(ExprID &n) { n.unique_id = next++; }
 
 void Indexer::visit_field(Field &n) {
   n.unique_id = next++;
@@ -163,13 +141,9 @@ void Indexer::visit_functioncall(FunctionCall &n) {
     dispatch(*a);
 }
 
-void Indexer::visit_geq(Geq &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_geq(Geq &n) { visit_bexpr(n); }
 
-void Indexer::visit_gt(Gt &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_gt(Gt &n) { visit_bexpr(n); }
 
 void Indexer::visit_if(If &n) {
   n.unique_id = next++;
@@ -185,29 +159,17 @@ void Indexer::visit_ifclause(IfClause &n) {
     dispatch(*s);
 }
 
-void Indexer::visit_implication(Implication &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_implication(Implication &n) { visit_bexpr(n); }
 
-void Indexer::visit_isundefined(IsUndefined &n) {
-  visit_uexpr(n);
-}
+void Indexer::visit_isundefined(IsUndefined &n) { visit_uexpr(n); }
 
-void Indexer::visit_leq(Leq &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_leq(Leq &n) { visit_bexpr(n); }
 
-void Indexer::visit_lsh(Lsh &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_lsh(Lsh &n) { visit_bexpr(n); }
 
-void Indexer::visit_lt(Lt &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_lt(Lt &n) { visit_bexpr(n); }
 
-void Indexer::visit_mod(Mod &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_mod(Mod &n) { visit_bexpr(n); }
 
 void Indexer::visit_model(Model &n) {
   n.unique_id = next++;
@@ -215,29 +177,17 @@ void Indexer::visit_model(Model &n) {
     dispatch(*c);
 }
 
-void Indexer::visit_mul(Mul &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_mul(Mul &n) { visit_bexpr(n); }
 
-void Indexer::visit_negative(Negative &n) {
-  visit_uexpr(n);
-}
+void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
-void Indexer::visit_neq(Neq &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_neq(Neq &n) { visit_bexpr(n); }
 
-void Indexer::visit_not(Not &n) {
-  visit_uexpr(n);
-}
+void Indexer::visit_not(Not &n) { visit_uexpr(n); }
 
-void Indexer::visit_number(Number &n) {
-  n.unique_id = next++;
-}
+void Indexer::visit_number(Number &n) { n.unique_id = next++; }
 
-void Indexer::visit_or(Or &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_or(Or &n) { visit_bexpr(n); }
 
 void Indexer::visit_procedurecall(ProcedureCall &n) {
   n.unique_id = next++;
@@ -298,9 +248,7 @@ void Indexer::visit_return(Return &n) {
     dispatch(*n.expr);
 }
 
-void Indexer::visit_rsh(Rsh &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_rsh(Rsh &n) { visit_bexpr(n); }
 
 void Indexer::visit_ruleset(Ruleset &n) {
   n.unique_id = next++;
@@ -337,9 +285,7 @@ void Indexer::visit_startstate(StartState &n) {
     dispatch(*s);
 }
 
-void Indexer::visit_sub(Sub &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_sub(Sub &n) { visit_bexpr(n); }
 
 void Indexer::visit_switch(Switch &n) {
   n.unique_id = next++;
@@ -368,9 +314,7 @@ void Indexer::visit_typedecl(TypeDecl &n) {
   dispatch(*n.value);
 }
 
-void Indexer::visit_typeexprid(TypeExprID &n) {
-  n.unique_id = next++;
-}
+void Indexer::visit_typeexprid(TypeExprID &n) { n.unique_id = next++; }
 
 void Indexer::visit_uexpr(UnaryExpr &n) {
   n.unique_id = next++;
@@ -394,8 +338,6 @@ void Indexer::visit_while(While &n) {
     dispatch(*s);
 }
 
-void Indexer::visit_xor(Xor &n) {
-  visit_bexpr(n);
-}
+void Indexer::visit_xor(Xor &n) { visit_bexpr(n); }
 
-}
+} // namespace rumur

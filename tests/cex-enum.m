@@ -1,5 +1,5 @@
 -- checker_exit_code: 1
--- checker_output: None if self.xml else re.compile(r'^Rule\s+1, y:\s*[AB] fired.$', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^Rule\s+1, y:\s*[AB] fired.$', re.MULTILINE)
 
 /* An example that causes a counter-example trace involving an enum. The
  * motivation for this is that rulesets quantifying over enums led to enums

@@ -1,8 +1,8 @@
-#include <cstddef>
-#include <cassert>
 #include "../../common/isa.h"
-#include <gmpxx.h>
+#include <cassert>
+#include <cstddef>
 #include "location.hh"
+#include <gmpxx.h>
 #include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
@@ -11,26 +11,26 @@
 #include <rumur/Node.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
-#include <rumur/resolve-symbols.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
 #include <rumur/Symtab.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/resolve-symbols.h>
+#include <rumur/traverse.h>
 #include <rumur/validate.h>
 #include <string>
 #include <utility>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
 class Resolver : public Traversal {
 
- private:
+private:
   Symtab symtab;
 
- public:
+public:
   Resolver() {
 
     // Open a global scope
@@ -41,15 +41,15 @@ class Resolver : public Traversal {
     symtab.declare("boolean", td);
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : Boolean->members) {
-      symtab.declare(m.first, Ptr<ConstDecl>::make("boolean",
-        Ptr<Number>::make(index, location()), Boolean, location()));
+      symtab.declare(m.first,
+                     Ptr<ConstDecl>::make("boolean",
+                                          Ptr<Number>::make(index, location()),
+                                          Boolean, location()));
       index++;
     }
   }
 
-  void visit_add(Add &n) final {
-    visit_bexpr(n);
-  }
+  void visit_add(Add &n) final { visit_bexpr(n); }
 
   void visit_aliasdecl(AliasDecl &n) final {
     dispatch(*n.value);
@@ -78,17 +78,11 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit_ambiguousamp(AmbiguousAmp &n) final {
-    visit_bexpr(n);
-  }
+  void visit_ambiguousamp(AmbiguousAmp &n) final { visit_bexpr(n); }
 
-  void visit_ambiguouspipe(AmbiguousPipe &n) final {
-    visit_bexpr(n);
-  }
+  void visit_ambiguouspipe(AmbiguousPipe &n) final { visit_bexpr(n); }
 
-  void visit_and(And &n) final {
-    visit_bexpr(n);
-  }
+  void visit_and(And &n) final { visit_bexpr(n); }
 
   void visit_assignment(Assignment &n) final {
     dispatch(*n.lhs);
@@ -97,17 +91,11 @@ class Resolver : public Traversal {
     disambiguate(n.rhs);
   }
 
-  void visit_band(Band &n) final {
-    visit_bexpr(n);
-  }
+  void visit_band(Band &n) final { visit_bexpr(n); }
 
-  void visit_bnot(Bnot &n) final {
-    visit_uexpr(n);
-  }
+  void visit_bnot(Bnot &n) final { visit_uexpr(n); }
 
-  void visit_bor(Bor &n) final {
-    visit_bexpr(n);
-  }
+  void visit_bor(Bor &n) final { visit_bexpr(n); }
 
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
@@ -119,9 +107,7 @@ class Resolver : public Traversal {
     disambiguate(n.value);
   }
 
-  void visit_div(Div &n) final {
-    visit_bexpr(n);
-  }
+  void visit_div(Div &n) final { visit_bexpr(n); }
 
   void visit_element(Element &n) final {
     dispatch(*n.array);
@@ -137,11 +123,11 @@ class Resolver : public Traversal {
     mpz_class index = 0;
     size_t id = e->unique_id + 1;
     for (const std::pair<std::string, location> &m : n.members) {
-      auto cd = Ptr<ConstDecl>::make(m.first,
-        Ptr<Number>::make(index, m.second), e, m.second);
+      auto cd = Ptr<ConstDecl>::make(
+          m.first, Ptr<Number>::make(index, m.second), e, m.second);
       // assign this member a unique id so that referrers can use it if need be
-      assert(id < e->unique_id_limit && "number of enum members exceeds what "
-        "was expected");
+      assert(id < e->unique_id_limit &&
+             "number of enum members exceeds what was expected");
       cd->unique_id = id;
       symtab.declare(m.first, cd);
       index++;
@@ -149,9 +135,7 @@ class Resolver : public Traversal {
     }
   }
 
-  void visit_eq(Eq &n) final {
-    visit_bexpr(n);
-  }
+  void visit_eq(Eq &n) final { visit_bexpr(n); }
 
   void visit_exists(Exists &n) final {
     symtab.open_scope();
@@ -235,13 +219,9 @@ class Resolver : public Traversal {
       disambiguate(a);
   }
 
-  void visit_geq(Geq &n) final {
-    visit_bexpr(n);
-  }
+  void visit_geq(Geq &n) final { visit_bexpr(n); }
 
-  void visit_gt(Gt &n) final {
-    visit_bexpr(n);
-  }
+  void visit_gt(Gt &n) final { visit_bexpr(n); }
 
   void visit_ifclause(IfClause &n) final {
     if (n.condition != nullptr)
@@ -252,25 +232,15 @@ class Resolver : public Traversal {
       disambiguate(n.condition);
   }
 
-  void visit_implication(Implication &n) final {
-    visit_bexpr(n);
-  }
+  void visit_implication(Implication &n) final { visit_bexpr(n); }
 
-  void visit_isundefined(IsUndefined &n) final {
-    visit_uexpr(n);
-  }
+  void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
 
-  void visit_leq(Leq &n) final {
-    visit_bexpr(n);
-  }
+  void visit_leq(Leq &n) final { visit_bexpr(n); }
 
-  void visit_lsh(Lsh &n) final {
-    visit_bexpr(n);
-  }
+  void visit_lsh(Lsh &n) final { visit_bexpr(n); }
 
-  void visit_lt(Lt &n) final {
-    visit_bexpr(n);
-  }
+  void visit_lt(Lt &n) final { visit_bexpr(n); }
 
   void visit_model(Model &n) final {
 
@@ -289,14 +259,14 @@ class Resolver : public Traversal {
        * offset in the global state data
        */
       if (ok) {
-        if (auto v = dynamic_cast<VarDecl*>(c.get())) {
+        if (auto v = dynamic_cast<VarDecl *>(c.get())) {
 
           /* If the declaration or one of its children does not validate, it is
            * unsafe to call width().
            */
           try {
             validate(*v);
-          } catch (Error&) {
+          } catch (Error &) {
             /* Skip this and future offset calculations and assume our caller
              * will eventually discover the underlying reason when they call
              * n.validate().
@@ -311,36 +281,24 @@ class Resolver : public Traversal {
         }
       }
 
-      if (auto d = dynamic_cast<Decl*>(c.get()))
+      if (auto d = dynamic_cast<Decl *>(c.get()))
         symtab.declare(d->name, c);
-      if (auto f = dynamic_cast<Function*>(c.get()))
+      if (auto f = dynamic_cast<Function *>(c.get()))
         symtab.declare(f->name, c);
     }
   }
 
-  void visit_mod(Mod &n) final {
-    visit_bexpr(n);
-  }
+  void visit_mod(Mod &n) final { visit_bexpr(n); }
 
-  void visit_mul(Mul &n) final {
-    visit_bexpr(n);
-  }
+  void visit_mul(Mul &n) final { visit_bexpr(n); }
 
-  void visit_negative(Negative &n) final {
-    visit_uexpr(n);
-  }
+  void visit_negative(Negative &n) final { visit_uexpr(n); }
 
-  void visit_neq(Neq &n) final {
-    visit_bexpr(n);
-  }
+  void visit_neq(Neq &n) final { visit_bexpr(n); }
 
-  void visit_not(Not &n) final {
-    visit_uexpr(n);
-  }
+  void visit_not(Not &n) final { visit_uexpr(n); }
 
-  void visit_or(Or &n) final {
-    visit_bexpr(n);
-  }
+  void visit_or(Or &n) final { visit_bexpr(n); }
 
   void visit_property(Property &n) final {
     dispatch(*n.expr);
@@ -379,9 +337,9 @@ class Resolver : public Traversal {
 
     // if the bounds for this iteration are now known to be constant, we can
     // narrow its VarDecl
-    if (n.from != nullptr && n.from->constant() &&
-        n.to != nullptr && n.to->constant()) {
-      auto r = dynamic_cast<Range*>(n.decl->type.get());
+    if (n.from != nullptr && n.from->constant() && n.to != nullptr &&
+        n.to->constant()) {
+      auto r = dynamic_cast<Range *>(n.decl->type.get());
       assert(r != nullptr && "non-range type used for inferred loop decl");
       // the range may have been given as either an up count or down count
       if (n.from->constant_fold() <= n.to->constant_fold()) {
@@ -412,9 +370,7 @@ class Resolver : public Traversal {
     }
   }
 
-  void visit_rsh(Rsh &n) final {
-    visit_bexpr(n);
-  }
+  void visit_rsh(Rsh &n) final { visit_bexpr(n); }
 
   void visit_ruleset(Ruleset &n) final {
     symtab.open_scope();
@@ -460,9 +416,7 @@ class Resolver : public Traversal {
     symtab.close_scope();
   }
 
-  void visit_sub(Sub &n) final {
-    visit_bexpr(n);
-  }
+  void visit_sub(Sub &n) final { visit_bexpr(n); }
 
   void visit_switch(Switch &n) final {
     dispatch(*n.expr);
@@ -513,13 +467,11 @@ class Resolver : public Traversal {
     disambiguate(n.condition);
   }
 
-  void visit_xor(Xor &n) final {
-    visit_bexpr(n);
-  }
+  void visit_xor(Xor &n) final { visit_bexpr(n); }
 
   virtual ~Resolver() = default;
 
- private:
+private:
   void visit_bexpr(BinaryExpr &n) {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -536,13 +488,13 @@ class Resolver : public Traversal {
   // more precise AST node type
   void disambiguate(Ptr<Expr> &e) {
 
-    if (auto a = dynamic_cast<const AmbiguousAmp*>(e.get())) {
+    if (auto a = dynamic_cast<const AmbiguousAmp *>(e.get())) {
 
       // try to get the type of the left hand side
       Ptr<TypeExpr> t;
       try {
         t = a->lhs->type();
-      } catch (Error&) {
+      } catch (Error &) {
         // We failed because the left operand is somehow invalid. Silently
         // ignore this, assuming it will be rediscovered during AST validation.
         return;
@@ -568,13 +520,13 @@ class Resolver : public Traversal {
       return;
     }
 
-    if (auto o = dynamic_cast<const AmbiguousPipe*>(e.get())) {
+    if (auto o = dynamic_cast<const AmbiguousPipe *>(e.get())) {
 
       // try to get the type of the left hand side
       Ptr<TypeExpr> t;
       try {
         t = o->lhs->type();
-      } catch (Error&) {
+      } catch (Error &) {
         // We failed because the left operand is somehow invalid. Silently
         // ignore this, assuming it will be rediscovered during AST validation.
         return;
@@ -602,11 +554,9 @@ class Resolver : public Traversal {
   }
 };
 
-}
+} // namespace
 
-void resolve_symbols(Model &m) {
+void rumur::resolve_symbols(Model &m) {
   Resolver r;
   r.dispatch(m);
-}
-
 }

@@ -1,20 +1,20 @@
-#include <cstddef>
-#include <cassert>
-#include <ctype.h>
 #include "ExplicitSemicolons.h"
+#include <cassert>
+#include <cstddef>
+#include <ctype.h>
 #include <rumur/rumur.h>
 
 using namespace rumur;
 
-ExplicitSemicolons::ExplicitSemicolons(Stage &next_):
-  IntermediateStage(next_) { }
+ExplicitSemicolons::ExplicitSemicolons(Stage &next_)
+    : IntermediateStage(next_) {}
 
 void ExplicitSemicolons::process(const Token &t) {
 
   // if this is a message to ourselves, update our state
   if (t.type == Token::SUBJ && t.subject == this) {
-    assert(!state.empty() && "message to shift state when we have no pending "
-      "next state");
+    assert(!state.empty() &&
+           "message to shift state when we have no pending next state");
     pending_semi = state.front();
     state.pop();
     return;
@@ -29,18 +29,18 @@ void ExplicitSemicolons::process(const Token &t) {
 
   switch (t.type) {
 
-    case Token::CHAR:
-      // if this is white space, keep accruing pending characters
-      if (t.character.size() == 1 && isspace(t.character.c_str()[0])) {
-        pending.push_back(t);
-        return;
-      }
-      break;
-
-    // if this was a shift message to another Stage, accrue it
-    case Token::SUBJ:
+  case Token::CHAR:
+    // if this is white space, keep accruing pending characters
+    if (t.character.size() == 1 && isspace(t.character.c_str()[0])) {
       pending.push_back(t);
       return;
+    }
+    break;
+
+  // if this was a shift message to another Stage, accrue it
+  case Token::SUBJ:
+    pending.push_back(t);
+    return;
   }
 
   // if we reached here, we know one way or another we are done accruing

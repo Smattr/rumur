@@ -1,29 +1,29 @@
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <rumur/Comment.h>
 #include <sstream>
 #include <string>
 #include <vector>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
 /// a file interface that supports lookahead
 class File {
 
- private:
+private:
   position pos;
 
   std::istream &in;
   std::string buffered;
 
- public:
-  explicit File(std::istream &in_): pos(nullptr, 1, 1), in(in_) { }
+public:
+  explicit File(std::istream &in_) : pos(nullptr, 1, 1), in(in_) {}
 
   /// read a new character from the file
   char getchar() {
@@ -81,14 +81,12 @@ class File {
     return buffered.empty() && in.eof();
   }
 
-  position get_position() const {
-    return pos;
-  }
+  position get_position() const { return pos; }
 };
 
-}
+} // namespace
 
-std::vector<Comment> parse_comments(std::istream &input) {
+std::vector<Comment> rumur::parse_comments(std::istream &input) {
 
   std::vector<Comment> result;
 
@@ -121,8 +119,7 @@ std::vector<Comment> parse_comments(std::istream &input) {
       }
     }
 
-    // single line comment?
-    if (in.next_is("--")) {
+    if (in.next_is("--")) { // single line comment?
       position begin = in.get_position();
       // discard the comment starter
       (void)in.read(strlen("--"));
@@ -130,11 +127,11 @@ std::vector<Comment> parse_comments(std::istream &input) {
       std::ostringstream content;
       while (!in.eof() && !in.next_is("\n"))
         content << in.getchar();
-      result.push_back(Comment{content.str(), false, location(begin, in.get_position())});
+      result.push_back(
+          Comment{content.str(), false, location(begin, in.get_position())});
       continue;
 
-    // multiline comment?
-    } else if (in.next_is("/*")) {
+    } else if (in.next_is("/*")) { // multiline comment?
       position begin = in.get_position();
       // discard the comment starter
       (void)in.read(strlen("/*"));
@@ -147,16 +144,13 @@ std::vector<Comment> parse_comments(std::istream &input) {
         }
         content << in.getchar();
       }
-      result.push_back(Comment{content.str(), true, location(begin, in.get_position())});
+      result.push_back(
+          Comment{content.str(), true, location(begin, in.get_position())});
 
-    // otherwise, something irrelevant
-    } else {
+    } else { // otherwise, something irrelevant
       (void)in.getchar();
-
     }
   }
 
   return result;
-}
-
 }

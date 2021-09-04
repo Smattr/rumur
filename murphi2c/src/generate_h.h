@@ -12,4 +12,5 @@
 /// \param pack Whether all structs are packed
 /// \param out Stream to write translation to
 void generate_h(const rumur::Node &n,
-  const std::vector<rumur::Comment> &comments, bool pack, std::ostream &out);
+                const std::vector<rumur::Comment> &comments, bool pack,
+                std::ostream &out);

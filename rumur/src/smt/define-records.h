@@ -1,8 +1,8 @@
 #pragma once
 
+#include "solver.h"
 #include <cstddef>
 #include <rumur/rumur.h>
-#include "solver.h"
 
 namespace smt {
 

@@ -1,15 +1,16 @@
+#include "max-simple-width.h"
 #include <cstddef>
 #include <gmpxx.h>
-#include "max-simple-width.h"
 #include <memory>
 #include <rumur/rumur.h>
 
 using namespace rumur;
 
 // An AST traversal that learns the maximum simple type width.
-namespace { class Measurer : public ConstTraversal {
+namespace {
+class Measurer : public ConstTraversal {
 
- public:
+public:
   mpz_class max = 0;
 
   /* Nothing required for complex types, but we do need to descend into their
@@ -68,7 +69,8 @@ namespace { class Measurer : public ConstTraversal {
      * 'boolean' that is a simple type.
      */
   }
-}; }
+};
+} // namespace
 
 mpz_class max_simple_width(const Model &m) {
   Measurer t;

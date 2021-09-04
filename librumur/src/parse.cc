@@ -1,18 +1,18 @@
 #include <cassert>
 #include <cstddef>
-#include <iostream>
 #include "location.hh"
 #include "parser.yy.hh"
+#include <iostream>
 #include <rumur/Decl.h>
-#include <rumur/except.h>
 #include <rumur/Model.h>
-#include <rumur/parse.h>
 #include <rumur/Ptr.h>
+#include <rumur/except.h>
+#include <rumur/parse.h>
 #include <rumur/scanner.h>
 
-namespace rumur {
+using namespace rumur;
 
-Ptr<Model> parse(std::istream &input) {
+Ptr<Model> rumur::parse(std::istream &input) {
 
   // Setup the parser
   scanner s(&input);
@@ -25,6 +25,4 @@ Ptr<Model> parse(std::istream &input) {
     throw Error("parsing failed", location());
 
   return m;
-}
-
 }

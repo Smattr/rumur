@@ -99,6 +99,7 @@
 %parse-param { rumur::Ptr<rumur::Model> &output }
 
 %token ALIAS
+%token AMPAMP "&&"
 %token ARRAY
 %token ARROW
 %token ASSERT
@@ -108,12 +109,12 @@
 %token BY
 %token CASE
 %token CLEAR
-%token COLON_EQ
+%token COLON_EQ ":="
 %token CONST
 %token COVER
-%token DEQ
+%token DEQ "=="
 %token DO
-%token DOTDOT
+%token DOTDOT ".."
 %token ELSE
 %token ELSIF
 %token END
@@ -136,25 +137,26 @@
 %token FOR
 %token FORALL
 %token FUNCTION
-%token GEQ
+%token GEQ ">="
 %token <std::string> ID
 %token IF
-%token IMPLIES
+%token IMPLIES "->"
 %token INVARIANT
 %token ISUNDEFINED
-%token LAND
-%token LEQ
+%token LAND "∧"
+%token LEQ "<="
 %token LIVENESS
-%token LOR
-%token LSH
-%token NEQ
+%token LOR "∨"
+%token LSH "<<"
+%token NEQ "!="
 %token <std::string> NUMBER
 %token OF
+%token PIPEPIPE "||"
 %token PROCEDURE
 %token PUT
 %token RECORD
 %token RETURN
-%token RSH
+%token RSH ">>"
 %token RULE
 %token RULESET
 %token SCALARSET

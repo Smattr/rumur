@@ -1,8 +1,8 @@
 #pragma once
 
+#include "options.h"
 #include <cstddef>
 #include <iostream>
-#include "options.h"
 
 void set_log_level(LogLevel level);
 

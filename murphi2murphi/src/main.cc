@@ -1,25 +1,25 @@
-#include <cstddef>
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
+#include "../../common/help.h"
 #include "DecomposeComplexComparisons.h"
 #include "ExplicitSemicolons.h"
-#include <fstream>
-#include <getopt.h>
-#include "../../common/help.h"
-#include <iostream>
-#include <memory>
-#include "options.h"
 #include "Pipeline.h"
 #include "Printer.h"
 #include "RemoveLiveness.h"
-#include "resources.h"
-#include <rumur/rumur.h>
-#include <sstream>
 #include "Stage.h"
 #include "SwitchToIf.h"
-#include <sys/stat.h>
 #include "ToAscii.h"
+#include "options.h"
+#include "resources.h"
+#include <cassert>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <getopt.h>
+#include <iostream>
+#include <memory>
+#include <rumur/rumur.h>
+#include <sstream>
+#include <sys/stat.h>
 
 using namespace rumur;
 
@@ -28,7 +28,7 @@ static std::shared_ptr<std::istream> in_replay;
 static std::shared_ptr<std::ostream> out;
 
 // buffer the contents of stdin so we can read it twice
-static void buffer_stdin(void) {
+static void buffer_stdin() {
 
   // read in all of stdin
   std::ostringstream buf;
@@ -45,20 +45,22 @@ static void parse_args(int argc, char **argv) {
   for (;;) {
 
     static struct option opts[] = {
-      { "decompose-complex-comparisons",    no_argument,       0, 128 },
-      { "explicit-semicolons",              no_argument,       0, 129 },
-      { "help",                             no_argument,       0, 'h' },
-      { "no-decompose-complex-comparisons", no_argument,       0, 130 },
-      { "no-explicit-semicolons",           no_argument,       0, 131 },
-      { "no-remove-liveness",               no_argument,       0, 132 },
-      { "no-switch-to-if",                  no_argument,       0, 133 },
-      { "no-to-ascii",                      no_argument,       0, 134 },
-      { "output",                           required_argument, 0, 'o' },
-      { "remove-liveness",                  no_argument,       0, 135 },
-      { "switch-to-if",                     no_argument,       0, 136 },
-      { "to-ascii",                         no_argument,       0, 137 },
-      { "version",                          no_argument,       0, 138 },
-      { 0, 0, 0, 0 },
+        // clang-format off
+        { "decompose-complex-comparisons",    no_argument,       0, 128 },
+        { "explicit-semicolons",              no_argument,       0, 129 },
+        { "help",                             no_argument,       0, 'h' },
+        { "no-decompose-complex-comparisons", no_argument,       0, 130 },
+        { "no-explicit-semicolons",           no_argument,       0, 131 },
+        { "no-remove-liveness",               no_argument,       0, 132 },
+        { "no-switch-to-if",                  no_argument,       0, 133 },
+        { "no-to-ascii",                      no_argument,       0, 134 },
+        { "output",                           required_argument, 0, 'o' },
+        { "remove-liveness",                  no_argument,       0, 135 },
+        { "switch-to-if",                     no_argument,       0, 136 },
+        { "to-ascii",                         no_argument,       0, 137 },
+        { "version",                          no_argument,       0, 138 },
+        { 0, 0, 0, 0 },
+        // clang-format on
     };
 
     int option_index = 0;
@@ -70,83 +72,85 @@ static void parse_args(int argc, char **argv) {
 
     switch (c) {
 
-      case 128: // --decompose-complex-comparisons
-        options.decompose_complex_comparisons = true;
-        break;
+    case 128: // --decompose-complex-comparisons
+      options.decompose_complex_comparisons = true;
+      break;
 
-      case 129: // --explicit-semicolons
-        options.explicit_semicolons = true;
-        break;
+    case 129: // --explicit-semicolons
+      options.explicit_semicolons = true;
+      break;
 
-      case '?':
-        std::cerr << "run `" << argv[0] << " --help` to see available options\n";
-        exit(EXIT_SUCCESS);
+    case '?':
+      std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+      exit(EXIT_SUCCESS);
 
-      case 'h': // --help
-        help(doc_murphi2murphi_1, doc_murphi2murphi_1_len);
-        exit(EXIT_SUCCESS);
+    case 'h': // --help
+      help(doc_murphi2murphi_1, doc_murphi2murphi_1_len);
+      exit(EXIT_SUCCESS);
 
-      case 130: // --no-decompose-complex-comparisons
-        options.decompose_complex_comparisons = false;
-        break;
+    case 130: // --no-decompose-complex-comparisons
+      options.decompose_complex_comparisons = false;
+      break;
 
-      case 131: // --no-explicit-semicolons
-        options.explicit_semicolons = false;
-        break;
+    case 131: // --no-explicit-semicolons
+      options.explicit_semicolons = false;
+      break;
 
-      case 132: // --no-remove-liveness
-        options.remove_liveness = false;
-        break;
+    case 132: // --no-remove-liveness
+      options.remove_liveness = false;
+      break;
 
-      case 133: // --no-switch-to-if
-        options.switch_to_if = false;
-        break;
+    case 133: // --no-switch-to-if
+      options.switch_to_if = false;
+      break;
 
-      case 134: // --no-to-ascii
-        options.to_ascii = false;
-        break;
+    case 134: // --no-to-ascii
+      options.to_ascii = false;
+      break;
 
-      case 'o': { // --output
-        auto o = std::make_shared<std::ofstream>(optarg);
-        if (!o->is_open()) {
-          std::cerr << "failed to open " << optarg << "\n";
-          exit(EXIT_FAILURE);
-        }
-        out = o;
-        break;
-      }
-
-      case 135: // --remove-liveness
-        options.remove_liveness = true;
-        break;
-
-      case 136: // --switch-to-if
-        options.switch_to_if = true;
-        break;
-
-      case 137: // --to-ascii
-        options.to_ascii = true;
-        break;
-
-      case 138: // --version
-        std::cout << "Murphi2Murphi version " << get_version() << "\n";
-        exit(EXIT_SUCCESS);
-
-      default:
-        std::cerr << "unexpected error\n";
+    case 'o': { // --output
+      auto o = std::make_shared<std::ofstream>(optarg);
+      if (!o->is_open()) {
+        std::cerr << "failed to open " << optarg << "\n";
         exit(EXIT_FAILURE);
+      }
+      out = o;
+      break;
+    }
+
+    case 135: // --remove-liveness
+      options.remove_liveness = true;
+      break;
+
+    case 136: // --switch-to-if
+      options.switch_to_if = true;
+      break;
+
+    case 137: // --to-ascii
+      options.to_ascii = true;
+      break;
+
+    case 138: // --version
+      std::cout << "Murphi2Murphi version " << get_version() << "\n";
+      exit(EXIT_SUCCESS);
+
+    default:
+      std::cerr << "unexpected error\n";
+      exit(EXIT_FAILURE);
     }
   }
 
   if (optind == argc - 1) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
-      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno) << "\n";
+      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
+                << "\n";
       exit(EXIT_FAILURE);
     }
 
     if (S_ISDIR(buf.st_mode)) {
-      std::cerr << "failed to open " << argv[optind] << ": this is a directory\n";
+      std::cerr << "failed to open " << argv[optind]
+                << ": this is a directory\n";
       exit(EXIT_FAILURE);
     }
 

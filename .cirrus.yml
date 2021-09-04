@@ -11,14 +11,44 @@ task:
       freebsd_instance:
         image_family: freebsd-13-0-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 12.1
+    - name: FreeBSD 12.2
       freebsd_instance:
-        image_family: freebsd-12-1-snap
+        image_family: freebsd-12-2-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 11.3
       freebsd_instance:
         image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+
+    - name: Linux, GCC 4.9
+      container:
+        image: gcc:4.9
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        PATH: /opt/cmake-3.21.0-rc3-linux-x86_64/bin:${PATH}
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev python3 && wget https://github.com/Kitware/CMake/releases/download/v3.21.0-rc3/cmake-3.21.0-rc3-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.21.0-rc3-linux-x86_64.tar.gz --directory /opt
+    - name: Linux, GCC 8.5
+      container:
+        image: gcc:8.5
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -g
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev
+    - name: Linux, GCC 9.4
+      container:
+        image: gcc:9.4
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -g
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev
+    - name: Linux, GCC 10.3
+      container:
+        image: gcc:10.3
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
     - name: macOS, XCode 11.3.1, Homebrew
       osx_instance:
@@ -116,4 +146,4 @@ task:
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && sudo cmake --build . -- install && cmake --build . -- check
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && cmake --build . -- install && cmake --build . -- check

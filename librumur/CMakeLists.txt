@@ -1,5 +1,3 @@
-project(librumur LANGUAGES CXX)
-
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
@@ -71,6 +69,7 @@ add_library(librumur
   src/Property.cc
   src/resolve-symbols.cc
   src/Rule.cc
+  src/sanitise_rule_names.cc
   src/Stmt.cc
   src/traverse.cc
   src/TypeExpr.cc

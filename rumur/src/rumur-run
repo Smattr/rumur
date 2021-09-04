@@ -17,9 +17,8 @@ import shutil
 import subprocess as sp
 import sys
 import tempfile
-from typing import Optional
 
-def which(cmd: str) -> Optional[str]:
+def which(cmd):
   '''
   Equivalent of shell `which`
   '''
@@ -32,7 +31,7 @@ def which(cmd: str) -> Optional[str]:
 # C compiler
 CC = which(os.environ.get('CC', 'cc'))
 
-def categorise(cc: str) -> str:
+def categorise(cc):
   '''
   Determine the vendor of a given C compiler
   '''
@@ -60,11 +59,11 @@ def categorise(cc: str) -> str:
 
   # Compile it
   aout = os.path.join(tmp, 'a.out')
-  cc_proc = sp.run([cc, '-o', aout, src], universal_newlines=True,
+  cc_ret = sp.call([cc, '-o', aout, src], universal_newlines=True,
     stdout=sp.DEVNULL, stderr=sp.DEVNULL)
 
   # Run it
-  if cc_proc.returncode == 0:
+  if cc_ret == 0:
     try:
       categorisation = sp.check_output([aout], universal_newlines=True).strip()
     except sp.CalledProcessError:
@@ -75,20 +74,21 @@ def categorise(cc: str) -> str:
 
   return categorisation
 
-def supports(flag: str) -> bool:
+def supports(flag):
   '''check whether the compiler supports a given command line flag'''
 
   # a trivial program to ask it to compile
   program = 'int main(void) { return 0; }'
 
   # compile it
-  p = sp.run([CC, '-o', os.devnull, '-x', 'c', '-', flag], stderr=sp.DEVNULL,
-    input=program.encode('utf-8', 'replace'))
+  p = sp.Popen([CC, '-o', os.devnull, '-x', 'c', '-', flag], stderr=sp.DEVNULL,
+    stdin=sp.PIPE)
+  p.communicate(program.encode('utf-8', 'replace'))
 
   # check whether compilation succeeded
   return p.returncode == 0
 
-def needs_libatomic() -> bool:
+def needs_libatomic():
   '''check whether the compiler needs -latomic for a double-word
   compare-and-swap'''
 
@@ -213,12 +213,13 @@ int main(void) {
   args = [CC, '-x', 'c', '-std=c11', '-', '-o', os.devnull]
   if supports('-mcx16'):
     args.append('-mcx16')
-  p = sp.run(args, stderr=sp.DEVNULL, input=program.encode('utf-8', 'replace'))
+  p = sp.Popen(args, stderr=sp.DEVNULL, stdin=sp.PIPE)
+  p.communicate(program.encode('utf-8', 'replace'))
 
   # check whether compilation succeeded
   return p.returncode != 0
 
-def optimisation_flags() -> [str]:
+def optimisation_flags():
   '''C compiler optimisation command line options for this platform'''
 
   flags = ['-O3']
@@ -242,7 +243,7 @@ def optimisation_flags() -> [str]:
 
   return flags
 
-def has_no_la57() -> bool:
+def has_no_la57():
   '''
   does our hardware lack support for Intel 5-level paging?
   '''
@@ -268,7 +269,7 @@ def has_no_la57() -> bool:
   # conservatively assume we may support LA57
   return False
 
-def main(args: [str]) -> int:
+def main(args):
 
   # Find the Rumur binary
   rumur_bin = which(os.path.join(
@@ -297,10 +298,11 @@ def main(args: [str]) -> int:
 
   # Generate the checker
   print('Generating the checker...')
-  rumur_proc = sp.run(argv, stdin=sp.PIPE, stdout=sp.PIPE)
+  rumur_proc = sp.Popen(argv, stdin=sp.PIPE, stdout=sp.PIPE)
+  stdout, _ = rumur_proc.communicate()
   if rumur_proc.returncode != 0:
     return rumur_proc.returncode
-  checker_c = rumur_proc.stdout
+  checker_c = stdout
 
   ok = True
 
@@ -316,14 +318,15 @@ def main(args: [str]) -> int:
       '-', '-lpthread']
     if needs_libatomic():
       argv.append('-latomic')
-    cc_proc = sp.run(argv, input=checker_c)
+    cc_proc = sp.Popen(argv, stdin=sp.PIPE)
+    cc_proc.communicate(checker_c)
     ok &= cc_proc.returncode == 0
 
   # Run the checker
   if ok:
     print('Running the checker...')
-    checker_proc = sp.run([aout])
-    ok &= checker_proc.returncode == 0
+    ret = sp.call([aout])
+    ok &= ret == 0
 
   return 0 if ok else -1
 

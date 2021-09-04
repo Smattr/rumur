@@ -4,15 +4,15 @@
 #include <gmpxx.h>
 #include <memory>
 #include <sstream>
-#include <string>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace smt {
 
 class Solver {
 
- private:
+private:
   std::vector<std::shared_ptr<std::ostringstream>> prelude;
   mpz_class time_used = 0;
 
@@ -28,8 +28,7 @@ class Solver {
    */
   Result solve(const std::string &claim, bool expectation);
 
- public:
-
+public:
   // can this expression be proven always-true?
   bool is_true(const std::string &claim);
 
@@ -40,10 +39,10 @@ class Solver {
   Solver &operator<<(const std::string &s);
 
   // open a new (nested) variable scope
-  void open_scope(void);
+  void open_scope();
 
   // close a scope
-  void close_scope(void);
+  void close_scope();
 };
 
-}
+} // namespace smt

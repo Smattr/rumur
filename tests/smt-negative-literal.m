@@ -1,5 +1,5 @@
--- rumur_flags: self.config['SMT_ARGS']
--- skip_reason: 'no SMT solver available' if self.config['SMT_ARGS'] is None else None
+-- rumur_flags: CONFIG['SMT_ARGS']
+-- skip_reason: 'no SMT solver available' if CONFIG['SMT_ARGS'] is None else None
 
 -- As observed on commit 852de6485322fe6e0dfaa8efa0109f23f634bf3f, models with
 -- negative literal values would cause malformed SMT problems to be constructed.

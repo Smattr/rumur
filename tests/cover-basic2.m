@@ -1,4 +1,4 @@
--- checker_output: None if self.xml else re.compile(r'^\s*cover "x was false" hit 2 times$', re.MULTILINE)
+-- checker_output: None if xml else re.compile(r'^\s*cover "x was false" hit 2 times$', re.MULTILINE)
 
 -- Test of a cover property that is hit multiple times
 

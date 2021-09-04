@@ -2,9 +2,9 @@
 
 #include <climits>
 #include <cstddef>
+#include "location.hh"
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
@@ -13,13 +13,17 @@
 #include <utility>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 // Forward declare to avoid circular #include
 struct TypeDecl;
 struct VarDecl;
 
-struct TypeExpr : public Node {
+struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
 
   TypeExpr(const location &loc_);
   virtual ~TypeExpr() = default;
@@ -53,9 +57,13 @@ struct TypeExpr : public Node {
   // Is this the type Boolean? Note that this only returns true for the actual
   // type Boolean, and not for TypeExprIDs that point at Boolean.
   virtual bool is_boolean() const;
+
+protected:
+  TypeExpr(const TypeExpr &) = default;
+  TypeExpr &operator=(const TypeExpr &) = default;
 };
 
-struct Range : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
 
   Ptr<Expr> min;
   Ptr<Expr> max;
@@ -77,7 +85,7 @@ struct Range : public TypeExpr {
   bool constant() const final;
 };
 
-struct Scalarset : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
 
   Ptr<Expr> bound;
 
@@ -98,7 +106,7 @@ struct Scalarset : public TypeExpr {
   bool constant() const final;
 };
 
-struct Enum : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
 
   std::vector<std::pair<std::string, location>> members;
 
@@ -108,7 +116,7 @@ struct Enum : public TypeExpr {
   size_t unique_id_limit = SIZE_MAX;
 
   Enum(const std::vector<std::pair<std::string, location>> &members_,
-    const location &loc_);
+       const location &loc_);
   Enum *clone() const final;
   virtual ~Enum() = default;
 
@@ -126,7 +134,7 @@ struct Enum : public TypeExpr {
   bool is_boolean() const final;
 };
 
-struct Record : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Record : public TypeExpr {
 
   std::vector<Ptr<VarDecl>> fields;
 
@@ -142,13 +150,13 @@ struct Record : public TypeExpr {
   std::string to_string() const final;
 };
 
-struct Array : public TypeExpr {
+struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
 
   Ptr<TypeExpr> index_type;
   Ptr<TypeExpr> element_type;
 
   Array(const Ptr<TypeExpr> &index_type_, const Ptr<TypeExpr> &element_type_,
-    const location &loc_);
+        const location &loc_);
   Array *clone() const final;
   virtual ~Array() = default;
 
@@ -161,13 +169,13 @@ struct Array : public TypeExpr {
   std::string to_string() const final;
 };
 
-struct TypeExprID : public TypeExpr {
+struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
 
   std::string name;
   Ptr<TypeDecl> referent;
 
   TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
-    const location &loc_);
+             const location &loc_);
   TypeExprID *clone() const final;
   virtual ~TypeExprID() = default;
 
@@ -186,4 +194,4 @@ struct TypeExprID : public TypeExpr {
   bool constant() const final;
 };
 
-}
+} // namespace rumur

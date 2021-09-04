@@ -1,24 +1,25 @@
-#include <cstddef>
-#include <cassert>
+#include "typeexpr-to-smt.h"
+#include "../options.h"
 #include "except.h"
 #include "logic.h"
-#include "../options.h"
+#include "translate.h"
+#include <cassert>
+#include <cstddef>
 #include <rumur/rumur.h>
 #include <sstream>
 #include <string>
-#include "translate.h"
-#include "typeexpr-to-smt.h"
 
 using namespace rumur;
 
 namespace smt {
 
-namespace { class Translator : public ConstTypeTraversal {
+namespace {
+class Translator : public ConstTypeTraversal {
 
- private:
+private:
   std::ostringstream out;
 
- public:
+public:
   Translator &operator<<(const std::string &s) {
     out << s;
     return *this;
@@ -29,9 +30,7 @@ namespace { class Translator : public ConstTypeTraversal {
     return *this;
   }
 
-  std::string str() const {
-    return out.str();
-  }
+  std::string str() const { return out.str(); }
 
   void visit_array(const Array &n) final {
     *this << "(Array " << *n.index_type << " " << *n.element_type << ")";
@@ -50,7 +49,7 @@ namespace { class Translator : public ConstTypeTraversal {
     *this << integer_type();
   }
 
-  void visit_range(const Range&) final {
+  void visit_range(const Range &) final {
     /* we assume our caller will eventually set the lower and upper bound
      * constraints for this integer if it is relevant to them
      */
@@ -63,7 +62,7 @@ namespace { class Translator : public ConstTypeTraversal {
     *this << mangle("", n.unique_id);
   }
 
-  void visit_scalarset(const Scalarset&) final {
+  void visit_scalarset(const Scalarset &) final {
     /* A scalarset is nothing special to the SMT solver. That is, we just
      * declare it as an integer and don't expect the solver to use any symmetry
      * reasoning.
@@ -75,7 +74,8 @@ namespace { class Translator : public ConstTypeTraversal {
     assert(n.referent != nullptr && "unresolved TypeExprID in AST");
     *this << *n.referent->value;
   }
-}; }
+};
+} // namespace
 
 std::string typeexpr_to_smt(const TypeExpr &type) {
   Translator t;
@@ -83,4 +83,4 @@ std::string typeexpr_to_smt(const TypeExpr &type) {
   return t.str();
 }
 
-}
+} // namespace smt

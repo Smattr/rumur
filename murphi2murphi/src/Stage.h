@@ -18,16 +18,16 @@ struct Token {
   std::string character;
   const Stage *subject = nullptr;
 
-  explicit Token(const std::string &c): type(CHAR), character(c) { }
-  explicit Token(const Stage *s): type(SUBJ), subject(s) { }
+  explicit Token(const std::string &c) : type(CHAR), character(c) {}
+  explicit Token(const Stage *s) : type(SUBJ), subject(s) {}
 };
 
 class Stage : public rumur::ConstBaseTraversal {
 
- protected:
+protected:
   Stage *top = nullptr;
 
- public:
+public:
   // pass one or more characters to process()
   Stage &operator<<(const std::string &s);
 
@@ -49,17 +49,17 @@ class Stage : public rumur::ConstBaseTraversal {
   virtual void skip_to(const rumur::position &pos) = 0;
 
   // perform any pending actions, assuming that processing is done
-  virtual void finalise() { };
+  virtual void finalise(){};
 
   virtual ~Stage() = default;
 };
 
 class IntermediateStage : public Stage {
 
- protected:
+protected:
   Stage &next;
 
- public:
+public:
   explicit IntermediateStage(Stage &next_);
 
   void visit_add(const rumur::Add &n) override;

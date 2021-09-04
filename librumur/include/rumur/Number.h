@@ -1,28 +1,32 @@
 #pragma once
 
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <rumur/Expr.h>
 #include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <string>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Number : public Expr {
+struct RUMUR_API_WITH_RTTI Number : public Expr {
 
   mpz_class value;
 
   Number() = delete;
   Number(const std::string &value_, const location &loc_);
   Number(const mpz_class &value_, const location &loc_);
-  Number(const Number&) = default;
-  Number(Number&&) = default;
-  Number &operator=(const Number&) = default;
-  Number &operator=(Number&&) = default;
+  Number(const Number &) = default;
+  Number(Number &&) = default;
+  Number &operator=(const Number &) = default;
+  Number &operator=(Number &&) = default;
   virtual ~Number() = default;
   Number *clone() const final;
 
@@ -36,4 +40,4 @@ struct Number : public Expr {
   bool is_pure() const final;
 };
 
-}
+} // namespace rumur

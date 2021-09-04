@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include "location.hh"
 #include <gmpxx.h>
 #include <iostream>
 #include <limits>
-#include "location.hh"
 #include <memory>
 #include <rumur/Expr.h>
 #include <rumur/Node.h>
@@ -12,9 +12,13 @@
 #include <rumur/TypeExpr.h>
 #include <string>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Decl : public Node {
+struct RUMUR_API_WITH_RTTI Decl : public Node {
 
   std::string name;
 
@@ -22,9 +26,13 @@ struct Decl : public Node {
   virtual ~Decl() = 0;
 
   Decl *clone() const override = 0;
+
+protected:
+  Decl(const Decl &) = default;
+  Decl &operator=(const Decl &) = default;
 };
 
-struct ExprDecl : public Decl {
+struct RUMUR_API_WITH_RTTI ExprDecl : public Decl {
 
   ExprDecl(const std::string &name_, const location &loc_);
   virtual ~ExprDecl() = default;
@@ -41,14 +49,18 @@ struct ExprDecl : public Decl {
   virtual Ptr<TypeExpr> get_type() const = 0;
 
   ExprDecl *clone() const override = 0;
+
+protected:
+  ExprDecl(const ExprDecl &) = default;
+  ExprDecl &operator=(const ExprDecl &) = default;
 };
 
-struct AliasDecl : public ExprDecl {
+struct RUMUR_API_WITH_RTTI AliasDecl : public ExprDecl {
 
   Ptr<Expr> value;
 
   AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
-    const location &loc_);
+            const location &loc_);
   AliasDecl *clone() const final;
   virtual ~AliasDecl() = default;
 
@@ -60,7 +72,7 @@ struct AliasDecl : public ExprDecl {
   Ptr<TypeExpr> get_type() const final;
 };
 
-struct ConstDecl : public ExprDecl {
+struct RUMUR_API_WITH_RTTI ConstDecl : public ExprDecl {
 
   Ptr<Expr> value;
 
@@ -70,9 +82,9 @@ struct ConstDecl : public ExprDecl {
   Ptr<TypeExpr> type;
 
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
-    const location &loc_);
+            const location &loc_);
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
-    const Ptr<TypeExpr> &type_, const location &loc_);
+            const Ptr<TypeExpr> &type_, const location &loc_);
   ConstDecl *clone() const final;
   virtual ~ConstDecl() = default;
 
@@ -85,12 +97,12 @@ struct ConstDecl : public ExprDecl {
   Ptr<TypeExpr> get_type() const final;
 };
 
-struct TypeDecl : public Decl {
+struct RUMUR_API_WITH_RTTI TypeDecl : public Decl {
 
   Ptr<TypeExpr> value;
 
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
-    const location &loc);
+           const location &loc);
   TypeDecl *clone() const final;
   virtual ~TypeDecl() = default;
 
@@ -98,13 +110,13 @@ struct TypeDecl : public Decl {
   void visit(ConstBaseTraversal &visitor) const final;
 };
 
-struct VarDecl : public ExprDecl {
+struct RUMUR_API_WITH_RTTI VarDecl : public ExprDecl {
 
   Ptr<TypeExpr> type;
 
   /* Offset within the model state. This is only relevant if this is a state
-   * variable. We initially set it to an invalid value and rely on Model::reindex
-   * setting this correctly later.
+   * variable. We initially set it to an invalid value and rely on
+   * Model::reindex setting this correctly later.
    */
   mpz_class offset = -1;
 
@@ -114,7 +126,7 @@ struct VarDecl : public ExprDecl {
   bool readonly = false;
 
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
-    const location &loc_);
+          const location &loc_);
   VarDecl *clone() const final;
   virtual ~VarDecl() = default;
 
@@ -134,4 +146,4 @@ struct VarDecl : public ExprDecl {
   Ptr<TypeExpr> get_type() const final;
 };
 
-}
+} // namespace rumur

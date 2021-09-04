@@ -1,13 +1,13 @@
-#include <cassert>
 #include "../../common/isa.h"
-#include <cstddef>
 #include "generate.h"
+#include "utils.h"
+#include <cassert>
+#include <cstddef>
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
 #include <string>
-#include "utils.h"
 
 using namespace rumur;
 
@@ -15,12 +15,12 @@ namespace {
 
 class Generator : public ConstExprTraversal {
 
- private:
+private:
   std::ostream *out;
   bool lvalue;
 
- public:
-  Generator(std::ostream &o, bool lvalue_): out(&o), lvalue(lvalue_) { }
+public:
+  Generator(std::ostream &o, bool lvalue_) : out(&o), lvalue(lvalue_) {}
 
   // Make emitting an rvalue more concise below
   Generator &operator<<(const Expr &e) {
@@ -38,7 +38,7 @@ class Generator : public ConstExprTraversal {
     if (lvalue)
       invalid(n);
     *this << "add(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
-      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+          << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_and(const And &n) final {
@@ -68,8 +68,8 @@ class Generator : public ConstExprTraversal {
   void visit_div(const Div &n) final {
     if (lvalue)
       invalid(n);
-    *this << "divide(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
-      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+    *this << "divide(" << to_C_string(n.loc) << ", rule_name, "
+          << to_C_string(n) << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_element(const Element &n) final {
@@ -83,22 +83,23 @@ class Generator : public ConstExprTraversal {
     const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
-    auto a = dynamic_cast<const Array&>(*t2);
+    auto a = dynamic_cast<const Array &>(*t2);
     mpz_class element_width = a.element_type->width();
 
-    // Second, determine the minimum and maximum values of the array's index type
+    // Second, determine the minimum and maximum values of the array's index
+    // type
 
     const Ptr<TypeExpr> t3 = a.index_type->resolve();
     assert(t3 != nullptr && "array with invalid index type");
 
     mpz_class min, max;
-    if (auto r = dynamic_cast<const Range*>(t3.get())) {
+    if (auto r = dynamic_cast<const Range *>(t3.get())) {
       min = r->min->constant_fold();
       max = r->max->constant_fold();
-    } else if (auto e = dynamic_cast<const Enum*>(t3.get())) {
+    } else if (auto e = dynamic_cast<const Enum *>(t3.get())) {
       min = 0;
       max = e->count() - 1;
-    } else if (auto s = dynamic_cast<const Scalarset*>(t3.get())) {
+    } else if (auto s = dynamic_cast<const Scalarset *>(t3.get())) {
       min = 0;
       max = s->bound->constant_fold() - 1;
     } else {
@@ -109,12 +110,12 @@ class Generator : public ConstExprTraversal {
       const std::string lb = a.element_type->lower_bound();
       const std::string ub = a.element_type->upper_bound();
       *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-        << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+           << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
     }
 
     *out << "handle_index(" << to_C_string(n.loc) << ", rule_name, "
-      << to_C_string(n) << ", s, " << element_width << "ull, VALUE_C("
-      << min << "), VALUE_C(" << max << "), ";
+         << to_C_string(n) << ", s, " << element_width << "ull, VALUE_C(" << min
+         << "), VALUE_C(" << max << "), ";
     if (lvalue) {
       generate_lvalue(*out, *n.array);
     } else {
@@ -132,7 +133,7 @@ class Generator : public ConstExprTraversal {
 
     if (!n.lhs->type()->is_simple()) {
       assert(!n.rhs->type()->is_simple() &&
-        "comparison between simple and complex type");
+             "comparison between simple and complex type");
 
       *this << "handle_eq(" << *n.lhs << ", " << *n.rhs << ")";
 
@@ -162,7 +163,7 @@ class Generator : public ConstExprTraversal {
     /* This is a reference to a const. Note, this also covers enum
      * members.
      */
-    if (auto c = dynamic_cast<const ConstDecl*>(n.value.get())) {
+    if (auto c = dynamic_cast<const ConstDecl *>(n.value.get())) {
       assert(!lvalue && "const appearing as an lvalue");
       *out << "VALUE_C(" << c->value->constant_fold() << ")";
       return;
@@ -178,7 +179,7 @@ class Generator : public ConstExprTraversal {
         const std::string lb = t->lower_bound();
         const std::string ub = t->upper_bound();
         *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-          << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+             << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
       }
 
       *out << "ru_" << n.id;
@@ -200,7 +201,7 @@ class Generator : public ConstExprTraversal {
     assert(root != nullptr);
     const Ptr<TypeExpr> resolved = root->resolve();
     assert(resolved != nullptr);
-    if (auto r = dynamic_cast<const Record*>(resolved.get())) {
+    if (auto r = dynamic_cast<const Record *>(resolved.get())) {
       mpz_class offset = 0;
       for (const Ptr<VarDecl> &f : r->fields) {
         if (f->name == n.field) {
@@ -208,7 +209,7 @@ class Generator : public ConstExprTraversal {
             const std::string lb = f->type->lower_bound();
             const std::string ub = f->type->upper_bound();
             *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-              << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+                 << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
@@ -258,7 +259,7 @@ class Generator : public ConstExprTraversal {
       auto it = n.function->parameters.begin();
       for (const Ptr<Expr> &a __attribute__((unused)) : n.arguments) {
         assert(((*it)->is_readonly() || !a->is_readonly()) &&
-          "read-only value passed to var parameter");
+               "read-only value passed to var parameter");
         it++;
       }
     }
@@ -331,28 +332,27 @@ class Generator : public ConstExprTraversal {
       for (const Ptr<Expr> &a : n.arguments) {
         const Ptr<VarDecl> &p = *it;
 
-        const std::string storage = "v" + std::to_string(n.unique_id) + "_"
-          + std::to_string(index) + "_";
-        const std::string handle = "v" + std::to_string(n.unique_id) + "_"
-          + std::to_string(index);
+        const std::string storage = "v" + std::to_string(n.unique_id) + "_" +
+                                    std::to_string(index) + "_";
+        const std::string handle =
+            "v" + std::to_string(n.unique_id) + "_" + std::to_string(index);
 
         auto method = get_method(p, a);
         assert(method >= 1 && method <= 5);
 
         if (method == 1 || method == 2 || method == 3)
-          *out
-            << "uint8_t " << storage << "[BITS_TO_BYTES(" << p->width()
-              << ")] = { 0 }; "
-            << "struct handle " << handle << " = { .base = " << storage
-              << ", .offset = 0, .width = " << p->width() << "ull }; ";
+          *out << "uint8_t " << storage << "[BITS_TO_BYTES(" << p->width()
+               << ")] = { 0 }; "
+               << "struct handle " << handle << " = { .base = " << storage
+               << ", .offset = 0, .width = " << p->width() << "ull }; ";
 
         if (method == 1) {
           const std::string lb = p->get_type()->lower_bound();
           const std::string ub = p->get_type()->upper_bound();
 
           *out << "handle_write(" << to_C_string(n.loc) << ", rule_name, "
-            << "\"<temporary>\", s, " << lb << ", " << ub
-            << ", " << handle << ", ";
+               << "\"<temporary>\", s, " << lb << ", " << ub << ", " << handle
+               << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
 
@@ -362,34 +362,33 @@ class Generator : public ConstExprTraversal {
 
           const std::string lba = a->type()->lower_bound();
 
-          *out
-            << "{ "
-            << "raw_value_t v = handle_read_raw(s, ";
+          *out << "{ "
+               << "raw_value_t v = handle_read_raw(s, ";
           generate_lvalue(*out, *a);
           *out << "); "
-            << "raw_value_t v2; "
-            << "value_t v3; "
-            << "static const value_t lb = " << lb << "; "
-            << "static const value_t ub = " << ub << "; "
-            << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, " << lba << ", &v3) "
-              << "|| v3 < lb || v3 > ub)) { "
-            << "error(s, \"call to function %s passed an out-of-range value "
-              << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
-              << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
-            << "} "
-            << "handle_write_raw(s, " << handle << ", v == 0 ? v : "
-              << "((raw_value_t)(v3 - " << lb << ") + 1)); "
-            << "} ";
+               << "raw_value_t v2; "
+               << "value_t v3; "
+               << "static const value_t lb = " << lb << "; "
+               << "static const value_t ub = " << ub << "; "
+               << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, " << lba
+               << ", &v3) "
+               << "|| v3 < lb || v3 > ub)) { "
+               << "error(s, \"call to function %s passed an out-of-range value "
+               << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
+               << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
+               << "} "
+               << "handle_write_raw(s, " << handle << ", v == 0 ? v : "
+               << "((raw_value_t)(v3 - " << lb << ") + 1)); "
+               << "} ";
 
         } else if (method == 3) {
-          assert(a->type()->width() == p->width() && "complex function "
-            "parameter receiving an argument of a differing width");
+          assert(a->type()->width() == p->width() &&
+                 "complex function "
+                 "parameter receiving an argument of a differing width");
 
-          *out
-            << "handle_copy(" << handle << ", ";
+          *out << "handle_copy(" << handle << ", ";
           generate_lvalue(*out, *a);
           *out << "); ";
-
         }
 
         it++;
@@ -402,7 +401,7 @@ class Generator : public ConstExprTraversal {
     // Pass the return type output parameter if required.
     if (return_type != nullptr && !return_type->is_simple())
       *out << ", (struct handle){ .base = ret" << n.unique_id
-        << ", .offset = 0ul, .width = " << return_type->width() << "ull }";
+           << ", .offset = 0ul, .width = " << return_type->width() << "ull }";
 
     // Now emit the arguments to the function.
     {
@@ -413,26 +412,26 @@ class Generator : public ConstExprTraversal {
         *out << ", ";
 
         assert(it != n.function->parameters.end() &&
-          "function call has more arguments than its target function");
+               "function call has more arguments than its target function");
 
         const Ptr<VarDecl> &p = *it;
 
-        const std::string handle = "v" + std::to_string(n.unique_id) + "_"
-          + std::to_string(index);
+        const std::string handle =
+            "v" + std::to_string(n.unique_id) + "_" + std::to_string(index);
 
         switch (get_method(p, a)) {
 
-          case 4:
-            generate_lvalue(*out, *a);
-            break;
+        case 4:
+          generate_lvalue(*out, *a);
+          break;
 
-          case 5:
-            generate_rvalue(*out, *a);
-            break;
+        case 5:
+          generate_rvalue(*out, *a);
+          break;
 
-          default:
-            *out << handle;
-            break;
+        default:
+          *out << handle;
+          break;
         }
 
         index++;
@@ -492,21 +491,21 @@ class Generator : public ConstExprTraversal {
     if (lvalue)
       invalid(n);
     *this << "mod(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
-      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+          << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_mul(const Mul &n) final {
     if (lvalue)
       invalid(n);
     *this << "mul(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
-      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+          << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
     *this << "negate(" << to_C_string(n.loc) << ", rule_name, "
-      << to_C_string(n) << ", s, " << *n.rhs << ")";
+          << to_C_string(n) << ", s, " << *n.rhs << ")";
   }
 
   void visit_neq(const Neq &n) final {
@@ -515,7 +514,7 @@ class Generator : public ConstExprTraversal {
 
     if (!n.lhs->type()->is_simple()) {
       assert(!n.rhs->type()->is_simple() &&
-        "comparison between simple and complex type");
+             "comparison between simple and complex type");
 
       *this << "(!handle_eq(" << *n.lhs << ", " << *n.rhs << "))";
 
@@ -550,7 +549,7 @@ class Generator : public ConstExprTraversal {
     if (lvalue)
       invalid(n);
     *this << "sub(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
-      << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+          << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
   void visit_ternary(const Ternary &n) final {
@@ -567,13 +566,13 @@ class Generator : public ConstExprTraversal {
 
   virtual ~Generator() = default;
 
- private:
+private:
   void invalid(const Expr &n) const {
     throw Error("invalid expression used as lvalue", n.loc);
   }
 };
 
-}
+} // namespace
 
 void generate_lvalue(std::ostream &out, const Expr &e) {
   Generator g(out, true);

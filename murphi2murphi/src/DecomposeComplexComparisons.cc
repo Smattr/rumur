@@ -1,25 +1,21 @@
-#include <cstddef>
+#include "DecomposeComplexComparisons.h"
+#include "Stage.h"
 #include <cassert>
 #include <climits>
-#include "DecomposeComplexComparisons.h"
+#include <cstddef>
 #include <rumur/rumur.h>
 #include <sstream>
-#include "Stage.h"
 #include <string>
 #include <unordered_set>
 
 using namespace rumur;
 
-DecomposeComplexComparisons::DecomposeComplexComparisons(Stage &next_):
-  IntermediateStage(next_) { }
+DecomposeComplexComparisons::DecomposeComplexComparisons(Stage &next_)
+    : IntermediateStage(next_) {}
 
-void DecomposeComplexComparisons::visit_eq(const Eq &n) {
-  rewrite(n, true);
-}
+void DecomposeComplexComparisons::visit_eq(const Eq &n) { rewrite(n, true); }
 
-void DecomposeComplexComparisons::visit_neq(const Neq &n) {
-  rewrite(n, false);
-}
+void DecomposeComplexComparisons::visit_neq(const Neq &n) { rewrite(n, false); }
 
 // find all identifiers used within a given expression
 static std::unordered_set<std::string> find_ids(const Expr &e) {
@@ -27,12 +23,10 @@ static std::unordered_set<std::string> find_ids(const Expr &e) {
   // a traversal that collects ExprIDs
   class ExprIDFinder : public ConstTraversal {
 
-   public:
+  public:
     std::unordered_set<std::string> ids;
 
-    void visit_exprid(const ExprID &n) final {
-      (void)ids.insert(n.id);
-    }
+    void visit_exprid(const ExprID &n) final { (void)ids.insert(n.id); }
   };
 
   // use this to find all contained ExprIDs
@@ -46,7 +40,7 @@ static std::unordered_set<std::string> find_ids(const Expr &e) {
 static std::string make_id(std::unordered_set<std::string> &ids) {
   // arbitrary prefix
   std::string v = "i";
-  for (size_t i = 0; ; i++) {
+  for (size_t i = 0;; i++) {
     std::string candidate = v + std::to_string(i);
     auto res = ids.insert(candidate);
     if (res.second)
@@ -57,8 +51,9 @@ static std::string make_id(std::unordered_set<std::string> &ids) {
 }
 
 static std::string explode(std::unordered_set<std::string> &ids,
-    const std::string &prefix_a, const std::string &prefix_b,
-    const std::string &stem, const TypeExpr &type, bool is_eq) {
+                           const std::string &prefix_a,
+                           const std::string &prefix_b, const std::string &stem,
+                           const TypeExpr &type, bool is_eq) {
 
   std::ostringstream buf;
 
@@ -72,20 +67,20 @@ static std::string explode(std::unordered_set<std::string> &ids,
   const Ptr<TypeExpr> t = type.resolve();
 
   // if this is a record, join together a comparison of each of its fields
-  if (auto r = dynamic_cast<const Record*>(t.get())) {
+  if (auto r = dynamic_cast<const Record *>(t.get())) {
     std::string sep;
     for (const Ptr<VarDecl> &f : r->fields) {
       const std::string new_stem = stem + "." + f->name;
       buf << sep << "("
-        << explode(ids, prefix_a, prefix_b, new_stem, *f->type, is_eq) << ")";
+          << explode(ids, prefix_a, prefix_b, new_stem, *f->type, is_eq) << ")";
       sep = is_eq ? " & " : " | ";
     }
     return buf.str();
   }
 
-  auto a = dynamic_cast<const Array*>(t.get());
+  auto a = dynamic_cast<const Array *>(t.get());
   assert(a != nullptr && "non-record, non-array encountered when decomposing "
-    "complex expression");
+                         "complex expression");
 
   const std::string binder = is_eq ? "forall" : "exists";
 
@@ -94,21 +89,21 @@ static std::string explode(std::unordered_set<std::string> &ids,
 
   const std::string new_stem = stem + "[" + i + "]";
   buf << binder << " " << i << ": " << a->index_type->to_string() << " do "
-    << explode(ids, prefix_a, prefix_b, new_stem, *a->element_type, is_eq)
-    << " end" << binder;
+      << explode(ids, prefix_a, prefix_b, new_stem, *a->element_type, is_eq)
+      << " end" << binder;
 
   return buf.str();
 }
 
 void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
-    bool is_eq) {
+                                          bool is_eq) {
 
   // if this is a comparison of simple types, we can let it pass through
   const Ptr<TypeExpr> t = n.lhs->type();
   if (t->is_simple()) {
 
-    assert(n.rhs->type()->is_simple()
-      && "comparison of simple type to complex type");
+    assert(n.rhs->type()->is_simple() &&
+           "comparison of simple type to complex type");
 
     next.dispatch(n);
     return;
@@ -119,10 +114,12 @@ void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
   // repeat
   if (!n.lhs->is_pure())
     throw Error("cannot decompose complex comparison because the left hand "
-      "side has side effects", n.lhs->loc);
+                "side has side effects",
+                n.lhs->loc);
   if (!n.rhs->is_pure())
     throw Error("cannot decompose complex comparison because the right hand "
-      "side has side effects", n.rhs->loc);
+                "side has side effects",
+                n.rhs->loc);
 
   // synchronise output to the start of this comparison
   top->sync_to(n);

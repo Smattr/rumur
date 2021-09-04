@@ -1,11 +1,11 @@
+#include "process.h"
+#include "environ.h"
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
-#include "environ.h"
 #include <fcntl.h>
 #include <iostream>
-#include "process.h"
 #include <signal.h>
 #include <spawn.h>
 #include <sstream>
@@ -19,31 +19,31 @@
 
 // compile this file with -DTEST_PROCESS to build a test harness
 #ifdef TEST_PROCESS
-  #define debug (&std::cerr)
+#define debug (&std::cerr)
 #else
-  #include "log.h"
+#include "log.h"
 #endif
 
 enum { READ_FD = 0, WRITE_FD = 1 };
 
 // pipe through which we'll redirect SIGCHLD notifications
-static int sigchld_pipe[2] = { -1, -1 };
+static int sigchld_pipe[2] = {-1, -1};
 
 // signal handler to redirect SIGCHLD into the above pipe
 static void handler(int sigchld __attribute__((unused))) {
 
-  assert(sigchld == SIGCHLD && "SIGCHLD handler received something other than "
-    "SIGCHLD");
+  assert(sigchld == SIGCHLD &&
+         "SIGCHLD handler received something other than SIGCHLD");
 
-  assert(sigchld_pipe[WRITE_FD] != -1 && "SIGCHLD handler called before "
-    "SIGCHLD pipe has been setup");
+  assert(sigchld_pipe[WRITE_FD] != -1 &&
+         "SIGCHLD handler called before SIGCHLD pipe has been setup");
 
   ssize_t w __attribute__((unused)) = write(sigchld_pipe[WRITE_FD], "\0", 1);
 }
 
 static bool inited = false;
 
-static int init(void) {
+static int init() {
 
   if (pipe(sigchld_pipe) < 0) {
     *debug << "failed to create SIGCHLD pipe\n";
@@ -81,12 +81,10 @@ fail:
   return -1;
 }
 
-static int max(int a, int b) {
-  return a > b ? a : b;
-}
+static int max(int a, int b) { return a > b ? a : b; }
 
 int run(const std::vector<std::string> &args, const std::string &input,
-  std::string &output) {
+        std::string &output) {
 
   if (!inited) {
     if (init() < 0)
@@ -94,20 +92,18 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // setup an argument vector
-  std::vector<char*> argv;
+  std::vector<char *> argv;
   for (const std::string &a : args)
-    argv.push_back(const_cast<char*>(a.c_str()));
+    argv.push_back(const_cast<char *>(a.c_str()));
   argv.push_back(nullptr);
 
-
   posix_spawn_file_actions_t fa;
-  int in[2] = { -1, -1 };
-  int out[2] = { -1, -1 };
+  int in[2] = {-1, -1};
+  int out[2] = {-1, -1};
   int ret = -1;
   std::ostringstream buffered_output;
   off_t input_offset = 0;
   int err = 0;
-
 
   err = posix_spawn_file_actions_init(&fa);
   if (err != 0) {
@@ -191,8 +187,8 @@ int run(const std::vector<std::string> &args, const std::string &input,
     // clear any SIGCHLD notification
     if (FD_ISSET(sigchld_pipe[READ_FD], &readfds)) {
       char ignored[BUFSIZ];
-      ssize_t r __attribute__((unused)) = read(sigchld_pipe[READ_FD], ignored,
-        sizeof(ignored));
+      ssize_t r __attribute__((unused)) =
+          read(sigchld_pipe[READ_FD], ignored, sizeof(ignored));
     }
 
     // read any data available from the child
@@ -226,7 +222,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
         ssize_t w;
         do {
           w = write(in[WRITE_FD], input.c_str() + input_offset,
-            input.size() - input_offset);
+                    input.size() - input_offset);
         } while (w == -1 && errno == EINTR);
 
         if (w == -1 && errno != EAGAIN) {
@@ -260,7 +256,8 @@ int run(const std::vector<std::string> &args, const std::string &input,
 #endif
       if (WIFEXITED(status)) {
         if (WEXITSTATUS(status) != EXIT_SUCCESS)
-          *debug << "child returned exit status " << WEXITSTATUS(status) << "\n";
+          *debug << "child returned exit status " << WEXITSTATUS(status)
+                 << "\n";
         break;
       }
       if (WIFSIGNALED(status)) {
@@ -299,12 +296,11 @@ done:
 
 static int __attribute__((unused)) test_process(int argc, char **argv) {
 
-  if (argc < 2 || strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0
-      || strcmp(argv[1], "-?") == 0) {
-    std::cerr
-      << "Rumur Process.cc tester\n"
-      << "\n"
-      << " usage: " << argv[0] << " cmd args...\n";
+  if (argc < 2 || strcmp(argv[1], "--help") == 0 ||
+      strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-?") == 0) {
+    std::cerr << "Rumur Process.cc tester\n"
+              << "\n"
+              << " usage: " << argv[0] << " cmd args...\n";
     return EXIT_SUCCESS;
   }
 
@@ -317,7 +313,7 @@ static int __attribute__((unused)) test_process(int argc, char **argv) {
 
   // read stdin until EOF
   std::ostringstream input;
-  for (std::string line; std::getline(std::cin, line); ) {
+  for (std::string line; std::getline(std::cin, line);) {
     input << line << "\n";
   }
 
@@ -332,7 +328,5 @@ static int __attribute__((unused)) test_process(int argc, char **argv) {
 }
 
 #ifdef TEST_PROCESS
-int main(int argc, char **argv) {
-  return test_process(argc, argv);
-}
+int main(int argc, char **argv) { return test_process(argc, argv); }
 #endif

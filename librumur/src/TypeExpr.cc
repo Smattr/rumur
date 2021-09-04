@@ -1,17 +1,17 @@
-#include <cassert>
 #include "../../common/isa.h"
+#include <cassert>
 #include <cstddef>
 #include <gmpxx.h>
 #include <iostream>
 #include <limits.h>
 #include <memory>
 #include <rumur/Decl.h>
-#include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Number.h>
 #include <rumur/Ptr.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/except.h>
+#include <rumur/traverse.h>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -19,15 +19,11 @@
 
 namespace rumur {
 
-TypeExpr::TypeExpr(const location &loc_): Node(loc_) { }
+TypeExpr::TypeExpr(const location &loc_) : Node(loc_) {}
 
-bool TypeExpr::is_simple() const {
-  return false;
-}
+bool TypeExpr::is_simple() const { return false; }
 
-Ptr<TypeExpr> TypeExpr::resolve() const {
-  return Ptr<TypeExpr>(clone());
-}
+Ptr<TypeExpr> TypeExpr::resolve() const { return Ptr<TypeExpr>(clone()); }
 
 std::string TypeExpr::lower_bound() const {
   throw Error("complex types do not have valid lower bounds", loc);
@@ -58,7 +54,7 @@ mpz_class TypeExpr::width() const {
 
 bool TypeExpr::constant() const {
   assert(!is_simple() && "TypeExpr::constant invoked for simple type; missing "
-    "TypeExpr::constant override?");
+                         "TypeExpr::constant override?");
 
   throw Error("complex types do not have bounds to query", loc);
 }
@@ -70,16 +66,16 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
 
   class Equater : public ConstTypeTraversal {
 
-   private:
+  private:
     const Ptr<TypeExpr> t;
 
-   public:
+  public:
     bool result = true;
 
-    explicit Equater(const TypeExpr &type): t(type.resolve()) { }
+    explicit Equater(const TypeExpr &type) : t(type.resolve()) {}
 
     void visit_array(const Array &n) final {
-      if (auto a = dynamic_cast<const Array*>(t.get())) {
+      if (auto a = dynamic_cast<const Array *>(t.get())) {
         result &= equal(*a->index_type, *n.index_type);
         result &= equal(*a->element_type, *n.element_type);
       } else {
@@ -88,8 +84,9 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
     }
 
     void visit_enum(const Enum &n) final {
-      if (auto e = dynamic_cast<const Enum*>(t.get())) {
-        for (auto it = e->members.begin(), it2 = n.members.begin(); ; it++, it2++) {
+      if (auto e = dynamic_cast<const Enum *>(t.get())) {
+        for (auto it = e->members.begin(), it2 = n.members.begin();;
+             it++, it2++) {
           if (it == e->members.end()) {
             result &= it2 == n.members.end();
             break;
@@ -106,17 +103,18 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
     }
 
     void visit_range(const Range &n) final {
-      if (auto r = dynamic_cast<const Range*>(t.get())) {
-        result = r->min->constant_fold() == n.min->constant_fold()
-              && r->max->constant_fold() == n.max->constant_fold();
+      if (auto r = dynamic_cast<const Range *>(t.get())) {
+        result = r->min->constant_fold() == n.min->constant_fold() &&
+                 r->max->constant_fold() == n.max->constant_fold();
       } else {
         result = false;
       }
     }
 
     void visit_record(const Record &n) final {
-      if (auto r = dynamic_cast<const Record*>(t.get())) {
-        for (auto it = r->fields.begin(), it2 = n.fields.begin(); ; it++, it2++) {
+      if (auto r = dynamic_cast<const Record *>(t.get())) {
+        for (auto it = r->fields.begin(), it2 = n.fields.begin();;
+             it++, it2++) {
           if (it == r->fields.end()) {
             result &= it2 == n.fields.end();
             break;
@@ -125,8 +123,8 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
             result = false;
             break;
           }
-          result &= (*it)->name == (*it2)->name
-                 && equal(*(*it)->get_type(), *(*it2)->get_type());
+          result &= (*it)->name == (*it2)->name &&
+                    equal(*(*it)->get_type(), *(*it2)->get_type());
         }
       } else {
         result = false;
@@ -134,16 +132,14 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
     }
 
     void visit_scalarset(const Scalarset &n) final {
-      if (auto s = dynamic_cast<const Scalarset*>(t.get())) {
+      if (auto s = dynamic_cast<const Scalarset *>(t.get())) {
         result = s->bound->constant_fold() == n.bound->constant_fold();
       } else {
         result = false;
       }
     }
 
-    void visit_typeexprid(const TypeExprID &n) final {
-      dispatch(*n.referent);
-    }
+    void visit_typeexprid(const TypeExprID &n) final { dispatch(*n.referent); }
   };
 
   Equater eq(t1);
@@ -162,13 +158,10 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
   return equal(*t1, *t2);
 }
 
-bool TypeExpr::is_boolean() const {
-  return false;
-}
+bool TypeExpr::is_boolean() const { return false; }
 
-Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
-  const location &loc_):
-  TypeExpr(loc_), min(min_), max(max_) {
+Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_)
+    : TypeExpr(loc_), min(min_), max(max_) {
 
   if (min == nullptr) {
     // FIXME: avoid hard coding INT64 limits here
@@ -181,13 +174,9 @@ Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_,
   }
 }
 
-Range *Range::clone() const {
-  return new Range(*this);
-}
+Range *Range::clone() const { return new Range(*this); }
 
-void Range::visit(BaseTraversal &visitor) {
-  visitor.visit_range(*this);
-}
+void Range::visit(BaseTraversal &visitor) { visitor.visit_range(*this); }
 
 void Range::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_range(*this);
@@ -199,9 +188,7 @@ mpz_class Range::count() const {
   return ub - lb + 2;
 }
 
-bool Range::is_simple() const {
-  return true;
-}
+bool Range::is_simple() const { return true; }
 
 void Range::validate() const {
   if (!min->constant())
@@ -226,16 +213,12 @@ std::string Range::to_string() const {
   return min->to_string() + ".." + max->to_string();
 }
 
-bool Range::constant() const {
-  return min->constant() && max->constant();
-}
+bool Range::constant() const { return min->constant() && max->constant(); }
 
-Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_):
-  TypeExpr(loc_), bound(bound_) { }
+Scalarset::Scalarset(const Ptr<Expr> &bound_, const location &loc_)
+    : TypeExpr(loc_), bound(bound_) {}
 
-Scalarset *Scalarset::clone() const {
-  return new Scalarset(*this);
-}
+Scalarset *Scalarset::clone() const { return new Scalarset(*this); }
 
 void Scalarset::visit(BaseTraversal &visitor) {
   visitor.visit_scalarset(*this);
@@ -252,9 +235,7 @@ mpz_class Scalarset::count() const {
   return b + 1;
 }
 
-bool Scalarset::is_simple() const {
-  return true;
-}
+bool Scalarset::is_simple() const { return true; }
 
 void Scalarset::validate() const {
   if (!bound->constant())
@@ -264,9 +245,7 @@ void Scalarset::validate() const {
     throw Error("bound of scalarset is not positive", bound->loc);
 }
 
-std::string Scalarset::lower_bound() const {
-  return "VALUE_C(0)";
-}
+std::string Scalarset::lower_bound() const { return "VALUE_C(0)"; }
 
 std::string Scalarset::upper_bound() const {
   mpz_class b = bound->constant_fold() - 1;
@@ -277,21 +256,15 @@ std::string Scalarset::to_string() const {
   return "scalarset(" + bound->to_string() + ")";
 }
 
-bool Scalarset::constant() const {
-  return bound->constant();
-}
+bool Scalarset::constant() const { return bound->constant(); }
 
 Enum::Enum(const std::vector<std::pair<std::string, location>> &members_,
-  const location &loc_):
-  TypeExpr(loc_), members(members_) { }
+           const location &loc_)
+    : TypeExpr(loc_), members(members_) {}
 
-Enum *Enum::clone() const {
-  return new Enum(*this);
-}
+Enum *Enum::clone() const { return new Enum(*this); }
 
-void Enum::visit(BaseTraversal &visitor) {
-  visitor.visit_enum(*this);
-}
+void Enum::visit(BaseTraversal &visitor) { visitor.visit_enum(*this); }
 
 void Enum::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_enum(*this);
@@ -302,9 +275,7 @@ mpz_class Enum::count() const {
   return members_size + 1;
 }
 
-bool Enum::is_simple() const {
-  return true;
-}
+bool Enum::is_simple() const { return true; }
 
 void Enum::validate() const {
   std::unordered_set<std::string> ms;
@@ -312,13 +283,11 @@ void Enum::validate() const {
     auto it = ms.insert(member.first);
     if (!it.second)
       throw Error("duplicate enum member \"" + member.first + "\"",
-        member.second);
+                  member.second);
   }
 }
 
-std::string Enum::lower_bound() const {
-  return "VALUE_C(0)";
-}
+std::string Enum::lower_bound() const { return "VALUE_C(0)"; }
 
 std::string Enum::upper_bound() const {
   mpz_class size = members.size();
@@ -347,13 +316,12 @@ bool Enum::constant() const {
 bool Enum::is_boolean() const {
   // the boolean literals cannot be shadowed, so we simply need to check if our
   // members are “false” and “true”
-  return members.size() == 2 && members[0].first == "false"
-    && members[1].first == "true";
+  return members.size() == 2 && members[0].first == "false" &&
+         members[1].first == "true";
 }
 
-Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
-  const location &loc_):
-  TypeExpr(loc_), fields(fields_) {
+Record::Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_)
+    : TypeExpr(loc_), fields(fields_) {
 
   std::unordered_set<std::string> names;
   for (const Ptr<VarDecl> &f : fields) {
@@ -362,13 +330,9 @@ Record::Record(const std::vector<Ptr<VarDecl>> &fields_,
   }
 }
 
-Record *Record::clone() const {
-  return new Record(*this);
-}
+Record *Record::clone() const { return new Record(*this); }
 
-void Record::visit(BaseTraversal &visitor) {
-  visitor.visit_record(*this);
-}
+void Record::visit(BaseTraversal &visitor) { visitor.visit_record(*this); }
 
 void Record::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_record(*this);
@@ -396,16 +360,12 @@ std::string Record::to_string() const {
 }
 
 Array::Array(const Ptr<TypeExpr> &index_type_,
-  const Ptr<TypeExpr> &element_type_, const location &loc_):
-  TypeExpr(loc_), index_type(index_type_), element_type(element_type_) { }
+             const Ptr<TypeExpr> &element_type_, const location &loc_)
+    : TypeExpr(loc_), index_type(index_type_), element_type(element_type_) {}
 
-Array *Array::clone() const {
-  return new Array(*this);
-}
+Array *Array::clone() const { return new Array(*this); }
 
-void Array::visit(BaseTraversal &visitor) {
-  visitor.visit_array(*this);
-}
+void Array::visit(BaseTraversal &visitor) { visitor.visit_array(*this); }
 
 void Array::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_array(*this);
@@ -445,17 +405,15 @@ void Array::validate() const {
 }
 
 std::string Array::to_string() const {
-  return "array [" + index_type->to_string() + "] of "
-    + element_type->to_string();
+  return "array [" + index_type->to_string() + "] of " +
+         element_type->to_string();
 }
 
-TypeExprID::TypeExprID(const std::string &name_,
-  const Ptr<TypeDecl> &referent_, const location &loc_):
-  TypeExpr(loc_), name(name_), referent(referent_) { }
+TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
+                       const location &loc_)
+    : TypeExpr(loc_), name(name_), referent(referent_) {}
 
-TypeExprID *TypeExprID::clone() const {
-  return new TypeExprID(*this);
-}
+TypeExprID *TypeExprID::clone() const { return new TypeExprID(*this); }
 
 void TypeExprID::visit(BaseTraversal &visitor) {
   visitor.visit_typeexprid(*this);
@@ -506,9 +464,7 @@ std::string TypeExprID::upper_bound() const {
   return referent->value->upper_bound();
 }
 
-std::string TypeExprID::to_string() const {
-  return name;
-}
+std::string TypeExprID::to_string() const { return name; }
 
 bool TypeExprID::constant() const {
   if (referent == nullptr)
@@ -516,4 +472,4 @@ bool TypeExprID::constant() const {
   return referent->value->constant();
 }
 
-}
+} // namespace rumur

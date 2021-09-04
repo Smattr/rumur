@@ -9,4 +9,4 @@ namespace smt {
  */
 void simplify(rumur::Model &model);
 
-}
+} // namespace smt

@@ -10,17 +10,17 @@
 #include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/traverse.h>
 #include <rumur/validate.h>
 
-namespace rumur {
+using namespace rumur;
 
 namespace {
 
 class Validator : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -117,9 +117,7 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit_enum(const Enum &n) final {
-    n.validate();
-  }
+  void visit_enum(const Enum &n) final { n.validate(); }
 
   void visit_eq(const Eq &n) final {
     dispatch(*n.lhs);
@@ -127,9 +125,7 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit_errorstmt(const ErrorStmt &n) final {
-    n.validate();
-  }
+  void visit_errorstmt(const ErrorStmt &n) final { n.validate(); }
 
   void visit_exists(const Exists &n) final {
     dispatch(n.quantifier);
@@ -268,9 +264,7 @@ class Validator : public ConstBaseTraversal {
     n.validate();
   }
 
-  void visit_number(const Number &n) final {
-    n.validate();
-  }
+  void visit_number(const Number &n) final { n.validate(); }
 
   void visit_or(const Or &n) final {
     dispatch(*n.lhs);
@@ -443,11 +437,9 @@ class Validator : public ConstBaseTraversal {
   virtual ~Validator() = default;
 };
 
-}
+} // namespace
 
-void validate(const Node &n) {
+void rumur::validate(const Node &n) {
   Validator v;
   v.dispatch(n);
-}
-
 }

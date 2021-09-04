@@ -1,24 +1,26 @@
+#include "../../common/help.h"
+#include "ValueType.h"
+#include "environ.h"
+#include "generate.h"
+#include "has-start-state.h"
+#include "log.h"
+#include "optimise-field-ordering.h"
+#include "options.h"
+#include "resources.h"
+#include "smt/except.h"
+#include "smt/simplify.h"
+#include "utils.h"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "environ.h"
 #include <fstream>
-#include "generate.h"
 #include <getopt.h>
-#include "has-start-state.h"
-#include "../../common/help.h"
 #include <iostream>
-#include "log.h"
 #include <memory>
-#include "optimise-field-ordering.h"
-#include "options.h"
-#include "resources.h"
 #include <rumur/rumur.h>
-#include "smt/except.h"
-#include "smt/simplify.h"
 #include <spawn.h>
 #include <sstream>
 #include <string>
@@ -26,8 +28,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <utility>
-#include "utils.h"
-#include "ValueType.h"
 
 using namespace rumur;
 
@@ -40,7 +40,7 @@ static unsigned string_to_percentage(const std::string &s) {
     p = std::stoi(s);
     if (p < 1 || p > 100)
       throw std::invalid_argument("");
-  } catch (std::out_of_range&) {
+  } catch (std::out_of_range &) {
     throw std::invalid_argument("");
   }
   return (unsigned)p;
@@ -65,7 +65,6 @@ static void parse_args(int argc, char **argv) {
       OPT_SMT_ARG,
       OPT_SMT_BITVECTORS,
       OPT_SMT_BUDGET,
-      OPT_SMT_LOGIC,
       OPT_SMT_PATH,
       OPT_SMT_PRELUDE,
       OPT_SMT_SIMPLIFICATION,
@@ -76,40 +75,40 @@ static void parse_args(int argc, char **argv) {
     };
 
     static struct option opts[] = {
-      { "bound", required_argument, 0, OPT_BOUND },
-      { "color", required_argument, 0, OPT_COLOUR },
-      { "colour", required_argument, 0, OPT_COLOUR },
-      { "counterexample-trace", required_argument, 0, OPT_COUNTEREXAMPLE_TRACE },
-      { "deadlock-detection", required_argument, 0, OPT_DEADLOCK_DETECTION },
-      { "debug", no_argument, 0, 'd' },
-      { "help", no_argument, 0, 'h' },
-      { "max-errors", required_argument, 0, OPT_MAX_ERRORS },
-      { "monopolise", no_argument, 0, OPT_MONOPOLISE },
-      { "monopolize", no_argument, 0, OPT_MONOPOLISE },
-      { "output", required_argument, 0, 'o' },
-      { "output-format", required_argument, 0, OPT_OUTPUT_FORMAT },
-      { "pack-state", required_argument, 0, OPT_PACK_STATE },
-      { "pointer-bits", required_argument, 0, OPT_POINTER_BITS },
-      { "quiet", no_argument, 0, 'q' },
-      { "reorder-fields", required_argument, 0, OPT_REORDER_FIELDS },
-      { "sandbox", required_argument, 0, OPT_SANDBOX },
-      { "scalarset-schedules", required_argument, 0, OPT_SCALARSET_SCHEDULES },
-      { "set-capacity", required_argument, 0, 's' },
-      { "set-expand-threshold", required_argument, 0, 'e' },
-      { "smt-arg", required_argument, 0, OPT_SMT_ARG },
-      { "smt-bitvectors", required_argument, 0, OPT_SMT_BITVECTORS },
-      { "smt-budget", required_argument, 0, OPT_SMT_BUDGET },
-      { "smt-logic", required_argument, 0, OPT_SMT_LOGIC },
-      { "smt-path", required_argument, 0, OPT_SMT_PATH },
-      { "smt-prelude", required_argument, 0, OPT_SMT_PRELUDE },
-      { "smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION },
-      { "symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION },
-      { "threads", required_argument, 0, 't' },
-      { "trace", required_argument, 0, OPT_TRACE },
-      { "value-type", required_argument, 0, OPT_VALUE_TYPE },
-      { "verbose", no_argument, 0, 'v' },
-      { "version", no_argument, 0, OPT_VERSION },
-      { 0, 0, 0, 0 },
+        {"bound", required_argument, 0, OPT_BOUND},
+        {"color", required_argument, 0, OPT_COLOUR},
+        {"colour", required_argument, 0, OPT_COLOUR},
+        {"counterexample-trace", required_argument, 0,
+         OPT_COUNTEREXAMPLE_TRACE},
+        {"deadlock-detection", required_argument, 0, OPT_DEADLOCK_DETECTION},
+        {"debug", no_argument, 0, 'd'},
+        {"help", no_argument, 0, 'h'},
+        {"max-errors", required_argument, 0, OPT_MAX_ERRORS},
+        {"monopolise", no_argument, 0, OPT_MONOPOLISE},
+        {"monopolize", no_argument, 0, OPT_MONOPOLISE},
+        {"output", required_argument, 0, 'o'},
+        {"output-format", required_argument, 0, OPT_OUTPUT_FORMAT},
+        {"pack-state", required_argument, 0, OPT_PACK_STATE},
+        {"pointer-bits", required_argument, 0, OPT_POINTER_BITS},
+        {"quiet", no_argument, 0, 'q'},
+        {"reorder-fields", required_argument, 0, OPT_REORDER_FIELDS},
+        {"sandbox", required_argument, 0, OPT_SANDBOX},
+        {"scalarset-schedules", required_argument, 0, OPT_SCALARSET_SCHEDULES},
+        {"set-capacity", required_argument, 0, 's'},
+        {"set-expand-threshold", required_argument, 0, 'e'},
+        {"smt-arg", required_argument, 0, OPT_SMT_ARG},
+        {"smt-bitvectors", required_argument, 0, OPT_SMT_BITVECTORS},
+        {"smt-budget", required_argument, 0, OPT_SMT_BUDGET},
+        {"smt-path", required_argument, 0, OPT_SMT_PATH},
+        {"smt-prelude", required_argument, 0, OPT_SMT_PRELUDE},
+        {"smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION},
+        {"symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION},
+        {"threads", required_argument, 0, 't'},
+        {"trace", required_argument, 0, OPT_TRACE},
+        {"value-type", required_argument, 0, OPT_VALUE_TYPE},
+        {"verbose", no_argument, 0, 'v'},
+        {"version", no_argument, 0, OPT_VERSION},
+        {0, 0, 0, 0},
     };
 
     int option_index = 0;
@@ -120,403 +119,394 @@ static void parse_args(int argc, char **argv) {
 
     switch (c) {
 
-      case 'd': // --debug
-        options.log_level = LogLevel::DEBUG;
-        set_log_level(options.log_level);
-        break;
+    case 'd': // --debug
+      options.log_level = LogLevel::DEBUG;
+      set_log_level(options.log_level);
+      break;
 
-      case 'e': { // --set-expand-threshold ...
-        bool valid = true;
-        try {
-          options.set_expand_threshold = string_to_percentage(optarg);
-        } catch (std::invalid_argument&) {
-          valid = false;
-        }
-        if (!valid) {
-          std::cerr << "invalid --set-expand-threshold argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
+    case 'e': { // --set-expand-threshold ...
+      bool valid = true;
+      try {
+        options.set_expand_threshold = string_to_percentage(optarg);
+      } catch (std::invalid_argument &) {
+        valid = false;
       }
-
-      case 'h': // --help
-        help(doc_rumur_1, doc_rumur_1_len);
-        exit(EXIT_SUCCESS);
-
-      case 'o': // --output ...
-        out = std::make_shared<std::string>(optarg);
-        break;
-
-      case 'q': // --quiet
-        options.log_level = LogLevel::SILENT;
-        set_log_level(options.log_level);
-        break;
-
-      case 's': { // --set-capacity ...
-        bool valid = true;
-        try {
-          options.set_capacity = optarg;
-          if (options.set_capacity <= 0)
-            valid = false;
-        } catch (std::invalid_argument&) {
-          valid = false;
-        }
-        if (!valid) {
-          std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-      }
-
-      case 't': { // --threads ...
-        bool valid = true;
-        try {
-          options.threads = optarg;
-          if (options.threads < 0)
-            valid = false;
-        } catch (std::invalid_argument&) {
-          valid = false;
-        }
-        if (!valid) {
-          std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-      }
-
-      case 'v': // --verbose
-        options.log_level = LogLevel::INFO;
-        set_log_level(options.log_level);
-        break;
-
-      case '?':
-        std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+      if (!valid) {
+        std::cerr << "invalid --set-expand-threshold argument \"" << optarg
+                  << "\"\n";
         exit(EXIT_FAILURE);
-
-      case OPT_COLOUR: // --colour ...
-        if (strcmp(optarg, "auto") == 0) {
-          options.color = Color::AUTO;
-        } else if (strcmp(optarg, "on") == 0) {
-          if (options.machine_readable_output) {
-            std::cerr << "colour is not supported in combination with "
-              << "--output-format \"machine readable\"\n";
-            exit(EXIT_FAILURE);
-          }
-          options.color = Color::ON;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.color = Color::OFF;
-        } else {
-          std::cerr
-            << "invalid --colour argument \"" << optarg << "\"\n"
-            << "valid arguments are \"auto\", \"off\", and \"on\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_TRACE: // --trace ...
-        if (strcmp(optarg, "handle_reads") == 0) {
-          options.traces |= TC_HANDLE_READS;
-        } else if (strcmp(optarg, "handle_writes") == 0) {
-          options.traces |= TC_HANDLE_WRITES;
-        } else if (strcmp(optarg, "memory_usage") == 0) {
-          options.traces |= TC_MEMORY_USAGE;
-        } else if (strcmp(optarg, "queue") == 0) {
-          options.traces |= TC_QUEUE;
-        } else if (strcmp(optarg, "set") == 0) {
-          options.traces |= TC_SET;
-        } else if (strcmp(optarg, "symmetry_reduction") == 0) {
-          options.traces |= TC_SYMMETRY_REDUCTION;
-        } else if (strcmp(optarg, "all") == 0) {
-          options.traces = uint64_t(-1);
-        } else {
-          std::cerr
-            << "invalid --trace argument \"" << optarg << "\"\n"
-            << "valid arguments are \"handle_reads\", \"handle_writes\", "
-              "\"memory_usage\", \"queue\", \"set\", and "
-              "\"symmetry_reduction\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_DEADLOCK_DETECTION: // --deadlock-detection ...
-        if (strcmp(optarg, "off") == 0) {
-          options.deadlock_detection = DeadlockDetection::OFF;
-        } else if (strcmp(optarg, "stuck") == 0) {
-          options.deadlock_detection = DeadlockDetection::STUCK;
-        } else if (strcmp(optarg, "stuttering") == 0) {
-          options.deadlock_detection = DeadlockDetection::STUTTERING;
-        } else {
-          std::cerr << "invalid argument to --deadlock-detection, \"" << optarg
-            << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_MONOPOLISE: { // --monopolise
-
-        long pagesize = sysconf(_SC_PAGESIZE);
-        if (pagesize < 0) {
-          perror("failed to retrieve page size");
-          exit(EXIT_FAILURE);
-        }
-
-        long physpages = sysconf(_SC_PHYS_PAGES);
-        if (physpages < 0) {
-          perror("failed to retrieve physical pages");
-          exit(EXIT_FAILURE);
-        }
-
-        /* Allocate a set that will eventually cover all of memory upfront. Note
-         * that this will never actually reach 100% occupancy because memory
-         * also needs to contain our code and data as well as the OS.
-         */
-        options.set_capacity = size_t(pagesize) * size_t(physpages);
-
-        // Never expand the set.
-        options.set_expand_threshold = 100;
-
-        break;
       }
+      break;
+    }
 
-      case OPT_PACK_STATE: // --pack-state ...
-        if (strcmp(optarg, "on") == 0) {
-          options.pack_state = true;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.pack_state = false;
-        } else {
-          std::cerr << "invalid argument to --pack_state, \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
+    case 'h': // --help
+      help(doc_rumur_1, doc_rumur_1_len);
+      exit(EXIT_SUCCESS);
 
-      case OPT_POINTER_BITS: // --pointer-bits ...
-        if (strcmp(optarg, "auto") == 0) {
-          options.pointer_bits = 0;
-        } else {
-          bool valid = true;
-          try {
-            options.pointer_bits = optarg;
-            if (options.pointer_bits <= 0)
-              valid = false;
-          } catch (std::invalid_argument&) {
-            valid = false;
-          }
-          if (!valid) {
-            std::cerr << "invalid --pointer-bits argument \"" << optarg << "\"\n";
-            exit(EXIT_FAILURE);
-          }
-        }
-        break;
+    case 'o': // --output ...
+      out = std::make_shared<std::string>(optarg);
+      break;
 
+    case 'q': // --quiet
+      options.log_level = LogLevel::SILENT;
+      set_log_level(options.log_level);
+      break;
 
-      case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
-        if (strcmp(optarg, "off") == 0) {
-          options.symmetry_reduction = SymmetryReduction::OFF;
-        } else if (strcmp(optarg, "heuristic") == 0) {
-          options.symmetry_reduction = SymmetryReduction::HEURISTIC;
-        } else if (strcmp(optarg, "exhaustive") == 0) {
-          options.symmetry_reduction = SymmetryReduction::EXHAUSTIVE;
-        } else {
-          std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
-            << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_SANDBOX: // --sandbox ...
-        if (strcmp(optarg, "on") == 0) {
-          options.sandbox_enabled = true;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.sandbox_enabled = false;
-        } else {
-          std::cerr << "invalid argument to --sandbox, \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_SCALARSET_SCHEDULES: // --scalarset-schedules ...
-        if (strcmp(optarg, "on") == 0) {
-          options.scalarset_schedules = true;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.scalarset_schedules = false;
-        } else {
-          std::cerr << "invalid argument to --scalarset-schedules, \"" << optarg
-            << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_MAX_ERRORS: { // --max-errors ...
-        bool valid = true;
-        try {
-          options.max_errors = optarg;
-          if (options.max_errors <= 0)
-            valid = false;
-        } catch (std::invalid_argument&) {
+    case 's': { // --set-capacity ...
+      bool valid = true;
+      try {
+        options.set_capacity = optarg;
+        if (options.set_capacity <= 0)
           valid = false;
-        }
-        if (!valid) {
-          std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
+      } catch (std::invalid_argument &) {
+        valid = false;
       }
-
-      case OPT_COUNTEREXAMPLE_TRACE: // --counterexample-trace ...
-        if (strcmp(optarg, "full") == 0) {
-          options.counterexample_trace = CounterexampleTrace::FULL;
-        } else if (strcmp(optarg, "diff") == 0) {
-          options.counterexample_trace = CounterexampleTrace::DIFF;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.counterexample_trace = CounterexampleTrace::OFF;
-        } else {
-          std::cerr << "invalid argument to --counterexample-trace, \""
-            << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_OUTPUT_FORMAT: // --output-format ...
-        if (strcmp(optarg, "machine-readable") == 0) {
-          options.machine_readable_output = true;
-          // Disable colour that would interfere with XML
-          options.color = Color::OFF;
-        } else if (strcmp(optarg, "human-readable") == 0) {
-          options.machine_readable_output = false;
-        } else {
-          std::cerr << "invalid argument to --output-format, \""
-            << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_VERSION: // --version
-        std::cout << "Rumur version " << get_version() << "\n";
-        exit(EXIT_SUCCESS);
-
-      case OPT_BOUND: { // --bound ...
-        bool valid = true;
-        try {
-          options.bound = optarg;
-          if (options.bound < 0)
-            valid = false;
-        } catch (std::invalid_argument&) {
-          valid = false;
-        }
-        if (!valid) {
-          std::cerr << "invalid --bound argument \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-      }
-
-      case OPT_VALUE_TYPE: // --value-type ...
-        options.value_type = optarg;
-        break;
-
-      case OPT_REORDER_FIELDS: // --reorder-fields ...
-        if (strcmp(optarg, "on") == 0) {
-          options.reorder_fields = true;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.reorder_fields = false;
-        } else {
-          std::cerr << "invalid argument to --reorder-fields, \"" << optarg
-            << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      case OPT_SMT_ARG: // --smt-arg ...
-        options.smt.args.emplace_back(optarg);
-        if (options.smt.simplification == SmtSimplification::AUTO) {
-          options.smt.simplification = SmtSimplification::ON;
-        }
-        break;
-
-      case OPT_SMT_BITVECTORS: // --smt-bitvectors ...
-        if (strcmp(optarg, "on") == 0) {
-          options.smt.use_bitvectors = true;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.smt.use_bitvectors = false;
-        } else {
-          std::cerr << "invalid argument to --smt-bitvectors, \"" << optarg
-            << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        if (options.smt.simplification == SmtSimplification::AUTO) {
-          options.smt.simplification = SmtSimplification::ON;
-        }
-        break;
-
-      case OPT_SMT_BUDGET: { // --smt-budget ...
-        bool valid = true;
-        try {
-          options.smt.budget = optarg;
-          if (options.smt.budget < 0)
-            valid = false;
-        } catch (std::invalid_argument&) {
-          valid = false;
-        }
-        if (!valid) {
-          std::cerr << "invalid --smt-budget, \"" << optarg << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        if (options.smt.simplification == SmtSimplification::AUTO) {
-          options.smt.simplification = SmtSimplification::ON;
-        }
-        break;
-      }
-
-      case OPT_SMT_LOGIC: // --smt-logic ...
-        options.smt.logic = optarg;
-        if (options.smt.simplification == SmtSimplification::AUTO) {
-          options.smt.simplification = SmtSimplification::ON;
-        }
-        *warn << "the option --smt-logic is deprecated\n";
-        break;
-
-      case OPT_SMT_PATH: // --smt-path ...
-        options.smt.path = optarg;
-        if (options.smt.simplification == SmtSimplification::AUTO) {
-          options.smt.simplification = SmtSimplification::ON;
-        }
-        break;
-
-      case OPT_SMT_PRELUDE: // --smt-prelude ...
-        options.smt.prelude.emplace_back(optarg);
-        if (options.smt.simplification == SmtSimplification::AUTO) {
-          options.smt.simplification = SmtSimplification::ON;
-        }
-        break;
-
-      case OPT_SMT_SIMPLIFICATION: // --smt-simplification ...
-        if (strcmp(optarg, "on") == 0) {
-          options.smt.simplification = SmtSimplification::ON;
-        } else if (strcmp(optarg, "off") == 0) {
-          options.smt.simplification = SmtSimplification::OFF;
-        } else {
-          std::cerr << "invalid argument to --smt-simplification, \"" << optarg
-            << "\"\n";
-          exit(EXIT_FAILURE);
-        }
-        break;
-
-      default:
-        std::cerr << "unexpected error\n";
+      if (!valid) {
+        std::cerr << "invalid --set-capacity argument \"" << optarg << "\"\n";
         exit(EXIT_FAILURE);
+      }
+      break;
+    }
 
+    case 't': { // --threads ...
+      bool valid = true;
+      try {
+        options.threads = optarg;
+        if (options.threads < 0)
+          valid = false;
+      } catch (std::invalid_argument &) {
+        valid = false;
+      }
+      if (!valid) {
+        std::cerr << "invalid --threads argument \"" << optarg << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+    }
+
+    case 'v': // --verbose
+      options.log_level = LogLevel::INFO;
+      set_log_level(options.log_level);
+      break;
+
+    case '?':
+      std::cerr << "run `" << argv[0] << " --help` to see available options\n";
+      exit(EXIT_FAILURE);
+
+    case OPT_COLOUR: // --colour ...
+      if (strcmp(optarg, "auto") == 0) {
+        options.color = Color::AUTO;
+      } else if (strcmp(optarg, "on") == 0) {
+        if (options.machine_readable_output) {
+          std::cerr << "colour is not supported in combination with "
+                    << "--output-format \"machine readable\"\n";
+          exit(EXIT_FAILURE);
+        }
+        options.color = Color::ON;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.color = Color::OFF;
+      } else {
+        std::cerr << "invalid --colour argument \"" << optarg << "\"\n"
+                  << "valid arguments are \"auto\", \"off\", and \"on\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_TRACE: // --trace ...
+      if (strcmp(optarg, "handle_reads") == 0) {
+        options.traces |= TC_HANDLE_READS;
+      } else if (strcmp(optarg, "handle_writes") == 0) {
+        options.traces |= TC_HANDLE_WRITES;
+      } else if (strcmp(optarg, "memory_usage") == 0) {
+        options.traces |= TC_MEMORY_USAGE;
+      } else if (strcmp(optarg, "queue") == 0) {
+        options.traces |= TC_QUEUE;
+      } else if (strcmp(optarg, "set") == 0) {
+        options.traces |= TC_SET;
+      } else if (strcmp(optarg, "symmetry_reduction") == 0) {
+        options.traces |= TC_SYMMETRY_REDUCTION;
+      } else if (strcmp(optarg, "all") == 0) {
+        options.traces = uint64_t(-1);
+      } else {
+        std::cerr << "invalid --trace argument \"" << optarg << "\"\n"
+                  << "valid arguments are \"handle_reads\", \"handle_writes\", "
+                     "\"memory_usage\", \"queue\", \"set\", and "
+                     "\"symmetry_reduction\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_DEADLOCK_DETECTION: // --deadlock-detection ...
+      if (strcmp(optarg, "off") == 0) {
+        options.deadlock_detection = DeadlockDetection::OFF;
+      } else if (strcmp(optarg, "stuck") == 0) {
+        options.deadlock_detection = DeadlockDetection::STUCK;
+      } else if (strcmp(optarg, "stuttering") == 0) {
+        options.deadlock_detection = DeadlockDetection::STUTTERING;
+      } else {
+        std::cerr << "invalid argument to --deadlock-detection, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_MONOPOLISE: { // --monopolise
+
+      long pagesize = sysconf(_SC_PAGESIZE);
+      if (pagesize < 0) {
+        perror("failed to retrieve page size");
+        exit(EXIT_FAILURE);
+      }
+
+      long physpages = sysconf(_SC_PHYS_PAGES);
+      if (physpages < 0) {
+        perror("failed to retrieve physical pages");
+        exit(EXIT_FAILURE);
+      }
+
+      /* Allocate a set that will eventually cover all of memory upfront. Note
+       * that this will never actually reach 100% occupancy because memory
+       * also needs to contain our code and data as well as the OS.
+       */
+      options.set_capacity = size_t(pagesize) * size_t(physpages);
+
+      // Never expand the set.
+      options.set_expand_threshold = 100;
+
+      break;
+    }
+
+    case OPT_PACK_STATE: // --pack-state ...
+      if (strcmp(optarg, "on") == 0) {
+        options.pack_state = true;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.pack_state = false;
+      } else {
+        std::cerr << "invalid argument to --pack_state, \"" << optarg << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_POINTER_BITS: // --pointer-bits ...
+      if (strcmp(optarg, "auto") == 0) {
+        options.pointer_bits = 0;
+      } else {
+        bool valid = true;
+        try {
+          options.pointer_bits = optarg;
+          if (options.pointer_bits <= 0)
+            valid = false;
+        } catch (std::invalid_argument &) {
+          valid = false;
+        }
+        if (!valid) {
+          std::cerr << "invalid --pointer-bits argument \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+      }
+      break;
+
+    case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
+      if (strcmp(optarg, "off") == 0) {
+        options.symmetry_reduction = SymmetryReduction::OFF;
+      } else if (strcmp(optarg, "heuristic") == 0) {
+        options.symmetry_reduction = SymmetryReduction::HEURISTIC;
+      } else if (strcmp(optarg, "exhaustive") == 0) {
+        options.symmetry_reduction = SymmetryReduction::EXHAUSTIVE;
+      } else {
+        std::cerr << "invalid argument to --symmetry-reduction, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_SANDBOX: // --sandbox ...
+      if (strcmp(optarg, "on") == 0) {
+        options.sandbox_enabled = true;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.sandbox_enabled = false;
+      } else {
+        std::cerr << "invalid argument to --sandbox, \"" << optarg << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_SCALARSET_SCHEDULES: // --scalarset-schedules ...
+      if (strcmp(optarg, "on") == 0) {
+        options.scalarset_schedules = true;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.scalarset_schedules = false;
+      } else {
+        std::cerr << "invalid argument to --scalarset-schedules, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_MAX_ERRORS: { // --max-errors ...
+      bool valid = true;
+      try {
+        options.max_errors = optarg;
+        if (options.max_errors <= 0)
+          valid = false;
+      } catch (std::invalid_argument &) {
+        valid = false;
+      }
+      if (!valid) {
+        std::cerr << "invalid --max-errors argument \"" << optarg << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+    }
+
+    case OPT_COUNTEREXAMPLE_TRACE: // --counterexample-trace ...
+      if (strcmp(optarg, "full") == 0) {
+        options.counterexample_trace = CounterexampleTrace::FULL;
+      } else if (strcmp(optarg, "diff") == 0) {
+        options.counterexample_trace = CounterexampleTrace::DIFF;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.counterexample_trace = CounterexampleTrace::OFF;
+      } else {
+        std::cerr << "invalid argument to --counterexample-trace, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_OUTPUT_FORMAT: // --output-format ...
+      if (strcmp(optarg, "machine-readable") == 0) {
+        options.machine_readable_output = true;
+        // Disable colour that would interfere with XML
+        options.color = Color::OFF;
+      } else if (strcmp(optarg, "human-readable") == 0) {
+        options.machine_readable_output = false;
+      } else {
+        std::cerr << "invalid argument to --output-format, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_VERSION: // --version
+      std::cout << "Rumur version " << get_version() << "\n";
+      exit(EXIT_SUCCESS);
+
+    case OPT_BOUND: { // --bound ...
+      bool valid = true;
+      try {
+        options.bound = optarg;
+        if (options.bound < 0)
+          valid = false;
+      } catch (std::invalid_argument &) {
+        valid = false;
+      }
+      if (!valid) {
+        std::cerr << "invalid --bound argument \"" << optarg << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+    }
+
+    case OPT_VALUE_TYPE: // --value-type ...
+      options.value_type = optarg;
+      break;
+
+    case OPT_REORDER_FIELDS: // --reorder-fields ...
+      if (strcmp(optarg, "on") == 0) {
+        options.reorder_fields = true;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.reorder_fields = false;
+      } else {
+        std::cerr << "invalid argument to --reorder-fields, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    case OPT_SMT_ARG: // --smt-arg ...
+      options.smt.args.emplace_back(optarg);
+      if (options.smt.simplification == SmtSimplification::AUTO) {
+        options.smt.simplification = SmtSimplification::ON;
+      }
+      break;
+
+    case OPT_SMT_BITVECTORS: // --smt-bitvectors ...
+      if (strcmp(optarg, "on") == 0) {
+        options.smt.use_bitvectors = true;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.smt.use_bitvectors = false;
+      } else {
+        std::cerr << "invalid argument to --smt-bitvectors, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      if (options.smt.simplification == SmtSimplification::AUTO) {
+        options.smt.simplification = SmtSimplification::ON;
+      }
+      break;
+
+    case OPT_SMT_BUDGET: { // --smt-budget ...
+      bool valid = true;
+      try {
+        options.smt.budget = optarg;
+        if (options.smt.budget < 0)
+          valid = false;
+      } catch (std::invalid_argument &) {
+        valid = false;
+      }
+      if (!valid) {
+        std::cerr << "invalid --smt-budget, \"" << optarg << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      if (options.smt.simplification == SmtSimplification::AUTO) {
+        options.smt.simplification = SmtSimplification::ON;
+      }
+      break;
+    }
+
+    case OPT_SMT_PATH: // --smt-path ...
+      options.smt.path = optarg;
+      if (options.smt.simplification == SmtSimplification::AUTO) {
+        options.smt.simplification = SmtSimplification::ON;
+      }
+      break;
+
+    case OPT_SMT_PRELUDE: // --smt-prelude ...
+      options.smt.prelude.emplace_back(optarg);
+      if (options.smt.simplification == SmtSimplification::AUTO) {
+        options.smt.simplification = SmtSimplification::ON;
+      }
+      break;
+
+    case OPT_SMT_SIMPLIFICATION: // --smt-simplification ...
+      if (strcmp(optarg, "on") == 0) {
+        options.smt.simplification = SmtSimplification::ON;
+      } else if (strcmp(optarg, "off") == 0) {
+        options.smt.simplification = SmtSimplification::OFF;
+      } else {
+        std::cerr << "invalid argument to --smt-simplification, \"" << optarg
+                  << "\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
+
+    default:
+      std::cerr << "unexpected error\n";
+      exit(EXIT_FAILURE);
     }
   }
 
   if (optind == argc - 1) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
-      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno) << "\n";
+      std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
+                << "\n";
       exit(EXIT_FAILURE);
     }
 
     if (S_ISDIR(buf.st_mode)) {
-      std::cerr << "failed to open " << argv[optind] << ": this is a directory\n";
+      std::cerr << "failed to open " << argv[optind]
+                << ": this is a directory\n";
       exit(EXIT_FAILURE);
     }
 
@@ -547,7 +537,7 @@ static void parse_args(int argc, char **argv) {
   if (options.smt.simplification == SmtSimplification::ON &&
       options.smt.path == "") {
     *warn << "SMT simplification was enabled but no path was provided to the "
-      << "solver (--smt-path ...), so it will be disabled\n";
+          << "solver (--smt-path ...), so it will be disabled\n";
     options.smt.simplification = SmtSimplification::OFF;
   }
 }
@@ -645,8 +635,8 @@ int main(int argc, char **argv) {
     m = parse(in == nullptr ? std::cin : *in);
   } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
-      << reset() << " " << red() << bold() << "error:" << reset() << " "
-      << white() << bold() << e.what() << reset() << "\n";
+              << reset() << " " << red() << bold() << "error:" << reset() << " "
+              << white() << bold() << e.what() << reset() << "\n";
     print_location(input_filename, e.loc);
     return EXIT_FAILURE;
   }
@@ -667,8 +657,8 @@ int main(int argc, char **argv) {
     validate(*m);
   } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
-      << reset() << " " << red() << bold() << "error:" << reset() << " "
-      << white() << bold() << e.what() << reset() << "\n";
+              << reset() << " " << red() << bold() << "error:" << reset() << " "
+              << white() << bold() << e.what() << reset() << "\n";
     print_location(input_filename, e.loc);
     return EXIT_FAILURE;
   }
@@ -682,7 +672,7 @@ int main(int argc, char **argv) {
     *debug << "SMT simplification...\n";
     try {
       smt::simplify(*m);
-    } catch (smt::BudgetExhausted&) {
+    } catch (smt::BudgetExhausted &) {
       *info << "SMT solver budget (" << options.smt.budget << "ms) exhausted\n";
     } catch (smt::Unsupported &e) {
       if (e.expr != nullptr)
@@ -704,7 +694,7 @@ int main(int argc, char **argv) {
     value_types = get_value_type(options.value_type, *m);
   } catch (std::runtime_error &e) {
     std::cerr << "invalid --value-type " << options.value_type << ": "
-      << e.what() << "\n";
+              << e.what() << "\n";
     return EXIT_FAILURE;
   }
 
@@ -714,7 +704,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
 
 #ifndef __AFL_COMPILER
-  #define __AFL_COMPILER 0
+#define __AFL_COMPILER 0
 #endif
 
   if (__AFL_COMPILER) { // extra steps for when we're being fuzzed
@@ -725,17 +715,24 @@ int main(int argc, char **argv) {
       cc = "cc";
 
     // setup an argument vector for calling the C compiler
-    const char *args[] = { cc, "-std=c11", "-x", "c", "-o",
-      "/dev/null", "-Werror=format", "-Werror=sign-compare",
-      "-Werror=type-limits", out->c_str(),
+    const char *args[] = {cc,
+                          "-std=c11",
+                          "-x",
+                          "c",
+                          "-o",
+                          "/dev/null",
+                          "-Werror=format",
+                          "-Werror=sign-compare",
+                          "-Werror=type-limits",
+                          out->c_str(),
 #ifdef __x86_64__
-      "-mcx16",
+                          "-mcx16",
 #endif
-      "-lpthread" };
+                          "-lpthread"};
 
     // start the C compiler
     int r = posix_spawnp(nullptr, args[0], nullptr, nullptr,
-      const_cast<char*const*>(args), get_environ());
+                         const_cast<char *const *>(args), get_environ());
     if (r != 0) {
       std::cerr << "posix_spawnp failed: " << strerror(r) << "\n";
       abort();

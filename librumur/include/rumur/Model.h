@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
-#include "location.hh"
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Function.h>
@@ -13,19 +13,17 @@
 #include <rumur/Rule.h>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Model : public Node {
+struct RUMUR_API_WITH_RTTI Model : public Node {
 
   // declarations, functions and rules in the order in which they appeared in
   // the source
   std::vector<Ptr<Node>> children;
-
-  __attribute__((deprecated("the 4-argument constructor of Model is "
-    "deprecated; please use the newer 2-argument constructor")))
-  Model(const std::vector<Ptr<Decl>> &decls_,
-    const std::vector<Ptr<Function>> &functions_,
-    const std::vector<Ptr<Rule>> &rules_, const location &loc_);
 
   Model(const std::vector<Ptr<Node>> &children_, const location &loc_);
   virtual ~Model() = default;
@@ -52,4 +50,4 @@ struct Model : public Node {
   void reindex();
 };
 
-}
+} // namespace rumur

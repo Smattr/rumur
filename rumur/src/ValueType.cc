@@ -1,15 +1,15 @@
+#include "ValueType.h"
+#include "log.h"
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <gmpxx.h>
 #include <limits.h>
-#include "log.h"
 #include <rumur/rumur.h>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include "ValueType.h"
 #include <vector>
 
 using namespace rumur;
@@ -18,24 +18,24 @@ namespace {
 
 class BoundsFinder : public ConstTraversal {
 
- public:
+public:
   mpz_class min = 0;
   mpz_class max = 0;
 
- private:
+private:
   void increase_max(const mpz_class &new_value, const std::string &cause) {
     *debug << "increasing maximum numerical bound to " << new_value
-      << " due to \"" << cause << "\"\n";
+           << " due to \"" << cause << "\"\n";
     max = new_value;
   }
 
   void decrease_min(const mpz_class &new_value, const std::string &cause) {
     *debug << "decreasing minimum numerical bound to " << new_value
-      << " due to \"" << cause << "\"\n";
+           << " due to \"" << cause << "\"\n";
     min = new_value;
   }
 
- public:
+public:
   void visit_enum(const Enum &n) final {
     if (n.members.size() > max)
       increase_max(n.members.size(), n.to_string());
@@ -49,7 +49,7 @@ class BoundsFinder : public ConstTraversal {
    * than was intuitive to the user.
    */
   void visit_negative(const Negative &n) final {
-    if (auto l = dynamic_cast<const Number*>(&*n.rhs)) {
+    if (auto l = dynamic_cast<const Number *>(&*n.rhs)) {
       mpz_class v = -l->value;
       if (v < min)
         decrease_min(v, n.to_string());
@@ -108,22 +108,25 @@ class BoundsFinder : public ConstTraversal {
   }
 };
 
-}
+} // namespace
 
 static const std::unordered_map<std::string, ValueType> types = {
-  { "int8_t",   { "int_fast8_t",   "INT_FAST8_MIN",  "INT_FAST8_MAX",   "INT8_C",   "PRIdFAST8",  mpz_class(std::to_string(INT8_MIN)),  mpz_class(std::to_string(INT8_MAX))   } },
-  { "uint8_t",  { "uint_fast8_t",  "((uint8_t)0)",   "UINT_FAST8_MAX",  "UINT8_C",  "PRIuFAST8",  0,                                    mpz_class(std::to_string(UINT8_MAX))  } },
-  { "int16_t",  { "int_fast16_t",  "INT_FAST16_MIN", "INT_FAST16_MAX",  "INT16_C",  "PRIdFAST16", mpz_class(std::to_string(INT16_MIN)), mpz_class(std::to_string(INT16_MAX))  } },
-  { "uint16_t", { "uint_fast16_t", "((uint16_t)0)",  "UINT_FAST16_MAX", "UINT16_C", "PRIuFAST16", 0,                                    mpz_class(std::to_string(UINT16_MAX)) } },
-  { "int32_t",  { "int_fast32_t",  "INT_FAST32_MIN", "INT_FAST32_MAX",  "INT32_C",  "PRIdFAST32", mpz_class(std::to_string(INT32_MIN)), mpz_class(std::to_string(INT32_MAX))  } },
-  { "uint32_t", { "uint_fast32_t", "((uint32_t)0)",  "UINT_FAST32_MAX", "UINT32_C", "PRIuFAST32", 0,                                    mpz_class(std::to_string(UINT32_MAX)) } },
-  { "int64_t",  { "int_fast64_t",  "INT_FAST64_MIN", "INT_FAST64_MAX",  "INT64_C",  "PRIdFAST64", mpz_class(std::to_string(INT64_MIN)), mpz_class(std::to_string(INT64_MAX))  } },
-  { "uint64_t", { "uint_fast64_t", "((uint64_t)0)",  "UINT_FAST64_MAX", "UINT64_C", "PRIuFAST64", 0,                                    mpz_class(std::to_string(UINT64_MAX)) } },
+    // clang-format off
+    { "int8_t",   { "int_fast8_t",   "INT_FAST8_MIN",      "INT_FAST8_MAX",   "INT8_C",   "PRIdFAST8",  mpz_class(std::to_string(INT8_MIN)),  mpz_class(std::to_string(INT8_MAX))   } },
+    { "uint8_t",  { "uint_fast8_t",  "((uint_fast8_t)0)",  "UINT_FAST8_MAX",  "UINT8_C",  "PRIuFAST8",  0,                                    mpz_class(std::to_string(UINT8_MAX))  } },
+    { "int16_t",  { "int_fast16_t",  "INT_FAST16_MIN",     "INT_FAST16_MAX",  "INT16_C",  "PRIdFAST16", mpz_class(std::to_string(INT16_MIN)), mpz_class(std::to_string(INT16_MAX))  } },
+    { "uint16_t", { "uint_fast16_t", "((uint_fast16_t)0)", "UINT_FAST16_MAX", "UINT16_C", "PRIuFAST16", 0,                                    mpz_class(std::to_string(UINT16_MAX)) } },
+    { "int32_t",  { "int_fast32_t",  "INT_FAST32_MIN",     "INT_FAST32_MAX",  "INT32_C",  "PRIdFAST32", mpz_class(std::to_string(INT32_MIN)), mpz_class(std::to_string(INT32_MAX))  } },
+    { "uint32_t", { "uint_fast32_t", "((uint_fast32_t)0)", "UINT_FAST32_MAX", "UINT32_C", "PRIuFAST32", 0,                                    mpz_class(std::to_string(UINT32_MAX)) } },
+    { "int64_t",  { "int_fast64_t",  "INT_FAST64_MIN",     "INT_FAST64_MAX",  "INT64_C",  "PRIdFAST64", mpz_class(std::to_string(INT64_MIN)), mpz_class(std::to_string(INT64_MAX))  } },
+    { "uint64_t", { "uint_fast64_t", "((uint_fast64_t)0)", "UINT_FAST64_MAX", "UINT64_C", "PRIuFAST64", 0,                                    mpz_class(std::to_string(UINT64_MAX)) } },
+    // clang-format on
 };
 
 // a list of the types sorted by estimated expense
-static const std::vector<std::string> TYPES = { "uint8_t", "int8_t", "uint16_t",
-  "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t" };
+static const std::vector<std::string> TYPES = {
+    "uint8_t",  "int8_t",  "uint16_t", "int16_t",
+    "uint32_t", "int32_t", "uint64_t", "int64_t"};
 
 // find an unsigned type that can contain the given range shifted to be 1-based
 static const ValueType raw_type(const mpz_class &min, const mpz_class &max) {
@@ -144,11 +147,12 @@ static const ValueType raw_type(const mpz_class &min, const mpz_class &max) {
   }
 
   throw std::runtime_error("no supported unsigned type is wide enough to "
-    "contain enough values to cover the range [" + min.get_str() + ", "
-    + max.get_str() + "]");
+                           "contain enough values to cover the range [" +
+                           min.get_str() + ", " + max.get_str() + "]");
 }
 
-std::pair<ValueType, ValueType> get_value_type(const std::string &name, const Model &m) {
+std::pair<ValueType, ValueType> get_value_type(const std::string &name,
+                                               const Model &m) {
 
   if (name == "auto") {
 
@@ -162,12 +166,13 @@ std::pair<ValueType, ValueType> get_value_type(const std::string &name, const Mo
       const ValueType &vt = types.at(t);
       if (vt.min <= bf.min && vt.max >= bf.max) {
         *info << "using numerical type " << t << " as value type\n";
-        return { vt, raw_type(bf.min, bf.max) };
+        return {vt, raw_type(bf.min, bf.max)};
       }
     }
 
-    throw std::runtime_error("model's numerical bounds are [" + bf.min.get_str()
-      + ", " + bf.max.get_str() + "] which no supported type contains");
+    throw std::runtime_error("model's numerical bounds are [" +
+                             bf.min.get_str() + ", " + bf.max.get_str() +
+                             "] which no supported type contains");
   }
 
   auto it = types.find(name);
@@ -176,5 +181,5 @@ std::pair<ValueType, ValueType> get_value_type(const std::string &name, const Mo
 
   const ValueType &vt = it->second;
 
-  return { vt, raw_type(vt.min, vt.max) };
+  return {vt, raw_type(vt.min, vt.max)};
 }

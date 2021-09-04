@@ -2,21 +2,21 @@
 
 #pragma once
 
+#include "Stage.h"
 #include <cstddef>
 #include <queue>
 #include <rumur/rumur.h>
-#include "Stage.h"
 
 class RemoveLiveness : public IntermediateStage {
 
- private:
+private:
   // does the next seen semi-colon need to be deleted?
   bool swallow_semi = false;
 
   // queued updates to .swallow_semi
   std::queue<bool> state;
 
- public:
+public:
   explicit RemoveLiveness(Stage &next_);
 
   // interpose on the output, so we have a chance to suppress any spurious

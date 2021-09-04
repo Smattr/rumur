@@ -8,6 +8,10 @@
 #include <rumur/Stmt.h>
 #include <rumur/TypeExpr.h>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
 /* Generic abstract syntax tree traversal interface with no implementation. If
@@ -16,9 +20,9 @@ namespace rumur {
  * that provides default implementations for the 'visit' methods you don't need
  * to override, inherit from Traversal below.
  */
-class BaseTraversal {
+class RUMUR_API_WITH_RTTI BaseTraversal {
 
- public:
+public:
   virtual void visit_add(Add &n) = 0;
   virtual void visit_aliasdecl(AliasDecl &n) = 0;
   virtual void visit_aliasrule(AliasRule &n) = 0;
@@ -102,9 +106,9 @@ class BaseTraversal {
   virtual ~BaseTraversal() = default;
 };
 
-class Traversal : public BaseTraversal {
+class RUMUR_API_WITH_RTTI Traversal : public BaseTraversal {
 
- public:
+public:
   void visit_add(Add &n) override;
   void visit_aliasdecl(AliasDecl &n) override;
   void visit_aliasrule(AliasRule &n) override;
@@ -174,15 +178,15 @@ class Traversal : public BaseTraversal {
   // Force class to be abstract
   virtual ~Traversal() = 0;
 
- private:
+private:
   void visit_bexpr(BinaryExpr &n);
   void visit_uexpr(UnaryExpr &n);
 };
 
 // Read-only equivalent of BaseTraversal.
-class ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstBaseTraversal {
 
- public:
+public:
   virtual void visit_add(const Add &n) = 0;
   virtual void visit_aliasdecl(const AliasDecl &n) = 0;
   virtual void visit_aliasrule(const AliasRule &n) = 0;
@@ -257,11 +261,10 @@ class ConstBaseTraversal {
   virtual ~ConstBaseTraversal() = default;
 };
 
-
 // Read-only equivalent of Traversal.
-class ConstTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) override;
   void visit_aliasdecl(const AliasDecl &n) override;
   void visit_aliasrule(const AliasRule &n) override;
@@ -331,7 +334,7 @@ class ConstTraversal : public ConstBaseTraversal {
   // Force class to be abstract
   virtual ~ConstTraversal() = 0;
 
- private:
+private:
   void visit_bexpr(const BinaryExpr &n);
   void visit_uexpr(const UnaryExpr &n);
 };
@@ -340,9 +343,9 @@ class ConstTraversal : public ConstBaseTraversal {
  * This gives you a default implementation for visitation of any non-expression
  * node.
  */
-class ConstExprTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstExprTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_aliasdecl(const AliasDecl &n) final;
   void visit_aliasrule(const AliasRule &n) final;
   void visit_aliasstmt(const AliasStmt &n) final;
@@ -385,9 +388,9 @@ class ConstExprTraversal : public ConstBaseTraversal {
  * This gives you a default implementation for visitation of any non-statement
  * node.
  */
-class ConstStmtTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstStmtTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) final;
   void visit_aliasdecl(const AliasDecl &n) final;
   void visit_aliasrule(const AliasRule &n) final;
@@ -443,15 +446,15 @@ class ConstStmtTraversal : public ConstBaseTraversal {
 
   virtual ~ConstStmtTraversal() = default;
 
- private:
+private:
   void visit_bexpr(const BinaryExpr &n);
   void visit_uexpr(const UnaryExpr &n);
 };
 
 // Generic base for read-only traversals that only need to act on TypeExprs
-class ConstTypeTraversal : public ConstBaseTraversal {
+class RUMUR_API_WITH_RTTI ConstTypeTraversal : public ConstBaseTraversal {
 
- public:
+public:
   void visit_add(const Add &n) final;
   void visit_aliasdecl(const AliasDecl &n) final;
   void visit_aliasrule(const AliasRule &n) final;
@@ -514,8 +517,8 @@ class ConstTypeTraversal : public ConstBaseTraversal {
 
   virtual ~ConstTypeTraversal() = default;
 
- private:
+private:
   void visit_bexpr(const BinaryExpr &n);
   void visit_uexpr(const UnaryExpr &n);
 };
-}
+} // namespace rumur

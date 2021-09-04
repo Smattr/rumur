@@ -12,37 +12,34 @@
 /* built-in boolean type */
 typedef bool boolean;
 
-
 static void failed_assertion_(const char *message) {
   fprintf(stderr, "failed assertion: %s\n", message);
   exit(EXIT_FAILURE);
 }
 
-void (*failed_assertion)(const char*) = failed_assertion_;
+void (*failed_assertion)(const char *) = failed_assertion_;
 
 static void failed_assumption_(const char *message) {
   fprintf(stderr, "failed assumption: %s\n", message);
   exit(EXIT_FAILURE);
 }
 
-void (*failed_assumption)(const char*) = failed_assumption_;
+void (*failed_assumption)(const char *) = failed_assumption_;
 
 static void error_(const char *message) {
   fprintf(stderr, "error: %s\n", message);
   exit(EXIT_FAILURE);
 }
 
-void (*error)(const char*) = error_;
+void (*error)(const char *) = error_;
 
-static void cover_(const char *message __attribute__((unused))) {
-}
+static void cover_(const char *message __attribute__((unused))) {}
 
-void (*cover)(const char*) = cover_;
+void (*cover)(const char *) = cover_;
 
-static void liveness_(const char *message __attribute__((unused))) {
-}
+static void liveness_(const char *message __attribute__((unused))) {}
 
-void (*liveness)(const char*) = liveness_;
+void (*liveness)(const char *) = liveness_;
 
 // various printf wrappers to deal with the user having passed --value-type
 static __attribute__((unused)) void print_int     (int v)      { printf("%d",          v); }

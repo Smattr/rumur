@@ -5,7 +5,8 @@ project(rumur LANGUAGES CXX)
 # This seems to be some magic to get libraries to install correctly.
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -W -Wall -Wextra -Wwrite-strings -Wmissing-declarations -Wshadow")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -W -Wall -Wextra -Wformat=2 \
+  -Wwrite-strings -Wmissing-declarations -Wshadow -Wundef")
 
 # enable even more warnings if the compiler supports them
 include(CheckCXXCompilerFlag)
@@ -16,6 +17,10 @@ endif()
 CHECK_CXX_COMPILER_FLAG(-Wcast-align HAS_WARNING_CAST_ALIGN)
 if(HAS_WARNING_CAST_ALIGN)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wcast-align")
+endif()
+CHECK_CXX_COMPILER_FLAG(-Wlogical-op HAS_WARNING_LOGICAL_OP)
+if(HAS_WARNING_LOGICAL_OP)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op")
 endif()
 CHECK_CXX_COMPILER_FLAG(-Wstrict-aliasing=1 HAS_WARNING_STRICT_ALIASING_1)
 if(HAS_WARNING_STRICT_ALIASING_1)
@@ -40,14 +45,15 @@ endif()
 add_subdirectory(librumur)
 add_subdirectory(murphi2c)
 add_subdirectory(murphi2murphi)
+add_subdirectory(murphi2uclid)
 add_subdirectory(murphi2xml)
 add_subdirectory(rumur)
 add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check
-  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --jobs 1)
-add_dependencies(check murphi2c murphi2murphi murphi2xml rumur)
+  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --verbose)
+add_dependencies(check murphi2c murphi2murphi murphi2uclid murphi2xml rumur)
 if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check murphi-comment-ls)
 endif()

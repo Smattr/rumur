@@ -1,56 +1,44 @@
+#include "../../common/isa.h"
 #include <cassert>
 #include <climits>
-#include "../../common/isa.h"
 #include <cstddef>
+#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
 #include <limits>
-#include "location.hh"
 #include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>
-#include <rumur/except.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
 #include <rumur/Ptr.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/except.h>
+#include <rumur/traverse.h>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace rumur {
 
-Expr::Expr(const location &loc_): Node(loc_) { }
+Expr::Expr(const location &loc_) : Node(loc_) {}
 
-bool Expr::is_boolean() const {
-  return type()->resolve()->is_boolean();
-}
+bool Expr::is_boolean() const { return type()->resolve()->is_boolean(); }
 
-bool Expr::is_lvalue() const {
-  return false;
-}
+bool Expr::is_lvalue() const { return false; }
 
-bool Expr::is_readonly() const {
-  return !is_lvalue();
-}
+bool Expr::is_readonly() const { return !is_lvalue(); }
 
-bool Expr::is_literal_true() const {
-  return false;
-}
+bool Expr::is_literal_true() const { return false; }
 
-bool Expr::is_literal_false() const {
-  return false;
-}
+bool Expr::is_literal_false() const { return false; }
 
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
-  const Ptr<Expr> &rhs_, const location &loc_):
-  Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) { }
+                 const Ptr<Expr> &rhs_, const location &loc_)
+    : Expr(loc_), cond(cond_), lhs(lhs_), rhs(rhs_) {}
 
-Ternary *Ternary::clone() const {
-  return new Ternary(*this);
-}
+Ternary *Ternary::clone() const { return new Ternary(*this); }
 
 void Ternary::visit(BaseTraversal &visitor) {
   return visitor.visit_ternary(*this);
@@ -70,7 +58,8 @@ Ptr<TypeExpr> Ternary::type() const {
 }
 
 mpz_class Ternary::constant_fold() const {
-  return cond->constant_fold() != 0 ? lhs->constant_fold() : rhs->constant_fold();
+  return cond->constant_fold() != 0 ? lhs->constant_fold()
+                                    : rhs->constant_fold();
 }
 
 void Ternary::validate() const {
@@ -79,8 +68,8 @@ void Ternary::validate() const {
 }
 
 std::string Ternary::to_string() const {
-  return "(" + cond->to_string() + " ? " + lhs->to_string() + " : "
-    + rhs->to_string() + ")";
+  return "(" + cond->to_string() + " ? " + lhs->to_string() + " : " +
+         rhs->to_string() + ")";
 }
 
 bool Ternary::is_pure() const {
@@ -88,39 +77,33 @@ bool Ternary::is_pure() const {
 }
 
 BinaryExpr::BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-  const location &loc_):
-  Expr(loc_), lhs(lhs_), rhs(rhs_) { }
+                       const location &loc_)
+    : Expr(loc_), lhs(lhs_), rhs(rhs_) {}
 
-bool BinaryExpr::constant() const {
-  return lhs->constant() && rhs->constant();
-}
+bool BinaryExpr::constant() const { return lhs->constant() && rhs->constant(); }
 
-bool BinaryExpr::is_pure() const {
-  return lhs->is_pure() && rhs->is_pure();
-}
+bool BinaryExpr::is_pure() const { return lhs->is_pure() && rhs->is_pure(); }
 
 BooleanBinaryExpr::BooleanBinaryExpr(const Ptr<Expr> &lhs_,
-  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+                                     const Ptr<Expr> &rhs_,
+                                     const location &loc_)
+    : BinaryExpr(lhs_, rhs_, loc_) {}
 
-Ptr<TypeExpr> BooleanBinaryExpr::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> BooleanBinaryExpr::type() const { return Boolean; }
 
 void BooleanBinaryExpr::validate() const {
   if (!lhs->is_boolean())
     throw Error("left hand side of expression is not a boolean", lhs->loc);
 
   if (!rhs->is_boolean())
-    throw Error("right hand side of expression is not a boolean",
-      rhs->loc);
+    throw Error("right hand side of expression is not a boolean", rhs->loc);
 }
 
 Implication::Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-  const location &loc_): BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+                         const location &loc_)
+    : BooleanBinaryExpr(lhs_, rhs_, loc_) {}
 
-Implication *Implication::clone() const {
-  return new Implication(*this);
-}
+Implication *Implication::clone() const { return new Implication(*this); }
 
 void Implication::visit(BaseTraversal &visitor) {
   return visitor.visit_implication(*this);
@@ -138,16 +121,12 @@ std::string Implication::to_string() const {
   return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
 }
 
-Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : BooleanBinaryExpr(lhs_, rhs_, loc_) {}
 
-Or *Or::clone() const {
-  return new Or(*this);
-}
+Or *Or::clone() const { return new Or(*this); }
 
-void Or::visit(BaseTraversal &visitor) {
-  return visitor.visit_or(*this);
-}
+void Or::visit(BaseTraversal &visitor) { return visitor.visit_or(*this); }
 
 void Or::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_or(*this);
@@ -161,16 +140,12 @@ std::string Or::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
-And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  BooleanBinaryExpr(lhs_, rhs_, loc_) { }
+And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : BooleanBinaryExpr(lhs_, rhs_, loc_) {}
 
-And *And::clone() const {
-  return new And(*this);
-}
+And *And::clone() const { return new And(*this); }
 
-void And::visit(BaseTraversal &visitor) {
-  return visitor.visit_and(*this);
-}
+void And::visit(BaseTraversal &visitor) { return visitor.visit_and(*this); }
 
 void And::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_and(*this);
@@ -185,11 +160,10 @@ std::string And::to_string() const {
 }
 
 AmbiguousAmp::AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-  const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+                           const location &loc_)
+    : BinaryExpr(lhs_, rhs_, loc_) {}
 
-AmbiguousAmp *AmbiguousAmp::clone() const {
-  return new AmbiguousAmp(*this);
-}
+AmbiguousAmp *AmbiguousAmp::clone() const { return new AmbiguousAmp(*this); }
 
 void AmbiguousAmp::visit(BaseTraversal &visitor) {
   return visitor.visit_ambiguousamp(*this);
@@ -216,11 +190,10 @@ std::string AmbiguousAmp::to_string() const {
 }
 
 AmbiguousPipe::AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
-  const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+                             const location &loc_)
+    : BinaryExpr(lhs_, rhs_, loc_) {}
 
-AmbiguousPipe *AmbiguousPipe::clone() const {
-  return new AmbiguousPipe(*this);
-}
+AmbiguousPipe *AmbiguousPipe::clone() const { return new AmbiguousPipe(*this); }
 
 void AmbiguousPipe::visit(BaseTraversal &visitor) {
   return visitor.visit_ambiguouspipe(*this);
@@ -246,48 +219,33 @@ std::string AmbiguousPipe::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
-UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_):
-  Expr(loc_), rhs(rhs_) {
-}
+UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_)
+    : Expr(loc_), rhs(rhs_) {}
 
-bool UnaryExpr::constant() const {
-  return rhs->constant();
-}
+bool UnaryExpr::constant() const { return rhs->constant(); }
 
-bool UnaryExpr::is_pure() const {
-  return rhs->is_pure();
-}
+bool UnaryExpr::is_pure() const { return rhs->is_pure(); }
 
-Not::Not(const Ptr<Expr> &rhs_, const location &loc_): UnaryExpr(rhs_, loc_) { }
+Not::Not(const Ptr<Expr> &rhs_, const location &loc_) : UnaryExpr(rhs_, loc_) {}
 
-Not *Not::clone() const {
-  return new Not(*this);
-}
+Not *Not::clone() const { return new Not(*this); }
 
-void Not::visit(BaseTraversal &visitor) {
-  return visitor.visit_not(*this);
-}
+void Not::visit(BaseTraversal &visitor) { return visitor.visit_not(*this); }
 
 void Not::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_not(*this);
 }
 
-Ptr<TypeExpr> Not::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Not::type() const { return Boolean; }
 
-mpz_class Not::constant_fold() const {
-  return rhs->constant_fold() == 0;
-}
+mpz_class Not::constant_fold() const { return rhs->constant_fold() == 0; }
 
 void Not::validate() const {
   if (!rhs->is_boolean())
     throw Error("argument to ! is not a boolean", rhs->loc);
 }
 
-std::string Not::to_string() const {
-  return "(!" + rhs->to_string() + ")";
-}
+std::string Not::to_string() const { return "(!" + rhs->to_string() + ")"; }
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
 
@@ -303,31 +261,27 @@ static bool comparable(const Expr &lhs, const Expr &rhs) {
 }
 
 ComparisonBinaryExpr::ComparisonBinaryExpr(const Ptr<Expr> &lhs_,
-  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+                                           const Ptr<Expr> &rhs_,
+                                           const location &loc_)
+    : BinaryExpr(lhs_, rhs_, loc_) {}
 
 void ComparisonBinaryExpr::validate() const {
   if (!comparable(*lhs, *rhs))
     throw Error("expressions are not comparable", loc);
 }
 
-Lt::Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+Lt::Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ComparisonBinaryExpr(lhs_, rhs_, loc_) {}
 
-Lt *Lt::clone() const {
-  return new Lt(*this);
-}
+Lt *Lt::clone() const { return new Lt(*this); }
 
-void Lt::visit(BaseTraversal &visitor) {
-  return visitor.visit_lt(*this);
-}
+void Lt::visit(BaseTraversal &visitor) { return visitor.visit_lt(*this); }
 
 void Lt::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_lt(*this);
 }
 
-Ptr<TypeExpr> Lt::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Lt::type() const { return Boolean; }
 
 mpz_class Lt::constant_fold() const {
   return lhs->constant_fold() < rhs->constant_fold();
@@ -337,24 +291,18 @@ std::string Lt::to_string() const {
   return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
 }
 
-Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ComparisonBinaryExpr(lhs_, rhs_, loc_) {}
 
-Leq *Leq::clone() const {
-  return new Leq(*this);
-}
+Leq *Leq::clone() const { return new Leq(*this); }
 
-void Leq::visit(BaseTraversal &visitor) {
-  return visitor.visit_leq(*this);
-}
+void Leq::visit(BaseTraversal &visitor) { return visitor.visit_leq(*this); }
 
 void Leq::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_leq(*this);
 }
 
-Ptr<TypeExpr> Leq::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Leq::type() const { return Boolean; }
 
 mpz_class Leq::constant_fold() const {
   return lhs->constant_fold() <= rhs->constant_fold();
@@ -364,24 +312,18 @@ std::string Leq::to_string() const {
   return "(" + lhs->to_string() + " <= " + rhs->to_string() + ")";
 }
 
-Gt::Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+Gt::Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ComparisonBinaryExpr(lhs_, rhs_, loc_) {}
 
-Gt *Gt::clone() const {
-  return new Gt(*this);
-}
+Gt *Gt::clone() const { return new Gt(*this); }
 
-void Gt::visit(BaseTraversal &visitor) {
-  return visitor.visit_gt(*this);
-}
+void Gt::visit(BaseTraversal &visitor) { return visitor.visit_gt(*this); }
 
 void Gt::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_gt(*this);
 }
 
-Ptr<TypeExpr> Gt::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Gt::type() const { return Boolean; }
 
 mpz_class Gt::constant_fold() const {
   return lhs->constant_fold() > rhs->constant_fold();
@@ -391,24 +333,18 @@ std::string Gt::to_string() const {
   return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
 }
 
-Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ComparisonBinaryExpr(lhs_, rhs_, loc_) { }
+Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ComparisonBinaryExpr(lhs_, rhs_, loc_) {}
 
-Geq *Geq::clone() const {
-  return new Geq(*this);
-}
+Geq *Geq::clone() const { return new Geq(*this); }
 
-void Geq::visit(BaseTraversal &visitor) {
-  return visitor.visit_geq(*this);
-}
+void Geq::visit(BaseTraversal &visitor) { return visitor.visit_geq(*this); }
 
 void Geq::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_geq(*this);
 }
 
-Ptr<TypeExpr> Geq::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Geq::type() const { return Boolean; }
 
 mpz_class Geq::constant_fold() const {
   return lhs->constant_fold() >= rhs->constant_fold();
@@ -419,31 +355,27 @@ std::string Geq::to_string() const {
 }
 
 EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
-  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+                                         const Ptr<Expr> &rhs_,
+                                         const location &loc_)
+    : BinaryExpr(lhs_, rhs_, loc_) {}
 
 void EquatableBinaryExpr::validate() const {
   if (!lhs->type()->coerces_to(*rhs->type()))
     throw Error("expressions are not comparable", loc);
 }
 
-Eq::Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  EquatableBinaryExpr(lhs_, rhs_, loc_) { }
+Eq::Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : EquatableBinaryExpr(lhs_, rhs_, loc_) {}
 
-Eq *Eq::clone() const {
-  return new Eq(*this);
-}
+Eq *Eq::clone() const { return new Eq(*this); }
 
-void Eq::visit(BaseTraversal &visitor) {
-  return visitor.visit_eq(*this);
-}
+void Eq::visit(BaseTraversal &visitor) { return visitor.visit_eq(*this); }
 
 void Eq::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_eq(*this);
 }
 
-Ptr<TypeExpr> Eq::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Eq::type() const { return Boolean; }
 
 mpz_class Eq::constant_fold() const {
   return lhs->constant_fold() == rhs->constant_fold();
@@ -453,24 +385,18 @@ std::string Eq::to_string() const {
   return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
 }
 
-Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  EquatableBinaryExpr(lhs_, rhs_, loc_) { }
+Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : EquatableBinaryExpr(lhs_, rhs_, loc_) {}
 
-Neq *Neq::clone() const {
-  return new Neq(*this);
-}
+Neq *Neq::clone() const { return new Neq(*this); }
 
-void Neq::visit(BaseTraversal &visitor) {
-  return visitor.visit_neq(*this);
-}
+void Neq::visit(BaseTraversal &visitor) { return visitor.visit_neq(*this); }
 
 void Neq::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_neq(*this);
 }
 
-Ptr<TypeExpr> Neq::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Neq::type() const { return Boolean; }
 
 mpz_class Neq::constant_fold() const {
   return lhs->constant_fold() != rhs->constant_fold();
@@ -492,28 +418,25 @@ static bool arithmetic(const Expr &lhs, const Expr &rhs) {
 }
 
 ArithmeticBinaryExpr::ArithmeticBinaryExpr(const Ptr<Expr> &lhs_,
-  const Ptr<Expr> &rhs_, const location &loc_): BinaryExpr(lhs_, rhs_, loc_) { }
+                                           const Ptr<Expr> &rhs_,
+                                           const location &loc_)
+    : BinaryExpr(lhs_, rhs_, loc_) {}
 
 void ArithmeticBinaryExpr::validate() const {
   if (!arithmetic(*lhs, *rhs))
-    throw Error("expressions are incompatible in arithmetic expression",
-      loc);
+    throw Error("expressions are incompatible in arithmetic expression", loc);
 }
 
 Ptr<TypeExpr> ArithmeticBinaryExpr::type() const {
   return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
-Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Add::Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Add *Add::clone() const {
-  return new Add(*this);
-}
+Add *Add::clone() const { return new Add(*this); }
 
-void Add::visit(BaseTraversal &visitor) {
-  return visitor.visit_add(*this);
-}
+void Add::visit(BaseTraversal &visitor) { return visitor.visit_add(*this); }
 
 void Add::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_add(*this);
@@ -527,16 +450,12 @@ std::string Add::to_string() const {
   return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
 }
 
-Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Sub *Sub::clone() const {
-  return new Sub(*this);
-}
+Sub *Sub::clone() const { return new Sub(*this); }
 
-void Sub::visit(BaseTraversal &visitor) {
-  return visitor.visit_sub(*this);
-}
+void Sub::visit(BaseTraversal &visitor) { return visitor.visit_sub(*this); }
 
 void Sub::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_sub(*this);
@@ -550,17 +469,15 @@ std::string Sub::to_string() const {
   return "(" + lhs->to_string() + " - " + rhs->to_string() + ")";
 }
 
-Negative::Negative(const Ptr<Expr> &rhs_, const location &loc_):
-  UnaryExpr(rhs_, loc_) { }
+Negative::Negative(const Ptr<Expr> &rhs_, const location &loc_)
+    : UnaryExpr(rhs_, loc_) {}
 
 void Negative::validate() const {
   if (!isa<Range>(rhs->type()->resolve()))
     throw Error("expression cannot be negated", rhs->loc);
 }
 
-Negative *Negative::clone() const {
-  return new Negative(*this);
-}
+Negative *Negative::clone() const { return new Negative(*this); }
 
 void Negative::visit(BaseTraversal &visitor) {
   return visitor.visit_negative(*this);
@@ -574,29 +491,23 @@ Ptr<TypeExpr> Negative::type() const {
   return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
-mpz_class Negative::constant_fold() const {
-  return -rhs->constant_fold();
-}
+mpz_class Negative::constant_fold() const { return -rhs->constant_fold(); }
 
 std::string Negative::to_string() const {
   return "(-" + rhs->to_string() + ")";
 }
 
-Bnot::Bnot(const Ptr<Expr> &rhs_, const location &loc_):
-  UnaryExpr(rhs_, loc_) { }
+Bnot::Bnot(const Ptr<Expr> &rhs_, const location &loc_)
+    : UnaryExpr(rhs_, loc_) {}
 
 void Bnot::validate() const {
   if (!isa<Range>(rhs->type()->resolve()))
     throw Error("expression cannot be bitwise NOTed", rhs->loc);
 }
 
-Bnot *Bnot::clone() const {
-  return new Bnot(*this);
-}
+Bnot *Bnot::clone() const { return new Bnot(*this); }
 
-void Bnot::visit(BaseTraversal &visitor) {
-  return visitor.visit_bnot(*this);
-}
+void Bnot::visit(BaseTraversal &visitor) { return visitor.visit_bnot(*this); }
 
 void Bnot::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_bnot(*this);
@@ -606,24 +517,16 @@ Ptr<TypeExpr> Bnot::type() const {
   return Ptr<Range>::make(nullptr, nullptr, location());
 }
 
-mpz_class Bnot::constant_fold() const {
-  return ~rhs->constant_fold();
-}
+mpz_class Bnot::constant_fold() const { return ~rhs->constant_fold(); }
 
-std::string Bnot::to_string() const {
-  return "(~" + rhs->to_string() + ")";
-}
+std::string Bnot::to_string() const { return "(~" + rhs->to_string() + ")"; }
 
-Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Mul *Mul::clone() const {
-  return new Mul(*this);
-}
+Mul *Mul::clone() const { return new Mul(*this); }
 
-void Mul::visit(BaseTraversal &visitor) {
-  return visitor.visit_mul(*this);
-}
+void Mul::visit(BaseTraversal &visitor) { return visitor.visit_mul(*this); }
 
 void Mul::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_mul(*this);
@@ -637,16 +540,12 @@ std::string Mul::to_string() const {
   return "(" + lhs->to_string() + " * " + rhs->to_string() + ")";
 }
 
-Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Div *Div::clone() const {
-  return new Div(*this);
-}
+Div *Div::clone() const { return new Div(*this); }
 
-void Div::visit(BaseTraversal &visitor) {
-  return visitor.visit_div(*this);
-}
+void Div::visit(BaseTraversal &visitor) { return visitor.visit_div(*this); }
 
 void Div::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_div(*this);
@@ -664,16 +563,12 @@ std::string Div::to_string() const {
   return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
 }
 
-Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Mod *Mod::clone() const {
-  return new Mod(*this);
-}
+Mod *Mod::clone() const { return new Mod(*this); }
 
-void Mod::visit(BaseTraversal &visitor) {
-  return visitor.visit_mod(*this);
-}
+void Mod::visit(BaseTraversal &visitor) { return visitor.visit_mod(*this); }
 
 void Mod::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_mod(*this);
@@ -691,16 +586,12 @@ std::string Mod::to_string() const {
   return "(" + lhs->to_string() + " % " + rhs->to_string() + ")";
 }
 
-Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Lsh *Lsh::clone() const {
-  return new Lsh(*this);
-}
+Lsh *Lsh::clone() const { return new Lsh(*this); }
 
-void Lsh::visit(BaseTraversal &visitor) {
-  return visitor.visit_lsh(*this);
-}
+void Lsh::visit(BaseTraversal &visitor) { return visitor.visit_lsh(*this); }
 
 void Lsh::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_lsh(*this);
@@ -766,16 +657,12 @@ std::string Lsh::to_string() const {
   return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
 }
 
-Rsh::Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Rsh::Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Rsh *Rsh::clone() const {
-  return new Rsh(*this);
-}
+Rsh *Rsh::clone() const { return new Rsh(*this); }
 
-void Rsh::visit(BaseTraversal &visitor) {
-  return visitor.visit_rsh(*this);
-}
+void Rsh::visit(BaseTraversal &visitor) { return visitor.visit_rsh(*this); }
 
 void Rsh::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_rsh(*this);
@@ -791,16 +678,12 @@ std::string Rsh::to_string() const {
   return "(" + lhs->to_string() + " >> " + rhs->to_string() + ")";
 }
 
-Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Band *Band::clone() const {
-  return new Band(*this);
-}
+Band *Band::clone() const { return new Band(*this); }
 
-void Band::visit(BaseTraversal &visitor) {
-  return visitor.visit_band(*this);
-}
+void Band::visit(BaseTraversal &visitor) { return visitor.visit_band(*this); }
 
 void Band::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_band(*this);
@@ -816,16 +699,12 @@ std::string Band::to_string() const {
   return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
 }
 
-Bor::Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Bor::Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Bor *Bor::clone() const {
-  return new Bor(*this);
-}
+Bor *Bor::clone() const { return new Bor(*this); }
 
-void Bor::visit(BaseTraversal &visitor) {
-  return visitor.visit_bor(*this);
-}
+void Bor::visit(BaseTraversal &visitor) { return visitor.visit_bor(*this); }
 
 void Bor::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_bor(*this);
@@ -841,16 +720,12 @@ std::string Bor::to_string() const {
   return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
 }
 
-Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_):
-  ArithmeticBinaryExpr(lhs_, rhs_, loc_) { }
+Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
+    : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
 
-Xor *Xor::clone() const {
-  return new Xor(*this);
-}
+Xor *Xor::clone() const { return new Xor(*this); }
 
-void Xor::visit(BaseTraversal &visitor) {
-  return visitor.visit_xor(*this);
-}
+void Xor::visit(BaseTraversal &visitor) { return visitor.visit_xor(*this); }
 
 void Xor::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_xor(*this);
@@ -867,13 +742,10 @@ std::string Xor::to_string() const {
 }
 
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
-  const location &loc_):
-  Expr(loc_), id(id_), value(value_) {
-}
+               const location &loc_)
+    : Expr(loc_), id(id_), value(value_) {}
 
-ExprID *ExprID::clone() const {
-  return new ExprID(*this);
-}
+ExprID *ExprID::clone() const { return new ExprID(*this); }
 
 void ExprID::visit(BaseTraversal &visitor) {
   return visitor.visit_exprid(*this);
@@ -888,7 +760,7 @@ bool ExprID::constant() const {
   if (isa<ConstDecl>(value))
     return true;
 
-  if (auto a = dynamic_cast<const AliasDecl*>(value.get()))
+  if (auto a = dynamic_cast<const AliasDecl *>(value.get()))
     return a->value->constant();
 
   return false;
@@ -903,10 +775,10 @@ Ptr<TypeExpr> ExprID::type() const {
 
 mpz_class ExprID::constant_fold() const {
 
-  if (auto c = dynamic_cast<const ConstDecl*>(value.get()))
+  if (auto c = dynamic_cast<const ConstDecl *>(value.get()))
     return c->value->constant_fold();
 
-  if (auto a = dynamic_cast<const AliasDecl*>(value.get()))
+  if (auto a = dynamic_cast<const AliasDecl *>(value.get()))
     return a->value->constant_fold();
 
   throw Error("symbol \"" + id + "\" is not a constant", loc);
@@ -924,13 +796,9 @@ bool ExprID::is_lvalue() const {
   return value->is_lvalue();
 }
 
-bool ExprID::is_readonly() const {
-  return value->is_readonly();
-}
+bool ExprID::is_readonly() const { return value->is_readonly(); }
 
-std::string ExprID::to_string() const {
-  return id;
-}
+std::string ExprID::to_string() const { return id; }
 
 bool ExprID::is_literal_true() const {
   // It is not possible to shadow “true,” so we simply need to check the text of
@@ -939,41 +807,30 @@ bool ExprID::is_literal_true() const {
   return id == "true";
 }
 
-bool ExprID::is_literal_false() const {
-  return id == "false";
-}
+bool ExprID::is_literal_false() const { return id == "false"; }
 
-bool ExprID::is_pure() const {
-  return true;
-}
+bool ExprID::is_pure() const { return true; }
 
 Field::Field(const Ptr<Expr> &record_, const std::string &field_,
-  const location &loc_):
-  Expr(loc_), record(record_), field(field_) {
-}
+             const location &loc_)
+    : Expr(loc_), record(record_), field(field_) {}
 
-Field *Field::clone() const {
-  return new Field(*this);
-}
+Field *Field::clone() const { return new Field(*this); }
 
-void Field::visit(BaseTraversal &visitor) {
-  return visitor.visit_field(*this);
-}
+void Field::visit(BaseTraversal &visitor) { return visitor.visit_field(*this); }
 
 void Field::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_field(*this);
 }
 
-bool Field::constant() const {
-  return false;
-}
+bool Field::constant() const { return false; }
 
 Ptr<TypeExpr> Field::type() const {
 
   const Ptr<TypeExpr> root = record->type();
   const Ptr<TypeExpr> resolved = root->resolve();
 
-  auto r = dynamic_cast<const Record*>(resolved.get());
+  auto r = dynamic_cast<const Record *>(resolved.get());
 
   // if we are called before types have been resolved (or during type
   // resolution on a malformed model), it is possible that the root is not a
@@ -1000,7 +857,7 @@ void Field::validate() const {
   if (!isa<Record>(root))
     throw Error("left hand side of field expression is not a record", loc);
 
-  auto r = dynamic_cast<const Record&>(*root);
+  auto r = dynamic_cast<const Record &>(*root);
 
   for (const Ptr<VarDecl> &f : r.fields) {
     if (f->name == field)
@@ -1010,30 +867,21 @@ void Field::validate() const {
   throw Error("no field named \"" + field + "\" in record", loc);
 }
 
-bool Field::is_lvalue() const {
-  return record->is_lvalue();
-}
+bool Field::is_lvalue() const { return record->is_lvalue(); }
 
-bool Field::is_readonly() const {
-  return record->is_readonly();
-}
+bool Field::is_readonly() const { return record->is_readonly(); }
 
 std::string Field::to_string() const {
   return record->to_string() + "." + field;
 }
 
-bool Field::is_pure() const {
-  return true;
-}
+bool Field::is_pure() const { return true; }
 
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
-  const location &loc_):
-  Expr(loc_), array(array_), index(index_) {
-}
+                 const location &loc_)
+    : Expr(loc_), array(array_), index(index_) {}
 
-Element *Element::clone() const {
-  return new Element(*this);
-}
+Element *Element::clone() const { return new Element(*this); }
 
 void Element::visit(BaseTraversal &visitor) {
   return visitor.visit_element(*this);
@@ -1043,13 +891,11 @@ void Element::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_element(*this);
 }
 
-bool Element::constant() const {
-  return false;
-}
+bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
-  const Array *a = dynamic_cast<const Array*>(t.get());
+  const Array *a = dynamic_cast<const Array *>(t.get());
 
   // if we are called during symbol resolution on a malformed expression, our
   // left hand side may not be an array
@@ -1065,40 +911,34 @@ mpz_class Element::constant_fold() const {
 
 void Element::validate() const {
 
-  const Ptr<TypeExpr> t = array->type()->resolve();;
+  const Ptr<TypeExpr> t = array->type()->resolve();
+  ;
 
   if (!isa<Array>(t))
     throw Error("array index on an expression that is not an array", loc);
 
-  auto a = dynamic_cast<const Array&>(*t);
+  auto a = dynamic_cast<const Array &>(*t);
 
   if (!index->type()->coerces_to(*a.index_type))
     throw Error("array indexed using an expression of incorrect type", loc);
 }
 
-bool Element::is_lvalue() const {
-  return array->is_lvalue();
-}
+bool Element::is_lvalue() const { return array->is_lvalue(); }
 
-bool Element::is_readonly() const {
-  return array->is_readonly();
-}
+bool Element::is_readonly() const { return array->is_readonly(); }
 
 std::string Element::to_string() const {
   return array->to_string() + "[" + index->to_string() + "]";
 }
 
-bool Element::is_pure() const {
-  return true;
-}
+bool Element::is_pure() const { return true; }
 
 FunctionCall::FunctionCall(const std::string &name_,
-  const std::vector<Ptr<Expr>> &arguments_, const location &loc_):
-  Expr(loc_), name(name_), arguments(arguments_) { }
+                           const std::vector<Ptr<Expr>> &arguments_,
+                           const location &loc_)
+    : Expr(loc_), name(name_), arguments(arguments_) {}
 
-FunctionCall *FunctionCall::clone() const {
-  return new FunctionCall(*this);
-}
+FunctionCall *FunctionCall::clone() const { return new FunctionCall(*this); }
 
 void FunctionCall::visit(BaseTraversal &visitor) {
   return visitor.visit_functioncall(*this);
@@ -1140,21 +980,22 @@ void FunctionCall::validate() const {
 
   if (!within_procedure_call && function->return_type == nullptr)
     throw Error("procedure (function with no return value) called in "
-      "expression", loc);
+                "expression",
+                loc);
 
   auto it = arguments.begin();
   for (const Ptr<VarDecl> &v : function->parameters) {
 
     assert(it != arguments.end() && "mismatch in size of parameter list and "
-      "function arguments list");
+                                    "function arguments list");
 
     if ((*it)->is_readonly() && !v->is_readonly())
       throw Error("function call passes a read-only value as a var parameter",
-        (*it)->loc);
+                  (*it)->loc);
 
     if (!(*it)->type()->coerces_to(*v->get_type()))
       throw Error("function call contains parameter of incorrect type",
-        (*it)->loc);
+                  (*it)->loc);
 
     const Ptr<TypeExpr> param_type = v->get_type()->resolve();
 
@@ -1163,16 +1004,17 @@ void FunctionCall::validate() const {
     // callee’s handles are compatible
     if (!v->is_readonly() && isa<Range>(param_type)) {
       const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
-      assert(isa<Range>(arg_type)
-        && "non-range considered type-compatible with range");
+      assert(isa<Range>(arg_type) &&
+             "non-range considered type-compatible with range");
 
-      auto p = dynamic_cast<const Range&>(*param_type);
-      auto a = dynamic_cast<const Range&>(*arg_type);
+      auto p = dynamic_cast<const Range &>(*param_type);
+      auto a = dynamic_cast<const Range &>(*arg_type);
 
       if (p.min->constant_fold() != a.min->constant_fold() ||
           p.max->constant_fold() != a.max->constant_fold())
         throw Error("range types of function call argument and var parameter "
-          "differ", (*it)->loc);
+                    "differ",
+                    (*it)->loc);
     }
 
     it++;
@@ -1212,26 +1054,25 @@ bool FunctionCall::is_pure() const {
 }
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<TypeExpr> &type_,
-  const location &loc_):
-  Node(loc_), name(name_), type(type_),
-  decl(Ptr<VarDecl>::make(name_, type_, loc_)) { }
+                       const location &loc_)
+    : Node(loc_), name(name_), type(type_),
+      decl(Ptr<VarDecl>::make(name_, type_, loc_)) {}
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
-  const Ptr<Expr> &to_, const location &loc_):
-  Quantifier(name_, from_, to_, nullptr, loc_) { }
+                       const Ptr<Expr> &to_, const location &loc_)
+    : Quantifier(name_, from_, to_, nullptr, loc_) {}
 
 Quantifier::Quantifier(const std::string &name_, const Ptr<Expr> &from_,
-  const Ptr<Expr> &to_, const Ptr<Expr> &step_, const location &loc_):
-  Node(loc_), name(name_), from(from_), to(to_), step(step_),
-  // we construct an artificial unbounded range here because we do not know
-  // whether the bounds of this iteration are constant prior to symbol
-  // resolution
-  decl(Ptr<VarDecl>::make(name_, Ptr<Range>::make(nullptr, nullptr, loc_), loc_))
-  { }
+                       const Ptr<Expr> &to_, const Ptr<Expr> &step_,
+                       const location &loc_)
+    : Node(loc_), name(name_), from(from_), to(to_), step(step_),
+      // we construct an artificial unbounded range here because we do not know
+      // whether the bounds of this iteration are constant prior to symbol
+      // resolution
+      decl(Ptr<VarDecl>::make(name_, Ptr<Range>::make(nullptr, nullptr, loc_),
+                              loc_)) {}
 
-Quantifier *Quantifier::clone() const {
-  return new Quantifier(*this);
-}
+Quantifier *Quantifier::clone() const { return new Quantifier(*this); }
 
 void Quantifier::visit(BaseTraversal &visitor) {
   return visitor.visit_quantifier(*this);
@@ -1250,10 +1091,10 @@ void Quantifier::validate() const {
   if (step_const && step->constant_fold() == 0)
     throw Error("infinite loop due to 0 step", loc);
 
-  bool step_positive
-    = step == nullptr || (step_const && step->constant_fold() > 0);
-  bool step_negative
-    = step != nullptr && step_const && step->constant_fold() < 0;
+  bool step_positive =
+      step == nullptr || (step_const && step->constant_fold() > 0);
+  bool step_negative =
+      step != nullptr && step_const && step->constant_fold() < 0;
 
   if (from_const && to_const) {
 
@@ -1270,8 +1111,8 @@ void Quantifier::validate() const {
 
 std::string Quantifier::to_string() const {
   if (type == nullptr) {
-    std::string s = name + " from " + from->to_string() + " to "
-      + to->to_string();
+    std::string s =
+        name + " from " + from->to_string() + " to " + to->to_string();
     if (step != nullptr)
       s += " by " + step->to_string();
     return s;
@@ -1310,8 +1151,8 @@ mpz_class Quantifier::count() const {
     return type->count() - 1;
   }
 
-  assert(from != nullptr && to != nullptr && "quantifier with null type and "
-    "bounds");
+  assert(from != nullptr && to != nullptr &&
+         "quantifier with null type and bounds");
 
   mpz_class lb = from->constant_fold();
   mpz_class ub = to->constant_fold();
@@ -1328,7 +1169,8 @@ std::string Quantifier::lower_bound() const {
 
   if (!constant())
     throw Error("non-constant quantifier has a lower bound that cannot be "
-      "calculated ahead of time", loc);
+                "calculated ahead of time",
+                loc);
 
   if (type != nullptr)
     return type->lower_bound();
@@ -1343,14 +1185,14 @@ bool Quantifier::is_pure() const {
   if (type != nullptr) {
     const Ptr<TypeExpr> t = type->resolve();
 
-    if (auto r = dynamic_cast<const Range*>(t.get()))
+    if (auto r = dynamic_cast<const Range *>(t.get()))
       return r->min->is_pure() && r->max->is_pure();
 
-    if (auto s = dynamic_cast<const Scalarset*>(t.get()))
+    if (auto s = dynamic_cast<const Scalarset *>(t.get()))
       return s->bound->is_pure();
 
-    assert(dynamic_cast<const Enum*>(t.get()) != nullptr &&
-      "complex type encountered in quantifier");
+    assert(dynamic_cast<const Enum *>(t.get()) != nullptr &&
+           "complex type encountered in quantifier");
 
     return true;
   }
@@ -1368,12 +1210,10 @@ bool Quantifier::is_pure() const {
 }
 
 Exists::Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
-  const location &loc_):
-  Expr(loc_), quantifier(quantifier_), expr(expr_) { }
+               const location &loc_)
+    : Expr(loc_), quantifier(quantifier_), expr(expr_) {}
 
-Exists *Exists::clone() const {
-  return new Exists(*this);
-}
+Exists *Exists::clone() const { return new Exists(*this); }
 
 void Exists::visit(BaseTraversal &visitor) {
   return visitor.visit_exists(*this);
@@ -1383,13 +1223,9 @@ void Exists::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_exists(*this);
 }
 
-bool Exists::constant() const {
-  return expr->constant();
-}
+bool Exists::constant() const { return expr->constant(); }
 
-Ptr<TypeExpr> Exists::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Exists::type() const { return Boolean; }
 
 mpz_class Exists::constant_fold() const {
   throw Error("exists expression used in constant", loc);
@@ -1401,21 +1237,17 @@ void Exists::validate() const {
 }
 
 std::string Exists::to_string() const {
-  return "exists " + quantifier.to_string() + " do " + expr->to_string()
-    + " endexists";
+  return "exists " + quantifier.to_string() + " do " + expr->to_string() +
+         " endexists";
 }
 
-bool Exists::is_pure() const {
-  return quantifier.is_pure() && expr->is_pure();
-}
+bool Exists::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
 
 Forall::Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
-  const location &loc_):
-  Expr(loc_), quantifier(quantifier_), expr(expr_) { }
+               const location &loc_)
+    : Expr(loc_), quantifier(quantifier_), expr(expr_) {}
 
-Forall *Forall::clone() const {
-  return new Forall(*this);
-}
+Forall *Forall::clone() const { return new Forall(*this); }
 
 void Forall::visit(BaseTraversal &visitor) {
   return visitor.visit_forall(*this);
@@ -1425,13 +1257,9 @@ void Forall::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_forall(*this);
 }
 
-bool Forall::constant() const {
-  return expr->constant();
-}
+bool Forall::constant() const { return expr->constant(); }
 
-Ptr<TypeExpr> Forall::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> Forall::type() const { return Boolean; }
 
 mpz_class Forall::constant_fold() const {
   throw Error("forall expression used in constant", loc);
@@ -1443,20 +1271,16 @@ void Forall::validate() const {
 }
 
 std::string Forall::to_string() const {
-  return "forall " + quantifier.to_string() + " do " + expr->to_string()
-    + " endforall";
+  return "forall " + quantifier.to_string() + " do " + expr->to_string() +
+         " endforall";
 }
 
-bool Forall::is_pure() const {
-  return quantifier.is_pure() && expr->is_pure();
-}
+bool Forall::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
 
-IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_):
-  UnaryExpr(expr_, loc_) { }
+IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_)
+    : UnaryExpr(expr_, loc_) {}
 
-IsUndefined *IsUndefined::clone() const {
-  return new IsUndefined(*this);
-}
+IsUndefined *IsUndefined::clone() const { return new IsUndefined(*this); }
 
 void IsUndefined::visit(BaseTraversal &visitor) {
   return visitor.visit_isundefined(*this);
@@ -1466,13 +1290,9 @@ void IsUndefined::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_isundefined(*this);
 }
 
-bool IsUndefined::constant() const {
-  return false;
-}
+bool IsUndefined::constant() const { return false; }
 
-Ptr<TypeExpr> IsUndefined::type() const {
-  return Boolean;
-}
+Ptr<TypeExpr> IsUndefined::type() const { return Boolean; }
 
 mpz_class IsUndefined::constant_fold() const {
   throw Error("isundefined used in constant", loc);
@@ -1482,16 +1302,15 @@ void IsUndefined::validate() const {
 
   if (!rhs->is_lvalue())
     throw Error("non-lvalue expression cannot be used in isundefined",
-      rhs->loc);
+                rhs->loc);
 
   const Ptr<TypeExpr> t = rhs->type();
   if (!t->is_simple())
     throw Error("complex type used in isundefined", rhs->loc);
-
 }
 
 std::string IsUndefined::to_string() const {
   return "isundefined(" + rhs->to_string() + ")";
 }
 
-}
+} // namespace rumur

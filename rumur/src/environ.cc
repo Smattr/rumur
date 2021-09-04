@@ -1,11 +1,11 @@
-#include <cstdlib>
 #include "environ.h"
+#include <cstdlib>
 
 #ifdef __APPLE__
-    #include <crt_externs.h>
+#include <crt_externs.h>
 #endif
 
-char **get_environ(void) {
+char **get_environ() {
 #ifdef __APPLE__
   // on macOS, environ is not directly accessible
   return *_NSGetEnviron();

@@ -2,22 +2,25 @@
 
 #include <cstddef>
 #include <rumur/Expr.h>
-#include <rumur/Expr.h>
 #include <rumur/Model.h>
 #include <rumur/Number.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
-#include <rumur/traverse.h>
 #include <rumur/TypeExpr.h>
+#include <rumur/traverse.h>
+
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
 
 namespace rumur {
 
-class Indexer : public BaseTraversal {
+class RUMUR_API_WITH_RTTI Indexer : public BaseTraversal {
 
- private:
+private:
   size_t next = 0;
 
- public:
+public:
   void visit_add(Add &n) final;
   void visit_aliasdecl(AliasDecl &n) final;
   void visit_aliasrule(AliasRule &n) final;
@@ -88,9 +91,9 @@ class Indexer : public BaseTraversal {
 
   virtual ~Indexer() = default;
 
- private:
+private:
   void visit_bexpr(BinaryExpr &n);
   void visit_uexpr(UnaryExpr &n);
 };
 
-}
+} // namespace rumur

@@ -1,6 +1,6 @@
-#include <cstddef>
 #include "../../common/isa.h"
 #include "generate.h"
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <rumur/rumur.h>
@@ -9,12 +9,12 @@
 using namespace rumur;
 
 void generate_function(std::ostream &out, const Function &f,
-    const std::vector<const Decl*> &decls) {
+                       const std::vector<const Decl *> &decls) {
 
   out << "static ";
 
-  bool needs_return_handle
-    = f.return_type != nullptr && !f.return_type->is_simple();
+  bool needs_return_handle =
+      f.return_type != nullptr && !f.return_type->is_simple();
 
   // if this function has no side effects and doesn’t have output arguments,
   // pass the compiler a hint for this
@@ -41,7 +41,7 @@ void generate_function(std::ostream &out, const Function &f,
     out << "struct handle";
   }
   out << " ru_" << f.name << "(const char *rule_name __attribute__((unused)), "
-    << "struct state *NONNULL s __attribute__((unused))";
+      << "struct state *NONNULL s __attribute__((unused))";
 
   // If required, generate the return (out) parameter.
   if (needs_return_handle)
@@ -107,7 +107,7 @@ void generate_function(std::ostream &out, const Function &f,
    */
   if (f.return_type != nullptr)
     out << "  error(s, \"The end of function %s reached without returning "
-      << "values.\", \"" << f.name << "\");\n";
+        << "values.\", \"" << f.name << "\");\n";
 
   if (f.return_type == nullptr)
     out << "  return true; /* ignored by caller */\n";

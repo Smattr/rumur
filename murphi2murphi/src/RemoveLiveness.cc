@@ -1,13 +1,13 @@
+#include "RemoveLiveness.h"
+#include "Stage.h"
 #include <cstddef>
 #include <ctype.h>
-#include "RemoveLiveness.h"
 #include <rumur/rumur.h>
-#include "Stage.h"
 #include <string>
 
 using namespace rumur;
 
-RemoveLiveness::RemoveLiveness(Stage &next_): IntermediateStage(next_) { }
+RemoveLiveness::RemoveLiveness(Stage &next_) : IntermediateStage(next_) {}
 
 void RemoveLiveness::process(const Token &t) {
 

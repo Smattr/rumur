@@ -11,9 +11,13 @@
 #include <string>
 #include <vector>
 
+#ifndef RUMUR_API_WITH_RTTI
+#define RUMUR_API_WITH_RTTI __attribute__((visibility("default")))
+#endif
+
 namespace rumur {
 
-struct Function : public Node {
+struct RUMUR_API_WITH_RTTI Function : public Node {
 
   std::string name;
   std::vector<Ptr<VarDecl>> parameters;
@@ -22,10 +26,10 @@ struct Function : public Node {
   std::vector<Ptr<Stmt>> body;
 
   Function(const std::string &name_,
-    const std::vector<Ptr<VarDecl>> &parameters_,
-    const Ptr<TypeExpr> &return_type_,
-    const std::vector<Ptr<Decl>> &decls_,
-    const std::vector<Ptr<Stmt>> &body_, const location &loc_);
+           const std::vector<Ptr<VarDecl>> &parameters_,
+           const Ptr<TypeExpr> &return_type_,
+           const std::vector<Ptr<Decl>> &decls_,
+           const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~Function() = default;
   Function *clone() const final;
   void validate() const final;
@@ -40,4 +44,4 @@ struct Function : public Node {
   bool is_recursive() const;
 };
 
-}
+} // namespace rumur

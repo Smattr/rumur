@@ -1,5 +1,5 @@
-#include <cstddef>
 #include "compares_complex_values.h"
+#include <cstddef>
 #include <rumur/rumur.h>
 
 using namespace rumur;
@@ -8,10 +8,10 @@ namespace {
 
 class ComplexComparisonFinder : public ConstTraversal {
 
- private:
+private:
   bool seen = false;
 
- public:
+public:
   void visit_eq(const Eq &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
@@ -30,12 +30,10 @@ class ComplexComparisonFinder : public ConstTraversal {
     seen |= !n.lhs->type()->is_simple();
   }
 
-  bool found() const {
-    return seen;
-  }
+  bool found() const { return seen; }
 };
 
-}
+} // namespace
 
 bool compares_complex_values(const Node &n) {
   ComplexComparisonFinder ccf;
