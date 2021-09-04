@@ -8,7 +8,7 @@ Build-Depends: debhelper-compat (= 12),
  flex (>= 2.5.35),
  libfl-dev,
  libgmp-dev,
- python3 (>= 3.6),
+ python3 (>= 3.4),
  strace
 Standards-Version: 4.5.1
 Homepage: https://github.com/Smattr/rumur
@@ -19,7 +19,7 @@ Rules-Requires-Root: no
 Package: rumur
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Suggests: python3 (>= 3.6)
+Suggests: python3 (>= 3.4)
 Description: model checker for the Murphi language
  Rumur is a model checker for use in the formal verification of finite state
  machines specified in the Murphi modelling language. It is based on a previous

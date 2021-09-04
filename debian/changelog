@@ -4,6 +4,8 @@ rumur (2021.08.28-1) unstable; urgency=medium
 
   * A new binary, murphi2uclid, is now included.
 
+  * Python build dependency and suggests have been relaxed from 3.6 to 3.4.
+
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sat, 04 Sep 2021 09:11:03 -0700
 
 rumur (2020.12.20-1) unstable; urgency=medium
