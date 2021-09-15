@@ -33,9 +33,7 @@ struct RUMUR_API_WITH_RTTI Expr : public Node {
   // Whether an expression is a compile-time constant
   virtual bool constant() const = 0;
 
-  /* The type of this expression. A nullptr indicates the type is equivalent
-   * to a numeric literal; that is, an unbounded range.
-   */
+  /// The type of this expression. Never returns `nullptr`.
   virtual Ptr<TypeExpr> type() const = 0;
 
   // If this expression is of boolean type.
