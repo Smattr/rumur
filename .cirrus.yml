@@ -11,6 +11,12 @@ task:
       freebsd_instance:
         image_family: freebsd-13-0-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+    - name: FreeBSD 13.0, shared libraries
+      freebsd_instance:
+        image_family: freebsd-13-0-snap
+      environment:
+        CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 12.2
       freebsd_instance:
         image_family: freebsd-12-2-snap
@@ -146,4 +152,4 @@ task:
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake .. && cmake --build . && cmake --build . -- install && cmake --build . -- check
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && cmake --build . -- install && cmake --build . -- check

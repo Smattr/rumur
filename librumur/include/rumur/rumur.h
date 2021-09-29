@@ -3,7 +3,7 @@
 #pragma once
 
 #ifndef RUMUR_API
-#define RUMUR_API __attribute__((visibility("hidden")))
+#define RUMUR_API
 #endif
 
 namespace rumur {
