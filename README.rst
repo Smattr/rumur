@@ -9,8 +9,8 @@ with some extensions and generates a C program that implements a verifier.
 Quickstart
 ----------
 
-Installation on Ubuntu ≥ 20.04 or Debian Unstable
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installation on Ubuntu ≥ 20.04 or Debian
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
