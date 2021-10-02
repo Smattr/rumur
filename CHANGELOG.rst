@@ -1,6 +1,18 @@
 Change log
 ==========
 
+v2021.09.29
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: build errors when compiling with shared libraries due to symbol
+  visibility have been fixed (commit c73e8a28870d37a44bf16a1bd3701edfe82a2521)
+
 v2021.08.28
 -----------
 

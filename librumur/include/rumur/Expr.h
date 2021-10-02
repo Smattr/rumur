@@ -30,38 +30,37 @@ struct RUMUR_API_WITH_RTTI Expr : public Node {
 
   virtual Expr *clone() const = 0;
 
-  // Whether an expression is a compile-time constant
+  /// is this expression a compile-time constant?
   virtual bool constant() const = 0;
 
-  /* The type of this expression. A nullptr indicates the type is equivalent
-   * to a numeric literal; that is, an unbounded range.
-   */
+  /// The type of this expression. Never returns `nullptr`.
   virtual Ptr<TypeExpr> type() const = 0;
 
-  // If this expression is of boolean type.
+  /// is this expression of boolean type?
   bool is_boolean() const;
 
+  /// Evaluate this expression. This will throw `Error` if `constant()` is not
+  /// true.
   virtual mpz_class constant_fold() const = 0;
 
-  // Is this value valid to use on the LHS of an assignment?
+  /// is this value valid to use on the LHS of an assignment?
   virtual bool is_lvalue() const;
 
-  /* Is this value a constant (cannot be modified)? It only makes sense to ask
-   * this of expressions for which is_lvalue() returns true. For non-lvalues,
-   * this is always true.
-   */
+  /// Is this value a constant (cannot be modified)? It only makes sense to ask
+  /// this of expressions for which is_lvalue() returns true. For non-lvalues,
+  /// this is always true.
   virtual bool is_readonly() const;
 
-  // Get a string representation of this expression
+  /// get a string representation of this expression
   virtual std::string to_string() const = 0;
 
-  // is this expression the boolean literal “true”?
+  /// is this expression the boolean literal “true”?
   virtual bool is_literal_true() const;
 
-  // is this expression the boolean literal “false”?
+  /// is this expression the boolean literal “false”?
   virtual bool is_literal_false() const;
 
-  // is this expression side-effect free?
+  /// is this expression side-effect free?
   virtual bool is_pure() const = 0;
 
 protected:
@@ -141,7 +140,7 @@ struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
   std::string to_string() const final;
 };
 
-// logical OR
+/// logical OR
 struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
 
   Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
@@ -155,7 +154,7 @@ struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
   std::string to_string() const final;
 };
 
-// logical AND
+/// logical AND
 struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
 
   And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
@@ -169,9 +168,9 @@ struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
   std::string to_string() const final;
 };
 
-// An 'x & y' expression where a decision has not yet been made as to whether
-// the '&' is a logical AND or a bitwise AND. These nodes can only occur in the
-// AST prior to symbol resolution.
+/// An 'x & y' expression where a decision has not yet been made as to whether
+/// the '&' is a logical AND or a bitwise AND. These nodes can only occur in the
+/// AST prior to symbol resolution.
 struct RUMUR_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
 
   AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -187,9 +186,9 @@ struct RUMUR_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
   std::string to_string() const final;
 };
 
-// An 'x | y' expression where a decision has not yet been made as to whether
-// the '|' is a logical OR or a bitwise OR. These nodes can only occur in the
-// AST prior to symbol resolution.
+/// An 'x | y' expression where a decision has not yet been made as to whether
+/// the '|' is a logical OR or a bitwise OR. These nodes can only occur in the
+/// AST prior to symbol resolution.
 struct RUMUR_API_WITH_RTTI AmbiguousPipe : public BinaryExpr {
 
   AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -478,7 +477,7 @@ struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-// bitwise AND
+/// bitwise AND
 struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
 
   Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
@@ -492,7 +491,7 @@ struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
   std::string to_string() const final;
 };
 
-// bitwise OR
+/// bitwise OR
 struct RUMUR_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
 
   Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
@@ -596,7 +595,7 @@ struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
-  // Whether this is a child of a ProcedureCall
+  /// whether this is a child of a `ProcedureCall`
   bool within_procedure_call = false;
 
   FunctionCall(const std::string &name_,
@@ -619,7 +618,7 @@ struct RUMUR_API_WITH_RTTI Quantifier : public Node {
 
   std::string name;
 
-  // If this is != nullptr, the from/to/step will be nullptr
+  // if this is != nullptr, the from/to/step will be nullptr
   Ptr<TypeExpr> type;
 
   Ptr<Expr> from;
@@ -643,18 +642,17 @@ struct RUMUR_API_WITH_RTTI Quantifier : public Node {
   void visit(BaseTraversal &visitor) final;
   void visit(ConstBaseTraversal &visitor) const final;
 
-  // whether the quantifier's range can be constant folded
+  /// whether the quantifier’s range can be constant folded
   bool constant() const;
 
-  /* number of entries in this quantifier's range (only valid when constant()
-   * returns true)
-   */
+  /// number of entries in this quantifier’s range (only valid when `constant()`
+  /// returns `true`)
   mpz_class count() const;
 
-  // get the lower bound of this quantified expression as a C expression
+  /// get the lower bound of this quantified expression as a C expression
   std::string lower_bound() const;
 
-  // is this side-effect free?
+  /// is this side-effect free?
   bool is_pure() const;
 };
 
