@@ -17,10 +17,11 @@ endif()
 bison_target(parser
   src/parser.yy
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.cc
-  COMPILE_FLAGS --warnings=all)
+  COMPILE_FLAGS "--no-lines --warnings=all")
 flex_target(lexer
   src/lexer.l
-  ${CMAKE_CURRENT_BINARY_DIR}/lexer.l.cc)
+  ${CMAKE_CURRENT_BINARY_DIR}/lexer.l.cc
+  COMPILE_FLAGS "--noline")
 add_flex_bison_dependency(lexer parser)
 
 # Suppress warnings in generated code.
