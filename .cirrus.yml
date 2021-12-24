@@ -55,6 +55,14 @@ task:
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
+    - name: Linux, GCC 11.2
+      container:
+        image: gcc:11.2
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
     - name: macOS, XCode 13.1, Homebrew
       osx_instance:
