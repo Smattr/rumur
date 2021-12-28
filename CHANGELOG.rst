@@ -1,6 +1,18 @@
 Change log
 ==========
 
+v2021.12.27
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The ``newfstatat`` syscall is now allowed in ``--sandbox on`` mode (commit
+  53fab5e0cc431652c57439de3b15181cd07173ab).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2021.09.29
 -----------
 

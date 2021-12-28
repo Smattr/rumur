@@ -19,7 +19,7 @@ The process of cutting a new Rumur release should follow these steps:
    change will have. Code changes that are only of relevance to people hacking
    on Rumur can be omitted, and this audience can read about them in the Git
    log.
-4. Commit this to master.
+4. Commit this to main.
 5. Push this to `upstream on Github`_.
 6. Wait for the `Cirrus CI regression tests`_ to pass. If one of these tests
    fail, you may need to look at the raw log because the summary output hides
@@ -38,7 +38,7 @@ Rumur is currently `packaged in Debian unstable`_. To update the Debian Rumur
 package follow these steps.
 
 1. Switch to the branch packaging/debian.
-2. Merge from master.
+2. Merge from main.
 3. Update the Debian changelog (../debian/changelog). Debian provide guidance on
    the `changelog format`_.
 4. Commit these changes.

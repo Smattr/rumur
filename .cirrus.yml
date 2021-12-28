@@ -1,7 +1,7 @@
 task:
 
-  # only test the master branch and pull requests
-  only_if: $CIRRUS_BRANCH == "master" || $CIRRUS_PR != ""
+  # only test the main branch and pull requests
+  only_if: $CIRRUS_BRANCH == "main" || $CIRRUS_PR != ""
 
   # increase timeout to the maximum limit
   timeout_in: 120m
@@ -31,8 +31,8 @@ task:
         image: gcc:4.9
       environment:
         DEBIAN_FRONTEND: noninteractive
-        PATH: /opt/cmake-3.21.0-rc3-linux-x86_64/bin:${PATH}
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev python3 && wget https://github.com/Kitware/CMake/releases/download/v3.21.0-rc3/cmake-3.21.0-rc3-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.21.0-rc3-linux-x86_64.tar.gz --directory /opt
+        PATH: /opt/cmake-3.22.0-linux-x86_64/bin:${PATH}
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev python3 && wget https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.22.0-linux-x86_64.tar.gz --directory /opt
     - name: Linux, GCC 8.5
       container:
         image: gcc:8.5
@@ -55,10 +55,18 @@ task:
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
+    - name: Linux, GCC 11.2
+      container:
+        image: gcc:11.2
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
-    - name: macOS, XCode 11.3.1, Homebrew
+    - name: macOS, XCode 13.1, Homebrew
       osx_instance:
-        image: catalina-xcode-11.3.1
+        image: monterey-xcode-13.1
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
@@ -70,80 +78,24 @@ task:
       # the flags/features we use. To install newer versions and make them
       # available to CMake we need to link them into the system directories.
       install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 11.4.1, Homebrew
+    - name: macOS, XCode 13.2, Homebrew
       osx_instance:
-        image: catalina-xcode-11.4.1
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 11.5, Homebrew
-      osx_instance:
-        image: catalina-xcode-11.5
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 11.6, Homebrew
-      osx_instance:
-        image: catalina-xcode-11.6
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 12.0, Homebrew
-      osx_instance:
-        image: catalina-xcode-12.0
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 12.1, Homebrew
-      osx_instance:
-        image: catalina-xcode-12.1
+        image: monterey-xcode-13.2
       environment:
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
       install_script: brew update && brew install bison && brew link bison --force
 
-    - name: macOS, XCode 11.3.1, Macports
+    - name: macOS, XCode 13.1, Macports
       osx_instance:
-        image: catalina-xcode-11.3.1
+        image: monterey-xcode-13.1
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
       install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 11.4.1, Macports
+    - name: macOS, XCode 13.2, Macports
       osx_instance:
-        image: catalina-xcode-11.4.1
-      environment:
-        PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 11.5, Macports
-      osx_instance:
-        image: catalina-xcode-11.5
-      environment:
-        PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 11.6, Macports
-      osx_instance:
-        image: catalina-xcode-11.6
-      environment:
-        PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 12.0, Macports
-      osx_instance:
-        image: catalina-xcode-12.0
-      environment:
-        PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 12.1, Macports
-      osx_instance:
-        image: catalina-xcode-12.1
+        image: monterey-xcode-13.2
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror

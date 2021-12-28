@@ -6,7 +6,7 @@
 VERSION=2.7.1
 
 if [ "$(uname)" != "Darwin" ]; then
-  printf 'this script is only intended to run on macOS\n'
+  printf 'this script is only intended to run on macOS\n' >&2
   exit 1
 fi
 
