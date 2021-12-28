@@ -1,3 +1,11 @@
+rumur (2021.11.27-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * Fix sandbox failures due to newfstatat. Closes: #1002186.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Tue, 28 Dec 2021 09:14:44 -0800
+
 rumur (2021.09.29-1) unstable; urgency=medium
 
   * New upstream release.
