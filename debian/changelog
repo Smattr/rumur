@@ -1,3 +1,11 @@
+rumur (2022.03.05-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * Fix sandbox failures due to statx. Closes: #1004035.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 06 Mar 2022 11:42:05 -0800
+
 rumur (2021.12.27-1) unstable; urgency=medium
 
   * New upstream release.
