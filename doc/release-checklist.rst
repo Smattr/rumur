@@ -34,8 +34,8 @@ https://github.com/Smattr/rumur.
 
 Packaging for Debian
 --------------------
-Rumur is currently `packaged in Debian unstable`_. To update the Debian Rumur
-package follow these steps.
+Rumur is currently `packaged in Debian`_. To update the Debian Rumur package
+follow these steps.
 
 1. Switch to the branch packaging/debian.
 2. Merge from main.
@@ -97,6 +97,6 @@ main repositories.
 .. _`Cirrus CI regression tests`: https://cirrus-ci.com/github/Smattr/rumur
 .. _`Debian buildd results`: https://buildd.debian.org/status/package.php?p=rumur
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
-.. _`packaged in Debian unstable`: https://packages.debian.org/sid/rumur
+.. _`packaged in Debian`: https://packages.debian.org/bullseye/rumur
 .. _`Request For Sponsorship`: https://mentors.debian.net/sponsors/rfs-howto
 .. _`upstream on Github`: https://github.com/Smattr/rumur
