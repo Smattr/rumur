@@ -1,6 +1,18 @@
 Change log
 ==========
 
+v2022.03.05
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The ``statx`` Linux system call is now allowed in ``--sandbox on`` mode
+  (commit 7d33181707dbeab8ec0ae2c949ac15215308f521).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2021.12.27
 -----------
 
