@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 /* The approach we take below is writing the manpage to a temporary location and
  * then asking man to display it. It would be nice to avoid the temporary file
@@ -28,9 +29,9 @@ int help(const unsigned char *manpage, size_t manpage_len) {
 
   // Create a temporary file
   size_t size = tmp.size() + sizeof("/temp.XXXXXX");
-  char *path = new char[size];
-  snprintf(path, size, "%s/temp.XXXXXX", tmp.c_str());
-  int fd = mkstemp(path);
+  std::vector<char> path(size);
+  snprintf(path.data(), path.size(), "%s/temp.XXXXXX", tmp.c_str());
+  int fd = mkstemp(path.data());
   if (fd == -1) {
     ret = errno;
     std::cerr << "failed to create temporary file\n";
@@ -57,7 +58,7 @@ int help(const unsigned char *manpage, size_t manpage_len) {
 #ifdef __linux__
     args += "--local-file ";
 #endif
-    args += path;
+    args += path.data();
     ret = system(args.c_str());
   }
 
@@ -65,8 +66,7 @@ int help(const unsigned char *manpage, size_t manpage_len) {
 done:
   if (fd >= 0)
     close(fd);
-  if (access(path, F_OK) == 0)
-    (void)unlink(path);
-  delete[] path;
+  if (access(path.data(), F_OK) == 0)
+    (void)unlink(path.data());
   return ret;
 }
