@@ -57,3 +57,8 @@ add_dependencies(check murphi2c murphi2murphi murphi2uclid murphi2xml rumur)
 if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check murphi-comment-ls)
 endif()
+
+add_custom_target(format
+  COMMAND git ls-files -z '**/*.cc' '**/*.h' |
+    xargs -0 -- clang-format -i --style=file
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
