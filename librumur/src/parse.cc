@@ -1,7 +1,7 @@
-#include <cassert>
-#include <cstddef>
 #include "location.hh"
 #include "parser.yy.hh"
+#include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <rumur/Decl.h>
 #include <rumur/Model.h>

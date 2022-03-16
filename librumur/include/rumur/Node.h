@@ -1,8 +1,8 @@
 #pragma once
 
+#include "location.hh"
 #include <climits>
 #include <cstddef>
-#include "location.hh"
 #include <iostream>
 
 #ifndef RUMUR_API_WITH_RTTI
@@ -44,7 +44,7 @@ struct RUMUR_API_WITH_RTTI Node {
   virtual void visit(ConstBaseTraversal &visitor) const = 0;
 
 protected:
-  Node(const Node&) = default;
+  Node(const Node &) = default;
   Node &operator=(const Node &) = default;
 };
 

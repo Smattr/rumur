@@ -1,5 +1,5 @@
-#include <cstddef>
 #include "location.hh"
+#include <cstddef>
 #include <rumur/except.h>
 #include <stdexcept>
 #include <string>

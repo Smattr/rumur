@@ -1,8 +1,8 @@
 #pragma once
 
+#include "location.hh"
 #include <cassert>
 #include <cstddef>
-#include "location.hh"
 #include <memory>
 #include <rumur/Node.h>
 #include <rumur/Ptr.h>

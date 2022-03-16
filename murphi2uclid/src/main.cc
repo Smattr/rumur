@@ -4,8 +4,8 @@
 #include "options.h"
 #include "pick_numeric_type.h"
 #include "resources.h"
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

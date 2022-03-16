@@ -1,6 +1,6 @@
+#include "location.hh"
 #include <cassert>
 #include <cstddef>
-#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
