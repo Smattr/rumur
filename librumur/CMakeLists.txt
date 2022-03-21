@@ -82,10 +82,13 @@ target_include_directories(librumur
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${GMPXX_INCLUDE}
   PRIVATE
   src
   ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(librumur
+  SYSTEM PUBLIC
+  ${GMPXX_INCLUDE}
+)
 target_link_libraries(librumur PUBLIC ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 
 # Force the output to librumur.a instead of liblibrumur.a.
