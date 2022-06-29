@@ -39,6 +39,7 @@ target_include_directories(murphi2c
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(murphi2c
+  PRIVATE
   librumur)
 
 # Compress manpage
