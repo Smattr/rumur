@@ -89,10 +89,24 @@ task:
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
       install_script: brew update && brew install bison && brew link bison --force
+    - name: macOS, XCode 13.3, Homebrew
+      osx_instance:
+        image: monterey-xcode-13.3
+      environment:
+        PATH: /usr/local/opt/bison/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: brew update && brew install bison && brew link bison --force
 
     - name: macOS, XCode 13.2, Macports
       osx_instance:
         image: monterey-xcode-13.2
+      environment:
+        PATH: /opt/local/bin:${PATH}
+        CXXFLAGS: -fsanitize=address -Werror
+      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+    - name: macOS, XCode 13.3, Macports
+      osx_instance:
+        image: monterey-xcode-13.3
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
