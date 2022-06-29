@@ -32,13 +32,13 @@ if(HAS_WARNING_POINTER_ARITH)
 endif()
 
 # Enable --as-needed, present on GNU ld on Linux, to minimise dependencies.
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
 endif()
 
 # if we have a new enough CMake to have FindPython3, check for it
-if(${CMAKE_VERSION} VERSION_GREATER 3.11)
+if(CMAKE_VERSION VERSION_GREATER 3.11)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
 endif()
 
