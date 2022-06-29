@@ -19,6 +19,7 @@ target_include_directories(murphi2uclid
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(murphi2uclid
+  PRIVATE
   librumur)
 
 add_custom_target(man-murphi2uclid
