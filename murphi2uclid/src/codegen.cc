@@ -2,8 +2,8 @@
 #include "../../common/isa.h"
 #include "is_one_step.h"
 #include "options.h"
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
 #include <stdexcept>
@@ -81,14 +81,15 @@ public:
     // assignment
 
     // special case function call assignment that has its own syntax
-    if (auto c = dynamic_cast<const FunctionCall*>(n.rhs.get())) {
+    if (auto c = dynamic_cast<const FunctionCall *>(n.rhs.get())) {
       *this << tab() << "call (" << *n.lhs;
 
       // We need to also assign to any 'var' parameters. The function itself
       // will have been translate to something that yields these as extra return
       // values.
-      assert(c->arguments.size() == c->function->parameters.size() &&
-        "function call with a different number of arguments than its target");
+      assert(
+          c->arguments.size() == c->function->parameters.size() &&
+          "function call with a different number of arguments than its target");
       for (size_t i = 0; i < c->arguments.size(); ++i) {
         if (!c->function->parameters[i]->is_readonly()) {
           // FIXME: not strictly safe to emit this and then emit it again in the
@@ -200,12 +201,11 @@ public:
     }
 
     if (is_one_step(n.quantifier.step)) {
-      *this
-        << "(exists (" << n.quantifier.name << " : " << numeric_type << ") :: ("
-        << n.quantifier.name << " >= " << *n.quantifier.from << " && "
-        << n.quantifier.name << " <= " << *n.quantifier.to << " && "
-        << *n.expr << "))";
-        return;
+      *this << "(exists (" << n.quantifier.name << " : " << numeric_type
+            << ") :: (" << n.quantifier.name << " >= " << *n.quantifier.from
+            << " && " << n.quantifier.name << " <= " << *n.quantifier.to
+            << " && " << *n.expr << "))";
+      return;
     }
 
     throw std::logic_error("exists should have been rejected during check()");
@@ -238,14 +238,13 @@ public:
       const Expr &step = *n.quantifier.step;
       *this << tab() << "var " << i << " : " << numeric_type << ";\n";
 
-      *this
-            << tab() << lb << " = " << *n.quantifier.from << ";\n"
+      *this << tab() << lb << " = " << *n.quantifier.from << ";\n"
             << tab() << ub << " = " << *n.quantifier.to << ";\n"
             << tab() << i << " = " << lb << ";\n"
             << tab() << "while ((" << lb << " <= " << ub << " && " << i
-              << " <= " << ub << ") ||\n"
-            << tab() << "       (" << lb << " > " << ub << " && " << i << " >= "
-              << ub << ")) {\n";
+            << " <= " << ub << ") ||\n"
+            << tab() << "       (" << lb << " > " << ub << " && " << i
+            << " >= " << ub << ")) {\n";
       indent();
 
       for (const Ptr<Stmt> &s : n.body) {
@@ -283,12 +282,11 @@ public:
     }
 
     if (is_one_step(n.quantifier.step)) {
-      *this
-        << "(forall (" << n.quantifier.name << " : " << numeric_type << ") :: ("
-        << n.quantifier.name << " < " << *n.quantifier.from << " && "
-        << n.quantifier.name << " > " << *n.quantifier.to << " && "
-        << *n.expr << "))";
-        return;
+      *this << "(forall (" << n.quantifier.name << " : " << numeric_type
+            << ") :: (" << n.quantifier.name << " < " << *n.quantifier.from
+            << " && " << n.quantifier.name << " > " << *n.quantifier.to
+            << " && " << *n.expr << "))";
+      return;
     }
 
     throw std::logic_error("forall should have been rejected during check()");
@@ -518,8 +516,9 @@ public:
       *this << tab() << "call (" << s;
 
       // also deal with any 'var' parameters
-      assert(n.call.arguments.size() == n.call.function->parameters.size() &&
-        "function call with a different number of arguments than its target");
+      assert(
+          n.call.arguments.size() == n.call.function->parameters.size() &&
+          "function call with a different number of arguments than its target");
       for (size_t i = 0; i < n.call.arguments.size(); ++i) {
         if (!n.call.function->parameters[i]->is_readonly()) {
           // FIXME: not strictly safe to emit this and then emit it again in the
@@ -540,8 +539,9 @@ public:
 
     // handle any 'var' parameters this function may have
     bool has_var = false;
-    assert(n.call.arguments.size() == n.call.function->parameters.size() &&
-      "function call with a different number of arguments than its target");
+    assert(
+        n.call.arguments.size() == n.call.function->parameters.size() &&
+        "function call with a different number of arguments than its target");
     std::string sep = "(";
     for (size_t i = 0; i < n.call.arguments.size(); ++i) {
       if (!n.call.function->parameters[i]->is_readonly()) {
@@ -598,8 +598,8 @@ public:
         if (!is_one_step(q->step)) // TODO
           throw std::logic_error("property should have been rejected during "
                                  "check()");
-        *this << q->name << " < " << *q->from << " || "
-          << q->name << " > " << *q->to << " || ";
+        *this << q->name << " < " << *q->from << " || " << q->name << " > "
+              << *q->to << " || ";
       }
     }
 
@@ -740,8 +740,8 @@ public:
     assert(params.size() >= n.quantifiers.size() &&
            "ruleset parameter management out of sync");
     for (size_t i = 0; i < n.quantifiers.size(); ++i) {
-      size_t j __attribute__((unused))
-        = params.size() - n.quantifiers.size() + i;
+      size_t j __attribute__((unused)) =
+          params.size() - n.quantifiers.size() + i;
       assert(params[j] == &n.quantifiers[i] &&
              "ruleset parameter management out of sync");
     }

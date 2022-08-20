@@ -1,7 +1,7 @@
+#include "location.hh"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <memory>
@@ -86,7 +86,7 @@ mpz_class Model::liveness_count() const {
        */
       for (const Quantifier &q : n.quantifiers) {
         assert(multiplier % q.count() == 0 &&
-              "logic error in handling LivenessCounter::multiplier");
+               "logic error in handling LivenessCounter::multiplier");
 
         multiplier /= q.count();
       }

@@ -1,5 +1,5 @@
-#include <cstddef>
 #include "location.hh"
+#include <cstddef>
 #include <memory>
 #include <rumur/Boolean.h>
 #include <rumur/Decl.h>

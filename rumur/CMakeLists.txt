@@ -65,6 +65,7 @@ target_include_directories(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/../librumur)
 
 target_link_libraries(rumur
+  PRIVATE
   librumur)
 
 # Compress manpages

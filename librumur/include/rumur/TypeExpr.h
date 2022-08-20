@@ -1,8 +1,8 @@
 #pragma once
 
+#include "location.hh"
 #include <climits>
 #include <cstddef>
-#include "location.hh"
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>

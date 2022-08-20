@@ -11,12 +11,12 @@ private:
   // states for process() state machine
   enum State {
     IDLE,
-    IDLE_DASH, // saw '-'
-    IDLE_SLASH, // saw '/'
-    IN_STRING, // within a string
-    IN_STRING_SLASH, // within string and saw a '\'
-    IN_LINE_COMMENT, // within a -- comment
-    IN_MULTILINE_COMMENT, // within a /* */ comment
+    IDLE_DASH,                 // saw '-'
+    IDLE_SLASH,                // saw '/'
+    IN_STRING,                 // within a string
+    IN_STRING_SLASH,           // within string and saw a '\'
+    IN_LINE_COMMENT,           // within a -- comment
+    IN_MULTILINE_COMMENT,      // within a /* */ comment
     IN_MULTILINE_COMMENT_STAR, // within a /* */ comment and saw '*'
   };
 

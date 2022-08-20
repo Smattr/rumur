@@ -7,6 +7,16 @@ task:
   timeout_in: 120m
 
   matrix:
+    - name: FreeBSD 14.0
+      freebsd_instance:
+        image_family: freebsd-14-0-snap
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+    - name: FreeBSD 14.0, shared libraries
+      freebsd_instance:
+        image_family: freebsd-14-0-snap
+      environment:
+        CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 13.0
       freebsd_instance:
         image_family: freebsd-13-0-snap
@@ -20,10 +30,6 @@ task:
     - name: FreeBSD 12.2
       freebsd_instance:
         image_family: freebsd-12-2-snap
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 11.3
-      freebsd_instance:
-        image_family: freebsd-11-3-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
     - name: Linux, GCC 4.9
@@ -55,18 +61,26 @@ task:
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
-    - name: Linux, GCC 11.2
+    - name: Linux, GCC 11.3
       container:
-        image: gcc:11.2
+        image: gcc:11.3
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
+    - name: Linux, GCC 12.1
+      container:
+        image: gcc:12.1
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
-    - name: macOS, XCode 13.1, Homebrew
+    - name: macOS, XCode 13.2, Homebrew
       osx_instance:
-        image: monterey-xcode-13.1
+        image: monterey-xcode-13.2
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
@@ -74,28 +88,25 @@ task:
         # not originally, but we'll force this.
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
-      # The version of Bison that comes with XCode is too old to support some of
-      # the flags/features we use. To install newer versions and make them
-      # available to CMake we need to link them into the system directories.
       install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 13.2, Homebrew
+    - name: macOS, XCode 13.3, Homebrew
       osx_instance:
-        image: monterey-xcode-13.2
+        image: monterey-xcode-13.3
       environment:
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
       install_script: brew update && brew install bison && brew link bison --force
 
-    - name: macOS, XCode 13.1, Macports
+    - name: macOS, XCode 13.2, Macports
       osx_instance:
-        image: monterey-xcode-13.1
+        image: monterey-xcode-13.2
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
       install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 13.2, Macports
+    - name: macOS, XCode 13.3, Macports
       osx_instance:
-        image: monterey-xcode-13.2
+        image: monterey-xcode-13.3
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror

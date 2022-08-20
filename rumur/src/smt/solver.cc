@@ -18,9 +18,7 @@ namespace smt {
 
 typedef std::chrono::time_point<std::chrono::system_clock> timestamp_t;
 
-static timestamp_t get_timestamp() {
-  return std::chrono::system_clock::now();
-}
+static timestamp_t get_timestamp() { return std::chrono::system_clock::now(); }
 
 static mpz_class get_duration(const timestamp_t &start,
                               const timestamp_t &end) {

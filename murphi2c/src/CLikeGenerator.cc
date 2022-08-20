@@ -57,7 +57,7 @@ void CLikeGenerator::visit_array(const Array &n) {
   count--;
 
   // wrap the array in a struct so that we do not have the awkwardness of
-  // having to emit its type and size on either size of another node
+  // having to emit its type and size on either side of another node
   *this << "struct " << (pack ? "__attribute__((packed)) " : "") << "{ "
         << *n.element_type << " data[" << count.get_str() << "];";
 

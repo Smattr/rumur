@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstddef>
 #include "location.hh"
+#include <cstddef>
 #include <memory>
 #include <rumur/Decl.h>
 #include <rumur/Node.h>

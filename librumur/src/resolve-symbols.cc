@@ -1,7 +1,7 @@
 #include "../../common/isa.h"
+#include "location.hh"
 #include <cassert>
 #include <cstddef>
-#include "location.hh"
 #include <gmpxx.h>
 #include <memory>
 #include <rumur/Boolean.h>

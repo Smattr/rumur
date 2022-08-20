@@ -1,7 +1,7 @@
 #include "check.h"
 #include "is_one_step.h"
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
 #include <rumur/rumur.h>
 
 using namespace rumur;
@@ -134,12 +134,14 @@ public:
     // forall quantifiers outside `G(F(…))` does not work in Uclid5
     if (!params.empty() && n.property.category == Property::LIVENESS)
       throw Error("liveness properties within rulesets cannot be translated to "
-                  "Uclid5", n.loc);
+                  "Uclid5",
+                  n.loc);
 
     for (const Quantifier *q : params) {
       if (q->type == nullptr && !is_one_step(q->step))
         throw Error("properties within rulesets using quantifiers with non-1 "
-                    "steps are not supported", q->loc);
+                    "steps are not supported",
+                    q->loc);
     }
 
     n.property.visit(*this);
@@ -158,7 +160,8 @@ public:
 
   void visit_put(const Put &n) final {
     throw Error("Uclid5 has no equivalent of put statements except print, "
-                "which is only permitted in control blocks", n.loc);
+                "which is only permitted in control blocks",
+                n.loc);
   }
 
   void visit_return(const Return &n) final {
@@ -193,8 +196,8 @@ public:
     assert(params.size() >= n.quantifiers.size() &&
            "ruleset parameter management out of sync");
     for (size_t i = 0; i < n.quantifiers.size(); ++i) {
-      size_t j __attribute__((unused))
-        = params.size() - n.quantifiers.size() + i;
+      size_t j __attribute__((unused)) =
+          params.size() - n.quantifiers.size() + i;
       assert(params[j] == &n.quantifiers[i] &&
              "ruleset parameter management out of sync");
     }

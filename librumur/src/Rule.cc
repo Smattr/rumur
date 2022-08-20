@@ -1,6 +1,6 @@
+#include "location.hh"
 #include <cassert>
 #include <cstddef>
-#include "location.hh"
 #include <iostream>
 #include <memory>
 #include <rumur/Decl.h>

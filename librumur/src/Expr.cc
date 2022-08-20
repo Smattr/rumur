@@ -1,8 +1,8 @@
 #include "../../common/isa.h"
+#include "location.hh"
 #include <cassert>
 #include <climits>
 #include <cstddef>
-#include "location.hh"
 #include <cstdint>
 #include <gmpxx.h>
 #include <iostream>

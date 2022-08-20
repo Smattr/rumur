@@ -329,6 +329,12 @@ static void sandbox(void) {
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
+        /* When `getrandom` is available, it is used during initialisation. */
+#ifdef __NR_getrandom
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_getrandom, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
+#endif
+
         /* Deny everything else. On a disallowed syscall, we trap instead of
          * killing to allow the user to debug the failure. If you are debugging
          * seccomp denials, strace the checker and find the number of the denied
