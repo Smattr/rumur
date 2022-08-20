@@ -1,6 +1,18 @@
 Change log
 ==========
 
+v2022.08.20
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* The ``getrandom`` Linux system call is now allowed in ``--sandbox on`` mode
+  (commit 1d3a61eb5fbff15af089a7f33ee90d0c98455124).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2022.03.05
 -----------
 
