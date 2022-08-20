@@ -10,7 +10,7 @@ Build-Depends: debhelper-compat (= 12),
  libgmp-dev,
  python3,
  strace
-Standards-Version: 4.6.0.1
+Standards-Version: 4.6.1.0
 Homepage: https://github.com/Smattr/rumur
 Vcs-Git: https://github.com/Smattr/rumur.git -b packaging/debian
 Vcs-Browser: https://github.com/Smattr/rumur.git
