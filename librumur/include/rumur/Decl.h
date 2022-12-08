@@ -40,9 +40,9 @@ struct RUMUR_API_WITH_RTTI ExprDecl : public Decl {
   // Return true if this declaration is usable as an lvalue
   virtual bool is_lvalue() const = 0;
 
-  /* Return true if this declaration is to a resource cannot be modified. Note
-   * that this is only relevant for declarations for which is_lvalue() returns
-   * true. For non-lvalue declarations, this is always true.
+  /* Return true if this declaration is to a resource that cannot be modified.
+   * Note that this is only relevant for declarations for which is_lvalue()
+   * returns true. For non-lvalue declarations, this is always true.
    */
   virtual bool is_readonly() const = 0;
 
