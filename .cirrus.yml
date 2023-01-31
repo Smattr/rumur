@@ -88,6 +88,7 @@ task:
         # not originally, but we'll force this.
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
+        SUDO: sudo
       install_script: brew update && brew install bison && brew link bison --force
 
     - name: macOS, Macports
@@ -96,9 +97,10 @@ task:
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
+        SUDO: sudo
       install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && cmake --build . -- install && cmake --build . -- check
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check
