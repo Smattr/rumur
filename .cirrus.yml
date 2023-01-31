@@ -78,9 +78,9 @@ task:
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
-    - name: macOS, XCode 13.3, Homebrew
-      osx_instance:
-        image: monterey-xcode-13.3
+    - name: macOS, Homebrew
+      macos_instance:
+        image: ghcr.io/cirruslabs/macos-ventura-base:latest
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
@@ -90,9 +90,9 @@ task:
         CXXFLAGS: -fsanitize=address -Werror
       install_script: brew update && brew install bison && brew link bison --force
 
-    - name: macOS, XCode 13.3, Macports
-      osx_instance:
-        image: monterey-xcode-13.3
+    - name: macOS, Macports
+      macos_instance:
+        image: ghcr.io/cirruslabs/macos-ventura-base:latest
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
