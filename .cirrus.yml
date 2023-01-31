@@ -38,7 +38,7 @@ task:
       environment:
         DEBIAN_FRONTEND: noninteractive
         PATH: /opt/cmake-3.22.0-linux-x86_64/bin:${PATH}
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev python3 && wget https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.22.0-linux-x86_64.tar.gz --directory /opt
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y --force-yes bison flex libgmp-dev python3 && wget https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.22.0-linux-x86_64.tar.gz --directory /opt
     - name: Linux, GCC 8.5
       container:
         image: gcc:8.5
@@ -78,9 +78,9 @@ task:
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
-    - name: macOS, XCode 13.2, Homebrew
-      osx_instance:
-        image: monterey-xcode-13.2
+    - name: macOS, Homebrew
+      macos_instance:
+        image: ghcr.io/cirruslabs/macos-ventura-base:latest
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
@@ -88,31 +88,19 @@ task:
         # not originally, but we'll force this.
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
-      install_script: brew update && brew install bison && brew link bison --force
-    - name: macOS, XCode 13.3, Homebrew
-      osx_instance:
-        image: monterey-xcode-13.3
-      environment:
-        PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        SUDO: sudo
       install_script: brew update && brew install bison && brew link bison --force
 
-    - name: macOS, XCode 13.2, Macports
-      osx_instance:
-        image: monterey-xcode-13.2
+    - name: macOS, Macports
+      macos_instance:
+        image: ghcr.io/cirruslabs/macos-ventura-base:latest
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
-    - name: macOS, XCode 13.3, Macports
-      osx_instance:
-        image: monterey-xcode-13.3
-      environment:
-        PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        SUDO: sudo
       install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && cmake --build . -- install && cmake --build . -- check
+  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check
