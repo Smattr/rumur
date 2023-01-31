@@ -38,7 +38,7 @@ task:
       environment:
         DEBIAN_FRONTEND: noninteractive
         PATH: /opt/cmake-3.22.0-linux-x86_64/bin:${PATH}
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison flex libgmp-dev python3 && wget https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.22.0-linux-x86_64.tar.gz --directory /opt
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y --force-yes bison flex libgmp-dev python3 && wget https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.22.0-linux-x86_64.tar.gz --directory /opt
     - name: Linux, GCC 8.5
       container:
         image: gcc:8.5
