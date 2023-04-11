@@ -86,6 +86,11 @@
 
   #include <rumur/scanner.h>
 
+  /* squash warnings that Bison-generated code triggers under Clang ≥14 */
+  #ifdef __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-but-set-variable"
+  #endif
 }
 
   /* Tell Bison that the parser receives a reference to an instance of our

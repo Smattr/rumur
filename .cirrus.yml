@@ -17,13 +17,13 @@ task:
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 13.0
+    - name: FreeBSD 13.1
       freebsd_instance:
-        image_family: freebsd-13-0-snap
+        image_family: freebsd-13-1
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 13.0, shared libraries
+    - name: FreeBSD 13.1, shared libraries
       freebsd_instance:
-        image_family: freebsd-13-0-snap
+        image_family: freebsd-13-1
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
@@ -32,13 +32,6 @@ task:
         image_family: freebsd-12-2-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
-    - name: Linux, GCC 4.9
-      container:
-        image: gcc:4.9
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        PATH: /opt/cmake-3.22.0-linux-x86_64/bin:${PATH}
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y --force-yes bison flex libgmp-dev python3 && wget https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz && mkdir -p /opt && tar xvf cmake-3.22.0-linux-x86_64.tar.gz --directory /opt
     - name: Linux, GCC 8.5
       container:
         image: gcc:8.5
