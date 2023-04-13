@@ -17,13 +17,13 @@ task:
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 13.1
+    - name: FreeBSD 13.2
       freebsd_instance:
-        image_family: freebsd-13-1
+        image_family: freebsd-13-2
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 13.1, shared libraries
+    - name: FreeBSD 13.2, shared libraries
       freebsd_instance:
-        image_family: freebsd-13-1
+        image_family: freebsd-13-2
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
