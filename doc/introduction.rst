@@ -45,3 +45,7 @@ tools can identify *symmetries* in your system; situations where two paths
 through a system are equivalent and only one need be explored. With real world
 systems, this can be a powerful optimisation that transforms infeasible
 verification problems into something achievable.
+
+Suggested to read next: `Introduction to Murphi`_
+
+.. _`Introduction to Murphi`: intro-to-murphi.rst

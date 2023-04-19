@@ -812,3 +812,7 @@ For reference, the full model we constructed is given below.
       philosophers[i].mood = EATING
 
   end
+
+Suggested to read next: `Murphi Idioms`_
+
+.. _`Murphi Idioms`: murphi-idioms.rst
