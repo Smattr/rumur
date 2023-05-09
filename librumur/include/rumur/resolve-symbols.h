@@ -9,8 +9,10 @@
 
 namespace rumur {
 
-/* Resolve symbolic references (rumur::ExprIDs and rumur::TypeExprIDs) within a
- * model. Throws rumur::Error if this process fails.
+/** resolve symbolic references within a model
+ *
+ * Resolve symbolic references (\p rumur::ExprIDs and \p rumur::TypeExprIDs)
+ * within a model. Throws \p rumur::Error if this process fails.
  */
 RUMUR_API void resolve_symbols(Model &m);
 

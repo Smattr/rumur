@@ -20,8 +20,8 @@ struct RUMUR_API_WITH_RTTI Node {
   location loc;
 
   /// A numeric identifier of this node, unique within the current AST. A value
-  /// of `SIZE_MAX` means this node (and its children) have not yet been indexed
-  /// (see `Model::reindex`). This value can be useful when doing code
+  /// of \p SIZE_MAX means this node (and its children) have not yet been
+  /// indexed (see \p Model::reindex). This value can be useful when doing code
   /// generation and needing to invent unique symbols.
   size_t unique_id = SIZE_MAX;
 
@@ -31,12 +31,12 @@ struct RUMUR_API_WITH_RTTI Node {
 
   /// Create a copy of this node. This is necessary rather than simply relying
   /// on the copy constructor because of the inheritance hierarchy. That is, an
-  /// agnostic class like `Ptr` can call this to copy a node without knowing its
-  /// precise derived type and without object slicing.
+  /// agnostic class like \p Ptr can call this to copy a node without knowing
+  /// its precise derived type and without object slicing.
   virtual Node *clone() const = 0;
 
   /// Confirm that data structure invariants hold. This function throws
-  /// `rumur::Error` if invariants are violated.
+  /// \p rumur::Error if invariants are violated.
   virtual void validate() const {}
 
   /// traverse this node and its children using the given action
