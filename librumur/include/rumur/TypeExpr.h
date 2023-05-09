@@ -3,6 +3,7 @@
 #include "location.hh"
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>
