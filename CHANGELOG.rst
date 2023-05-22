@@ -1,6 +1,18 @@
 Change log
 ==========
 
+v2023.05.21
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: headers that use ``SIZE_MAX`` now all ``#include <cstdint>`` (commit
+  46e830d74473743598d1481aed8a845b8dc3b2f2).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2022.08.20
 -----------
 
