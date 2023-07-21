@@ -20,7 +20,7 @@ extern RUMUR_API const Ptr<Enum> Boolean;
 /// These are included for convenience, so you can assign to expressions to
 /// these constants if relevant. Do not compare against these expressions. If
 /// you want to ask “is this expression the literal true/false?” use
-/// `Expr::is_literal_true`/`Expr::is_literal_false`.
+/// \p Expr::is_literal_true / \p Expr::is_literal_false.
 extern RUMUR_API const Ptr<Expr> False;
 extern RUMUR_API const Ptr<Expr> True;
 

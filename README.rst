@@ -6,6 +6,10 @@ previous tool, CMurphi_, and intended to be close to a drop-in replacement.
 Rumur takes the same input format as CMurphi, the Murphi modelling language,
 with some extensions and generates a C program that implements a verifier.
 
+A more extended introduction is available in `doc/introduction.rst`_
+
+.. _`doc/introduction.rst`: doc/introduction.rst
+
 Quickstart
 ----------
 
