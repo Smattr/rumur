@@ -46,9 +46,9 @@ task:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev
-    - name: Linux, GCC 10.4
+    - name: Linux, GCC 10.5
       container:
-        image: gcc:10.4
+        image: gcc:10.5
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
