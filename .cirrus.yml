@@ -27,9 +27,9 @@ task:
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 12.2
+    - name: FreeBSD 12.4
       freebsd_instance:
-        image_family: freebsd-12-2-snap
+        image_family: freebsd-12-4-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
     - name: Linux, GCC 8.5
