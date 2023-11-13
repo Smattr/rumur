@@ -25,7 +25,7 @@ syn match murphiError "\<0\o*[89]"
 syn match murphiOperator "==[^>]"he=e-1
 
 " UTF-8 operators that Rumur recognises
-syn match murphiOperator "[∀∃≔≥→≤≠⇒¬∧∨÷]"
+syn match murphiOperator "[∀∃≔≥→≤≠⇒¬∧∨÷−]"
 
 " extra logical operators that Rumur supports
 syn match murphiOperator "&&"
