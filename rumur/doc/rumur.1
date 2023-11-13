@@ -2,12 +2,12 @@
 .SH NAME
 rumur \- Yet another explicit state model checker
 .SH SYNOPSIS
-.B \fBrumur\fR \fBoptions\fR \fB--output\fR \fIFILE\fR [\fIFILE\fR]
+.B \fBrumur\fR \fBoptions\fR \fB\-\-output\fR \fIFILE\fR [\fIFILE\fR]
 .SH DESCRIPTION
 Rumur is a reimplementation of the model checker CMurphi with improved
 performance and a slightly different feature set.
 .SH OPTIONS
-\fB--bound\fR \fISTEPS\fR
+\fB\-\-bound\fR \fISTEPS\fR
 .RS
 Set a limit for state space exploration. The verifier will stop checking beyond
 this depth. A bound of \fB0\fR, the default, indicates unlimited exploration.
@@ -15,14 +15,14 @@ That is, the verifier will not stop checking until it has expanded all seen
 states.
 .RE
 .PP
-\fB--colour\fR [\fBauto\fR | \fBoff\fR | \fBon\fR]
+\fB\-\-colour\fR [\fBauto\fR | \fBoff\fR | \fBon\fR]
 .RS
 Enable or disable the use of ANSI colour codes in the verifier's output. The
 default is \fBauto\fR, to auto-detect based on whether the verifier's stdout is
 a TTY.
 .RE
 .PP
-\fB--counterexample-trace\fR [\fBdiff\fR | \fBfull\fR | \fBoff\fR]
+\fB\-\-counterexample\-trace\fR [\fBdiff\fR | \fBfull\fR | \fBoff\fR]
 .RS
 Set how counterexample traces are printed when an error is found during
 checking. \fBdiff\fR, the default, prints each state showing only the
@@ -30,7 +30,7 @@ differences from the previous state. \fBfull\fR shows the entire contents of
 each state. \fBoff\fR disables counterexample trace printing altogether.
 .RE
 .PP
-\fB--deadlock-detection\fR [\fBoff\fR | \fBstuck\fR | \fBstuttering\fR]
+\fB\-\-deadlock\-detection\fR [\fBoff\fR | \fBstuck\fR | \fBstuttering\fR]
 .RS
 Enable or disable deadlock detection. Rumur has the ability to generate a
 verifier that notices when there is no valid transition out of a state and raise
@@ -53,19 +53,19 @@ represents a problem depends on the properties of the system you are modelling.
 Hence you may want to change deadlock detection.
 .RE
 .PP
-\fB--debug\fR or \fB-d\fR
+\fB\-\-debug\fR or \fB\-d\fR
 .RS
 Enable debugging options in the generated verifier. This includes enabling
 runtime assertions. This will also output debugging messages while generating
 the verifier.
 .RE
 .PP
-\fB--help\fR
+\fB\-\-help\fR
 .RS
 Display this information.
 .RE
 .PP
-\fB--max-errors\fR \fICOUNT\fR
+\fB\-\-max\-errors\fR \fICOUNT\fR
 .RS
 Number of errors the verifier should report before considering them fatal. By
 default this is \fI1\fR, that is exit as soon as an error is encountered.
@@ -73,30 +73,30 @@ However, you may wish to set a higher value to get multiple error traces from a
 single run.
 .RE
 .PP
-\fB--monopolise\fR
+\fB\-\-monopolise\fR
 .RS
 Assume that the machine the generated verifier will run on is the current host
 and that it will be the only process running. This flag causes the verifier to
 upfront allocate a seen set that will eventually occupy all of memory. That is,
-it is the same as passing \fB--set-expand-threshold 100\fR and
-\fB--set-capacity\fR with the total amount of physical memory available on the
-current machine.
+it is the same as passing \fB\-\-set\-expand\-threshold 100\fR and
+\fB\-\-set\-capacity\fR with the total amount of physical memory available on
+the current machine.
 .RE
 .PP
-\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+\fB\-\-output\fR \fIFILE\fR or \fB\-o\fR \fIFILE\fR
 .RS
 Set path to write the generated C verifier's code to.
 .RE
 .PP
-\fB--output-format\fR [\fBmachine-readable\fR | \fBhuman-readable\fR]
+\fB\-\-output\-format\fR [\fBmachine\-readable\fR | \fBhuman\-readable\fR]
 .RS
 Change the format in which the verifier displays its output. By default, it uses
-\fBhuman-readable\fR which results in progress output and then a final summary
-of the result. Using \fBmachine-readable\fR generates output in an XML format
+\fBhuman\-readable\fR which results in progress output and then a final summary
+of the result. Using \fBmachine\-readable\fR generates output in an XML format
 suitable for consumption by a following tool in an I/O pipeline.
 .RE
 .PP
-\fB--pack-state\fR [\fBon\fR | \fBoff\fR]
+\fB\-\-pack\-state\fR [\fBon\fR | \fBoff\fR]
 .RS
 Set whether auxiliary state data is compressed in the generated verifier.
 Compression (\fBon\fR, the default) saves memory at the expense of runtime. That
@@ -105,27 +105,27 @@ small enough to comfortably fit in available memory, you may want to set this to
 \fBoff\fR to accelerate the checking process.
 .RE
 .PP
-\fB--pointer-bits [\fBauto\fR | \fIBITS\fR]
+\fB\-\-pointer\-bits [\fBauto\fR | \fIBITS\fR]
 .RS
 Number of relevant (non-zero) bits in a pointer on the target platform on which
 the verifier will be compiled. This option can be used to tune pointer
 compression, which can save memory when checking larger models. With the
-default, \fBauto\fR, 5-level paging is assumed for x86-64, meaning pointers can
-be compressed and stored in 56 bits. Other platforms currently have no
+default, \fBauto\fR, 5\-level paging is assumed for x86\-64, meaning pointers
+can be compressed and stored in 56 bits. Other platforms currently have no
 auto-detection, and will store pointers uncompressed at their full width. If you
 know a certain number of high bits of pointers on your target platform are
 always zero, you can teach Rumur this information with this option. For example,
-if you are compiling on an x86-64 platform that you know is using 4-level paging
-you can pass \fB--pointer-bits\fR \fB48\fR to tell Rumur that the upper 16 bits
-of a pointer will always be zero.
+if you are compiling on an x86\-64 platform that you know is using 4\-level
+paging you can pass \fB\-\-pointer\-bits\fR \fB48\fR to tell Rumur that the
+upper 16 bits of a pointer will always be zero.
 .RE
 .PP
-\fB--quiet\fR or \fB-q\fR
+\fB\-\-quiet\fR or \fB\-q\fR
 .RS
 Don't output any messages while generating the verifier.
 .RE
 .PP
-\fB--reorder-fields\fR [\fBon\fR | \fBoff\fR]
+\fB\-\-reorder\-fields\fR [\fBon\fR | \fBoff\fR]
 .RS
 Control whether access to state variables and record fields is optimised by
 reordering them. By default this is \fBon\fR, causing the order of a model's
@@ -135,7 +135,7 @@ should never normally have cause to turn this \fBoff\fR, but this feature was
 buggy when first implemented so this option is provided for debugging purposes.
 .RE
 .PP
-\fB--sandbox\fR [\fBon\fR | \fBoff\fR]
+\fB\-\-sandbox\fR [\fBon\fR | \fBoff\fR]
 .RS
 Control whether the generated verifier uses your operating system's sandboxing
 facilities to limit its own operations. The verifier does not intentionally
@@ -146,7 +146,7 @@ allowed to perform if you are using a model you did not write yourself. By
 default this is \fBoff\fR.
 .RE
 .PP
-\fB--scalarset-schedules\fR [\fBon\fR | \fBoff\fR]
+\fB\-\-scalarset\-schedules\fR [\fBon\fR | \fBoff\fR]
 .RS
 Enable or disable tracking of the permutation of scalarset values for more
 comprehensible counterexample traces. The permuting of scalarset values that is
@@ -161,7 +161,7 @@ configuration, as scalarset variables will appear to have their values change
 arbitrarily.
 .RE
 .PP
-\fB--set-capacity\fR \fISIZE\fR or \fB-s\fR \fISIZE\fR
+\fB\-\-set\-capacity\fR \fISIZE\fR or \fB\-s\fR \fISIZE\fR
 .RS
 The size of the initial set to allocate for storing seen states. This is given
 in bytes and is interpreted to mean the desired size of the set when it is
@@ -170,7 +170,7 @@ of "state slots" that, when all occupied, will consume this much memory. Default
 value for this 8MB.
 .RE
 .PP
-\fB--set-expand-threshold\fR \fIPERCENT\fR or \fB-e\fR \fIPERCENT\fR
+\fB\-\-set\-expand\-threshold\fR \fIPERCENT\fR or \fB\-e\fR \fIPERCENT\fR
 .RS
 Expand the state set when its occupancy exceeds this percentage. Default is
 \fI75\fR, valid values are \fI1\fR - \fI100\fR. Setting a value of 100 will
@@ -178,7 +178,7 @@ result in the set only expanding when completely full. This may sound ideal, but
 will actually result in a much longer runtime.
 .RE
 .PP
-\fB--symmetry-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR]
+\fB\-\-symmetry\-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR]
 .RS
 Enable or disable symmetry reduction. Symmetry reduction is an optimisation that
 decreases the state space that must be searched by deriving a canonical
@@ -205,14 +205,14 @@ if you want to minimise memory usage at the expense of runtime.
 .RE
 .RE
 .PP
-\fB--threads\fR \fICOUNT\fR or \fB-t\fR \fICOUNT\fR
+\fB\-\-threads\fR \fICOUNT\fR or \fB\-t\fR \fICOUNT\fR
 .RS
 Specify the number of threads the verifier should use. If you do not specify this
 parameter or pass \fI0\fR, the number of threads will be chosen based on the
 available hardware threads on the platform on which you generate the model.
 .RE
 .PP
-\fB--trace\fR \fICATEGORY\fR
+\fB\-\-trace\fR \fICATEGORY\fR
 .RS
 Enable tracing of specific events while checking. This option is for debugging
 Rumur itself, and lets you generate a verifier that writes events to stderr.
@@ -234,12 +234,12 @@ Available event categories are:
 \fIall\fR Enable all of the above
 .RE
 .PP
-More than one of these can be enabled at once by passing the \fB--trace\fR
+More than one of these can be enabled at once by passing the \fB\-\-trace\fR
 argument multiple times. Note that enabling tracing will significantly slow the
 verifier and is only intended for debugging purposes.
 .RE
 .PP
-\fB--value-type\fR \fITYPE\fR
+\fB\-\-value\-type\fR \fITYPE\fR
 .RS
 Change the C type used to represent scalar values in the generated verifier.
 Valid values are \fIauto\fR and the C fixed-width types, \fIint8_t\fR,
@@ -253,12 +253,12 @@ case you will need to use this option to select a wider type. However, this is
 not a common case.
 .RE
 .PP
-\fB--verbose\fR or \fB-v\fR
+\fB\-\-verbose\fR or \fB\-v\fR
 .RS
 Output informational messages while generating the verifier.
 .RE
 .PP
-\fB--version\fR
+\fB\-\-version\fR
 .RS
 Display version information and exit.
 .RE
@@ -271,38 +271,38 @@ to find and use your SMT solver. Some examples of solver configuration:
 .RS
 # for Z3 with a 5 second timeout
 .br
-\fBrumur --smt-path z3 --smt-arg=-smt2 --smt-arg=-in --smt-arg=-t:5000 ...\fR
+\fBrumur \-\-smt\-path z3 \-\-smt\-arg=\-smt2 \-\-smt\-arg=\-in \-\-smt\-arg=\-t:5000 ...\fR
 .PP
 # for CVC4 with a 5 second timeout
 .br
-\fBrumur --smt-path cvc4 --smt-prelude "(set-logic AUFLIA)" --smt-arg=--lang=smt2 --smt-arg=--rewrite-divk --smt-arg=--tlimit=5000 ...\fR
+\fBrumur \-\-smt\-path cvc4 \-\-smt\-prelude "(set\-logic AUFLIA)" \-\-smt\-arg=\-\-lang=smt2 \-\-smt\-arg=\-\-rewrite\-divk \-\-smt\-arg=\-\-tlimit=5000 ...\fR
 .RE
 .PP
 For other solvers, consult their manpages or documentation to determine what
 command line parameters they accept. Then use the options described below to
 instruct Rumur how to use them. Note that Rumur can only use a single SMT
-solver and specifying the \fB--smt-path\fR option multiple times will only
+solver and specifying the \fB\-\-smt\-path\fR option multiple times will only
 retain the last path given.
 .PP
-\fB--smt-arg\fR \fIARG\fR
+\fB\-\-smt\-arg\fR \fIARG\fR
 .RS
 A command line argument to pass to the SMT solver. This option can be given
 multiple times and arguments are passed in the order listed. E.g. if you specify
-\fB--smt-arg=--tlimit\fR \fB--smt-arg=5000\fR the solver will be called with the
-command line arguments \fB--tlimit\fR \fB5000\fR.
+\fB\-\-smt\-arg=\-\-tlimit\fR \fB\-\-smt\-arg=5000\fR the solver will be called
+with the command line arguments \fB\-\-tlimit\fR \fB5000\fR.
 .RE
 .PP
-\fB--smt-bitvectors\fR [\fBoff\fR | \fBon\fR]
+\fB\-\-smt\-bitvectors\fR [\fBoff\fR | \fBon\fR]
 .RS
 Select whether simple types (enums, ranges, and scalarsets) are translated to
 bitvectors or unbounded integers when passed to the solver. By default,
-unbounded integers are used (\fB--smt-bitvectors off\fR). If you turn this
-option on, 64-bit vectors are used instead. Whether integers, bitvectors, or
+unbounded integers are used (\fB\-\-smt\-bitvectors off\fR). If you turn this
+option on, 64\-bit vectors are used instead. Whether integers, bitvectors, or
 both are supported will depend on your solver as well as the SMT logic you are
 using.
 .RE
 .PP
-\fB--smt-budget\fR \fIMILLISECONDS\fR
+\fB\-\-smt\-budget\fR \fIMILLISECONDS\fR
 .RS
 Total time allotted for running the SMT solver. That is, the time the solver
 will be allowed to run for over multiple executions. This defaults to
@@ -310,19 +310,19 @@ will be allowed to run for over multiple executions. This defaults to
 is called, then 5 seconds the second time it is called, then 20 seconds the
 third time it is called, it will not be called again. Note that Rumur trusts the
 SMT solver to limit itself to a reasonable timeout per run, so its final run can
-exceed the budget. You may want to use the \fB--smt-arg\fR option to pass the
+exceed the budget. You may want to use the \fB\-\-smt\-arg\fR option to pass the
 SMT solver a timeout limit if it supports one.
 .RE
 .PP
-\fB--smt-path\fR \fIPATH\fR
+\fB\-\-smt\-path\fR \fIPATH\fR
 .RS
 Command or path to the SMT solver. This will use your environment's \fBPATH\fR
 variable, so if the solver is in one of your system directories you can simply
 provide the name of its binary. Note that this option has no effect unless you
-also pass \fB--smt-simplification\fR \fBon\fR.
+also pass \fB\-\-smt\-simplification\fR \fBon\fR.
 .RE
 .PP
-\fB--smt-prelude\fR \fITEXT\fR
+\fB\-\-smt\-prelude\fR \fITEXT\fR
 .RS
 Text to emit when communicating with the solver prior to sending the actual
 problem itself. You can use this to set a solver logic or other options. This
@@ -330,7 +330,7 @@ option can be given multiple times and each argument will be passed to the
 solver on a separate line.
 .RE
 .PP
-\fB--smt-simplification\fR [\fBoff\fR | \fBon\fR]
+\fB\-\-smt\-simplification\fR [\fBoff\fR | \fBon\fR]
 .RS
 Disable or enable using the SMT solver to simplify the input model. By default,
 this is automatic, in that it is turned \fBon\fR if you use any of the other SMT
@@ -355,7 +355,7 @@ successors. We intend this dedication to be an overt act of
 relinquishment in perpetuity of all present and future rights to this
 software under copyright law.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+THE SOFTWARE IS PROVIDED \[lq]AS IS\[rq], WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
