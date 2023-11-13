@@ -191,6 +191,7 @@ class murphi2uclid(unittest.TestCase):
       'smt-bv-div.m',
       'smt-bv-div2.m',
       'smt-div.m',
+      'unicode-div.m',
 
       # contains '%'
       'put-string-injection.m',

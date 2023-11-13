@@ -158,6 +158,7 @@ true {
 "∨"  { return rumur::parser::token::LOR;       }
 "&&" { return rumur::parser::token::AMPAMP;    }
 "||" { return rumur::parser::token::PIPEPIPE;  }
+"÷"  { return '/';                             }
 
 [\^~&!|:=><\-\%\+;{},\[\]\.()/\*\?] {
   return YYText()[0];
