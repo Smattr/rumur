@@ -40,6 +40,7 @@ void ToAscii::process(const Token &t) {
     else if (s == "÷") s = "/";
     else if (s == "−") s = "-";
     else if (s == "∕") s = "/";
+    else if (s == "×") s = "*";
   }
 
   switch (state) {
