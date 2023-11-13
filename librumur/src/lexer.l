@@ -160,6 +160,7 @@ true {
 "||" { return rumur::parser::token::PIPEPIPE;  }
 "÷"  { return '/';                             }
 "−"  { return '-';                             }
+"∕"  { return '/';                             }
 
 [\^~&!|:=><\-\%\+;{},\[\]\.()/\*\?] {
   return YYText()[0];
