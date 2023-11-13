@@ -38,6 +38,7 @@ void ToAscii::process(const Token &t) {
     else if (s == "∀") { s = "forall"; pending_space = true; }
     else if (s == "∃") { s = "exists"; pending_space = true; }
     else if (s == "÷") s = "/";
+    else if (s == "−") s = "-";
   }
 
   switch (state) {
