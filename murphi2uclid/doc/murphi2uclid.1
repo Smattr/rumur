@@ -2,25 +2,25 @@
 .SH NAME
 murphi2uclid \- translate a Murphi model to Uclid5
 .SH SYNOPSIS
-.B \fBmurphi2uclid\fR [\fB--output\fR \fIFILE\fR | \fB-o\fR \fIFILE\fR] \fIFILE\fR
+.B \fBmurphi2uclid\fR [\fB\-\-output\fR \fIFILE\fR | \fB\-o\fR \fIFILE\fR] \fIFILE\fR
 .SH DESCRIPTION
 The utility \fBmurphi2uclid\fR is bundled with the model checker Rumur and can
 be used to translate a Murphi model into a Uclid5 model. See
 .BR rumur(1)
 for more information about Rumur or Murphi.
 .SH OPTIONS
-\fB--help\fR or \fB-?\fR
+\fB\-\-help\fR or \fB\-?\fR
 .RS
 Display usage information.
 .RE
 .PP
-\fB--module\fR \fINAME\fR or \fB-m\fR \fINAME\fR
+\fB\-\-module\fR \fINAME\fR or \fB\-m\fR \fINAME\fR
 .RS
 Set the name to use for the generated Uclid5 module. If you do not supply this,
 it defaults to \fBmain\fR.
 .RE
 .PP
-\fB--numeric-type\fR \fITYPE\fRR or \fB-n\fR \fITYPE\fR
+\fB\-\-numeric\-type\fR \fITYPE\fRR or \fB\-n\fR \fITYPE\fR
 .RS
 Set the Uclid5 type used for ranges, scalarsets and numeric literals. This can
 be either \fIinteger\fR or a bit-vector type, for example, \fIbv8\fR. If this
@@ -28,23 +28,23 @@ option is omitted, either \fIinteger\fR or \fIbv64\fR is chosen automatically
 based on the content of the input model.
 .RE
 .PP
-\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+\fB\-\-output\fR \fIFILE\fR or \fB\-o\fR \fIFILE\fR
 .RS
 Set the path to write the output Uclid5 model to. If this argument is omitted,
 output is written to standard out.
 .RE
 .PP
-\fB--quiet\fR or \fB-q\fR
+\fB\-\-quiet\fR or \fB\-q\fR
 .RS
 Silence warning diagnostics.
 .RE
 .PP
-\fB--verbose or \fB-v\fR
+\fB\-\-verbose or \fB\-v\fR
 .RS
 Report extra debugging information.
 .RE
 .PP
-\fB--version\fR
+\fB\-\-version\fR
 .RS
 Display version information and exit.
 .RE

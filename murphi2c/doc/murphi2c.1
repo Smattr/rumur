@@ -2,7 +2,7 @@
 .SH NAME
 murphi2c \- translate a Murphi model to C for simulation
 .SH SYNOPSIS
-.B \fBmurphi2c\fR \fBoptions\fR [\fB--output\fR \fIFILE\fR] [\fIFILE\fR]
+.B \fBmurphi2c\fR \fBoptions\fR [\fB\-\-output\fR \fIFILE\fR] [\fIFILE\fR]
 .SH DESCRIPTION
 Murphi2C is a utility bundled with the Rumur model checker. It can be used to
 translate a Murphi model into C source code for integration into a simulator.
@@ -23,23 +23,23 @@ See
 .BR rumur(1)
 for more information about Rumur or Murphi.
 .SH OPTIONS
-\fB--header\fR
+\fB\-\-header\fR
 .RS
 Generate a C header, as opposed to a source file.
 .RE
 .PP
-\fB--output\fR \fIFILE\fR or \fB-o\fR \fIFILE\fR
+\fB\-\-output\fR \fIFILE\fR or \fB\-o\fR \fIFILE\fR
 .RS
 Set path to write the generated C code to. Without this option, code is written
 to stdout.
 .RE
 .PP
-\fB--source\fR
+\fB\-\-source\fR
 .RS
 Generate a C source file, as opposed to a header. This is the default.
 .RE
 .PP
-\fB--value-type\fR \fITYPE\fR
+\fB\-\-value\-type\fR \fITYPE\fR
 .RS
 Change the C type used to represent scalar values in the emitted code. By
 default, \fIint\fR is used. Murphi2C does not validate that the type you specify
@@ -47,7 +47,7 @@ is a valid C type, but simply trusts that you have given something that will be
 available when you compile the generated code.
 .RE
 .PP
-\fB--version\fR
+\fB\-\-version\fR
 .RS
 Display version information and exit.
 .RE
@@ -112,7 +112,7 @@ successors. We intend this dedication to be an overt act of
 relinquishment in perpetuity of all present and future rights to this
 software under copyright law.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+THE SOFTWARE IS PROVIDED \[lq]AS IS\[rq], WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
