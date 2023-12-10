@@ -1,6 +1,27 @@
 Change log
 ==========
 
+v2023.11.27
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Various UTF-8 equivalents of arithmetic operators (``÷``, ``−``, ``∕``,
+  ``×``) are supported (commits d2aaea8993e469b933e2b790a4c3e077174afaee,
+  a9de733aba646e1b0612269bbba6c8e21f485584,
+  6071da6b6189b8f24a07960dfccb540c6693ce0f,
+  5dac72950d59457aba636cb58487e54120338c7f,
+  eba3529b10c35576c7f057be96eee86184443184,
+  10acb27984e0580e30e0d995cf89d2b50fba10bb,
+  9ebd4f24b13685ca97f05dc3e493063d3431e14e,
+  cc345ea2b6beebe63951549b9d6616f533dd1d2e).
+* Man pages use more precise dashes (commit
+  5e7993681962346a02aac7bcb9de952da851b0bf).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2023.05.21
 -----------
 
