@@ -2,7 +2,7 @@ Source: rumur
 Section: devel
 Priority: optional
 Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
-Build-Depends: debhelper-compat (= 12),
+Build-Depends: debhelper-compat (= 13),
  bison,
  cmake,
  flex,
