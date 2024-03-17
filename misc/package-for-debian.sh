@@ -63,6 +63,6 @@ set -x
 gbp buildpackage --git-ignore-new --git-upstream-tag='v%(version)s' --git-debian-branch=packaging/debian
 
 # Check for consistency errors in the built package
-lintian --display-experimental --display-info --info --show-overrides --verbose
+lintian --display-experimental --display-info --info --pedantic --show-overrides --verbose
 
 printf 'Run pdebuild to test the package under pbuilder\n'
