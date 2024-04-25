@@ -118,4 +118,4 @@ task:
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check
+  test_script: uname -rms && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check
