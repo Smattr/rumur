@@ -2934,7 +2934,7 @@ static void refcounted_ptr_set(refcounted_ptr_t *NONNULL p, void *ptr) {
   /* Read the current state of the pointer. */
   refcounted_ptr_t old = atomic_read(p);
   struct refcounted_ptr p2;
-  memcpy(&p2, &old, sizeof(old));
+  memcpy(&p2, &old, sizeof(p2));
   assert(p2.count == 0 && "overwriting a pointer source while someone still "
                           "has a reference to this pointer");
 #endif
@@ -2952,7 +2952,7 @@ static void refcounted_ptr_set(refcounted_ptr_t *NONNULL p, void *ptr) {
 
 static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
 
-  refcounted_ptr_t old, new;
+  refcounted_ptr_t old, new = 0;
   void *ret;
   bool r;
 
@@ -2961,14 +2961,14 @@ static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
     /* Read the current state of the pointer. */
     old = atomic_read(p);
     struct refcounted_ptr p2;
-    memcpy(&p2, &old, sizeof(old));
+    memcpy(&p2, &old, sizeof(p2));
 
     /* Take a reference to it. */
     p2.count++;
     ret = p2.ptr;
 
     /* Try to commit our results. */
-    memcpy(&new, &p2, sizeof(new));
+    memcpy(&new, &p2, sizeof(p2));
     r = atomic_cas(p, old, new);
   } while (!r);
 
@@ -2978,7 +2978,7 @@ static void *refcounted_ptr_get(refcounted_ptr_t *NONNULL p) {
 static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
                                void *ptr __attribute__((unused))) {
 
-  refcounted_ptr_t old, new;
+  refcounted_ptr_t old, new = 0;
   bool r;
 
   do {
@@ -2986,7 +2986,7 @@ static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
     /* Read the current state of the pointer. */
     old = atomic_read(p);
     struct refcounted_ptr p2;
-    memcpy(&p2, &old, sizeof(old));
+    memcpy(&p2, &old, sizeof(p2));
 
     /* Release our reference to it. */
     ASSERT(p2.ptr == ptr && "releasing a reference to a pointer after someone "
@@ -2996,7 +2996,7 @@ static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
     p2.count--;
 
     /* Try to commit our results. */
-    memcpy(&new, &p2, sizeof(new));
+    memcpy(&new, &p2, sizeof(p2));
     r = atomic_cas(p, old, new);
   } while (!r);
 }
