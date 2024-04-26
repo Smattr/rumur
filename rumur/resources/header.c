@@ -3003,16 +3003,12 @@ static void refcounted_ptr_put(refcounted_ptr_t *NONNULL p,
 
 static void *refcounted_ptr_peek(refcounted_ptr_t *NONNULL p) {
 
-  /* Read out the state of the pointer. This rather unpleasant expression is
-   * designed to emit an atomic load at a smaller granularity than the entire
-   * refcounted_ptr structure. Because we only need the pointer -- and not the
-   * count -- we can afford to just atomically read the first word.
-   */
-  void *ptr = __atomic_load_n(
-      (void **)((void *)p + __builtin_offsetof(struct refcounted_ptr, ptr)),
-      __ATOMIC_SEQ_CST);
+  /* Read the current state of the pointer. */
+  refcounted_ptr_t value = atomic_read(p);
+  struct refcounted_ptr p2;
+  memcpy(&p2, &value, sizeof(p2));
 
-  return ptr;
+  return p2.ptr;
 }
 
 static void refcounted_ptr_shift(refcounted_ptr_t *NONNULL current,
