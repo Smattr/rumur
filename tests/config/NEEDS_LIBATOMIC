@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#does the toolchain need -latomic to support dword CAS?
+# does the toolchain need -latomic to support dword CAS?
 
 
 # repeat the HAS_MCX16 logic
