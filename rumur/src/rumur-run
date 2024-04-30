@@ -203,6 +203,8 @@ int main(void) {
 
   # compile it
   args = [CC, "-x", "c", "-std=c11", "-", "-o", os.devnull]
+  if supports("-march=native"):
+    args.append("-march=native")
   if supports("-mcx16"):
     args.append("-mcx16")
   p = sp.Popen(args, stderr=sp.DEVNULL, stdin=sp.PIPE)
