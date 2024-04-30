@@ -18,18 +18,8 @@ import subprocess as sp
 import sys
 import tempfile
 
-def which(cmd):
-  '''
-  Equivalent of shell `which`
-  '''
-  try:
-    return sp.check_output(['which', cmd], stderr=sp.DEVNULL,
-      universal_newlines=True).strip()
-  except sp.CalledProcessError:
-    return None
-
 # C compiler
-CC = which(os.environ.get('CC', 'cc'))
+CC = shutil.which(os.environ.get('CC', 'cc'))
 
 def categorise(cc):
   '''
@@ -272,10 +262,10 @@ def has_no_la57():
 def main(args):
 
   # Find the Rumur binary
-  rumur_bin = which(os.path.join(
+  rumur_bin = shutil.which(os.path.join(
     os.path.abspath(os.path.dirname(__file__)), 'rumur'))
   if rumur_bin is None:
-    rumur_bin = which('rumur')
+    rumur_bin = shutil.which('rumur')
   if rumur_bin is None:
     sys.stderr.write('rumur binary not found\n')
     return -1
