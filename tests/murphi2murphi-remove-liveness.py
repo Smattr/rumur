@@ -2,7 +2,6 @@
 
 import os
 import pathlib
-import re
 import subprocess
 
 # an arbitrary test model that has a liveness property
@@ -11,7 +10,7 @@ assert model.exists()
 
 # confirm it contains the liveness property we expect
 with open(str(model), "rt", encoding="utf-8") as f:
-  assert re.search(r'liveness "x is 10" x = 10', f.read())
+  assert 'liveness "x is 10" x = 10' in f.read()
 
 # use the remove-liveness pass to remove the property
 print("+ murphi2murphi --remove-liveness {}".format(model))
@@ -22,7 +21,7 @@ decoded = transformed.decode("utf-8", "replace")
 print("transformed model:\n{}".format(decoded))
 
 # now confirm the property is no longer present
-assert re.search(r'liveness "x is 10" x = 10', decoded) is None
+assert 'liveness "x is 10" x = 10' not in decoded
 
 # the generated model also should be valid syntax for Rumur
 print("+ rumur --output /dev/null <(transformed model)")

@@ -13,7 +13,6 @@ verifier.
 
 import os
 import platform
-import re
 import sys
 import subprocess
 
@@ -37,7 +36,7 @@ if p.returncode != 0:
   sys.exit(1)
 
 # check for calls to libatomic functions
-if re.search("__atomic_", model_s.decode("utf-8", "replace")) is not None:
+if "__atomic_" in model_s.decode("utf-8", "replace"):
   print("libatomic calls in generated code were not optimised out")
   sys.exit(-1)
 
