@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
-'''
+"""
 The following is a simplified model checker for a specific problem. The aim is
 to help readers understand how a model checker like Rumur works. It is written
 in Python for readability, however the Rumur implementation is generated C code
 optimised for both memory usage and execution speed. If you have read and
 understood the following file, you will be in a position to start reading and
 understanding ../rumur/resources/header.c.
-'''
+"""
 
 import sys
 from typing import Optional, Set
 
 class State(object):
 
-  def __init__(self, value: int = 0, previous: Optional['State'] = None):
+  def __init__(self, value: int = 0, previous: Optional["State"] = None):
 
     # the state of our model; a single integer
     self.value = value
@@ -23,8 +23,8 @@ class State(object):
     # example traces
     self.previous = previous
 
-  def duplicate(self) -> 'State':
-    'create a new State that will be a successor of this one'
+  def duplicate(self) -> "State":
+    """create a new State that will be a successor of this one"""
     return State(self.value, self)
 
   # make objects of this type storable in a set
@@ -54,7 +54,7 @@ def start(s: State) -> None:
 
 
 def print_cex(s: State) -> None:
-  'print a counter example trace ending at the given state'
+  """print a counter example trace ending at the given state"""
 
   if s.previous is not None:
     print_cex(s.previous)
@@ -62,7 +62,7 @@ def print_cex(s: State) -> None:
   # Print the value of this state. In a real world model checker like Rumur, you
   # would typically also print the transition rule that connected this state to
   # the previous to aid debugging.
-  print(f' value == {s.value}')
+  print(f" value == {s.value}")
 
 
 def main() -> int:
@@ -104,7 +104,7 @@ def main() -> int:
 
         # Does the state violate our invariant?
         if not invariant(e):
-          print('counter example trace:')
+          print("counter example trace:")
           print_cex(e)
           return -1
 
@@ -115,9 +115,9 @@ def main() -> int:
         pending.append(e)
 
 
-  print('checking complete')
+  print("checking complete")
 
   return 0
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   sys.exit(main())
