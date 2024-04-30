@@ -6,6 +6,7 @@ Generate contents of a version.cc.
 
 import os
 import re
+import shutil
 import subprocess as sp
 import sys
 
@@ -29,9 +30,7 @@ def has_git():
   '''
 
   # Return False if we don't have Git.
-  try:
-    sp.check_call(['which', 'git'], stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-  except:
+  if shutil.which("git") is None:
     return False
 
   # Return False if we have no Git repository information.
