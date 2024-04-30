@@ -3,6 +3,18 @@
 # does the toolchain need -latomic to support dword CAS?
 
 
+# repeat the HAS_MARCH_NATIVE logic
+${CC:-cc} -x c -std=c11 -march=native -o /dev/null - &>/dev/null <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+if [ $? -eq 0 ]; then
+  MARCH=-march=native
+else
+  MARCH=
+fi
+
 # repeat the HAS_MCX16 logic
 ${CC:-cc} -x c -std=c11 -mcx16 -o /dev/null - &>/dev/null <<EOT
 int main(void) {
@@ -16,7 +28,7 @@ else
 fi
 
 # compile a program that operates on a double-word
-${CC:-cc} -x c -std=c11 ${MCX16} -o /dev/null - &>/dev/null <<EOT
+${CC:-cc} -x c -std=c11 ${MARCH} ${MCX16} -o /dev/null - &>/dev/null <<EOT
 #include <stdbool.h>
 #include <stdint.h>
 

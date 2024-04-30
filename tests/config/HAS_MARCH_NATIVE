@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# does the compiler support -march=native?
+
+
+# try to compile something using -march=native
+${CC:-cc} -x c -std=c11 -march=native -o /dev/null - &>/dev/null <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+
+# see if the compiler errored
+if [ $? -eq 0 ]; then
+  printf 'True\n'
+else
+  printf 'False\n'
+fi
