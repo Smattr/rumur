@@ -45,8 +45,11 @@ static dword_t atomic_read(dword_t *p) {
    * i386: __atomic_load_n emits code calling a libatomic function that takes a
    *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
    *   __sync built-in instead.
+   *
+   * XXX: the obvious (irrelevant) literal to use here is “0” but this triggers
+   * a GCC bug on ARM, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114310.
    */
-  return __sync_val_compare_and_swap(p, 0, 0);
+  return __sync_val_compare_and_swap(p, 1, 1);
 #endif
 
   return __atomic_load_n(p, __ATOMIC_SEQ_CST);
