@@ -37,7 +37,8 @@ if p.returncode != 0:
 
 # check for calls to libatomic functions
 if "__atomic_" in model_s.decode("utf-8", "replace"):
-  print("libatomic calls in generated code were not optimised out")
+  print("libatomic calls in generated code were not optimised out:\n{}".format(
+    model_s.decode("utf-8", "replace")))
   sys.exit(-1)
 
 # pass
