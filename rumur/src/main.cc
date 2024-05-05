@@ -721,6 +721,7 @@ int main(int argc, char **argv) {
                           "c",
                           "-o",
                           "/dev/null",
+                          "-march=native",
                           "-Werror=format",
                           "-Werror=sign-compare",
                           "-Werror=type-limits",

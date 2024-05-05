@@ -48,6 +48,13 @@ EOT
 # generate a sandboxed checker
 rumur --sandbox on --output model.c model.m
 
+# check if the compiler supports -march=native
+if [ "${HAS_MARCH_NATIVE}" = "True" ]; then
+  MARCH=-march=native
+else
+  MARCH=
+fi
+
 # check if the compiler supports -mcx16
 if [ "${HAS_MCX16}" = "True" ]; then
   MCX16=-mcx16
@@ -63,7 +70,7 @@ else
 fi
 
 # compile the sandboxed checker
-${CC:-cc} -std=c11 ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
+${CC:-cc} -std=c11 ${MARCH} ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
 
 # run the model under strace
 strace ./model.exe
@@ -77,7 +84,7 @@ if [ $RET -eq 0 ]; then
   rumur --sandbox on --debug --output model.c model.m
 
   # compile the sandboxed checker
-  ${CC:-cc} -std=c11 ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
+  ${CC:-cc} -std=c11 ${MARCH} ${MCX16} model.c -o model.exe ${LIBATOMIC} -lpthread
 
   # run the model under strace
   strace ./model.exe

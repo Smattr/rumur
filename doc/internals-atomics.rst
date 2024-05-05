@@ -68,9 +68,10 @@ Some relevant points to note from this table and from other sources:
 * Some of the C11 atomics expect to operate on ``atomic_`` types and are not
   directly usable on regular variables.
 * Double-word compare and exchange using either the __atomic built-ins or the
-  C11 atomics causes a call to libatomic to be emitted. This is functionally
-  correct but impairs our ability to use these in lock-free algorithms. See
-  https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878 for more information.
+  C11 atomics causes a call to libatomic to be emitted by GCC. This is
+  functionally correct but impairs our ability to use these in lock-free
+  algorithms. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878 and
+  https://gcc.gnu.org/pipermail/gcc-help/2017-June.txt for more information.
 * The C11 atomics are not available prior to GCC 4.9.
 
 With these constraints in mind, the checker that Rumur generates mostly uses

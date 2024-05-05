@@ -91,10 +91,18 @@ enum {
  *      with atomic semantics and sometimes as regular memory operations. The
  *      C11 atomics cannot give us this and the __atomic built-ins are
  *      implemented by the major compilers.
- *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64. It
- *      seems the __atomic built-ins do not result in a CMPXCHG instruction, but
- *      rather in a less efficient library call. See
- *      https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+ *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64 and
+ *      ARM64.
+ *        2a. On x86-64, it seems the __atomic built-ins do not result in a
+ *            CMPXCHG instruction, but rather in a less efficient library call.
+ *            See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+ *        2b. On ARM64, it seems the __atomic built-ins do not result in a CASP
+ *            instruction (available in ≥armv8.1-a, “Large System Extensions”),
+ *            but rather in a less efficient library call. See
+ *            https://gcc.gnu.org/pipermail/gcc-help/2017-June.txt. It seems
+ *            undocumented, but the __sync built-ins emit a CASP with
+ *            ≥-march=armv8.1a. This only affects GCC, not Clang which will emit
+ *            a CASP for both __atomic and __sync built-ins.
  *
  * Though this is intended to be a C11 program, we avoid the C11 atomics to be
  * compatible with GCC <4.9.
@@ -2475,15 +2483,22 @@ static dword_t atomic_read(dword_t *p) {
     return *p;
   }
 
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
    *   memory. The way to work around this is apparently the following
    *   degenerate CMPXCHG16B.
    * i386: __atomic_load_n emits code calling a libatomic function that takes a
    *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
    *   __sync built-in instead.
+   * ARM64: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CASP by using the __sync
+   *   built-in instead.
+   *
+   * XXX: the obvious (irrelevant) literal to use here is “0” but this triggers
+   * a GCC bug on ARM, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114310.
    */
-  return __sync_val_compare_and_swap(p, 0, 0);
+  return __sync_val_compare_and_swap(p, 1, 1);
 #endif
 
   return __atomic_load_n(p, __ATOMIC_SEQ_CST);
@@ -2496,9 +2511,10 @@ static void atomic_write(dword_t *p, dword_t v) {
     return;
   }
 
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
   /* As explained above, we need some extra gymnastics to avoid a call to
-   * libatomic on x86-64 and i386.
+   * libatomic on x86-64, i386, and ARM64.
    */
   dword_t expected;
   dword_t old = 0;
@@ -2522,9 +2538,11 @@ static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
     return false;
   }
 
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   * Make GCC emit a CASP on ARM64 (undocumented?).
    */
   return __sync_bool_compare_and_swap(p, expected, new);
 #endif
@@ -2543,9 +2561,11 @@ static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
     return old;
   }
 
-#if defined(__x86_64__) || defined(__i386__)
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
   /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
    * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   * Make GCC emit a CASP on ARM64 (undocumented?).
    */
   return __sync_val_compare_and_swap(p, expected, new);
 #endif
