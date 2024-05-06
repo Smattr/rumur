@@ -77,17 +77,17 @@ struct RUMUR_API_WITH_RTTI Ternary : public Expr {
   Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
           const location &loc_);
   virtual ~Ternary() = default;
-  Ternary *clone() const final;
+  Ternary *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 
   /* Note we do not override is_lvalue. Unlike in C, ternary expressions are not
    * considered lvalues.
@@ -104,8 +104,8 @@ struct RUMUR_API_WITH_RTTI BinaryExpr : public Expr {
   virtual ~BinaryExpr() = default;
 
   BinaryExpr *clone() const override = 0;
-  bool constant() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  bool is_pure() const override;
 
 protected:
   BinaryExpr(const BinaryExpr &) = default;
@@ -118,8 +118,8 @@ struct RUMUR_API_WITH_RTTI BooleanBinaryExpr : public BinaryExpr {
                     const location &loc_);
   BooleanBinaryExpr() = delete;
 
-  Ptr<TypeExpr> type() const final;
-  void validate() const final;
+  Ptr<TypeExpr> type() const override;
+  void validate() const override;
 
 protected:
   BooleanBinaryExpr(const BooleanBinaryExpr &) = default;
@@ -130,14 +130,14 @@ struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
 
   Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
               const location &loc_);
-  Implication *clone() const final;
+  Implication *clone() const override;
   virtual ~Implication() = default;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 /// logical OR
@@ -145,13 +145,13 @@ struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
 
   Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Or() = default;
-  Or *clone() const final;
+  Or *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 /// logical AND
@@ -159,13 +159,13 @@ struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
 
   And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~And() = default;
-  And *clone() const final;
+  And *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 /// An 'x & y' expression where a decision has not yet been made as to whether
@@ -176,14 +176,14 @@ struct RUMUR_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
   AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                const location &loc_);
   virtual ~AmbiguousAmp() = default;
-  AmbiguousAmp *clone() const final;
+  AmbiguousAmp *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 /// An 'x | y' expression where a decision has not yet been made as to whether
@@ -194,14 +194,14 @@ struct RUMUR_API_WITH_RTTI AmbiguousPipe : public BinaryExpr {
   AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                 const location &loc_);
   virtual ~AmbiguousPipe() = default;
-  AmbiguousPipe *clone() const final;
+  AmbiguousPipe *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI UnaryExpr : public Expr {
@@ -213,7 +213,7 @@ struct RUMUR_API_WITH_RTTI UnaryExpr : public Expr {
   virtual ~UnaryExpr() = default;
 
   bool constant() const override;
-  bool is_pure() const final;
+  bool is_pure() const override;
 
 protected:
   UnaryExpr(const UnaryExpr &) = default;
@@ -224,15 +224,15 @@ struct RUMUR_API_WITH_RTTI Not : public UnaryExpr {
 
   Not(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Not() = default;
-  Not *clone() const final;
+  Not *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI ComparisonBinaryExpr : public BinaryExpr {
@@ -240,7 +240,7 @@ struct RUMUR_API_WITH_RTTI ComparisonBinaryExpr : public BinaryExpr {
   ComparisonBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                        const location &loc_);
 
-  void validate() const final;
+  void validate() const override;
 
 protected:
   ComparisonBinaryExpr(const ComparisonBinaryExpr &) = default;
@@ -251,56 +251,56 @@ struct RUMUR_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
 
   Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Lt() = default;
-  Lt *clone() const final;
+  Lt *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
 
   Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Leq() = default;
-  Leq *clone() const final;
+  Leq *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
 
   Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Gt() = default;
-  Gt *clone() const final;
+  Gt *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
 
   Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Geq() = default;
-  Geq *clone() const final;
+  Geq *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI EquatableBinaryExpr : public BinaryExpr {
@@ -308,7 +308,7 @@ struct RUMUR_API_WITH_RTTI EquatableBinaryExpr : public BinaryExpr {
   EquatableBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                       const location &loc_);
 
-  void validate() const final;
+  void validate() const override;
 
 protected:
   EquatableBinaryExpr(const EquatableBinaryExpr &) = default;
@@ -319,28 +319,28 @@ struct RUMUR_API_WITH_RTTI Eq : public EquatableBinaryExpr {
 
   Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Eq() = default;
-  Eq *clone() const final;
+  Eq *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Neq : public EquatableBinaryExpr {
 
   Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Neq() = default;
-  Neq *clone() const final;
+  Neq *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI ArithmeticBinaryExpr : public BinaryExpr {
@@ -348,8 +348,8 @@ struct RUMUR_API_WITH_RTTI ArithmeticBinaryExpr : public BinaryExpr {
   ArithmeticBinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                        const location &loc_);
 
-  Ptr<TypeExpr> type() const final;
-  void validate() const final;
+  Ptr<TypeExpr> type() const override;
+  void validate() const override;
 
 protected:
   ArithmeticBinaryExpr(const ArithmeticBinaryExpr &) = default;
@@ -360,121 +360,121 @@ struct RUMUR_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
 
   Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Add() = default;
-  Add *clone() const final;
+  Add *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
 
   Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Sub() = default;
-  Sub *clone() const final;
+  Sub *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Negative : public UnaryExpr {
 
   Negative(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Negative() = default;
-  Negative *clone() const final;
+  Negative *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Bnot : public UnaryExpr {
 
   Bnot(const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Bnot() = default;
-  Bnot *clone() const final;
+  Bnot *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
 
   Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mul() = default;
-  Mul *clone() const final;
+  Mul *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
 
   Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Div() = default;
-  Div *clone() const final;
+  Div *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
 
   Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Mod() = default;
-  Mod *clone() const final;
+  Mod *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
 
   Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Lsh() = default;
-  Lsh *clone() const final;
+  Lsh *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
 
   Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Rsh() = default;
-  Rsh *clone() const final;
+  Rsh *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 /// bitwise AND
@@ -482,13 +482,13 @@ struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
 
   Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Band() = default;
-  Band *clone() const final;
+  Band *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 /// bitwise OR
@@ -496,26 +496,26 @@ struct RUMUR_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
 
   Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Bor() = default;
-  Bor *clone() const final;
+  Bor *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
 
   Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
   virtual ~Xor() = default;
-  Xor *clone() const final;
+  Xor *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
 };
 
 struct RUMUR_API_WITH_RTTI ExprID : public Expr {
@@ -526,21 +526,21 @@ struct RUMUR_API_WITH_RTTI ExprID : public Expr {
   ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
          const location &loc_);
   virtual ~ExprID() = default;
-  ExprID *clone() const final;
+  ExprID *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  bool is_lvalue() const final;
-  bool is_readonly() const final;
-  std::string to_string() const final;
-  bool is_literal_true() const final;
-  bool is_literal_false() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  bool is_lvalue() const override;
+  bool is_readonly() const override;
+  std::string to_string() const override;
+  bool is_literal_true() const override;
+  bool is_literal_false() const override;
+  bool is_pure() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Field : public Expr {
@@ -551,19 +551,19 @@ struct RUMUR_API_WITH_RTTI Field : public Expr {
   Field(const Ptr<Expr> &record_, const std::string &field_,
         const location &loc_);
   virtual ~Field() = default;
-  Field *clone() const final;
+  Field *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  bool is_lvalue() const final;
-  bool is_readonly() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  bool is_lvalue() const override;
+  bool is_readonly() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Element : public Expr {
@@ -574,19 +574,19 @@ struct RUMUR_API_WITH_RTTI Element : public Expr {
   Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
           const location &loc_);
   virtual ~Element() = default;
-  Element *clone() const final;
+  Element *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  bool is_lvalue() const final;
-  bool is_readonly() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  bool is_lvalue() const override;
+  bool is_readonly() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 };
 
 struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
@@ -601,17 +601,17 @@ struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
   FunctionCall(const std::string &name_,
                const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
   virtual ~FunctionCall() = default;
-  FunctionCall *clone() const final;
+  FunctionCall *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Quantifier : public Node {
@@ -635,12 +635,12 @@ struct RUMUR_API_WITH_RTTI Quantifier : public Node {
              const Ptr<Expr> &to_, const Ptr<Expr> &step_,
              const location &loc_);
   virtual ~Quantifier() = default;
-  Quantifier *clone() const final;
-  void validate() const final;
+  Quantifier *clone() const override;
+  void validate() const override;
   std::string to_string() const;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
   /// whether the quantifier’s range can be constant folded
   bool constant() const;
@@ -664,17 +664,17 @@ struct RUMUR_API_WITH_RTTI Exists : public Expr {
   Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
          const location &loc_);
   virtual ~Exists() = default;
-  Exists *clone() const final;
+  Exists *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 };
 
 struct RUMUR_API_WITH_RTTI Forall : public Expr {
@@ -685,33 +685,33 @@ struct RUMUR_API_WITH_RTTI Forall : public Expr {
   Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
          const location &loc_);
   virtual ~Forall() = default;
-  Forall *clone() const final;
+  Forall *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 };
 
 struct RUMUR_API_WITH_RTTI IsUndefined : public UnaryExpr {
 
   IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
   virtual ~IsUndefined() = default;
-  IsUndefined *clone() const final;
+  IsUndefined *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  void validate() const final;
-  std::string to_string() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  std::string to_string() const override;
 };
 
 } // namespace rumur

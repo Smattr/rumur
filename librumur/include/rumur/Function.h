@@ -31,11 +31,11 @@ struct RUMUR_API_WITH_RTTI Function : public Node {
            const std::vector<Ptr<Decl>> &decls_,
            const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~Function() = default;
-  Function *clone() const final;
-  void validate() const final;
+  Function *clone() const override;
+  void validate() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
   // is this function side effect free?
   bool is_pure() const;

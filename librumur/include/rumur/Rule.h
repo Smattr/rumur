@@ -44,12 +44,12 @@ struct RUMUR_API_WITH_RTTI AliasRule : public Rule {
   AliasRule(const std::vector<Ptr<AliasDecl>> &aliases_,
             const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   virtual ~AliasRule() = default;
-  AliasRule *clone() const final;
+  AliasRule *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  std::vector<Ptr<Rule>> flatten() const final;
+  std::vector<Ptr<Rule>> flatten() const override;
 };
 
 struct RUMUR_API_WITH_RTTI SimpleRule : public Rule {
@@ -63,10 +63,10 @@ struct RUMUR_API_WITH_RTTI SimpleRule : public Rule {
              const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~SimpleRule() = default;
   SimpleRule *clone() const override;
-  void validate() const final;
+  void validate() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 };
 
 struct RUMUR_API_WITH_RTTI StartState : public Rule {
@@ -77,11 +77,11 @@ struct RUMUR_API_WITH_RTTI StartState : public Rule {
   StartState(const std::string &name_, const std::vector<Ptr<Decl>> &decls_,
              const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   virtual ~StartState() = default;
-  StartState *clone() const final;
-  void validate() const final;
+  StartState *clone() const override;
+  void validate() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 };
 
 struct RUMUR_API_WITH_RTTI PropertyRule : public Rule {
@@ -91,10 +91,10 @@ struct RUMUR_API_WITH_RTTI PropertyRule : public Rule {
   PropertyRule(const std::string &name_, const Property &property_,
                const location &loc_);
   virtual ~PropertyRule() = default;
-  PropertyRule *clone() const final;
+  PropertyRule *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Ruleset : public Rule {
@@ -104,13 +104,13 @@ struct RUMUR_API_WITH_RTTI Ruleset : public Rule {
   Ruleset(const std::vector<Quantifier> &quantifiers_,
           const std::vector<Ptr<Rule>> &rules_, const location &loc_);
   virtual ~Ruleset() = default;
-  Ruleset *clone() const final;
-  void validate() const final;
+  Ruleset *clone() const override;
+  void validate() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  std::vector<Ptr<Rule>> flatten() const final;
+  std::vector<Ptr<Rule>> flatten() const override;
 };
 
 } // namespace rumur

@@ -27,11 +27,11 @@ struct RUMUR_API_WITH_RTTI Property : public Node {
   Ptr<Expr> expr;
 
   Property(Category category_, const Ptr<Expr> &expr_, const location &loc_);
-  Property *clone() const final;
+  Property *clone() const override;
   virtual ~Property() = default;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 };
 
 } // namespace rumur
