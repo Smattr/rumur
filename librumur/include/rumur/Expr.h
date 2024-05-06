@@ -33,13 +33,13 @@ struct RUMUR_API_WITH_RTTI Expr : public Node {
   /// is this expression a compile-time constant?
   virtual bool constant() const = 0;
 
-  /// The type of this expression. Never returns \p nullptr.
+  /// The type of this expression. Never returns `nullptr`.
   virtual Ptr<TypeExpr> type() const = 0;
 
   /// is this expression of boolean type?
   bool is_boolean() const;
 
-  /// Evaluate this expression. This will throw \p Error if \p constant() is not
+  /// Evaluate this expression. This will throw `Error` if `constant()` is not
   /// true.
   virtual mpz_class constant_fold() const = 0;
 
@@ -595,7 +595,7 @@ struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
   Ptr<Function> function;
   std::vector<Ptr<Expr>> arguments;
 
-  /// whether this is a child of a \p ProcedureCall
+  /// whether this is a child of a `ProcedureCall`
   bool within_procedure_call = false;
 
   FunctionCall(const std::string &name_,
@@ -646,7 +646,7 @@ struct RUMUR_API_WITH_RTTI Quantifier : public Node {
   bool constant() const;
 
   /// number of entries in this quantifier’s range (only valid when
-  /// \p constant() returns \p true)
+  /// `constant()` returns `true`)
   mpz_class count() const;
 
   /// get the lower bound of this quantified expression as a C expression

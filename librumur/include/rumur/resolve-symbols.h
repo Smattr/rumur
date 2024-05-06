@@ -11,8 +11,8 @@ namespace rumur {
 
 /** resolve symbolic references within a model
  *
- * Resolve symbolic references (\p rumur::ExprIDs and \p rumur::TypeExprIDs)
- * within a model. Throws \p rumur::Error if this process fails.
+ * Resolve symbolic references (`rumur::ExprID`s and `rumur::TypeExprID`s)
+ * within a model. Throws `rumur::Error` if this process fails.
  */
 RUMUR_API void resolve_symbols(Model &m);
 
