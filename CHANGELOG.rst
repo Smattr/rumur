@@ -1,6 +1,31 @@
 Change log
 ==========
 
+v2024.05.07
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: the generated verifier no longer mixes ``__atomic_*`` and
+  ``__sync_*`` operations on the same variable. Previously this could have
+  caused incorrect results on some hardware platforms (commit
+  e6e8572cb5422ba2c272c49760bc16e404fe53a0).
+* Bug fix: the generated verifier no longer assumes that the size of a
+  ``struct`` containing two machine words is exactly 8 or 16 bytes (commit
+  ebbd5fdc5bd2c3c86b5786c039956b10c910793d).
+* On ARM platforms supporting Large System Extensions (≥ armv8.1-a), the
+  generated verifier no longer needs to be linked against libatomic. It instead
+  uses lock-free operations, which should result in a performance improvement
+  (commits 28eb088ce8fdd5c039c19d39a4ef6cd85d4ea70f,
+  5afc797f7f8f0869e33e7c5c45846c8b70f66b59,
+  adba81cde626901077a1c946dc57446660db47e3).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The ``final`` keyword has been removed from some member functions, allowing
+  third-party child classes to inherit and override these functions (commit
+  ed68536883b6ba27c37af12fdc2e7adcf8b7bf6b).
+
 v2023.11.27
 -----------
 
