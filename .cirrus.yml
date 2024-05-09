@@ -92,9 +92,9 @@ task:
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
-    - name: Linux, ARM, GCC 13.2
+    - name: Linux, ARM, GCC 14.1
       arm_container:
-        image: gcc:13.2
+        image: gcc:14.1
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
