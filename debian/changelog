@@ -1,6 +1,7 @@
 rumur (2024.05.07-1) unstable; urgency=medium
 
   * New upstream release.
+  * Fix inaccurate libatomic checks in autopkgtests. Closes: #1018205.
   * Fix Vcs-Browser URL. Closes: #1018202.
   * Update debian-compat Build-Depends from 12 to 13.
 

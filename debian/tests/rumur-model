@@ -17,6 +17,19 @@ cd ${AUTOPKGTEST_TMP}/rumur-model
 # temporarily allow failure so we can test some things
 set +e
 
+# check if the compiler supports -march=native
+cat - >march-native-check.c <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+${CC:-cc} -std=c11 -march=native march-native-check.c -o /dev/null
+if [ $? -eq 0 ]; then
+  MARCH=-march=native
+else
+  MARCH=
+fi
+
 # check if the compiler supports -mcx16
 cat - >mcx16-check.c <<EOT
 int main(void) {
@@ -32,18 +45,133 @@ fi
 
 # check if we need libatomic support
 cat - >libatomic-check.c <<EOT
+#include <stdbool.h>
 #include <stdint.h>
 
-int main(void) {
+// replicate what is in ../rumur/resources/header.c
+
+#define THREADS 2
+
 #if __SIZEOF_POINTER__ <= 4
-  uint64_t target = 0;
+  typedef uint64_t dword_t;
 #elif __SIZEOF_POINTER__ <= 8
-  unsigned __int128 target = 0;
+  typedef unsigned __int128 dword_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for dword_t?"
 #endif
-  return (int)__sync_val_compare_and_swap(&target, 0, 1);
+
+static dword_t atomic_read(dword_t *p) {
+
+  if (THREADS == 1) {
+    return *p;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
+   *   memory. The way to work around this is apparently the following
+   *   degenerate CMPXCHG16B.
+   * i386: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
+   *   __sync built-in instead.
+   * ARM64: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CASP by using the __sync
+   *   built-in instead.
+   *
+   * XXX: the obvious (irrelevant) literal to use here is “0” but this triggers
+   * a GCC bug on ARM, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114310.
+   */
+  return __sync_val_compare_and_swap(p, 1, 1);
+#endif
+
+  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
+}
+
+static void atomic_write(dword_t *p, dword_t v) {
+
+  if (THREADS == 1) {
+    *p = v;
+    return;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* As explained above, we need some extra gymnastics to avoid a call to
+   * libatomic on x86-64, i386, and ARM64.
+   */
+  dword_t expected;
+  dword_t old = 0;
+  do {
+    expected = old;
+    old = __sync_val_compare_and_swap(p, expected, v);
+  } while (expected != old);
+  return;
+#endif
+
+  __atomic_store_n(p, v, __ATOMIC_SEQ_CST);
+}
+
+static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
+
+  if (THREADS == 1) {
+    if (*p == expected) {
+      *p = new;
+      return true;
+    }
+    return false;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   * Make GCC emit a CASP on ARM64 (undocumented?).
+   */
+  return __sync_bool_compare_and_swap(p, expected, new);
+#endif
+
+  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+}
+
+static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
+
+  if (THREADS == 1) {
+    dword_t old = *p;
+    if (old == expected) {
+      *p = new;
+    }
+    return old;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   * Make GCC emit a CASP on ARM64 (undocumented?).
+   */
+  return __sync_val_compare_and_swap(p, expected, new);
+#endif
+
+
+  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+  return expected;
+}
+
+int main(void) {
+  dword_t target = 0;
+
+  target = atomic_read(&target);
+
+  atomic_write(&target, 42);
+
+  atomic_cas(&target, 42, 0);
+
+  return (int)atomic_cas_val(&target, 0, 42);
 }
 EOT
-${CC:-cc} -std=c11 ${MCX16} libatomic-check.c -o /dev/null
+${CC:-cc} -std=c11 ${MARCH} ${MCX16} libatomic-check.c -o /dev/null
 if [ $? -eq 0 ]; then
   LIBATOMIC=
 else
@@ -71,7 +199,7 @@ EOT
 rumur --output checker.c model.m
 
 # compile it to an executable
-${CC:-cc} -std=c11 ${MCX16} checker.c ${LIBATOMIC} -lpthread
+${CC:-cc} -std=c11 ${MARCH} ${MCX16} checker.c ${LIBATOMIC} -lpthread
 
 # run the model to completion
 ./a.out
