@@ -1,3 +1,11 @@
+rumur (2024.05.07-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fix Vcs-Browser URL. Closes: #1018202.
+  * Update debian-compat Build-Depends from 12 to 13.
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 19 May 2024 07:24:59 +1000
+
 rumur (2023.11.27-1) unstable; urgency=medium
 
   * New upstream release.
