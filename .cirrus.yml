@@ -7,6 +7,16 @@ task:
   timeout_in: 120m
 
   matrix:
+    - name: FreeBSD 15.0
+      freebsd_instance:
+        image_family: freebsd-15-0-snap
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+    - name: FreeBSD 15.0, shared libraries
+      freebsd_instance:
+        image_family: freebsd-15-0-snap
+      environment:
+        CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
     - name: FreeBSD 14.0
       freebsd_instance:
         image_family: freebsd-14-0-snap
@@ -26,10 +36,6 @@ task:
         image_family: freebsd-13-2
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 12.4
-      freebsd_instance:
-        image_family: freebsd-12-4-snap
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
 
     - name: Linux, GCC 8.5
@@ -78,6 +84,14 @@ task:
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
+    - name: Linux, ARM, GCC 13.2
+      arm_container:
+        image: gcc:13.2
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
 
     - name: macOS, Homebrew
       macos_instance:
@@ -104,4 +118,4 @@ task:
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -sr && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check
+  test_script: uname -rms && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check

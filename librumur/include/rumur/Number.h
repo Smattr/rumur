@@ -28,16 +28,16 @@ struct RUMUR_API_WITH_RTTI Number : public Expr {
   Number &operator=(const Number &) = default;
   Number &operator=(Number &&) = default;
   virtual ~Number() = default;
-  Number *clone() const final;
+  Number *clone() const override;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool constant() const final;
-  Ptr<TypeExpr> type() const final;
-  mpz_class constant_fold() const final;
-  std::string to_string() const final;
-  bool is_pure() const final;
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  std::string to_string() const override;
+  bool is_pure() const override;
 };
 
 } // namespace rumur

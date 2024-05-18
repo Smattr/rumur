@@ -16,7 +16,17 @@ if [ $? -eq 0 ]; then
   printf ', "-Werror=enum-conversion"'
 fi
 
-# test is the C compiler supports -mcx16
+# test if the C compiler supports -march=native
+${CC:-cc} -x c -std=c11 -march=native -o /dev/null - &>/dev/null <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+if [ $? -eq 0 ]; then
+  printf ', "-march=native"'
+fi
+
+# test if the C compiler supports -mcx16
 ${CC:-cc} -x c -std=c11 -mcx16 -o /dev/null - &>/dev/null <<EOT
 int main(void) {
   return 0;

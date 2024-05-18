@@ -61,15 +61,15 @@ struct RUMUR_API_WITH_RTTI AliasDecl : public ExprDecl {
 
   AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
             const location &loc_);
-  AliasDecl *clone() const final;
+  AliasDecl *clone() const override;
   virtual ~AliasDecl() = default;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool is_lvalue() const final;
-  bool is_readonly() const final;
-  Ptr<TypeExpr> get_type() const final;
+  bool is_lvalue() const override;
+  bool is_readonly() const override;
+  Ptr<TypeExpr> get_type() const override;
 };
 
 struct RUMUR_API_WITH_RTTI ConstDecl : public ExprDecl {
@@ -85,16 +85,16 @@ struct RUMUR_API_WITH_RTTI ConstDecl : public ExprDecl {
             const location &loc_);
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
             const Ptr<TypeExpr> &type_, const location &loc_);
-  ConstDecl *clone() const final;
+  ConstDecl *clone() const override;
   virtual ~ConstDecl() = default;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
-  bool is_lvalue() const final;
-  bool is_readonly() const final;
-  void validate() const final;
-  Ptr<TypeExpr> get_type() const final;
+  bool is_lvalue() const override;
+  bool is_readonly() const override;
+  void validate() const override;
+  Ptr<TypeExpr> get_type() const override;
 };
 
 struct RUMUR_API_WITH_RTTI TypeDecl : public Decl {
@@ -103,11 +103,11 @@ struct RUMUR_API_WITH_RTTI TypeDecl : public Decl {
 
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
            const location &loc);
-  TypeDecl *clone() const final;
+  TypeDecl *clone() const override;
   virtual ~TypeDecl() = default;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 };
 
 struct RUMUR_API_WITH_RTTI VarDecl : public ExprDecl {
@@ -127,11 +127,11 @@ struct RUMUR_API_WITH_RTTI VarDecl : public ExprDecl {
 
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
           const location &loc_);
-  VarDecl *clone() const final;
+  VarDecl *clone() const override;
   virtual ~VarDecl() = default;
 
-  void visit(BaseTraversal &visitor) final;
-  void visit(ConstBaseTraversal &visitor) const final;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
 
   mpz_class count() const;
   mpz_class width() const;
@@ -141,9 +141,9 @@ struct RUMUR_API_WITH_RTTI VarDecl : public ExprDecl {
    */
   bool is_in_state() const;
 
-  bool is_lvalue() const final;
-  bool is_readonly() const final;
-  Ptr<TypeExpr> get_type() const final;
+  bool is_lvalue() const override;
+  bool is_readonly() const override;
+  Ptr<TypeExpr> get_type() const override;
 };
 
 } // namespace rumur
