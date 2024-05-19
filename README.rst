@@ -13,8 +13,8 @@ A more extended introduction is available in `doc/introduction.rst`_
 Quickstart
 ----------
 
-Installation on Ubuntu ≥ 20.04 or Debian
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installation on Ubuntu or Debian
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
