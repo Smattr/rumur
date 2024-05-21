@@ -202,7 +202,8 @@ int main(int argc, char **argv) {
   }
 
   // if the user did not select a numeric type, select one for them
-  numeric_type = pick_numeric_type(*m);
+  if (numeric_type == "")
+    numeric_type = pick_numeric_type(*m);
 
   // parse comments from the source code
   std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
