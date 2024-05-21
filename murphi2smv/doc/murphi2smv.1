@@ -1,0 +1,58 @@
+.TH MURPHI2SMV 1
+.SH NAME
+murphi2smv \- translate a Murphi model to SMV
+.SH SYNOPSIS
+.B \fBmurphi2smv\fR [\fB\-\-output\fR \fIFILE\fR | \fB\-o\fR \fIFILE\fR] \fIFILE\fR
+.SH DESCRIPTION
+The utility \fBmurphi2smv\fR is bundled with the model checker Rumur and can be
+used to translate a Murphi model into the input format to the NuSMV model
+checker. See
+.BR rumur(1)
+for more information about Rumur or Murphi.
+.SH OPTIONS
+\fB\-\-help\fR or \fB\-?\fR
+.RS
+Display usage information.
+.RE
+.PP
+\fB\-\-module\fR \fINAME\fR or \fB\-m\fR \fINAME\fR
+.RS
+Set the name to use for the generated SMV module. If you do not supply this, it
+it defaults to \fBmain\fR.
+.RE
+.PP
+\fB\-\-numeric\-type\fR [\fBinteger\fR | \fBword\fR]
+.RS
+Set the SMV type used for ranges, scalarsets and numeric literals. This can be
+either \fIinteger\fR to use native integers or \fIword\fR to use bit-vectors. If
+this option is omitted, one is chosen automatically based on the content of the
+input model.
+.RE
+.PP
+\fB\-\-output\fR \fIFILE\fR or \fB\-o\fR \fIFILE\fR
+.RS
+Set the path to write the output SMV model to. If this argument is omitted,
+output is written to standard out.
+.RE
+.PP
+\fB\-\-quiet\fR or \fB\-q\fR
+.RS
+Silence warning diagnostics.
+.RE
+.PP
+\fB\-\-verbose or \fB\-v\fR
+.RS
+Report extra debugging information.
+.RE
+.PP
+\fB\-\-version\fR
+.RS
+Display version information and exit.
+.RE
+.SH NOTES
+Translation to SMV is imprecise because the semantics of model execution in SMV
+are significantly different to Murphi. \fBmurphi2smv\fR should not be expected
+to give you a ready-to-run SMV model. Rather it gives you an initial rough
+translation that you will need to edit to form a runnable model.
+.SH SEE ALSO
+rumur(1)
