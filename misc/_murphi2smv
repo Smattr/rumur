@@ -1,0 +1,10 @@
+#compdef murphi2smv
+
+# Zsh completion script for Murphi2SMV
+
+_arguments \
+  '--help[display help information]' \
+  {--numeric-type,-n}'[target numeric type]:TYPE' \
+  {--output,-o}'[path to write SMV to]:filename:_files' \
+  '--version[output version information]' \
+  '*::filename:_files -g "*.m"'
