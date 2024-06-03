@@ -87,7 +87,7 @@ static void parse_args(int argc, char **argv) {
 
     case 'n': // --numeric-type
       if (!is_valid_numeric_type(optarg)) {
-        std::cerr << "invalid argument to --numeric-type " << optarg << "\n";
+        std::cerr << "invalid argument to --numeric-type " << optarg << '\n';
         exit(EXIT_FAILURE);
       }
       numeric_type = optarg;
@@ -106,7 +106,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 128: // --version
-      std::cout << "Murphi2Uclid version " << rumur::get_version() << "\n";
+      std::cout << "Murphi2Uclid version " << rumur::get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     default:
@@ -119,7 +119,7 @@ static void parse_args(int argc, char **argv) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
       std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
-                << "\n";
+                << '\n';
       exit(EXIT_FAILURE);
     }
 
@@ -134,7 +134,7 @@ static void parse_args(int argc, char **argv) {
     auto i = std::make_shared<std::ifstream>(in_filename);
     auto j = std::make_shared<std::ifstream>(in_filename);
     if (!i->is_open() || !j->is_open()) {
-      std::cerr << "failed to open " << in_filename << "\n";
+      std::cerr << "failed to open " << in_filename << '\n';
       exit(EXIT_FAILURE);
     }
     in = dup_t(i, j);
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
   try {
     m = rumur::parse(*in.first);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
     resolve_symbols(*m);
     validate(*m);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
   try {
     check(*m);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
   if (out_filename != "-") {
     auto o = std::make_shared<std::ofstream>(out_filename);
     if (!o->is_open()) {
-      std::cerr << "failed to open " << out_filename << "\n";
+      std::cerr << "failed to open " << out_filename << '\n';
       exit(EXIT_FAILURE);
     }
     out = o;
