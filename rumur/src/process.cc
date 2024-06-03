@@ -116,19 +116,24 @@ int run(const std::vector<std::string> &args, const std::string &input,
     goto done;
   }
 
+  // set close-on-exec to clean these up in the child
+  for (int fd : in) {
+    if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC) < 0) {
+      *debug << "failed to set FD_CLOEXEC: " << strerror(errno) << '\n';
+      goto done;
+    }
+  }
+  for (int fd : out) {
+    if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC) < 0) {
+      *debug << "failed to set FD_CLOEXEC: " << strerror(errno) << '\n';
+      goto done;
+    }
+  }
+
   // set the ends the parent (us) will use as non-blocking
   if (fcntl(in[WRITE_FD], F_SETFL, fcntl(in[WRITE_FD], F_GETFL) | O_NONBLOCK) == -1 ||
       fcntl(out[READ_FD], F_SETFL, fcntl(out[READ_FD], F_GETFL) | O_NONBLOCK) == -1) {
     *debug << "failed to set O_NONBLOCK: " << strerror(errno) << '\n';
-    goto done;
-  }
-
-  // have the child close the ends it won't need
-  err = posix_spawn_file_actions_addclose(&fa, in[WRITE_FD]);
-  if (err == 0)
-    err = posix_spawn_file_actions_addclose(&fa, out[READ_FD]);
-  if (err != 0) {
-    *debug << "failed file_actions_addclose: " << strerror(err) << "\n";
     goto done;
   }
 
