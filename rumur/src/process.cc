@@ -1,5 +1,6 @@
 #include "process.h"
 #include "environ.h"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -80,8 +81,6 @@ fail:
   }
   return -1;
 }
-
-static int max(int a, int b) { return a > b ? a : b; }
 
 int run(const std::vector<std::string> &args, const std::string &input,
         std::string &output) {
@@ -168,14 +167,14 @@ int run(const std::vector<std::string> &args, const std::string &input,
     FD_ZERO(&readfds);
     FD_SET(out[READ_FD], &readfds);
     FD_SET(sigchld_pipe[READ_FD], &readfds);
-    nfds = max(out[READ_FD], sigchld_pipe[READ_FD]);
+    nfds = std::max(out[READ_FD], sigchld_pipe[READ_FD]);
 
     // create a set of only the in pipe (if still open) to monitor for writing
     fd_set writefds;
     FD_ZERO(&writefds);
     if (in[WRITE_FD] != -1) {
       FD_SET(in[WRITE_FD], &writefds);
-      nfds = max(nfds, in[WRITE_FD]);
+      nfds = std::max(nfds, in[WRITE_FD]);
     }
 
     // wait for an event
