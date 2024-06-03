@@ -1,5 +1,6 @@
 #include "process.h"
 #include "environ.h"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
@@ -63,7 +64,7 @@ static int init() {
 
   // register our redirecting signal handler
   if (signal(SIGCHLD, handler) == SIG_ERR) {
-    *debug << "failed to set SIGCHLD handler: " << strerror(errno) << "\n";
+    *debug << "failed to set SIGCHLD handler: " << strerror(errno) << '\n';
     goto fail;
   }
 
@@ -80,8 +81,6 @@ fail:
   }
   return -1;
 }
-
-static int max(int a, int b) { return a > b ? a : b; }
 
 int run(const std::vector<std::string> &args, const std::string &input,
         std::string &output) {
@@ -107,29 +106,34 @@ int run(const std::vector<std::string> &args, const std::string &input,
 
   err = posix_spawn_file_actions_init(&fa);
   if (err != 0) {
-    *debug << "failed file_actions_init: " << strerror(err) << "\n";
+    *debug << "failed file_actions_init: " << strerror(err) << '\n';
     return -1;
   }
 
   // create some pipes we'll use to communicate with the child
   if (pipe(in) < 0 || pipe(out) < 0) {
-    *debug << "failed pipe: " << strerror(errno) << "\n";
+    *debug << "failed pipe: " << strerror(errno) << '\n';
     goto done;
+  }
+
+  // set close-on-exec to clean these up in the child
+  for (int fd : in) {
+    if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC) < 0) {
+      *debug << "failed to set FD_CLOEXEC: " << strerror(errno) << '\n';
+      goto done;
+    }
+  }
+  for (int fd : out) {
+    if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC) < 0) {
+      *debug << "failed to set FD_CLOEXEC: " << strerror(errno) << '\n';
+      goto done;
+    }
   }
 
   // set the ends the parent (us) will use as non-blocking
   if (fcntl(in[WRITE_FD], F_SETFL, fcntl(in[WRITE_FD], F_GETFL) | O_NONBLOCK) == -1 ||
       fcntl(out[READ_FD], F_SETFL, fcntl(out[READ_FD], F_GETFL) | O_NONBLOCK) == -1) {
-    *debug << "failed to set O_NONBLOCK: " << strerror(errno) << "\n";
-    goto done;
-  }
-
-  // have the child close the ends it won't need
-  err = posix_spawn_file_actions_addclose(&fa, in[WRITE_FD]);
-  if (err == 0)
-    err = posix_spawn_file_actions_addclose(&fa, out[READ_FD]);
-  if (err != 0) {
-    *debug << "failed file_actions_addclose: " << strerror(err) << "\n";
+    *debug << "failed to set O_NONBLOCK: " << strerror(errno) << '\n';
     goto done;
   }
 
@@ -140,7 +144,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
   if (err == 0)
     err = posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDERR_FILENO);
   if (err != 0) {
-    *debug << "failed file_actions_adddup2: " << strerror(err) << "\n";
+    *debug << "failed file_actions_adddup2: " << strerror(err) << '\n';
     goto done;
   }
 
@@ -148,7 +152,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
   pid_t pid;
   err = posix_spawnp(&pid, argv[0], &fa, nullptr, argv.data(), get_environ());
   if (err != 0) {
-    *debug << "failed posix_spawnp: " << strerror(err) << "\n";
+    *debug << "failed posix_spawnp: " << strerror(err) << '\n';
     goto done;
   }
 
@@ -168,14 +172,14 @@ int run(const std::vector<std::string> &args, const std::string &input,
     FD_ZERO(&readfds);
     FD_SET(out[READ_FD], &readfds);
     FD_SET(sigchld_pipe[READ_FD], &readfds);
-    nfds = max(out[READ_FD], sigchld_pipe[READ_FD]);
+    nfds = std::max(out[READ_FD], sigchld_pipe[READ_FD]);
 
     // create a set of only the in pipe (if still open) to monitor for writing
     fd_set writefds;
     FD_ZERO(&writefds);
     if (in[WRITE_FD] != -1) {
       FD_SET(in[WRITE_FD], &writefds);
-      nfds = max(nfds, in[WRITE_FD]);
+      nfds = std::max(nfds, in[WRITE_FD]);
     }
 
     // wait for an event
@@ -204,7 +208,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
         if (r == -1) {
           if (errno == EAGAIN)
             break;
-          *debug << "failed to read from child: " << strerror(errno) << "\n";
+          *debug << "failed to read from child: " << strerror(errno) << '\n';
           goto done;
         }
 
@@ -226,7 +230,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
         } while (w == -1 && errno == EINTR);
 
         if (w == -1 && errno != EAGAIN) {
-          *debug << "failed to write to child: " << strerror(errno) << "\n";
+          *debug << "failed to write to child: " << strerror(errno) << '\n';
           goto done;
         }
 
@@ -257,11 +261,11 @@ int run(const std::vector<std::string> &args, const std::string &input,
       if (WIFEXITED(status)) {
         if (WEXITSTATUS(status) != EXIT_SUCCESS)
           *debug << "child returned exit status " << WEXITSTATUS(status)
-                 << "\n";
+                 << '\n';
         break;
       }
       if (WIFSIGNALED(status)) {
-        *debug << "child exited due to signal " << WTERMSIG(status) << "\n";
+        *debug << "child exited due to signal " << WTERMSIG(status) << '\n';
         break;
       }
     }
@@ -299,7 +303,7 @@ static int __attribute__((unused)) test_process(int argc, char **argv) {
   if (argc < 2 || strcmp(argv[1], "--help") == 0 ||
       strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-?") == 0) {
     std::cerr << "Rumur Process.cc tester\n"
-              << "\n"
+              << '\n'
               << " usage: " << argv[0] << " cmd args...\n";
     return EXIT_SUCCESS;
   }
@@ -314,7 +318,7 @@ static int __attribute__((unused)) test_process(int argc, char **argv) {
   // read stdin until EOF
   std::ostringstream input;
   for (std::string line; std::getline(std::cin, line);) {
-    input << line << "\n";
+    input << line << '\n';
   }
 
   // run our designated process
