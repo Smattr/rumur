@@ -31,6 +31,11 @@ if(HAS_WARNING_POINTER_ARITH)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith")
 endif()
 
+# make pipe2() prototype visible
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_definitions(-D_GNU_SOURCE)
+endif()
+
 # Enable --as-needed, present on GNU ld on Linux, to minimise dependencies.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
