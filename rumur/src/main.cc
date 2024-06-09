@@ -641,6 +641,10 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
+  // We no longer need the input file. Close it here to avoid having to think
+  // about close-on-exec when running the compiler or an SMT solver.
+  in = nullptr;
+
   assert(m != nullptr);
 
   /* Re-index the model (assign unique identifiers to each node that are used in
