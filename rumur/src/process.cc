@@ -2,6 +2,7 @@
 #include "environ.h"
 #include <algorithm>
 #include <cassert>
+#include <cerrno>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -42,12 +43,46 @@ static void handler(int sigchld __attribute__((unused))) {
   ssize_t w __attribute__((unused)) = write(sigchld_pipe[WRITE_FD], "\0", 1);
 }
 
+/// `pipe` that also sets close-on-exec
+static int pipe_(int pipefd[2]) {
+  assert(pipefd != NULL);
+
+#ifdef __APPLE__
+  // macOS does not have `pipe2`, so we need to fall back on `pipe`+`fcntl`.
+  // This is racy, but there does not seem to be a way to avoid this.
+
+  // create the pipe
+  if (pipe(pipefd) < 0)
+    return -1;
+
+  // set close-on-exec
+  for (size_t i = 0; i < 2; ++i) {
+    const int flags = fcntl(pipefd[i], F_GETFD);
+    if (fcntl(pipefd[i], F_SETFD, flags | FD_CLOEXEC) < 0) {
+      const int err = errno;
+      for (size_t j = 0; j < 2; ++j) {
+        (void)close(pipefd[j]);
+        pipefd[j] = -1;
+      }
+      errno = err;
+      return -1;
+    }
+  }
+
+#else
+  if (pipe2(pipefd, O_CLOEXEC) < 0)
+    return -1;
+#endif
+
+  return 0;
+}
+
 static bool inited = false;
 
 static int init() {
 
-  if (pipe(sigchld_pipe) < 0) {
-    *debug << "failed to create SIGCHLD pipe\n";
+  if (pipe_(sigchld_pipe) < 0) {
+    *debug << "failed to create SIGCHLD pipe: " << strerror(errno) << '\n';
     goto fail;
   }
 
@@ -111,23 +146,9 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // create some pipes we'll use to communicate with the child
-  if (pipe(in) < 0 || pipe(out) < 0) {
+  if (pipe_(in) < 0 || pipe_(out) < 0) {
     *debug << "failed pipe: " << strerror(errno) << '\n';
     goto done;
-  }
-
-  // set close-on-exec to clean these up in the child
-  for (int fd : in) {
-    if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC) < 0) {
-      *debug << "failed to set FD_CLOEXEC: " << strerror(errno) << '\n';
-      goto done;
-    }
-  }
-  for (int fd : out) {
-    if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC) < 0) {
-      *debug << "failed to set FD_CLOEXEC: " << strerror(errno) << '\n';
-      goto done;
-    }
   }
 
   // set the ends the parent (us) will use as non-blocking
