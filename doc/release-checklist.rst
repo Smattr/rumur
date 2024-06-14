@@ -82,7 +82,8 @@ Then:
 
 13. Follow the instructions included in the confirmation email to send a
     `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
-    get a reply from an interested party.
+    get a reply from an interested party. Make sure “Needs a sponsor” is set to
+    “Yes” on the `package details page`_.
 
 14. When/if the package is accepted into Debian unstable, tag the commit used to
     produce it with the Debian version number in “debian/vYYYY.MM.DD-1” format.
@@ -97,6 +98,7 @@ main repositories.
 .. _`Cirrus CI regression tests`: https://cirrus-ci.com/github/Smattr/rumur
 .. _`Debian buildd results`: https://buildd.debian.org/status/package.php?p=rumur
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
+.. _`package details page`: https://mentors.debian.net/package/rumur/
 .. _`packaged in Debian`: https://packages.debian.org/bullseye/rumur
 .. _`Request For Sponsorship`: https://mentors.debian.net/sponsors/rfs-howto
 .. _`upstream on Github`: https://github.com/Smattr/rumur
