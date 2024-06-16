@@ -61,7 +61,7 @@ Then:
   rumur my-model.m --output my-model.c
 
   # Compile the checker (also pass -mcx16 if using GCC on x86-64)
-  cc -std=c11 -O3 my-model.c -lpthread
+  cc -std=c11 -march=native -O3 my-model.c -lpthread
 
   # Run the checker
   ./a.out
