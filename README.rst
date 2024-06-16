@@ -51,11 +51,9 @@ Then:
   cd rumur
 
   # Configure and compile
-  mkdir build
-  cd build
-  cmake ..
-  make
-  make install
+  cmake -B build -S .
+  cmake --build build
+  cmake --install build
 
   # Generate a checker
   rumur my-model.m --output my-model.c
