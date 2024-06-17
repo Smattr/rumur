@@ -5,6 +5,7 @@ rumur (2024.05.07-1) unstable; urgency=medium
   * Fix Vcs-Browser URL. Closes: #1018202.
   * Add libxml2-utils, z3 to Build-Depends.
   * Add z3 to Suggests.
+  * Update Copyright from 2019 to 2019-2024.
   * Update debian-compat Build-Depends from 12 to 13.
   * Update Standards-Version from 4.6.2 to 4.7.0.
 
