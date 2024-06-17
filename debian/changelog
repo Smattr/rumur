@@ -4,6 +4,7 @@ rumur (2024.05.07-1) unstable; urgency=medium
   * Fix inaccurate libatomic checks in autopkgtests. Closes: #1018205.
   * Fix Vcs-Browser URL. Closes: #1018202.
   * Add libxml2-utils, z3 to Build-Depends.
+  * Add z3 to Suggests.
   * Update debian-compat Build-Depends from 12 to 13.
 
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 19 May 2024 07:24:59 +1000
