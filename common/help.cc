@@ -1,5 +1,7 @@
 #include "help.h"
 #include "environ.h"
+#include <cassert>
+#include <cerrno>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
@@ -44,13 +46,16 @@ int help(const unsigned char *manpage, size_t manpage_len) {
   }
 
   // Write the manpage to the temporary file
-  {
-    ssize_t r = write(fd, manpage, manpage_len);
-    if (r < 0 || (size_t)r != manpage_len) {
+  for (size_t offset = 0; offset < manpage_len;) {
+    const ssize_t r = write(fd, &manpage[offset], manpage_len - offset);
+    if (r < 0) {
+      if (errno == EINTR)
+        continue;
       ret = errno;
-      std::cerr << "failed to write manpage to temporary file\n";
       goto done;
     }
+    assert((size_t)r <= manpage_len - offset);
+    offset += (size_t)r;
   }
 
   // Close our file handle and mark it invalid
