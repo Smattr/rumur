@@ -2040,9 +2040,7 @@ static __attribute__((unused)) value_t mod(const char *NONNULL context,
   /* Is INT_MIN % -1 UD? Reading the C spec I am not sure. */
   if (__builtin_expect(VALUE_MIN != 0 && a == VALUE_MIN && b == (value_t)-1,
                        0)) {
-    error(s, "%sinteger overflow in modulo in expression %s%s%s", context, expr,
-          rule_name == NULL ? "" : " within ",
-          rule_name == NULL ? "" : rule_name);
+    return 0;
   }
 
   return a % b;
