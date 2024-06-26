@@ -504,6 +504,19 @@ public:
   void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
+
+    // if this is negation of a power of 2, conservatively assume it is
+    // `VALUE_MIN` and cannot be printed as-is without UB
+    auto constant = dynamic_cast<const Number *>(n.rhs.get());
+    if (constant != nullptr) {
+      const mpz_class &rhs = constant->value;
+      if (rhs > 0 && mpz_popcount(rhs.get_mpz_t()) == 1) {
+        *out << "sub(" << to_C_string(n.loc) << ", rule_name, "
+             << to_C_string(n) << ", s, VALUE_C(-1), VALUE_C(" << (rhs - 1) << "))";
+        return;
+      }
+    }
+
     *this << "negate(" << to_C_string(n.loc) << ", rule_name, "
           << to_C_string(n) << ", s, " << *n.rhs << ")";
   }

@@ -196,6 +196,7 @@ class murphi2uclid(unittest.TestCase):
 
       # contains `%`
       "mod-neg-1.m",
+      "mod-neg-1_2.m",
       "put-string-injection.m",
       "smt-bv-mod.m",
       "smt-bv-mod2.m",
