@@ -1,6 +1,6 @@
+#include "../../common/environ.h"
 #include "../../common/help.h"
 #include "ValueType.h"
-#include "environ.h"
 #include "generate.h"
 #include "has-start-state.h"
 #include "log.h"

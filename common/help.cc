@@ -1,10 +1,13 @@
 #include "help.h"
+#include "environ.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <fcntl.h>
 #include <iostream>
+#include <spawn.h>
 #include <string>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
 
@@ -55,14 +58,22 @@ int help(const unsigned char *manpage, size_t manpage_len) {
   fd = -1;
 
   // Run man to display the help text
+  pid_t man;
   {
-    std::string args("man ");
+    const char *argv[] = {"man",
 #ifdef __linux__
-    args += "--local-file ";
+                          "--local-file",
 #endif
-    args += path.data();
-    ret = system(args.c_str());
+                          path.data(), nullptr};
+    char *const *args = const_cast<char *const *>(argv);
+    if ((ret = posix_spawnp(&man, argv[0], nullptr, nullptr, args,
+                            get_environ())))
+      goto done;
   }
+
+  // wait for man to finish
+  int ignored;
+  (void)waitpid(man, &ignored, 0);
 
   // Cleanup
 done:
