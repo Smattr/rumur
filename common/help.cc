@@ -34,6 +34,7 @@ int help(const unsigned char *manpage, size_t manpage_len) {
   int fd = mkstemp(path.data());
   if (fd == -1) {
     ret = errno;
+    path.clear();
     std::cerr << "failed to create temporary file\n";
     goto done;
   }
@@ -66,7 +67,7 @@ int help(const unsigned char *manpage, size_t manpage_len) {
 done:
   if (fd >= 0)
     close(fd);
-  if (access(path.data(), F_OK) == 0)
+  if (!path.empty())
     (void)unlink(path.data());
   return ret;
 }
