@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <fcntl.h>
 #include <iostream>
 #include <string>
 #include <unistd.h>
@@ -31,7 +32,7 @@ int help(const unsigned char *manpage, size_t manpage_len) {
   size_t size = tmp.size() + sizeof("/temp.XXXXXX");
   std::vector<char> path(size);
   snprintf(path.data(), path.size(), "%s/temp.XXXXXX", tmp.c_str());
-  int fd = mkstemp(path.data());
+  int fd = mkostemp(path.data(), O_CLOEXEC);
   if (fd == -1) {
     ret = errno;
     path.clear();

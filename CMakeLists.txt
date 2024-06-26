@@ -34,7 +34,7 @@ if(HAS_WARNING_POINTER_ARITH)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith")
 endif()
 
-# make pipe2() prototype visible
+# make mkostemp(), pipe2() prototype visible
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_definitions(-D_GNU_SOURCE)
 endif()
