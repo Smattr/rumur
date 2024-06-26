@@ -103,7 +103,7 @@ task:
 
     - name: macOS, Homebrew
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-ventura-base:latest
+        image: ghcr.io/cirruslabs/macos-sonoma-base:latest
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
@@ -112,16 +112,16 @@ task:
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
         SUDO: sudo
-      install_script: brew update && brew install bison && brew link bison --force
+      install_script: uname -rms && brew update && brew install bison && brew link bison --force
 
     - name: macOS, Macports
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-ventura-base:latest
+        image: ghcr.io/cirruslabs/macos-sonoma-base:latest
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
         SUDO: sudo
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
