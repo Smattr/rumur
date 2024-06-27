@@ -25,7 +25,6 @@ add_executable(rumur
   ../common/escape.cc
   ../common/help.cc
   src/assume-statements-count.cc
-  src/environ.cc
   src/generate-allocations.cc
   src/generate-cover-array.cc
   src/generate-decl.cc

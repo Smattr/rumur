@@ -1,9 +1,15 @@
 #include "help.h"
+#include "environ.h"
+#include <cassert>
+#include <cerrno>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <fcntl.h>
 #include <iostream>
+#include <spawn.h>
 #include <string>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <vector>
 
@@ -31,21 +37,25 @@ int help(const unsigned char *manpage, size_t manpage_len) {
   size_t size = tmp.size() + sizeof("/temp.XXXXXX");
   std::vector<char> path(size);
   snprintf(path.data(), path.size(), "%s/temp.XXXXXX", tmp.c_str());
-  int fd = mkstemp(path.data());
+  int fd = mkostemp(path.data(), O_CLOEXEC);
   if (fd == -1) {
     ret = errno;
+    path.clear();
     std::cerr << "failed to create temporary file\n";
     goto done;
   }
 
   // Write the manpage to the temporary file
-  {
-    ssize_t r = write(fd, manpage, manpage_len);
-    if (r < 0 || (size_t)r != manpage_len) {
+  for (size_t offset = 0; offset < manpage_len;) {
+    const ssize_t r = write(fd, &manpage[offset], manpage_len - offset);
+    if (r < 0) {
+      if (errno == EINTR)
+        continue;
       ret = errno;
-      std::cerr << "failed to write manpage to temporary file\n";
       goto done;
     }
+    assert((size_t)r <= manpage_len - offset);
+    offset += (size_t)r;
   }
 
   // Close our file handle and mark it invalid
@@ -53,20 +63,28 @@ int help(const unsigned char *manpage, size_t manpage_len) {
   fd = -1;
 
   // Run man to display the help text
+  pid_t man;
   {
-    std::string args("man ");
+    const char *argv[] = {"man",
 #ifdef __linux__
-    args += "--local-file ";
+                          "--local-file",
 #endif
-    args += path.data();
-    ret = system(args.c_str());
+                          path.data(), nullptr};
+    char *const *args = const_cast<char *const *>(argv);
+    if ((ret = posix_spawnp(&man, argv[0], nullptr, nullptr, args,
+                            get_environ())))
+      goto done;
   }
+
+  // wait for man to finish
+  int ignored;
+  (void)waitpid(man, &ignored, 0);
 
   // Cleanup
 done:
   if (fd >= 0)
     close(fd);
-  if (access(path.data(), F_OK) == 0)
+  if (!path.empty())
     (void)unlink(path.data());
   return ret;
 }
