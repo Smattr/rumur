@@ -16,13 +16,17 @@ Ptr<Model> rumur::parse(std::istream &input) {
 
   // Setup the parser
   scanner s(&input);
-  Ptr<Model> m;
-  parser p(s, m, parser::token::START_MODEL);
+  Ptr<Node> answer;
+  parser p(s, answer, parser::token::START_MODEL);
 
   // Parse the input model
   int err = p.parse();
   if (err != 0)
     throw Error("parsing failed", location());
 
-  return m;
+  // transform this into a Model pointer
+  Ptr<Model> model = answer.narrow<Model>();
+  assert(model != NULL);
+
+  return model;
 }

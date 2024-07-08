@@ -101,7 +101,7 @@
   /* Tell Bison we'll receive another parameter that will allow us to pass
    * back the result of parsing.
    */
-%parse-param { rumur::Ptr<rumur::Model> &output }
+%parse-param { rumur::Ptr<rumur::Node> &output }
 
   /* Tell Bison our parser should have an extra class member that will be passed
    * during construction, which should in turn be passed on to the scanner
@@ -218,6 +218,7 @@
 %type <rumur::Ptr<rumur::Expr>>                              guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
+%type <rumur::Ptr<rumur::Model>>                             model
 %type <std::vector<rumur::Ptr<rumur::Node>>>                 nodes
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameter
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              parameters
@@ -247,15 +248,25 @@
 %%
 
 start:
-    START_DECL decl
-  | START_EXPR expr
-  | START_MODEL model
-  | START_PROPERTY property
-  | START_RULE rule
-  | START_STMT stmt;
+    START_DECL decl {
+  if ($2.size() != 1) {
+    throw rumur::Error("only parsing a single declaration is supported", rumur::location());
+  }
+  output = $2[0];
+} | START_EXPR expr {
+  output = $2;
+} | START_MODEL model {
+  output = $2;
+} | START_PROPERTY property {
+  output = $2;
+} | START_RULE rule {
+  output = $2;
+} | START_STMT stmt {
+  output = $2;
+};
 
 model: nodes {
-  output = rumur::Ptr<rumur::Model>::make($1, @$);
+  $$ = rumur::Ptr<rumur::Model>::make($1, @$);
 };
 
 nodes: nodes decl {
