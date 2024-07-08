@@ -128,32 +128,37 @@ int main(int argc, char **argv) {
   if (in.first == nullptr)
     in = make_stdin_dup();
 
-  // parse input model
-  rumur::Ptr<rumur::Model> m;
+  // parse input
+  rumur::Ptr<rumur::Node> parsed;
   try {
-    m = rumur::parse_model(*in.first);
+    parsed = rumur::parse(*in.first);
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
-  assert(m != nullptr);
+  assert(parsed != nullptr);
 
-  // update unique identifiers within the model
-  m->reindex();
+  // if we have a model, run full validation
+  auto model = dynamic_cast<rumur::Model *>(parsed.get());
+  if (model != nullptr) {
 
-  // check the model is valid
-  try {
-    resolve_symbols(*m);
-    validate(*m);
-  } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << '\n';
-    return EXIT_FAILURE;
+    // update unique identifiers within the model
+    model->reindex();
+
+    // check the model is valid
+    try {
+      resolve_symbols(*model);
+      validate(*model);
+    } catch (rumur::Error &e) {
+      std::cerr << e.loc << ":" << e.what() << '\n';
+      return EXIT_FAILURE;
+    }
   }
 
   // if the user did not select a numeric type, select one for them
   if (numeric_type == "")
-    numeric_type = pick_numeric_type(*m);
+    numeric_type = pick_numeric_type(*parsed);
 
   // parse comments from the source code
   std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
@@ -170,7 +175,7 @@ int main(int argc, char **argv) {
   }
 
   // generate SMV source code
-  codegen(*m, comments, output());
+  codegen(*parsed, comments, output());
 
   return EXIT_SUCCESS;
 }
