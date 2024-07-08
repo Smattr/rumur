@@ -632,7 +632,7 @@ int main(int argc, char **argv) {
   *debug << "parsing input model...\n";
   Ptr<Model> m;
   try {
-    m = parse(in == nullptr ? std::cin : *in);
+    m = parse_model(in == nullptr ? std::cin : *in);
   } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
               << reset() << " " << red() << bold() << "error:" << reset() << " "

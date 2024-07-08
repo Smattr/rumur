@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
   // parse input model
   rumur::Ptr<rumur::Model> m;
   try {
-    m = rumur::parse(*in);
+    m = rumur::parse_model(*in);
   } catch (rumur::Error &e) {
     std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
