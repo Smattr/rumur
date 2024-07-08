@@ -16,6 +16,14 @@
 
 namespace rumur {
 
+/// parse some Murphi input into an AST representation
+///
+/// This function assumes the caller does not know what the input represents and
+/// would like to parse any legal Murphi fragment. If you know more accurately
+/// what semantic entity you are trying to parse, one of the more specific
+/// functions below (e.g. `parse_model`) may be more suitable.
+RUMUR_API Ptr<Node> parse(std::istream &input);
+
 // Parse in a model from an input stream. Throws Errors on parsing errors.
 RUMUR_API Ptr<Model> parse_model(std::istream &input);
 

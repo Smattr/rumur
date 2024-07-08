@@ -2,6 +2,7 @@
 #include "parser.yy.hh"
 #include <cassert>
 #include <cstddef>
+#include <exception>
 #include <iostream>
 #include <rumur/Decl.h>
 #include <rumur/Model.h>
@@ -9,6 +10,7 @@
 #include <rumur/except.h>
 #include <rumur/parse.h>
 #include <rumur/scanner.h>
+#include <sstream>
 
 using namespace rumur;
 
@@ -54,4 +56,54 @@ Ptr<Rule> rumur::parse_rule(std::istream &input) {
 
 Ptr<Stmt> rumur::parse_stmt(std::istream &input) {
   return parse_node<Stmt, parser::token::START_STMT>(input);
+}
+
+Ptr<Node> rumur::parse(std::istream &input) {
+
+  // we want to be able to repeatedly attempt to parse the input, which involves
+  // rewinding the stream, so copy it into something that can rewind
+  std::stringstream stage;
+  stage << input.rdbuf();
+
+  // first, try to parse a complete model
+  try {
+    return parse_model(stage);
+  } catch (std::exception &e) {
+
+    // if this failed, try other alternatives in an order that roughly
+    // corresponds to the user’s likely expectation
+    stage.seekg(0);
+    try {
+      return parse_rule(stage);
+    } catch (std::exception &) {
+      // ignore
+    }
+    stage.seekg(0);
+    try {
+      return parse_property(stage);
+    } catch (std::exception &) {
+      // ignore
+    }
+    stage.seekg(0);
+    try {
+      return parse_decl(stage);
+    } catch (std::exception &) {
+      // ignore
+    }
+    stage.seekg(0);
+    try {
+      return parse_stmt(stage);
+    } catch (std::exception &) {
+      // ignore
+    }
+    stage.seekg(0);
+    try {
+      return parse_expr(stage);
+    } catch (std::exception &) {
+      // ignore
+    }
+
+    // if nothing succeeded, throw the caller the first error
+    throw e;
+  }
 }
