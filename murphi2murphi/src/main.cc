@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
   // parse input model
   Ptr<Model> m;
   try {
-    m = parse(*in);
+    m = parse_model(*in);
   } catch (Error &e) {
     std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
