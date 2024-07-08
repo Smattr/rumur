@@ -33,7 +33,7 @@ public:
 #endif
   // Force a new available type signature for yylex
   virtual int yylex(parser::semantic_type *const lval,
-                    parser::location_type *loc);
+                    parser::location_type *loc, int &start_token);
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif

@@ -103,6 +103,13 @@
    */
 %parse-param { rumur::Ptr<rumur::Model> &output }
 
+  /* Tell Bison our parser should have an extra class member that will be passed
+   * during construction, which should in turn be passed on to the scanner
+   * during lexing.
+   */
+%lex-param { int &start_token }
+%parse-param { int start_token }
+
 %token ALIAS
 %token AMPAMP "&&"
 %token ARRAY
@@ -165,6 +172,12 @@
 %token RULE
 %token RULESET
 %token SCALARSET
+%token START_DECL
+%token START_EXPR
+%token START_MODEL
+%token START_PROPERTY
+%token START_RULE
+%token START_STMT
 %token STARTSTATE
 %token <std::string> STRING
 %token SWITCH
@@ -232,6 +245,14 @@
 %type <std::shared_ptr<bool>>                                var_opt
 
 %%
+
+start:
+    START_DECL decl
+  | START_EXPR expr
+  | START_MODEL model
+  | START_PROPERTY property
+  | START_RULE rule
+  | START_STMT stmt;
 
 model: nodes {
   output = rumur::Ptr<rumur::Model>::make($1, @$);

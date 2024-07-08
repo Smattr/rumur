@@ -17,7 +17,7 @@ Ptr<Model> rumur::parse(std::istream &input) {
   // Setup the parser
   scanner s(&input);
   Ptr<Model> m;
-  parser p(s, m);
+  parser p(s, m, parser::token::START_MODEL);
 
   // Parse the input model
   int err = p.parse();
