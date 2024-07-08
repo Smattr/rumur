@@ -1,18 +1,18 @@
 #include "../../common/help.h"
-#include "resources.h"
-#include <getopt.h>
-#include <string>
-#include "pick_numeric_type.h"
-#include <cassert>
-#include <rumur/rumur.h>
-#include <sys/stat.h>
-#include <iostream>
-#include <cstdlib>
-#include <memory>
-#include <sstream>
-#include <utility>
-#include <fstream>
 #include "codegen.h"
+#include "pick_numeric_type.h"
+#include "resources.h"
+#include <cassert>
+#include <cstdlib>
+#include <fstream>
+#include <getopt.h>
+#include <iostream>
+#include <memory>
+#include <rumur/rumur.h>
+#include <sstream>
+#include <string>
+#include <sys/stat.h>
+#include <utility>
 
 // a pair of input streams
 using dup_t =
