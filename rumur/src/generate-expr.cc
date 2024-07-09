@@ -265,7 +265,7 @@ public:
       }
     }
 
-    /* Now for each parameter we need to consider four distinct methods, based
+    /* Now for each parameter we need to consider five distinct methods, based
      * on the parameter's circumstance as described in the following table:
      *
      *   ┌──────┬────────────────┬─────────┬────────────╥────────┐
