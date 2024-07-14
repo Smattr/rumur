@@ -1,6 +1,46 @@
 Change log
 ==========
 
+v2024.07.14
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: ``murphi2uclid`` no longer ignores the long form option
+  ``--numeric-type`` (commit 285453789b7394aab8e182935aca7c91ed504832).
+* Bug fix: ``murphi2uclid`` no longer ignores the short form options ``-n`` and
+  others (commit ad1ddb7ed750d82460e97dd952814ad6b6156edd).
+* Bug fix: irrelevant file descriptors are no longer leaked into an SMT solver
+  configured via ``--smt-path`` (commits
+  90132cf838c7bcfa2a1081786f7a0b511c5e281a,
+  cb9d47fa6037187d995995bbc8730b6976d8c804).
+* Bug fix: ``--help`` works even when ``$TMPDIR`` contains spaces (commit
+  9db30b901b0598b99d300c7988e24ddb28be344c).
+* A negation that results in the greatest negative number of the value type
+  (controllable with ``--value-type``) is no longer considered a runtime error
+  (commit fd1627d092275e96f475a0ac28de7927ad65d69b).
+* Modulo of the greatest negative number of the value type by ``-1`` is no
+  longer considered a runtime error (commit
+  f794358e5c08bcafe57c6a3e1d74a11f8d478ebd).
+* A new ``murphi2smv`` binary has been added that translates Murphi models or
+  fragments to the input language for the NuSMV model checker (commit
+  391cb95ad30026a0579fe04e1c8591413433ae2b).
+* ``murphi2uclid`` supports translation of Murphi fragments in addition to full
+  models (commit 2de59f8599bd64c3d1b7c673a6fde1a711187a32).
+* Missing author and licence information from manual pages has been filled in
+  (commit a037954531bdbd88072d2d779b95a4ca20b0cd3c).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* New parsing functions are available for parsing a fragment of Murphi rather
+  than a fully formed model (commits 782efd73320c232c484538e2ac3ec108e6f350e6,
+  3f1b6e765794bdfdfa0403b94693b8c82a68c080,
+  603a2e4bd4a8ef3a99907f408a04e361dbe9f3bb,
+  628b3fb66c0825e0937369bdde912d5e922049b0).
+* The build system sets rpath such that Rumur installed to a custom path should
+  more reliably be able to find its librumur.so (commit
+  d932fe53ef57afcdcc24bea53582e21f2d076a67).
+
 v2024.05.07
 -----------
 
