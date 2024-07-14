@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>
@@ -264,7 +265,7 @@ public:
       }
     }
 
-    /* Now for each parameter we need to consider four distinct methods, based
+    /* Now for each parameter we need to consider five distinct methods, based
      * on the parameter's circumstance as described in the following table:
      *
      *   ┌──────┬────────────────┬─────────┬────────────╥────────┐
@@ -505,14 +506,24 @@ public:
     if (lvalue)
       invalid(n);
 
-    // if this is negation of a power of 2, conservatively assume it is
-    // `VALUE_MIN` and cannot be printed as-is without UB
+    // if this is negation of something that may be `VALUE_MIN`, assume it
+    // cannot be printed as-is without UB
     auto constant = dynamic_cast<const Number *>(n.rhs.get());
     if (constant != nullptr) {
-      const mpz_class &rhs = constant->value;
-      if (rhs > 0 && mpz_popcount(rhs.get_mpz_t()) == 1) {
-        *out << "sub(" << to_C_string(n.loc) << ", rule_name, "
-             << to_C_string(n) << ", s, VALUE_C(-1), VALUE_C(" << (rhs - 1) << "))";
+      if (-constant->value == INT8_MIN) {
+        *out << "((value_t)INT8_MIN)";
+        return;
+      }
+      if (-constant->value == INT16_MIN) {
+        *out << "((value_t)INT16_MIN)";
+        return;
+      }
+      if (-constant->value == INT32_MIN) {
+        *out << "((value_t)INT32_MIN)";
+        return;
+      }
+      if (-constant->value == mpz_class{std::to_string(INT64_MIN)}) {
+        *out << "((value_t)INT64_MIN)";
         return;
       }
     }
