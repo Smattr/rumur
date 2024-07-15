@@ -690,7 +690,56 @@ void Mul::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_mul(*this);
 }
 
+bool Mul::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Mul::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   return lhs->constant_fold() * rhs->constant_fold();
 }
 
