@@ -181,6 +181,7 @@ class murphi2uclid(unittest.TestCase):
     MURPHI2UCLID_FAIL = (
       # contains `<<` or `>>`
       "const-folding5.m",
+      "const-folding6.m",
       "lsh-basic.m",
       "rsh-and.m",
       "rsh-basic.m",

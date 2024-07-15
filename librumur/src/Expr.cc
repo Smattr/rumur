@@ -962,7 +962,36 @@ void Rsh::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_rsh(*this);
 }
 
+bool Rsh::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Rsh::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return rshift(a, b);
