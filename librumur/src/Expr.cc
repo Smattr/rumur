@@ -49,7 +49,18 @@ void Ternary::visit(ConstBaseTraversal &visitor) const {
 }
 
 bool Ternary::constant() const {
-  return cond->constant() && lhs->constant() && rhs->constant();
+
+  if (!cond->constant())
+    return false;
+
+  mpz_class condition;
+  try {
+    condition = cond->constant_fold();
+  } catch (Error &) {
+    return false;
+  }
+
+  return condition != 0 ? lhs->constant() : rhs->constant();
 }
 
 Ptr<TypeExpr> Ternary::type() const {
@@ -113,7 +124,56 @@ void Implication::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_implication(*this);
 }
 
+bool Implication::constant() const {
+
+  if (BinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right != 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Implication::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right != 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   return lhs->constant_fold() == 0 || rhs->constant_fold() != 0;
 }
 
@@ -132,7 +192,56 @@ void Or::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_or(*this);
 }
 
+bool Or::constant() const {
+
+  if (BinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left != 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right != 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Or::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left != 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right != 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
 
@@ -151,7 +260,56 @@ void And::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_and(*this);
 }
 
+bool And::constant() const {
+
+  if (BinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class And::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return false;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return false;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
 
@@ -532,7 +690,56 @@ void Mul::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_mul(*this);
 }
 
+bool Mul::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Mul::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   return lhs->constant_fold() * rhs->constant_fold();
 }
 
@@ -551,7 +758,36 @@ void Div::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_div(*this);
 }
 
+bool Div::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Div::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   if (b == 0)
@@ -574,7 +810,36 @@ void Mod::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_mod(*this);
 }
 
+bool Mod::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Mod::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   if (b == 0)
@@ -647,7 +912,36 @@ static mpz_class rshift(mpz_class a, mpz_class b) {
   return mpz_class(rop);
 }
 
+bool Lsh::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Lsh::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return lshift(a, b);
@@ -668,7 +962,36 @@ void Rsh::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_rsh(*this);
 }
 
+bool Rsh::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Rsh::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return rshift(a, b);
@@ -689,7 +1012,56 @@ void Band::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_band(*this);
 }
 
+bool Band::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Band::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return a & b;

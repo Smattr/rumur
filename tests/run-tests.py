@@ -180,6 +180,8 @@ class murphi2uclid(unittest.TestCase):
     # test cases for which murphi2uclid is expected to fail
     MURPHI2UCLID_FAIL = (
       # contains `<<` or `>>`
+      "const-folding5.m",
+      "const-folding6.m",
       "lsh-basic.m",
       "rsh-and.m",
       "rsh-basic.m",
@@ -187,6 +189,7 @@ class murphi2uclid(unittest.TestCase):
       "smt-bv-rsh.m",
 
       # contains `/`
+      "const-folding3.m",
       "division.m",
       "smt-bv-div.m",
       "smt-bv-div2.m",
@@ -195,6 +198,7 @@ class murphi2uclid(unittest.TestCase):
       "unicode-div2.m",
 
       # contains `%`
+      "const-folding4.m",
       "mod-neg-1.m",
       "mod-neg-1_2.m",
       "put-string-injection.m",
