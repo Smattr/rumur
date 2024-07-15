@@ -49,7 +49,18 @@ void Ternary::visit(ConstBaseTraversal &visitor) const {
 }
 
 bool Ternary::constant() const {
-  return cond->constant() && lhs->constant() && rhs->constant();
+
+  if (!cond->constant())
+    return false;
+
+  mpz_class condition;
+  try {
+    condition = cond->constant_fold();
+  } catch (Error &) {
+    return false;
+  }
+
+  return condition != 0 ? lhs->constant() : rhs->constant();
 }
 
 Ptr<TypeExpr> Ternary::type() const {
