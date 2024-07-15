@@ -166,6 +166,7 @@ struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
 
+  bool constant() const override;
   mpz_class constant_fold() const override;
   std::string to_string() const override;
 };

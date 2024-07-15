@@ -260,7 +260,56 @@ void And::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_and(*this);
 }
 
+bool And::constant() const {
+
+  if (BinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class And::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return false;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return false;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
 
