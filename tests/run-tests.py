@@ -187,6 +187,7 @@ class murphi2uclid(unittest.TestCase):
       "smt-bv-rsh.m",
 
       # contains `/`
+      "const-folding3.m",
       "division.m",
       "smt-bv-div.m",
       "smt-bv-div2.m",
