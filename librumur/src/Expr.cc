@@ -1012,7 +1012,56 @@ void Band::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_band(*this);
 }
 
+bool Band::constant() const {
+
+  if (ArithmeticBinaryExpr::constant())
+    return true;
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return true;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  return false;
+}
+
 mpz_class Band::constant_fold() const {
+
+  if (lhs->constant()) {
+    try {
+      mpz_class left = lhs->constant_fold();
+      if (left == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
+  if (rhs->constant()) {
+    try {
+      mpz_class right = rhs->constant_fold();
+      if (right == 0)
+        return 0;
+    } catch (Error &) {
+      // ignore
+    }
+  }
+
   mpz_class a = lhs->constant_fold();
   mpz_class b = rhs->constant_fold();
   return a & b;
