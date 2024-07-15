@@ -180,6 +180,7 @@ class murphi2uclid(unittest.TestCase):
     # test cases for which murphi2uclid is expected to fail
     MURPHI2UCLID_FAIL = (
       # contains `<<` or `>>`
+      "const-folding5.m",
       "lsh-basic.m",
       "rsh-and.m",
       "rsh-basic.m",
