@@ -196,6 +196,7 @@ class murphi2uclid(unittest.TestCase):
       "unicode-div2.m",
 
       # contains `%`
+      "const-folding4.m",
       "mod-neg-1.m",
       "mod-neg-1_2.m",
       "put-string-injection.m",
