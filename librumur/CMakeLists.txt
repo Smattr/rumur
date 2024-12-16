@@ -95,7 +95,7 @@ target_link_libraries(librumur PUBLIC ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 set_target_properties(librumur PROPERTIES PREFIX "")
 
 # Clagged boiler plate to install a library.
-install(TARGETS librumur EXPORT LibrumurConfig
+install(TARGETS librumur EXPORT librumurConfig
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -108,4 +108,7 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/stack.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rumur)
 
-export(TARGETS librumur FILE LibrumurConfig.cmake)
+export(TARGETS librumur FILE librumurConfig.cmake)
+install(EXPORT librumurConfig
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/librumur
+)
