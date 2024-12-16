@@ -109,3 +109,6 @@ install(FILES
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rumur)
 
 export(TARGETS librumur FILE librumurConfig.cmake)
+install(EXPORT librumurConfig
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/librumur
+)
