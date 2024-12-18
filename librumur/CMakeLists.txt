@@ -111,5 +111,10 @@ install(FILES
 install(
   EXPORT librumurConfig
   FILE librumurConfig.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/librumur
+  NAMESPACE rumur::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rumur
+)
+install(
+  FILES rumurConfig.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rumur
 )
