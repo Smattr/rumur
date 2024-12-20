@@ -16,6 +16,16 @@ if [ $? -eq 0 ]; then
   printf ', "-Werror=enum-conversion"'
 fi
 
+# test if the C compiler supports -Werror=maybe-uninitialized
+${CC:-cc} -x c -std=c11 -Werror=maybe-uninitialized -o /dev/null - &>/dev/null <<EOT
+int main(void) {
+  return 0;
+}
+EOT
+if [ $? -eq 0 ]; then
+  printf ', "-Werror=maybe-uninitialized"'
+fi
+
 # test if the C compiler supports -march=native
 ${CC:-cc} -x c -std=c11 -march=native -o /dev/null - &>/dev/null <<EOT
 int main(void) {

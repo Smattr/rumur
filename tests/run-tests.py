@@ -105,8 +105,14 @@ class murphi2c(unittest.TestCase):
     if ret != 0:
       return
 
+    # omit -Werror=maybe-uninitialized which identifies legitimate problems in
+    # input models
+    cflags = [
+      f for f in CONFIG["C_FLAGS"] if f != "-Werror=maybe-uninitialized"
+    ]
+
     # ask the C compiler if this is valid
-    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-c", "-o", os.devnull, "-"]
+    args = [CONFIG["CC"]] + cflags + ["-c", "-o", os.devnull, "-"]
     ret, out, err = run(args, stdout)
     if ret != 0:
       self.fail("C compilation failed:\n{}{}\nProgram:\n{}"
