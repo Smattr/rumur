@@ -9,7 +9,7 @@ def main(args):
 
   # parse command line arguments
   parser = argparse.ArgumentParser(
-    description="convert file contents to a C++ string")
+    description="convert file contents to a C/C++ string")
   parser.add_argument("input", type=argparse.FileType("rb"), help="input file")
   parser.add_argument("output", type=argparse.FileType("wt"),
     help="output file")
@@ -19,9 +19,16 @@ def main(args):
   size = "{}_len".format(array)
 
   options.output.write(textwrap.dedent("""\
-  #include <cstddef>
+  #include <stddef.h>
 
-  extern const unsigned char {}[] = {{""".format(array)))
+  #ifdef __cplusplus
+  extern "C" {{
+  #define EXPORT extern
+  #else
+  #define EXPORT /* nothing */
+  #endif
+
+  EXPORT const unsigned char {}[] = {{""".format(array)))
 
   index = 0
   while True:
@@ -41,7 +48,13 @@ def main(args):
   options.output.write(textwrap.dedent("""\
 
   }};
-  extern const size_t {} = sizeof({}) / sizeof({}[0]);
+  EXPORT const size_t {} = sizeof({}) / sizeof({}[0]);
+
+  #undef EXPORT
+
+  #ifdef __cplusplus
+  }}
+  #endif
   """.format(size, array, array)))
 
   return 0

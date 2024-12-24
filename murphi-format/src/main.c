@@ -1,5 +1,7 @@
+#include "../../common/help.h"
 #include "debug.h"
 #include "format.h"
+#include "resources.h"
 #include "rumur-get-version.h"
 #include <assert.h>
 #include <errno.h>
@@ -23,6 +25,7 @@ static void parse_args(int argc, char **argv) {
   while (true) {
     static struct option opts[] = {
         {"debug", no_argument, 0, 'd'},
+        {"help", no_argument, 0, 'h'},
         {"in-place", no_argument, 0, 'i'},
         {"output", required_argument, 0, 'o'},
         {"version", no_argument, 0, 129},
@@ -40,6 +43,10 @@ static void parse_args(int argc, char **argv) {
     case 'd': // --debug
       debug = true;
       break;
+
+    case 'h': // --help
+      help(doc_murphi_format_1, doc_murphi_format_1_len);
+      exit(EXIT_SUCCESS);
 
     case 'i': // --in-place
       in_place = true;

@@ -723,6 +723,28 @@ class MurphiFormat(unittest.TestCase):
             "incorrect spacing around end-of-file"
         )
 
+    def test_bad_operator(self):
+        """
+        non-operators like `>-` should not be recognised
+        """
+
+        model = "rule begin if x >- 1 then end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertNotIn(" >- ", stdout, "`>-` incorrectly considered an operator")
+        self.assertNotIn(">-", stdout, "`>-` incorrectly considered an operator")
+        self.assertIn("> -", stdout, "incorrect spacing around `>-`")
+
+    def test_case(self):
+        """reformatting should be caseless"""
+
+        model = "cOnSt N: 0;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertIn("cOnSt\n  N: 0;", stdout, "incorrect spacing around erratic casing")
+
 
 def make_name(t):
   """
