@@ -23,7 +23,7 @@ add_executable(murphi2c
   ${CMAKE_CURRENT_BINARY_DIR}/resources_h_prefix.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ../common/escape.cc
-  ../common/help.cc
+  ../common/help.c
   src/check.cc
   src/CLikeGenerator.cc
   src/CodeGenerator.cc
