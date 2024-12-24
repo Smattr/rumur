@@ -114,6 +114,7 @@ if(CMAKE_VERSION VERSION_GREATER 3.11)
 endif()
 
 add_subdirectory(librumur)
+add_subdirectory(murphi-format)
 add_subdirectory(murphi2c)
 add_subdirectory(murphi2murphi)
 add_subdirectory(murphi2smv)
@@ -123,9 +124,11 @@ add_subdirectory(rumur)
 add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check
-  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
+  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py --verbose)
-add_dependencies(check murphi2c murphi2murphi murphi2uclid murphi2xml rumur)
+add_dependencies(check
+  murphi-format murphi2c murphi2murphi murphi2uclid murphi2xml rumur
+)
 if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check murphi-comment-ls)
 endif()
