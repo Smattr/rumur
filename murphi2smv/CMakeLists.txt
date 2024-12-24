@@ -8,7 +8,7 @@ add_custom_command(
 
 add_executable(murphi2smv
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
-  ../common/help.cc
+  ../common/help.c
   src/codegen.cc
   src/main.cc
   src/pick_numeric_type.cc

@@ -121,6 +121,7 @@ def main(args):
   new = textwrap.dedent("""\
   #pragma once
 
+  #ifdef __cplusplus
   namespace rumur {{
 
   static constexpr const char *get_version() {{
@@ -128,7 +129,12 @@ def main(args):
   }}
 
   }}
-  """.format(version))
+  #endif
+
+  static inline const char *rumur_get_version(void) {{
+    return "{}";
+  }}
+  """.format(version, version))
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.

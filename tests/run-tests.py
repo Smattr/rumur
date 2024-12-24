@@ -527,6 +527,203 @@ class rumurOptimisedMultithreadedXML(rumur):
   def _run(self, testcase):
     self._run_param(testcase, False, True, True, True)
 
+
+class MurphiFormat(unittest.TestCase):
+    """
+    test cases for murphi-format
+    """
+
+    def test_colon(self):
+        """colon spacing in definitions as well as ternary expressions"""
+
+        # sample Murphi that uses colons in both situations, that should be reflowed
+        model = "const y: 0?1:2; var x : boolean;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("y: 0", stdout, "incorrect spacing for const definition")
+        self.assertIn("0 ? 1 : 2", stdout, "incorrect spacing for ternary expression")
+        self.assertIn("x: boolean", stdout, "incorrect spacing for var definition")
+
+    def test_arrow_begin1(self):
+        """`==> begin` should not be reflowed with a newline"""
+
+        # sample Murphi that uses something that should be stable
+        model = 'rule "foo" ==> begin end'
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("==> begin", stdout, "incorrect spacing for `==> begin`")
+
+    def test_arrow_begin2(self):
+        """`==> begin` should not be reflowed with a newline"""
+
+        # sample Murphi that uses something that should be reflowed
+        model = 'rule "foo" ==>begin end'
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("==> begin", stdout, "incorrect spacing for `==> begin`")
+
+    def test_newline_on_end(self):
+        """`end` should force a newline"""
+
+        # sample Murphi that uses something that should be reflowed
+        model = 'rule "foo" begin end rule "bar" begin end'
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(stdout, "\\bbegin\n+end\\b", "no newline before end")
+        self.assertRegex(stdout, "\\bend\n+rule\\b", "no newline after end")
+
+    def test_unary_in_for(self):
+        """a unary operator following a keyword should be spaced correctly"""
+
+        model = "rule begin for x := 0 to - 2 by - 1 do end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("to -2", stdout, "incorrect unary minus spacing")
+        self.assertIn("by -1", stdout, "incorrect unary minus spacing")
+
+    def test_begin_indentation(self):
+        """`begin` should not be erroneously indented by decl blocks"""
+
+        model = "rule var x: boolean; begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(
+            stdout,
+            re.compile(r"^begin\b", flags=re.MULTILINE),
+            "incorrect begin indentation"
+        )
+        self.assertNotRegex(
+            stdout,
+            re.compile(r"^\s+begin\b", flags=re.MULTILINE),
+            "incorrect begin indentation"
+        )
+
+    def test_multiline_comment(self):
+        """multiline comments should be recognised"""
+
+        model = "rule /* hello\nworld */ begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("/* hello", stdout, "multiline comments mishandled")
+        self.assertIn("world */", stdout, "multiline comments mishandled")
+
+    def test_then_indentation(self):
+        """`then` should incur an indent"""
+
+        model = "rule begin if 0 = 0 then\nx := 2; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("0 = 0 then", stdout, "incorrect `then` indentation")
+        self.assertRegex(
+            stdout,
+            re.compile(r"^    x := 2", flags=re.MULTILINE),
+            "incorrect `then` indentation",
+        )
+
+    def test_newline_comment(self):
+        """is newline followed by a comment preserved?"""
+
+        model = "const N:\n-- a comment\n0;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(
+            stdout,
+            re.compile(r"^\s*-- a comment$", flags=re.MULTILINE),
+            "incorrect newline,comment handling"
+        )
+
+    def test_brace_ender(self):
+        """'}' should trigger a newline"""
+
+        model = "type x: enum {A, B} y: boolean;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("}\n", stdout, "`}` did not trigger newline")
+
+    def test_double_paren(self):
+        """does multi-dimensional indexing get spaced correctly?"""
+
+        model = "rule begin x [ 1 ] [ 2 ] := 3; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("x[1][2]", stdout, "spaced incorrectly")
+
+    def test_procedure_var(self):
+        """does `var` within a function/procedure parameter list cause problems?"""
+
+        model = "procedure foo( var x : boolean); begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("(var x: boolean)", stdout, "var parameters spaced incorrectly")
+
+    def test_trailing_space(self):
+        """
+        does something that would normally be followed by a space also incur a space
+        when landing at the end-of-file?
+        """
+
+        model = "invariant x"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(
+            stdout,
+            re.compile(r"\binvariant x$", flags=re.MULTILINE),
+            "incorrect spacing around end-of-file"
+        )
+
+
 def make_name(t):
   """
   name mangle a path into a valid test case name

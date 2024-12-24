@@ -1,7 +1,6 @@
 #pragma once
 
-#include "environ.h"
-#include <cstdlib>
+#include <stdlib.h>
 
 #ifdef __APPLE__
 #include <crt_externs.h>
