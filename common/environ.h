@@ -1,6 +1,5 @@
 #pragma once
 
-#include "environ.h"
 #include <cstdlib>
 
 #ifdef __APPLE__
