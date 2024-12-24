@@ -723,6 +723,19 @@ class MurphiFormat(unittest.TestCase):
             "incorrect spacing around end-of-file"
         )
 
+    def test_bad_operator(self):
+        """
+        non-operators like `>-` should not be recognised
+        """
+
+        model = "rule begin if x >- 1 then end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertNotIn(" >- ", stdout, "`>-` incorrectly considered an operator")
+        self.assertNotIn(">-", stdout, "`>-` incorrectly considered an operator")
+        self.assertIn("> -", stdout, "incorrect spacing around `>-`")
+
 
 def make_name(t):
   """

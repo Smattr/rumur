@@ -19,11 +19,6 @@ static const char *const OPERATORS[] = {
 /// operator (e.g. '[' and ']'). It only covers the things we want to think of
 /// as generic operators.
 ///
-/// FIXME: This does not take into account state from a previous call. E.g.
-/// `may_be_operator(0, '*')` will return true and then
-/// `may_be_operator(1, '>')` will return true, but there is no operator that
-/// begins with "*>".
-///
 /// \param offset Index within the current token we are looking at
 /// \param c Character at this index
 /// \return True if this could be part of a known operator
