@@ -736,6 +736,15 @@ class MurphiFormat(unittest.TestCase):
         self.assertNotIn(">-", stdout, "`>-` incorrectly considered an operator")
         self.assertIn("> -", stdout, "incorrect spacing around `>-`")
 
+    def test_case(self):
+        """reformatting should be caseless"""
+
+        model = "cOnSt N: 0;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertIn("cOnSt\n  N: 0;", stdout, "incorrect spacing around erratic casing")
+
 
 def make_name(t):
   """

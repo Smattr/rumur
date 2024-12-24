@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <strings.h>
 
 struct state;
 
@@ -50,8 +50,9 @@ typedef struct state {
 } state_t;
 
 /// are two strings equal?
-/// TODO: case-insensitive
-static bool streq(const char *a, const char *b) { return strcmp(a, b) == 0; }
+static bool streq(const char *a, const char *b) {
+  return strcasecmp(a, b) == 0;
+}
 
 /// handle an implicit newline following the previous token
 static int pend_newline(state_t *st, token_t token) {
