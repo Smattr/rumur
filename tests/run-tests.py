@@ -732,6 +732,9 @@ class MurphiFormat(unittest.TestCase):
 
         ret, stdout, stderr = run(["murphi-format"], model)
 
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
         self.assertNotIn(" >- ", stdout, "`>-` incorrectly considered an operator")
         self.assertNotIn(">-", stdout, "`>-` incorrectly considered an operator")
         self.assertIn("> -", stdout, "incorrect spacing around `>-`")
@@ -742,6 +745,9 @@ class MurphiFormat(unittest.TestCase):
         model = "cOnSt N: 0;"
 
         ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
 
         self.assertIn("cOnSt\n  N: 0;", stdout, "incorrect spacing around erratic casing")
 
