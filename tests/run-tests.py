@@ -732,6 +732,9 @@ class MurphiFormat(unittest.TestCase):
 
         ret, stdout, stderr = run(["murphi-format"], model)
 
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
         self.assertNotIn(" >- ", stdout, "`>-` incorrectly considered an operator")
         self.assertNotIn(">-", stdout, "`>-` incorrectly considered an operator")
         self.assertIn("> -", stdout, "incorrect spacing around `>-`")
@@ -743,7 +746,38 @@ class MurphiFormat(unittest.TestCase):
 
         ret, stdout, stderr = run(["murphi-format"], model)
 
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
         self.assertIn("cOnSt\n  N: 0;", stdout, "incorrect spacing around erratic casing")
+
+    def test_no_start_newline(self):
+        """a newline should not be inserted before all content"""
+
+        model = "rule begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertTrue(stdout.startswith("rule"), "incorrect preceding space inserted")
+
+    def test_switch(self):
+        """formatting of switch statements"""
+
+        model = "rule begin switch x\nend; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "rule begin\n  switch x\n  end;\nend\n",
+            stdout,
+            "incorrect switch formatting"
+        )
 
 
 def make_name(t):

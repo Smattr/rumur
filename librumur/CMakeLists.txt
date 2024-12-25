@@ -43,8 +43,8 @@ if(HAS_WARNING_DEPRECATED_REGISTER)
 endif()
 
 add_custom_command(
-  OUTPUT rumur-get-version.h
-  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  OUTPUT version.c
+  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/version.c
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -55,7 +55,7 @@ add_custom_command(
   COMMAND /usr/bin/env true)
 
 add_library(librumur
-  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  ${CMAKE_CURRENT_BINARY_DIR}/version.c
   src/Boolean.cc
   src/Comment.cc
   src/Decl.cc
@@ -104,7 +104,6 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/location.hh
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.hh
   ${CMAKE_CURRENT_BINARY_DIR}/position.hh
-  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   ${CMAKE_CURRENT_BINARY_DIR}/stack.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rumur)
 

@@ -23,12 +23,12 @@ def main(args):
 
   #ifdef __cplusplus
   extern "C" {{
-  #define EXPORT extern
-  #else
-  #define EXPORT /* nothing */
   #endif
 
-  EXPORT const unsigned char {}[] = {{""".format(array)))
+  extern const unsigned char {}[];
+  extern const size_t {};
+
+  const unsigned char {}[] = {{""".format(array, size, array)))
 
   index = 0
   while True:
@@ -48,9 +48,7 @@ def main(args):
   options.output.write(textwrap.dedent("""\
 
   }};
-  EXPORT const size_t {} = sizeof({}) / sizeof({}[0]);
-
-  #undef EXPORT
+  const size_t {} = sizeof({}) / sizeof({}[0]);
 
   #ifdef __cplusplus
   }}

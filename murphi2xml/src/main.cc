@@ -64,7 +64,7 @@ static void parse_args(int argc, char **argv) {
     }
 
     case 128: // --version
-      std::cout << "Rumur version " << rumur::get_version() << '\n';
+      std::cout << "Rumur version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     default:

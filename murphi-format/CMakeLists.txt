@@ -15,9 +15,7 @@ add_executable(murphi-format
   src/main.c
 )
 
-target_include_directories(murphi-format
-  PRIVATE src ${CMAKE_CURRENT_BINARY_DIR}/../librumur
-)
+target_include_directories(murphi-format PRIVATE src)
 target_link_libraries(murphi-format PRIVATE librumur)
 
 add_custom_target(man-murphi-format
