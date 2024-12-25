@@ -119,22 +119,12 @@ def main(args):
     version = last_release()
 
   new = textwrap.dedent("""\
-  #pragma once
+  __attribute__((visibility("default"))) const char *rumur_get_version(void);
 
-  #ifdef __cplusplus
-  namespace rumur {{
-
-  static constexpr const char *get_version() {{
+  const char *rumur_get_version(void) {{
     return "{}";
   }}
-
-  }}
-  #endif
-
-  static inline const char *rumur_get_version(void) {{
-    return "{}";
-  }}
-  """.format(version, version))
+  """.format(version))
 
   # If the version has changed, update the output. Otherwise we leave the old
   # contents -- and more importantly, the timestamp -- intact.

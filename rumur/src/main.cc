@@ -388,7 +388,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case OPT_VERSION: // --version
-      std::cout << "Rumur version " << get_version() << "\n";
+      std::cout << "Rumur version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     case OPT_BOUND: { // --bound ...

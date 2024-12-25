@@ -131,7 +131,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 138: // --version
-      std::cout << "Murphi2Murphi version " << get_version() << '\n';
+      std::cout << "Murphi2Murphi version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     default:

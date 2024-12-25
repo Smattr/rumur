@@ -16,7 +16,6 @@ class RUMUR_API parser;
 #include "location.hh"
 #include "parser.yy.hh"
 #include "position.hh"
-#include "rumur-get-version.h" // generated
 #include <cstddef>
 #include <rumur/Boolean.h>
 #include <rumur/Comment.h>
@@ -39,4 +38,5 @@ class RUMUR_API parser;
 #include <rumur/scanner.h>
 #include <rumur/traverse.h>
 #include <rumur/validate.h>
+#include <rumur/version.h>
 // stack.hh is deliberately not included; just use std::stack

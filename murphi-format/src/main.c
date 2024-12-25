@@ -2,10 +2,10 @@
 #include "debug.h"
 #include "format.h"
 #include "resources.h"
-#include "rumur-get-version.h"
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
+#include <rumur/version.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
