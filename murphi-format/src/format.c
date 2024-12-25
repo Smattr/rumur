@@ -47,6 +47,9 @@ typedef struct state {
   /// reformatter a 1-lookahead ability, wherein the actions for a token can
   /// also take the next token into account in their logic.
   mod_t mod;
+
+  /// have we output anything to `dst` yet?
+  bool started;
 } state_t;
 
 /// are two strings equal?
@@ -429,6 +432,7 @@ int format(FILE *dst, FILE *src) {
       st.mod = pend_newline;
       st.previous = tok.type;
       st.in_ternary = false;
+      st.started = true;
       continue;
     }
 
@@ -437,7 +441,7 @@ int format(FILE *dst, FILE *src) {
       st.mod = NULL;
 
     if (is_block_starter(st, tok.text)) {
-      if (st.previous != TOKEN_BREAK) {
+      if (st.started && st.previous != TOKEN_BREAK) {
         st.mod = pend_newline;
       }
       st.soft_indentation = 0;
@@ -577,6 +581,7 @@ int format(FILE *dst, FILE *src) {
     st.previous = tok.type;
     st.previous_was_keyword =
         tok.type == TOKEN_ID ? is_keyword(tok.text) : false;
+    st.started = true;
   }
 
 done:

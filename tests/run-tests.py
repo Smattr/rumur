@@ -751,6 +751,18 @@ class MurphiFormat(unittest.TestCase):
 
         self.assertIn("cOnSt\n  N: 0;", stdout, "incorrect spacing around erratic casing")
 
+    def test_no_start_newline(self):
+        """a newline should not be inserted before all content"""
+
+        model = "rule begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertTrue(stdout.startswith("rule"), "incorrect preceding space inserted")
+
 
 def make_name(t):
   """
