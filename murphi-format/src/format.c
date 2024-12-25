@@ -577,6 +577,8 @@ int format(FILE *dst, FILE *src) {
       if (st.paren_nesting > 0)
         --st.paren_nesting;
     }
+    if (tok.type == TOKEN_ID && streq(tok.text, "switch"))
+      ++st.indentation;
 
     st.previous = tok.type;
     st.previous_was_keyword =

@@ -763,6 +763,22 @@ class MurphiFormat(unittest.TestCase):
 
         self.assertTrue(stdout.startswith("rule"), "incorrect preceding space inserted")
 
+    def test_switch(self):
+        """formatting of switch statements"""
+
+        model = "rule begin switch x\nend; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "rule begin\n  switch x\n  end;\nend\n",
+            stdout,
+            "incorrect switch formatting"
+        )
+
 
 def make_name(t):
   """
