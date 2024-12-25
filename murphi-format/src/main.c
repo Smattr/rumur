@@ -20,6 +20,8 @@ static size_t n_inputs;
 
 static const char *output;
 
+const char *tab = "  ";
+
 static void parse_args(int argc, char **argv) {
 
   while (true) {
@@ -28,6 +30,7 @@ static void parse_args(int argc, char **argv) {
         {"help", no_argument, 0, 'h'},
         {"in-place", no_argument, 0, 'i'},
         {"output", required_argument, 0, 'o'},
+        {"tab", required_argument, 0, 't'},
         {"version", no_argument, 0, 129},
         {0},
     };
@@ -54,6 +57,10 @@ static void parse_args(int argc, char **argv) {
 
     case 'o': // --output
       output = optarg;
+      break;
+
+    case 't': // --tab
+      tab = optarg;
       break;
 
     case 129: // --version

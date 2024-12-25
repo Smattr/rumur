@@ -75,7 +75,7 @@ static int pend_newline(state_t *st, token_t token) {
   if (token.type != TOKEN_ID || !streq(token.text, "begin"))
     indentation += st->soft_indentation;
   for (size_t i = 0; i < indentation; ++i) {
-    if (fputs("  ", st->dst) < 0) {
+    if (fputs(tab, st->dst) < 0) {
       rc = EIO;
       goto done;
     }
@@ -513,7 +513,7 @@ int format(FILE *dst, FILE *src) {
           goto done;
         }
         for (size_t i = 0; i < st.indentation + st.soft_indentation; ++i) {
-          if (fputs("  ", dst) < 0) {
+          if (fputs(tab, dst) < 0) {
             rc = EIO;
             goto done;
           }
@@ -540,7 +540,7 @@ int format(FILE *dst, FILE *src) {
           while (tok.text[i] == ' ' || tok.text[i] == '\t')
             ++i;
           for (size_t j = 0; j < st.indentation + st.soft_indentation; ++j) {
-            if (fputs("  ", dst) < 0) {
+            if (fputs(tab, dst) < 0) {
               rc = EIO;
               goto done;
             }
