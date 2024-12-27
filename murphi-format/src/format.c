@@ -166,6 +166,9 @@ static int startstate_lookahead(state_t *st, token_t token) {
 
   int rc = 0;
 
+  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
+    ++st->indentation;
+
   // if this does not look like a string, we probably have the implicit
   // beginning of the startstate body
   if (token.type != TOKEN_STRING) {
@@ -501,7 +504,6 @@ int format(FILE *dst, FILE *src) {
         ++st.indentation;
       } else if (streq(tok.text, "startstate")) {
         st.mod = startstate_lookahead;
-        ++st.indentation;
       } else if (st.paren_nesting == 0 && is_soft_indenter(tok.text)) {
         st.mod = pend_newline;
         ++st.soft_indentation;
