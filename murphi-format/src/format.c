@@ -114,8 +114,8 @@ static int pend_space(state_t *st, token_t token) {
 
   // conditionally suppress pending spacing for opening parens
   if (token.type == TOKEN_OPEN_PAREN) {
-    if (st->previous == TOKEN_ID || st->previous == TOKEN_OPEN_PAREN ||
-        st->previous == TOKEN_CLOSE_PAREN)
+    if ((st->previous == TOKEN_ID && !st->previous_was_keyword) ||
+        st->previous == TOKEN_OPEN_PAREN || st->previous == TOKEN_CLOSE_PAREN)
       goto done;
   }
 

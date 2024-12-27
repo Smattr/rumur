@@ -899,6 +899,22 @@ class MurphiFormat(unittest.TestCase):
             "incorrect elsif formatting",
         )
 
+    def test_while_paren(self):
+        """`while` followed by parenthesised expression should be spaced"""
+
+        model = "rule begin while (x = x) do y := z; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "\n  while (x = x) do\n    y := z;\n  end;\n",
+            stdout,
+            "incorrect while formatting",
+        )
+
 
 def make_name(t):
   """
