@@ -837,6 +837,20 @@ class MurphiFormat(unittest.TestCase):
             "const\n  N: 10;\n", stdout, "incorrect const block formatting"
         )
 
+    def test_startstate_no_begin(self):
+        """unnamed startstate should be followed by correct indentation"""
+
+        model = "startstate x := y; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "startstate\n  x := y;\nend\n", stdout, "incorrect startstate formatting"
+        )
+
 
 def make_name(t):
   """

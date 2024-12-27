@@ -160,6 +160,26 @@ done:
   return rc;
 }
 
+/// modifier action for just having seen `startstate`
+static int startstate_lookahead(state_t *st, token_t token) {
+  assert(st != NULL);
+
+  int rc = 0;
+
+  // if this does not look like a string, we probably have the implicit
+  // beginning of the startstate body
+  if (token.type != TOKEN_STRING) {
+    rc = pend_newline(st, token);
+    goto done;
+  }
+
+done:
+  // de-register ourselves
+  st->mod = NULL;
+
+  return rc;
+}
+
 /// is this a Murphi/Rumur keyword?
 static bool is_keyword(const char *text) {
   assert(text != NULL);
@@ -478,6 +498,9 @@ int format(FILE *dst, FILE *src) {
         st.mod = pend_newline;
         if (streq(tok.text, "begin"))
           st.soft_indentation = 0;
+        ++st.indentation;
+      } else if (streq(tok.text, "startstate")) {
+        st.mod = startstate_lookahead;
         ++st.indentation;
       } else if (st.paren_nesting == 0 && is_soft_indenter(tok.text)) {
         st.mod = pend_newline;
