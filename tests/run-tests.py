@@ -883,6 +883,22 @@ class MurphiFormat(unittest.TestCase):
             "incorrect else formatting",
         )
 
+    def test_elsif(self):
+        """indentation of `elsif` should be correct"""
+
+        model = "rule begin if x = x then y := z; elsif y = y then y := w; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "\n  if x = x then\n    y := z;\n  elsif y = y then\n    y := w;\n  end;\n",
+            stdout,
+            "incorrect elsif formatting",
+        )
+
 
 def make_name(t):
   """

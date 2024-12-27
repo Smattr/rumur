@@ -392,6 +392,8 @@ static bool is_dedenter(const char *text) {
     return false;
   if (streq(text, "else"))
     return true;
+  if (streq(text, "elsif"))
+    return true;
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
@@ -513,7 +515,8 @@ int format(FILE *dst, FILE *src) {
         ++st.soft_indentation;
       } else if (is_arrow(tok.text)) {
         st.mod = arrow_lookahead;
-      } else if (is_dedenter(tok.text) || streq(tok.text, ";")) {
+      } else if ((is_dedenter(tok.text) && !streq(tok.text, "elsif")) ||
+                 streq(tok.text, ";")) {
         st.mod = pend_newline;
       } else if (!is_unary(st, tok.text)) {
         st.mod = pend_space;
