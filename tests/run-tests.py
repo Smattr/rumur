@@ -783,10 +783,10 @@ class MurphiFormat(unittest.TestCase):
         """formatting multiple files in-place should work"""
 
         # a model with a small amount of text
-        short = "const\n  x: 10;"
+        short = "const\n  x: 10;\n"
 
         # a model with a longer amount of text
-        long = "var\n  x: 0..10;\n  y: 0..10;\n  z: 0..10;"
+        long = "var\n  x: 0..10;\n  y: 0..10;\n  z: 0..10;\n"
 
         with tempfile.TemporaryDirectory() as tmp:
             short_path = Path(tmp) / "short.m"
@@ -809,17 +809,33 @@ class MurphiFormat(unittest.TestCase):
 
             with open(short_path, "rb") as f:
                 content = f.read()
-            self.assertTrue(
-                content.startswith(short.encode("utf-8")),
+            self.assertEqual(
+                content,
+                short.encode("utf-8"),
                 "model was reflowed incorrectly",
             )
 
             with open(long_path, "rb") as f:
                 content = f.read()
-            self.assertTrue(
-                content.startswith(long.encode("utf-8")),
+            self.assertEqual(
+                content,
+                long.encode("utf-8"),
                 "model was reflowed incorrectly",
             )
+
+    def test_trailing_indentation(self):
+        """we should not incur a trailing indentation at end of file"""
+
+        model = "const N: 10;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "const\n  N: 10;\n", stdout, "incorrect const block formatting"
+        )
 
 
 def make_name(t):

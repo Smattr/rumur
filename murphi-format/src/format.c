@@ -71,6 +71,8 @@ static int pend_newline(state_t *st, token_t token) {
     rc = EIO;
     goto done;
   }
+  if (token.type == TOKEN_EOF)
+    goto done;
   size_t indentation = st->indentation;
   if (token.type != TOKEN_ID || !streq(token.text, "begin"))
     indentation += st->soft_indentation;
