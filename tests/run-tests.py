@@ -867,6 +867,22 @@ class MurphiFormat(unittest.TestCase):
             "incorrect startstate formatting",
         )
 
+    def test_else(self):
+        """indentation of `else` should be correct"""
+
+        model = "rule begin if x = x then y := z; else y := w; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "\n  if x = x then\n    y := z;\n  else\n    y := w;\n  end;\n",
+            stdout,
+            "incorrect else formatting",
+        )
+
 
 def make_name(t):
   """

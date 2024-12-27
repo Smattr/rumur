@@ -364,6 +364,8 @@ static bool is_indenter(const char *text) {
     return true;
   if (streq(text, "do"))
     return true;
+  if (streq(text, "else"))
+    return true;
   if (streq(text, "record"))
     return true;
   if (streq(text, "then"))
@@ -388,6 +390,8 @@ static bool is_soft_indenter(const char *text) {
 static bool is_dedenter(const char *text) {
   if (text == NULL)
     return false;
+  if (streq(text, "else"))
+    return true;
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
