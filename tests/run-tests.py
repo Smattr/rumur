@@ -862,7 +862,7 @@ class MurphiFormat(unittest.TestCase):
         self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
 
         self.assertEqual(
-            "startstate\nbegin\n  x := y;\nend\n",
+            "startstate begin\n  x := y;\nend\n",
             stdout,
             "incorrect startstate formatting",
         )

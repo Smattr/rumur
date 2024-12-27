@@ -166,8 +166,13 @@ static int startstate_lookahead(state_t *st, token_t token) {
 
   int rc = 0;
 
-  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
-    ++st->indentation;
+  // if this is `begin`, let it handle the line ending and indentation
+  if (token.type == TOKEN_ID && streq(token.text, "begin")) {
+    rc = pend_space(st, token);
+    goto done;
+  }
+
+  ++st->indentation;
 
   // if this does not look like a string, we probably have the implicit
   // beginning of the startstate body
