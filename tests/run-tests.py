@@ -915,6 +915,22 @@ class MurphiFormat(unittest.TestCase):
             "incorrect while formatting",
         )
 
+    def test_no_format(self):
+        """formatting disabling comments should be respected"""
+
+        model = "rule begin -- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "-- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n",
+            stdout,
+            "format-disabling comments did not work",
+        )
+
 
 def make_name(t):
   """

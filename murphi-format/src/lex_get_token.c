@@ -180,18 +180,37 @@ int lex_get_token(lex_t *me, token_t *token) {
         if (first == '-' && i == 1 && c == '-') {
           // this is a comment
           ACCRUE(c);
+          bool is_raw = false;
           while (true) {
+            if (fflush(me->stage) < 0) {
+              return EIO;
+            }
             const int n = getc(me->src);
             if (n == EOF) {
               me->done = true;
               break;
             }
             if (n == '\n') {
-              ungetc(n, me->src);
-              break;
+              if (!is_raw) {
+                static const char OFF[] = "-- murphi-format: off";
+                if (strcmp(me->stage_base, OFF) == 0) {
+                  is_raw = true;
+                } else {
+                  ungetc(n, me->src);
+                  break;
+                }
+              } else {
+                static const char ON[] = "-- murphi-format: on";
+                if (strcmp(me->stage_base, ON) == 0) {
+                  ungetc(n, me->src);
+                  break;
+                }
+              }
             }
             ACCRUE(n);
           }
+          if (is_raw)
+            RET(TOKEN_RAW);
           if (newlines > 0)
             RET(TOKEN_NL_COMMENT);
           RET(TOKEN_LINE_COMMENT);

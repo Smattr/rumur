@@ -47,6 +47,28 @@ Text to use as one tab worth of indentation. By default, this is two spaces.
 .RS
 Print \fBmurphi\(hyformat\fR version and then exit.
 .RE
+.SH NOTES
+To disable formatting for a specific section of code, special comments are
+recognised:
+
+.RS
+.nf
+.eo
+rule begin
+	x := y;
+	y := z;
+	-- murphi-format: off
+	z := w; w := x;
+	-- murphi-format: on
+end;
+.ec
+.fi
+.RE
+
+Code between the \fBmurphi\-format: off\fR and \fBmurphi\-format: on\fR
+comments will be preserved as-is. Note that these must be line comments, not
+multi\(hyline comments. Additionally they must have the exact spacing shown, not
+arbitrary white space between e.g. the \fB:\fR and \fBoff\fR.
 .SH SEE ALSO
 rumur(1)
 .SH AUTHOR

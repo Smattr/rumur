@@ -555,6 +555,7 @@ int format(FILE *dst, FILE *src) {
       }
       // fall through
     case TOKEN_LINE_COMMENT:
+    case TOKEN_RAW:
       if (fputs(tok.text, dst) < 0) {
         rc = EIO;
         goto done;
