@@ -170,6 +170,7 @@ int main(int argc, char **argv) {
       }
       (void)fclose(wb);
       memset(buffer, '\0', buffer_size);
+      rewind(out);
     }
   }
 

@@ -779,6 +779,48 @@ class MurphiFormat(unittest.TestCase):
             "incorrect switch formatting"
         )
 
+    def test_multiple_inplace(self):
+        """formatting multiple files in-place should work"""
+
+        # a model with a small amount of text
+        short = "const\n  x: 10;"
+
+        # a model with a longer amount of text
+        long = "var\n  x: 0..10;\n  y: 0..10;\n  z: 0..10;"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            short_path = Path(tmp) / "short.m"
+            long_path = Path(tmp) / "long.m"
+
+            with open(short_path, "wt", encoding="utf-8") as f:
+                f.write(short)
+            with open(long_path, "wt", encoding="utf-8") as f:
+                f.write(long)
+
+            ret, stdout, stderr = run(
+                ["murphi-format", "--in-place", long_path, short_path]
+            )
+
+            self.assertEqual(ret, 0, "failed to reflow Murphi snippets")
+            self.assertEqual(
+                stdout, "", "murphi-format produced output when asked for in-place"
+            )
+            self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+            with open(short_path, "rb") as f:
+                content = f.read()
+            self.assertTrue(
+                content.startswith(short.encode("utf-8")),
+                "model was reflowed incorrectly",
+            )
+
+            with open(long_path, "rb") as f:
+                content = f.read()
+            self.assertTrue(
+                content.startswith(long.encode("utf-8")),
+                "model was reflowed incorrectly",
+            )
+
 
 def make_name(t):
   """
