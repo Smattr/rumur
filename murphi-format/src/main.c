@@ -169,7 +169,6 @@ int main(int argc, char **argv) {
         goto done;
       }
       (void)fclose(wb);
-      memset(buffer, '\0', buffer_size);
       rewind(out);
     }
   }
