@@ -40,6 +40,7 @@ typedef enum {
   TOKEN_NL_COMMENT, // comment with a preceding hard \n
   TOKEN_MULTILINE_COMMENT,
   TOKEN_BREAK, // double \n
+  TOKEN_RAW,   // text that should be output as-is
 } token_type_t;
 
 /// a token encountered in the input stream

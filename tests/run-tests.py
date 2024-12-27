@@ -779,6 +779,158 @@ class MurphiFormat(unittest.TestCase):
             "incorrect switch formatting"
         )
 
+    def test_multiple_inplace(self):
+        """formatting multiple files in-place should work"""
+
+        # a model with a small amount of text
+        short = "const\n  x: 10;\n"
+
+        # a model with a longer amount of text
+        long = "var\n  x: 0..10;\n  y: 0..10;\n  z: 0..10;\n"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            short_path = Path(tmp) / "short.m"
+            long_path = Path(tmp) / "long.m"
+
+            with open(short_path, "wt", encoding="utf-8") as f:
+                f.write(short)
+            with open(long_path, "wt", encoding="utf-8") as f:
+                f.write(long)
+
+            ret, stdout, stderr = run(
+                ["murphi-format", "--in-place", long_path, short_path]
+            )
+
+            self.assertEqual(ret, 0, "failed to reflow Murphi snippets")
+            self.assertEqual(
+                stdout, "", "murphi-format produced output when asked for in-place"
+            )
+            self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+            with open(short_path, "rb") as f:
+                content = f.read()
+            self.assertEqual(
+                content,
+                short.encode("utf-8"),
+                "model was reflowed incorrectly",
+            )
+
+            with open(long_path, "rb") as f:
+                content = f.read()
+            self.assertEqual(
+                content,
+                long.encode("utf-8"),
+                "model was reflowed incorrectly",
+            )
+
+    def test_trailing_indentation(self):
+        """we should not incur a trailing indentation at end of file"""
+
+        model = "const N: 10;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "const\n  N: 10;\n", stdout, "incorrect const block formatting"
+        )
+
+    def test_startstate_no_begin(self):
+        """unnamed startstate should be followed by correct indentation"""
+
+        model = "startstate x := y; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "startstate\n  x := y;\nend\n", stdout, "incorrect startstate formatting"
+        )
+
+    def test_startstate_begin(self):
+        """unnamed startstate with `begin` should be followed by correct indentation"""
+
+        model = "startstate begin x := y; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "startstate begin\n  x := y;\nend\n",
+            stdout,
+            "incorrect startstate formatting",
+        )
+
+    def test_else(self):
+        """indentation of `else` should be correct"""
+
+        model = "rule begin if x = x then y := z; else y := w; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "\n  if x = x then\n    y := z;\n  else\n    y := w;\n  end;\n",
+            stdout,
+            "incorrect else formatting",
+        )
+
+    def test_elsif(self):
+        """indentation of `elsif` should be correct"""
+
+        model = "rule begin if x = x then y := z; elsif y = y then y := w; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "\n  if x = x then\n    y := z;\n  elsif y = y then\n    y := w;\n  end;\n",
+            stdout,
+            "incorrect elsif formatting",
+        )
+
+    def test_while_paren(self):
+        """`while` followed by parenthesised expression should be spaced"""
+
+        model = "rule begin while (x = x) do y := z; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "\n  while (x = x) do\n    y := z;\n  end;\n",
+            stdout,
+            "incorrect while formatting",
+        )
+
+    def test_no_format(self):
+        """formatting disabling comments should be respected"""
+
+        model = "rule begin -- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "-- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n",
+            stdout,
+            "format-disabling comments did not work",
+        )
+
 
 def make_name(t):
   """

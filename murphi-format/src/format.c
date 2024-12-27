@@ -71,6 +71,8 @@ static int pend_newline(state_t *st, token_t token) {
     rc = EIO;
     goto done;
   }
+  if (token.type == TOKEN_EOF)
+    goto done;
   size_t indentation = st->indentation;
   if (token.type != TOKEN_ID || !streq(token.text, "begin"))
     indentation += st->soft_indentation;
@@ -112,8 +114,8 @@ static int pend_space(state_t *st, token_t token) {
 
   // conditionally suppress pending spacing for opening parens
   if (token.type == TOKEN_OPEN_PAREN) {
-    if (st->previous == TOKEN_ID || st->previous == TOKEN_OPEN_PAREN ||
-        st->previous == TOKEN_CLOSE_PAREN)
+    if ((st->previous == TOKEN_ID && !st->previous_was_keyword) ||
+        st->previous == TOKEN_OPEN_PAREN || st->previous == TOKEN_CLOSE_PAREN)
       goto done;
   }
 
@@ -150,6 +152,34 @@ static int arrow_lookahead(state_t *st, token_t token) {
   // otherwise infer a newline and indent
   ++st->indentation;
   rc = pend_newline(st, token);
+
+done:
+  // de-register ourselves
+  st->mod = NULL;
+
+  return rc;
+}
+
+/// modifier action for just having seen `startstate`
+static int startstate_lookahead(state_t *st, token_t token) {
+  assert(st != NULL);
+
+  int rc = 0;
+
+  // if this is `begin`, let it handle the line ending and indentation
+  if (token.type == TOKEN_ID && streq(token.text, "begin")) {
+    rc = pend_space(st, token);
+    goto done;
+  }
+
+  ++st->indentation;
+
+  // if this does not look like a string, we probably have the implicit
+  // beginning of the startstate body
+  if (token.type != TOKEN_STRING) {
+    rc = pend_newline(st, token);
+    goto done;
+  }
 
 done:
   // de-register ourselves
@@ -339,6 +369,8 @@ static bool is_indenter(const char *text) {
     return true;
   if (streq(text, "do"))
     return true;
+  if (streq(text, "else"))
+    return true;
   if (streq(text, "record"))
     return true;
   if (streq(text, "then"))
@@ -363,6 +395,10 @@ static bool is_soft_indenter(const char *text) {
 static bool is_dedenter(const char *text) {
   if (text == NULL)
     return false;
+  if (streq(text, "else"))
+    return true;
+  if (streq(text, "elsif"))
+    return true;
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
@@ -477,12 +513,15 @@ int format(FILE *dst, FILE *src) {
         if (streq(tok.text, "begin"))
           st.soft_indentation = 0;
         ++st.indentation;
+      } else if (streq(tok.text, "startstate")) {
+        st.mod = startstate_lookahead;
       } else if (st.paren_nesting == 0 && is_soft_indenter(tok.text)) {
         st.mod = pend_newline;
         ++st.soft_indentation;
       } else if (is_arrow(tok.text)) {
         st.mod = arrow_lookahead;
-      } else if (is_dedenter(tok.text) || streq(tok.text, ";")) {
+      } else if ((is_dedenter(tok.text) && !streq(tok.text, "elsif")) ||
+                 streq(tok.text, ";")) {
         st.mod = pend_newline;
       } else if (!is_unary(st, tok.text)) {
         st.mod = pend_space;
@@ -521,6 +560,7 @@ int format(FILE *dst, FILE *src) {
       }
       // fall through
     case TOKEN_LINE_COMMENT:
+    case TOKEN_RAW:
       if (fputs(tok.text, dst) < 0) {
         rc = EIO;
         goto done;
