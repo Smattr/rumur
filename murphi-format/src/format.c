@@ -529,8 +529,7 @@ int format(FILE *dst, FILE *src) {
         ++st.soft_indentation;
       } else if (is_arrow(tok.text)) {
         st.mod = arrow_lookahead;
-      } else if ((is_dedenter(tok.text) && !streq(tok.text, "elsif")) ||
-                 streq(tok.text, ";")) {
+      } else if (is_dedenter(tok.text) && !streq(tok.text, "elsif")) {
         st.mod = pend_newline;
       } else if (!is_unary(st, tok.text)) {
         st.mod = pend_space;
