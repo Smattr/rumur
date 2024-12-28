@@ -931,6 +931,22 @@ class MurphiFormat(unittest.TestCase):
             "format-disabling comments did not work",
         )
 
+    def test_isundefined(self):
+        """`isundefined` should be spaced correctly"""
+
+        model = "rule begin x := isundefined (x); end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            ":= isundefined(x)",
+            stdout,
+            "`isundefined` spaced incorrectly",
+        )
+
 
 def make_name(t):
   """
