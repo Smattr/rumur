@@ -57,39 +57,6 @@ static bool streq(const char *a, const char *b) {
   return strcasecmp(a, b) == 0;
 }
 
-/// handle an implicit newline following the previous token
-static int pend_newline(state_t *st, token_t token) {
-  assert(st != NULL);
-
-  int rc = 0;
-
-  // no need for a newline if we just incurred one
-  if (token.type == TOKEN_BREAK)
-    goto done;
-
-  if (fputc('\n', st->dst) < 0) {
-    rc = EIO;
-    goto done;
-  }
-  if (token.type == TOKEN_EOF)
-    goto done;
-  size_t indentation = st->indentation;
-  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
-    indentation += st->soft_indentation;
-  for (size_t i = 0; i < indentation; ++i) {
-    if (fputs(tab, st->dst) < 0) {
-      rc = EIO;
-      goto done;
-    }
-  }
-
-done:
-  // de-register ourselves
-  st->mod = NULL;
-
-  return rc;
-}
-
 /// handle an implicit space following the previous token
 static int pend_space(state_t *st, token_t token) {
   assert(st != NULL);
@@ -128,6 +95,45 @@ static int pend_space(state_t *st, token_t token) {
   if (fputc(' ', st->dst) < 0) {
     rc = EIO;
     goto done;
+  }
+
+done:
+  // de-register ourselves
+  st->mod = NULL;
+
+  return rc;
+}
+
+/// handle an implicit newline following the previous token
+static int pend_newline(state_t *st, token_t token) {
+  assert(st != NULL);
+
+  int rc = 0;
+
+  // no need for a newline if we just incurred one
+  if (token.type == TOKEN_BREAK)
+    goto done;
+
+  // do not append a newline if we have a non-breaking comment
+  if (token.type == TOKEN_LINE_COMMENT) {
+    rc = pend_space(st, token);
+    goto done;
+  }
+
+  if (fputc('\n', st->dst) < 0) {
+    rc = EIO;
+    goto done;
+  }
+  if (token.type == TOKEN_EOF)
+    goto done;
+  size_t indentation = st->indentation;
+  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
+    indentation += st->soft_indentation;
+  for (size_t i = 0; i < indentation; ++i) {
+    if (fputs(tab, st->dst) < 0) {
+      rc = EIO;
+      goto done;
+    }
   }
 
 done:
@@ -264,8 +270,11 @@ static bool is_keyword(const char *text) {
     return true;
   if (streq(text, "invariant"))
     return true;
+#if 0
+  // `isundefined` is a keyword, but is used as if it were a function
   if (streq(text, "isundefined"))
     return true;
+#endif
   if (streq(text, "liveness"))
     return true;
   if (streq(text, "of"))
@@ -465,7 +474,7 @@ int format(FILE *dst, FILE *src) {
         rc = EIO;
         goto done;
       }
-      st.mod = pend_newline;
+      st.mod = st.paren_nesting > 0 ? pend_space : pend_newline;
       st.previous = tok.type;
       st.in_ternary = false;
       st.started = true;
@@ -520,8 +529,7 @@ int format(FILE *dst, FILE *src) {
         ++st.soft_indentation;
       } else if (is_arrow(tok.text)) {
         st.mod = arrow_lookahead;
-      } else if ((is_dedenter(tok.text) && !streq(tok.text, "elsif")) ||
-                 streq(tok.text, ";")) {
+      } else if (is_dedenter(tok.text) && !streq(tok.text, "elsif")) {
         st.mod = pend_newline;
       } else if (!is_unary(st, tok.text)) {
         st.mod = pend_space;

@@ -931,6 +931,56 @@ class MurphiFormat(unittest.TestCase):
             "format-disabling comments did not work",
         )
 
+    def test_isundefined(self):
+        """`isundefined` should be spaced correctly"""
+
+        model = "rule begin x := isundefined (x); end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            ":= isundefined(x)",
+            stdout,
+            "`isundefined` spaced incorrectly",
+        )
+
+    def test_line_comment(self):
+        """line comments should not be bumped onto the next line"""
+
+        model = (
+            "rule begin x := y; -- line comment\nz := w;\n-- comment on newline\n end"
+        )
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "rule begin\n  x := y; -- line comment\n  z := w;\n  -- comment on newline\nend\n",
+            stdout,
+            "comments broken incorrectly",
+        )
+
+    def test_procedure_params(self):
+        """parameter lists in procedures should appear correctly"""
+
+        model = "procedure foo(a: b; c: d) begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "a: b; c: d",
+            stdout,
+            "procedure parameters formatted incorrectly",
+        )
+
 
 def make_name(t):
   """
