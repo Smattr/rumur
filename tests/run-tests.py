@@ -965,6 +965,22 @@ class MurphiFormat(unittest.TestCase):
             "comments broken incorrectly",
         )
 
+    def test_procedure_params(self):
+        """parameter lists in procedures should appear correctly"""
+
+        model = "procedure foo(a: b; c: d) begin end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            "a: b; c: d",
+            stdout,
+            "procedure parameters formatted incorrectly",
+        )
+
 
 def make_name(t):
   """

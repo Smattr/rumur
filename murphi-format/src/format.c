@@ -474,7 +474,7 @@ int format(FILE *dst, FILE *src) {
         rc = EIO;
         goto done;
       }
-      st.mod = pend_newline;
+      st.mod = st.paren_nesting > 0 ? pend_space : pend_newline;
       st.previous = tok.type;
       st.in_ternary = false;
       st.started = true;
