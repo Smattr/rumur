@@ -57,39 +57,6 @@ static bool streq(const char *a, const char *b) {
   return strcasecmp(a, b) == 0;
 }
 
-/// handle an implicit newline following the previous token
-static int pend_newline(state_t *st, token_t token) {
-  assert(st != NULL);
-
-  int rc = 0;
-
-  // no need for a newline if we just incurred one
-  if (token.type == TOKEN_BREAK)
-    goto done;
-
-  if (fputc('\n', st->dst) < 0) {
-    rc = EIO;
-    goto done;
-  }
-  if (token.type == TOKEN_EOF)
-    goto done;
-  size_t indentation = st->indentation;
-  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
-    indentation += st->soft_indentation;
-  for (size_t i = 0; i < indentation; ++i) {
-    if (fputs(tab, st->dst) < 0) {
-      rc = EIO;
-      goto done;
-    }
-  }
-
-done:
-  // de-register ourselves
-  st->mod = NULL;
-
-  return rc;
-}
-
 /// handle an implicit space following the previous token
 static int pend_space(state_t *st, token_t token) {
   assert(st != NULL);
@@ -128,6 +95,45 @@ static int pend_space(state_t *st, token_t token) {
   if (fputc(' ', st->dst) < 0) {
     rc = EIO;
     goto done;
+  }
+
+done:
+  // de-register ourselves
+  st->mod = NULL;
+
+  return rc;
+}
+
+/// handle an implicit newline following the previous token
+static int pend_newline(state_t *st, token_t token) {
+  assert(st != NULL);
+
+  int rc = 0;
+
+  // no need for a newline if we just incurred one
+  if (token.type == TOKEN_BREAK)
+    goto done;
+
+  // do not append a newline if we have a non-breaking comment
+  if (token.type == TOKEN_LINE_COMMENT) {
+    rc = pend_space(st, token);
+    goto done;
+  }
+
+  if (fputc('\n', st->dst) < 0) {
+    rc = EIO;
+    goto done;
+  }
+  if (token.type == TOKEN_EOF)
+    goto done;
+  size_t indentation = st->indentation;
+  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
+    indentation += st->soft_indentation;
+  for (size_t i = 0; i < indentation; ++i) {
+    if (fputs(tab, st->dst) < 0) {
+      rc = EIO;
+      goto done;
+    }
   }
 
 done:

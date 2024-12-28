@@ -947,6 +947,24 @@ class MurphiFormat(unittest.TestCase):
             "`isundefined` spaced incorrectly",
         )
 
+    def test_line_comment(self):
+        """line comments should not be bumped onto the next line"""
+
+        model = (
+            "rule begin x := y; -- line comment\nz := w;\n-- comment on newline\n end"
+        )
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "rule begin\n  x := y; -- line comment\n  z := w;\n  -- comment on newline\nend\n",
+            stdout,
+            "comments broken incorrectly",
+        )
+
 
 def make_name(t):
   """
