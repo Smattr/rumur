@@ -115,7 +115,7 @@ static int pend_newline(state_t *st, token_t token) {
     goto done;
 
   // do not append a newline if we have a non-breaking comment
-  if (token.type == TOKEN_LINE_COMMENT) {
+  if (st->previous != TOKEN_BREAK && token.type == TOKEN_LINE_COMMENT) {
     rc = pend_space(st, token);
     goto done;
   }

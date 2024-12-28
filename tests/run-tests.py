@@ -981,6 +981,22 @@ class MurphiFormat(unittest.TestCase):
             "procedure parameters formatted incorrectly",
         )
 
+    def test_comment_const_interleaved(self):
+        """comments attached to consts should stay where they are"""
+
+        model = "const x: 42;\n\n-- hello world\ny: 42;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertEqual(
+            "const\n  x: 42;\n\n  -- hello world\n  y: 42;\n",
+            stdout,
+            "const comments formatted incorrectly",
+        )
+
 
 def make_name(t):
   """
