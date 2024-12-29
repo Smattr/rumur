@@ -75,6 +75,10 @@ static int pend_space(state_t *st, token_t token) {
   if (token.type == TOKEN_BREAK)
     goto done;
 
+  // no need for a space if we are about to take a newline
+  if (token.type == TOKEN_NL_COMMENT)
+    goto done;
+
   // suppress pending spacing for closing parens
   if (token.type == TOKEN_CLOSE_PAREN)
     goto done;

@@ -1095,6 +1095,25 @@ class MurphiFormat(unittest.TestCase):
             "incorrect `case` indentation",
         )
 
+    def test_no_trailing_space_before_comment(self):
+        """
+        something that would normally incur a following space should not have one if the
+        next thing is a breaking line comment
+        """
+
+        model = "rule begin alias\n-- hello world\nx:y do x := z; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(
+            stdout,
+            re.compile(r"\balias$", flags=re.MULTILINE),
+            "incorrect trailing space",
+        )
+
 
 def make_name(t):
   """
