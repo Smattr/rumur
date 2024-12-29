@@ -200,8 +200,11 @@ static bool is_keyword(const char *text) {
 
   if (streq(text, "alias"))
     return true;
+#if 0
+  // it is more intuitive to suppress space between `array` and `[`
   if (streq(text, "array"))
     return true;
+#endif
   if (streq(text, "assert"))
     return true;
   if (streq(text, "assume"))
@@ -293,8 +296,11 @@ static bool is_keyword(const char *text) {
     return true;
   if (streq(text, "ruleset"))
     return true;
+#if 0
+  // `scalarset` is more intuitive to treat as a function (no following space)
   if (streq(text, "scalarset"))
     return true;
+#endif
   if (streq(text, "startstate"))
     return true;
   if (streq(text, "switch"))

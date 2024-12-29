@@ -997,6 +997,32 @@ class MurphiFormat(unittest.TestCase):
             "const comments formatted incorrectly",
         )
 
+    def test_scalarset(self):
+        """`scalarset` should be spaced correctly"""
+
+        model = "type x : scalarset (4);"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(": scalarset(4)", stdout, "`scalarset` spaced incorrectly")
+
+    def test_array(self):
+        """`array` should be spaced intuitively"""
+
+        model = "type x : array [ boolean ] of boolean;"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(
+            ": array[boolean] of boolean", stdout, "`array` spaced incorrectly"
+        )
+
 
 def make_name(t):
   """
