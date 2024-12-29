@@ -528,8 +528,15 @@ int format(FILE *dst, FILE *src) {
     if (st.mod != NULL)
       st.mod(&st, tok);
 
-    if (tok.type == TOKEN_EOF)
+    if (tok.type == TOKEN_EOF) {
+      if (!newlined && tok.type != TOKEN_UNKNOWN) {
+        if (fputc('\n', dst) < 0) {
+          rc = EIO;
+          goto done;
+        }
+      }
       break;
+    }
 
     switch (tok.type) {
 

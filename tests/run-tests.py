@@ -1142,6 +1142,18 @@ class MurphiFormat(unittest.TestCase):
             "incorrect hex spacing",
         )
 
+    def test_end_newline(self):
+        """a final newline should be present"""
+
+        model = "invariant x"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertTrue(stdout.endswith("\n"), "incorrect file ending")
+
 
 def make_name(t):
   """
