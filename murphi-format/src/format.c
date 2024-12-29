@@ -331,6 +331,8 @@ static bool is_unary(state_t st, const char *text) {
     return true;
   if (streq(text, "~"))
     return true;
+  if (streq(text, "¬"))
+    return true;
 
   if (streq(text, "+") || streq(text, "-")) {
     if (st.previous_was_keyword)

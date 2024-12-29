@@ -1023,6 +1023,18 @@ class MurphiFormat(unittest.TestCase):
             ": array[boolean] of boolean", stdout, "`array` spaced incorrectly"
         )
 
+    def test_not_unicode(self):
+        """`¬` spacing should be correct"""
+
+        model = "rule begin x := ¬ y; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(":= ¬y", stdout, "`¬` spaced incorrectly")
+
 
 def make_name(t):
   """
