@@ -1035,6 +1035,18 @@ class MurphiFormat(unittest.TestCase):
 
         self.assertIn(":= ¬y", stdout, "`¬` spaced incorrectly")
 
+    def test_smart_quotes(self):
+        """smart quotes (“”) should be handled correctly"""
+
+        model = "rule begin assert “foo bar” x; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn("assert “foo bar” x", stdout, "smart quotes spaced incorrectly")
+
 
 def make_name(t):
   """

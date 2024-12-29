@@ -134,6 +134,31 @@ int lex_get_token(lex_t *me, token_t *token) {
   case ';':
     RET(TOKEN_SEMI);
 
+  case 0xe2: { // first byte of "“" and "”"
+    const int second = getc(me->src);
+    if (second == EOF) {
+      me->done = true;
+      break;
+    }
+    if (second != 0x80) {
+      ungetc(second, me->src);
+      break;
+    }
+    ACCRUE(second);
+    const int third = getc(me->src);
+    if (third == EOF) {
+      me->done = true;
+      break;
+    }
+    if (third != 0x9c && third != 0x9d) {
+      ungetc(third, me->src);
+      break;
+    }
+    ACCRUE(third);
+    if (third == 0x9d) // we have "”"
+      break;
+  }
+  // fall through
   case '"':
     for (bool escaping = false;;) {
       const int c = getc(me->src);
@@ -142,8 +167,20 @@ int lex_get_token(lex_t *me, token_t *token) {
         break;
       }
       ACCRUE(c);
-      if (c == '"' && !escaping)
-        break;
+      if (fflush(me->stage) < 0)
+        return errno;
+      if (!escaping) {
+        if (me->stage_base[0] == '"') {
+          if (me->stage_base[me->stage_size - 1] == '"')
+            break;
+        }
+        if (me->stage_size >= strlen("“") + strlen("”")) {
+          if (strncmp(me->stage_base, "“", strlen("“")) == 0) {
+            if (strcmp(&me->stage_base[me->stage_size - strlen("”")], "”") == 0)
+              break;
+          }
+        }
+      }
       if (c == '\\') {
         escaping = !escaping;
       } else {
