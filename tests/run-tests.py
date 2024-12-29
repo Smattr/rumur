@@ -1126,6 +1126,22 @@ class MurphiFormat(unittest.TestCase):
 
         self.assertIn(" x ∨ y ", stdout, "incorrect unicode operator handling")
 
+    def test_hex_literal(self):
+        """hexadecimal literals should be handled correctly"""
+
+        model = "rule begin x := 0xe2; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(
+            stdout,
+            re.compile("^  x := 0xe2;$", flags=re.MULTILINE),
+            "incorrect hex spacing",
+        )
+
 
 def make_name(t):
   """

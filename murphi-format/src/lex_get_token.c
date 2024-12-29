@@ -96,7 +96,33 @@ int lex_get_token(lex_t *me, token_t *token) {
   } while (0)
 
   switch (first) {
-  case '0':
+  case '0': {
+    const int second = getc(me->src);
+    if (second == EOF) {
+      me->done = true;
+      RET(TOKEN_NUMBER);
+    }
+    if (second == 'x' || second == 'X') {
+      ACCRUE(second);
+      while (true) {
+        const int c = getc(me->src);
+        if (c == EOF) {
+          me->done = true;
+          break;
+        }
+        if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') ||
+            (c >= '0' && c <= '9')) {
+          ACCRUE(c);
+        } else {
+          ungetc(c, me->src);
+          break;
+        }
+      }
+      RET(TOKEN_NUMBER);
+    }
+    ungetc(second, me->src);
+  }
+  // fall through
   case '1' ... '9':
     while (true) {
 
