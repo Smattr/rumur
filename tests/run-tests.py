@@ -1114,6 +1114,18 @@ class MurphiFormat(unittest.TestCase):
             "incorrect trailing space",
         )
 
+    def test_unicode_op(self):
+        """unicode operators starting with 0xe2 should be handled correctly"""
+
+        model = "rule x ∨ y ==> begin x := z; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn(" x ∨ y ", stdout, "incorrect unicode operator handling")
+
 
 def make_name(t):
   """

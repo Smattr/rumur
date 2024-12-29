@@ -142,7 +142,22 @@ int lex_get_token(lex_t *me, token_t *token) {
     }
     if (second != 0x80) {
       ungetc(second, me->src);
-      break;
+      {
+        bool have_op = false;
+        for (size_t i = 0; i < sizeof(OPERATORS) / sizeof(OPERATORS[0]); ++i)
+          have_op |= (unsigned char)OPERATORS[i][0] == 0xe2;
+        assert(have_op && "redundant handling; no operators start with 0xe2");
+        (void)have_op;
+      }
+      goto operator;
+    }
+    {
+      bool have_op = false;
+      for (size_t i = 0; i < sizeof(OPERATORS) / sizeof(OPERATORS[0]); ++i) {
+        const unsigned char *const op = (const unsigned char *)OPERATORS[i];
+        have_op |= op[0] == 0xe2 && op[1] == 0x80;
+      }
+      assert(!have_op && "mishandling operator beginning 0xe280");
     }
     ACCRUE(second);
     const int third = getc(me->src);
@@ -206,6 +221,7 @@ int lex_get_token(lex_t *me, token_t *token) {
   case '{':
     RET(TOKEN_OPEN_BRACE);
 
+  operator:
   default:
     if (may_be_operator(0, first)) {
       for (size_t i = 1;; ++i) {
