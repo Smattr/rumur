@@ -776,7 +776,7 @@ class MurphiFormat(unittest.TestCase):
         self.assertEqual(
             "rule begin\n  switch x\n  end;\nend\n",
             stdout,
-            "incorrect switch formatting"
+            "incorrect switch formatting",
         )
 
     def test_multiple_inplace(self):
@@ -1058,6 +1058,42 @@ class MurphiFormat(unittest.TestCase):
         self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
 
         self.assertIn('startstate "foo" begin', stdout, "startstate spaced incorrectly")
+
+    def test_case(self):
+        """formatting of cases within switch statements"""
+
+        model = "rule begin switch x case 1: y := x; case 2: z := x; end; end"
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertRegex(
+            stdout,
+            re.compile("^  switch x", flags=re.MULTILINE),
+            "incorrect `switch` indentation",
+        )
+        self.assertRegex(
+            stdout,
+            re.compile("^  case 1", flags=re.MULTILINE),
+            "incorrect `case` indentation",
+        )
+        self.assertRegex(
+            stdout,
+            re.compile("^  case 2", flags=re.MULTILINE),
+            "incorrect `case` indentation",
+        )
+        self.assertRegex(
+            stdout,
+            re.compile("^    y := x", flags=re.MULTILINE),
+            "incorrect `case` indentation",
+        )
+        self.assertRegex(
+            stdout,
+            re.compile("^    z := x", flags=re.MULTILINE),
+            "incorrect `case` indentation",
+        )
 
 
 def make_name(t):

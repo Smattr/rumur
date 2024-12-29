@@ -33,6 +33,10 @@ typedef struct state {
   /// inaccurately. We use this as a heuristic to tune the spacing around ':'.
   bool in_ternary;
 
+  /// Are we currently within the expression of a switch case? This is again
+  /// only a heuristic.
+  bool in_case_expr;
+
   /// How many '(…)' are we within? This is tracked for the purposes of
   /// disambiguating 'var'.
   size_t paren_nesting;
@@ -364,6 +368,8 @@ static bool is_block_starter(state_t st, const char *text) {
 
   if (streq(text, "aliasrule"))
     return true;
+  if (streq(text, "case"))
+    return true;
   if (streq(text, "const"))
     return true;
   if (streq(text, "invariant"))
@@ -419,6 +425,8 @@ static bool is_soft_indenter(const char *text) {
 static bool is_dedenter(const char *text) {
   if (text == NULL)
     return false;
+  if (streq(text, "case"))
+    return true;
   if (streq(text, "else"))
     return true;
   if (streq(text, "elsif"))
@@ -539,6 +547,16 @@ int format(FILE *dst, FILE *src) {
         ++st.indentation;
       } else if (streq(tok.text, "startstate")) {
         st.mod = startstate_lookahead;
+      } else if (streq(tok.text, "switch")) {
+        ++st.indentation;
+        st.mod = pend_space;
+      } else if (streq(tok.text, "case")) {
+        st.in_case_expr = true;
+        st.mod = pend_space;
+      } else if (streq(tok.text, ":") && st.in_case_expr) {
+        st.in_case_expr = false;
+        ++st.indentation;
+        st.mod = pend_newline;
       } else if (st.paren_nesting == 0 && is_soft_indenter(tok.text)) {
         st.mod = pend_newline;
         ++st.soft_indentation;
@@ -640,8 +658,6 @@ int format(FILE *dst, FILE *src) {
       if (st.paren_nesting > 0)
         --st.paren_nesting;
     }
-    if (tok.type == TOKEN_ID && streq(tok.text, "switch"))
-      ++st.indentation;
 
     st.previous = tok.type;
     st.previous_was_keyword =
