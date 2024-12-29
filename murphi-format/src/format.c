@@ -178,6 +178,13 @@ static int startstate_lookahead(state_t *st, token_t token) {
     goto done;
   }
 
+  // If this is a string, it is the startstate’s name. Assume we will get a
+  // later `begin` to indent and break.
+  if (token.type == TOKEN_STRING) {
+    rc = pend_space(st, token);
+    goto done;
+  }
+
   ++st->indentation;
 
   // if this does not look like a string, we probably have the implicit

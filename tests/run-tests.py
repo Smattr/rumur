@@ -1047,6 +1047,18 @@ class MurphiFormat(unittest.TestCase):
 
         self.assertIn("assert “foo bar” x", stdout, "smart quotes spaced incorrectly")
 
+    def test_named_startstate(self):
+        """startstate with a name should be formatted correctly"""
+
+        model = 'startstate "foo" begin x := y; end'
+
+        ret, stdout, stderr = run(["murphi-format"], model)
+
+        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
+        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+
+        self.assertIn('startstate "foo" begin', stdout, "startstate spaced incorrectly")
+
 
 def make_name(t):
   """
