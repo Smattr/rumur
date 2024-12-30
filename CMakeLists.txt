@@ -121,6 +121,7 @@ add_subdirectory(murphi2smv)
 add_subdirectory(murphi2uclid)
 add_subdirectory(murphi2xml)
 add_subdirectory(rumur)
+add_subdirectory(share)
 add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check

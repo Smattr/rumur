@@ -12,6 +12,7 @@ import multiprocessing
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess as sp
 import sys
 import tempfile
@@ -1153,6 +1154,58 @@ class MurphiFormat(unittest.TestCase):
         self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
 
         self.assertTrue(stdout.endswith("\n"), "incorrect file ending")
+
+
+class TestStandardLibrary(unittest.TestCase):
+    """
+    tests for the files in ../share
+    """
+
+    def test_list(self):
+        """test ../share/list.m"""
+
+        if shutil.which("m4") is None:
+            self.skipTest("m4 not available")
+
+        with tempfile.TemporaryDirectory() as tmp:
+
+            # pre-process the tester with M4
+            share = Path(__file__).parents[1] / "share"
+            ret, model_m, stderr = run(
+                ["m4", "--include", share, share / "test_list.m"]
+            )
+            if ret != 0:
+                self.fail("M4 failed:\n{}{}".format(model_m, stderr))
+
+            # run the pre-processed output through Rumur
+            ret, model_c, stderr = run(["rumur", "--output=/dev/stdout"], model_m)
+            if ret != 0:
+                self.fail("Rumur failed:\n{}{}".format(model_c, stderr))
+
+            # build up arguments to call the C compiler
+            model_bin = Path(tmp) / "model.exe"
+            args = (
+                [CONFIG["CC"]]
+                + CONFIG["C_FLAGS"]
+                + ["-O3", "-o", model_bin, "-", "-lpthread"]
+            )
+
+            if CONFIG["NEEDS_LIBATOMIC"]:
+                args += ["-latomic"]
+
+            # call the C compiler
+            ret, stdout, stderr = run(args, model_c)
+            if ret != 0:
+                self.fail("C compilation failed:\n{}{}".format(stdout, stderr))
+
+            # now run the model itself
+            ret, stdout, stderr = run([model_bin])
+            if ret != 0:
+                self.fail(
+                    "Checker failed with exit status {}:\n{}{}".format(
+                        ret, stdout, stderr
+                    )
+                )
 
 
 def make_name(t):
