@@ -14,7 +14,7 @@ dnl
 dnl   define(`name', `ints')dnl
 dnl   define(`index_t', `0..10')dnl
 dnl   define(`elem_t', `int')dnl
-dnl   include(`list.m')dnl
+dnl   include(`list')dnl
 dnl   undefine(`elem_t')dnl
 dnl   undefine(`index_t')dnl
 dnl   undefine(`name')dnl
@@ -51,11 +51,11 @@ dnl its inclusion in a model does not affect the legal status of that model.
 dnl
 dnl ¹ https://en.wikipedia.org/wiki/M4_(computer_language)
 dnl
-ifdef(`name', `', `errprint(the macro "name" must be defined before including list.m
+ifdef(`name', `', `errprint(the macro "name" must be defined before including "list"
 )m4exit(1)')dnl
-ifdef(`index_t', `', `errprint(the macro "index_t" must be defined before including list.m
+ifdef(`index_t', `', `errprint(the macro "index_t" must be defined before including "list"
 )m4exit(1)')dnl
-ifdef(`elem_t', `', `errprint(the macro "elem_t" must be defined before including list.m
+ifdef(`elem_t', `', `errprint(the macro "elem_t" must be defined before including "list"
 )m4exit(1)')dnl
 -------------------------------------------------------------------------------
 -- interface for name`'_t, a list of elem_t values indexed by index_t

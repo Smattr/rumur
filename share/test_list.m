@@ -1,4 +1,4 @@
-dnl basic tester for list.m
+dnl basic tester for ./list
 dnl
 dnl This test model aims to cover the state space for a typically usage of the
 dnl generic list. Any mistakes in implementation should trigger either an
@@ -14,7 +14,7 @@ dnl a list of integers, replicating typical usage
 define(`name', `ints')
 define(`index_t', `0..LEN - 1')
 define(`elem_t', `int')
-include(`list.m')
+include(`list')
 undefine(`elem_t')
 undefine(`index_t')
 undefine(`name')

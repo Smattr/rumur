@@ -1162,7 +1162,7 @@ class TestStandardLibrary(unittest.TestCase):
     """
 
     def test_list(self):
-        """test ../share/list.m"""
+        """test ../share/list"""
 
         if shutil.which("m4") is None:
             self.skipTest("m4 not available")

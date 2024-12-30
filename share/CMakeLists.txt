@@ -1,5 +1,5 @@
 install(
   FILES
-    list.m
+    list
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/rumur/lib
 )
