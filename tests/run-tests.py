@@ -1231,7 +1231,7 @@ def main():
     if not os.access(str(p), os.X_OK): continue
 
     CONFIG[p.name] = eval(sp.check_output([str(p)]))
-    sys.stderr.write(f"configuration variable {p.name} = {CONFIG[p.name]}\n")
+    sys.stderr.write("configuration variable {} = {}\n".format(p.name, CONFIG[p.name]))
 
   # find files in our directory
   root = Path(__file__).parent
