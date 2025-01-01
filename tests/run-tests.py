@@ -1,30 +1,25 @@
-#!/usr/bin/env python3
-
 """
-integration test suite
-
-Despite using Python’s unittest, this is not a set of unit tests. The Python
-module is simply a nice low-overhead testing framework.
+Rumur integration test suite
 """
 
-import codecs
 import multiprocessing
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess as sp
 import sys
-import tempfile
-import unittest
+import textwrap
+from pathlib import Path
+
+import pytest
 
 CPUS = multiprocessing.cpu_count()
 
 VERIFIER_RNG = Path(__file__).resolve().parent / "../misc/verifier.rng"
 MURPHI2XML_RNG = Path(__file__).resolve().parent / "../misc/murphi2xml.rng"
 
-# test configuration variables, set during main
 CONFIG = {}
+"""test configuration variables"""
 
 
 def enc(s):
@@ -41,7 +36,7 @@ def run(args, stdin=None):
     """
     if stdin is not None:
         stdin = enc(stdin)
-    env = {k: v for k, v in os.environ.items()}
+    env = dict(os.environ.items())
     env.update({k: str(v) for k, v in CONFIG.items()})
     p = sp.Popen(
         [str(a) for a in args], stdout=sp.PIPE, stderr=sp.PIPE, stdin=sp.PIPE, env=env
@@ -63,1228 +58,646 @@ def parse_test_options(src, debug=False, multithreaded=False, xml=False):
             yield m.group("key"), eval(m.group("value").strip())
 
 
-class executable(unittest.TestCase):
+def test_murphi_format_colon():
+    """colon spacing in definitions as well as ternary expressions by murphi-format"""
+
+    # sample Murphi that uses colons in both situations, that should be reflowed
+    model = "const y: 0?1:2; var x : boolean;"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "y: 0" in stdout, "incorrect spacing for const definition"
+    assert "0 ? 1 : 2" in stdout, "incorrect spacing for ternary expression"
+    assert "x: boolean" in stdout, "incorrect spacing for var definition"
+
+
+def test_murphi_format_arrow_begin1():
+    """`==> begin` should not be reflowed with a newline by murphi-format"""
+
+    # sample Murphi that uses something that should be stable
+    model = 'rule "foo" ==> begin end'
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "==> begin" in stdout, "incorrect spacing for `==> begin`"
+
+
+def test_murphi_format_arrow_begin2():
+    """`==> begin` should not be reflowed with a newline in murphi-format"""
+
+    # sample Murphi that uses something that should be reflowed
+    model = 'rule "foo" ==>begin end'
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "==> begin" in stdout, "incorrect spacing for `==> begin`"
+
+
+def test_murphi_format_newline_on_end():
+    """`end` should force a newline in murphi-format"""
+
+    # sample Murphi that uses something that should be reflowed
+    model = 'rule "foo" begin end rule "bar" begin end'
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert re.search("\\bbegin\n+end\\b", stdout) is not None, "no newline before end"
+    assert re.search("\\bend\n+rule\\b", stdout) is not None, "no newline after end"
+
+
+def test_murphi_format_unary_in_for():
     """
-    test cases involving running a custom executable file
-    """
-
-    def _run(self, testcase):
-
-        assert os.access(
-            str(testcase), os.X_OK
-        ), "non-executable test case " "{} attached to executable class".format(
-            testcase
-        )
-
-        ret, stdout, stderr = run([testcase])
-        output = "{}{}".format(stdout, stderr)
-        if ret == 125:
-            self.skipTest(output.strip())
-        elif ret != 0:
-            self.fail(output)
-
-
-class murphi2c(unittest.TestCase):
-    """
-    test cases for murphi2c
-    """
-
-    def _run(self, testcase):
-
-        tweaks = {k: v for k, v in parse_test_options(testcase)}
-
-        # there is no C equivalent of isundefined, because an implicit assumption in
-        # the C representation is that you do not rely on undefined values
-        with open(str(testcase), "rt", encoding="utf-8") as f:
-            should_fail = re.search(r"\bisundefined\b", f.read()) is not None
-
-        args = ["murphi2c", testcase]
-        if CONFIG["HAS_VALGRIND"]:
-            args = [
-                "valgrind",
-                "--leak-check=full",
-                "--show-leak-kinds=all",
-                "--error-exitcode=42",
-            ] + args
-        ret, stdout, stderr = run(args)
-        if CONFIG["HAS_VALGRIND"]:
-            if ret == 42:
-                self.fail("Memory leak:\n{}{}".format(stdout, stderr))
-
-        # if rumur was expected to reject this model, we allow murphi2c to fail
-        if tweaks.get("rumur_exit_code", 0) == 0 and not should_fail and ret != 0:
-            self.fail(
-                "Unexpected murphi2c exit status {}:\n{}{}".format(ret, stdout, stderr)
-            )
-
-        if should_fail and ret == 0:
-            self.fail(
-                "Unexpected murphi2c exit status {}:\n{}{}".format(ret, stdout, stderr)
-            )
-
-        if ret != 0:
-            return
-
-        # omit -Werror=maybe-uninitialized which identifies legitimate problems in
-        # input models
-        cflags = [f for f in CONFIG["C_FLAGS"] if f != "-Werror=maybe-uninitialized"]
-
-        # ask the C compiler if this is valid
-        args = [CONFIG["CC"]] + cflags + ["-c", "-o", os.devnull, "-"]
-        ret, out, err = run(args, stdout)
-        if ret != 0:
-            self.fail(
-                "C compilation failed:\n{}{}\nProgram:\n{}".format(out, err, stdout)
-            )
-
-
-class murphi2cHeader(unittest.TestCase):
-    """
-    test cases for murphi2c --header
+    a unary operator following a keyword should be spaced correctly by murphi-format
     """
 
-    def _run(self, testcase):
+    model = "rule begin for x := 0 to - 2 by - 1 do end; end"
 
-        tweaks = {k: v for k, v in parse_test_options(testcase)}
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        # there is no C equivalent of isundefined, because an implicit assumption in
-        # the C representation is that you do not rely on undefined values
-        with open(str(testcase), "rt", encoding="utf-8") as f:
-            should_fail = re.search(r"\bisundefined\b", f.read()) is not None
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        args = ["murphi2c", "--header", testcase]
-        if CONFIG["HAS_VALGRIND"]:
-            args = [
-                "valgrind",
-                "--leak-check=full",
-                "--show-leak-kinds=all",
-                "--error-exitcode=42",
-            ] + args
-        ret, stdout, stderr = run(args)
-        if CONFIG["HAS_VALGRIND"]:
-            if ret == 42:
-                self.fail("Memory leak:\n{}{}".format(stdout, stderr))
-
-        # if rumur was expected to reject this model, we allow murphi2c to fail
-        if tweaks.get("rumur_exit_code", 0) == 0 and not should_fail and ret != 0:
-            self.fail(
-                "Unexpected murphi2c exit status {}:\n{}{}".format(ret, stdout, stderr)
-            )
-
-        if should_fail and ret == 0:
-            self.fail(
-                "Unexpected murphi2c exit status {}:\n{}{}".format(ret, stdout, stderr)
-            )
-
-        if ret != 0:
-            return
-
-        with tempfile.TemporaryDirectory() as tmp:
-
-            # write the header to a temporary file
-            header = Path(tmp) / "header.h"
-            with open(str(header), "wt", encoding="utf-8") as f:
-                f.write(stdout)
-
-            # ask the C compiler if the header is valid
-            main_c = '#include "{}"\nint main(void) {{ return 0; }}\n'.format(header)
-            args = [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-o", os.devnull, "-"]
-            ret, stdout, stderr = run(args, main_c)
-            if ret != 0:
-                self.fail("C compilation failed:\n{}{}".format(stdout, stderr))
-
-            # ask the C++ compiler if it is valid there too
-            ret, stdout, stderr = run(
-                [
-                    CONFIG["CXX"],
-                    "-std=c++11",
-                    "-o",
-                    os.devnull,
-                    "-x",
-                    "c++",
-                    "-",
-                    "-Werror=format",
-                    "-Werror=sign-compare",
-                    "-Werror=type-limits",
-                ],
-                main_c,
-            )
-            if ret != 0:
-                self.fail("C++ compilation failed:\n{}{}".format(stdout, stderr))
+    assert "to -2" in stdout, "incorrect unary minus spacing"
+    assert "by -1" in stdout, "incorrect unary minus spacing"
 
 
-class murphi2uclid(unittest.TestCase):
+def test_murphi_format_begin_indentation():
+    """`begin` should not be erroneously indented by decl blocks in murphi-format"""
+
+    model = "rule var x: boolean; begin end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        re.search(r"^begin\b", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect begin indentation"
+    assert (
+        re.search(r"^\s+begin\b", stdout, flags=re.MULTILINE) is None
+    ), "incorrect begin indentation"
+
+
+def test_murphi_format_multiline_comment():
+    """multiline comments should be recognised by murphi-format"""
+
+    model = "rule /* hello\nworld */ begin end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "/* hello" in stdout, "multiline comments mishandled"
+    assert "world */" in stdout, "multiline comments mishandled"
+
+
+def test_murphi_format_then_indentation():
+    """`then` should incur an murphi-format indent"""
+
+    model = "rule begin if 0 = 0 then\nx := 2; end; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "0 = 0 then" in stdout, "incorrect `then` indentation"
+    assert (
+        re.search(r"^    x := 2", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect `then` indentation"
+
+
+def test_murphi_format_newline_comment():
+    """is newline followed by a comment preserved by murphi-format?"""
+
+    model = "const N:\n-- a comment\n0;"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        re.search(r"^\s*-- a comment$", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect newline,comment handling"
+
+
+def test_murphi_format_brace_ender():
+    """'}' should trigger a newline in murphi-format"""
+
+    model = "type x: enum {A, B} y: boolean;"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "}\n" in stdout, "`}` did not trigger newline"
+
+
+def test_murphi_format_double_paren():
+    """does multi-dimensional indexing get spaced correctly by murphi-format?"""
+
+    model = "rule begin x [ 1 ] [ 2 ] := 3; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "x[1][2]" in stdout, "spaced incorrectly"
+
+
+def test_murphi_format_procedure_var():
     """
-    test cases for murphi2uclid
-    """
-
-    def _run(self, testcase):
-
-        tweaks = {k: v for k, v in parse_test_options(testcase)}
-
-        # test cases for which murphi2uclid is expected to fail
-        MURPHI2UCLID_FAIL = (
-            # contains `<<` or `>>`
-            "const-folding5.m",
-            "const-folding6.m",
-            "lsh-basic.m",
-            "rsh-and.m",
-            "rsh-basic.m",
-            "smt-bv-lsh.m",
-            "smt-bv-rsh.m",
-            # contains `/`
-            "const-folding3.m",
-            "division.m",
-            "smt-bv-div.m",
-            "smt-bv-div2.m",
-            "smt-div.m",
-            "unicode-div.m",
-            "unicode-div2.m",
-            # contains `%`
-            "const-folding4.m",
-            "mod-neg-1.m",
-            "mod-neg-1_2.m",
-            "put-string-injection.m",
-            "smt-bv-mod.m",
-            "smt-bv-mod2.m",
-            "smt-mod.m",
-            # contains alias statements
-            "alias-and-field.m",
-            "alias-in-bound.m",
-            "alias-in-bound2.m",
-            "alias-literal.m",
-            "alias-of-alias-rule.m",
-            "alias-of-alias-rule2.m",
-            "alias-of-alias-stmt.m",
-            "basic-aliasrule.m",
-            "mixed-aliases.m",
-            # `clear` of a complex type
-            "clear-complex.m",
-            # contains `cover`
-            "cover-basic.m",
-            "cover-basic2.m",
-            "cover-miss.m",
-            "cover-multiple.m",
-            "cover-stmt.m",
-            "cover-stmt-miss.m",
-            "cover-trivial.m",
-            "string-injection.m",
-            # contains `isundefined`
-            "diff-trace-arrays.m",
-            "isundefined-basic.m",
-            "isundefined-decl.m",
-            "isundefined-element.m",
-            "isundefined-function.m",
-            "for-variants.m",
-            "scalarset-cex.m",
-            "scalarset-schedules-off.m",
-            "scalarset-schedules-off-2.m",
-            # contains `put`
-            "for-step-0-dynamic.m",
-            "put-stmt.m",
-            "put-stmt2.m",
-            "put-stmt3.m",
-            "put-stmt4.m",
-            "scalarset-put.m",
-            # contains early return from a function/procedure/rule
-            "return-from-rule.m",
-            "return-from-ruleset.m",
-            "return-from-startstate.m",
-            # `exists` or `forall` with non-1 step
-            "smt-bv-exists4.m",
-            "smt-bv-forall4.m",
-            "smt-exists4.m",
-            "smt-forall4.m",
-            # `liveness` inside a `ruleset`
-            "liveness-in-ruleset.m",
-            "liveness-in-ruleset2.m",
-        )
-
-        # test cases fo which Uclid5 is expected to fail
-        UCLID_FAIL = (
-            # contains a record field with the same name as a variable
-            # https://github.com/uclid-org/uclid/issues/99
-            "compare-record.m",
-            "smt-array-of-record.m",
-            "smt-record-bool-field.m",
-            "smt-record-bool-field2.m",
-            "smt-record-enum-field.m",
-            "smt-record-enum-field2.m",
-            "smt-record-of-array.m",
-            "smt-record-range-field.m",
-            "smt-record-range-field2.m",
-            # recursive function calls
-            "recursion2.m",
-            "recursion4.m",
-            # reference to a field of an array element
-            "193.m",
-            # function calls within expressions
-            "differing-type-return.m",
-            "differing-type-return3.m",
-            "function-call-in-if.m",
-            "function-in-guard.m",
-            "multiple-parameters.m",
-            "multiple-parameters2.m",
-            "non-const-parameters.m",
-            "recursion1.m",
-            "recursion5.m",
-            "reference-function-parameter.m",
-            "reference-function-parameter2.m",
-            "section-order4.m",
-            "section-order5.m",
-            "section-order10.m",
-            "type-shadowing2.m",
-            # modifies a mutable parameter within a function, which is not valid
-            # within a Uclid5 procedure
-            "reference-function-parameter3.m",
-        )
-
-        args = ["murphi2uclid", testcase]
-        if CONFIG["HAS_VALGRIND"]:
-            args = [
-                "valgrind",
-                "--leak-check=full",
-                "--show-leak-kinds=all",
-                "--error-exitcode=42",
-            ] + args
-        ret, stdout, stderr = run(args)
-        if CONFIG["HAS_VALGRIND"]:
-            if ret == 42:
-                self.fail("Memory leak:\n{}{}".format(stdout, stderr))
-
-        # if rumur was expected to reject this model, we allow murphi2uclid to fail
-        should_fail = testcase.name in MURPHI2UCLID_FAIL
-        could_fail = tweaks.get("rumur_exit_code", 0) != 0 or should_fail
-
-        if not could_fail and ret != 0:
-            self.fail(
-                "Unexpected murphi2uclid exit status {}:\n{}{}".format(
-                    ret, stdout, stderr
-                )
-            )
-
-        if should_fail and ret == 0:
-            self.fail(
-                "Unexpected murphi2uclid exit status {}:\n{}{}".format(
-                    ret, stdout, stderr
-                )
-            )
-
-        if ret != 0:
-            return
-
-        # if we do not have Uclid5 available, skip the remainder of the test
-        if not CONFIG["HAS_UCLID"]:
-            self.skipTest("uclid not available for validation")
-
-        with tempfile.TemporaryDirectory() as tmp:
-
-            # write the Uclid5 source to a temporary file
-            src = Path(tmp) / "source.ucl"
-            with open(str(src), "wt", encoding="utf-8") as f:
-                f.write(stdout)
-
-            # ask Uclid if the source is valid
-            ret, stdout, stderr = run(["uclid", src])
-            if testcase.name in UCLID_FAIL and ret == 0:
-                self.fail("uclid unexpectedly succeeded:\n{}{}".format(stdout, stderr))
-            if testcase.name not in UCLID_FAIL and ret != 0:
-                self.fail("uclid failed:\n{}{}".format(stdout, stderr))
-
-
-class murphi2xml(unittest.TestCase):
-    """
-    test cases for murphi2xml
+    does `var` within a function/procedure parameter list cause problems for
+    murphi-format?
     """
 
-    def _run(self, testcase):
+    model = "procedure foo( var x : boolean); begin end"
 
-        tweaks = {k: v for k, v in parse_test_options(testcase)}
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        args = ["murphi2xml", testcase]
-        if CONFIG["HAS_VALGRIND"]:
-            args = [
-                "valgrind",
-                "--leak-check=full",
-                "--show-leak-kinds=all",
-                "--error-exitcode=42",
-            ] + args
-        ret, stdout, stderr = run(args)
-        if CONFIG["HAS_VALGRIND"]:
-            if ret == 42:
-                self.fail("Memory leak:\n{}{}".format(stdout, stderr))
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        # if rumur was expected to reject this model, we allow murphi2xml to fail
-        if tweaks.get("rumur_exit_code", 0) == 0 and ret != 0:
-            self.fail(
-                "Unexpected murphi2xml exit status {}:\n{}{}".format(
-                    ret, stdout, stderr
-                )
-            )
-
-        if ret != 0:
-            return
-
-        # murphi2xml will have written XML to its stdout
-        xmlcontent = stdout
-
-        # See if we have xmllint
-        if not CONFIG["HAS_XMLLINT"]:
-            self.skipTest("xmllint not available for validation")
-
-        # Validate the XML
-        ret, stdout, stderr = run(
-            ["xmllint", "--relaxng", MURPHI2XML_RNG, "--noout", "-"], xmlcontent
-        )
-        if ret != 0:
-            self.fail("Failed to validate:\n{}{}".format(stdout, stderr))
+    assert "(var x: boolean)" in stdout, "var parameters spaced incorrectly"
 
 
-class rumur(unittest.TestCase):
+def murphi_format_test_trailing_space():
     """
-    test cases involving generating a checker and running it
+    does something that would normally be followed by a space also incur a space
+    when landing at the end-of-file processed by murphi-format?
     """
 
-    def _run_param(self, testcase, debug, optimised, multithreaded, xml):
+    model = "invariant x"
 
-        tweaks = {
-            k: v for k, v in parse_test_options(testcase, debug, multithreaded, xml)
-        }
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        if tweaks.get("skip_reason") is not None:
-            self.skipTest(tweaks["skip_reason"])
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        # build up arguments to call rumur
-        args = ["rumur", "--output", "/dev/stdout", testcase]
-        if debug:
-            args += ["--debug"]
-        if xml:
-            args += ["--output-format", "machine-readable"]
-        if multithreaded and CPUS == 1:
-            args += ["--threads", "2"]
-        elif not multithreaded:
-            args += ["--threads", "1"]
-        args += tweaks.get("rumur_flags", [])
-
-        if CONFIG["HAS_VALGRIND"]:
-            args = [
-                "valgrind",
-                "--leak-check=full",
-                "--show-leak-kinds=all",
-                "--error-exitcode=42",
-            ] + args
-
-        # call rumur
-        ret, stdout, stderr = run(args)
-        if CONFIG["HAS_VALGRIND"]:
-            if ret == 42:
-                self.fail("Memory leak:\n{}{}".format(stdout, stderr))
-        if ret != tweaks.get("rumur_exit_code", 0):
-            self.fail("Rumur failed:\n{}{}".format(stdout, stderr))
-
-        # if we expected to fail, we are done
-        if ret != 0:
-            return
-
-        model_c = stdout
-
-        with tempfile.TemporaryDirectory() as tmp:
-
-            # build up arguments to call the C compiler
-            model_bin = Path(tmp) / "model.exe"
-            args = [CONFIG["CC"]] + CONFIG["C_FLAGS"]
-            if optimised:
-                args += ["-O3"]
-            args += ["-o", model_bin, "-", "-lpthread"]
-
-            if CONFIG["NEEDS_LIBATOMIC"]:
-                args += ["-latomic"]
-
-            # call the C compiler
-            ret, stdout, stderr = run(args, model_c)
-            if ret != 0:
-                self.fail("C compilation failed:\n{}{}".format(stdout, stderr))
-
-            # now run the model itself
-            ret, stdout, stderr = run([model_bin])
-            if ret != tweaks.get("checker_exit_code", 0):
-                self.fail(
-                    "Unexpected checker exit status {}:\n{}{}".format(
-                        ret, stdout, stderr
-                    )
-                )
-
-        # if the test has a stdout expectation, check that now
-        if tweaks.get("checker_output") is not None:
-            if tweaks["checker_output"].search(stdout) is None:
-                self.fail(
-                    "Checker output did not match expectation regex:\n{}{}".format(
-                        stdout, stderr
-                    )
-                )
-
-        # coarse grained check for whether the model contains a `put` statement that
-        # could screw up XML validation
-        with open(str(testcase), "rt", encoding="utf-8") as f:
-            has_put = re.search(r"\bput\b", f.read()) is not None
-
-        if xml and not has_put:
-
-            model_xml = stdout
-
-            if not CONFIG["HAS_XMLLINT"]:
-                self.skipTest("xmllint not available")
-
-            # validate the XML
-            args = ["xmllint", "--relaxng", VERIFIER_RNG, "--noout", "-"]
-            ret, stdout, stderr = run(args, model_xml)
-            if ret != 0:
-                self.fail(
-                    "Failed to XML-validate machine reachable output:\n{}{}".format(
-                        stdout, stderr
-                    )
-                )
+    assert (
+        re.search(r"\binvariant x$", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect spacing around end-of-file"
 
 
-class rumurSingleThreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, False, False, False)
-
-
-class rumurDebugSingleThreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, True, False, False, False)
-
-
-class rumurOptimisedSingleThreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, True, False, False)
-
-
-class rumurDebugOptimisedSingleThreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, True, True, False, False)
-
-
-class rumurMultithreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, False, True, False)
-
-
-class rumurDebugMultithreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, True, False, True, False)
-
-
-class rumurOptimisedMultithreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, True, True, False)
-
-
-class rumurDebugOptimisedMultithreaded(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, True, True, True, False)
-
-
-class rumurSingleThreadedXML(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, False, False, True)
-
-
-class rumurOptimisedSingleThreadedXML(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, True, False, True)
-
-
-class rumurMultithreadedXML(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, False, True, True)
-
-
-class rumurOptimisedMultithreadedXML(rumur):
-    def _run(self, testcase):
-        self._run_param(testcase, False, True, True, True)
-
-
-class MurphiFormat(unittest.TestCase):
+def test_murphi_format_bad_operator():
     """
-    test cases for murphi-format
+    non-operators like `>-` should not be recognised by murphi-format
     """
 
-    def test_colon(self):
-        """colon spacing in definitions as well as ternary expressions"""
+    model = "rule begin if x >- 1 then end; end"
 
-        # sample Murphi that uses colons in both situations, that should be reflowed
-        model = "const y: 0?1:2; var x : boolean;"
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+    assert " >- " not in stdout, "`>-` incorrectly considered an operator"
+    assert ">-" not in stdout, "`>-` incorrectly considered an operator"
+    assert "> -" in stdout, "incorrect spacing around `>-`"
 
-        self.assertIn("y: 0", stdout, "incorrect spacing for const definition")
-        self.assertIn("0 ? 1 : 2", stdout, "incorrect spacing for ternary expression")
-        self.assertIn("x: boolean", stdout, "incorrect spacing for var definition")
 
-    def test_arrow_begin1(self):
-        """`==> begin` should not be reflowed with a newline"""
+def test_murphi_format_case1():
+    """reformatting should be caseless"""
 
-        # sample Murphi that uses something that should be stable
-        model = 'rule "foo" ==> begin end'
+    model = "cOnSt N: 0;"
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        self.assertIn("==> begin", stdout, "incorrect spacing for `==> begin`")
+    assert "cOnSt\n  N: 0;" in stdout, "incorrect spacing around erratic casing"
 
-    def test_arrow_begin2(self):
-        """`==> begin` should not be reflowed with a newline"""
 
-        # sample Murphi that uses something that should be reflowed
-        model = 'rule "foo" ==>begin end'
+def test_murphi_format_no_start_newline():
+    """a newline should not be inserted by murphi-format before all content"""
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+    model = "rule begin end"
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        self.assertIn("==> begin", stdout, "incorrect spacing for `==> begin`")
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-    def test_newline_on_end(self):
-        """`end` should force a newline"""
+    assert stdout.startswith("rule"), "incorrect preceding space inserted"
 
-        # sample Murphi that uses something that should be reflowed
-        model = 'rule "foo" begin end rule "bar" begin end'
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+def test_murphi_format_switch():
+    """murphi-format of switch statements"""
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+    model = "rule begin switch x\nend; end"
 
-        self.assertRegex(stdout, "\\bbegin\n+end\\b", "no newline before end")
-        self.assertRegex(stdout, "\\bend\n+rule\\b", "no newline after end")
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-    def test_unary_in_for(self):
-        """a unary operator following a keyword should be spaced correctly"""
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        model = "rule begin for x := 0 to - 2 by - 1 do end; end"
+    assert (
+        "rule begin\n  switch x\n  end;\nend\n" == stdout
+    ), "incorrect switch formatting"
 
-        ret, stdout, stderr = run(["murphi-format"], model)
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+def test_murphi_format_multiple_inplace(tmp_path):
+    """murphi-format on multiple files in-place should work"""
 
-        self.assertIn("to -2", stdout, "incorrect unary minus spacing")
-        self.assertIn("by -1", stdout, "incorrect unary minus spacing")
+    # a model with a small amount of text
+    short = "const\n  x: 10;\n"
 
-    def test_begin_indentation(self):
-        """`begin` should not be erroneously indented by decl blocks"""
+    # a model with a longer amount of text
+    long = "var\n  x: 0..10;\n  y: 0..10;\n  z: 0..10;\n"
 
-        model = "rule var x: boolean; begin end"
+    short_path = tmp_path / "short.m"
+    long_path = tmp_path / "long.m"
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+    with open(short_path, "wt", encoding="utf-8") as f:
+        f.write(short)
+    with open(long_path, "wt", encoding="utf-8") as f:
+        f.write(long)
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+    ret, stdout, stderr = run(["murphi-format", "--in-place", long_path, short_path])
 
-        self.assertRegex(
-            stdout,
-            re.compile(r"^begin\b", flags=re.MULTILINE),
-            "incorrect begin indentation",
-        )
-        self.assertNotRegex(
-            stdout,
-            re.compile(r"^\s+begin\b", flags=re.MULTILINE),
-            "incorrect begin indentation",
-        )
+    assert ret == 0, "failed to reflow Murphi snippets"
+    assert stdout == "", "murphi-format produced output when asked for in-place"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-    def test_multiline_comment(self):
-        """multiline comments should be recognised"""
+    with open(short_path, "rb") as f:
+        content = f.read()
+    assert content == short.encode("utf-8"), "model was reflowed incorrectly"
 
-        model = "rule /* hello\nworld */ begin end"
+    with open(long_path, "rb") as f:
+        content = f.read()
+    assert content == long.encode("utf-8"), "model was reflowed incorrectly"
 
-        ret, stdout, stderr = run(["murphi-format"], model)
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+def test_murphi_format_trailing_indentation():
+    """murphi-format should not incur a trailing indentation at end of file"""
 
-        self.assertIn("/* hello", stdout, "multiline comments mishandled")
-        self.assertIn("world */", stdout, "multiline comments mishandled")
+    model = "const N: 10;"
 
-    def test_then_indentation(self):
-        """`then` should incur an indent"""
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        model = "rule begin if 0 = 0 then\nx := 2; end; end"
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+    assert "const\n  N: 10;\n" == stdout, "incorrect const block formatting"
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
 
-        self.assertIn("0 = 0 then", stdout, "incorrect `then` indentation")
-        self.assertRegex(
-            stdout,
-            re.compile(r"^    x := 2", flags=re.MULTILINE),
-            "incorrect `then` indentation",
-        )
+def test_murphi_format_startstate_no_begin():
+    """unnamed startstate should be followed by correct murphi-format indentation"""
 
-    def test_newline_comment(self):
-        """is newline followed by a comment preserved?"""
+    model = "startstate x := y; end"
 
-        model = "const N:\n-- a comment\n0;"
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        ret, stdout, stderr = run(["murphi-format"], model)
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
+    assert "startstate\n  x := y;\nend\n" == stdout, "incorrect startstate formatting"
 
-        self.assertRegex(
-            stdout,
-            re.compile(r"^\s*-- a comment$", flags=re.MULTILINE),
-            "incorrect newline,comment handling",
-        )
 
-    def test_brace_ender(self):
-        """'}' should trigger a newline"""
-
-        model = "type x: enum {A, B} y: boolean;"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn("}\n", stdout, "`}` did not trigger newline")
-
-    def test_double_paren(self):
-        """does multi-dimensional indexing get spaced correctly?"""
-
-        model = "rule begin x [ 1 ] [ 2 ] := 3; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn("x[1][2]", stdout, "spaced incorrectly")
-
-    def test_procedure_var(self):
-        """does `var` within a function/procedure parameter list cause problems?"""
-
-        model = "procedure foo( var x : boolean); begin end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn("(var x: boolean)", stdout, "var parameters spaced incorrectly")
-
-    def test_trailing_space(self):
-        """
-        does something that would normally be followed by a space also incur a space
-        when landing at the end-of-file?
-        """
-
-        model = "invariant x"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertRegex(
-            stdout,
-            re.compile(r"\binvariant x$", flags=re.MULTILINE),
-            "incorrect spacing around end-of-file",
-        )
-
-    def test_bad_operator(self):
-        """
-        non-operators like `>-` should not be recognised
-        """
-
-        model = "rule begin if x >- 1 then end; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertNotIn(" >- ", stdout, "`>-` incorrectly considered an operator")
-        self.assertNotIn(">-", stdout, "`>-` incorrectly considered an operator")
-        self.assertIn("> -", stdout, "incorrect spacing around `>-`")
-
-    def test_case(self):
-        """reformatting should be caseless"""
-
-        model = "cOnSt N: 0;"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            "cOnSt\n  N: 0;", stdout, "incorrect spacing around erratic casing"
-        )
-
-    def test_no_start_newline(self):
-        """a newline should not be inserted before all content"""
-
-        model = "rule begin end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertTrue(stdout.startswith("rule"), "incorrect preceding space inserted")
-
-    def test_switch(self):
-        """formatting of switch statements"""
-
-        model = "rule begin switch x\nend; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertEqual(
-            "rule begin\n  switch x\n  end;\nend\n",
-            stdout,
-            "incorrect switch formatting",
-        )
-
-    def test_multiple_inplace(self):
-        """formatting multiple files in-place should work"""
-
-        # a model with a small amount of text
-        short = "const\n  x: 10;\n"
-
-        # a model with a longer amount of text
-        long = "var\n  x: 0..10;\n  y: 0..10;\n  z: 0..10;\n"
-
-        with tempfile.TemporaryDirectory() as tmp:
-            short_path = Path(tmp) / "short.m"
-            long_path = Path(tmp) / "long.m"
-
-            with open(short_path, "wt", encoding="utf-8") as f:
-                f.write(short)
-            with open(long_path, "wt", encoding="utf-8") as f:
-                f.write(long)
-
-            ret, stdout, stderr = run(
-                ["murphi-format", "--in-place", long_path, short_path]
-            )
-
-            self.assertEqual(ret, 0, "failed to reflow Murphi snippets")
-            self.assertEqual(
-                stdout, "", "murphi-format produced output when asked for in-place"
-            )
-            self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-            with open(short_path, "rb") as f:
-                content = f.read()
-            self.assertEqual(
-                content,
-                short.encode("utf-8"),
-                "model was reflowed incorrectly",
-            )
-
-            with open(long_path, "rb") as f:
-                content = f.read()
-            self.assertEqual(
-                content,
-                long.encode("utf-8"),
-                "model was reflowed incorrectly",
-            )
-
-    def test_trailing_indentation(self):
-        """we should not incur a trailing indentation at end of file"""
-
-        model = "const N: 10;"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertEqual(
-            "const\n  N: 10;\n", stdout, "incorrect const block formatting"
-        )
-
-    def test_startstate_no_begin(self):
-        """unnamed startstate should be followed by correct indentation"""
-
-        model = "startstate x := y; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertEqual(
-            "startstate\n  x := y;\nend\n", stdout, "incorrect startstate formatting"
-        )
-
-    def test_startstate_begin(self):
-        """unnamed startstate with `begin` should be followed by correct indentation"""
-
-        model = "startstate begin x := y; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertEqual(
-            "startstate begin\n  x := y;\nend\n",
-            stdout,
-            "incorrect startstate formatting",
-        )
-
-    def test_else(self):
-        """indentation of `else` should be correct"""
-
-        model = "rule begin if x = x then y := z; else y := w; end; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            "\n  if x = x then\n    y := z;\n  else\n    y := w;\n  end;\n",
-            stdout,
-            "incorrect else formatting",
-        )
-
-    def test_elsif(self):
-        """indentation of `elsif` should be correct"""
-
-        model = "rule begin if x = x then y := z; elsif y = y then y := w; end; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            "\n  if x = x then\n    y := z;\n  elsif y = y then\n    y := w;\n  end;\n",
-            stdout,
-            "incorrect elsif formatting",
-        )
-
-    def test_while_paren(self):
-        """`while` followed by parenthesised expression should be spaced"""
-
-        model = "rule begin while (x = x) do y := z; end; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            "\n  while (x = x) do\n    y := z;\n  end;\n",
-            stdout,
-            "incorrect while formatting",
-        )
-
-    def test_no_format(self):
-        """formatting disabling comments should be respected"""
-
-        model = "rule begin -- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            "-- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n",
-            stdout,
-            "format-disabling comments did not work",
-        )
-
-    def test_isundefined(self):
-        """`isundefined` should be spaced correctly"""
-
-        model = "rule begin x := isundefined (x); end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            ":= isundefined(x)",
-            stdout,
-            "`isundefined` spaced incorrectly",
-        )
-
-    def test_line_comment(self):
-        """line comments should not be bumped onto the next line"""
-
-        model = (
-            "rule begin x := y; -- line comment\nz := w;\n-- comment on newline\n end"
-        )
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertEqual(
-            "rule begin\n  x := y; -- line comment\n  z := w;\n  -- comment on newline\nend\n",
-            stdout,
-            "comments broken incorrectly",
-        )
-
-    def test_procedure_params(self):
-        """parameter lists in procedures should appear correctly"""
-
-        model = "procedure foo(a: b; c: d) begin end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            "a: b; c: d",
-            stdout,
-            "procedure parameters formatted incorrectly",
-        )
-
-    def test_comment_const_interleaved(self):
-        """comments attached to consts should stay where they are"""
-
-        model = "const x: 42;\n\n-- hello world\ny: 42;"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertEqual(
-            "const\n  x: 42;\n\n  -- hello world\n  y: 42;\n",
-            stdout,
-            "const comments formatted incorrectly",
-        )
-
-    def test_scalarset(self):
-        """`scalarset` should be spaced correctly"""
-
-        model = "type x : scalarset (4);"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(": scalarset(4)", stdout, "`scalarset` spaced incorrectly")
-
-    def test_array(self):
-        """`array` should be spaced intuitively"""
-
-        model = "type x : array [ boolean ] of boolean;"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(
-            ": array[boolean] of boolean", stdout, "`array` spaced incorrectly"
-        )
-
-    def test_not_unicode(self):
-        """`¬` spacing should be correct"""
-
-        model = "rule begin x := ¬ y; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(":= ¬y", stdout, "`¬` spaced incorrectly")
-
-    def test_smart_quotes(self):
-        """smart quotes (“”) should be handled correctly"""
-
-        model = "rule begin assert “foo bar” x; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn("assert “foo bar” x", stdout, "smart quotes spaced incorrectly")
-
-    def test_named_startstate(self):
-        """startstate with a name should be formatted correctly"""
-
-        model = 'startstate "foo" begin x := y; end'
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn('startstate "foo" begin', stdout, "startstate spaced incorrectly")
-
-    def test_case(self):
-        """formatting of cases within switch statements"""
-
-        model = "rule begin switch x case 1: y := x; case 2: z := x; end; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertRegex(
-            stdout,
-            re.compile("^  switch x", flags=re.MULTILINE),
-            "incorrect `switch` indentation",
-        )
-        self.assertRegex(
-            stdout,
-            re.compile("^  case 1", flags=re.MULTILINE),
-            "incorrect `case` indentation",
-        )
-        self.assertRegex(
-            stdout,
-            re.compile("^  case 2", flags=re.MULTILINE),
-            "incorrect `case` indentation",
-        )
-        self.assertRegex(
-            stdout,
-            re.compile("^    y := x", flags=re.MULTILINE),
-            "incorrect `case` indentation",
-        )
-        self.assertRegex(
-            stdout,
-            re.compile("^    z := x", flags=re.MULTILINE),
-            "incorrect `case` indentation",
-        )
-
-    def test_no_trailing_space_before_comment(self):
-        """
-        something that would normally incur a following space should not have one if the
-        next thing is a breaking line comment
-        """
-
-        model = "rule begin alias\n-- hello world\nx:y do x := z; end; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertRegex(
-            stdout,
-            re.compile(r"\balias$", flags=re.MULTILINE),
-            "incorrect trailing space",
-        )
-
-    def test_unicode_op(self):
-        """unicode operators starting with 0xe2 should be handled correctly"""
-
-        model = "rule x ∨ y ==> begin x := z; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertIn(" x ∨ y ", stdout, "incorrect unicode operator handling")
-
-    def test_hex_literal(self):
-        """hexadecimal literals should be handled correctly"""
-
-        model = "rule begin x := 0xe2; end"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertRegex(
-            stdout,
-            re.compile("^  x := 0xe2;$", flags=re.MULTILINE),
-            "incorrect hex spacing",
-        )
-
-    def test_end_newline(self):
-        """a final newline should be present"""
-
-        model = "invariant x"
-
-        ret, stdout, stderr = run(["murphi-format"], model)
-
-        self.assertEqual(ret, 0, "failed to reflow Murphi snippet")
-        self.assertEqual(stderr, "", "murphi-format printed errors/warnings")
-
-        self.assertTrue(stdout.endswith("\n"), "incorrect file ending")
-
-
-class TestStandardLibrary(unittest.TestCase):
+def test_murphi_format_startstate_begin():
     """
-    tests for the files in ../share
+    unnamed startstate with `begin` should be followed by correct murphi-format
+    indentation
     """
 
-    def test_list(self):
-        """test ../share/list"""
+    model = "startstate begin x := y; end"
 
-        if shutil.which("m4") is None:
-            self.skipTest("m4 not available")
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-        with tempfile.TemporaryDirectory() as tmp:
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
 
-            # pre-process the tester with M4
-            share = Path(__file__).parents[1] / "share"
-            ret, model_m, stderr = run(
-                ["m4", "--include", share, share / "test_list.m"]
-            )
-            if ret != 0:
-                self.fail("M4 failed:\n{}{}".format(model_m, stderr))
+    assert (
+        "startstate begin\n  x := y;\nend\n" == stdout
+    ), "incorrect startstate formatting"
 
-            # run the pre-processed output through Rumur
-            ret, model_c, stderr = run(["rumur", "--output=/dev/stdout"], model_m)
-            if ret != 0:
-                self.fail("Rumur failed:\n{}{}".format(model_c, stderr))
 
-            # build up arguments to call the C compiler
-            model_bin = Path(tmp) / "model.exe"
-            args = (
-                [CONFIG["CC"]]
-                + CONFIG["C_FLAGS"]
-                + ["-O3", "-o", model_bin, "-", "-lpthread"]
-            )
+def test_murphi_format_else():
+    """murphi-format indentation of `else` should be correct"""
 
-            if CONFIG["NEEDS_LIBATOMIC"]:
-                args += ["-latomic"]
+    model = "rule begin if x = x then y := z; else y := w; end; end"
 
-            # call the C compiler
-            ret, stdout, stderr = run(args, model_c)
-            if ret != 0:
-                self.fail("C compilation failed:\n{}{}".format(stdout, stderr))
+    ret, stdout, stderr = run(["murphi-format"], model)
 
-            # now run the model itself
-            ret, stdout, stderr = run([model_bin])
-            if ret != 0:
-                self.fail(
-                    "Checker failed with exit status {}:\n{}{}".format(
-                        ret, stdout, stderr
-                    )
-                )
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        "\n  if x = x then\n    y := z;\n  else\n    y := w;\n  end;\n" in stdout
+    ), "incorrect else formatting"
+
+
+def test_murphi_format_elsif():
+    """murphi-format indentation of `elsif` should be correct"""
+
+    model = "rule begin if x = x then y := z; elsif y = y then y := w; end; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        "\n  if x = x then\n    y := z;\n  elsif y = y then\n    y := w;\n  end;\n"
+        in stdout
+    ), "incorrect elsif formatting"
+
+
+def test_murphi_format_while_paren():
+    """`while` followed by parenthesised expression should be spaced by murphi-format"""
+
+    model = "rule begin while (x = x) do y := z; end; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        "\n  while (x = x) do\n    y := z;\n  end;\n" in stdout
+    ), "incorrect while formatting"
+
+
+def test_murphi_format_no_format():
+    """formatting disabling comments should be respected"""
+
+    model = textwrap.dedent(
+        """\
+    rule begin -- murphi-format: off
+     while (x = x) do y := z; end; -- murphi-format: on
+     end"""
+    )
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        "-- murphi-format: off\n while (x = x) do y := z; end; -- murphi-format: on\n"
+        in stdout
+    ), "format-disabling comments did not work"
+
+
+def test_murphi_format_isundefined():
+    """`isundefined` should be spaced correctly by murphi-format"""
+
+    model = "rule begin x := isundefined (x); end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert ":= isundefined(x)" in stdout, "`isundefined` spaced incorrectly"
+
+
+def test_murphi_format_line_comment():
+    """line comments should not be bumped onto the next line by murphi-format"""
+
+    model = "rule begin x := y; -- line comment\nz := w;\n-- comment on newline\n end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        "rule begin\n  x := y; -- line comment\n  z := w;\n  -- comment on newline\nend\n"
+        == stdout
+    ), "comments broken incorrectly"
+
+
+def test_murphi_format_procedure_params():
+    """parameter lists in procedures should appear correctly after murphi-format"""
+
+    model = "procedure foo(a: b; c: d) begin end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "a: b; c: d" in stdout, "procedure parameters formatted incorrectly"
+
+
+def test_murphi_format_comment_const_interleaved():
+    """comments attached to consts should stay where they are across murphi-format"""
+
+    model = "const x: 42;\n\n-- hello world\ny: 42;"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        "const\n  x: 42;\n\n  -- hello world\n  y: 42;\n" == stdout
+    ), "const comments formatted incorrectly"
+
+
+def test_murphi_format_scalarset():
+    """`scalarset` should be spaced correctly by murphi-format"""
+
+    model = "type x : scalarset (4);"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert ": scalarset(4)" in stdout, "`scalarset` spaced incorrectly"
+
+
+def test_murphi_format_array():
+    """`array` should be spaced intuitively by murphi-format"""
+
+    model = "type x : array [ boolean ] of boolean;"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert ": array[boolean] of boolean" in stdout, "`array` spaced incorrectly"
+
+
+def test_murphi_format_not_unicode():
+    """murphi-format `¬` spacing should be correct"""
+
+    model = "rule begin x := ¬ y; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert ":= ¬y" in stdout, "`¬` spaced incorrectly"
+
+
+def test_muprhi_format_smart_quotes():
+    """murphi-format should handle smart quotes (“”) correctly"""
+
+    model = "rule begin assert “foo bar” x; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert "assert “foo bar” x" in stdout, "smart quotes spaced incorrectly"
+
+
+def test_murphi_format_named_startstate():
+    """startstate with a name should be formatted correctly by murphi-format"""
+
+    model = 'startstate "foo" begin x := y; end'
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert 'startstate "foo" begin' in stdout, "startstate spaced incorrectly"
+
+
+def test_murphi_format_case2():
+    """murphi-format formatting of cases within switch statements"""
+
+    model = "rule begin switch x case 1: y := x; case 2: z := x; end; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        re.search("^  switch x", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect `switch` indentation"
+    assert (
+        re.search("^  case 1", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect `case` indentation"
+    assert (
+        re.search("^  case 2", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect `case` indentation"
+    assert (
+        re.search("^    y := x", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect `case` indentation"
+    assert (
+        re.search("^    z := x", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect `case` indentation"
+
+
+def test_murphi_format_no_trailing_space_before_comment():
+    """
+    in murphi-format, something that would normally incur a following space
+    should not have one if the next thing is a breaking line comment
+    """
+
+    model = "rule begin alias\n-- hello world\nx:y do x := z; end; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        re.search(r"\balias$", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect trailing space"
+
+
+def test_murphi_format_unicode_op():
+    """
+    unicode operators starting with 0xe2 should be handled by murphi-format correctly
+    """
+
+    model = "rule x ∨ y ==> begin x := z; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert " x ∨ y " in stdout, "incorrect unicode operator handling"
+
+
+def test_murphi_format_hex_literal():
+    """murphi-format should handle hexadecimal literals correctly"""
+
+    model = "rule begin x := 0xe2; end"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert (
+        re.search("^  x := 0xe2;$", stdout, flags=re.MULTILINE) is not None
+    ), "incorrect hex spacing"
+
+
+def test_murphi_format_end_newline():
+    """murphi-format should always leave a final newline"""
+
+    model = "invariant x"
+
+    ret, stdout, stderr = run(["murphi-format"], model)
+
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    assert stdout.endswith("\n"), "incorrect file ending"
+
+
+@pytest.mark.skipif(shutil.which("m4") is None, reason="m4 not available")
+def test_stdlib_list(tmp_path):
+    """test ../share/list"""
+
+    # pre-process the tester with M4
+    share = Path(__file__).parents[1] / "share"
+    ret, model_m, stderr = run(["m4", "--include", share, share / "test_list.m"])
+    assert ret == 0, "M4 failed:\n{}{}".format(model_m, stderr)
+
+    # run the pre-processed output through Rumur
+    ret, model_c, stderr = run(["rumur", "--output=/dev/stdout"], model_m)
+    assert ret == 0, "Rumur failed:\n{}{}".format(model_c, stderr)
+
+    # build up arguments to call the C compiler
+    model_bin = tmp_path / "model.exe"
+    args = (
+        [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-O3", "-o", model_bin, "-", "-lpthread"]
+    )
+
+    if CONFIG["NEEDS_LIBATOMIC"]:
+        args += ["-latomic"]
+
+    # call the C compiler
+    ret, stdout, stderr = run(args, model_c)
+    assert ret == 0, "C compilation failed:\n{}{}".format(stdout, stderr)
+
+    # now run the model itself
+    ret, stdout, stderr = run([model_bin])
+    assert ret == 0, "Checker failed with exit status {}:\n{}{}".format(
+        ret, stdout, stderr
+    )
 
 
 def make_name(t):
@@ -1295,13 +708,9 @@ def make_name(t):
     return "test_{}".format(safe_name)
 
 
-def main():
-
-    # setup stdout to make encoding errors non-fatal
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, "replace")
-
+@pytest.fixture(scope="session", autouse=True)
+def setup():
     # parse configuration
-    global CONFIG
     for p in sorted((Path(__file__).parent / "config").iterdir()):
 
         # skip subdirectories
@@ -1317,72 +726,469 @@ def main():
             "configuration variable {} = {}\n".format(p.name, CONFIG[p.name])
         )
 
-    # find files in our directory
-    root = Path(__file__).parent
-    for p in sorted(root.iterdir()):
 
-        # skip directories
-        if p.is_dir():
-            continue
+MODELS = []
+"""test cases defined as .m files in this directory"""
 
-        # skip ourselves
-        if os.path.samefile(str(p), __file__):
-            continue
+PROGRAMS = []
+"""test cases defined as executable files in this directory"""
 
-        name = make_name(p)
+# find files in our directory
+root = Path(__file__).parent
+for p in sorted(root.iterdir()):
 
-        # if this is executable, treat it as a test case
-        if os.access(str(p), os.X_OK):
-            assert not hasattr(
-                executable, name
-            ), "name collision involving executable.{}".format(name)
-            setattr(executable, name, lambda self, p=p: self._run(p))
+    # skip directories
+    if p.is_dir():
+        continue
 
-        # if this is not a model, skip the remaining generic logic
-        if p.suffix != ".m":
-            continue
+    # skip ourselves
+    if os.path.samefile(str(p), __file__):
+        continue
 
-        for c in (
-            rumurSingleThreaded,
-            rumurDebugSingleThreaded,
-            rumurOptimisedSingleThreaded,
-            rumurDebugOptimisedSingleThreaded,
-            rumurMultithreaded,
-            rumurDebugMultithreaded,
-            rumurOptimisedMultithreaded,
-            rumurDebugOptimisedMultithreaded,
-            rumurSingleThreadedXML,
-            rumurOptimisedSingleThreadedXML,
-            rumurMultithreadedXML,
-            rumurOptimisedMultithreadedXML,
-        ):
-            assert not hasattr(c, name), "name collision involving rumur.{}".format(
-                name
-            )
-            setattr(c, name, lambda self, p=p: self._run(p))
+    name = make_name(p)
 
-        assert not hasattr(
-            murphi2c, name
-        ), "name collision involving murphi2c.{}".format(name)
-        setattr(murphi2c, name, lambda self, p=p: self._run(p))
+    # if this is executable, treat it as a test case
+    if os.access(str(p), os.X_OK):
+        PROGRAMS += [p.name]
 
-        assert not hasattr(
-            murphi2cHeader, name
-        ), "name collision involving murphi2cHeader.{}".format(name)
-        setattr(murphi2cHeader, name, lambda self, p=p: self._run(p))
+    # if this is not a model, skip the remaining generic logic
+    if p.suffix != ".m":
+        continue
 
-        assert not hasattr(
-            murphi2uclid, name
-        ), "name collision involving murphi2uclid.{}".format(name)
-        setattr(murphi2uclid, name, lambda self, p=p: self._run(p))
-
-        assert not hasattr(
-            murphi2xml, name
-        ), "name collision involving murphi2xml.{}".format(name)
-        setattr(murphi2xml, name, lambda self, p=p: self._run(p))
-
-    unittest.main()
+    MODELS += [p.name]
 
 
-if __name__ == "__main__":
-    main()
+@pytest.mark.parametrize("program", PROGRAMS)
+def test_program(program):
+    """test case involving running a custom executable file"""
+
+    testcase = Path(__file__).parent / program
+    assert os.access(str(testcase), os.X_OK), "non-executable test case {}".format(
+        testcase
+    )
+
+    ret, stdout, stderr = run([str(testcase)])
+    output = "{}{}".format(stdout, stderr)
+    if ret == 125:
+        pytest.skip(output.strip())
+    assert ret == 0, output
+
+
+@pytest.mark.parametrize("model", MODELS)
+def test_murphi2c(model):
+    """test cases for murphi2c"""
+
+    testcase = Path(__file__).parent / model
+    tweaks = dict(parse_test_options(testcase))
+
+    # there is no C equivalent of isundefined, because an implicit assumption in the C
+    # representation is that you do not rely on undefined values
+    with open(str(testcase), "rt", encoding="utf-8") as f:
+        should_fail = re.search(r"\bisundefined\b", f.read()) is not None
+
+    args = ["murphi2c", "--", testcase]
+    if CONFIG["HAS_VALGRIND"]:
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args)
+    if CONFIG["HAS_VALGRIND"]:
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    # if rumur was expected to reject this model, we allow murphi2c to fail
+    if tweaks.get("rumur_exit_code", 0) == 0 and not should_fail:
+        assert ret == 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    if should_fail:
+        assert ret != 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    if ret != 0:
+        return
+
+    # omit -Werror=maybe-uninitialized which identifies legitimate problems in input
+    # models
+    cflags = [f for f in CONFIG["C_FLAGS"] if f != "-Werror=maybe-uninitialized"]
+
+    # ask the C compiler if this is valid
+    args = [CONFIG["CC"]] + cflags + ["-c", "-o", os.devnull, "-"]
+    ret, out, err = run(args, stdout)
+    assert ret == 0, "C compilation failed:\n{}{}\nProgram:\n{}".format(
+        out, err, stdout
+    )
+
+
+@pytest.mark.parametrize("model", MODELS)
+def test_murphi2c_header(model, tmp_path):
+    """test cases for murphi2c --header"""
+
+    testcase = Path(__file__).parent / model
+    tweaks = dict(parse_test_options(testcase))
+
+    # there is no C equivalent of isundefined, because an implicit assumption in the C
+    # representation is that you do not rely on undefined values
+    with open(str(testcase), "rt", encoding="utf-8") as f:
+        should_fail = re.search(r"\bisundefined\b", f.read()) is not None
+
+    args = ["murphi2c", "--header", "--", testcase]
+    if CONFIG["HAS_VALGRIND"]:
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args)
+    if CONFIG["HAS_VALGRIND"]:
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    # if rumur was expected to reject this model, we allow murphi2c to fail
+    if tweaks.get("rumur_exit_code", 0) == 0 and not should_fail:
+        assert ret == 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    if should_fail:
+        assert ret != 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    if ret != 0:
+        return
+
+    # write the header to a temporary file
+    header = tmp_path / "header.h"
+    with open(str(header), "wt", encoding="utf-8") as f:
+        f.write(stdout)
+
+    # ask the C compiler if the header is valid
+    main_c = '#include "{}"\nint main(void) {{ return 0; }}\n'.format(header)
+    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-o", os.devnull, "-"]
+    ret, stdout, stderr = run(args, main_c)
+    assert ret == 0, "C compilation failed:\n{}{}".format(stdout, stderr)
+
+    # ask the C++ compiler if it is valid there too
+    ret, stdout, stderr = run(
+        [
+            CONFIG["CXX"],
+            "-std=c++11",
+            "-o",
+            os.devnull,
+            "-x",
+            "c++",
+            "-",
+            "-Werror=format",
+            "-Werror=sign-compare",
+            "-Werror=type-limits",
+        ],
+        main_c,
+    )
+    assert ret == 0, "C++ compilation failed:\n{}{}".format(stdout, stderr)
+
+
+@pytest.mark.parametrize("model", MODELS)
+def test_murphi2xml(model):
+    """test cases for murphi2xml"""
+
+    testcase = Path(__file__).parent / model
+    tweaks = dict(parse_test_options(testcase))
+
+    args = ["murphi2xml", "--", testcase]
+    if CONFIG["HAS_VALGRIND"]:
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args)
+    if CONFIG["HAS_VALGRIND"]:
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    # if rumur was expected to reject this model, we allow murphi2xml to fail
+    if tweaks.get("rumur_exit_code", 0) == 0:
+        assert ret == 0, "Unexpected murphi2xml exit:\n{}{}".format(stdout, stderr)
+
+    if ret != 0:
+        return
+
+    # murphi2xml will have written XML to its stdout
+    xmlcontent = stdout
+
+    # See if we have xmllint
+    if not CONFIG["HAS_XMLLINT"]:
+        pytest.skip("xmllint not available for validation")
+
+    # Validate the XML
+    ret, stdout, stderr = run(
+        ["xmllint", "--relaxng", MURPHI2XML_RNG, "--noout", "-"], xmlcontent
+    )
+    assert ret == 0, "Failed to validate:\n{}{}".format(stdout, stderr)
+
+
+@pytest.mark.parametrize("model", MODELS)
+def test_murphi2uclid(model, tmp_path):
+    """test cases for murphi2uclid"""
+
+    testcase = Path(__file__).parent / model
+    tweaks = dict(parse_test_options(testcase))
+
+    # test cases for which murphi2uclid is expected to fail
+    MURPHI2UCLID_FAIL = (
+        # contains `<<` or `>>`
+        "const-folding5.m",
+        "const-folding6.m",
+        "lsh-basic.m",
+        "rsh-and.m",
+        "rsh-basic.m",
+        "smt-bv-lsh.m",
+        "smt-bv-rsh.m",
+        # contains `/`
+        "const-folding3.m",
+        "division.m",
+        "smt-bv-div.m",
+        "smt-bv-div2.m",
+        "smt-div.m",
+        "unicode-div.m",
+        "unicode-div2.m",
+        # contains `%`
+        "const-folding4.m",
+        "mod-neg-1.m",
+        "mod-neg-1_2.m",
+        "put-string-injection.m",
+        "smt-bv-mod.m",
+        "smt-bv-mod2.m",
+        "smt-mod.m",
+        # contains alias statements
+        "alias-and-field.m",
+        "alias-in-bound.m",
+        "alias-in-bound2.m",
+        "alias-literal.m",
+        "alias-of-alias-rule.m",
+        "alias-of-alias-rule2.m",
+        "alias-of-alias-stmt.m",
+        "basic-aliasrule.m",
+        "mixed-aliases.m",
+        # `clear` of a complex type
+        "clear-complex.m",
+        # contains `cover`
+        "cover-basic.m",
+        "cover-basic2.m",
+        "cover-miss.m",
+        "cover-multiple.m",
+        "cover-stmt.m",
+        "cover-stmt-miss.m",
+        "cover-trivial.m",
+        "string-injection.m",
+        # contains `isundefined`
+        "diff-trace-arrays.m",
+        "isundefined-basic.m",
+        "isundefined-decl.m",
+        "isundefined-element.m",
+        "isundefined-function.m",
+        "for-variants.m",
+        "scalarset-cex.m",
+        "scalarset-schedules-off.m",
+        "scalarset-schedules-off-2.m",
+        # contains `put`
+        "for-step-0-dynamic.m",
+        "put-stmt.m",
+        "put-stmt2.m",
+        "put-stmt3.m",
+        "put-stmt4.m",
+        "scalarset-put.m",
+        # contains early return from a function/procedure/rule
+        "return-from-rule.m",
+        "return-from-ruleset.m",
+        "return-from-startstate.m",
+        # `exists` or `forall` with non-1 step
+        "smt-bv-exists4.m",
+        "smt-bv-forall4.m",
+        "smt-exists4.m",
+        "smt-forall4.m",
+        # `liveness` inside a `ruleset`
+        "liveness-in-ruleset.m",
+        "liveness-in-ruleset2.m",
+    )
+
+    # test cases fo which Uclid5 is expected to fail
+    UCLID_FAIL = (
+        # contains a record field with the same name as a variable
+        # https://github.com/uclid-org/uclid/issues/99
+        "compare-record.m",
+        "smt-array-of-record.m",
+        "smt-record-bool-field.m",
+        "smt-record-bool-field2.m",
+        "smt-record-enum-field.m",
+        "smt-record-enum-field2.m",
+        "smt-record-of-array.m",
+        "smt-record-range-field.m",
+        "smt-record-range-field2.m",
+        # recursive function calls
+        "recursion2.m",
+        "recursion4.m",
+        # reference to a field of an array element
+        "193.m",
+        # function calls within expressions
+        "differing-type-return.m",
+        "differing-type-return3.m",
+        "function-call-in-if.m",
+        "function-in-guard.m",
+        "multiple-parameters.m",
+        "multiple-parameters2.m",
+        "non-const-parameters.m",
+        "recursion1.m",
+        "recursion5.m",
+        "reference-function-parameter.m",
+        "reference-function-parameter2.m",
+        "section-order4.m",
+        "section-order5.m",
+        "section-order10.m",
+        "type-shadowing2.m",
+        # modifies a mutable parameter within a function, which is not valid
+        # within a Uclid5 procedure
+        "reference-function-parameter3.m",
+    )
+
+    args = ["murphi2uclid", "--", testcase]
+    if CONFIG["HAS_VALGRIND"]:
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args)
+    if CONFIG["HAS_VALGRIND"]:
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    # if rumur was expected to reject this model, we allow murphi2uclid to fail
+    should_fail = model in MURPHI2UCLID_FAIL
+    could_fail = tweaks.get("rumur_exit_code", 0) != 0 or should_fail
+
+    if not could_fail:
+        assert ret == 0, "Unexpected murphi2uclid exit:\n{}{}".format(stdout, stderr)
+
+    if should_fail:
+        assert ret != 0, "Unexpected murphi2uclid exit:\n{}{}".format(stdout, stderr)
+
+    if ret != 0:
+        return
+
+    # if we do not have Uclid5 available, skip the remainder of the test
+    if not CONFIG["HAS_UCLID"]:
+        pytest.skip("uclid5 not available for validation")
+
+    # write the Uclid5 source to a temporary file
+    src = tmp_path / "source.ucl"
+    with open(str(src), "wt", encoding="utf-8") as f:
+        f.write(stdout)
+
+    # ask Uclid if the source is valid
+    ret, stdout, stderr = run(["uclid", src])
+    if model in UCLID_FAIL:
+        assert ret != 0, "uclid unexpectedly succeeded:\n{}{}".format(stdout, stderr)
+    if model not in UCLID_FAIL:
+        assert ret == 0, "uclid failed:\n{}{}".format(stdout, stderr)
+
+
+@pytest.mark.parametrize("mode", ("non-debug", "debug", "XML"))
+@pytest.mark.parametrize("model", MODELS)
+@pytest.mark.parametrize("multithreaded", (False, True))
+@pytest.mark.parametrize("optimised", (False, True))
+def test_rumur(mode, model, multithreaded, optimised, tmp_path):
+    """test cases involving generating a checker and running it"""
+
+    testcase = Path(__file__).parent / model
+    debug = mode == "debug"
+    xml = mode == "XML"
+    tweaks = dict(parse_test_options(testcase, debug, multithreaded, xml))
+
+    if tweaks.get("skip_reason") is not None:
+        pytest.skip(tweaks["skip_reason"])
+
+    # build up arguments to call rumur
+    args = ["rumur", "--output", "/dev/stdout", testcase]
+    if debug:
+        args += ["--debug"]
+    if xml:
+        args += ["--output-format", "machine-readable"]
+    if multithreaded and CPUS == 1:
+        args += ["--threads", "2"]
+    elif not multithreaded:
+        args += ["--threads", "1"]
+    args += tweaks.get("rumur_flags", [])
+
+    if CONFIG["HAS_VALGRIND"]:
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+
+    # call rumur
+    ret, stdout, stderr = run(args)
+    if CONFIG["HAS_VALGRIND"]:
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+    assert ret == tweaks.get("rumur_exit_code", 0), "Rumur failed:\n{}{}".format(
+        stdout, stderr
+    )
+
+    # if we expected to fail, we are done
+    if ret != 0:
+        return
+
+    model_c = stdout
+
+    # build up arguments to call the C compiler
+    model_bin = tmp_path / "model.exe"
+    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"]
+    if optimised:
+        args += ["-O3"]
+    args += ["-o", model_bin, "-", "-lpthread"]
+
+    if CONFIG["NEEDS_LIBATOMIC"]:
+        args += ["-latomic"]
+
+    # call the C compiler
+    ret, stdout, stderr = run(args, model_c)
+    assert ret == 0, "C compilation failed:\n{}{}".format(stdout, stderr)
+
+    # now run the model itself
+    ret, stdout, stderr = run([model_bin])
+    assert ret == tweaks.get(
+        "checker_exit_code", 0
+    ), "Unexpected checker exit:\n{}{}".format(stdout, stderr)
+
+    # if the test has a stdout expectation, check that now
+    if tweaks.get("checker_output") is not None:
+        assert (
+            tweaks["checker_output"].search(stdout) is not None
+        ), "Checker output did not match expectation regex:\n{}{}".format(
+            stdout, stderr
+        )
+
+    # coarse grained check for whether the model contains a `put` statement that could
+    # screw up XML validation
+    with open(str(testcase), "rt", encoding="utf-8") as f:
+        has_put = re.search(r"\bput\b", f.read()) is not None
+
+    if xml and not has_put:
+
+        model_xml = stdout
+
+        if not CONFIG["HAS_XMLLINT"]:
+            pytest.skip("xmllint not available")
+
+        # validate the XML
+        args = ["xmllint", "--relaxng", VERIFIER_RNG, "--noout", "-"]
+        ret, stdout, stderr = run(args, model_xml)
+        assert (
+            ret == 0
+        ), "Failed to XML-validate machine reachable output:\n{}{}".format(
+            stdout, stderr
+        )
