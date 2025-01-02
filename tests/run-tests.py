@@ -1833,3 +1833,32 @@ def test_strace_sandbox(tmp_path):
     # run the model under strace
     ret, stdout, stderr = run(["strace", model_exe])
     assert ret == 0, "model failed: {}{}".format(stdout, stderr)
+
+
+def test_murphi2uclid_n():
+    """
+    `murphi2uclid` previously had a bug wherein the `-n` command-line option was not
+    accepted. The following tests whether this bug has been reintroduced.
+    """
+
+    MODEL = textwrap.dedent(
+        """\
+    const N: 2;
+    var x: 0 .. 1;
+    startstate begin
+      x := 0;
+    end;
+    rule begin
+      x := 1 - x;
+    end;
+    """
+    )
+
+    # translate a model to Uclid5 requesting a non-default bit-vector type
+    ret, uclid, stderr = run(["murphi2uclid", "-n", "bv64"], MODEL)
+    assert ret == 0, "murphi2uclid failed: {}".format(stderr)
+
+    # this should have been used for (at least) the constant
+    assert (
+        re.search(r"\bconst\s+N\s*:\s*bv64\b", uclid) is not None
+    ), "Numeric type 'bv64' not used in output:"
