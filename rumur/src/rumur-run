@@ -29,50 +29,48 @@ def categorise(cc):
     """
 
     # Create a temporary area to compile a test file
-    tmp = Path(tempfile.mkdtemp())
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
 
-    # Setup the test file
-    src = tmp / "test.c"
-    with open(src, "wt", encoding="utf-8") as f:
-        f.write(
-            """\
-    #include <stdio.h>
-    #include <stdlib.h>
-    int main(void) {
-    #ifdef __clang__
-      printf("clang\\n");
-    #elif defined(__GNUC__)
-      printf("gcc\\n");
-    #else
-      printf("unknown\\n");
-    #endif
-      return EXIT_SUCCESS;
-    }
-    """
+        # Setup the test file
+        src = tmp / "test.c"
+        with open(src, "wt", encoding="utf-8") as f:
+            f.write(
+                """\
+        #include <stdio.h>
+        #include <stdlib.h>
+        int main(void) {
+        #ifdef __clang__
+          printf("clang\\n");
+        #elif defined(__GNUC__)
+          printf("gcc\\n");
+        #else
+          printf("unknown\\n");
+        #endif
+          return EXIT_SUCCESS;
+        }
+        """
+            )
+
+        categorisation = "unknown"
+
+        # Compile it
+        aout = tmp / "a.out"
+        cc_ret = sp.call(
+            [cc, "-o", str(aout), str(src)],
+            universal_newlines=True,
+            stdout=sp.DEVNULL,
+            stderr=sp.DEVNULL,
         )
 
-    categorisation = "unknown"
-
-    # Compile it
-    aout = tmp / "a.out"
-    cc_ret = sp.call(
-        [cc, "-o", str(aout), str(src)],
-        universal_newlines=True,
-        stdout=sp.DEVNULL,
-        stderr=sp.DEVNULL,
-    )
-
-    # Run it
-    if cc_ret == 0:
-        try:
-            categorisation = sp.check_output(
-                [str(aout)], universal_newlines=True
-            ).strip()
-        except sp.CalledProcessError:
-            pass
-
-    # Clean up
-    shutil.rmtree(str(tmp))
+        # Run it
+        if cc_ret == 0:
+            try:
+                categorisation = sp.check_output(
+                    [str(aout)], universal_newlines=True
+                ).strip()
+            except sp.CalledProcessError:
+                pass
 
     return categorisation
 
