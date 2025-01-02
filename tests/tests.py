@@ -46,6 +46,22 @@ def run(args, stdin=None):
     return p.returncode, dec(stdout), dec(stderr)
 
 
+def cxx():
+    """find the C++ compiler"""
+    return os.environ.get("CXX", "c++")
+
+
+def test_display_info():
+    """
+    this is not a test case, but just a vehicle for echoing useful things into the CI
+    log
+    """
+
+    # output a newline to make things more readable in `--capture=no --verbose` mode
+    print()
+    print("  CXX = {}".format(cxx()))
+
+
 def parse_test_options(src, debug=False, multithreaded=False, xml=False):
     """
     extract test tweaks and directives from leading comments in a test input
@@ -871,7 +887,7 @@ def test_murphi2c_header(model, tmp_path):
     # ask the C++ compiler if it is valid there too
     ret, stdout, stderr = run(
         [
-            CONFIG["CXX"],
+            cxx(),
             "-std=c++11",
             "-o",
             os.devnull,
