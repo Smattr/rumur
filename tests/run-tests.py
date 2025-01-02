@@ -1468,3 +1468,26 @@ def test_murphi2murphi_decompose_array():
     # the generated model also should be valid syntax for Rumur
     ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
     assert ret == 0
+
+
+def test_murphi2murphi_decompose_record():
+    """test record comparison decomposition"""
+
+    # model from the test directory involving a record comparison
+    model = Path(__file__).parent / "compare-record.m"
+    assert model.exists()
+
+    # use the complex comparison decomposition to explode the record comparison in this
+    # model
+    ret, transformed, _ = run(
+        ["murphi2murphi", "--decompose-complex-comparisons", model]
+    )
+    assert ret == 0
+
+    # the comparisons should have been decomposed into member-wise comparison
+    assert re.search(r"\bx\.x = y\.x\b", transformed)
+    assert re.search(r"\bx\.x != y\.x\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
