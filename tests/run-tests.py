@@ -1512,3 +1512,26 @@ def test_murphi2murphi_explicit_semicolons():
     # the generated model also should be valid syntax for Rumur
     ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
     assert ret == 0
+
+
+def test_murphi2murphi_remove_liveness():
+    """test murphi2murphi’s ability to remove liveness properties"""
+
+    # an arbitrary test model that has a liveness property
+    model = Path(__file__).parent / "liveness-miss1.m"
+    assert model.exists()
+
+    # confirm it contains the liveness property we expect
+    with open(str(model), "rt", encoding="utf-8") as f:
+        assert 'liveness "x is 10" x = 10' in f.read()
+
+    # use the remove-liveness pass to remove the property
+    ret, transformed, _ = run(["murphi2murphi", "--remove-liveness", model])
+    assert ret == 0
+
+    # now confirm the property is no longer present
+    assert 'liveness "x is 10" x = 10' not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
