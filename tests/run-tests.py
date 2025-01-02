@@ -1746,3 +1746,90 @@ def test_rumur_run_version():
 
     ret, _, _ = run([sys.executable, RUMUR_RUN, "--version"])
     assert ret == 0
+
+
+@pytest.mark.skipif(shutil.which("strace") is None, reason="strace not available")
+def test_strace_sandbox(tmp_path):
+    """
+    run a sandboxed checker under strace
+
+    When the Linux seccomp sandbox causes the checker to terminate because it made an
+    unauthorised system call, it is difficult to debug what happened without stracing
+    the process to see the denied system call. This test case automates this work flow.
+    If the checker runs fine with the sandbox enabled, this test case is irrelevant.
+    However, if the basic-sandbox.m test fails, this test will hopefully automatically
+    diagnose the failure. The purpose of this existing within the test suite itself is
+    to debug failures that occur within a CI environment you do not have access to or
+    cannot easily replicate, like the Debian auto builders.
+    """
+
+    if not CONFIG["HAS_SANDBOX"]:
+        pytest.skip("seccomp sandboxing not supported")
+
+    # create a basic model
+    model_m = tmp_path / "model.m"
+    with open(model_m, "wt", encoding="utf-8") as f:
+        f.write(
+            textwrap.dedent(
+                """\
+        var
+          x: boolean;
+
+        startstate begin
+          x := true;
+        end;
+
+        rule begin
+          x := !x;
+        end;
+        """
+            )
+        )
+
+    # generate a sandboxed checker
+    model_c = tmp_path / "model.c"
+    ret, _, stderr = run(
+        ["rumur", "--sandbox=on", "--output={}".format(model_c), model_m]
+    )
+    assert ret == 0, "rumur failed: {}".format(stderr)
+
+    cflags = ["-std=c11"]
+    ldflags = ["-lpthread"]
+
+    # check if the compiler supports -march=native
+    if CONFIG["HAS_MARCH_NATIVE"]:
+        cflags += ["-march=native"]
+
+    # check if the compiler supports -mcx16
+    if CONFIG["HAS_MCX16"]:
+        cflags += ["-mcx16"]
+
+    # check if we need libatomic support
+    if CONFIG["NEEDS_LIBATOMIC"]:
+        ldflags += ["-latomic"]
+
+    # compile the sandboxed checker
+    model_exe = tmp_path / "model.exe"
+    ret, _, stderr = run([CONFIG["CC"]] + cflags + [model_c, "-o", model_exe] + ldflags)
+    assert ret == 0, "C compilation failed: {}".format(stderr)
+
+    # run the model under strace
+    ret, stdout, stderr = run(["strace", model_exe])
+    assert ret == 0, "model failed: {}{}".format(stdout, stderr)
+
+    # if we did not yet see a failure, test to see if the sandbox also permits anything
+    # extra we do with --debug
+
+    # generate a sandboxed checker with debugging enabled
+    ret, _, stderr = run(
+        ["rumur", "--sandbox=on", "--debug", "--output={}".format(model_c), model_m]
+    )
+    assert ret == 0, "rumur failed: {}".format(stderr)
+
+    # compile the sandboxed checker
+    ret, _, stderr = run([CONFIG["CC"]] + cflags + [model_c, "-o", model_exe] + ldflags)
+    assert ret == 0, "C compilation failed: {}".format(stderr)
+
+    # run the model under strace
+    ret, stdout, stderr = run(["strace", model_exe])
+    assert ret == 0, "model failed: {}{}".format(stdout, stderr)
