@@ -1862,3 +1862,32 @@ def test_murphi2uclid_n():
     assert (
         re.search(r"\bconst\s+N\s*:\s*bv64\b", uclid) is not None
     ), "Numeric type 'bv64' not used in output:"
+
+
+def test_murphi2uclid_numeric_type():
+    """
+    `murphi2uclid` previously had a bug wherein the `--numeric-type` command-line option
+    was ignored. The following tests whether this bug has been reintroduced.
+    """
+
+    MODEL = textwrap.dedent(
+        """\
+    const N: 2;
+    var x: 0 .. 1;
+    startstate begin
+      x := 0;
+    end;
+    rule begin
+      x := 1 - x;
+    end;
+    """
+    )
+
+    # translate a model to Uclid5 requesting a non-default bit-vector type
+    ret, uclid, stderr = run(["murphi2uclid", "--numeric-type=bv64"], MODEL)
+    assert ret == 0, "murphi2uclid failed: {}".format(stderr)
+
+    # this should have been used for (at least) the constant
+    assert (
+        re.search(r"\bconst\s+N\s*:\s*bv64\b", uclid) is not None
+    ), "Numeric type 'bv64' not used in output:"
