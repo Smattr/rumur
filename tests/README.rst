@@ -5,7 +5,7 @@ be run with Pytest:
 
 .. code-block:: sh
 
-    python3 -m pytest --capture=no --verbose run-tests.py
+    python3 -m pytest --capture=no --verbose tests.py
 
 Within this directory are various test cases, each defined in a .m file. It is
 possible to tweak the expected outcome of a test using specially formatted
@@ -17,4 +17,4 @@ to reject a test case:
     -- rumur_exit_code: 1
 
 To see how these comments are interpreted and gain a full understanding of what
-is possible, consult the test script run-tests.py.
+is possible, consult the test script tests.py.
