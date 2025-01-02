@@ -1192,3 +1192,130 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
         ), "Failed to XML-validate machine reachable output:\n{}{}".format(
             stdout, stderr
         )
+
+
+# a model without any comments
+NONE = """
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end;
+"""
+
+# a model with a single line comment
+SINGLE = """
+var
+  x: boolean;
+
+startstate begin
+  x := -- hello world
+  true;
+end;
+
+rule begin
+  x := !x;
+end;
+"""
+
+# a model with a multiline comment
+MULTILINE = """
+var
+  x: boolean;
+
+startstate begin
+  x := /* hello world */ true;
+end;
+
+rule begin
+  x := !x;
+end;
+"""
+
+# a model with a single line comment terminated by EOF, not \n
+SINGLE_EOF = """
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end; -- hello world"""
+
+# a model with a multiline comment terminated by EOF, not */
+MULTILINE_EOF = """
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end; /* hello world """
+
+# comments inside strings that should be ignored
+STRING = """
+var
+  x: boolean;
+
+startstate "hello -- world" begin
+  x := true;
+end;
+
+rule "hello /* world */" begin
+  x := !x;
+end;
+"""
+
+# a model with a mixture
+MIX = """
+var
+  x: boolean;
+
+startstate begin
+  x := -- hello world
+  /* hello world */true;
+end; -- hello /* hello world */
+/* hello -- hello */
+rule begin
+  x := !x;
+end;
+"""
+
+
+@pytest.mark.skipif(
+    shutil.which("murphi-comment-ls") is None, reason="murphi-comment-ls not found"
+)
+@pytest.mark.parametrize(
+    "model,expectation",
+    (
+        (NONE, ""),
+        (SINGLE, "6.8-21:  hello world\n"),
+        (MULTILINE, "6.8-24:  hello world \n"),
+        (SINGLE_EOF, "11.6-19:  hello world\n"),
+        (MULTILINE_EOF, "11.6-20:  hello world \n"),
+        (
+            MIX,
+            "6.8-21:  hello world\n7.3-19:  hello world \n8.6-31:  hello /* hello world */\n9.1-20:  hello -- hello \n",
+        ),
+    ),
+)
+def test_comment_parsing(model, expectation):
+    """librumur should be able to retrieve comments accurately"""
+
+    ret, stdout, stderr = run(["murphi-comment-ls"], model)
+
+    assert ret == 0, "murphi-comment-ls failed"
+    assert stderr == "", "murphi-comment-ls printed warnings/errors"
+
+    assert stdout == expectation
