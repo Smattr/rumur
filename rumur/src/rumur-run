@@ -9,7 +9,6 @@ an alternative to having to run the model generation, compilation and execution
 steps manually.
 """
 
-import atexit
 import os
 import platform
 import re
@@ -333,29 +332,29 @@ def main(args):
     ok = True
 
     # Setup a temporary directory in which to generate the checker
-    tmp = Path(tempfile.mkdtemp())
-    atexit.register(shutil.rmtree, str(tmp))
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
 
-    # Compile the checker
-    if ok:
-        print("Compiling the checker...")
-        aout = tmp / "a.out"
-        argv = (
-            [CC, "-std=c11"]
-            + optimisation_flags()
-            + ["-o", str(aout), "-x", "c", "-", "-lpthread"]
-        )
-        if needs_libatomic():
-            argv.append("-latomic")
-        cc_proc = sp.Popen(argv, stdin=sp.PIPE)
-        cc_proc.communicate(checker_c)
-        ok &= cc_proc.returncode == 0
+        # Compile the checker
+        if ok:
+            print("Compiling the checker...")
+            aout = tmp / "a.out"
+            argv = (
+                [CC, "-std=c11"]
+                + optimisation_flags()
+                + ["-o", str(aout), "-x", "c", "-", "-lpthread"]
+            )
+            if needs_libatomic():
+                argv.append("-latomic")
+            cc_proc = sp.Popen(argv, stdin=sp.PIPE)
+            cc_proc.communicate(checker_c)
+            ok &= cc_proc.returncode == 0
 
-    # Run the checker
-    if ok:
-        print("Running the checker...")
-        ret = sp.call([str(aout)])
-        ok &= ret == 0
+        # Run the checker
+        if ok:
+            print("Running the checker...")
+            ret = sp.call([str(aout)])
+            ok &= ret == 0
 
     return 0 if ok else -1
 
