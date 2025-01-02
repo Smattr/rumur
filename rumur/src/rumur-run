@@ -17,6 +17,7 @@ import shutil
 import subprocess as sp
 import sys
 import tempfile
+from pathlib import Path
 
 # C compiler
 CC = shutil.which(os.environ.get("CC", "cc"))
@@ -28,10 +29,10 @@ def categorise(cc):
     """
 
     # Create a temporary area to compile a test file
-    tmp = tempfile.mkdtemp()
+    tmp = Path(tempfile.mkdtemp())
 
     # Setup the test file
-    src = os.path.join(tmp, "test.c")
+    src = tmp / "test.c"
     with open(src, "wt", encoding="utf-8") as f:
         f.write(
             """\
@@ -53,9 +54,9 @@ def categorise(cc):
     categorisation = "unknown"
 
     # Compile it
-    aout = os.path.join(tmp, "a.out")
+    aout = tmp / "a.out"
     cc_ret = sp.call(
-        [cc, "-o", aout, src],
+        [cc, "-o", str(aout), str(src)],
         universal_newlines=True,
         stdout=sp.DEVNULL,
         stderr=sp.DEVNULL,
@@ -64,12 +65,14 @@ def categorise(cc):
     # Run it
     if cc_ret == 0:
         try:
-            categorisation = sp.check_output([aout], universal_newlines=True).strip()
+            categorisation = sp.check_output(
+                [str(aout)], universal_newlines=True
+            ).strip()
         except sp.CalledProcessError:
             pass
 
     # Clean up
-    shutil.rmtree(tmp)
+    shutil.rmtree(str(tmp))
 
     return categorisation
 
@@ -332,17 +335,17 @@ def main(args):
     ok = True
 
     # Setup a temporary directory in which to generate the checker
-    tmp = tempfile.mkdtemp()
-    atexit.register(shutil.rmtree, tmp)
+    tmp = Path(tempfile.mkdtemp())
+    atexit.register(shutil.rmtree, str(tmp))
 
     # Compile the checker
     if ok:
         print("Compiling the checker...")
-        aout = os.path.join(tmp, "a.out")
+        aout = tmp / "a.out"
         argv = (
             [CC, "-std=c11"]
             + optimisation_flags()
-            + ["-o", aout, "-x", "c", "-", "-lpthread"]
+            + ["-o", str(aout), "-x", "c", "-", "-lpthread"]
         )
         if needs_libatomic():
             argv.append("-latomic")
@@ -353,7 +356,7 @@ def main(args):
     # Run the checker
     if ok:
         print("Running the checker...")
-        ret = sp.call([aout])
+        ret = sp.call([str(aout)])
         ok &= ret == 0
 
     return 0 if ok else -1
