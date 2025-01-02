@@ -32,7 +32,7 @@ def categorise(cc):
 
     # Setup the test file
     src = os.path.join(tmp, "test.c")
-    with open(src, "wt") as f:
+    with open(src, "wt", encoding="utf-8") as f:
         f.write(
             """\
     #include <stdio.h>
@@ -277,7 +277,7 @@ def has_no_la57():
 
     # read cpuinfo, looking for la57 as a supported flag by the CPU
     try:
-        with open("/proc/cpuinfo", "rt") as f:
+        with open("/proc/cpuinfo", "rt", encoding="utf-8") as f:
             for line in f:
                 flags = re.match(r"flags\s*:\s*(?P<flags>.*)$", line)
                 if flags is not None:
