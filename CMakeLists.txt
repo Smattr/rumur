@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 project(rumur LANGUAGES C CXX)
 
@@ -126,7 +126,9 @@ add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check
   COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
-    python3 -m pytest -s --verbose ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py)
+    python3 -m pytest -s --verbose ${CMAKE_CURRENT_SOURCE_DIR}/tests/run-tests.py
+  USES_TERMINAL
+)
 add_dependencies(check
   murphi-format murphi2c murphi2murphi murphi2uclid murphi2xml rumur
 )
