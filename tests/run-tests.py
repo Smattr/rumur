@@ -1445,3 +1445,26 @@ def test_lock_freedom(arch):
     assert (
         "__atomic_" not in model_s
     ), "libatomic calls in generated code were not optimised out"
+
+
+def test_murphi2murphi_decompose_array():
+    """test array comparison decomposition"""
+
+    # model from the test directory involving an array comparison
+    model = Path(__file__).parent / "compare-array.m"
+    assert model.exists()
+
+    # use the complex comparison decomposition to explode the array comparison in this
+    # model
+    ret, transformed, _ = run(
+        ["murphi2murphi", "--decompose-complex-comparisons", model]
+    )
+    assert ret == 0
+
+    # the comparisons should have been decomposed into element-wise comparison
+    assert re.search(r"\bx\[i0\] = y\[i0\]", transformed)
+    assert re.search(r"\bx\[i0\] != y\[i0\]", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
