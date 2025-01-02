@@ -1319,3 +1319,44 @@ def test_comment_parsing(model, expectation):
     assert stderr == "", "murphi-comment-ls printed warnings/errors"
 
     assert stdout == expectation
+
+
+def test_193():
+    """
+    This is a variant of 193.m that tests that we descend into TypeExprIDs when
+    reordering record fields. It is hard to trigger a behaviour divergence that is
+    exposed during checking, so instead we check the --debug output of rumur.
+
+    See also https://github.com/Smattr/rumur/issues/193.
+    """
+
+    # a model containing a TypeExprID, itself referring to a record whose fields will be
+    # reordered
+    MODEL = textwrap.dedent(
+        """
+    type
+      t1: scalarset(4);
+
+      t2: record
+        a: boolean;
+        b: t1;
+        c: boolean;
+      end;
+
+    var x: t2;
+
+    startstate begin
+    end
+
+    rule begin
+    end
+    """
+    )
+
+    # run Rumur in debug mode
+    ret, _, stderr = run(["rumur", "--output", os.devnull, "--debug"], MODEL)
+    assert ret == 0, "rumur failed"
+
+    # we should see the fields be reordered once due to encountering the original
+    # TypeDecl (t2) and once due to the TypeExprID (the type of x)
+    assert stderr.count("sorted fields {a, b, c} -> {a, c, b}") == 2
