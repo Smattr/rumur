@@ -1491,3 +1491,24 @@ def test_murphi2murphi_decompose_record():
     # the generated model also should be valid syntax for Rumur
     ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
     assert ret == 0
+
+
+def test_murphi2murphi_explicit_semicolons():
+    """test murphi2murphi’s ability to add semi-colons"""
+
+    # pick an arbitrary test model that omits semi-colons
+    model = Path(__file__).parent / "assume-statement.m"
+    assert model.exists()
+
+    # use the explicit-semicolons pass to add semi-colons
+    ret, transformed, _ = run(["murphi2murphi", "--explicit-semicolons", model])
+    assert ret == 0
+
+    # we should now find the variable definition and both rules in this model are
+    # semi-colon terminated
+    assert re.search(r"\bx: 0 \.\. 2;$", transformed, re.MULTILINE)
+    assert len(re.findall(r"^end;$", transformed, re.MULTILINE)) == 2
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
