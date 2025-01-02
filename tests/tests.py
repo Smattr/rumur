@@ -1079,7 +1079,7 @@ def test_murphi2uclid(model, tmp_path):
         return
 
     # if we do not have Uclid5 available, skip the remainder of the test
-    if not CONFIG["HAS_UCLID"]:
+    if shutil.which("uclid") is None:
         pytest.skip("uclid5 not available for validation")
 
     # write the Uclid5 source to a temporary file
