@@ -227,6 +227,11 @@ int main(void) {
     return ret != 0
 
 
+def has_valgrind():
+    """is Valgrind available?"""
+    return shutil.which("valgrind") is not None
+
+
 def test_display_info():
     """
     this is not a test case, but just a vehicle for echoing useful things into the CI
@@ -239,6 +244,7 @@ def test_display_info():
     print("  CXX = {}".format(cxx()))
     print("  has_march_native() = {}".format(has_march_native()))
     print("  has_mcx16() = {}".format(has_mcx16()))
+    print("  has_valgrind() = {}".format(has_valgrind()))
     print("  needs_libatomic() = {}".format(needs_libatomic()))
 
 
@@ -982,7 +988,7 @@ def test_murphi2c(model):
         should_fail = re.search(r"\bisundefined\b", f.read()) is not None
 
     args = ["murphi2c", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -991,7 +997,7 @@ def test_murphi2c(model):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2c to fail
@@ -1029,7 +1035,7 @@ def test_murphi2c_header(model, tmp_path):
         should_fail = re.search(r"\bisundefined\b", f.read()) is not None
 
     args = ["murphi2c", "--header", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -1038,7 +1044,7 @@ def test_murphi2c_header(model, tmp_path):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2c to fail
@@ -1089,7 +1095,7 @@ def test_murphi2xml(model):
     tweaks = dict(parse_test_options(testcase))
 
     args = ["murphi2xml", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -1098,7 +1104,7 @@ def test_murphi2xml(model):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2xml to fail
@@ -1247,7 +1253,7 @@ def test_murphi2uclid(model, tmp_path):
     )
 
     args = ["murphi2uclid", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -1256,7 +1262,7 @@ def test_murphi2uclid(model, tmp_path):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
@@ -1316,7 +1322,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
         args += ["--threads", "1"]
     args += tweaks.get("rumur_flags", [])
 
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -1327,7 +1333,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
     # call rumur
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
     assert ret == tweaks.get("rumur_exit_code", 0), "Rumur failed:\n{}{}".format(
         stdout, stderr
