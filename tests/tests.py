@@ -57,28 +57,58 @@ def cxx():
     return os.environ.get("CXX", "c++")
 
 
-@functools.lru_cache()
-def has_march_native():
-    """does the compiler support -march=native?"""
-
-    # try to compile something using -march=native
+def has_c_flag(flag):
+    """does the C compiler support the given flag?"""
     ret, _, _ = run(
-        [cc(), "-x", "c", "-std=c11", "-march=native", "-o", os.devnull, "-"],
+        [cc(), "-x", "c", "-std=c11", flag, "-o", os.devnull, "-"],
         "int main(void) { return 0; }",
     )
     return ret == 0
+
+
+@functools.lru_cache()
+def has_march_native():
+    """does the compiler support -march=native?"""
+    return has_c_flag("-march=native")
 
 
 @functools.lru_cache()
 def has_mcx16():
     """does the compiler support -mcx16?"""
+    return has_c_flag("-mcx16")
 
-    # try to compile something using -mcx16
-    ret, _, _ = run(
-        [cc(), "-x", "c", "-std=c11", "-mcx16", "-o", os.devnull, "-"],
-        "int main(void) { return 0; }",
-    )
-    return ret == 0
+
+@functools.lru_cache()
+def c_flags():
+    """initial flags to pass to our C compiler"""
+
+    # first, the default flags
+    flags = [
+        "-x",
+        "c",
+        "-std=c11",
+        "-Werror=format",
+        "-Werror=sign-compare",
+        "-Werror=type-limits",
+    ]
+
+    # test if the C compiler supports -Werror=enum-conversion
+    if has_c_flag("-Werror=enum-conversion"):
+        flags += ["-Werror=enum-conversion"]
+
+    # test if the C compiler supports -Werror=maybe-uninitialized
+    if has_c_flag("-Werror=maybe-uninitialized"):
+        flags += ["-Werror=maybe-uninitialized"]
+
+    # test if the C compiler supports -march=native
+    if has_march_native():
+        flags += ["-march=native"]
+
+    # test if the C compiler supports -mcx16
+    if has_mcx16():
+        flags += ["-mcx16"]
+
+    return flags
 
 
 @functools.lru_cache()
@@ -247,6 +277,7 @@ def test_display_info():
     print()
     print("  CC = {}".format(cc()))
     print("  CXX = {}".format(cxx()))
+    print("  c_flags() = {}".format(c_flags()))
     print("  has_march_native() = {}".format(has_march_native()))
     print("  has_mcx16() = {}".format(has_mcx16()))
     print("  has_valgrind() = {}".format(has_valgrind()))
@@ -891,7 +922,7 @@ def test_stdlib_list(tmp_path):
 
     # build up arguments to call the C compiler
     model_bin = tmp_path / "model.exe"
-    args = [cc()] + CONFIG["C_FLAGS"] + ["-O3", "-o", model_bin, "-", "-lpthread"]
+    args = [cc()] + c_flags() + ["-O3", "-o", model_bin, "-", "-lpthread"]
 
     if needs_libatomic():
         args += ["-latomic"]
@@ -1018,7 +1049,7 @@ def test_murphi2c(model):
 
     # omit -Werror=maybe-uninitialized which identifies legitimate problems in input
     # models
-    cflags = [f for f in CONFIG["C_FLAGS"] if f != "-Werror=maybe-uninitialized"]
+    cflags = [f for f in c_flags() if f != "-Werror=maybe-uninitialized"]
 
     # ask the C compiler if this is valid
     args = [cc()] + cflags + ["-c", "-o", os.devnull, "-"]
@@ -1070,7 +1101,7 @@ def test_murphi2c_header(model, tmp_path):
 
     # ask the C compiler if the header is valid
     main_c = '#include "{}"\nint main(void) {{ return 0; }}\n'.format(header)
-    args = [cc()] + CONFIG["C_FLAGS"] + ["-o", os.devnull, "-"]
+    args = [cc()] + c_flags() + ["-o", os.devnull, "-"]
     ret, stdout, stderr = run(args, main_c)
     assert ret == 0, "C compilation failed:\n{}{}".format(stdout, stderr)
 
@@ -1353,7 +1384,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
     # build up arguments to call the C compiler
     model_bin = tmp_path / "model.exe"
-    args = [cc()] + CONFIG["C_FLAGS"]
+    args = [cc()] + c_flags()
     if optimised:
         args += ["-O3"]
     args += ["-o", model_bin, "-", "-lpthread"]
