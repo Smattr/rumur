@@ -232,6 +232,11 @@ def has_valgrind():
     return shutil.which("valgrind") is not None
 
 
+def has_xmllint():
+    """is xmllint available?"""
+    return shutil.which("xmllint") is not None
+
+
 def test_display_info():
     """
     this is not a test case, but just a vehicle for echoing useful things into the CI
@@ -245,6 +250,7 @@ def test_display_info():
     print("  has_march_native() = {}".format(has_march_native()))
     print("  has_mcx16() = {}".format(has_mcx16()))
     print("  has_valgrind() = {}".format(has_valgrind()))
+    print("  has_xmllint() = {}".format(has_xmllint()))
     print("  needs_libatomic() = {}".format(needs_libatomic()))
 
 
@@ -1118,7 +1124,7 @@ def test_murphi2xml(model):
     xmlcontent = stdout
 
     # See if we have xmllint
-    if not CONFIG["HAS_XMLLINT"]:
+    if not has_xmllint():
         pytest.skip("xmllint not available for validation")
 
     # Validate the XML
@@ -1382,7 +1388,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
         model_xml = stdout
 
-        if not CONFIG["HAS_XMLLINT"]:
+        if not has_xmllint():
             pytest.skip("xmllint not available")
 
         # validate the XML
