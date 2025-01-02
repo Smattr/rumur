@@ -1715,3 +1715,25 @@ def test_murphi2murphi_unicode_to_ascii():
     # the generated model also should be valid syntax for Rumur
     ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
     assert ret == 0
+
+
+def test_rumur_run_model():
+    """test that rumur-run can check a basic model"""
+
+    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+
+    MODEL = """
+    var
+      x: boolean;
+
+    startstate begin
+      x := true;
+    end;
+
+    rule begin
+      x := !x;
+    end;
+    """
+
+    ret, _, _ = run([sys.executable, RUMUR_RUN], MODEL)
+    assert ret == 0
