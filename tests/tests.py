@@ -46,6 +46,11 @@ def run(args, stdin=None):
     return p.returncode, dec(stdout), dec(stderr)
 
 
+def cc():
+    """find the C compiler"""
+    return os.environ.get("CC", "cc")
+
+
 def cxx():
     """find the C++ compiler"""
     return os.environ.get("CXX", "c++")
@@ -59,6 +64,7 @@ def test_display_info():
 
     # output a newline to make things more readable in `--capture=no --verbose` mode
     print()
+    print("  CC = {}".format(cc()))
     print("  CXX = {}".format(cxx()))
 
 
@@ -699,9 +705,7 @@ def test_stdlib_list(tmp_path):
 
     # build up arguments to call the C compiler
     model_bin = tmp_path / "model.exe"
-    args = (
-        [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-O3", "-o", model_bin, "-", "-lpthread"]
-    )
+    args = [cc()] + CONFIG["C_FLAGS"] + ["-O3", "-o", model_bin, "-", "-lpthread"]
 
     if CONFIG["NEEDS_LIBATOMIC"]:
         args += ["-latomic"]
@@ -831,7 +835,7 @@ def test_murphi2c(model):
     cflags = [f for f in CONFIG["C_FLAGS"] if f != "-Werror=maybe-uninitialized"]
 
     # ask the C compiler if this is valid
-    args = [CONFIG["CC"]] + cflags + ["-c", "-o", os.devnull, "-"]
+    args = [cc()] + cflags + ["-c", "-o", os.devnull, "-"]
     ret, out, err = run(args, stdout)
     assert ret == 0, "C compilation failed:\n{}{}\nProgram:\n{}".format(
         out, err, stdout
@@ -880,7 +884,7 @@ def test_murphi2c_header(model, tmp_path):
 
     # ask the C compiler if the header is valid
     main_c = '#include "{}"\nint main(void) {{ return 0; }}\n'.format(header)
-    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-o", os.devnull, "-"]
+    args = [cc()] + CONFIG["C_FLAGS"] + ["-o", os.devnull, "-"]
     ret, stdout, stderr = run(args, main_c)
     assert ret == 0, "C compilation failed:\n{}{}".format(stdout, stderr)
 
@@ -1163,7 +1167,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
     # build up arguments to call the C compiler
     model_bin = tmp_path / "model.exe"
-    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"]
+    args = [cc()] + CONFIG["C_FLAGS"]
     if optimised:
         args += ["-O3"]
     args += ["-o", model_bin, "-", "-lpthread"]
@@ -1394,7 +1398,7 @@ def test_lock_freedom(arch):
     if arch == "aarch64":
         # this variant is only relevant on ≥ARMv8.1a
         argv = [
-            CONFIG["CC"],
+            cc(),
             "-std=c11",
             "-march=armv8.1-a",
             "-x",
@@ -1413,7 +1417,7 @@ def test_lock_freedom(arch):
         if platform.machine() not in ("amd64", "x86_64"):
             pytest.skip("not relevant on non-x86-64 machines")
         # check that we have a multilib compiler capable of targeting i386
-        argv = [CONFIG["CC"], "-std=c11", "-m32", "-o", os.devnull, "-x", "c", "-"]
+        argv = [cc(), "-std=c11", "-m32", "-o", os.devnull, "-x", "c", "-"]
         program = textwrap.dedent(
             """\
         #include <stdio.h>
@@ -1444,7 +1448,7 @@ def test_lock_freedom(arch):
 
     # compile it to assembly
     argv = [
-        CONFIG["CC"],
+        cc(),
         "-O3",
         "-std=c11",
         "-x",
@@ -1826,7 +1830,7 @@ def test_strace_sandbox(tmp_path):
 
     # compile the sandboxed checker
     model_exe = tmp_path / "model.exe"
-    ret, _, stderr = run([CONFIG["CC"]] + cflags + [model_c, "-o", model_exe] + ldflags)
+    ret, _, stderr = run([cc()] + cflags + [model_c, "-o", model_exe] + ldflags)
     assert ret == 0, "C compilation failed: {}".format(stderr)
 
     # run the model under strace
@@ -1843,7 +1847,7 @@ def test_strace_sandbox(tmp_path):
     assert ret == 0, "rumur failed: {}".format(stderr)
 
     # compile the sandboxed checker
-    ret, _, stderr = run([CONFIG["CC"]] + cflags + [model_c, "-o", model_exe] + ldflags)
+    ret, _, stderr = run([cc()] + cflags + [model_c, "-o", model_exe] + ldflags)
     assert ret == 0, "C compilation failed: {}".format(stderr)
 
     # run the model under strace
