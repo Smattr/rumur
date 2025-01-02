@@ -912,7 +912,7 @@ def test_stdlib_list(tmp_path):
     """test ../share/list"""
 
     # pre-process the tester with M4
-    share = Path(__file__).parents[1] / "share"
+    share = Path(__file__).absolute().parents[1] / "share"
     ret, model_m, stderr = run(["m4", "--include", share, share / "test_list.m"])
     assert ret == 0, "M4 failed:\n{}{}".format(model_m, stderr)
 
