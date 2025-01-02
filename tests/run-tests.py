@@ -1737,3 +1737,12 @@ def test_rumur_run_model():
 
     ret, _, _ = run([sys.executable, RUMUR_RUN], MODEL)
     assert ret == 0
+
+
+def test_rumur_run_version():
+    """basic test that rumur-run can execute successfully"""
+
+    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+
+    ret, _, _ = run([sys.executable, RUMUR_RUN, "--version"])
+    assert ret == 0
