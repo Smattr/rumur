@@ -4,6 +4,7 @@ Rumur integration test suite
 
 import multiprocessing
 import os
+import platform
 import re
 import shutil
 import subprocess as sp
@@ -1360,3 +1361,87 @@ def test_193():
     # we should see the fields be reordered once due to encountering the original
     # TypeDecl (t2) and once due to the TypeExprID (the type of x)
     assert stderr.count("sorted fields {a, b, c} -> {a, c, b}") == 2
+
+
+@pytest.mark.parametrize("arch", ("aarch64", "i386", "x86-64"))
+def test_lock_freedom(arch):
+    """
+    Test that a compiled verifier does not depend on libatomic.
+
+    Uses of __atomic built-ins and C11 atomics can sometimes cause the compiler to emit
+    calls to libatomic instead of inline instructions. This is a problem because we use
+    these in the verifier to implement lock-free algorithms, while the libatomic
+    implementations take locks, defeating the purpose of using them. This test checks
+    that we end up with no libatomic calls in the compiled verifier.
+    """
+
+    if arch == "aarch64":
+        # this variant is only relevant on ≥ARMv8.1a
+        argv = [
+            CONFIG["CC"],
+            "-std=c11",
+            "-march=armv8.1-a",
+            "-x",
+            "c",
+            "-",
+            "-o",
+            os.devnull,
+        ]
+        ret, _, _ = run(argv, "int main(void) { return 0; }")
+        if ret != 0:
+            pytest.skip("only relevant for ≥ARMv8.1a machines")
+
+        cflags = ["-march=armv8.1-a"]
+
+    elif arch == "i386":
+        if platform.machine() not in ("amd64", "x86_64"):
+            pytest.skip("not relevant on non-x86-64 machines")
+        # check that we have a multilib compiler capable of targeting i386
+        argv = [CONFIG["CC"], "-std=c11", "-m32", "-o", os.devnull, "-x", "c", "-"]
+        program = textwrap.dedent(
+            """\
+        #include <stdio.h>
+        int main(void) {
+          printf("hello world\\n");
+          return 0;
+        }
+        """
+        )
+        ret, _, _ = run(argv, program)
+        if ret != 0:
+            pytest.skip("compiler cannot target 32-bit code")
+
+        cflags = ["-m32"]
+
+    else:
+        assert arch == "x86-64"
+        if platform.machine() not in ("amd64", "x86_64"):
+            pytest.skip("not relevant on non-x86-64 machines")
+
+        cflags = ["-mcx16"]
+
+    # generate a checker for a simple model
+    model = "var x: boolean; startstate begin x := false; end; rule begin x := !x; end;"
+    argv = ["rumur", "--output", "/dev/stdout"]
+    ret, model_c, stderr = run(argv, model)
+    assert ret == 0, "call to rumur failed: {}".format(stderr)
+
+    # compile it to assembly
+    argv = [
+        CONFIG["CC"],
+        "-O3",
+        "-std=c11",
+        "-x",
+        "c",
+        "-",
+        "-S",
+        "-o",
+        "/dev/stdout",
+    ] + cflags
+    ret, model_s, stderr = run(argv, model_c)
+    assert ret == 0, "compilation failed: {}".format(stderr)
+
+    # check for calls to libatomic functions
+    assert (
+        "__atomic_" not in model_s
+    ), "libatomic calls in generated code were not optimised out"
