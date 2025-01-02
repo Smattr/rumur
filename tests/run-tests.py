@@ -1535,3 +1535,23 @@ def test_murphi2murphi_remove_liveness():
     # the generated model also should be valid syntax for Rumur
     ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
     assert ret == 0
+
+
+def test_murphi2murphi_switch_to_if_const_enum():
+    """test murphi2murphi’s ability to transform switches to if statements"""
+
+    # model from the test directory involving some switch examples
+    model = Path(__file__).parent / "const-enum.m"
+    assert model.exists()
+
+    # use the switch-to-if pass to remove the switch statements
+    ret, transformed, _ = run(["murphi2murphi", "--switch-to-if", model])
+    assert ret == 0
+
+    # we should now be able to find some if statements in the model
+    assert re.search(r"\bif X = A then\b", transformed)
+    assert re.search(r"\bif X = X then\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
