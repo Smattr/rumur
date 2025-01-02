@@ -1655,3 +1655,23 @@ def test_murphi2murphi_unicode_div2():
     # the generated model also should be valid syntax for Rumur
     ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
     assert ret == 0
+
+
+def test_murphi2murphi_unicode_mul():
+    """murphi2murphi’s ability to handle ×"""
+
+    # model from the test directory involving a unicode multiplication
+    model = Path(__file__).parent / "unicode-mul.m"
+    assert model.exists()
+
+    # use the ASCII transformation to remove ×
+    ret, transformed, _ = run(["murphi2murphi", "--to-ascii", model])
+    assert ret == 0
+
+    # the × operator should have become *
+    assert re.search(r"\bx := 2 \* x\b", transformed)
+    assert "×" not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
