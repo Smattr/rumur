@@ -2,6 +2,7 @@
 Rumur integration test suite
 """
 
+import functools
 import multiprocessing
 import os
 import platform
@@ -56,6 +57,18 @@ def cxx():
     return os.environ.get("CXX", "c++")
 
 
+@functools.lru_cache()
+def has_march_native():
+    """does the compiler support -march=native?"""
+
+    # try to compile something using -march=native
+    ret, _, _ = run(
+        [cc(), "-x", "c", "-std=c11", "-march=native", "-o", os.devnull, "-"],
+        "int main(void) { return 0; }",
+    )
+    return ret == 0
+
+
 def test_display_info():
     """
     this is not a test case, but just a vehicle for echoing useful things into the CI
@@ -66,6 +79,7 @@ def test_display_info():
     print()
     print("  CC = {}".format(cc()))
     print("  CXX = {}".format(cxx()))
+    print("  has_march_native() = {}".format(has_march_native()))
 
 
 def parse_test_options(src, debug=False, multithreaded=False, xml=False):
@@ -1817,7 +1831,7 @@ def test_strace_sandbox(tmp_path):
     ldflags = ["-lpthread"]
 
     # check if the compiler supports -march=native
-    if CONFIG["HAS_MARCH_NATIVE"]:
+    if has_march_native():
         cflags += ["-march=native"]
 
     # check if the compiler supports -mcx16
