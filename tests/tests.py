@@ -1083,18 +1083,8 @@ def test_stdlib_list(tmp_path):
     )
 
 
-MODELS = []
+MODELS = sorted([p.name for p in Path(__file__).parent.iterdir() if p.suffix == ".m"])
 """test cases defined as .m files in this directory"""
-
-# find files in our directory
-root = Path(__file__).parent
-for p in sorted(root.iterdir()):
-
-    # if this is not a model, skip the remaining generic logic
-    if p.suffix != ".m":
-        continue
-
-    MODELS += [p.name]
 
 
 @pytest.mark.parametrize("model", MODELS)
