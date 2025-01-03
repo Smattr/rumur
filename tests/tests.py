@@ -2,8 +2,10 @@
 Rumur integration test suite
 """
 
+import functools
 import multiprocessing
 import os
+import platform
 import re
 import shutil
 import subprocess as sp
@@ -43,6 +45,244 @@ def run(args, stdin=None):
     )
     stdout, stderr = p.communicate(stdin)
     return p.returncode, dec(stdout), dec(stderr)
+
+
+def cc():
+    """find the C compiler"""
+    return os.environ.get("CC", "cc")
+
+
+def cxx():
+    """find the C++ compiler"""
+    return os.environ.get("CXX", "c++")
+
+
+def has_c_flag(flag):
+    """does the C compiler support the given flag?"""
+    ret, _, _ = run(
+        [cc(), "-x", "c", "-std=c11", flag, "-o", os.devnull, "-"],
+        "int main(void) { return 0; }",
+    )
+    return ret == 0
+
+
+@functools.lru_cache()
+def has_march_native():
+    """does the compiler support -march=native?"""
+    return has_c_flag("-march=native")
+
+
+@functools.lru_cache()
+def has_mcx16():
+    """does the compiler support -mcx16?"""
+    return has_c_flag("-mcx16")
+
+
+@functools.lru_cache()
+def c_flags():
+    """initial flags to pass to our C compiler"""
+
+    # first, the default flags
+    flags = [
+        "-x",
+        "c",
+        "-std=c11",
+        "-Werror=format",
+        "-Werror=sign-compare",
+        "-Werror=type-limits",
+    ]
+
+    # test if the C compiler supports -Werror=enum-conversion
+    if has_c_flag("-Werror=enum-conversion"):
+        flags += ["-Werror=enum-conversion"]
+
+    # test if the C compiler supports -Werror=maybe-uninitialized
+    if has_c_flag("-Werror=maybe-uninitialized"):
+        flags += ["-Werror=maybe-uninitialized"]
+
+    # test if the C compiler supports -march=native
+    if has_march_native():
+        flags += ["-march=native"]
+
+    # test if the C compiler supports -mcx16
+    if has_mcx16():
+        flags += ["-mcx16"]
+
+    return flags
+
+
+@functools.lru_cache()
+def needs_libatomic():
+    """does the toolchain need -latomic to support dword CAS?"""
+
+    cflags = ["-x", "c", "-std=c11"]
+    if has_march_native():
+        cflags += ["-march=native"]
+    if has_mcx16():
+        cflags += ["-mcx16"]
+
+    # compile a program that operates on a double-word
+    ret, _, _ = run(
+        [cc()] + cflags + ["-o", os.devnull, "-"],
+        textwrap.dedent(
+            """\
+#include <stdbool.h>
+#include <stdint.h>
+
+// replicate what is in ../../rumur/resources/header.c
+
+#define THREADS 2
+
+#if __SIZEOF_POINTER__ <= 4
+  typedef uint64_t dword_t;
+#elif __SIZEOF_POINTER__ <= 8
+  typedef unsigned __int128 dword_t;
+#else
+  #error "unexpected pointer size; what scalar type to use for dword_t?"
+#endif
+
+static dword_t atomic_read(dword_t *p) {
+
+  if (THREADS == 1) {
+    return *p;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \\
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
+   *   memory. The way to work around this is apparently the following
+   *   degenerate CMPXCHG16B.
+   * i386: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CMPXCHG8B by using the
+   *   __sync built-in instead.
+   * ARM64: __atomic_load_n emits code calling a libatomic function that takes a
+   *   lock, making this no longer lock free. Force a CASP by using the __sync
+   *   built-in instead.
+   *
+   * XXX: the obvious (irrelevant) literal to use here is “0” but this triggers
+   * a GCC bug on ARM, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114310.
+   */
+  return __sync_val_compare_and_swap(p, 1, 1);
+#endif
+
+  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
+}
+
+static void atomic_write(dword_t *p, dword_t v) {
+
+  if (THREADS == 1) {
+    *p = v;
+    return;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \\
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* As explained above, we need some extra gymnastics to avoid a call to
+   * libatomic on x86-64, i386, and ARM64.
+   */
+  dword_t expected;
+  dword_t old = 0;
+  do {
+    expected = old;
+    old = __sync_val_compare_and_swap(p, expected, v);
+  } while (expected != old);
+  return;
+#endif
+
+  __atomic_store_n(p, v, __ATOMIC_SEQ_CST);
+}
+
+static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
+
+  if (THREADS == 1) {
+    if (*p == expected) {
+      *p = new;
+      return true;
+    }
+    return false;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \\
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   * Make GCC emit a CASP on ARM64 (undocumented?).
+   */
+  return __sync_bool_compare_and_swap(p, expected, new);
+#endif
+
+  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+}
+
+static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
+
+  if (THREADS == 1) {
+    dword_t old = *p;
+    if (old == expected) {
+      *p = new;
+    }
+    return old;
+  }
+
+#if defined(__x86_64__) || defined(__i386__) || \\
+    (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
+  /* Make GCC >= 7.1 emit cmpxchg on x86-64 and i386. See
+   * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
+   * Make GCC emit a CASP on ARM64 (undocumented?).
+   */
+  return __sync_val_compare_and_swap(p, expected, new);
+#endif
+
+
+  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
+    __ATOMIC_SEQ_CST);
+  return expected;
+}
+
+int main(void) {
+  dword_t target = 0;
+
+  target = atomic_read(&target);
+
+  atomic_write(&target, 42);
+
+  atomic_cas(&target, 42, 0);
+
+  return (int)atomic_cas_val(&target, 0, 42);
+}
+"""
+        ),
+    )
+    return ret != 0
+
+
+def has_valgrind():
+    """is Valgrind available?"""
+    return shutil.which("valgrind") is not None
+
+
+def has_xmllint():
+    """is xmllint available?"""
+    return shutil.which("xmllint") is not None
+
+
+def test_display_info():
+    """
+    this is not a test case, but just a vehicle for echoing useful things into the CI
+    log
+    """
+
+    # output a newline to make things more readable in `--capture=no --verbose` mode
+    print()
+    print("  CC = {}".format(cc()))
+    print("  CXX = {}".format(cxx()))
+    print("  c_flags() = {}".format(c_flags()))
+    print("  has_march_native() = {}".format(has_march_native()))
+    print("  has_mcx16() = {}".format(has_mcx16()))
+    print("  has_valgrind() = {}".format(has_valgrind()))
+    print("  has_xmllint() = {}".format(has_xmllint()))
+    print("  needs_libatomic() = {}".format(needs_libatomic()))
 
 
 def parse_test_options(src, debug=False, multithreaded=False, xml=False):
@@ -672,7 +912,7 @@ def test_stdlib_list(tmp_path):
     """test ../share/list"""
 
     # pre-process the tester with M4
-    share = Path(__file__).parents[1] / "share"
+    share = Path(__file__).absolute().parents[1] / "share"
     ret, model_m, stderr = run(["m4", "--include", share, share / "test_list.m"])
     assert ret == 0, "M4 failed:\n{}{}".format(model_m, stderr)
 
@@ -682,11 +922,9 @@ def test_stdlib_list(tmp_path):
 
     # build up arguments to call the C compiler
     model_bin = tmp_path / "model.exe"
-    args = (
-        [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-O3", "-o", model_bin, "-", "-lpthread"]
-    )
+    args = [cc()] + c_flags() + ["-O3", "-o", model_bin, "-", "-lpthread"]
 
-    if CONFIG["NEEDS_LIBATOMIC"]:
+    if needs_libatomic():
         args += ["-latomic"]
 
     # call the C compiler
@@ -787,7 +1025,7 @@ def test_murphi2c(model):
         should_fail = re.search(r"\bisundefined\b", f.read()) is not None
 
     args = ["murphi2c", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -796,7 +1034,7 @@ def test_murphi2c(model):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2c to fail
@@ -811,10 +1049,10 @@ def test_murphi2c(model):
 
     # omit -Werror=maybe-uninitialized which identifies legitimate problems in input
     # models
-    cflags = [f for f in CONFIG["C_FLAGS"] if f != "-Werror=maybe-uninitialized"]
+    cflags = [f for f in c_flags() if f != "-Werror=maybe-uninitialized"]
 
     # ask the C compiler if this is valid
-    args = [CONFIG["CC"]] + cflags + ["-c", "-o", os.devnull, "-"]
+    args = [cc()] + cflags + ["-c", "-o", os.devnull, "-"]
     ret, out, err = run(args, stdout)
     assert ret == 0, "C compilation failed:\n{}{}\nProgram:\n{}".format(
         out, err, stdout
@@ -834,7 +1072,7 @@ def test_murphi2c_header(model, tmp_path):
         should_fail = re.search(r"\bisundefined\b", f.read()) is not None
 
     args = ["murphi2c", "--header", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -843,7 +1081,7 @@ def test_murphi2c_header(model, tmp_path):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2c to fail
@@ -863,14 +1101,14 @@ def test_murphi2c_header(model, tmp_path):
 
     # ask the C compiler if the header is valid
     main_c = '#include "{}"\nint main(void) {{ return 0; }}\n'.format(header)
-    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"] + ["-o", os.devnull, "-"]
+    args = [cc()] + c_flags() + ["-o", os.devnull, "-"]
     ret, stdout, stderr = run(args, main_c)
     assert ret == 0, "C compilation failed:\n{}{}".format(stdout, stderr)
 
     # ask the C++ compiler if it is valid there too
     ret, stdout, stderr = run(
         [
-            CONFIG["CXX"],
+            cxx(),
             "-std=c++11",
             "-o",
             os.devnull,
@@ -894,7 +1132,7 @@ def test_murphi2xml(model):
     tweaks = dict(parse_test_options(testcase))
 
     args = ["murphi2xml", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -903,7 +1141,7 @@ def test_murphi2xml(model):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2xml to fail
@@ -917,7 +1155,7 @@ def test_murphi2xml(model):
     xmlcontent = stdout
 
     # See if we have xmllint
-    if not CONFIG["HAS_XMLLINT"]:
+    if not has_xmllint():
         pytest.skip("xmllint not available for validation")
 
     # Validate the XML
@@ -1052,7 +1290,7 @@ def test_murphi2uclid(model, tmp_path):
     )
 
     args = ["murphi2uclid", "--", testcase]
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -1061,7 +1299,7 @@ def test_murphi2uclid(model, tmp_path):
             "--",
         ] + args
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
@@ -1078,7 +1316,7 @@ def test_murphi2uclid(model, tmp_path):
         return
 
     # if we do not have Uclid5 available, skip the remainder of the test
-    if not CONFIG["HAS_UCLID"]:
+    if shutil.which("uclid") is None:
         pytest.skip("uclid5 not available for validation")
 
     # write the Uclid5 source to a temporary file
@@ -1121,7 +1359,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
         args += ["--threads", "1"]
     args += tweaks.get("rumur_flags", [])
 
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         args = [
             "valgrind",
             "--leak-check=full",
@@ -1132,7 +1370,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
     # call rumur
     ret, stdout, stderr = run(args)
-    if CONFIG["HAS_VALGRIND"]:
+    if has_valgrind():
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
     assert ret == tweaks.get("rumur_exit_code", 0), "Rumur failed:\n{}{}".format(
         stdout, stderr
@@ -1146,12 +1384,12 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
     # build up arguments to call the C compiler
     model_bin = tmp_path / "model.exe"
-    args = [CONFIG["CC"]] + CONFIG["C_FLAGS"]
+    args = [cc()] + c_flags()
     if optimised:
         args += ["-O3"]
     args += ["-o", model_bin, "-", "-lpthread"]
 
-    if CONFIG["NEEDS_LIBATOMIC"]:
+    if needs_libatomic():
         args += ["-latomic"]
 
     # call the C compiler
@@ -1181,7 +1419,7 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
 
         model_xml = stdout
 
-        if not CONFIG["HAS_XMLLINT"]:
+        if not has_xmllint():
             pytest.skip("xmllint not available")
 
         # validate the XML
@@ -1192,3 +1430,701 @@ def test_rumur(mode, model, multithreaded, optimised, tmp_path):
         ), "Failed to XML-validate machine reachable output:\n{}{}".format(
             stdout, stderr
         )
+
+
+# a model without any comments
+NONE = """
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end;
+"""
+
+# a model with a single line comment
+SINGLE = """
+var
+  x: boolean;
+
+startstate begin
+  x := -- hello world
+  true;
+end;
+
+rule begin
+  x := !x;
+end;
+"""
+
+# a model with a multiline comment
+MULTILINE = """
+var
+  x: boolean;
+
+startstate begin
+  x := /* hello world */ true;
+end;
+
+rule begin
+  x := !x;
+end;
+"""
+
+# a model with a single line comment terminated by EOF, not \n
+SINGLE_EOF = """
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end; -- hello world"""
+
+# a model with a multiline comment terminated by EOF, not */
+MULTILINE_EOF = """
+var
+  x: boolean;
+
+startstate begin
+  x := true;
+end;
+
+rule begin
+  x := !x;
+end; /* hello world """
+
+# comments inside strings that should be ignored
+STRING = """
+var
+  x: boolean;
+
+startstate "hello -- world" begin
+  x := true;
+end;
+
+rule "hello /* world */" begin
+  x := !x;
+end;
+"""
+
+# a model with a mixture
+MIX = """
+var
+  x: boolean;
+
+startstate begin
+  x := -- hello world
+  /* hello world */true;
+end; -- hello /* hello world */
+/* hello -- hello */
+rule begin
+  x := !x;
+end;
+"""
+
+
+@pytest.mark.skipif(
+    shutil.which("murphi-comment-ls") is None, reason="murphi-comment-ls not found"
+)
+@pytest.mark.parametrize(
+    "model,expectation",
+    (
+        (NONE, ""),
+        (SINGLE, "6.8-21:  hello world\n"),
+        (MULTILINE, "6.8-24:  hello world \n"),
+        (SINGLE_EOF, "11.6-19:  hello world\n"),
+        (MULTILINE_EOF, "11.6-20:  hello world \n"),
+        (
+            MIX,
+            "6.8-21:  hello world\n7.3-19:  hello world \n8.6-31:  hello /* hello world */\n9.1-20:  hello -- hello \n",
+        ),
+    ),
+)
+def test_comment_parsing(model, expectation):
+    """librumur should be able to retrieve comments accurately"""
+
+    ret, stdout, stderr = run(["murphi-comment-ls"], model)
+
+    assert ret == 0, "murphi-comment-ls failed"
+    assert stderr == "", "murphi-comment-ls printed warnings/errors"
+
+    assert stdout == expectation
+
+
+def test_193():
+    """
+    This is a variant of 193.m that tests that we descend into TypeExprIDs when
+    reordering record fields. It is hard to trigger a behaviour divergence that is
+    exposed during checking, so instead we check the --debug output of rumur.
+
+    See also https://github.com/Smattr/rumur/issues/193.
+    """
+
+    # a model containing a TypeExprID, itself referring to a record whose fields will be
+    # reordered
+    MODEL = textwrap.dedent(
+        """
+    type
+      t1: scalarset(4);
+
+      t2: record
+        a: boolean;
+        b: t1;
+        c: boolean;
+      end;
+
+    var x: t2;
+
+    startstate begin
+    end
+
+    rule begin
+    end
+    """
+    )
+
+    # run Rumur in debug mode
+    ret, _, stderr = run(["rumur", "--output", os.devnull, "--debug"], MODEL)
+    assert ret == 0, "rumur failed"
+
+    # we should see the fields be reordered once due to encountering the original
+    # TypeDecl (t2) and once due to the TypeExprID (the type of x)
+    assert stderr.count("sorted fields {a, b, c} -> {a, c, b}") == 2
+
+
+@pytest.mark.parametrize("arch", ("aarch64", "i386", "x86-64"))
+def test_lock_freedom(arch):
+    """
+    Test that a compiled verifier does not depend on libatomic.
+
+    Uses of __atomic built-ins and C11 atomics can sometimes cause the compiler to emit
+    calls to libatomic instead of inline instructions. This is a problem because we use
+    these in the verifier to implement lock-free algorithms, while the libatomic
+    implementations take locks, defeating the purpose of using them. This test checks
+    that we end up with no libatomic calls in the compiled verifier.
+    """
+
+    if arch == "aarch64":
+        # this variant is only relevant on ≥ARMv8.1a
+        argv = [
+            cc(),
+            "-std=c11",
+            "-march=armv8.1-a",
+            "-x",
+            "c",
+            "-",
+            "-o",
+            os.devnull,
+        ]
+        ret, _, _ = run(argv, "int main(void) { return 0; }")
+        if ret != 0:
+            pytest.skip("only relevant for ≥ARMv8.1a machines")
+
+        cflags = ["-march=armv8.1-a"]
+
+    elif arch == "i386":
+        if platform.machine() not in ("amd64", "x86_64"):
+            pytest.skip("not relevant on non-x86-64 machines")
+        # check that we have a multilib compiler capable of targeting i386
+        argv = [cc(), "-std=c11", "-m32", "-o", os.devnull, "-x", "c", "-"]
+        program = textwrap.dedent(
+            """\
+        #include <stdio.h>
+        int main(void) {
+          printf("hello world\\n");
+          return 0;
+        }
+        """
+        )
+        ret, _, _ = run(argv, program)
+        if ret != 0:
+            pytest.skip("compiler cannot target 32-bit code")
+
+        cflags = ["-m32"]
+
+    else:
+        assert arch == "x86-64"
+        if platform.machine() not in ("amd64", "x86_64"):
+            pytest.skip("not relevant on non-x86-64 machines")
+
+        cflags = ["-mcx16"]
+
+    # generate a checker for a simple model
+    model = "var x: boolean; startstate begin x := false; end; rule begin x := !x; end;"
+    argv = ["rumur", "--output", "/dev/stdout"]
+    ret, model_c, stderr = run(argv, model)
+    assert ret == 0, "call to rumur failed: {}".format(stderr)
+
+    # compile it to assembly
+    argv = [
+        cc(),
+        "-O3",
+        "-std=c11",
+        "-x",
+        "c",
+        "-",
+        "-S",
+        "-o",
+        "/dev/stdout",
+    ] + cflags
+    ret, model_s, stderr = run(argv, model_c)
+    assert ret == 0, "compilation failed: {}".format(stderr)
+
+    # check for calls to libatomic functions
+    assert (
+        "__atomic_" not in model_s
+    ), "libatomic calls in generated code were not optimised out"
+
+
+def test_murphi2murphi_decompose_array():
+    """test array comparison decomposition"""
+
+    # model from the test directory involving an array comparison
+    model = Path(__file__).parent / "compare-array.m"
+    assert model.exists()
+
+    # use the complex comparison decomposition to explode the array comparison in this
+    # model
+    ret, transformed, _ = run(
+        ["murphi2murphi", "--decompose-complex-comparisons", model]
+    )
+    assert ret == 0
+
+    # the comparisons should have been decomposed into element-wise comparison
+    assert re.search(r"\bx\[i0\] = y\[i0\]", transformed)
+    assert re.search(r"\bx\[i0\] != y\[i0\]", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_decompose_record():
+    """test record comparison decomposition"""
+
+    # model from the test directory involving a record comparison
+    model = Path(__file__).parent / "compare-record.m"
+    assert model.exists()
+
+    # use the complex comparison decomposition to explode the record comparison in this
+    # model
+    ret, transformed, _ = run(
+        ["murphi2murphi", "--decompose-complex-comparisons", model]
+    )
+    assert ret == 0
+
+    # the comparisons should have been decomposed into member-wise comparison
+    assert re.search(r"\bx\.x = y\.x\b", transformed)
+    assert re.search(r"\bx\.x != y\.x\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_explicit_semicolons():
+    """test murphi2murphi’s ability to add semi-colons"""
+
+    # pick an arbitrary test model that omits semi-colons
+    model = Path(__file__).parent / "assume-statement.m"
+    assert model.exists()
+
+    # use the explicit-semicolons pass to add semi-colons
+    ret, transformed, _ = run(["murphi2murphi", "--explicit-semicolons", model])
+    assert ret == 0
+
+    # we should now find the variable definition and both rules in this model are
+    # semi-colon terminated
+    assert re.search(r"\bx: 0 \.\. 2;$", transformed, re.MULTILINE)
+    assert len(re.findall(r"^end;$", transformed, re.MULTILINE)) == 2
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_remove_liveness():
+    """test murphi2murphi’s ability to remove liveness properties"""
+
+    # an arbitrary test model that has a liveness property
+    model = Path(__file__).parent / "liveness-miss1.m"
+    assert model.exists()
+
+    # confirm it contains the liveness property we expect
+    with open(str(model), "rt", encoding="utf-8") as f:
+        assert 'liveness "x is 10" x = 10' in f.read()
+
+    # use the remove-liveness pass to remove the property
+    ret, transformed, _ = run(["murphi2murphi", "--remove-liveness", model])
+    assert ret == 0
+
+    # now confirm the property is no longer present
+    assert 'liveness "x is 10" x = 10' not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_switch_to_if_const_enum():
+    """test murphi2murphi’s ability to transform switches to if statements"""
+
+    # model from the test directory involving some switch examples
+    model = Path(__file__).parent / "const-enum.m"
+    assert model.exists()
+
+    # use the switch-to-if pass to remove the switch statements
+    ret, transformed, _ = run(["murphi2murphi", "--switch-to-if", model])
+    assert ret == 0
+
+    # we should now be able to find some if statements in the model
+    assert re.search(r"\bif X = A then\b", transformed)
+    assert re.search(r"\bif X = X then\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_switch_to_if_nested():
+    """test whether murphi2murphi can transform nested switches"""
+
+    # model from the test directory involving some switch examples
+    model = Path(__file__).parent / "switch-nested.m"
+    assert model.exists()
+
+    # use the switch-to-if pass to remove the switch statements
+    ret, transformed, _ = run(["murphi2murphi", "--switch-to-if", model])
+    assert ret == 0
+
+    # we should now be able to find some if statements in the model
+    assert re.search(r"\bif \(?x = 0\)? | \(?x = 1\)?", transformed)
+    assert re.search(r"\bif x = 0 then\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_switch_to_if1():
+    """conversion of switches to if statements"""
+
+    # model from the test directory involving some switch examples
+    model = Path(__file__).parent / "switch-stmt1.m"
+    assert model.exists()
+
+    # use the switch-to-if pass to remove the switch statements
+    ret, transformed, _ = run(["murphi2murphi", "--switch-to-if", model])
+    assert ret == 0
+
+    # we should now be able to find some if statements in the model
+    assert re.search(r"\bif x = 1 then\b", transformed)
+    assert re.search(r"\belsif \(?x = 3\)? | \(?x = 4\)? then\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_switch_to_if2():
+    """more conversion of switches to if statements"""
+
+    # model from the test directory involving some switch examples
+    model = Path(__file__).parent / "switch-stmt2.m"
+    assert model.exists()
+
+    # use the switch-to-if pass to remove the switch statements
+    ret, transformed, _ = run(["murphi2murphi", "--switch-to-if", model])
+    assert ret == 0
+
+    # we should now be able to find some if statements in the model
+    assert re.search(r"\bif x = y then\b", transformed)
+    assert re.search(r"\belsif x = 5 then\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_unicode_div():
+    """murphi2murphi’s ability to handle ÷"""
+
+    # model from the test directory involving a unicode division
+    model = Path(__file__).parent / "unicode-div.m"
+    assert model.exists()
+
+    # use the ASCII transformation to remove ÷
+    ret, transformed, _ = run(["murphi2murphi", "--to-ascii", model])
+    assert ret == 0
+
+    # the ÷ operator should have become /
+    assert re.search(r"\bx := 2 / x\b", transformed)
+    assert "÷" not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_unicode_div2():
+    """murphi2murphi’s ability to handle ∕"""
+
+    # model from the test directory involving a unicode division
+    model = Path(__file__).parent / "unicode-div2.m"
+    assert model.exists()
+
+    # use the ASCII transformation to remove ∕
+    ret, transformed, _ = run(["murphi2murphi", "--to-ascii", model])
+    assert ret == 0
+
+    # the ∕ operator should have become /
+    assert re.search(r"\bx := 2 / x\b", transformed)
+    assert "∕" not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_unicode_mul():
+    """murphi2murphi’s ability to handle ×"""
+
+    # model from the test directory involving a unicode multiplication
+    model = Path(__file__).parent / "unicode-mul.m"
+    assert model.exists()
+
+    # use the ASCII transformation to remove ×
+    ret, transformed, _ = run(["murphi2murphi", "--to-ascii", model])
+    assert ret == 0
+
+    # the × operator should have become *
+    assert re.search(r"\bx := 2 \* x\b", transformed)
+    assert "×" not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_unicode_sub():
+    """murphi2murphi’s ability to handle −"""
+
+    # model from the test directory involving a unicode subtraction
+    model = Path(__file__).parent / "unicode-sub.m"
+    assert model.exists()
+
+    # use the ASCII transformation to remove −
+    ret, transformed, _ = run(["murphi2murphi", "--to-ascii", model])
+    assert ret == 0
+
+    # the − operator should have become -
+    assert re.search(r"\bx := 1 - x\b", transformed)
+    assert "−" not in transformed
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_murphi2murphi_unicode_to_ascii():
+    """murphi2murphi’s ability to handle ≔"""
+
+    # model from the test directory involving a record comparison
+    model = Path(__file__).parent / "unicode-assignment.m"
+    assert model.exists()
+
+    # use the ASCII transformation to remove ≔
+    ret, transformed, _ = run(["murphi2murphi", "--to-ascii", model])
+    assert ret == 0
+
+    # the ≔ operator should have become :=
+    assert re.search(r"\bx := true\b", transformed)
+    assert re.search(r"\bx := !x\b", transformed)
+
+    # the generated model also should be valid syntax for Rumur
+    ret, _, _ = run(["rumur", "--output", os.devnull], transformed)
+    assert ret == 0
+
+
+def test_rumur_run_model():
+    """test that rumur-run can check a basic model"""
+
+    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+
+    MODEL = """
+    var
+      x: boolean;
+
+    startstate begin
+      x := true;
+    end;
+
+    rule begin
+      x := !x;
+    end;
+    """
+
+    ret, _, _ = run([sys.executable, RUMUR_RUN], MODEL)
+    assert ret == 0
+
+
+def test_rumur_run_version():
+    """basic test that rumur-run can execute successfully"""
+
+    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+
+    ret, _, _ = run([sys.executable, RUMUR_RUN, "--version"])
+    assert ret == 0
+
+
+@pytest.mark.skipif(shutil.which("strace") is None, reason="strace not available")
+def test_strace_sandbox(tmp_path):
+    """
+    run a sandboxed checker under strace
+
+    When the Linux seccomp sandbox causes the checker to terminate because it made an
+    unauthorised system call, it is difficult to debug what happened without stracing
+    the process to see the denied system call. This test case automates this work flow.
+    If the checker runs fine with the sandbox enabled, this test case is irrelevant.
+    However, if the basic-sandbox.m test fails, this test will hopefully automatically
+    diagnose the failure. The purpose of this existing within the test suite itself is
+    to debug failures that occur within a CI environment you do not have access to or
+    cannot easily replicate, like the Debian auto builders.
+    """
+
+    if not CONFIG["HAS_SANDBOX"]:
+        pytest.skip("seccomp sandboxing not supported")
+
+    # create a basic model
+    model_m = tmp_path / "model.m"
+    with open(model_m, "wt", encoding="utf-8") as f:
+        f.write(
+            textwrap.dedent(
+                """\
+        var
+          x: boolean;
+
+        startstate begin
+          x := true;
+        end;
+
+        rule begin
+          x := !x;
+        end;
+        """
+            )
+        )
+
+    # generate a sandboxed checker
+    model_c = tmp_path / "model.c"
+    ret, _, stderr = run(
+        ["rumur", "--sandbox=on", "--output={}".format(model_c), model_m]
+    )
+    assert ret == 0, "rumur failed: {}".format(stderr)
+
+    cflags = ["-std=c11"]
+    ldflags = ["-lpthread"]
+
+    # check if the compiler supports -march=native
+    if has_march_native():
+        cflags += ["-march=native"]
+
+    # check if the compiler supports -mcx16
+    if has_mcx16():
+        cflags += ["-mcx16"]
+
+    # check if we need libatomic support
+    if needs_libatomic():
+        ldflags += ["-latomic"]
+
+    # compile the sandboxed checker
+    model_exe = tmp_path / "model.exe"
+    ret, _, stderr = run([cc()] + cflags + [model_c, "-o", model_exe] + ldflags)
+    assert ret == 0, "C compilation failed: {}".format(stderr)
+
+    # run the model under strace
+    ret, stdout, stderr = run(["strace", model_exe])
+    assert ret == 0, "model failed: {}{}".format(stdout, stderr)
+
+    # if we did not yet see a failure, test to see if the sandbox also permits anything
+    # extra we do with --debug
+
+    # generate a sandboxed checker with debugging enabled
+    ret, _, stderr = run(
+        ["rumur", "--sandbox=on", "--debug", "--output={}".format(model_c), model_m]
+    )
+    assert ret == 0, "rumur failed: {}".format(stderr)
+
+    # compile the sandboxed checker
+    ret, _, stderr = run([cc()] + cflags + [model_c, "-o", model_exe] + ldflags)
+    assert ret == 0, "C compilation failed: {}".format(stderr)
+
+    # run the model under strace
+    ret, stdout, stderr = run(["strace", model_exe])
+    assert ret == 0, "model failed: {}{}".format(stdout, stderr)
+
+
+def test_murphi2uclid_n():
+    """
+    `murphi2uclid` previously had a bug wherein the `-n` command-line option was not
+    accepted. The following tests whether this bug has been reintroduced.
+    """
+
+    MODEL = textwrap.dedent(
+        """\
+    const N: 2;
+    var x: 0 .. 1;
+    startstate begin
+      x := 0;
+    end;
+    rule begin
+      x := 1 - x;
+    end;
+    """
+    )
+
+    # translate a model to Uclid5 requesting a non-default bit-vector type
+    ret, uclid, stderr = run(["murphi2uclid", "-n", "bv64"], MODEL)
+    assert ret == 0, "murphi2uclid failed: {}".format(stderr)
+
+    # this should have been used for (at least) the constant
+    assert (
+        re.search(r"\bconst\s+N\s*:\s*bv64\b", uclid) is not None
+    ), "Numeric type 'bv64' not used in output:"
+
+
+def test_murphi2uclid_numeric_type():
+    """
+    `murphi2uclid` previously had a bug wherein the `--numeric-type` command-line option
+    was ignored. The following tests whether this bug has been reintroduced.
+    """
+
+    MODEL = textwrap.dedent(
+        """\
+    const N: 2;
+    var x: 0 .. 1;
+    startstate begin
+      x := 0;
+    end;
+    rule begin
+      x := 1 - x;
+    end;
+    """
+    )
+
+    # translate a model to Uclid5 requesting a non-default bit-vector type
+    ret, uclid, stderr = run(["murphi2uclid", "--numeric-type=bv64"], MODEL)
+    assert ret == 0, "murphi2uclid failed: {}".format(stderr)
+
+    # this should have been used for (at least) the constant
+    assert (
+        re.search(r"\bconst\s+N\s*:\s*bv64\b", uclid) is not None
+    ), "Numeric type 'bv64' not used in output:"
