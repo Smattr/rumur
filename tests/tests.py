@@ -16,6 +16,10 @@ from pathlib import Path
 
 import pytest
 
+# we intentionally avoid f-strings to retain compatibility with Python 3.4, so
+# disable warnings about those
+# pylint: disable=consider-using-f-string
+
 CPUS = multiprocessing.cpu_count()
 
 VERIFIER_RNG = Path(__file__).resolve().parent / "../misc/verifier.rng"
