@@ -2210,3 +2210,42 @@ def test_murphi2uclid_numeric_type():
     assert (
         re.search(r"\bconst\s+N\s*:\s*bv64\b", uclid) is not None
     ), "Numeric type 'bv64' not used in output:"
+
+
+def test_stdlib_export():
+    """
+    the last version of the standard library should be exported under a stable name
+    """
+
+    # find the last release version
+    version = None
+    changelog = Path(__file__).absolute().parents[1] / "CHANGELOG.rst"
+    with open(str(changelog), "rt", encoding="utf-8") as f:
+        for line in f:
+            m = re.match(r"(?P<version>v\d{4}\.\d{2}\.\d{2})$", line)
+            if m is not None:
+                version = m.group("version")
+                break
+    assert version is not None, "could not determine last release version"
+
+    # find the associated standard library snapshot
+    snapshot = Path(__file__).absolute().parents[1] / "share" / version
+    assert snapshot.exists(), "{} standard library not found".format(version)
+    assert snapshot.is_dir(), "{} standard library snapshot is not a directory".format(
+        version
+    )
+
+    # ensure it is installed
+    cmakelists = Path(__file__).absolute().parents[1] / "share/CMakeLists.txt"
+    seen = False
+    with open(str(cmakelists), "rt", encoding="utf-8") as f:
+        for line in f:
+            m = re.search(r"\b(?P<version>v\d{4}\.\d{2}\.\d{2})\b", line)
+            if m is not None and m.group("version") == version:
+                seen = True
+                break
+    assert (
+        seen
+    ), "{} standard library snapshot does not appear to be installed by share/CMakeLists.txt".format(
+        version
+    )
