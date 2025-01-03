@@ -440,7 +440,9 @@ def parse_test_options(src, debug=False, multithreaded=False, xml=False):
             m = re.match(r"\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$", line)
             if m is None:
                 break
-            yield m.group("key"), eval(m.group("value").strip())
+            key = m.group("key")
+            value = eval(m.group("value").strip())  # pylint: disable=eval-used
+            yield key, value
 
 
 def test_murphi_format_colon():
