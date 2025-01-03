@@ -1083,14 +1083,6 @@ def test_stdlib_list(tmp_path):
     )
 
 
-def make_name(t):
-    """
-    name mangle a path into a valid test case name
-    """
-    safe_name = re.sub(r"[^a-zA-Z0-9]", "_", t.name)
-    return "test_{}".format(safe_name)
-
-
 MODELS = []
 """test cases defined as .m files in this directory"""
 
@@ -1108,8 +1100,6 @@ for p in sorted(root.iterdir()):
     # skip ourselves
     if os.path.samefile(str(p), __file__):
         continue
-
-    name = make_name(p)
 
     # if this is executable, treat it as a test case
     if os.access(str(p), os.X_OK):
