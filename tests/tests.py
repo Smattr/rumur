@@ -1248,7 +1248,7 @@ def test_murphi2uclid(model, tmp_path):
     tweaks = dict(parse_test_options(testcase))
 
     # test cases for which murphi2uclid is expected to fail
-    MURPHI2UCLID_FAIL = (
+    murphi2uclid_fail = (
         # contains `<<` or `>>`
         "const-folding5.m",
         "const-folding6.m",
@@ -1326,7 +1326,7 @@ def test_murphi2uclid(model, tmp_path):
     )
 
     # test cases fo which Uclid5 is expected to fail
-    UCLID_FAIL = (
+    uclid_fail = (
         # contains a record field with the same name as a variable
         # https://github.com/uclid-org/uclid/issues/99
         "compare-record.m",
@@ -1378,7 +1378,7 @@ def test_murphi2uclid(model, tmp_path):
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
-    should_fail = model in MURPHI2UCLID_FAIL
+    should_fail = model in murphi2uclid_fail
     could_fail = tweaks.get("rumur_exit_code", 0) != 0 or should_fail
 
     if not could_fail:
@@ -1401,9 +1401,9 @@ def test_murphi2uclid(model, tmp_path):
 
     # ask Uclid if the source is valid
     ret, stdout, stderr = run(["uclid", src])
-    if model in UCLID_FAIL:
+    if model in uclid_fail:
         assert ret != 0, "uclid unexpectedly succeeded:\n{}{}".format(stdout, stderr)
-    if model not in UCLID_FAIL:
+    if model not in uclid_fail:
         assert ret == 0, "uclid failed:\n{}{}".format(stdout, stderr)
 
 
@@ -1645,7 +1645,7 @@ def test_193():
 
     # a model containing a TypeExprID, itself referring to a record whose fields will be
     # reordered
-    MODEL = textwrap.dedent(
+    model = textwrap.dedent(
         """
     type
       t1: scalarset(4);
@@ -1667,7 +1667,7 @@ def test_193():
     )
 
     # run Rumur in debug mode
-    ret, _, stderr = run(["rumur", "--output", os.devnull, "--debug"], MODEL)
+    ret, _, stderr = run(["rumur", "--output", os.devnull, "--debug"], model)
     assert ret == 0, "rumur failed"
 
     # we should see the fields be reordered once due to encountering the original
@@ -2032,9 +2032,9 @@ def test_murphi2murphi_unicode_to_ascii():
 def test_rumur_run_model():
     """test that rumur-run can check a basic model"""
 
-    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+    rumur_run = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
 
-    MODEL = """
+    model = """
     var
       x: boolean;
 
@@ -2047,16 +2047,16 @@ def test_rumur_run_model():
     end;
     """
 
-    ret, _, _ = run([sys.executable, RUMUR_RUN], MODEL)
+    ret, _, _ = run([sys.executable, rumur_run], model)
     assert ret == 0
 
 
 def test_rumur_run_version():
     """basic test that rumur-run can execute successfully"""
 
-    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+    rumur_run = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
 
-    ret, _, _ = run([sys.executable, RUMUR_RUN, "--version"])
+    ret, _, _ = run([sys.executable, rumur_run, "--version"])
     assert ret == 0
 
 
@@ -2153,7 +2153,7 @@ def test_murphi2uclid_n():
     accepted. The following tests whether this bug has been reintroduced.
     """
 
-    MODEL = textwrap.dedent(
+    model = textwrap.dedent(
         """\
     const N: 2;
     var x: 0 .. 1;
@@ -2167,7 +2167,7 @@ def test_murphi2uclid_n():
     )
 
     # translate a model to Uclid5 requesting a non-default bit-vector type
-    ret, uclid, stderr = run(["murphi2uclid", "-n", "bv64"], MODEL)
+    ret, uclid, stderr = run(["murphi2uclid", "-n", "bv64"], model)
     assert ret == 0, "murphi2uclid failed: {}".format(stderr)
 
     # this should have been used for (at least) the constant
@@ -2182,7 +2182,7 @@ def test_murphi2uclid_numeric_type():
     was ignored. The following tests whether this bug has been reintroduced.
     """
 
-    MODEL = textwrap.dedent(
+    model = textwrap.dedent(
         """\
     const N: 2;
     var x: 0 .. 1;
@@ -2196,7 +2196,7 @@ def test_murphi2uclid_numeric_type():
     )
 
     # translate a model to Uclid5 requesting a non-default bit-vector type
-    ret, uclid, stderr = run(["murphi2uclid", "--numeric-type=bv64"], MODEL)
+    ret, uclid, stderr = run(["murphi2uclid", "--numeric-type=bv64"], model)
     assert ret == 0, "murphi2uclid failed: {}".format(stderr)
 
     # this should have been used for (at least) the constant
