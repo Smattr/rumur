@@ -127,7 +127,7 @@ def needs_libatomic():
 #include <stdbool.h>
 #include <stdint.h>
 
-// replicate what is in ../../rumur/resources/header.c
+// replicate what is in ../rumur/resources/header.c
 
 #define THREADS 2
 
