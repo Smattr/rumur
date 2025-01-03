@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess as sp
 import sys
+import tempfile
 import textwrap
 from pathlib import Path
 
@@ -19,9 +20,6 @@ CPUS = multiprocessing.cpu_count()
 
 VERIFIER_RNG = Path(__file__).resolve().parent / "../misc/verifier.rng"
 MURPHI2XML_RNG = Path(__file__).resolve().parent / "../misc/murphi2xml.rng"
-
-CONFIG = {}
-"""test configuration variables"""
 
 
 def enc(s):
@@ -38,11 +36,7 @@ def run(args, stdin=None):
     """
     if stdin is not None:
         stdin = enc(stdin)
-    env = dict(os.environ.items())
-    env.update({k: str(v) for k, v in CONFIG.items()})
-    p = sp.Popen(
-        [str(a) for a in args], stdout=sp.PIPE, stderr=sp.PIPE, stdin=sp.PIPE, env=env
-    )
+    p = sp.Popen([str(a) for a in args], stdout=sp.PIPE, stderr=sp.PIPE, stdin=sp.PIPE)
     stdout, stderr = p.communicate(stdin)
     return p.returncode, dec(stdout), dec(stderr)
 
@@ -257,6 +251,93 @@ int main(void) {
     return ret != 0
 
 
+@functools.lru_cache()
+def has_sandbox():
+    """whether the current platform has sandboxing support for the verifier"""
+
+    # assume macOS always has sandboxing support
+    if platform.system() == "Darwin":
+        return True
+
+    # assume FreeBSD always has sandboxing support
+    if platform.system() == "FreeBSD":
+        return True
+
+    # assume OpenBSD always has sandboxing support
+    if platform.system() == "OpenBSD":
+        return True
+
+    # for Linux, we need to check for seccomp
+    if platform.system() == "Linux":
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+
+            # create a sandbox testing program
+            test_c = tmp / "test.c"
+            with open(str(test_c), "wt", encoding="utf-8") as f:
+                f.write(
+                    textwrap.dedent(
+                        """\
+                #include <linux/audit.h>
+                #include <linux/filter.h>
+                #include <linux/seccomp.h>
+                #include <stdio.h>
+                #include <stdlib.h>
+                #include <sys/prctl.h>
+                #include <sys/socket.h>
+                #include <sys/syscall.h>
+
+                int main(void) {
+
+                  // disable addition of new privileges
+                  int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+                  if (r != 0) {
+                    perror("prctl(PR_SET_NO_NEW_PRIVS) failed");
+                    return EXIT_FAILURE;
+                  }
+
+                  // a BPF program that allows everything
+                  static struct sock_filter filter[] = {
+
+                    // return allow
+                    BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+
+                  };
+
+                  static const struct sock_fprog filter_program = {
+                    .len = sizeof(filter) / sizeof(filter[0]),
+                    .filter = filter,
+                  };
+
+                  // apply the filter to ourselves
+                  r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
+                  if (r != 0) {
+                    perror("prctl(PR_SET_SECCOMP) failed");
+                    return EXIT_FAILURE;
+                  }
+
+                  return EXIT_SUCCESS;
+                }
+                """
+                    )
+                )
+
+            # compile the test program
+            a_out = tmp / "a.out"
+            ret, _, _ = run([cc(), "-std=c11", test_c, "-o", a_out])
+            if ret != 0:
+                return False
+
+            # execute the test program
+            ret, _, _ = run([a_out])
+            if ret != 0:
+                return False
+
+        return True
+
+    return False
+
+
 def has_valgrind():
     """is Valgrind available?"""
     return shutil.which("valgrind") is not None
@@ -337,6 +418,7 @@ def test_display_info():
     print("  c_flags() = {}".format(c_flags()))
     print("  has_march_native() = {}".format(has_march_native()))
     print("  has_mcx16() = {}".format(has_mcx16()))
+    print("  has_sandbox() = {}".format(has_sandbox()))
     print("  has_valgrind() = {}".format(has_valgrind()))
     print("  has_xmllint() = {}".format(has_xmllint()))
     print("  needs_libatomic() = {}".format(needs_libatomic()))
@@ -1003,25 +1085,6 @@ def make_name(t):
     """
     safe_name = re.sub(r"[^a-zA-Z0-9]", "_", t.name)
     return "test_{}".format(safe_name)
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup():
-    # parse configuration
-    for p in sorted((Path(__file__).parent / "config").iterdir()):
-
-        # skip subdirectories
-        if p.is_dir():
-            continue
-
-        # skip non-executable files
-        if not os.access(str(p), os.X_OK):
-            continue
-
-        CONFIG[p.name] = eval(sp.check_output([str(p)]))
-        sys.stderr.write(
-            "configuration variable {} = {}\n".format(p.name, CONFIG[p.name])
-        )
 
 
 MODELS = []
@@ -2059,7 +2122,7 @@ def test_strace_sandbox(tmp_path):
     cannot easily replicate, like the Debian auto builders.
     """
 
-    if not CONFIG["HAS_SANDBOX"]:
+    if not has_sandbox():
         pytest.skip("seccomp sandboxing not supported")
 
     # create a basic model
