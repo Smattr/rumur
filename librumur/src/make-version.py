@@ -18,9 +18,8 @@ def last_release():
     The version of the last tagged release of Rumur. This will be used as the
     version number if no Git information is available.
     """
-    with open(
-        Path(__file__).absolute().parents[2] / "CHANGELOG.rst", "rt", encoding="utf-8"
-    ) as f:
+    changelog = Path(__file__).absolute().parents[2] / "CHANGELOG.rst"
+    with open(str(changelog), "rt", encoding="utf-8") as f:
         for line in f:
             m = re.match(r"(v\d{4}\.\d{2}\.\d{2})$", line)
             if m is not None:

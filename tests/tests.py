@@ -566,9 +566,9 @@ def test_murphi_format_multiple_inplace(tmp_path):
     short_path = tmp_path / "short.m"
     long_path = tmp_path / "long.m"
 
-    with open(short_path, "wt", encoding="utf-8") as f:
+    with open(str(short_path), "wt", encoding="utf-8") as f:
         f.write(short)
-    with open(long_path, "wt", encoding="utf-8") as f:
+    with open(str(long_path), "wt", encoding="utf-8") as f:
         f.write(long)
 
     ret, stdout, stderr = run(["murphi-format", "--in-place", long_path, short_path])
@@ -577,11 +577,11 @@ def test_murphi_format_multiple_inplace(tmp_path):
     assert stdout == "", "murphi-format produced output when asked for in-place"
     assert stderr == "", "murphi-format printed errors/warnings"
 
-    with open(short_path, "rb") as f:
+    with open(str(short_path), "rb") as f:
         content = f.read()
     assert content == short.encode("utf-8"), "model was reflowed incorrectly"
 
-    with open(long_path, "rb") as f:
+    with open(str(long_path), "rb") as f:
         content = f.read()
     assert content == long.encode("utf-8"), "model was reflowed incorrectly"
 
@@ -2005,7 +2005,7 @@ def test_strace_sandbox(tmp_path):
 
     # create a basic model
     model_m = tmp_path / "model.m"
-    with open(model_m, "wt", encoding="utf-8") as f:
+    with open(str(model_m), "wt", encoding="utf-8") as f:
         f.write(
             textwrap.dedent(
                 """\
