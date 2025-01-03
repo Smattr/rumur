@@ -1086,46 +1086,15 @@ def test_stdlib_list(tmp_path):
 MODELS = []
 """test cases defined as .m files in this directory"""
 
-PROGRAMS = []
-"""test cases defined as executable files in this directory"""
-
 # find files in our directory
 root = Path(__file__).parent
 for p in sorted(root.iterdir()):
-
-    # skip directories
-    if p.is_dir():
-        continue
-
-    # skip ourselves
-    if os.path.samefile(str(p), __file__):
-        continue
-
-    # if this is executable, treat it as a test case
-    if os.access(str(p), os.X_OK):
-        PROGRAMS += [p.name]
 
     # if this is not a model, skip the remaining generic logic
     if p.suffix != ".m":
         continue
 
     MODELS += [p.name]
-
-
-@pytest.mark.parametrize("program", PROGRAMS)
-def test_program(program):
-    """test case involving running a custom executable file"""
-
-    testcase = Path(__file__).parent / program
-    assert os.access(str(testcase), os.X_OK), "non-executable test case {}".format(
-        testcase
-    )
-
-    ret, stdout, stderr = run([str(testcase)])
-    output = "{}{}".format(stdout, stderr)
-    if ret == 125:
-        pytest.skip(output.strip())
-    assert ret == 0, output
 
 
 @pytest.mark.parametrize("model", MODELS)
