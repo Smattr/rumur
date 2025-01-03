@@ -430,9 +430,14 @@ def test_display_info():
     print("  smt_args() = {}".format(smt_args()))
 
 
-def parse_test_options(src, debug=False, multithreaded=False, xml=False):
+def parse_test_options(
+    src, debug=False, multithreaded=False, xml=False
+):  # pylint:disable=unused-argument
     """
     extract test tweaks and directives from leading comments in a test input
+
+    We disable `unused-argument` warnings because these are used by strings read from
+    test cases that are eval-ed.
     """
     with open(str(src), "rt", encoding="utf-8") as f:
         for line in f:
