@@ -268,6 +268,39 @@ def has_xmllint():
 
 
 @functools.lru_cache()
+def smt_bv_args():
+    """get bitvector SMT arguments for an available solver"""
+
+    # preference 1: Z3
+    if shutil.which("z3") is not None:
+        # we leave a blank logic here, as Z3 performs best when not given a logic
+        return [
+            "--smt-path",
+            "z3",
+            "--smt-arg=-smt2",
+            "--smt-arg=-in",
+            "--smt-bitvectors",
+            "on",
+        ]
+
+    # preference 2: CVC4
+    if shutil.which("cvc4") is not None:
+        return [
+            "--smt-path",
+            "cvc4",
+            "--smt-arg=--lang=smt2",
+            "--smt-arg=--rewrite-divk",
+            "--smt-prelude",
+            "(set-logic AUFBV)",
+            "--smt-bitvectors",
+            "on",
+        ]
+
+    # otherwise, give up
+    return None
+
+
+@functools.lru_cache()
 def smt_args():
     """get SMT arguments for an available solver"""
 
@@ -307,6 +340,7 @@ def test_display_info():
     print("  has_valgrind() = {}".format(has_valgrind()))
     print("  has_xmllint() = {}".format(has_xmllint()))
     print("  needs_libatomic() = {}".format(needs_libatomic()))
+    print("  smt_bv_args() = {}".format(smt_bv_args()))
     print("  smt_args() = {}".format(smt_args()))
 
 

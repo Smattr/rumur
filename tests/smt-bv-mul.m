@@ -1,5 +1,5 @@
--- rumur_flags: CONFIG['SMT_BV_ARGS']
--- skip_reason: 'no SMT solver available' if CONFIG['SMT_BV_ARGS'] is None else None
+-- rumur_flags: smt_bv_args()
+-- skip_reason: 'no SMT solver available' if smt_bv_args() is None else None
 
 -- test that the SMT bridge can cope with multiplication when using a bitvector logic
 
