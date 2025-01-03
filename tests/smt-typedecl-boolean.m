@@ -1,5 +1,5 @@
--- rumur_flags: CONFIG['SMT_ARGS']
--- skip_reason: 'no SMT solver available' if CONFIG['SMT_ARGS'] is None else None
+-- rumur_flags: smt_args()
+-- skip_reason: 'no SMT solver available' if smt_args() is None else None
 
 -- This model is designed to provoke a problem first observed on
 -- 787f074328874a470d595576ae9e8b16837582f4, where the SMT bridge would

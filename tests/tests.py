@@ -10,18 +10,20 @@ import re
 import shutil
 import subprocess as sp
 import sys
+import tempfile
 import textwrap
 from pathlib import Path
 
 import pytest
 
+# we intentionally avoid f-strings to retain compatibility with Python 3.4, so
+# disable warnings about those
+# pylint: disable=consider-using-f-string
+
 CPUS = multiprocessing.cpu_count()
 
 VERIFIER_RNG = Path(__file__).resolve().parent / "../misc/verifier.rng"
 MURPHI2XML_RNG = Path(__file__).resolve().parent / "../misc/murphi2xml.rng"
-
-CONFIG = {}
-"""test configuration variables"""
 
 
 def enc(s):
@@ -38,11 +40,7 @@ def run(args, stdin=None):
     """
     if stdin is not None:
         stdin = enc(stdin)
-    env = dict(os.environ.items())
-    env.update({k: str(v) for k, v in CONFIG.items()})
-    p = sp.Popen(
-        [str(a) for a in args], stdout=sp.PIPE, stderr=sp.PIPE, stdin=sp.PIPE, env=env
-    )
+    p = sp.Popen([str(a) for a in args], stdout=sp.PIPE, stderr=sp.PIPE, stdin=sp.PIPE)
     stdout, stderr = p.communicate(stdin)
     return p.returncode, dec(stdout), dec(stderr)
 
@@ -129,7 +127,7 @@ def needs_libatomic():
 #include <stdbool.h>
 #include <stdint.h>
 
-// replicate what is in ../../rumur/resources/header.c
+// replicate what is in ../rumur/resources/header.c
 
 #define THREADS 2
 
@@ -257,6 +255,93 @@ int main(void) {
     return ret != 0
 
 
+@functools.lru_cache()
+def has_sandbox():
+    """whether the current platform has sandboxing support for the verifier"""
+
+    # assume macOS always has sandboxing support
+    if platform.system() == "Darwin":
+        return True
+
+    # assume FreeBSD always has sandboxing support
+    if platform.system() == "FreeBSD":
+        return True
+
+    # assume OpenBSD always has sandboxing support
+    if platform.system() == "OpenBSD":
+        return True
+
+    # for Linux, we need to check for seccomp
+    if platform.system() == "Linux":
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+
+            # create a sandbox testing program
+            test_c = tmp / "test.c"
+            with open(str(test_c), "wt", encoding="utf-8") as f:
+                f.write(
+                    textwrap.dedent(
+                        """\
+                #include <linux/audit.h>
+                #include <linux/filter.h>
+                #include <linux/seccomp.h>
+                #include <stdio.h>
+                #include <stdlib.h>
+                #include <sys/prctl.h>
+                #include <sys/socket.h>
+                #include <sys/syscall.h>
+
+                int main(void) {
+
+                  // disable addition of new privileges
+                  int r = prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+                  if (r != 0) {
+                    perror("prctl(PR_SET_NO_NEW_PRIVS) failed");
+                    return EXIT_FAILURE;
+                  }
+
+                  // a BPF program that allows everything
+                  static struct sock_filter filter[] = {
+
+                    // return allow
+                    BPF_STMT(BPF_RET|BPF_K, SECCOMP_RET_ALLOW),
+
+                  };
+
+                  static const struct sock_fprog filter_program = {
+                    .len = sizeof(filter) / sizeof(filter[0]),
+                    .filter = filter,
+                  };
+
+                  // apply the filter to ourselves
+                  r = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &filter_program, 0, 0);
+                  if (r != 0) {
+                    perror("prctl(PR_SET_SECCOMP) failed");
+                    return EXIT_FAILURE;
+                  }
+
+                  return EXIT_SUCCESS;
+                }
+                """
+                    )
+                )
+
+            # compile the test program
+            a_out = tmp / "a.out"
+            ret, _, _ = run([cc(), "-std=c11", test_c, "-o", a_out])
+            if ret != 0:
+                return False
+
+            # execute the test program
+            ret, _, _ = run([a_out])
+            if ret != 0:
+                return False
+
+        return True
+
+    return False
+
+
 def has_valgrind():
     """is Valgrind available?"""
     return shutil.which("valgrind") is not None
@@ -265,6 +350,63 @@ def has_valgrind():
 def has_xmllint():
     """is xmllint available?"""
     return shutil.which("xmllint") is not None
+
+
+@functools.lru_cache()
+def smt_bv_args():
+    """get bitvector SMT arguments for an available solver"""
+
+    # preference 1: Z3
+    if shutil.which("z3") is not None:
+        # we leave a blank logic here, as Z3 performs best when not given a logic
+        return [
+            "--smt-path",
+            "z3",
+            "--smt-arg=-smt2",
+            "--smt-arg=-in",
+            "--smt-bitvectors",
+            "on",
+        ]
+
+    # preference 2: CVC4
+    if shutil.which("cvc4") is not None:
+        return [
+            "--smt-path",
+            "cvc4",
+            "--smt-arg=--lang=smt2",
+            "--smt-arg=--rewrite-divk",
+            "--smt-prelude",
+            "(set-logic AUFBV)",
+            "--smt-bitvectors",
+            "on",
+        ]
+
+    # otherwise, give up
+    return None
+
+
+@functools.lru_cache()
+def smt_args():
+    """get SMT arguments for an available solver"""
+
+    # preference 1: Z3
+    if shutil.which("z3") is not None:
+        # we leave a blank logic here, as Z3 performs best when not given a logic
+        return ["--smt-path", "z3", "--smt-arg=-smt2", "--smt-arg=-in"]
+
+    # preference 2: CVC4
+    if shutil.which("cvc4") is not None:
+        return [
+            "--smt-path",
+            "cvc4",
+            "--smt-arg=--lang=smt2",
+            "--smt-arg=--rewrite-divk",
+            "--smt-prelude",
+            "(set-logic AUFLIA)",
+        ]
+
+    # otherwise, give up
+    return None
 
 
 def test_display_info():
@@ -280,14 +422,22 @@ def test_display_info():
     print("  c_flags() = {}".format(c_flags()))
     print("  has_march_native() = {}".format(has_march_native()))
     print("  has_mcx16() = {}".format(has_mcx16()))
+    print("  has_sandbox() = {}".format(has_sandbox()))
     print("  has_valgrind() = {}".format(has_valgrind()))
     print("  has_xmllint() = {}".format(has_xmllint()))
     print("  needs_libatomic() = {}".format(needs_libatomic()))
+    print("  smt_bv_args() = {}".format(smt_bv_args()))
+    print("  smt_args() = {}".format(smt_args()))
 
 
-def parse_test_options(src, debug=False, multithreaded=False, xml=False):
+def parse_test_options(
+    src, debug=False, multithreaded=False, xml=False
+):  # pylint:disable=unused-argument
     """
     extract test tweaks and directives from leading comments in a test input
+
+    We disable `unused-argument` warnings because these are used by strings read from
+    test cases that are eval-ed.
     """
     with open(str(src), "rt", encoding="utf-8") as f:
         for line in f:
@@ -295,7 +445,9 @@ def parse_test_options(src, debug=False, multithreaded=False, xml=False):
             m = re.match(r"\s*--\s*(?P<key>[a-zA-Z_]\w*)\s*:(?P<value>.*)$", line)
             if m is None:
                 break
-            yield m.group("key"), eval(m.group("value").strip())
+            key = m.group("key")
+            value = eval(m.group("value").strip())  # pylint: disable=eval-used
+            yield key, value
 
 
 def test_murphi_format_colon():
@@ -566,9 +718,9 @@ def test_murphi_format_multiple_inplace(tmp_path):
     short_path = tmp_path / "short.m"
     long_path = tmp_path / "long.m"
 
-    with open(short_path, "wt", encoding="utf-8") as f:
+    with open(str(short_path), "wt", encoding="utf-8") as f:
         f.write(short)
-    with open(long_path, "wt", encoding="utf-8") as f:
+    with open(str(long_path), "wt", encoding="utf-8") as f:
         f.write(long)
 
     ret, stdout, stderr = run(["murphi-format", "--in-place", long_path, short_path])
@@ -577,11 +729,11 @@ def test_murphi_format_multiple_inplace(tmp_path):
     assert stdout == "", "murphi-format produced output when asked for in-place"
     assert stderr == "", "murphi-format printed errors/warnings"
 
-    with open(short_path, "rb") as f:
+    with open(str(short_path), "rb") as f:
         content = f.read()
     assert content == short.encode("utf-8"), "model was reflowed incorrectly"
 
-    with open(long_path, "rb") as f:
+    with open(str(long_path), "rb") as f:
         content = f.read()
     assert content == long.encode("utf-8"), "model was reflowed incorrectly"
 
@@ -938,78 +1090,8 @@ def test_stdlib_list(tmp_path):
     )
 
 
-def make_name(t):
-    """
-    name mangle a path into a valid test case name
-    """
-    safe_name = re.sub(r"[^a-zA-Z0-9]", "_", t.name)
-    return "test_{}".format(safe_name)
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup():
-    # parse configuration
-    for p in sorted((Path(__file__).parent / "config").iterdir()):
-
-        # skip subdirectories
-        if p.is_dir():
-            continue
-
-        # skip non-executable files
-        if not os.access(str(p), os.X_OK):
-            continue
-
-        CONFIG[p.name] = eval(sp.check_output([str(p)]))
-        sys.stderr.write(
-            "configuration variable {} = {}\n".format(p.name, CONFIG[p.name])
-        )
-
-
-MODELS = []
+MODELS = sorted([p.name for p in Path(__file__).parent.iterdir() if p.suffix == ".m"])
 """test cases defined as .m files in this directory"""
-
-PROGRAMS = []
-"""test cases defined as executable files in this directory"""
-
-# find files in our directory
-root = Path(__file__).parent
-for p in sorted(root.iterdir()):
-
-    # skip directories
-    if p.is_dir():
-        continue
-
-    # skip ourselves
-    if os.path.samefile(str(p), __file__):
-        continue
-
-    name = make_name(p)
-
-    # if this is executable, treat it as a test case
-    if os.access(str(p), os.X_OK):
-        PROGRAMS += [p.name]
-
-    # if this is not a model, skip the remaining generic logic
-    if p.suffix != ".m":
-        continue
-
-    MODELS += [p.name]
-
-
-@pytest.mark.parametrize("program", PROGRAMS)
-def test_program(program):
-    """test case involving running a custom executable file"""
-
-    testcase = Path(__file__).parent / program
-    assert os.access(str(testcase), os.X_OK), "non-executable test case {}".format(
-        testcase
-    )
-
-    ret, stdout, stderr = run([str(testcase)])
-    output = "{}{}".format(stdout, stderr)
-    if ret == 125:
-        pytest.skip(output.strip())
-    assert ret == 0, output
 
 
 @pytest.mark.parametrize("model", MODELS)
@@ -1173,7 +1255,7 @@ def test_murphi2uclid(model, tmp_path):
     tweaks = dict(parse_test_options(testcase))
 
     # test cases for which murphi2uclid is expected to fail
-    MURPHI2UCLID_FAIL = (
+    murphi2uclid_fail = (
         # contains `<<` or `>>`
         "const-folding5.m",
         "const-folding6.m",
@@ -1251,7 +1333,7 @@ def test_murphi2uclid(model, tmp_path):
     )
 
     # test cases fo which Uclid5 is expected to fail
-    UCLID_FAIL = (
+    uclid_fail = (
         # contains a record field with the same name as a variable
         # https://github.com/uclid-org/uclid/issues/99
         "compare-record.m",
@@ -1303,7 +1385,7 @@ def test_murphi2uclid(model, tmp_path):
         assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
 
     # if rumur was expected to reject this model, we allow murphi2uclid to fail
-    should_fail = model in MURPHI2UCLID_FAIL
+    should_fail = model in murphi2uclid_fail
     could_fail = tweaks.get("rumur_exit_code", 0) != 0 or should_fail
 
     if not could_fail:
@@ -1326,9 +1408,9 @@ def test_murphi2uclid(model, tmp_path):
 
     # ask Uclid if the source is valid
     ret, stdout, stderr = run(["uclid", src])
-    if model in UCLID_FAIL:
+    if model in uclid_fail:
         assert ret != 0, "uclid unexpectedly succeeded:\n{}{}".format(stdout, stderr)
-    if model not in UCLID_FAIL:
+    if model not in uclid_fail:
         assert ret == 0, "uclid failed:\n{}{}".format(stdout, stderr)
 
 
@@ -1570,7 +1652,7 @@ def test_193():
 
     # a model containing a TypeExprID, itself referring to a record whose fields will be
     # reordered
-    MODEL = textwrap.dedent(
+    model = textwrap.dedent(
         """
     type
       t1: scalarset(4);
@@ -1592,7 +1674,7 @@ def test_193():
     )
 
     # run Rumur in debug mode
-    ret, _, stderr = run(["rumur", "--output", os.devnull, "--debug"], MODEL)
+    ret, _, stderr = run(["rumur", "--output", os.devnull, "--debug"], model)
     assert ret == 0, "rumur failed"
 
     # we should see the fields be reordered once due to encountering the original
@@ -1957,9 +2039,9 @@ def test_murphi2murphi_unicode_to_ascii():
 def test_rumur_run_model():
     """test that rumur-run can check a basic model"""
 
-    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+    rumur_run = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
 
-    MODEL = """
+    model = """
     var
       x: boolean;
 
@@ -1972,16 +2054,16 @@ def test_rumur_run_model():
     end;
     """
 
-    ret, _, _ = run([sys.executable, RUMUR_RUN], MODEL)
+    ret, _, _ = run([sys.executable, rumur_run], model)
     assert ret == 0
 
 
 def test_rumur_run_version():
     """basic test that rumur-run can execute successfully"""
 
-    RUMUR_RUN = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
+    rumur_run = Path(__file__).absolute().parents[1] / "rumur/src/rumur-run"
 
-    ret, _, _ = run([sys.executable, RUMUR_RUN, "--version"])
+    ret, _, _ = run([sys.executable, rumur_run, "--version"])
     assert ret == 0
 
 
@@ -2000,12 +2082,12 @@ def test_strace_sandbox(tmp_path):
     cannot easily replicate, like the Debian auto builders.
     """
 
-    if not CONFIG["HAS_SANDBOX"]:
+    if not has_sandbox():
         pytest.skip("seccomp sandboxing not supported")
 
     # create a basic model
     model_m = tmp_path / "model.m"
-    with open(model_m, "wt", encoding="utf-8") as f:
+    with open(str(model_m), "wt", encoding="utf-8") as f:
         f.write(
             textwrap.dedent(
                 """\
@@ -2078,7 +2160,7 @@ def test_murphi2uclid_n():
     accepted. The following tests whether this bug has been reintroduced.
     """
 
-    MODEL = textwrap.dedent(
+    model = textwrap.dedent(
         """\
     const N: 2;
     var x: 0 .. 1;
@@ -2092,7 +2174,7 @@ def test_murphi2uclid_n():
     )
 
     # translate a model to Uclid5 requesting a non-default bit-vector type
-    ret, uclid, stderr = run(["murphi2uclid", "-n", "bv64"], MODEL)
+    ret, uclid, stderr = run(["murphi2uclid", "-n", "bv64"], model)
     assert ret == 0, "murphi2uclid failed: {}".format(stderr)
 
     # this should have been used for (at least) the constant
@@ -2107,7 +2189,7 @@ def test_murphi2uclid_numeric_type():
     was ignored. The following tests whether this bug has been reintroduced.
     """
 
-    MODEL = textwrap.dedent(
+    model = textwrap.dedent(
         """\
     const N: 2;
     var x: 0 .. 1;
@@ -2121,7 +2203,7 @@ def test_murphi2uclid_numeric_type():
     )
 
     # translate a model to Uclid5 requesting a non-default bit-vector type
-    ret, uclid, stderr = run(["murphi2uclid", "--numeric-type=bv64"], MODEL)
+    ret, uclid, stderr = run(["murphi2uclid", "--numeric-type=bv64"], model)
     assert ret == 0, "murphi2uclid failed: {}".format(stderr)
 
     # this should have been used for (at least) the constant

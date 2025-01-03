@@ -33,7 +33,7 @@ def categorise(cc):
 
         # Setup the test file
         src = tmp / "test.c"
-        with open(src, "wt", encoding="utf-8") as f:
+        with open(str(src), "wt", encoding="utf-8") as f:
             f.write(
                 """\
         #include <stdio.h>
