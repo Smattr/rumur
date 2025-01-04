@@ -1,6 +1,7 @@
 rumur (2025.01.04-1) unstable; urgency=medium
 
   * New upstream release.
+  * Add python3-pytest as a build dependency.
 
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sat, 04 Jan 2025 11:36:24 +1100
 
