@@ -64,37 +64,33 @@ Then on a `Debian Unstable installation`_:
   # 8. Run packaging script.
   ./misc/package-for-debian.sh
 
-  # 9. Remove temporary files left by Pytest. Without this, pdebuild complains
-  # the directory and the package do not match.
-  git clean -dfx
-
   # If any lintian errors or warnings were output, you will need to address
   # these and then return to step 4.
 
-  # 10. Update pbuilder environment. You will need to already have a pbuilder
+  # 9. Update pbuilder environment. You will need to already have a pbuilder
   # environment created, as described in misc/package-for-debian.sh.
   sudo pbuilder update
 
-  # 11. Test the package under pbuilder
+  # 10. Test the package under pbuilder
   pdebuild
 
-  # 12. Sign the source package that pbuilder created. You will need GPG key(s)
+  # 11. Sign the source package that pbuilder created. You will need GPG key(s)
   # configured.
   debsign ../rumur_*_source.changes
 
-  # 13. Upload to the mentors inbox. You will need dput configured, as described
+  # 12. Upload to the mentors inbox. You will need dput configured, as described
   # in misc/package-for-debian.sh.
   dput mentors ../rumur_*_source.changes
 
 In a few minutes you should get a confirmation email that the upload succeeded.
 Then:
 
-14. Follow the instructions included in the confirmation email to send a
+13. Follow the instructions included in the confirmation email to send a
     `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
     get a reply from an interested party. Make sure “Needs a sponsor” is set to
     “Yes” on the `package details page`_.
 
-15. When/if the package is accepted into Debian unstable, tag the commit used to
+14. When/if the package is accepted into Debian unstable, tag the commit used to
     produce it with the Debian version number in “debian/vYYYY.MM.DD-1” format.
     Push this upstream.
 
