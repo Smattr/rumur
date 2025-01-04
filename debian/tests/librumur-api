@@ -46,7 +46,7 @@ int main(void) {
 
   // parse it into an AST
   try {
-    rumur::Ptr<rumur::Model> ast = rumur::parse(input);
+    rumur::Ptr<rumur::Model> ast = rumur::parse_model(input);
   } catch (rumur::Error &e) {
     std::cerr << "failed to parse model.m: " << e.what() << "\n";
     return EXIT_FAILURE;
