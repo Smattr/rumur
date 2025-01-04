@@ -2,4 +2,4 @@
 # triggering Lintian warnings about documentation installed outside
 # /usr/share/doc. This file qualifies for an exemption because it describes the
 # purpose of the directory it is installed into.
-rumur source: package-contains-documentation-outside-usr-share-doc
+rumur: package-contains-documentation-outside-usr-share-doc
