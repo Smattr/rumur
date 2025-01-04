@@ -1,6 +1,15 @@
 Change log
 ==========
 
+v2025.01.05
+-----------
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: Pytest’s cache directory is now located within the build directory
+  during test runs, rather than within the source directory (commit
+  af0430fb0dbe8e76d1f38b8338efeb0aa5bbd5b1).
+
 v2025.01.04
 -----------
 
