@@ -13,8 +13,8 @@ A more extended introduction is available in `doc/introduction.rst`_
 Quickstart
 ----------
 
-Installation on Ubuntu ≥ 20.04 or Debian
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installation on Ubuntu or Debian
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
@@ -51,17 +51,15 @@ Then:
   cd rumur
 
   # Configure and compile
-  mkdir build
-  cd build
-  cmake ..
-  make
-  make install
+  cmake -B build -S .
+  cmake --build build
+  cmake --install build
 
   # Generate a checker
   rumur my-model.m --output my-model.c
 
   # Compile the checker (also pass -mcx16 if using GCC on x86-64)
-  cc -std=c11 -O3 my-model.c -lpthread
+  cc -std=c11 -march=native -O3 my-model.c -lpthread
 
   # Run the checker
   ./a.out
@@ -73,6 +71,8 @@ Compilation produces several artefacts including the `rumur` binary itself:
 * murphi2c: Tool for translating a Murphi model into C code for use in a
   simulator;
 * murphi2murphi: A preprocessor for Murphi models;
+* murphi2smv: Tool for translating a Murphi model into `NuSMV` input;
+* murphi2uclid: Tool for translating a Murphi model into `Uclid5` input;
 * murphi2xml: Tool for emitting an XML representation of a Murphi model’s
   Abstract Syntax Tree;
 * librumur.a: A library for building your own Murphi model tools; and
@@ -99,5 +99,7 @@ Everything in this repository is in the public domain, under the terms of
 .. _Libgmp: https://gmplib.org/
 .. _LICENSE: ./LICENSE
 .. _`model checker`: https://en.wikipedia.org/wiki/Model_checking
+.. _NuSMV: https://nusmv.fbk.eu/
 .. _Python: https://www.python.org/
 .. _`the Unlicense`: http://unlicense.org/
+.. _Uclid5: https://github.com/uclid-org/uclid

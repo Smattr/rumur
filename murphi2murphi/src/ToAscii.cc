@@ -47,9 +47,9 @@ void ToAscii::process(const Token &t) {
 
   case IDLE:
     next << s;
-    if (s == "-") {
+    if (t.character == "-") {
       state = IDLE_DASH;
-    } else if (s == "/") {
+    } else if (t.character == "/") {
       state = IDLE_SLASH;
     } else if (s == "\"") {
       state = IN_STRING;
@@ -58,9 +58,9 @@ void ToAscii::process(const Token &t) {
 
   case IDLE_DASH:
     next << s;
-    if (s == "-") {
+    if (t.character == "-") {
       state = IN_LINE_COMMENT;
-    } else if (s == "/") {
+    } else if (t.character == "/") {
       state = IDLE_SLASH;
     } else if (s == "\"") {
       state = IN_STRING;
@@ -71,11 +71,11 @@ void ToAscii::process(const Token &t) {
 
   case IDLE_SLASH:
     next << s;
-    if (s == "-") {
+    if (t.character == "-") {
       state = IDLE_DASH;
-    } else if (s == "/") {
+    } else if (t.character == "/") {
       // stay in IDLE_SLASH
-    } else if (s == "*") {
+    } else if (t.character == "*") {
       state = IN_MULTILINE_COMMENT;
     } else if (s == "\"") {
       state = IN_STRING;

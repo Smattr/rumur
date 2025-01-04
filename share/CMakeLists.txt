@@ -1,0 +1,9 @@
+install(
+  FILES
+    list
+    README.rst
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/rumur/lib
+)
+install(DIRECTORY v2025.01.04
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/rumur/lib
+)

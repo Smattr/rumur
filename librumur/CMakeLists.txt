@@ -43,8 +43,8 @@ if(HAS_WARNING_DEPRECATED_REGISTER)
 endif()
 
 add_custom_command(
-  OUTPUT rumur-get-version.h
-  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  OUTPUT version.c
+  COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/version.c
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -55,7 +55,7 @@ add_custom_command(
   COMMAND /usr/bin/env true)
 
 add_library(librumur
-  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
+  ${CMAKE_CURRENT_BINARY_DIR}/version.c
   src/Boolean.cc
   src/Comment.cc
   src/Decl.cc
@@ -95,7 +95,7 @@ target_link_libraries(librumur PUBLIC ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 set_target_properties(librumur PROPERTIES PREFIX "")
 
 # Clagged boiler plate to install a library.
-install(TARGETS librumur EXPORT LibrumurConfig
+install(TARGETS librumur EXPORT librumurConfig
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -104,8 +104,16 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/location.hh
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.hh
   ${CMAKE_CURRENT_BINARY_DIR}/position.hh
-  ${CMAKE_CURRENT_BINARY_DIR}/rumur-get-version.h
   ${CMAKE_CURRENT_BINARY_DIR}/stack.hh
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rumur)
 
-export(TARGETS librumur FILE LibrumurConfig.cmake)
+install(
+  EXPORT librumurConfig
+  FILE librumurConfig.cmake
+  NAMESPACE rumur::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rumur
+)
+install(
+  FILES rumurConfig.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rumur
+)

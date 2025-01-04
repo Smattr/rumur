@@ -69,7 +69,7 @@ static void parse_args(int argc, char **argv) {
     case 'o': {
       auto o = std::make_shared<std::ofstream>(optarg);
       if (!o->is_open()) {
-        std::cerr << "failed to open " << optarg << "\n";
+        std::cerr << "failed to open " << optarg << '\n';
         exit(EXIT_FAILURE);
       }
       out = o;
@@ -86,7 +86,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 131: // --version
-      std::cout << "Murphi2C version " << rumur::get_version() << "\n";
+      std::cout << "Murphi2C version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     default:
@@ -99,7 +99,7 @@ static void parse_args(int argc, char **argv) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
       std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
-                << "\n";
+                << '\n';
       exit(EXIT_FAILURE);
     }
 
@@ -114,7 +114,7 @@ static void parse_args(int argc, char **argv) {
     auto i = std::make_shared<std::ifstream>(in_filename);
     auto j = std::make_shared<std::ifstream>(in_filename);
     if (!i->is_open() || !j->is_open()) {
-      std::cerr << "failed to open " << in_filename << "\n";
+      std::cerr << "failed to open " << in_filename << '\n';
       exit(EXIT_FAILURE);
     }
     in = dup_t(i, j);
@@ -146,9 +146,9 @@ int main(int argc, char **argv) {
   // parse input model
   rumur::Ptr<rumur::Model> m;
   try {
-    m = rumur::parse(*in.first);
+    m = rumur::parse_model(*in.first);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
     resolve_symbols(*m);
     validate(*m);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 

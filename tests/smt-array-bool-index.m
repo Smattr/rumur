@@ -1,5 +1,5 @@
--- rumur_flags: CONFIG['SMT_ARGS']
--- skip_reason: 'no SMT solver available' if CONFIG['SMT_ARGS'] is None else None
+-- rumur_flags: smt_args()
+-- skip_reason: 'no SMT solver available' if smt_args() is None else None
 
 /* test whether the SMT bridge can simplify expressions involving arrays with
  * boolean indices

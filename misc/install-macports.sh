@@ -3,7 +3,7 @@
 # Download and install Macports. For use in CI.
 
 # Version of Macports to install
-VERSION=2.8.1
+VERSION=2.9.3
 
 if [ "$(uname)" != "Darwin" ]; then
   printf 'this script is only intended to run on macOS\n' >&2
@@ -22,7 +22,7 @@ cd "${TMP}"
 
 # Download
 curl --retry 3 --location --no-progress-meter -O \
-  https://github.com/macports/macports-base/releases/download/v${VERSION}/MacPorts-${VERSION}-13-Ventura.pkg
+  https://github.com/macports/macports-base/releases/download/v${VERSION}/MacPorts-${VERSION}-14-Sonoma.pkg
 
 # Install
-sudo installer -package MacPorts-${VERSION}-13-Ventura.pkg -target /
+sudo installer -package MacPorts-${VERSION}-14-Sonoma.pkg -target /

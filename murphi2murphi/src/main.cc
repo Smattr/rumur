@@ -111,7 +111,7 @@ static void parse_args(int argc, char **argv) {
     case 'o': { // --output
       auto o = std::make_shared<std::ofstream>(optarg);
       if (!o->is_open()) {
-        std::cerr << "failed to open " << optarg << "\n";
+        std::cerr << "failed to open " << optarg << '\n';
         exit(EXIT_FAILURE);
       }
       out = o;
@@ -131,7 +131,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 138: // --version
-      std::cout << "Murphi2Murphi version " << get_version() << "\n";
+      std::cout << "Murphi2Murphi version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     default:
@@ -144,7 +144,7 @@ static void parse_args(int argc, char **argv) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
       std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
-                << "\n";
+                << '\n';
       exit(EXIT_FAILURE);
     }
 
@@ -156,7 +156,7 @@ static void parse_args(int argc, char **argv) {
 
     auto i = std::make_shared<std::ifstream>(argv[optind]);
     if (!i->is_open()) {
-      std::cerr << "failed to open " << argv[optind] << "\n";
+      std::cerr << "failed to open " << argv[optind] << '\n';
       exit(EXIT_FAILURE);
     }
     in = i;
@@ -164,7 +164,7 @@ static void parse_args(int argc, char **argv) {
     // open the input again that we need for replay during XML output
     auto i2 = std::make_shared<std::ifstream>(argv[optind]);
     if (!i2->is_open()) {
-      std::cerr << "failed to open " << argv[optind] << "\n";
+      std::cerr << "failed to open " << argv[optind] << '\n';
       exit(EXIT_FAILURE);
     }
     in_replay = i2;
@@ -184,9 +184,9 @@ int main(int argc, char **argv) {
   // parse input model
   Ptr<Model> m;
   try {
-    m = parse(*in);
+    m = parse_model(*in);
   } catch (Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
     resolve_symbols(*m);
     validate(*m);
   } catch (Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
@@ -239,7 +239,7 @@ int main(int argc, char **argv) {
     pipe.finalise();
 
   } catch (Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 

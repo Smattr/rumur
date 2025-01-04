@@ -1,0 +1,143 @@
+.TH MURPHI2SMV 1
+.SH NAME
+murphi2smv \- translate a Murphi model to SMV
+.SH SYNOPSIS
+.B \fBmurphi2smv\fR [\fB\-\-output\fR \fIFILE\fR | \fB\-o\fR \fIFILE\fR] \fIFILE\fR
+.SH DESCRIPTION
+The utility \fBmurphi2smv\fR is bundled with the model checker Rumur and can be
+used to translate a Murphi model into the input format to the NuSMV model
+checker. See
+.BR rumur(1)
+for more information about Rumur or Murphi.
+.SH OPTIONS
+\fB\-\-help\fR or \fB\-?\fR
+.RS
+Display usage information.
+.RE
+.PP
+\fB\-\-numeric\-type\fR [\fBinteger\fR | \fBword\fR] or
+\fB\-n\fR [\fBinteger\fR | \fBword\fR]
+.RS
+Set the SMV type used for ranges, scalarsets and numeric literals. This can be
+either \fIinteger\fR to use native integers or \fIword\fR to use bit-vectors. If
+this option is omitted, one is chosen automatically based on the content of the
+input model.
+.RE
+.PP
+\fB\-\-output\fR \fIFILE\fR or \fB\-o\fR \fIFILE\fR
+.RS
+Set the path to write the output SMV model to. If this argument is omitted,
+output is written to standard out.
+.RE
+.PP
+\fB\-\-quiet\fR or \fB\-q\fR
+.RS
+Silence warning diagnostics.
+.RE
+.PP
+\fB\-\-verbose or \fB\-v\fR
+.RS
+Report extra debugging information.
+.RE
+.PP
+\fB\-\-version\fR
+.RS
+Display version information and exit.
+.RE
+.SH NOTES
+Translation to SMV is imprecise because the semantics of model execution in SMV
+are significantly different to Murphi. \fBmurphi2smv\fR should not be expected
+to give you a ready-to-run SMV model. Rather it gives you an initial rough
+translation that you will need to edit to form a runnable model.
+.SH LIMITATIONS
+Murphi type declarations have no exact equivalent in SMV. These are handled by
+propagating and expanding them inline. This is done purely syntactically, which
+can lead to unexpected or incorrect results if your input model has symbols that
+shadow other symbols.
+.PP
+The following Murphi constructs have no equivalent in SMV and are emitted as a
+placeholder comment:
+.RS
+.IP \[bu] 2
+\fBalias\fR declarations
+.IP \[bu]
+\fBalias\fR rules
+.IP \[bu]
+\fBalias\fR statements
+.IP \[bu]
+\fBassume\fR, \fBcover\fR, and \fBliveness\fR properties
+.IP \[bu]
+\fBclear\fR statements
+.IP \[bu]
+\fBerror\fR statements
+.IP \[bu]
+\fBexists\fR expressions
+.IP \[bu]
+\fBfor\fR loops
+.IP \[bu]
+\fBforall\fR expressions
+.IP \[bu]
+\fBfunction\fRs, \fBprocedure\fRs, and calls to these
+.IP \[bu]
+\fBif\fR statements
+.IP \[bu]
+\fBisundefined\fR statements
+.IP \[bu]
+\fBproperty\fR statements
+.IP \[bu]
+quantifiers
+.IP \[bu]
+\fBrecord\fR definitions
+.IP \[bu]
+simple \fBrule\fRs
+.IP \[bu]
+\fBruleset\fRs
+.IP \[bu]
+\fBswitch\fR statements
+.IP \[bu]
+\fBundefine\fR statements
+.IP \[bu]
+\fBwhile\fR statements
+.RE
+.PP
+You will need to either rephrase your input model to avoid these features or
+edit the generated SMV after generation.
+.PP
+Rumur supports integers up to 64-bit in width. SMV integers are only 32-bit.
+There are no checks that the numbers or calculations in the input model fit in
+32-bit. This may result in constants or calculations in the generated SMV that
+overflow.
+.PP
+Murphi rule-local declarations and variables have no equivalent in SMV. These
+are emitted using SMV syntax but will need to be moved to a valid location
+within the SMV output.
+.SH SEE ALSO
+rumur(1)
+.SH AUTHOR
+All comments, questions and complaints should be directed to Matthew Fernandez
+<matthew.fernandez@gmail.com>.
+.SH LICENSE
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED \[lq]AS IS\[rq], WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>

@@ -1,6 +1,6 @@
+#include "../../common/environ.h"
 #include "../../common/help.h"
 #include "ValueType.h"
-#include "environ.h"
 #include "generate.h"
 #include "has-start-state.h"
 #include "log.h"
@@ -388,7 +388,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case OPT_VERSION: // --version
-      std::cout << "Rumur version " << get_version() << "\n";
+      std::cout << "Rumur version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     case OPT_BOUND: { // --bound ...
@@ -632,7 +632,7 @@ int main(int argc, char **argv) {
   *debug << "parsing input model...\n";
   Ptr<Model> m;
   try {
-    m = parse(in == nullptr ? std::cin : *in);
+    m = parse_model(in == nullptr ? std::cin : *in);
   } catch (Error &e) {
     std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
               << reset() << " " << red() << bold() << "error:" << reset() << " "
@@ -640,6 +640,10 @@ int main(int argc, char **argv) {
     print_location(input_filename, e.loc);
     return EXIT_FAILURE;
   }
+
+  // We no longer need the input file. Close it here to avoid having to think
+  // about close-on-exec when running the compiler or an SMT solver.
+  in = nullptr;
 
   assert(m != nullptr);
 

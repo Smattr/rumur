@@ -10,33 +10,33 @@ task:
     - name: FreeBSD 15.0
       freebsd_instance:
         image_family: freebsd-15-0-snap
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
     - name: FreeBSD 15.0, shared libraries
       freebsd_instance:
         image_family: freebsd-15-0-snap
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
     - name: FreeBSD 14.0
       freebsd_instance:
         image_family: freebsd-14-0-snap
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
     - name: FreeBSD 14.0, shared libraries
       freebsd_instance:
         image_family: freebsd-14-0-snap
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 13.2
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
+    - name: FreeBSD 13.3
       freebsd_instance:
-        image_family: freebsd-13-2
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
-    - name: FreeBSD 13.2, shared libraries
+        image_family: freebsd-13-3
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
+    - name: FreeBSD 13.3, shared libraries
       freebsd_instance:
-        image_family: freebsd-13-2
+        image_family: freebsd-13-3
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
-      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 z3
+      install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
 
     - name: Linux, GCC 8.5
       container:
@@ -44,14 +44,14 @@ task:
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
     - name: Linux, GCC 9.5
       container:
         image: gcc:9.5
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
     - name: Linux, GCC 10.5
       container:
         image: gcc:10.5
@@ -59,43 +59,51 @@ task:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
-    - name: Linux, GCC 11.4
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
+    - name: Linux, GCC 11.5
       container:
-        image: gcc:11.4
+        image: gcc:11.5
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
-    - name: Linux, GCC 12.3
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
+    - name: Linux, GCC 12.4
       container:
-        image: gcc:12.3
+        image: gcc:12.4
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
-    - name: Linux, GCC 13.2
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
+    - name: Linux, GCC 13.3
       container:
-        image: gcc:13.2
+        image: gcc:13.3
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
-    - name: Linux, ARM, GCC 13.2
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
+    - name: Linux, GCC 14.2
+      container:
+        image: gcc:14.2
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
+    - name: Linux, ARM, GCC 14.2
       arm_container:
-        image: gcc:13.2
+        image: gcc:14.2
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils strace z3
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
 
     - name: macOS, Homebrew
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-ventura-base:latest
+        image: ghcr.io/cirruslabs/macos-runner:sonoma
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
@@ -104,18 +112,18 @@ task:
         PATH: /usr/local/opt/bison/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
         SUDO: sudo
-      install_script: brew update && brew install bison && brew link bison --force
+      install_script: uname -rms && brew update && brew install bison && brew link bison --force && python3 -m pip install --break-system-packages pytest
 
     - name: macOS, Macports
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-ventura-base:latest
+        image: ghcr.io/cirruslabs/macos-runner:sonoma
       environment:
         PATH: /opt/local/bin:${PATH}
         CXXFLAGS: -fsanitize=address -Werror
         SUDO: sudo
-      install_script: ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison
+      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && python3 -m pip install --break-system-packages pytest
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
   # time and we end up having some of the SMT tests time out
-  test_script: uname -rms && python3 --version && mkdir build && cd build && cmake ${CMAKE_OPTIONS:-} .. && cmake --build . && ${SUDO:-} cmake --build . -- install && cmake --build . -- check
+  test_script: uname -rms && python3 --version && cmake ${CMAKE_OPTIONS:-} -B build -S . && cmake --build build && ${SUDO:-} cmake --install build && cmake --build build --target check

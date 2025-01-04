@@ -30,6 +30,7 @@ struct RUMUR_API_WITH_RTTI Property : public Node {
   Property *clone() const override;
   virtual ~Property() = default;
 
+  void validate() const override;
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
 };

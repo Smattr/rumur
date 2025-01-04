@@ -7,7 +7,7 @@ add_custom_command(
 
 add_executable(murphi2xml
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
-  ../common/help.cc
+  ../common/help.c
   src/main.cc
   src/XMLPrinter.cc)
 

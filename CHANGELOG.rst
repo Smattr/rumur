@@ -1,6 +1,100 @@
 Change log
 ==========
 
+v2025.01.04
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: non-boolean expressions in properties are now rejected at generation
+  time. Previously these were incorrectly accepted, generating code that then
+  would not compile (commit a936e611b7b13ee35c78fe59d6abd8641af9fdc7).
+* A new tool, ``murphi-format``, has been added. This works similarly to
+  ``clang-format`` but for reformatting Murphi models. See
+  ``murphi-format --help`` for more information.
+* Rumur now ships with a standard library, accessible under share/rumur/lib in
+  the installation tree. See share/rumur/lib/README.rst for more information
+  (commit 09e155c6e89510ccf2866980294a972a04094949).
+* Constant folding is now more powerful, allowing you to use e.g. ternary
+  expressions within the definition of a ``const`` (commits
+  4b82cbfb75771c8fdcb6c1cb3467d8a703d41d2a,
+  b538562f4e336e3f5d113642024e69445fa2d0e2,
+  24f53488b75bed1c49f88f5c9da3116af4e783c9,
+  9427e6a8476e95f1c364a8a4cf7557bab496510d,
+  0c70dccceb4753a06343463a2e90a7c1f6caecf3,
+  06a289b212fa3610e0b04aa121b53a631ed5d1e0,
+  6ac3fad6635c93fb18500e3b4ba6ffad5689d1ef,
+  9b98e8840e3cf669a5f50d986e91d37d32c7a464,
+  84ce4d3d8c98069030624fa0cd22deb4b47efadd,
+  8a8cb6c4f2fbf00d39a29f01c488b3d5a7e82f51).
+* Some ``-Wmaybe-uninitialized`` false positive compiler warnings when building
+  certain models have been suppressed (commit
+  4cb21affa7ed0292a9190357ef2b63c2e2fceff7).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The version API that was previously ``rumur::get_version`` has changed names
+  to ``rumur_get_version`` and been given C linkage (commit
+  6d62dbabc30ae7738f1532711e81a7a4843d1e0b).
+* The CMake export files defining librumur as a target have been tweaked for
+  improved usability (commits 78eb9057e693355a4db28739658faee3b4fa348a,
+  4de3cc72904c7a6360158a8f6d236fb24450a105,
+  0cf8cf5bb1d2aea1ad3ed6171d6c437b851168a9,
+  930d9555df990241491f9e6ec0bda71c35169d68).
+* Parts of Rumur are now implemented in C, in addition to C++. This means to
+  build Rumur from source you now additionally need a C compiler (commit
+  6d770821a10b0a58392a676c4f6b77ef6355c83a).
+* The test suite has been ported to Pytest_. To run it, you will now need Pytest
+  installed (commit 0bf8f4d0d7a46f3e9a3670d43cff64aff573783d).
+* The minimum required CMake version to build Rumur from source has been changed
+  3.1 → 3.2 (commit e4d333239233239f01ce7a83cf315bdac44dd1ef).
+* The test suite status is more reliably echoed unbuffered to the terminal, even
+  when using buffering build systems like Ninja_ (commit
+  e4d333239233239f01ce7a83cf315bdac44dd1ef).
+
+.. _Ninja: https://ninja-build.org
+.. _Pytest: https://docs.pytest.org
+
+v2024.07.14
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: ``murphi2uclid`` no longer ignores the long form option
+  ``--numeric-type`` (commit 285453789b7394aab8e182935aca7c91ed504832).
+* Bug fix: ``murphi2uclid`` no longer ignores the short form options ``-n`` and
+  others (commit ad1ddb7ed750d82460e97dd952814ad6b6156edd).
+* Bug fix: irrelevant file descriptors are no longer leaked into an SMT solver
+  configured via ``--smt-path`` (commits
+  90132cf838c7bcfa2a1081786f7a0b511c5e281a,
+  cb9d47fa6037187d995995bbc8730b6976d8c804).
+* Bug fix: ``--help`` works even when ``$TMPDIR`` contains spaces (commit
+  9db30b901b0598b99d300c7988e24ddb28be344c).
+* A negation that results in the greatest negative number of the value type
+  (controllable with ``--value-type``) is no longer considered a runtime error
+  (commit fd1627d092275e96f475a0ac28de7927ad65d69b).
+* Modulo of the greatest negative number of the value type by ``-1`` is no
+  longer considered a runtime error (commit
+  f794358e5c08bcafe57c6a3e1d74a11f8d478ebd).
+* A new ``murphi2smv`` binary has been added that translates Murphi models or
+  fragments to the input language for the NuSMV model checker (commit
+  391cb95ad30026a0579fe04e1c8591413433ae2b).
+* ``murphi2uclid`` supports translation of Murphi fragments in addition to full
+  models (commit 2de59f8599bd64c3d1b7c673a6fde1a711187a32).
+* Missing author and licence information from manual pages has been filled in
+  (commit a037954531bdbd88072d2d779b95a4ca20b0cd3c).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* New parsing functions are available for parsing a fragment of Murphi rather
+  than a fully formed model (commits 782efd73320c232c484538e2ac3ec108e6f350e6,
+  3f1b6e765794bdfdfa0403b94693b8c82a68c080,
+  603a2e4bd4a8ef3a99907f408a04e361dbe9f3bb,
+  628b3fb66c0825e0937369bdde912d5e922049b0).
+* The build system sets rpath such that Rumur installed to a custom path should
+  more reliably be able to find its librumur.so (commit
+  d932fe53ef57afcdcc24bea53582e21f2d076a67).
+
 v2024.05.07
 -----------
 

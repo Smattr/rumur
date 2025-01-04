@@ -2,31 +2,36 @@ Release Checklist
 =================
 The process of cutting a new Rumur release should follow these steps:
 
-1. Grep the source tree for any deprecated functions or data (marked with
-   ``__attribute__((deprecated))`` or a “deprecated” comment). Any that were
-   deprecated more than six months ago can, and should, be removed for the
-   upcoming release.
-2. Check the `Debian buildd results`_ for the last uploaded version of Rumur.
-   If there were any failures, consider introducing commits to try to address
-   them prior to release. The buildd tests are only run each time there is a
-   new Debian package uploaded, so the turn around time on seeing a failure
-   here and having an opportunity to fix it can be long.
-3. Update ../CHANGELOG.rst with information about the changes in the new
-   release. Changes should be separated into “user-facing” and “internal,”
-   providing commit hash(es) as a reference where possible. The ordering in
-   which changes are listed should firstly prioritise bug fixes (which should
-   be explicitly marked as such) and then by the impact on users/developers a
-   change will have. Code changes that are only of relevance to people hacking
-   on Rumur can be omitted, and this audience can read about them in the Git
-   log.
-4. Commit this to main.
-5. Push this to `upstream on Github`_.
-6. Wait for the `Cirrus CI regression tests`_ to pass. If one of these tests
-   fail, you may need to look at the raw log because the summary output hides
-   some stderr lines.
-7. Tag the commit with the version number in “vYYYY.MM.DD” format.
-8. Push the new version tag upstream.
-9. Package Rumur for Debian (see below).
+1.  Grep the source tree for any deprecated functions or data (marked with
+    ``__attribute__((deprecated))`` or a “deprecated” comment). Any that were
+    deprecated more than six months ago can, and should, be removed for the
+    upcoming release.
+2.  Check the `Debian buildd results`_ for the last uploaded version of Rumur.
+    If there were any failures, consider introducing commits to try to address
+    them prior to release. The buildd tests are only run each time there is a
+    new Debian package uploaded, so the turn around time on seeing a failure
+    here and having an opportunity to fix it can be long.
+3.  Update ../CHANGELOG.rst with information about the changes in the new
+    release. Changes should be separated into “user-facing” and “internal,”
+    providing commit hash(es) as a reference where possible. The ordering in
+    which changes are listed should firstly prioritise bug fixes (which should
+    be explicitly marked as such) and then by the impact on users/developers a
+    change will have. Code changes that are only of relevance to people hacking
+    on Rumur can be omitted, and this audience can read about them in the Git
+    log.
+4.  Copy all shipped files in share/ to share/<version>, where <version> is the
+    upcoming version. This allows users to write things like
+    ``include(`v2021.08.28/list')`` to get a stable known version of ``list`` as
+    it was in the v2021.08.28 release. Don’t forget to add these new files to
+    the shipped files in share/CMakeLists.txt.
+5.  Commit this to main.
+6.  Push this to `upstream on Github`_.
+7.  Wait for the `Cirrus CI regression tests`_ to pass. If one of these tests
+    fail, you may need to look at the raw log because the summary output hides
+    some stderr lines.
+8.  Tag the commit with the version number in “vYYYY.MM.DD” format.
+9.  Push the new version tag upstream.
+10. Package Rumur for Debian (see below).
 
 Github’s automated release process should notice the version tag and show the
 new release as a downloadable zip/tarball on the “releases” tab of
@@ -82,7 +87,8 @@ Then:
 
 13. Follow the instructions included in the confirmation email to send a
     `Request For Sponsorship`_ to the Debian Mentors mailing list. Hope that you
-    get a reply from an interested party.
+    get a reply from an interested party. Make sure “Needs a sponsor” is set to
+    “Yes” on the `package details page`_.
 
 14. When/if the package is accepted into Debian unstable, tag the commit used to
     produce it with the Debian version number in “debian/vYYYY.MM.DD-1” format.
@@ -97,6 +103,7 @@ main repositories.
 .. _`Cirrus CI regression tests`: https://cirrus-ci.com/github/Smattr/rumur
 .. _`Debian buildd results`: https://buildd.debian.org/status/package.php?p=rumur
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
+.. _`package details page`: https://mentors.debian.net/package/rumur/
 .. _`packaged in Debian`: https://packages.debian.org/bullseye/rumur
 .. _`Request For Sponsorship`: https://mentors.debian.net/sponsors/rfs-howto
 .. _`upstream on Github`: https://github.com/Smattr/rumur

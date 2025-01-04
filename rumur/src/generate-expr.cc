@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <gmpxx.h>
 #include <iostream>
 #include <memory>
@@ -264,7 +265,7 @@ public:
       }
     }
 
-    /* Now for each parameter we need to consider four distinct methods, based
+    /* Now for each parameter we need to consider five distinct methods, based
      * on the parameter's circumstance as described in the following table:
      *
      *   ┌──────┬────────────────┬─────────┬────────────╥────────┐
@@ -504,6 +505,29 @@ public:
   void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
+
+    // if this is negation of something that may be `VALUE_MIN`, assume it
+    // cannot be printed as-is without UB
+    auto constant = dynamic_cast<const Number *>(n.rhs.get());
+    if (constant != nullptr) {
+      if (-constant->value == INT8_MIN) {
+        *out << "((value_t)INT8_MIN)";
+        return;
+      }
+      if (-constant->value == INT16_MIN) {
+        *out << "((value_t)INT16_MIN)";
+        return;
+      }
+      if (-constant->value == INT32_MIN) {
+        *out << "((value_t)INT32_MIN)";
+        return;
+      }
+      if (-constant->value == mpz_class{std::to_string(INT64_MIN)}) {
+        *out << "((value_t)INT64_MIN)";
+        return;
+      }
+    }
+
     *this << "negate(" << to_C_string(n.loc) << ", rule_name, "
           << to_C_string(n) << ", s, " << *n.rhs << ")";
   }

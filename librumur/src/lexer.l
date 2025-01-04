@@ -10,7 +10,7 @@
   #undef YY_DECL
 #endif
 #define YY_DECL int rumur::scanner::yylex(\
-  rumur::parser::semantic_type *const lval, rumur::parser::location_type *loc)
+  rumur::parser::semantic_type *const lval, rumur::parser::location_type *loc, int &start_token)
 
 /* Each time yylex() is called, update the begin position with the last end
  * position. This ensures we get correct starting column numbers.
@@ -42,6 +42,14 @@
 %x SC_COMMENT SC_MULTILINE_COMMENT
 
 %%
+
+%{
+  if (start_token) {
+    const int token = start_token;
+    start_token = 0;
+    return token;
+  }
+%}
 
 (0x[[:xdigit:]]+|[[:digit:]]+) {
   lval->build<std::string>(YYText());

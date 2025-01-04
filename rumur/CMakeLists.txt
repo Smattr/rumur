@@ -23,9 +23,8 @@ add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   ../common/escape.cc
-  ../common/help.cc
+  ../common/help.c
   src/assume-statements-count.cc
-  src/environ.cc
   src/generate-allocations.cc
   src/generate-cover-array.cc
   src/generate-decl.cc

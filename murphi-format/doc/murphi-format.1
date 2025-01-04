@@ -1,0 +1,106 @@
+.TH MURPHI\(hyFORMAT 1
+.SH NAME
+murphi\-format \- reformat Murphi models
+.SH SYNOPSIS
+.B \fBmurphi\-format\fR \fBoptions\fR [\fIFILE\fR]
+.SH DESCRIPTION
+\fBmurphi\-format\fR is a utility bundled with the Rumur model checker. It can
+be used to reflow the text of a Murphi model into a consistent indentation
+style.
+.PP
+\fBmurphi\-format\fR intentionally has very few options. It aims to settle
+style debates by simply mandating a universally disliked format.
+.PP
+No line length limit is applied. The content within comments is not reflowed. If
+your input contains long expressions, these will appear as long lines in the
+output. The intention behind this choice is to encourage users to outline long
+expressions into functions.
+.PP
+See
+.BR rumur(1)
+for more information about Rumur or Murphi.
+.SH OPTIONS
+\fB\-\-debug\fR or \fB\-d\fR
+.RS
+Enable debug mode. This produces some extra output intended for developers who
+are debugging \fBmurphi\-format\fR itself.
+.RE
+.PP
+\fB\-\-help\fR or \B\-h\fR
+.RS
+Show this documentation.
+.RE
+.PP
+\fB\-\-in\-place\fR or \fB\-i\fR
+.RS
+Write the output of reformatting back into the same path as the source. This is
+only valid when one or more paths are given; it cannot be used when reformatting
+\fBstdin\fR.
+.RE
+.PP
+\fB\-\-output=\fR\fIFILE\fR or \fB\-o\fR \fIFILE\fR
+.RS
+Write output to the given path. By default, output is written to \fBstdout\fR.
+.RE
+.PP
+\fB\-\-tab=\fR\fISTRING\fR or \fB\-t\fR \fISTRING\fR
+.RS
+Text to use as one tab worth of indentation. By default, this is two spaces.
+.RE
+.PP
+\fB\-\-version\fR
+.RS
+Print \fBmurphi\-format\fR version and then exit.
+.RE
+.SH NOTES
+To disable formatting for a specific section of code, special comments are
+recognised:
+
+.RS
+.nf
+.eo
+rule begin
+	x := y;
+	y := z;
+	-- murphi-format: off
+	z := w; w := x;
+	-- murphi-format: on
+end;
+.ec
+.fi
+.RE
+
+Code between the \fBmurphi\-format: off\fR and \fBmurphi\-format: on\fR
+comments will be preserved as-is. Note that these must be line comments, not
+multi\(hyline comments. Additionally they must have the exact spacing shown, not
+arbitrary white space between e.g. the \fB:\fR and \fBoff\fR.
+.SH SEE ALSO
+rumur(1)
+.SH AUTHOR
+All comments, questions and complaints should be directed to Matthew Fernandez
+<matthew.fernandez@gmail.com>.
+.SH LICENSE
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED \[lq]AS IS\[rq], WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>

@@ -54,6 +54,18 @@ public:
 
   TARGET *get() { return t.get(); }
 
+  template <typename SUBTYPE> Ptr<SUBTYPE> narrow() {
+
+    // can we downcast to the requested type?
+    auto subtype = dynamic_cast<SUBTYPE *>(t.get());
+    if (subtype == nullptr)
+      return Ptr<SUBTYPE>(nullptr);
+
+    // if so, steal our pointer
+    (void)t.release();
+    return Ptr<SUBTYPE>(subtype);
+  }
+
   TARGET &operator*() {
     assert(t != nullptr && "dereferencing a null pointer");
     return *t;

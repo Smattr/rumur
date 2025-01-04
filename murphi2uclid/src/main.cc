@@ -66,7 +66,7 @@ static void parse_args(int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "ho:", options, &option_index);
+    int c = getopt_long(argc, argv, "hm:n:o:qv", options, &option_index);
 
     if (c == -1)
       break;
@@ -87,7 +87,7 @@ static void parse_args(int argc, char **argv) {
 
     case 'n': // --numeric-type
       if (!is_valid_numeric_type(optarg)) {
-        std::cerr << "invalid argument to --numeric-type " << optarg << "\n";
+        std::cerr << "invalid argument to --numeric-type " << optarg << '\n';
         exit(EXIT_FAILURE);
       }
       numeric_type = optarg;
@@ -106,7 +106,7 @@ static void parse_args(int argc, char **argv) {
       break;
 
     case 128: // --version
-      std::cout << "Murphi2Uclid version " << rumur::get_version() << "\n";
+      std::cout << "Murphi2Uclid version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
 
     default:
@@ -119,7 +119,7 @@ static void parse_args(int argc, char **argv) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
       std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
-                << "\n";
+                << '\n';
       exit(EXIT_FAILURE);
     }
 
@@ -134,7 +134,7 @@ static void parse_args(int argc, char **argv) {
     auto i = std::make_shared<std::ifstream>(in_filename);
     auto j = std::make_shared<std::ifstream>(in_filename);
     if (!i->is_open() || !j->is_open()) {
-      std::cerr << "failed to open " << in_filename << "\n";
+      std::cerr << "failed to open " << in_filename << '\n';
       exit(EXIT_FAILURE);
     }
     in = dup_t(i, j);
@@ -167,42 +167,48 @@ int main(int argc, char **argv) {
   if (in.first == nullptr)
     in = make_stdin_dup();
 
-  // parse input model
-  rumur::Ptr<rumur::Model> m;
+  // parse input
+  rumur::Ptr<rumur::Node> parsed;
   try {
-    m = rumur::parse(*in.first);
+    parsed = rumur::parse(*in.first);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
-  assert(m != nullptr);
+  assert(parsed != nullptr);
+
+  // if we have a model, run full validation
+  auto model = dynamic_cast<rumur::Model *>(parsed.get());
+  if (model != nullptr) {
 
   // update unique identifiers within the model
-  m->reindex();
+  model->reindex();
 
   // check the model is valid
   try {
-    resolve_symbols(*m);
-    validate(*m);
+    resolve_symbols(*model);
+    validate(*model);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
+  }
   }
 
   // name any rules that are unnamed, so they get valid Uclid5 symbols
-  rumur::sanitise_rule_names(*m);
+  rumur::sanitise_rule_names(*parsed);
 
   // check this can be translated to Uclid5
   try {
-    check(*m);
+    check(*parsed);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << "\n";
+    std::cerr << e.loc << ":" << e.what() << '\n';
     return EXIT_FAILURE;
   }
 
   // if the user did not select a numeric type, select one for them
-  numeric_type = pick_numeric_type(*m);
+  if (numeric_type == "")
+    numeric_type = pick_numeric_type(*parsed);
 
   // parse comments from the source code
   std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
@@ -212,14 +218,14 @@ int main(int argc, char **argv) {
   if (out_filename != "-") {
     auto o = std::make_shared<std::ofstream>(out_filename);
     if (!o->is_open()) {
-      std::cerr << "failed to open " << out_filename << "\n";
+      std::cerr << "failed to open " << out_filename << '\n';
       exit(EXIT_FAILURE);
     }
     out = o;
   }
 
   // generate Uclid5 source code
-  codegen(*m, comments, output());
+  codegen(*parsed, comments, output());
 
   return EXIT_SUCCESS;
 }
