@@ -22,7 +22,7 @@ Rules-Requires-Root: no
 Package: rumur
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Suggests: python3, z3
+Suggests: z3
 Description: model checker for the Murphi language
  Rumur is a model checker for use in the formal verification of finite state
  machines specified in the Murphi modelling language. It is based on a previous
