@@ -1061,7 +1061,7 @@ def test_murphi_format_end_newline():
 
 @pytest.mark.skipif(shutil.which("m4") is None, reason="m4 not available")
 def test_stdlib_list(tmp_path):
-    """test ../share/list"""
+    """test ../share/_list"""
 
     # pre-process the tester with M4
     share = Path(__file__).absolute().parents[1] / "share"

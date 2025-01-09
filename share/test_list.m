@@ -1,10 +1,10 @@
-dnl basic tester for ./list
+dnl basic tester for ./_list
 dnl
 dnl This test model aims to cover the state space for a typically usage of the
 dnl generic list. Any mistakes in implementation should trigger either an
 dnl assertion failure, a read/write out of bounds, or a read of an undefined
 dnl value.
-include(`list')dnl
+include(`_list')dnl
 const
   LEN: 5;
 

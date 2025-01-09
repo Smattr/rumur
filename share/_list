@@ -9,7 +9,7 @@ dnl   • "index_t" – a Murphi type for indexing the list
 dnl   • "elem_t" – a Murphi type for the elements of the list
 dnl E.g.:
 dnl
-dnl   include(`list')dnl
+dnl   include(`_list')dnl
 dnl
 dnl   type
 dnl     int: 0..32;

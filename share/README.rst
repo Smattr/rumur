@@ -20,19 +20,19 @@ binary:
 Using Standard Library Components
 ---------------------------------
 Most fragments define macros that you can then invoke from your own code. For
-example, to use ``list``:
+example, to use ``_list``:
 
 .. code-block:: m4
 
-  include(`v2025.02.01/list')dnl
+  include(`v2025.02.01/_list')dnl
   _list(`foo', `bar_t', `baz_t')dnl
 
-Note that the example above includes the ``list`` template specifically from
+Note that the example above includes the ``_list`` template specifically from
 Rumur v2025.02.01. It is good practice to reference a specific version of
 standard library templates like this, to ensure your model remains runnable on
 future versions of Rumur. If you are working on a model that does not need this
 kind of stability, you can include the latest version of the template with
-``include(`list')`` but this usage may break on Rumur upgrades.
+``include(`_list')`` but this usage may break on Rumur upgrades.
 
 Contributing to the Standard Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
