@@ -4,6 +4,7 @@ dnl This test model aims to cover the state space for a typically usage of the
 dnl generic list. Any mistakes in implementation should trigger either an
 dnl assertion failure, a read/write out of bounds, or a read of an undefined
 dnl value.
+include(`list')dnl
 const
   LEN: 5;
 
@@ -11,13 +12,7 @@ type
   int: 0..1;
 
 dnl a list of integers, replicating typical usage
-define(`name', `ints')
-define(`index_t', `0..LEN - 1')
-define(`elem_t', `int')
-include(`list')
-undefine(`elem_t')
-undefine(`index_t')
-undefine(`name')
+_list(`ints', `0..LEN - 1', `int')dnl
 
 var
   xs: ints_t;

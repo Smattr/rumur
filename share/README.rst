@@ -19,26 +19,16 @@ binary:
 
 Using Standard Library Components
 ---------------------------------
-Most fragments are written in a style that expects some M4 macros to be defined
-prior to their inclusion. For example, to use ``list`` the macros ``name``,
-``index_t`` and ``elem_t`` need to be defined:
+Most fragments define macros that you can then invoke from your own code. For
+example, to use ``list``:
 
 .. code-block:: m4
 
-  define(`name', `foo')dnl
-  define(`index_t', `bar_t')dnl
-  define(`elem_t', `baz_t')dnl
-  include(`v2025.01.04/list')dnl
-  undefine(`elem_t')dnl
-  undefine(`index_t')dnl
-  undefine(`name')dnl
-
-These are effectively template parameters to ``list``. It is good practice to
-undefine the parameters after template inclusion (as in the example above) to
-avoid their definitions leaking into later code.
+  include(`v2025.02.01/list')dnl
+  _list(`foo', `bar_t', `baz_t')dnl
 
 Note that the example above includes the ``list`` template specifically from
-Rumur v2025.01.04. It is good practice to reference a specific version of
+Rumur v2025.02.01. It is good practice to reference a specific version of
 standard library templates like this, to ensure your model remains runnable on
 future versions of Rumur. If you are working on a model that does not need this
 kind of stability, you can include the latest version of the template with
