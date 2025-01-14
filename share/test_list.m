@@ -179,19 +179,6 @@ _list(`one_element', `0..0', `boolean')dnl
 var
   one: one_element_t;
 
-function one_element_size(xs: one_element_t): 0..1;
-var
-  count: 0..1;
-begin
-  count := 0;
-  for i: 0..0 do
-    if !isundefined(xs[i].is_populated_) then
-      count := count + 1;
-    end;
-  end;
-  return count;
-end;
-
 ruleset v: boolean do
   rule "one push back" !one_element_is_full(one) ==>
   begin

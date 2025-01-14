@@ -2,11 +2,13 @@ dnl template for a statically sized list/queue/stack
 dnl
 dnl This file defines, as an M4¹ template, a type-generic Murphi list data
 dnl structure. To use this, include the template and then call the macro "_list"
-dnl with 3 parameters:
+dnl with 4 parameters:
 dnl   • "name" – a prefix for the generated list data structure and its
 dnl     supporting functions
 dnl   • "index_t" – a Murphi type for indexing the list
 dnl   • "elem_t" – a Murphi type for the elements of the list
+dnl   • "size" – one more than the number of elements in type "index_t",
+dnl     defaulting to 2³¹-1 (see discussion of this below)
 dnl E.g.:
 dnl
 dnl   include(`_list')dnl
@@ -27,6 +29,7 @@ dnl     ints_t: …
 dnl
 dnl   function ints_is_empty(list_: ints_t): boolean;
 dnl   function ints_is_full(list_: ints_t): boolean;
+dnl   function ints_size(list_: ints_t): 0..2147483647;
 dnl   procedure ints_push_back(var list_: ints_t; elem_: int);
 dnl   function ints_try_push_back(var list_: ints_t; elem_: int): boolean;
 dnl   function ints_pop_front(var list_: ints_t): int;
@@ -42,6 +45,16 @@ dnl
 dnl "elem_t" can be an arbitrary type. It can be a previously defined type or a
 dnl type literal, though you probably want to name it in order to more easily
 dnl use the push and pop functions.
+dnl
+dnl "size" does not need to be supplied unless (a) your indexing type "index_t"
+dnl has more than 2³¹-2 elements or (b) you are trying to optimise your model by
+dnl using a value type narrower than "int32_t". In either case, you still do not
+dnl need to supply "size" if you never call the "*_size()" function; it is not
+dnl used internally within this template. If you call "*_size()" and your usage
+dnl falls into the (a) or (b) cases above, supply a "size" that is the number of
+dnl elements in "index_t" plus 1. Note that, e.g. if your indexing type is
+dnl "0..255", your size will need to be ≥ 256, preventing you using the value
+dnl type "uint8_t" which is not large enough to hold the value 256.
 dnl
 dnl This template is in the public domain. You may use it for any purpose and
 dnl its inclusion in a model does not affect the legal status of that model.
@@ -77,6 +90,32 @@ begin
   end;
   -- in the edge case where $2 is an empty type, consider the list always empty
   return true;
+end;
+
+-- get the number of elements present in a list
+function $1_size(list_: $1_t): 0..ifelse(`$4', `', `2147483647', `$4');
+  var count_: 0..ifelse(`$4', `', `2147483647', `$4');
+begin
+  -- We have no easy way of checking the number of members in the type $2 at
+  -- generation time. So we use a runtime sanity check here that our return type
+  -- is large enough to represent the maximum size. A decent compiler will
+  -- constant fold and eliminate this in the common case where the type is
+  -- indeed large enough.
+  count_ := 0;
+  for i_: $2 do
+    assert
+      "0..ifelse(`$4', `', `2147483647', `$4') too small to represent $1_t size"
+      count_ < ifelse(`$4', `', `2147483647', `$4');
+    count_ := count_ + 1;
+  end;
+
+  count_ := 0;
+  for i_: $2 do
+    if !isundefined(list_[i_].is_populated_) then
+      count_ := count_ + 1;
+    end;
+  end;
+  return count_;
 end;
 
 function $1_is_full(list_: $1_t): boolean;
