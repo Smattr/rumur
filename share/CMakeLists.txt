@@ -1,6 +1,7 @@
 install(
   FILES
     _list
+    _set
     README.rst
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/rumur/lib
 )

@@ -1059,13 +1059,16 @@ def test_murphi_format_end_newline():
     assert stdout.endswith("\n"), "incorrect file ending"
 
 
+@pytest.mark.parametrize("component", ("list", "set"))
 @pytest.mark.skipif(shutil.which("m4") is None, reason="m4 not available")
-def test_stdlib_list(tmp_path):
-    """test ../share/_list"""
+def test_stdlib(component, tmp_path):
+    """test ../share/_<component>"""
 
     # pre-process the tester with M4
     share = Path(__file__).absolute().parents[1] / "share"
-    ret, model_m, stderr = run(["m4", "--include", share, share / "test_list.m"])
+    ret, model_m, stderr = run(
+        ["m4", "--include", share, share / "test_{}.m".format(component)]
+    )
     assert ret == 0, "M4 failed:\n{}{}".format(model_m, stderr)
 
     # run the pre-processed output through Rumur
