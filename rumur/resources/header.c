@@ -640,10 +640,10 @@ static __attribute__((format(printf, 1, 2))) void trace(const char *NONNULL fmt,
  * to trace() would be a no-op that can be elided. By making the call a macro we
  * make the category comparison visible to the compiler's optimising passes.
  */
-#define TRACE(category, args...)                                               \
+#define TRACE(category, ...)                                                   \
   do {                                                                         \
     if ((category) & TRACES_ENABLED) {                                         \
-      trace(args);                                                             \
+      trace(__VA_ARGS__);                                                      \
     }                                                                          \
   } while (0)
 
