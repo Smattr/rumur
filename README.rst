@@ -31,6 +31,15 @@ Thanks to `yuri@FreeBSD`_ for packaging.
 
 .. _`yuri@FreeBSD`: https://github.com/yurivict
 
+Installation on Arch Linux
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: sh
+
+  pacman -S rumur
+
+Thanks to Qirui Wang (wangqr) for packaging.
+
 Building from Source
 ~~~~~~~~~~~~~~~~~~~~
 First you will need to have the following dependencies installed:
