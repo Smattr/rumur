@@ -212,6 +212,10 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ";\n";
           }
 
+          // allocate memory for any complex-returning functions we call
+          if (s->guard != nullptr)
+            generate_allocations(out, *s->guard);
+
           out << "  return ";
           if (s->guard == nullptr) {
             out << "true";
