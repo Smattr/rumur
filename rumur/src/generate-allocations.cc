@@ -39,6 +39,11 @@ private:
 
 } // namespace
 
+void generate_allocations(std::ostream &out, const Expr &expr) {
+  Generator g(out);
+  g.dispatch(expr);
+}
+
 void generate_allocations(std::ostream &out, const Stmt &stmt) {
   Generator g(out);
   g.dispatch(stmt);
