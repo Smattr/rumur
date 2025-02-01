@@ -125,7 +125,11 @@ add_subdirectory(share)
 add_subdirectory(tests/murphi-comment-ls)
 
 add_custom_target(check
-  COMMAND env PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
+  COMMAND env
+    PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
+    CPLUS_INCLUDE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/librumur/include:${CMAKE_CURRENT_BINARY_DIR}/librumur
+    LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur
+    LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur
     python3 -m pytest --capture=no --override-ini=cache_dir=${CMAKE_CURRENT_BINARY_DIR} --verbose --verbose ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.py
   USES_TERMINAL
 )
