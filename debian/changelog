@@ -3,6 +3,7 @@ rumur (2025.02.02-1) unstable; urgency=medium
   * New upstream release.
   * Add python3-pytest as a build dependency.
   * Add a Lintian override for a descriptive file installed outside doc.
+  * python3 moved from Suggests to Depends.
 
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 02 Feb 2025 06:44:25 +1100
 
