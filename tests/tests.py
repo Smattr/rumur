@@ -8,6 +8,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import subprocess as sp
 import sys
 import tempfile
@@ -1059,13 +1060,16 @@ def test_murphi_format_end_newline():
     assert stdout.endswith("\n"), "incorrect file ending"
 
 
+@pytest.mark.parametrize("component", ("list", "set"))
 @pytest.mark.skipif(shutil.which("m4") is None, reason="m4 not available")
-def test_stdlib_list(tmp_path):
-    """test ../share/list"""
+def test_stdlib(component, tmp_path):
+    """test ../share/_<component>"""
 
     # pre-process the tester with M4
     share = Path(__file__).absolute().parents[1] / "share"
-    ret, model_m, stderr = run(["m4", "--include", share, share / "test_list.m"])
+    ret, model_m, stderr = run(
+        ["m4", "--include", share, share / "test_{}.m".format(component)]
+    )
     assert ret == 0, "M4 failed:\n{}{}".format(model_m, stderr)
 
     # run the pre-processed output through Rumur
@@ -2248,4 +2252,47 @@ def test_stdlib_export():
         seen
     ), "{} standard library snapshot does not appear to be installed by share/CMakeLists.txt".format(
         version
+    )
+
+
+DEBIAN_TESTS_ROOT = Path(__file__).absolute().parents[1] / "debian/tests"
+"""
+path to Debian autopkgtests
+"""
+
+DEBIAN_TESTS = [
+    p.name
+    for p in (DEBIAN_TESTS_ROOT.iterdir() if DEBIAN_TESTS_ROOT.exists() else ())
+    if p.is_file() and (p.stat().st_mode & stat.S_IXUSR)
+]
+
+
+@pytest.mark.parametrize("testcase", DEBIAN_TESTS)
+def test_debian_tests(testcase, tmp_path):
+    """
+    Run the Debian autopkgtests. These only exist on the `packaging/debian` branch.
+    """
+
+    exe = DEBIAN_TESTS_ROOT / testcase
+    assert exe.exists()
+
+    env = os.environ.copy()
+    env["AUTOPKGTEST_TMP"] = str(tmp_path)
+
+    proc = sp.run(
+        [exe], stdout=sp.PIPE, stderr=sp.PIPE, universal_newlines=True, env=env
+    )
+
+    # skip `rumur-run` test that has complications because `rumur-run` is not executable
+    # in the source tree
+    if testcase == "rumur-run-model":
+        assert (
+            proc.returncode != 0
+        ), "{} suprisingly found `rumur-run` executable: {}{}".format(
+            str(exe), proc.stdout, proc.stderr
+        )
+        return
+
+    assert proc.returncode == 0, "{} failed: {}{}".format(
+        str(exe), proc.stdout, proc.stderr
     )

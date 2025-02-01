@@ -13,6 +13,7 @@ int output_checker(const std::string &path, const rumur::Model &model,
                    const std::pair<ValueType, ValueType> &value_types);
 
 // Generate prelude definitions to allocate memory for function returns
+void generate_allocations(std::ostream &out, const rumur::Expr &expr);
 void generate_allocations(std::ostream &out, const rumur::Stmt &stmt);
 
 // Helper for calling the above on a body of functions

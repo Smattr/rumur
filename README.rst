@@ -31,6 +31,15 @@ Thanks to `yuri@FreeBSD`_ for packaging.
 
 .. _`yuri@FreeBSD`: https://github.com/yurivict
 
+Installation on Arch Linux
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: sh
+
+  pacman -S rumur
+
+Thanks to Qirui Wang (wangqr) for packaging.
+
 Building from Source
 ~~~~~~~~~~~~~~~~~~~~
 First you will need to have the following dependencies installed:
@@ -68,6 +77,7 @@ Compilation produces several artefacts including the `rumur` binary itself:
 
 * rumur: Tool for translating a Murphi model into a program that implements
   a checker;
+* murphi-format: Reformatter for Murphi models;
 * murphi2c: Tool for translating a Murphi model into C code for use in a
   simulator;
 * murphi2murphi: A preprocessor for Murphi models;

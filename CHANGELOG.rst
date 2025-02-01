@@ -1,6 +1,28 @@
 Change log
 ==========
 
+v2025.02.02
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: calling a function that returns a complex type (array, record) within
+  a guard no longer results in malformed generated C code (commit
+  7d6524bc12ef219beb481c903bb9179791d5b1ad).
+* The way to interact with templates in the Rumur Standard Library has changed.
+  See share/README.rst for details (commit
+  1f477f143d88e4a966d5123265e24a618f1f6c28).
+* The Rumur Standard Library template ``list`` has been renamed to ``_list``
+  (commit d9f0008079c6e5f854574a344f3e92bc32192f64).
+* A new set template, ``_set``, has been added to the Rumur Standard Library
+  (commit ed835089f55b260d7c319b730eef2d41e1c52faa).
+* The Rumur Standard Library template ``_list`` now exports a ``*_size``
+  function (commit 8d67b087038043ba53842fdd908538317d0938e5).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2025.01.05
 -----------
 

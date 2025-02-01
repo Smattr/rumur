@@ -9,14 +9,14 @@
 extern bool debug;
 
 /// emit a debug message
-#define DEBUG(args...)                                                         \
+#define DEBUG(...)                                                             \
   do {                                                                         \
     if (UNLIKELY(debug)) {                                                     \
       const char *name_ = strrchr(__FILE__, '/');                              \
       flockfile(stderr);                                                       \
       fprintf(stderr, "[MURPHI-FORMAT] murphi-format/src%s:%d: ", name_,       \
               __LINE__);                                                       \
-      fprintf(stderr, args);                                                   \
+      fprintf(stderr, __VA_ARGS__);                                            \
       fprintf(stderr, "\n");                                                   \
       funlockfile(stderr);                                                     \
     }                                                                          \

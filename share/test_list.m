@@ -1,23 +1,22 @@
-dnl basic tester for ./list
+dnl basic tester for ./_list
 dnl
 dnl This test model aims to cover the state space for a typically usage of the
 dnl generic list. Any mistakes in implementation should trigger either an
 dnl assertion failure, a read/write out of bounds, or a read of an undefined
 dnl value.
+include(`_list')dnl
+
+-------------------------------------------------------------------------------
+-- a list of integers, replicating typical usage
+-------------------------------------------------------------------------------
+
 const
   LEN: 5;
 
 type
   int: 0..1;
 
-dnl a list of integers, replicating typical usage
-define(`name', `ints')
-define(`index_t', `0..LEN - 1')
-define(`elem_t', `int')
-include(`list')
-undefine(`elem_t')
-undefine(`index_t')
-undefine(`name')
+_list(`ints', `0..LEN - 1', `int')dnl
 
 var
   xs: ints_t;
@@ -169,4 +168,49 @@ begin
   end;
 
   shadow_length := shadow_length - 1;
+end;
+
+-------------------------------------------------------------------------------
+-- an edge case, of a 1-element list
+-------------------------------------------------------------------------------
+
+_list(`one_element', `0..0', `boolean')dnl
+
+var
+  one: one_element_t;
+
+ruleset v: boolean do
+  rule "one push back" !one_element_is_full(one) ==>
+  begin
+    assert one_element_size(one) = 0;
+    one_element_push_back(one, v);
+    assert one_element_size(one) = 1;
+  end;
+
+  rule "one try push back"
+  var
+    was_full: boolean;
+  begin
+    was_full := one_element_is_full(one);
+    if one_element_try_push_back(one, v) then
+      assert !was_full;
+    else
+      assert was_full;
+    end;
+    assert one_element_size(one) = 1;
+  end;
+end;
+
+rule "one pop back" !one_element_is_empty(one) ==>
+begin
+  assert one_element_size(one) = 1;
+  one_element_pop_back(one);
+  assert one_element_size(one) = 0;
+end;
+
+rule "one pop front" !one_element_is_empty(one) ==>
+begin
+  assert one_element_size(one) = 1;
+  one_element_pop_front(one);
+  assert one_element_size(one) = 0;
 end;
