@@ -110,8 +110,9 @@ task:
         # version of bison." I do not know when this became the case as it was
         # not originally, but we'll force this.
         PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
+        UBSAN_OPTIONS: print_stacktrace=1
       install_script: uname -rms && brew update && brew install bison && brew link bison --force && python3 -m pip install --break-system-packages pytest
 
     - name: macOS, Macports
@@ -119,8 +120,9 @@ task:
         image: ghcr.io/cirruslabs/macos-runner:sequoia
       environment:
         PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
+        UBSAN_OPTIONS: print_stacktrace=1
       install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && python3 -m pip install --break-system-packages pytest
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
