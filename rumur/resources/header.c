@@ -2254,13 +2254,9 @@ _Static_assert(sizeof(struct queue_node) == 4096,
                "incorrect queue_node size calculation");
 
 static struct queue_node *queue_node_new(void) {
-  struct queue_node *p = NULL;
+  struct queue_node *p = aligned_alloc(sizeof(*p), sizeof(*p));
 
-  int r = posix_memalign((void **)&p, sizeof(*p), sizeof(*p));
-
-  assert((r == 0 || r == ENOMEM) && "invalid alignment to posix_memalign");
-
-  if (__builtin_expect(r != 0, 0)) {
+  if (__builtin_expect(p == NULL, 0)) {
     oom();
   }
 
