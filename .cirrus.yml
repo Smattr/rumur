@@ -113,7 +113,7 @@ task:
         CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: uname -rms && brew update && brew install bison && brew link bison --force && python3 -m pip install --break-system-packages pytest
+      install_script: uname -rms && brew update && brew install bison && brew link bison --force && env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
 
     - name: macOS, Macports
       macos_instance:
@@ -123,7 +123,7 @@ task:
         CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
         UBSAN_OPTIONS: print_stacktrace=1
-      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && python3 -m pip install --break-system-packages pytest
+      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
