@@ -103,25 +103,27 @@ task:
 
     - name: macOS, Homebrew
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-runner:sonoma
+        image: ghcr.io/cirruslabs/macos-runner:sequoia
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
         # version of bison." I do not know when this became the case as it was
         # not originally, but we'll force this.
         PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
-      install_script: uname -rms && brew update && brew install bison && brew link bison --force && python3 -m pip install --break-system-packages pytest
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: uname -rms && brew update && brew install bison && brew link bison --force && env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
 
     - name: macOS, Macports
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-runner:sonoma
+        image: ghcr.io/cirruslabs/macos-runner:sequoia
       environment:
         PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
-      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && python3 -m pip install --break-system-packages pytest
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
