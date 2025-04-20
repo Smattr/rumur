@@ -390,31 +390,31 @@ static void sandbox(void) {
 
 static bool istty;
 
-static const char *green() {
+static const char *green(void) {
   if (COLOR == ON || (COLOR == AUTO && istty))
     return "\033[32m";
   return "";
 }
 
-static const char *red() {
+static const char *red(void) {
   if (COLOR == ON || (COLOR == AUTO && istty))
     return "\033[31m";
   return "";
 }
 
-static const char *yellow() {
+static const char *yellow(void) {
   if (COLOR == ON || (COLOR == AUTO && istty))
     return "\033[33m";
   return "";
 }
 
-static const char *bold() {
+static const char *bold(void) {
   if (COLOR == ON || (COLOR == AUTO && istty))
     return "\033[1m";
   return "";
 }
 
-static const char *reset() {
+static const char *reset(void) {
   if (COLOR == ON || (COLOR == AUTO && istty))
     return "\033[0m";
   return "";
@@ -3570,7 +3570,7 @@ set_find(const struct state *NONNULL s) {
 
 static time_t START_TIME;
 
-static unsigned long long gettime() {
+static unsigned long long gettime(void) {
   return (unsigned long long)(time(NULL) - START_TIME);
 }
 
