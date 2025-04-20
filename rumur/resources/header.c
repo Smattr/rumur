@@ -1228,7 +1228,7 @@ static struct handle state_schedule_handle(const struct state *NONNULL s,
 #endif
 
   struct handle h = (struct handle){
-      .base = (uint8_t *)b + o / 8,
+      .base = b + o / 8,
       .offset = o % 8,
       .width = width,
   };
