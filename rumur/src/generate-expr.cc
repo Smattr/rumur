@@ -342,7 +342,7 @@ public:
         assert(method >= 1 && method <= 5);
 
         if (method == 1 || method == 2 || method == 3)
-          *out << "uint8_t " << storage << "[BITS_TO_BYTES(" << p->width()
+          *out << "unsigned char " << storage << "[BITS_TO_BYTES(" << p->width()
                << ")] = { 0 }; "
                << "struct handle " << handle << " = { .base = " << storage
                << ", .offset = 0, .width = " << p->width() << "ull }; ";

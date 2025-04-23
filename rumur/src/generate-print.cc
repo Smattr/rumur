@@ -75,8 +75,8 @@ static std::string derive_handle(const std::string &handle, mpz_class offset,
 // from a handle pointing into the current state, derive a corresponding handle
 // pointing into the previous state
 static std::string to_previous(const std::string &h) {
-  return "((struct handle){ .base = (uint8_t*)previous->data + (" + h +
-         ".base - (const uint8_t*)s->data), .offset = " + h +
+  return "((struct handle){ .base = (unsigned char *)previous->data + (" + h +
+         ".base - (const unsigned char*)s->data), .offset = " + h +
          ".offset, .width = " + h + ".width })";
 }
 

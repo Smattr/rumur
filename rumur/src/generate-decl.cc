@@ -46,8 +46,8 @@ void generate_decl(std::ostream &out, const Decl &d) {
 
       // Otherwise we need to allocate backing memory for it.
     } else {
-      out << "uint8_t _ru_" << v->name << "[BITS_TO_BYTES(" << v->type->width()
-          << ")] = { 0 };\n"
+      out << "unsigned char _ru_" << v->name << "[BITS_TO_BYTES("
+          << v->type->width() << ")] = { 0 };\n"
           << "  const struct handle ru_" << v->name
           << " __attribute__((unused)) "
           << "= { .base = _ru_" << v->name
