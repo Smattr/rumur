@@ -32,7 +32,7 @@ public:
 private:
   void define_backing_mem(size_t id, const TypeExpr *t) {
     if (t != nullptr && !t->is_simple())
-      *out << "  uint8_t ret" << id << "[BITS_TO_BYTES(" << t->width()
+      *out << "  unsigned char ret" << id << "[BITS_TO_BYTES(" << t->width()
            << ")] = {0};\n";
   }
 };
