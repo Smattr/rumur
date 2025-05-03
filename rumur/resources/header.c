@@ -38,7 +38,9 @@
 #define BITS_TO_BYTES(size)                                                    \
   ((size) / CHAR_BIT + ((size) % CHAR_BIT == 0 ? 0 : 1))
 #define BITS_FOR(value)                                                        \
-  ((value) == 0 ? 0 : (sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(value)))
+  ((value) == 0                                                                \
+       ? 0                                                                     \
+       : (sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(value)))
 
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
@@ -1010,8 +1012,8 @@ static void write_raw(struct handle h, uint64_t v) {
         unsigned __int128 or_mask =
             ((unsigned __int128)v) >> (sizeof(low) * CHAR_BIT - h.offset);
         const unsigned __int128 one = 1;
-        unsigned __int128 and_mask = ~(
-            (one << (h.width + h.offset - sizeof(low) * CHAR_BIT)) - one);
+        unsigned __int128 and_mask =
+            ~((one << (h.width + h.offset - sizeof(low) * CHAR_BIT)) - one);
 
         high = (high & and_mask) | or_mask;
       }
@@ -1733,7 +1735,7 @@ handle_read(const char *NONNULL context, const char *rule_name,
    * we're only reading within bounds.
    */
   assert((h.base != (const unsigned char *)s->data
-           /* not a read from the current state */
+          /* not a read from the current state */
           || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
          && "out of bounds read in handle_read()");
 
@@ -1797,7 +1799,7 @@ handle_write(const char *NONNULL context, const char *rule_name,
    * we're only writing within bounds.
    */
   assert((h.base != (const unsigned char *)s->data
-           /* not a write to the current state */
+          /* not a write to the current state */
           || sizeof(s->data) * CHAR_BIT - h.width >= h.offset) /* in bounds */
          && "out of bounds write in handle_write()");
 
