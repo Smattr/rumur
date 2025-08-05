@@ -2664,7 +2664,7 @@ retry:;
            "tail of queue 0 while head is non-0");
 
     struct queue_node *n = queue_node_new();
-    n->s[0] = s;
+    __atomic_store_n(&n->s[0], s, __ATOMIC_SEQ_CST);
 
     double_ptr_t new = double_ptr_make(queue_handle_from_node_ptr(n),
                                        queue_handle_from_node_ptr(n));
@@ -2723,7 +2723,7 @@ retry:;
 
       /* Create the new node. */
       new_node = queue_node_new();
-      new_node->s[0] = s;
+      __atomic_store_n(&new_node->s[0], s, __ATOMIC_SEQ_CST);
 
       /* Try to update the chained pointer of the current tail to point to this
        * new node.
@@ -2880,7 +2880,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
 
       if (queue_handle_is_state_pptr(head)) {
         struct state **st = queue_handle_to_state_pptr(head);
-        s = *st;
+        s = __atomic_load_n(st, __ATOMIC_SEQ_CST);
       }
 
       unhazard(head);
