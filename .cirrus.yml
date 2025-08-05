@@ -38,13 +38,6 @@ task:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
 
-    - name: Linux, GCC 8.5
-      container:
-        image: gcc:8.5
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -g
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
     - name: Linux, GCC 9.5
       container:
         image: gcc:9.5
