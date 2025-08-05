@@ -2789,7 +2789,7 @@ retry:;
     unhazard(tail);
   }
 
-  size_t count = __atomic_add_fetch(&q[queue_id].count, 1, __ATOMIC_SEQ_CST);
+  size_t count = __atomic_add_fetch(&q[queue_id].count, 1, __ATOMIC_RELAXED);
 
   TRACE(TC_QUEUE, "enqueued state %p into queue %zu, queue length is now %zu",
         s, queue_id, count);
@@ -2896,7 +2896,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
       }
 
       size_t count =
-          __atomic_sub_fetch(&q[*queue_id].count, 1, __ATOMIC_SEQ_CST);
+          __atomic_sub_fetch(&q[*queue_id].count, 1, __ATOMIC_RELAXED);
 
       TRACE(TC_QUEUE,
             "dequeued state %p from queue %zu, queue length is now %zu",
