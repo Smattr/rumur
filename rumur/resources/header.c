@@ -2708,7 +2708,7 @@ retry:;
         struct state **target = queue_handle_to_state_pptr(next_tail);
         if (!__atomic_compare_exchange_n(target, &(struct state *){NULL}, s,
                                          false, __ATOMIC_RELEASE,
-                                         __ATOMIC_ACQUIRE)) {
+                                         __ATOMIC_RELAXED)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
           goto retry;
@@ -2731,7 +2731,7 @@ retry:;
       struct queue_node **target = queue_handle_to_node_pptr(next_tail);
       if (!__atomic_compare_exchange_n(target, &(struct queue_node *){NULL},
                                        new_node, false, __ATOMIC_RELEASE,
-                                       __ATOMIC_ACQUIRE)) {
+                                       __ATOMIC_RELAXED)) {
         /* Failed. Someone else enqueued before we could. */
         queue_node_free(new_node);
         unhazard(tail);
@@ -2765,14 +2765,14 @@ retry:;
           struct state **target = queue_handle_to_state_pptr(next_tail);
           struct state *temp = s;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
+              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
         } else {
           /* We previously wrote into a new queue node. */
           struct queue_node **target = queue_handle_to_node_pptr(next_tail);
           struct queue_node *temp = new_node;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
+              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
 
           queue_node_free(new_node);
