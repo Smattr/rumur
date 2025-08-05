@@ -2706,9 +2706,9 @@ retry:;
 
       {
         struct state **target = queue_handle_to_state_pptr(next_tail);
-        struct state *null = NULL;
-        if (!__atomic_compare_exchange_n(target, &null, s, false,
-                                         __ATOMIC_RELEASE, __ATOMIC_ACQUIRE)) {
+        if (!__atomic_compare_exchange_n(target, &(struct state *){NULL}, s,
+                                         false, __ATOMIC_RELEASE,
+                                         __ATOMIC_ACQUIRE)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
           goto retry;
@@ -2729,9 +2729,9 @@ retry:;
        * new node.
        */
       struct queue_node **target = queue_handle_to_node_pptr(next_tail);
-      struct queue_node *null = NULL;
-      if (!__atomic_compare_exchange_n(target, &null, new_node, false,
-                                       __ATOMIC_RELEASE, __ATOMIC_ACQUIRE)) {
+      if (!__atomic_compare_exchange_n(target, &(struct queue_node *){NULL},
+                                       new_node, false, __ATOMIC_RELEASE,
+                                       __ATOMIC_ACQUIRE)) {
         /* Failed. Someone else enqueued before we could. */
         queue_node_free(new_node);
         unhazard(tail);
