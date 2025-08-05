@@ -2664,7 +2664,7 @@ retry:;
            "tail of queue 0 while head is non-0");
 
     struct queue_node *n = queue_node_new();
-    __atomic_store_n(&n->s[0], s, __ATOMIC_SEQ_CST);
+    __atomic_store_n(&n->s[0], s, __ATOMIC_RELEASE);
 
     double_ptr_t new = double_ptr_make(queue_handle_from_node_ptr(n),
                                        queue_handle_from_node_ptr(n));
@@ -2708,7 +2708,7 @@ retry:;
         struct state **target = queue_handle_to_state_pptr(next_tail);
         struct state *null = NULL;
         if (!__atomic_compare_exchange_n(target, &null, s, false,
-                                         __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+                                         __ATOMIC_RELEASE, __ATOMIC_ACQUIRE)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
           goto retry;
@@ -2723,7 +2723,7 @@ retry:;
 
       /* Create the new node. */
       new_node = queue_node_new();
-      __atomic_store_n(&new_node->s[0], s, __ATOMIC_SEQ_CST);
+      __atomic_store_n(&new_node->s[0], s, __ATOMIC_RELEASE);
 
       /* Try to update the chained pointer of the current tail to point to this
        * new node.
@@ -2731,7 +2731,7 @@ retry:;
       struct queue_node **target = queue_handle_to_node_pptr(next_tail);
       struct queue_node *null = NULL;
       if (!__atomic_compare_exchange_n(target, &null, new_node, false,
-                                       __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+                                       __ATOMIC_RELEASE, __ATOMIC_ACQUIRE)) {
         /* Failed. Someone else enqueued before we could. */
         queue_node_free(new_node);
         unhazard(tail);
@@ -2765,14 +2765,14 @@ retry:;
           struct state **target = queue_handle_to_state_pptr(next_tail);
           struct state *temp = s;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
           assert(r && "undo of write to next_tail failed");
         } else {
           /* We previously wrote into a new queue node. */
           struct queue_node **target = queue_handle_to_node_pptr(next_tail);
           struct queue_node *temp = new_node;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
           assert(r && "undo of write to next_tail failed");
 
           queue_node_free(new_node);
@@ -2846,7 +2846,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
 
         /* Load the next queue node. */
         struct queue_node **n = queue_handle_to_node_pptr(head);
-        struct queue_node *new_head = __atomic_load_n(n, __ATOMIC_SEQ_CST);
+        struct queue_node *new_head = __atomic_load_n(n, __ATOMIC_ACQUIRE);
         new = double_ptr_make(queue_handle_from_node_ptr(new_head), tail);
 
         /* Try to replace the current head with the next node. */
@@ -2880,7 +2880,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
 
       if (queue_handle_is_state_pptr(head)) {
         struct state **st = queue_handle_to_state_pptr(head);
-        s = __atomic_load_n(st, __ATOMIC_SEQ_CST);
+        s = __atomic_load_n(st, __ATOMIC_ACQUIRE);
       }
 
       unhazard(head);
