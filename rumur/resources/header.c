@@ -94,12 +94,14 @@ enum {
  *      with atomic semantics and sometimes as regular memory operations. The
  *      C11 atomics cannot give us this and the __atomic built-ins are
  *      implemented by the major compilers.
- *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64 and
- *      ARM64.
- *        2a. On x86-64, it seems the __atomic built-ins do not result in a
- *            CMPXCHG instruction, but rather in a less efficient library call.
+ *   2. GCC __sync built-ins: used for 64-bit atomic accesses on i386 and
+ *      128-bit atomic accesses on x86-64 and ARM64.
+ *        2a. On i386, the __atomic built-ins do not result in a CMPXCHG8B
+ *            instruction, but rather in a less efficient library call.
+ *        2b. On x86-64, the __atomic built-ins do not result in a CMPXCHG16B
+ *            instruction, but rather in a less efficient library call.
  *            See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
- *        2b. On ARM64, it seems the __atomic built-ins do not result in a CASP
+ *        2c. On ARM64, the __atomic built-ins do not result in a CASP
  *            instruction (available in ≥armv8.1-a, “Large System Extensions”),
  *            but rather in a less efficient library call. See
  *            https://gcc.gnu.org/pipermail/gcc-help/2017-June.txt. It seems
