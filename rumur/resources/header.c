@@ -2352,10 +2352,10 @@ static void hazard(queue_handle_t h) {
   assert(p != NULL && "attempt to hazard an invalid pointer");
 
   /* Each thread is only allowed a single hazarded pointer at a time. */
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL &&
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_ACQUIRE) == NULL &&
          "hazarding multiple pointers at once");
 
-  __atomic_store_n(&hazarded[thread_id], p, __ATOMIC_SEQ_CST);
+  __atomic_store_n(&hazarded[thread_id], p, __ATOMIC_RELEASE);
 }
 
 /* Drop protection on a pointer whose target we are done accessing. */
@@ -2366,13 +2366,13 @@ static void unhazard(queue_handle_t h) {
 
   assert(p != NULL && "attempt to unhazard an invalid pointer");
 
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) != NULL &&
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_ACQUIRE) != NULL &&
          "unhazarding a pointer when none are hazarded");
 
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == p &&
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_ACQUIRE) == p &&
          "unhazarding a pointer that differs from the one hazarded");
 
-  __atomic_store_n(&hazarded[thread_id], NULL, __ATOMIC_SEQ_CST);
+  __atomic_store_n(&hazarded[thread_id], NULL, __ATOMIC_RELEASE);
 }
 
 /* Free a pointer or, if not possible, defer this to later. */
@@ -2386,7 +2386,7 @@ static void reclaim(queue_handle_t h) {
   /* The reclaimer is not allowed to be freeing something while also holding a
    * hazarded pointer.
    */
-  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_SEQ_CST) == NULL &&
+  assert(__atomic_load_n(&hazarded[thread_id], __ATOMIC_ACQUIRE) == NULL &&
          "reclaiming a pointer while holding a hazarded pointer");
 
   /* Pointers that we failed to free initially because they were in use
@@ -2418,10 +2418,10 @@ static void reclaim(queue_handle_t h) {
       for (size_t j = 0; j < sizeof(hazarded) / sizeof(hazarded[0]); j++) {
         if (j == thread_id) {
           /* No need to check for conflicts with ourself. */
-          assert(__atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST) == NULL);
+          assert(__atomic_load_n(&hazarded[j], __ATOMIC_ACQUIRE) == NULL);
           continue;
         }
-        if (deferred[i] == __atomic_load_n(&hazarded[j], __ATOMIC_SEQ_CST)) {
+        if (deferred[i] == __atomic_load_n(&hazarded[j], __ATOMIC_ACQUIRE)) {
           /* This pointer is in use by thread j. */
           conflict = true;
           break;
@@ -2441,10 +2441,10 @@ static void reclaim(queue_handle_t h) {
   for (size_t i = 0; i < sizeof(hazarded) / sizeof(hazarded[i]); i++) {
     if (i == thread_id) {
       /* No need to check for conflicts with ourself. */
-      assert(__atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST) == NULL);
+      assert(__atomic_load_n(&hazarded[i], __ATOMIC_ACQUIRE) == NULL);
       continue;
     }
-    if (p == __atomic_load_n(&hazarded[i], __ATOMIC_SEQ_CST)) {
+    if (p == __atomic_load_n(&hazarded[i], __ATOMIC_ACQUIRE)) {
       /* Bad luck :( */
       conflict = true;
       break;
@@ -2708,7 +2708,7 @@ retry:;
         struct state **target = queue_handle_to_state_pptr(next_tail);
         if (!__atomic_compare_exchange_n(target, &(struct state *){NULL}, s,
                                          false, __ATOMIC_RELEASE,
-                                         __ATOMIC_ACQUIRE)) {
+                                         __ATOMIC_RELAXED)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
           goto retry;
@@ -2731,7 +2731,7 @@ retry:;
       struct queue_node **target = queue_handle_to_node_pptr(next_tail);
       if (!__atomic_compare_exchange_n(target, &(struct queue_node *){NULL},
                                        new_node, false, __ATOMIC_RELEASE,
-                                       __ATOMIC_ACQUIRE)) {
+                                       __ATOMIC_RELAXED)) {
         /* Failed. Someone else enqueued before we could. */
         queue_node_free(new_node);
         unhazard(tail);
@@ -2765,14 +2765,14 @@ retry:;
           struct state **target = queue_handle_to_state_pptr(next_tail);
           struct state *temp = s;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
+              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
         } else {
           /* We previously wrote into a new queue node. */
           struct queue_node **target = queue_handle_to_node_pptr(next_tail);
           struct queue_node *temp = new_node;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
+              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
 
           queue_node_free(new_node);

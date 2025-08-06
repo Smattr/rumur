@@ -38,13 +38,6 @@ task:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
 
-    - name: Linux, GCC 8.5
-      container:
-        image: gcc:8.5
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -g
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
     - name: Linux, GCC 9.5
       container:
         image: gcc:9.5
@@ -100,9 +93,9 @@ task:
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, ARM, GCC 14.3
+    - name: Linux, ARM, GCC 15.1
       arm_container:
-        image: gcc:14.3
+        image: gcc:15.1
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
