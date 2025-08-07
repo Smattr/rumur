@@ -94,12 +94,14 @@ enum {
  *      with atomic semantics and sometimes as regular memory operations. The
  *      C11 atomics cannot give us this and the __atomic built-ins are
  *      implemented by the major compilers.
- *   2. GCC __sync built-ins: used for 128-bit atomic accesses on x86-64 and
- *      ARM64.
- *        2a. On x86-64, it seems the __atomic built-ins do not result in a
- *            CMPXCHG instruction, but rather in a less efficient library call.
+ *   2. GCC __sync built-ins: used for 64-bit atomic accesses on i386 and
+ *      128-bit atomic accesses on x86-64 and ARM64.
+ *        2a. On i386, the __atomic built-ins do not result in a CMPXCHG8B
+ *            instruction, but rather in a less efficient library call.
+ *        2b. On x86-64, the __atomic built-ins do not result in a CMPXCHG16B
+ *            instruction, but rather in a less efficient library call.
  *            See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80878.
- *        2b. On ARM64, it seems the __atomic built-ins do not result in a CASP
+ *        2c. On ARM64, the __atomic built-ins do not result in a CASP
  *            instruction (available in ≥armv8.1-a, “Large System Extensions”),
  *            but rather in a less efficient library call. See
  *            https://gcc.gnu.org/pipermail/gcc-help/2017-June.txt. It seems
@@ -2506,7 +2508,7 @@ static dword_t atomic_read(dword_t *p) {
   return __sync_val_compare_and_swap(p, 1, 1);
 #endif
 
-  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
+  return __atomic_load_n(p, __ATOMIC_ACQUIRE);
 }
 
 static void atomic_write(dword_t *p, dword_t v) {
@@ -2530,7 +2532,7 @@ static void atomic_write(dword_t *p, dword_t v) {
   return;
 #endif
 
-  __atomic_store_n(p, v, __ATOMIC_SEQ_CST);
+  __atomic_store_n(p, v, __ATOMIC_RELEASE);
 }
 
 static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
@@ -2552,8 +2554,8 @@ static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
   return __sync_bool_compare_and_swap(p, expected, new);
 #endif
 
-  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-                                     __ATOMIC_SEQ_CST);
+  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_ACQ_REL,
+                                     __ATOMIC_RELAXED);
 }
 
 static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
@@ -2575,8 +2577,8 @@ static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
   return __sync_val_compare_and_swap(p, expected, new);
 #endif
 
-  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-                                    __ATOMIC_SEQ_CST);
+  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_ACQ_REL,
+                                    __ATOMIC_ACQUIRE);
   return expected;
 }
 
@@ -2707,7 +2709,7 @@ retry:;
       {
         struct state **target = queue_handle_to_state_pptr(next_tail);
         if (!__atomic_compare_exchange_n(target, &(struct state *){NULL}, s,
-                                         false, __ATOMIC_RELEASE,
+                                         false, __ATOMIC_ACQ_REL,
                                          __ATOMIC_RELAXED)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
@@ -2730,7 +2732,7 @@ retry:;
        */
       struct queue_node **target = queue_handle_to_node_pptr(next_tail);
       if (!__atomic_compare_exchange_n(target, &(struct queue_node *){NULL},
-                                       new_node, false, __ATOMIC_RELEASE,
+                                       new_node, false, __ATOMIC_ACQ_REL,
                                        __ATOMIC_RELAXED)) {
         /* Failed. Someone else enqueued before we could. */
         queue_node_free(new_node);
@@ -2765,14 +2767,14 @@ retry:;
           struct state **target = queue_handle_to_state_pptr(next_tail);
           struct state *temp = s;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
+              target, &temp, NULL, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
         } else {
           /* We previously wrote into a new queue node. */
           struct queue_node **target = queue_handle_to_node_pptr(next_tail);
           struct queue_node *temp = new_node;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_RELEASE, __ATOMIC_RELAXED);
+              target, &temp, NULL, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
 
           queue_node_free(new_node);
