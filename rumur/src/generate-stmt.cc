@@ -235,7 +235,7 @@ public:
       generate_property(*out, s.property);
       *out << ") {\n"
            << "  (void)__atomic_fetch_add(&covers[COVER_"
-           << s.property.unique_id << "], 1, __ATOMIC_SEQ_CST);\n"
+           << s.property.unique_id << "], 1, __ATOMIC_RELAXED);\n"
            << "}";
       break;
 
