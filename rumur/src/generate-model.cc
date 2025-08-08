@@ -73,15 +73,15 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ") {\n";
 
           out << "  static const char *rule_name __attribute__((unused)) = "
-              << "\"startstate " << rule_name_string(*s, start_index)
-              << "\";\n";
+                 "\"startstate "
+              << rule_name_string(*s, start_index) << "\";\n";
 
           out << "  if (JMP_BUF_NEEDED) {\n"
-              << "    if (sigsetjmp(checkpoint, 0)) {\n"
-              << "      /* error triggered during this startstate */\n"
-              << "      return false;\n"
-              << "    }\n"
-              << "  }\n";
+                 "    if (sigsetjmp(checkpoint, 0)) {\n"
+                 "      /* error triggered during this startstate */\n"
+                 "      return false;\n"
+                 "    }\n"
+                 "  }\n";
 
           // output the state variable handles that are in scope so we can
           // reference them within this start state
@@ -182,15 +182,15 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ") {\n";
 
           out << "  static const char *rule_name __attribute__((unused)) = \""
-              << "guard of rule " << rule_name_string(*s, rule_index)
-              << "\";\n";
+                 "guard of rule "
+              << rule_name_string(*s, rule_index) << "\";\n";
 
           out << "  if (JMP_BUF_NEEDED) {\n"
-              << "    if (sigsetjmp(checkpoint, 0)) {\n"
-              << "      /* this guard triggered an error */\n"
-              << "      return -1;\n"
-              << "    }\n"
-              << "  }\n";
+                 "    if (sigsetjmp(checkpoint, 0)) {\n"
+                 "      /* this guard triggered an error */\n"
+                 "      return -1;\n"
+                 "    }\n"
+                 "  }\n";
 
           // output the state variable handles that are in scope so we can
           // reference them within this guard
@@ -233,14 +233,15 @@ void generate_model(std::ostream &out, const Model &m) {
           out << ") {\n";
 
           out << "  static const char *rule_name __attribute__((unused)) = "
-              << "\"rule " << rule_name_string(*s, rule_index) << "\";\n";
+                 "\"rule "
+              << rule_name_string(*s, rule_index) << "\";\n";
 
           out << "  if (JMP_BUF_NEEDED) {\n"
-              << "    if (sigsetjmp(checkpoint, 0)) {\n"
-              << "      /* an error was triggered during this rule */\n"
-              << "      return false;\n"
-              << "    }\n"
-              << "  }\n";
+                 "    if (sigsetjmp(checkpoint, 0)) {\n"
+                 "      /* an error was triggered during this rule */\n"
+                 "      return false;\n"
+                 "    }\n"
+                 "  }\n";
 
           // output the state variable handles that are in scope so we can
           // reference them within this rule
@@ -285,9 +286,10 @@ void generate_model(std::ostream &out, const Model &m) {
 
           // Close the scopes we created.
           out << "  }\n"
-              << std::string(s->aliases.size(), '}') << "\n"
-              << "  return true;\n"
-              << "}\n\n";
+              << std::string(s->aliases.size(), '}')
+              << "\n"
+                 "  return true;\n"
+                 "}\n\n";
 
           rule_index++;
         }
@@ -298,14 +300,14 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write invariant checker
   {
     out << "static bool check_invariants(const struct state *NONNULL s "
-        << "__attribute__((unused))) {\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "  if (JMP_BUF_NEEDED) {\n"
-        << "    if (sigsetjmp(checkpoint, 0)) {\n"
-        << "      /* invariant violated */\n"
-        << "      return false;\n"
-        << "    }\n"
-        << "  }\n";
+           "__attribute__((unused))) {\n"
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "  if (JMP_BUF_NEEDED) {\n"
+           "    if (sigsetjmp(checkpoint, 0)) {\n"
+           "      /* invariant violated */\n"
+           "      return false;\n"
+           "    }\n"
+           "  }\n";
     size_t index = 0;
     size_t invariant_index = 0;
     for (const Ptr<Node> &c : m.children) {
@@ -354,20 +356,20 @@ void generate_model(std::ostream &out, const Model &m) {
       }
     }
     out << "  return true;\n"
-        << "}\n\n";
+           "}\n\n";
   }
 
   // Write assumption checker
   {
     out << "static bool check_assumptions(const struct state *NONNULL s "
-        << "__attribute__((unused))) {\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "  if (JMP_BUF_NEEDED) {\n"
-        << "    if (sigsetjmp(checkpoint, 0)) {\n"
-        << "      /* one of the properties triggered an error */\n"
-        << "      return false;\n"
-        << "    }\n"
-        << "  }\n";
+           "__attribute__((unused))) {\n"
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "  if (JMP_BUF_NEEDED) {\n"
+           "    if (sigsetjmp(checkpoint, 0)) {\n"
+           "      /* one of the properties triggered an error */\n"
+           "      return false;\n"
+           "    }\n"
+           "  }\n";
     size_t index = 0;
     for (const Ptr<Node> &c : m.children) {
       if (auto rule = dynamic_cast<const Rule *>(c.get())) {
@@ -393,9 +395,9 @@ void generate_model(std::ostream &out, const Model &m) {
               for (const Quantifier &q : r->quantifiers)
                 out << ", ru_" << q.name;
               out << ")) {\n"
-                  << "      /* Assumption violated. */\n"
-                  << "      return false;\n"
-                  << "    }\n";
+                     "      /* Assumption violated. */\n"
+                     "      return false;\n"
+                     "    }\n";
 
               // close the quantifier loops
               for (auto it = r->quantifiers.rbegin();
@@ -411,20 +413,20 @@ void generate_model(std::ostream &out, const Model &m) {
       }
     }
     out << "  return true;\n"
-        << "}\n\n";
+           "}\n\n";
   }
 
   // Write cover checker
   {
     out << "static bool check_covers(const struct state *NONNULL s "
-        << "__attribute__((unused))) {\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "  if (JMP_BUF_NEEDED) {\n"
-        << "    if (sigsetjmp(checkpoint, 0)) {\n"
-        << "      /* one of the properties triggered an error */\n"
-        << "      return false;\n"
-        << "    }\n"
-        << "  }\n";
+           "__attribute__((unused))) {\n"
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "  if (JMP_BUF_NEEDED) {\n"
+           "    if (sigsetjmp(checkpoint, 0)) {\n"
+           "      /* one of the properties triggered an error */\n"
+           "      return false;\n"
+           "    }\n"
+           "  }\n";
     size_t index = 0;
     for (const Ptr<Node> &c : m.children) {
       if (auto rule = dynamic_cast<const Rule *>(c.get())) {
@@ -450,10 +452,11 @@ void generate_model(std::ostream &out, const Model &m) {
               for (const Quantifier &q : r->quantifiers)
                 out << ", ru_" << q.name;
               out << ")) {\n"
-                  << "      /* Covered. */\n"
-                  << "      (void)__atomic_fetch_add(&covers[COVER_"
-                  << p->property.unique_id << "], 1, __ATOMIC_SEQ_CST);\n"
-                  << "    }\n";
+                     "      /* Covered. */\n"
+                     "      (void)__atomic_fetch_add(&covers[COVER_"
+                  << p->property.unique_id
+                  << "], 1, __ATOMIC_SEQ_CST);\n"
+                     "    }\n";
 
               // close the quantifier loops
               for (auto it = r->quantifiers.rbegin();
@@ -469,22 +472,22 @@ void generate_model(std::ostream &out, const Model &m) {
       }
     }
     out << "  return true;\n"
-        << "}\n\n";
+           "}\n\n";
   }
 
   // Write liveness checker
   {
     out << "#if LIVENESS_COUNT > 0\n"
-        << "static bool check_liveness(struct state *NONNULL s "
-        << "__attribute__((unused))) {\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "  if (JMP_BUF_NEEDED) {\n"
-        << "    if (sigsetjmp(checkpoint, 0)) {\n"
-        << "      /* one of the liveness properties triggered an error */\n"
-        << "      return false;\n"
-        << "    }\n"
-        << "  }\n"
-        << "  size_t liveness_index __attribute__((unused)) = 0;\n";
+           "static bool check_liveness(struct state *NONNULL s "
+           "__attribute__((unused))) {\n"
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "  if (JMP_BUF_NEEDED) {\n"
+           "    if (sigsetjmp(checkpoint, 0)) {\n"
+           "      /* one of the liveness properties triggered an error */\n"
+           "      return false;\n"
+           "    }\n"
+           "  }\n"
+           "  size_t liveness_index __attribute__((unused)) = 0;\n";
     size_t index = 0;
     for (const Ptr<Node> &c : m.children) {
       if (auto rule = dynamic_cast<const Rule *>(c.get())) {
@@ -510,10 +513,10 @@ void generate_model(std::ostream &out, const Model &m) {
               for (const Quantifier &q : r->quantifiers)
                 out << ", ru_" << q.name;
               out << ")) {\n"
-                  << "      /* Hit. */\n"
-                  << "      mark_liveness(s, liveness_index, false);\n"
-                  << "    }\n"
-                  << "    liveness_index++;\n";
+                     "      /* Hit. */\n"
+                     "      mark_liveness(s, liveness_index, false);\n"
+                     "    }\n"
+                     "    liveness_index++;\n";
 
               // close the quantifier loops
               for (auto it = r->quantifiers.rbegin();
@@ -529,91 +532,91 @@ void generate_model(std::ostream &out, const Model &m) {
       }
     }
     out << "  return true;\n"
-        << "}\n\n";
+           "}\n\n";
   }
 
   // Write final liveness checker, the one that runs just prior to termination
   {
     out << "static void check_liveness_final(void) {\n"
-        << "\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "\n"
-        << "  if (!MACHINE_READABLE_OUTPUT) {\n"
-        << "    put(\"trying to prove remaining liveness "
+           "\n"
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "\n"
+           "  if (!MACHINE_READABLE_OUTPUT) {\n"
+           "    put(\"trying to prove remaining liveness "
            "constraints...\\n\");\n"
-        << "  }\n"
-        << "\n"
-        << "  /* find how many liveness bits are unknown */\n"
-        << "  unsigned long remaining = 0;\n"
-        << "  unsigned long long last_update = 0;\n"
-        << "  unsigned long learned_since_last = 0;\n"
-        << "  if (!MACHINE_READABLE_OUTPUT) {\n"
-        << "    for (size_t i = 0; i < set_size(local_seen); i++) {\n"
-        << "\n"
-        << "      slot_t slot = __atomic_load_n(&local_seen->bucket[i], "
-           "__ATOMIC_SEQ_CST);\n"
-        << "\n"
-        << "      ASSERT(!slot_is_tombstone(slot)\n"
-        << "        && \"seen set being migrated during final liveness "
+           "  }\n"
+           "\n"
+           "  /* find how many liveness bits are unknown */\n"
+           "  unsigned long remaining = 0;\n"
+           "  unsigned long long last_update = 0;\n"
+           "  unsigned long learned_since_last = 0;\n"
+           "  if (!MACHINE_READABLE_OUTPUT) {\n"
+           "    for (size_t i = 0; i < set_size(local_seen); i++) {\n"
+           "\n"
+           "      slot_t slot = __atomic_load_n(&local_seen->bucket[i], "
+           "__ATOMIC_ACQUIRE);\n"
+           "\n"
+           "      ASSERT(!slot_is_tombstone(slot)\n"
+           "        && \"seen set being migrated during final liveness "
            "check\");\n"
-        << "\n"
-        << "      if (slot_is_empty(slot)) {\n"
-        << "        /* skip empty entries in the hash table */\n"
-        << "        continue;\n"
-        << "      }\n"
-        << "\n"
-        << "      struct state *s = slot_to_state(slot);\n"
-        << "      ASSERT(s != NULL && \"null pointer stored in state set\");\n"
-        << "\n"
-        << "      remaining += unknown_liveness(s);\n"
-        << "    }\n"
-        << "    put(\"\\t \");\n"
-        << "    put_uint(remaining);\n"
-        << "    put(\" constraints remaining\\n\");\n"
-        << "    last_update = gettime();\n"
-        << "  }\n"
-        << "\n"
-        << "  bool progress = true;\n"
-        << "  while (progress) {\n"
-        << "    progress = false;\n"
-        << "\n"
-        << "    /* Run through all seen states trying to learn new liveness "
+           "\n"
+           "      if (slot_is_empty(slot)) {\n"
+           "        /* skip empty entries in the hash table */\n"
+           "        continue;\n"
+           "      }\n"
+           "\n"
+           "      struct state *s = slot_to_state(slot);\n"
+           "      ASSERT(s != NULL && \"null pointer stored in state set\");\n"
+           "\n"
+           "      remaining += unknown_liveness(s);\n"
+           "    }\n"
+           "    put(\"\\t \");\n"
+           "    put_uint(remaining);\n"
+           "    put(\" constraints remaining\\n\");\n"
+           "    last_update = gettime();\n"
+           "  }\n"
+           "\n"
+           "  bool progress = true;\n"
+           "  while (progress) {\n"
+           "    progress = false;\n"
+           "\n"
+           "    /* Run through all seen states trying to learn new liveness "
            "information. */\n"
-        << "    for (size_t i = 0; i < set_size(local_seen); i++) {\n"
-        << "\n"
-        << "      slot_t slot = __atomic_load_n(&local_seen->bucket[i], "
-           "__ATOMIC_SEQ_CST);\n"
-        << "\n"
-        << "      ASSERT(!slot_is_tombstone(slot)\n"
-        << "        && \"seen set being migrated during final liveness "
+           "    for (size_t i = 0; i < set_size(local_seen); i++) {\n"
+           "\n"
+           "      slot_t slot = __atomic_load_n(&local_seen->bucket[i], "
+           "__ATOMIC_ACQUIRE);\n"
+           "\n"
+           "      ASSERT(!slot_is_tombstone(slot)\n"
+           "        && \"seen set being migrated during final liveness "
            "check\");\n"
-        << "\n"
-        << "      if (slot_is_empty(slot)) {\n"
-        << "        /* skip empty entries in the hash table */\n"
-        << "        continue;\n"
-        << "      }\n"
-        << "\n"
-        << "      struct state *s = slot_to_state(slot);\n"
-        << "      ASSERT(s != NULL && \"null pointer stored in state set\");\n"
-        << "\n"
-        << "      if (unknown_liveness(s) == 0) {\n"
-        << "        /* skip entries where liveness is fully satisfied already "
+           "\n"
+           "      if (slot_is_empty(slot)) {\n"
+           "        /* skip empty entries in the hash table */\n"
+           "        continue;\n"
+           "      }\n"
+           "\n"
+           "      struct state *s = slot_to_state(slot);\n"
+           "      ASSERT(s != NULL && \"null pointer stored in state set\");\n"
+           "\n"
+           "      if (unknown_liveness(s) == 0) {\n"
+           "        /* skip entries where liveness is fully satisfied already "
            "*/\n"
-        << "        continue;\n"
-        << "      }\n"
-        << "\n"
-        << "#if BOUND > 0\n"
-        << "      /* If we're doing bounded checking and this state is at the "
+           "        continue;\n"
+           "      }\n"
+           "\n"
+           "#if BOUND > 0\n"
+           "      /* If we're doing bounded checking and this state is at the "
            "bound limit,\n"
-        << "       * it's not valid to expand beyond this.\n"
-        << "       */\n"
-        << "      ASSERT(state_bound_get(s) <= BOUND && \"a state that "
+           "       * it's not valid to expand beyond this.\n"
+           "       */\n"
+           "      ASSERT(state_bound_get(s) <= BOUND && \"a state that "
            "exceeded the bound depth was explored\");\n"
-        << "      if (state_bound_get(s) == BOUND) {\n"
-        << "        continue;\n"
-        << "      }\n"
-        << "#endif\n"
-        << "\n";
+           "      if (state_bound_get(s) == BOUND) {\n"
+           "        continue;\n"
+           "      }\n"
+           "#endif\n"
+           "\n";
     size_t index = 0;
     for (const Ptr<Node> &c : m.children) {
       if (auto rule = dynamic_cast<const Rule *>(c.get())) {
@@ -633,80 +636,82 @@ void generate_model(std::ostream &out, const Model &m) {
             out
                 // use a dummy do-while to give us 'break' as a local goto
                 << "        do {\n"
-                << "          struct state *n = state_dup(s);\n"
-                << "\n"
-                << "          int g = guard" << index << "(n";
+                   "          struct state *n = state_dup(s);\n"
+                   "\n"
+                   "          int g = guard"
+                << index << "(n";
             for (const Quantifier &q : r->quantifiers)
               out << ", ru_" << q.name;
             out << ");\n"
-                << "          if (g == -1) {\n"
-                << "            /* guard triggered an error */\n"
-                << "            state_free(n);\n"
-                << "            break;\n"
-                << "          } else if (g == 1) {\n"
-                << "            if (!rule" << index << "(n";
+                   "          if (g == -1) {\n"
+                   "            /* guard triggered an error */\n"
+                   "            state_free(n);\n"
+                   "            break;\n"
+                   "          } else if (g == 1) {\n"
+                   "            if (!rule"
+                << index << "(n";
             for (const Quantifier &q : r->quantifiers)
               out << ", ru_" << q.name;
             out << ")) {\n"
-                << "              /* this rule triggered an error */\n"
-                << "              state_free(n);\n"
-                << "              break;\n"
-                << "            }\n"
-                << "            state_canonicalise(n);\n"
-                << "            if (!check_assumptions(n)) {\n"
-                << "              /* assumption violated */\n"
-                << "              state_free(n);\n"
-                << "              break;\n"
-                << "            }\n"
-                << "\n"
-                << "            /* note that we can skip an invariant check "
+                   "              /* this rule triggered an error */\n"
+                   "              state_free(n);\n"
+                   "              break;\n"
+                   "            }\n"
+                   "            state_canonicalise(n);\n"
+                   "            if (!check_assumptions(n)) {\n"
+                   "              /* assumption violated */\n"
+                   "              state_free(n);\n"
+                   "              break;\n"
+                   "            }\n"
+                   "\n"
+                   "            /* note that we can skip an invariant check "
                    "because we already know it\n"
-                << "             * passed from prior expansion of this state.\n"
-                << "             */\n"
-                << "\n"
-                << "            /* We should be able to find this state in the "
+                   "             * passed from prior expansion of this state.\n"
+                   "             */\n"
+                   "\n"
+                   "            /* We should be able to find this state in the "
                    "seen set. */\n"
-                << "            const struct state *t = set_find(n);\n"
-                << "            ASSERT(t != NULL && \"state encountered during "
+                   "            const struct state *t = set_find(n);\n"
+                   "            ASSERT(t != NULL && \"state encountered during "
                    "final liveness wrap up \"\n"
-                << "              \"that was not previously seen\");\n"
-                << "\n"
-                << "            /* See if this successor state learned a "
+                   "              \"that was not previously seen\");\n"
+                   "\n"
+                   "            /* See if this successor state learned a "
                    "liveness property it never\n"
-                << "             * passed back to us. This can occur if the "
+                   "             * passed back to us. This can occur if the "
                    "state our exploration\n"
-                << "             * encountered (`n`) was not the first of its "
+                   "             * encountered (`n`) was not the first of its "
                    "kind seen and thus was\n"
-                << "             * de-duped and never made it into the seen "
+                   "             * de-duped and never made it into the seen "
                    "set with a back pointer\n"
-                << "             * to `s`.\n"
-                << "             */\n"
-                << "            unsigned long learned = learn_liveness(s, t);\n"
-                << "            if (learned > 0) {\n"
-                << "              if (!MACHINE_READABLE_OUTPUT) {\n"
-                << "                learned_since_last += learned;\n"
-                << "                remaining -= learned;\n"
-                << "                unsigned long long t = gettime();\n"
-                << "                if (t > last_update) {\n"
-                << "                  put(\"\\t \");\n"
-                << "                  put_uint(learned_since_last);\n"
-                << "                  put(\" further liveness constraints "
+                   "             * to `s`.\n"
+                   "             */\n"
+                   "            unsigned long learned = learn_liveness(s, t);\n"
+                   "            if (learned > 0) {\n"
+                   "              if (!MACHINE_READABLE_OUTPUT) {\n"
+                   "                learned_since_last += learned;\n"
+                   "                remaining -= learned;\n"
+                   "                unsigned long long t = gettime();\n"
+                   "                if (t > last_update) {\n"
+                   "                  put(\"\\t \");\n"
+                   "                  put_uint(learned_since_last);\n"
+                   "                  put(\" further liveness constraints "
                    "proved in \");\n"
-                << "                  put_uint(t - last_update);\n"
-                << "                  put(\"s, with \");\n"
-                << "                  put(green()); put_uint(remaining); "
+                   "                  put_uint(t - last_update);\n"
+                   "                  put(\"s, with \");\n"
+                   "                  put(green()); put_uint(remaining); "
                    "put(reset());\n"
-                << "                  put(\" remaining\\n\");\n"
-                << "                  learned_since_last = 0;\n"
-                << "                  last_update = t;\n"
-                << "                }\n"
-                << "              }\n"
-                << "              progress = true;\n"
-                << "            }\n"
-                << "          }\n"
-                << "          /* we don't need this state anymore. */\n"
-                << "          state_free(n);\n"
-                << "        } while (0);\n";
+                   "                  put(\" remaining\\n\");\n"
+                   "                  learned_since_last = 0;\n"
+                   "                  last_update = t;\n"
+                   "                }\n"
+                   "              }\n"
+                   "              progress = true;\n"
+                   "            }\n"
+                   "          }\n"
+                   "          /* we don't need this state anymore. */\n"
+                   "          state_free(n);\n"
+                   "        } while (0);\n";
 
             // close the quantifier loops
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend();
@@ -722,34 +727,34 @@ void generate_model(std::ostream &out, const Model &m) {
       }
     }
     out << "    }\n"
-        << "  }\n"
-        << "}\n"
-        << "\n"
-        << "\n"
-        << "static unsigned long check_liveness_summarise(void) {\n"
-        << "\n"
-        << "  /* We can now finally check whether all liveness properties were "
+           "  }\n"
+           "}\n"
+           "\n"
+           "\n"
+           "static unsigned long check_liveness_summarise(void) {\n"
+           "\n"
+           "  /* We can now finally check whether all liveness properties were "
            "hit. */\n"
-        << "  bool missed[LIVENESS_COUNT];\n"
-        << "  memset(missed, 0, sizeof(missed));\n"
-        << "  for (size_t i = 0; i < set_size(local_seen); i++) {\n"
-        << "\n"
-        << "    slot_t slot = __atomic_load_n(&local_seen->bucket[i], "
-           "__ATOMIC_SEQ_CST);\n"
-        << "\n"
-        << "    ASSERT(!slot_is_tombstone(slot)\n"
-        << "      && \"seen set being migrated during final liveness "
+           "  bool missed[LIVENESS_COUNT];\n"
+           "  memset(missed, 0, sizeof(missed));\n"
+           "  for (size_t i = 0; i < set_size(local_seen); i++) {\n"
+           "\n"
+           "    slot_t slot = __atomic_load_n(&local_seen->bucket[i], "
+           "__ATOMIC_ACQUIRE);\n"
+           "\n"
+           "    ASSERT(!slot_is_tombstone(slot)\n"
+           "      && \"seen set being migrated during final liveness "
            "check\");\n"
-        << "\n"
-        << "    if (slot_is_empty(slot)) {\n"
-        << "      /* skip empty entries in the hash table */\n"
-        << "      continue;\n"
-        << "    }\n"
-        << "\n"
-        << "    const struct state *s = slot_to_state(slot);\n"
-        << "    ASSERT(s != NULL && \"null pointer stored in state set\");\n"
-        << "\n"
-        << "    size_t index __attribute__((unused)) = 0;\n";
+           "\n"
+           "    if (slot_is_empty(slot)) {\n"
+           "      /* skip empty entries in the hash table */\n"
+           "      continue;\n"
+           "    }\n"
+           "\n"
+           "    const struct state *s = slot_to_state(slot);\n"
+           "    ASSERT(s != NULL && \"null pointer stored in state set\");\n"
+           "\n"
+           "    size_t index __attribute__((unused)) = 0;\n";
     index = 0;
     for (const Ptr<Node> &c : m.children) {
       if (auto rule = dynamic_cast<const Rule *>(c.get())) {
@@ -770,33 +775,35 @@ void generate_model(std::ostream &out, const Model &m) {
 
               out << "      size_t word_index = index / "
                      "(sizeof(s->liveness[0]) * CHAR_BIT);\n"
-                  << "      size_t bit_index = index % (sizeof(s->liveness[0]) "
+                     "      size_t bit_index = index % (sizeof(s->liveness[0]) "
                      "* CHAR_BIT);\n"
-                  << "      if (!missed[index] && !((s->liveness[word_index] "
+                     "      if (!missed[index] && !((s->liveness[word_index] "
                      ">> bit_index) & 0x1)) {\n"
-                  << "        /* missed */\n"
-                  << "        missed[index] = true;\n"
-                  << "        if (MACHINE_READABLE_OUTPUT) {\n"
-                  << "          put(\"<error includes_trace=\\\"\");\n"
-                  << "          put(COUNTEREXAMPLE_TRACE == CEX_OFF ? "
+                     "        /* missed */\n"
+                     "        missed[index] = true;\n"
+                     "        if (MACHINE_READABLE_OUTPUT) {\n"
+                     "          put(\"<error includes_trace=\\\"\");\n"
+                     "          put(COUNTEREXAMPLE_TRACE == CEX_OFF ? "
                      "\"false\" : \"true\");\n"
-                  << "          put(\"\\\">\\n<message>liveness property \");\n"
-                  << "          xml_printf(\"" << rule_name_string(*p, index)
+                     "          put(\"\\\">\\n<message>liveness property \");\n"
+                     "          xml_printf(\""
+                  << rule_name_string(*p, index)
                   << "\");\n"
-                  << "          put(\" violated</message>\\n\");\n"
-                  << "        } else {\n"
-                  << "          put(\"\\t\");\n"
-                  << "          put(red()); put(bold());\n"
-                  << "          put(\"liveness property "
-                  << rule_name_string(*p, index) << " violated:\");\n"
-                  << "          put(reset()); put(\"\\n\");\n"
-                  << "        }\n"
-                  << "        print_counterexample(s);\n"
-                  << "        if (MACHINE_READABLE_OUTPUT) {\n"
-                  << "          put(\"</error>\\n\");\n"
-                  << "        }\n"
-                  << "      }\n"
-                  << "      index++;\n";
+                     "          put(\" violated</message>\\n\");\n"
+                     "        } else {\n"
+                     "          put(\"\\t\");\n"
+                     "          put(red()); put(bold());\n"
+                     "          put(\"liveness property "
+                  << rule_name_string(*p, index)
+                  << " violated:\");\n"
+                     "          put(reset()); put(\"\\n\");\n"
+                     "        }\n"
+                     "        print_counterexample(s);\n"
+                     "        if (MACHINE_READABLE_OUTPUT) {\n"
+                     "          put(\"</error>\\n\");\n"
+                     "        }\n"
+                     "      }\n"
+                     "      index++;\n";
 
               // close the quantifier loops
               for (auto it = r->quantifiers.rbegin();
@@ -813,28 +820,28 @@ void generate_model(std::ostream &out, const Model &m) {
       }
     }
     out << "  }\n"
-        << "\n"
-        << "  /* total up how many misses we saw */\n"
-        << "  unsigned long total = 0;\n"
-        << "  for (size_t i = 0; i < sizeof(missed) / sizeof(missed[0]); i++) "
+           "\n"
+           "  /* total up how many misses we saw */\n"
+           "  unsigned long total = 0;\n"
+           "  for (size_t i = 0; i < sizeof(missed) / sizeof(missed[0]); i++) "
            "{\n"
-        << "    if (missed[i]) {\n"
-        << "      total++;\n"
-        << "    }\n"
-        << "  }\n"
-        << "\n"
-        << "  return total;\n"
-        << "}\n"
-        << "#endif\n"
-        << "\n";
+           "    if (missed[i]) {\n"
+           "      total++;\n"
+           "    }\n"
+           "  }\n"
+           "\n"
+           "  return total;\n"
+           "}\n"
+           "#endif\n"
+           "\n";
   }
 
   // Write initialisation
   {
     out << "static void init(void) {\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "  size_t queue_id = 0;\n"
-        << "  uint64_t rule_taken = 1;\n";
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "  size_t queue_id = 0;\n"
+           "  uint64_t rule_taken = 1;\n";
 
     size_t index = 0;
     for (const Ptr<Node> &c : m.children) {
@@ -861,52 +868,53 @@ void generate_model(std::ostream &out, const Model &m) {
                 // use a dummy do-while to give us 'break' as a local goto
                 << "    do {\n"
 
-                << "      s = state_new();\n"
-                << "      memset(s, 0, sizeof(*s));\n"
-                << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-                << "      state_rule_taken_set(s, rule_taken);\n"
-                << "#endif\n"
-                << "      if (!startstate" << index << "(s";
+                   "      s = state_new();\n"
+                   "      memset(s, 0, sizeof(*s));\n"
+                   "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
+                   "      state_rule_taken_set(s, rule_taken);\n"
+                   "#endif\n"
+                   "      if (!startstate"
+                << index << "(s";
             for (const Quantifier &q : r->quantifiers)
               out << ", ru_" << q.name;
             out << ")) {\n"
-                << "        /* startstate triggered an error */\n"
-                << "        state_free(s);\n"
-                << "        break;\n"
-                << "      }\n"
-                << "      state_canonicalise(s);\n"
-                << "      if (!check_assumptions(s)) {\n"
-                << "        /* assumption violated */\n"
-                << "        state_free(s);\n"
-                << "        break;\n"
-                << "      }\n"
-                << "      if (!check_invariants(s)) {\n"
-                << "        /* invariant violated */\n"
-                << "        state_free(s);\n"
-                << "        break;\n"
-                << "      }\n"
-                << "      size_t size;\n"
-                << "      if (set_insert(s, &size)) {\n"
-                << "        if (!check_covers(s)) {\n"
-                << "          /* one of the cover properties triggered an "
+                   "        /* startstate triggered an error */\n"
+                   "        state_free(s);\n"
+                   "        break;\n"
+                   "      }\n"
+                   "      state_canonicalise(s);\n"
+                   "      if (!check_assumptions(s)) {\n"
+                   "        /* assumption violated */\n"
+                   "        state_free(s);\n"
+                   "        break;\n"
+                   "      }\n"
+                   "      if (!check_invariants(s)) {\n"
+                   "        /* invariant violated */\n"
+                   "        state_free(s);\n"
+                   "        break;\n"
+                   "      }\n"
+                   "      size_t size;\n"
+                   "      if (set_insert(s, &size)) {\n"
+                   "        if (!check_covers(s)) {\n"
+                   "          /* one of the cover properties triggered an "
                    "error */\n"
-                << "          break;\n"
-                << "        }\n"
-                << "#if LIVENESS_COUNT > 0\n"
-                << "        if (!check_liveness(s)) {\n"
-                << "          /* one of the liveness properties triggered an "
+                   "          break;\n"
+                   "        }\n"
+                   "#if LIVENESS_COUNT > 0\n"
+                   "        if (!check_liveness(s)) {\n"
+                   "          /* one of the liveness properties triggered an "
                    "error */\n"
-                << "          break;\n"
-                << "        }\n"
-                << "#endif\n"
-                << "        (void)queue_enqueue(s, queue_id);\n"
-                << "        queue_id = (queue_id + 1) % (sizeof(q) / "
+                   "          break;\n"
+                   "        }\n"
+                   "#endif\n"
+                   "        (void)queue_enqueue(s, queue_id);\n"
+                   "        queue_id = (queue_id + 1) % (sizeof(q) / "
                    "sizeof(q[0]));\n"
-                << "      } else {\n"
-                << "        state_free(s);\n"
-                << "      }\n"
-                << "    } while (0);\n"
-                << "    rule_taken++;\n";
+                   "      } else {\n"
+                   "        state_free(s);\n"
+                   "      }\n"
+                   "    } while (0);\n"
+                   "    rule_taken++;\n";
 
             // close the quantifier loops
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend();
@@ -927,30 +935,30 @@ void generate_model(std::ostream &out, const Model &m) {
   // Write exploration logic
   {
     out << "static void explore(void) {\n"
-        << "\n"
-        << "  /* Used when writing to quantifier variables. */\n"
-        << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-        << "\n"
-        << "  size_t last_queue_size = 0;\n"
-        << "\n"
-        << "  /* Identifier of the last queue we interacted with. */\n"
-        << "  size_t queue_id = thread_id;\n"
-        << "\n"
-        << "  for (;;) {\n"
-        << "\n"
-        << "    if (THREADS > 1 && __atomic_load_n(&error_count,\n"
-        << "        __ATOMIC_SEQ_CST) >= MAX_ERRORS) {\n"
-        << "      /* Another thread found an error. */\n"
-        << "      break;\n"
-        << "    }\n"
-        << "\n"
-        << "    const struct state *s = queue_dequeue(&queue_id);\n"
-        << "    if (s == NULL) {\n"
-        << "      break;\n"
-        << "    }\n"
-        << "\n"
-        << "    bool possible_deadlock = true;\n"
-        << "    uint64_t rule_taken = 1;\n";
+           "\n"
+           "  /* Used when writing to quantifier variables. */\n"
+           "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+           "\n"
+           "  size_t last_queue_size = 0;\n"
+           "\n"
+           "  /* Identifier of the last queue we interacted with. */\n"
+           "  size_t queue_id = thread_id;\n"
+           "\n"
+           "  for (;;) {\n"
+           "\n"
+           "    if (THREADS > 1 && __atomic_load_n(&error_count,\n"
+           "        __ATOMIC_ACQUIRE) >= MAX_ERRORS) {\n"
+           "      /* Another thread found an error. */\n"
+           "      break;\n"
+           "    }\n"
+           "\n"
+           "    const struct state *s = queue_dequeue(&queue_id);\n"
+           "    if (s == NULL) {\n"
+           "      break;\n"
+           "    }\n"
+           "\n"
+           "    bool possible_deadlock = true;\n"
+           "    uint64_t rule_taken = 1;\n";
     size_t index = 0;
     for (const Ptr<Node> &c : m.children) {
       if (auto rule = dynamic_cast<const Rule *>(c.get())) {
@@ -970,120 +978,122 @@ void generate_model(std::ostream &out, const Model &m) {
             out
                 // use a dummy do-while to give us 'break' as a local goto
                 << "      do {\n"
-                << "        struct state *n = state_dup(s);\n"
-                << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-                << "        state_rule_taken_set(n, rule_taken);\n"
-                << "#endif\n"
-                << "        int g = guard" << index << "(n";
+                   "        struct state *n = state_dup(s);\n"
+                   "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
+                   "        state_rule_taken_set(n, rule_taken);\n"
+                   "#endif\n"
+                   "        int g = guard"
+                << index << "(n";
             for (const Quantifier &q : r->quantifiers)
               out << ", ru_" << q.name;
             out << ");\n"
-                << "        if (g == -1) {\n"
-                << "          /* error() was called */\n"
-                << "          state_free(n);\n"
-                << "          break;\n"
-                << "        } else if (g == 1) {\n"
-                << "          if (!rule" << index << "(n";
+                   "        if (g == -1) {\n"
+                   "          /* error() was called */\n"
+                   "          state_free(n);\n"
+                   "          break;\n"
+                   "        } else if (g == 1) {\n"
+                   "          if (!rule"
+                << index << "(n";
             for (const Quantifier &q : r->quantifiers)
               out << ", ru_" << q.name;
             out << ")) {\n"
-                << "            /* this rule triggered an error */\n"
-                << "            state_free(n);\n"
-                << "            break;\n"
-                << "          }\n"
-                << "          rules_fired_local++;\n"
-                << "          if (DEADLOCK_DETECTION != "
+                   "            /* this rule triggered an error */\n"
+                   "            state_free(n);\n"
+                   "            break;\n"
+                   "          }\n"
+                   "          rules_fired_local++;\n"
+                   "          if (DEADLOCK_DETECTION != "
                    "DEADLOCK_DETECTION_STUTTERING || !state_eq(s, n)) {\n"
-                << "            possible_deadlock = false;\n"
-                << "          }\n"
-                << "          state_canonicalise(n);\n"
-                << "          if (!check_assumptions(n)) {\n"
-                << "            /* assumption violated */\n"
-                << "            state_free(n);\n"
-                << "            break;\n"
-                << "          }\n"
-                << "          if (!check_invariants(n)) {\n"
-                << "            /* invariant violated */\n"
-                << "            state_free(n);\n"
-                << "            break;\n"
-                << "          }\n"
-                << "          size_t size;\n"
-                << "          if (set_insert(n, &size)) {\n"
-                << "\n"
-                << "            if (!check_covers(n)) {\n"
-                << "              /* one of the cover properties triggered an "
+                   "            possible_deadlock = false;\n"
+                   "          }\n"
+                   "          state_canonicalise(n);\n"
+                   "          if (!check_assumptions(n)) {\n"
+                   "            /* assumption violated */\n"
+                   "            state_free(n);\n"
+                   "            break;\n"
+                   "          }\n"
+                   "          if (!check_invariants(n)) {\n"
+                   "            /* invariant violated */\n"
+                   "            state_free(n);\n"
+                   "            break;\n"
+                   "          }\n"
+                   "          size_t size;\n"
+                   "          if (set_insert(n, &size)) {\n"
+                   "\n"
+                   "            if (!check_covers(n)) {\n"
+                   "              /* one of the cover properties triggered an "
                    "error */\n"
-                << "              break;\n"
-                << "            }\n"
-                << "#if LIVENESS_COUNT > 0\n"
-                << "            if (!check_liveness(n)) {\n"
-                << "              /* one of the liveness properties triggered "
+                   "              break;\n"
+                   "            }\n"
+                   "#if LIVENESS_COUNT > 0\n"
+                   "            if (!check_liveness(n)) {\n"
+                   "              /* one of the liveness properties triggered "
                    "an error */\n"
-                << "              break;\n"
-                << "            }\n"
-                << "#endif\n"
-                << "\n"
-                << "#if BOUND > 0\n"
-                << "            if (state_bound_get(n) < BOUND) {\n"
-                << "#endif\n"
-                << "            size_t queue_size = queue_enqueue(n, "
+                   "              break;\n"
+                   "            }\n"
+                   "#endif\n"
+                   "\n"
+                   "#if BOUND > 0\n"
+                   "            if (state_bound_get(n) < BOUND) {\n"
+                   "#endif\n"
+                   "            size_t queue_size = queue_enqueue(n, "
                    "thread_id);\n"
-                << "            queue_id = thread_id;\n"
-                << "\n"
-                << "            if (size % 10000 == 0 && ftrylockfile(stdout) "
+                   "            queue_id = thread_id;\n"
+                   "\n"
+                   "            if (size % 10000 == 0 && ftrylockfile(stdout) "
                    "== 0) {\n"
-                << "              if (MACHINE_READABLE_OUTPUT) {\n"
-                << "                put(\"<progress states=\\\"\");\n"
-                << "                put_uint(size);\n"
-                << "                put(\"\\\" duration_seconds=\\\"\");\n"
-                << "                put_uint(gettime());\n"
-                << "                put(\"\\\" rules_fired=\\\"\");\n"
-                << "                put_uint(rules_fired_local);\n"
-                << "                put(\"\\\" queue_size=\\\"\");\n"
-                << "                put_uint(queue_size);\n"
-                << "                put(\"\\\" thread_id=\\\"\");\n"
-                << "                put_uint(thread_id);\n"
-                << "                put(\"\\\"/>\\n\");\n"
-                << "              } else {\n"
-                << "                put(\"\\t \");\n"
-                << "                if (THREADS > 1) {\n"
-                << "                  put(\"thread \");\n"
-                << "                  put_uint(thread_id);\n"
-                << "                  put(\": \");\n"
-                << "                }\n"
-                << "                put_uint(size);\n"
-                << "                put(\" states explored in \");\n"
-                << "                put_uint(gettime());\n"
-                << "                put(\"s, with \");\n"
-                << "                put_uint(rules_fired_local);\n"
-                << "                put(\" rules fired and \");\n"
-                << "                put(queue_size > last_queue_size ? "
+                   "              if (MACHINE_READABLE_OUTPUT) {\n"
+                   "                put(\"<progress states=\\\"\");\n"
+                   "                put_uint(size);\n"
+                   "                put(\"\\\" duration_seconds=\\\"\");\n"
+                   "                put_uint(gettime());\n"
+                   "                put(\"\\\" rules_fired=\\\"\");\n"
+                   "                put_uint(rules_fired_local);\n"
+                   "                put(\"\\\" queue_size=\\\"\");\n"
+                   "                put_uint(queue_size);\n"
+                   "                put(\"\\\" thread_id=\\\"\");\n"
+                   "                put_uint(thread_id);\n"
+                   "                put(\"\\\"/>\\n\");\n"
+                   "              } else {\n"
+                   "                put(\"\\t \");\n"
+                   "                if (THREADS > 1) {\n"
+                   "                  put(\"thread \");\n"
+                   "                  put_uint(thread_id);\n"
+                   "                  put(\": \");\n"
+                   "                }\n"
+                   "                put_uint(size);\n"
+                   "                put(\" states explored in \");\n"
+                   "                put_uint(gettime());\n"
+                   "                put(\"s, with \");\n"
+                   "                put_uint(rules_fired_local);\n"
+                   "                put(\" rules fired and \");\n"
+                   "                put(queue_size > last_queue_size ? "
                    "yellow() : green());\n"
-                << "                put_uint(queue_size);\n"
-                << "                put(reset());\n"
-                << "                put(\" states in the queue.\\n\");\n"
-                << "              }\n"
-                << "              funlockfile(stdout);\n"
-                << "              last_queue_size = queue_size;\n"
-                << "            }\n"
-                << "\n"
-                << "            if (THREADS > 1 && thread_id == 0 && phase == "
+                   "                put_uint(queue_size);\n"
+                   "                put(reset());\n"
+                   "                put(\" states in the queue.\\n\");\n"
+                   "              }\n"
+                   "              funlockfile(stdout);\n"
+                   "              last_queue_size = queue_size;\n"
+                   "            }\n"
+                   "\n"
+                   "            if (THREADS > 1 && thread_id == 0 && phase == "
                    "WARMUP && queue_size > 20) {\n"
-                << "              start_secondary_threads();\n"
-                << "              phase = RUN;\n"
-                << "            }\n"
-                << "\n"
-                << "#if BOUND > 0\n"
-                << "            }\n"
-                << "#endif\n"
-                << "          } else {\n"
-                << "            state_free(n);\n"
-                << "          }\n"
-                << "        } else {\n"
-                << "          state_free(n);\n"
-                << "        }\n"
-                << "      } while (0);\n"
-                << "      rule_taken++;\n";
+                   "              start_secondary_threads();\n"
+                   "              phase = RUN;\n"
+                   "            }\n"
+                   "\n"
+                   "#if BOUND > 0\n"
+                   "            }\n"
+                   "#endif\n"
+                   "          } else {\n"
+                   "            state_free(n);\n"
+                   "          }\n"
+                   "        } else {\n"
+                   "          state_free(n);\n"
+                   "        }\n"
+                   "      } while (0);\n"
+                   "      rule_taken++;\n";
 
             // close the quantifier loops
             for (auto it = r->quantifiers.rbegin(); it != r->quantifiers.rend();
@@ -1100,21 +1110,21 @@ void generate_model(std::ostream &out, const Model &m) {
     }
     out << "    /* If we did not toggle 'possible_deadlock' off by this point, "
            "we\n"
-        << "     * have a deadlock.\n"
-        << "     */\n"
-        << "    if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_OFF && "
+           "     * have a deadlock.\n"
+           "     */\n"
+           "    if (DEADLOCK_DETECTION != DEADLOCK_DETECTION_OFF && "
            "possible_deadlock) {\n"
-        << "      deadlock(s);\n"
-        << "    }\n"
-        << "\n"
-        << "  }\n"
-        << "  exit_with(EXIT_SUCCESS);\n"
-        << "}\n\n";
+           "      deadlock(s);\n"
+           "    }\n"
+           "\n"
+           "  }\n"
+           "  exit_with(EXIT_SUCCESS);\n"
+           "}\n\n";
   }
 
   // Write a function to print the state.
   out << "static void state_print(const struct state *previous, const struct "
-      << "state *NONNULL s) {\n";
+         "state *NONNULL s) {\n";
   /* Output the state variable handles so we can reference them within this
    * function.
    */
@@ -1133,18 +1143,18 @@ void generate_model(std::ostream &out, const Model &m) {
 
   // Write a function to print state transitions.
   out << "static void print_transition(const struct state *NONNULL s "
-      << "__attribute__((unused))) {\n"
-      << "  ASSERT(s != NULL);\n"
-      << "  static const char *rule_name __attribute__((unused)) = NULL;\n"
-      << "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
-      << "\n"
-      << "  ASSERT(state_rule_taken_get(s) != 0 && \"unknown state "
+         "__attribute__((unused))) {\n"
+         "  ASSERT(s != NULL);\n"
+         "  static const char *rule_name __attribute__((unused)) = NULL;\n"
+         "#if COUNTEREXAMPLE_TRACE != CEX_OFF\n"
+         "\n"
+         "  ASSERT(state_rule_taken_get(s) != 0 && \"unknown state "
          "transition\");\n"
-      << "\n";
+         "\n";
 
   {
     out << "  if (state_previous_get(s) == NULL) {\n"
-        << "    uint64_t rule_taken = 1;\n";
+           "    uint64_t rule_taken = 1;\n";
 
     mpz_class base = 1;
 
@@ -1164,20 +1174,22 @@ void generate_model(std::ostream &out, const Model &m) {
               generate_quantifier_header(out, q);
 
             out << "  if (state_rule_taken_get(s) == rule_taken) {\n"
-                << "    if (MACHINE_READABLE_OUTPUT) {\n"
-                << "      put(\"<transition>\");\n"
-                << "      xml_printf(\"Startstate "
-                << rule_name_string(*r, index) << "\");\n"
-                << "    } else {\n"
-                << "      put(\"Startstate " << rule_name_string(*r, index)
+                   "    if (MACHINE_READABLE_OUTPUT) {\n"
+                   "      put(\"<transition>\");\n"
+                   "      xml_printf(\"Startstate "
+                << rule_name_string(*r, index)
                 << "\");\n"
-                << "    }\n";
+                   "    } else {\n"
+                   "      put(\"Startstate "
+                << rule_name_string(*r, index)
+                << "\");\n"
+                   "    }\n";
             {
               size_t i = 0;
               for (const Quantifier &q : r->quantifiers) {
                 out << "    {\n"
-                    << "      value_t v = (value_t)((rule_taken - " << base
-                    << ") / (1";
+                       "      value_t v = (value_t)((rule_taken - "
+                    << base << ") / (1";
                 size_t j = r->quantifiers.size() - 1;
                 for (auto it = r->quantifiers.rbegin();
                      it != r->quantifiers.rend(); it++) {
@@ -1186,15 +1198,20 @@ void generate_model(std::ostream &out, const Model &m) {
                   out << " * " << it->count();
                   j--;
                 }
-                out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
+                out << ") % " << q.count() << ") + " << q.lower_bound()
+                    << ";\n"
 
-                    << "      if (MACHINE_READABLE_OUTPUT) {\n"
-                    << "        put(\"<parameter name=\\\"\");\n"
-                    << "        xml_printf(\"" << q.name << "\");\n"
-                    << "        put(\"\\\">\");\n"
-                    << "      } else {\n"
-                    << "        put(\", " << q.name << ": \");\n"
-                    << "      }\n";
+                       "      if (MACHINE_READABLE_OUTPUT) {\n"
+                       "        put(\"<parameter name=\\\"\");\n"
+                       "        xml_printf(\""
+                    << q.name
+                    << "\");\n"
+                       "        put(\"\\\">\");\n"
+                       "      } else {\n"
+                       "        put(\", "
+                    << q.name
+                    << ": \");\n"
+                       "      }\n";
 
                 const Ptr<TypeExpr> t = q.type->resolve();
                 if (auto e = dynamic_cast<const Enum *>(t.get())) {
@@ -1204,19 +1221,25 @@ void generate_model(std::ostream &out, const Model &m) {
                     out << "      ";
                     if (member_index > 0)
                       out << "else ";
-                    out << "if (v == VALUE_C(" << member_index << ")) {\n"
-                        << "        if (MACHINE_READABLE_OUTPUT) {\n"
-                        << "          xml_printf(\"" << member.first << "\");\n"
-                        << "        } else {\n"
-                        << "          put(\"" << member.first << "\");\n"
-                        << "        }\n"
-                        << "      }\n";
+                    out << "if (v == VALUE_C(" << member_index
+                        << ")) {\n"
+                           "        if (MACHINE_READABLE_OUTPUT) {\n"
+                           "          xml_printf(\""
+                        << member.first
+                        << "\");\n"
+                           "        } else {\n"
+                           "          put(\""
+                        << member.first
+                        << "\");\n"
+                           "        }\n"
+                           "      }\n";
                     member_index++;
                   }
                   out << "      else {\n"
-                      << "        ASSERT(!\"illegal value for " << q.name
+                         "        ASSERT(!\"illegal value for "
+                      << q.name
                       << "\");\n"
-                      << "      }\n";
+                         "      }\n";
                 } else if (isa<Scalarset>(t)) {
 
                   // figure out if this is a named scalarset (i.e. ony eligible
@@ -1237,11 +1260,13 @@ void generate_model(std::ostream &out, const Model &m) {
 
                     // dump the symbolic value of this parameter
                     out << "        if (USE_SCALARSET_SCHEDULES) {\n"
-                        << "          put(\"" << escape(id->name) << "_\");\n"
-                        << "          put_val(v);\n"
-                        << "        } else {\n"
-                        << "          put_val(v);\n"
-                        << "        }\n";
+                           "          put(\""
+                        << escape(id->name)
+                        << "_\");\n"
+                           "          put_val(v);\n"
+                           "        } else {\n"
+                           "          put_val(v);\n"
+                           "        }\n";
 
                   } else {
                     // this scalarset seems not eligible for symmetry reduction
@@ -1255,19 +1280,19 @@ void generate_model(std::ostream &out, const Model &m) {
                 }
 
                 out << "      if (MACHINE_READABLE_OUTPUT) {\n"
-                    << "        put(\"</parameter>\");\n"
-                    << "      }\n"
-                    << "    }\n";
+                       "        put(\"</parameter>\");\n"
+                       "      }\n"
+                       "    }\n";
                 i++;
               }
             }
             out << "    if (MACHINE_READABLE_OUTPUT) {\n"
-                << "      put(\"</transition>\\n\");\n"
-                << "    } else {\n"
-                << "      put(\" fired.\\n\");\n"
-                << "    }\n"
-                << "    return;\n"
-                << "  }\n";
+                   "      put(\"</transition>\\n\");\n"
+                   "    } else {\n"
+                   "      put(\" fired.\\n\");\n"
+                   "    }\n"
+                   "    return;\n"
+                   "  }\n";
 
             out << "      rule_taken++;\n";
 
@@ -1293,7 +1318,7 @@ void generate_model(std::ostream &out, const Model &m) {
 
   {
     out << "  } else {\n"
-        << "    uint64_t rule_taken = 1;\n";
+           "    uint64_t rule_taken = 1;\n";
 
     mpz_class base = 1;
 
@@ -1313,20 +1338,22 @@ void generate_model(std::ostream &out, const Model &m) {
               generate_quantifier_header(out, q);
 
             out << "  if (state_rule_taken_get(s) == rule_taken) {\n"
-                << "    if (MACHINE_READABLE_OUTPUT) {\n"
-                << "      put(\"<transition>\");\n"
-                << "      xml_printf(\"Rule " << rule_name_string(*r, index)
+                   "    if (MACHINE_READABLE_OUTPUT) {\n"
+                   "      put(\"<transition>\");\n"
+                   "      xml_printf(\"Rule "
+                << rule_name_string(*r, index)
                 << "\");\n"
-                << "    } else {\n"
-                << "      put(\"Rule " << rule_name_string(*r, index)
+                   "    } else {\n"
+                   "      put(\"Rule "
+                << rule_name_string(*r, index)
                 << "\");\n"
-                << "    }\n";
+                   "    }\n";
             {
               size_t i = 0;
               for (const Quantifier &q : r->quantifiers) {
                 out << "    {\n"
-                    << "      value_t v = (value_t)((rule_taken - " << base
-                    << ") / (1";
+                       "      value_t v = (value_t)((rule_taken - "
+                    << base << ") / (1";
                 size_t j = r->quantifiers.size() - 1;
                 for (auto it = r->quantifiers.rbegin();
                      it != r->quantifiers.rend(); it++) {
@@ -1335,15 +1362,20 @@ void generate_model(std::ostream &out, const Model &m) {
                   out << " * " << it->count();
                   j--;
                 }
-                out << ") % " << q.count() << ") + " << q.lower_bound() << ";\n"
+                out << ") % " << q.count() << ") + " << q.lower_bound()
+                    << ";\n"
 
-                    << "      if (MACHINE_READABLE_OUTPUT) {\n"
-                    << "        put(\"<parameter name=\\\"\");\n"
-                    << "        xml_printf(\"" << q.name << "\");\n"
-                    << "        put(\"\\\">\");\n"
-                    << "      } else {\n"
-                    << "        put(\", " << q.name << ": \");\n"
-                    << "      }\n";
+                       "      if (MACHINE_READABLE_OUTPUT) {\n"
+                       "        put(\"<parameter name=\\\"\");\n"
+                       "        xml_printf(\""
+                    << q.name
+                    << "\");\n"
+                       "        put(\"\\\">\");\n"
+                       "      } else {\n"
+                       "        put(\", "
+                    << q.name
+                    << ": \");\n"
+                       "      }\n";
 
                 const Ptr<TypeExpr> t = q.type->resolve();
                 if (auto e = dynamic_cast<const Enum *>(t.get())) {
@@ -1353,19 +1385,25 @@ void generate_model(std::ostream &out, const Model &m) {
                     out << "      ";
                     if (member_index > 0)
                       out << "else ";
-                    out << "if (v == VALUE_C(" << member_index << ")) {\n"
-                        << "        if (MACHINE_READABLE_OUTPUT) {\n"
-                        << "          xml_printf(\"" << member.first << "\");\n"
-                        << "        } else {\n"
-                        << "          put(\"" << member.first << "\");\n"
-                        << "        }\n"
-                        << "      }\n";
+                    out << "if (v == VALUE_C(" << member_index
+                        << ")) {\n"
+                           "        if (MACHINE_READABLE_OUTPUT) {\n"
+                           "          xml_printf(\""
+                        << member.first
+                        << "\");\n"
+                           "        } else {\n"
+                           "          put(\""
+                        << member.first
+                        << "\");\n"
+                           "        }\n"
+                           "      }\n";
                     member_index++;
                   }
                   out << "      else {\n"
-                      << "        ASSERT(!\"illegal value for " << q.name
+                         "        ASSERT(!\"illegal value for "
+                      << q.name
                       << "\");\n"
-                      << "      }\n";
+                         "      }\n";
                 } else if (auto s = dynamic_cast<const Scalarset *>(t.get())) {
 
                   // open a scope to contain the schedule computation variables
@@ -1388,40 +1426,48 @@ void generate_model(std::ostream &out, const Model &m) {
                       id = inner;
 
                     // generate schedule retrieval
-                    out << "        size_t schedule[" << b << "];\n"
-                        << "        /* setup a default identity mapping for "
+                    out << "        size_t schedule[" << b
+                        << "];\n"
+                           "        /* setup a default identity mapping for "
                            "when\n"
-                        << "         * symmetry reduction is off\n"
-                        << "         */\n"
-                        << "        for (size_t i = 0; i < " << b
+                           "         * symmetry reduction is off\n"
+                           "         */\n"
+                           "        for (size_t i = 0; i < "
+                        << b
                         << "; ++i) {\n"
-                        << "          schedule[i] = i;\n"
-                        << "        }\n"
-                        << "        if (USE_SCALARSET_SCHEDULES) {\n"
-                        // note that we read from the *previous* state’s
-                        // schedule here because that is what this value is
-                        // relative to
-                        << "          size_t index = schedule_read_" << id->name
+                           "          schedule[i] = i;\n"
+                           "        }\n"
+                           "        if (USE_SCALARSET_SCHEDULES) {\n"
+                           // note that we read from the *previous* state’s
+                           // schedule here because that is what this value is
+                           // relative to
+                           "          size_t index = schedule_read_"
+                        << id->name
                         << "(state_previous_get(s));\n"
-                        << "          size_t stack[" << b << "];\n"
-                        << "          index_to_permutation(index, schedule, "
+                           "          size_t stack["
+                        << b
+                        << "];\n"
+                           "          index_to_permutation(index, schedule, "
                            "stack, "
-                        << b << ");\n"
-                        << "        }\n";
+                        << b
+                        << ");\n"
+                           "        }\n";
 
                     // map the parameter value through the retrieved permutation
                     out << "        assert((size_t)v < " << b
                         << " && \"illegal scalarset "
-                        << " parameter recorded\");\n"
-                        << "        v = (value_t)schedule[(size_t)v];\n";
+                           " parameter recorded\");\n"
+                           "        v = (value_t)schedule[(size_t)v];\n";
 
                     // dump the resulting value
                     out << "        if (USE_SCALARSET_SCHEDULES) {\n"
-                        << "          put(\"" << escape(id->name) << "_\");\n"
-                        << "          put_val(v);\n"
-                        << "        } else {\n"
-                        << "          put_val(v);\n"
-                        << "        }\n";
+                           "          put(\""
+                        << escape(id->name)
+                        << "_\");\n"
+                           "          put_val(v);\n"
+                           "        } else {\n"
+                           "          put_val(v);\n"
+                           "        }\n";
 
                   } else {
                     // this scalarset seems not eligible for symmetry reduction
@@ -1437,19 +1483,19 @@ void generate_model(std::ostream &out, const Model &m) {
                 }
 
                 out << "      if (MACHINE_READABLE_OUTPUT) {\n"
-                    << "        put(\"</parameter>\");\n"
-                    << "      }\n"
-                    << "    }\n";
+                       "        put(\"</parameter>\");\n"
+                       "      }\n"
+                       "    }\n";
                 i++;
               }
             }
             out << "    if (MACHINE_READABLE_OUTPUT) {\n"
-                << "      put(\"</transition>\\n\");\n"
-                << "    } else {\n"
-                << "      put(\" fired.\\n\");\n"
-                << "    }\n"
-                << "    return;\n"
-                << "  }\n";
+                   "      put(\"</transition>\\n\");\n"
+                   "    } else {\n"
+                   "      put(\" fired.\\n\");\n"
+                   "    }\n"
+                   "    return;\n"
+                   "  }\n";
 
             out << "      rule_taken++;\n";
 
@@ -1474,25 +1520,25 @@ void generate_model(std::ostream &out, const Model &m) {
   }
 
   out << "  }\n"
-      << "\n"
-      << "  /* give some helpful output for debugging problems with this "
+         "\n"
+         "  /* give some helpful output for debugging problems with this "
          "function. */\n"
-      << "  fprintf(stderr, \"no rule found to link to state at depth "
+         "  fprintf(stderr, \"no rule found to link to state at depth "
          "%zu\\n\", state_depth(s));\n"
-      << "  ASSERT(!\"unreachable\");\n"
-      << "#endif\n"
-      << "}\n\n";
+         "  ASSERT(!\"unreachable\");\n"
+         "#endif\n"
+         "}\n\n";
 
   // Generate a function used during debugging
   out << "static void state_print_field_offsets(void) {\n"
-      << "  put(\"\t* state struct is \");\n"
-      << "  put_uint(__alignof__(struct state));\n"
-      << "  put(\"-byte aligned\\n\");\n";
+         "  put(\"\t* state struct is \");\n"
+         "  put_uint(__alignof__(struct state));\n"
+         "  put(\"-byte aligned\\n\");\n";
   for (const Ptr<Node> &c : m.children) {
     if (auto v = dynamic_cast<const VarDecl *>(c.get()))
       out << "  put(\"\t* field " << v->name << " is located at state offset "
           << v->offset << " bits\\n\");\n";
   }
   out << "  put(\"\\n\");\n"
-      << "}\n\n";
+         "}\n\n";
 }

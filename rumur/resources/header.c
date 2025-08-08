@@ -1411,7 +1411,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void
 error(const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
   unsigned long prior_errors =
-      __atomic_fetch_add(&error_count, 1, __ATOMIC_SEQ_CST);
+      __atomic_fetch_add(&error_count, 1, __ATOMIC_ACQ_REL);
 
   if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 
@@ -3377,7 +3377,7 @@ static void set_migrate(void) {
 
       /* retrieve the slot element and mark it as migrated */
       slot_t s = __atomic_exchange_n(&local_seen->bucket[i], slot_tombstone(),
-                                     __ATOMIC_SEQ_CST);
+                                     __ATOMIC_ACQ_REL);
       ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
 
       /* If the current slot contained a state, rehash it and insert it into the
@@ -3388,7 +3388,7 @@ static void set_migrate(void) {
         size_t index = set_index(next, state_hash(slot_to_state(s)));
         /* insert and shuffle any colliding entries one along */
         for (size_t j = index; !slot_is_empty(s); j = set_index(next, j + 1)) {
-          s = __atomic_exchange_n(&next->bucket[j], s, __ATOMIC_SEQ_CST);
+          s = __atomic_exchange_n(&next->bucket[j], s, __ATOMIC_ACQ_REL);
         }
       }
     }
@@ -3478,8 +3478,8 @@ restart:;
     /* Guess that the current slot is empty and try to insert here. */
     slot_t c = slot_empty();
     if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
-                                    state_to_slot(s), false, __ATOMIC_SEQ_CST,
-                                    __ATOMIC_SEQ_CST)) {
+                                    state_to_slot(s), false, __ATOMIC_ACQ_REL,
+                                    __ATOMIC_ACQUIRE)) {
       /* Success */
       *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
@@ -3550,7 +3550,7 @@ set_find(const struct state *NONNULL s) {
   for (size_t i = index; attempts < set_size(local_seen);
        i = set_index(local_seen, i + 1)) {
 
-    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_SEQ_CST);
+    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
 
     /* This function is only expected to be called during the final liveness
      * scan, in which all threads participate. So we should never encounter a
