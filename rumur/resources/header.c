@@ -3358,7 +3358,7 @@ static void set_migrate(void) {
 
   for (;;) {
 
-    size_t chunk = __atomic_fetch_add(&next_migration, 1, __ATOMIC_SEQ_CST);
+    size_t chunk = __atomic_fetch_add(&next_migration, 1, __ATOMIC_ACQ_REL);
     size_t start = chunk * CHUNK_SIZE;
     size_t end = start + CHUNK_SIZE;
 
