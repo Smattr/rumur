@@ -3464,7 +3464,7 @@ static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
-  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100 /
+  if (__atomic_load_n(&seen_count, __ATOMIC_ACQUIRE) * 100 /
           set_size(local_seen) >=
       SET_EXPAND_THRESHOLD)
     set_expand();
@@ -3481,7 +3481,7 @@ restart:;
                                     state_to_slot(s), false, __ATOMIC_ACQ_REL,
                                     __ATOMIC_ACQUIRE)) {
       /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
+      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
