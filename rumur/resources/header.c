@@ -1411,7 +1411,7 @@ static __attribute__((format(printf, 2, 3))) _Noreturn void
 error(const struct state *NONNULL s, const char *NONNULL fmt, ...) {
 
   unsigned long prior_errors =
-      __atomic_fetch_add(&error_count, 1, __ATOMIC_SEQ_CST);
+      __atomic_fetch_add(&error_count, 1, __ATOMIC_ACQ_REL);
 
   if (__builtin_expect(prior_errors < MAX_ERRORS, 1)) {
 

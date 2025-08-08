@@ -939,7 +939,7 @@ void generate_model(std::ostream &out, const Model &m) {
         << "  for (;;) {\n"
         << "\n"
         << "    if (THREADS > 1 && __atomic_load_n(&error_count,\n"
-        << "        __ATOMIC_SEQ_CST) >= MAX_ERRORS) {\n"
+        << "        __ATOMIC_ACQUIRE) >= MAX_ERRORS) {\n"
         << "      /* Another thread found an error. */\n"
         << "      break;\n"
         << "    }\n"
