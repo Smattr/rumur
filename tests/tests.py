@@ -164,7 +164,7 @@ static dword_t atomic_read(dword_t *p) {
   return __sync_val_compare_and_swap(p, 1, 1);
 #endif
 
-  return __atomic_load_n(p, __ATOMIC_SEQ_CST);
+  return __atomic_load_n(p, __ATOMIC_ACQUIRE);
 }
 
 static void atomic_write(dword_t *p, dword_t v) {
@@ -188,7 +188,7 @@ static void atomic_write(dword_t *p, dword_t v) {
   return;
 #endif
 
-  __atomic_store_n(p, v, __ATOMIC_SEQ_CST);
+  __atomic_store_n(p, v, __ATOMIC_RELEASE);
 }
 
 static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
@@ -210,8 +210,8 @@ static bool atomic_cas(dword_t *p, dword_t expected, dword_t new) {
   return __sync_bool_compare_and_swap(p, expected, new);
 #endif
 
-  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
+  return __atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_ACQ_REL,
+                                     __ATOMIC_RELAXED);
 }
 
 static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
@@ -234,8 +234,8 @@ static dword_t atomic_cas_val(dword_t *p, dword_t expected, dword_t new) {
 #endif
 
 
-  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_SEQ_CST,
-    __ATOMIC_SEQ_CST);
+  (void)__atomic_compare_exchange_n(p, &expected, new, false, __ATOMIC_ACQ_REL,
+                                    __ATOMIC_ACQUIRE);
   return expected;
 }
 
