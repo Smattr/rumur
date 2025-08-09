@@ -455,7 +455,7 @@ void generate_model(std::ostream &out, const Model &m) {
                      "      /* Covered. */\n"
                      "      (void)__atomic_fetch_add(&covers[COVER_"
                   << p->property.unique_id
-                  << "], 1, __ATOMIC_SEQ_CST);\n"
+                  << "], 1, __ATOMIC_RELAXED);\n"
                      "    }\n";
 
               // close the quantifier loops

@@ -3358,7 +3358,7 @@ static void set_migrate(void) {
 
   for (;;) {
 
-    size_t chunk = __atomic_fetch_add(&next_migration, 1, __ATOMIC_SEQ_CST);
+    size_t chunk = __atomic_fetch_add(&next_migration, 1, __ATOMIC_ACQ_REL);
     size_t start = chunk * CHUNK_SIZE;
     size_t end = start + CHUNK_SIZE;
 
@@ -3464,7 +3464,7 @@ static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
 restart:;
 
-  if (__atomic_load_n(&seen_count, __ATOMIC_SEQ_CST) * 100 /
+  if (__atomic_load_n(&seen_count, __ATOMIC_ACQUIRE) * 100 /
           set_size(local_seen) >=
       SET_EXPAND_THRESHOLD)
     set_expand();
@@ -3481,7 +3481,7 @@ restart:;
                                     state_to_slot(s), false, __ATOMIC_ACQ_REL,
                                     __ATOMIC_ACQUIRE)) {
       /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_SEQ_CST);
+      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
       /* The maximum possible size of the seen state set should be constrained
@@ -3609,7 +3609,7 @@ static __attribute__((unused)) void mark_liveness(struct state *NONNULL s,
     /* If this state is shared (accessible by other threads) we need to operate
      * on its liveness data atomically.
      */
-    previous_value = __atomic_fetch_or(target, mask, __ATOMIC_SEQ_CST);
+    previous_value = __atomic_fetch_or(target, mask, __ATOMIC_ACQ_REL);
   } else {
     /* Otherwise we can use a cheaper ordinary OR. */
     previous_value = *target;
@@ -3642,7 +3642,7 @@ static unsigned long unknown_liveness(const struct state *NONNULL s) {
 
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
 
-    uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+    uintptr_t word = __atomic_load_n(&s->liveness[i], __ATOMIC_ACQUIRE);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
       if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
@@ -3678,8 +3678,8 @@ static unsigned long learn_liveness(struct state *NONNULL s,
   for (size_t i = 0; i < sizeof(s->liveness) / sizeof(s->liveness[0]); i++) {
 
     uintptr_t word_src =
-        __atomic_load_n(&successor->liveness[i], __ATOMIC_SEQ_CST);
-    uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_SEQ_CST);
+        __atomic_load_n(&successor->liveness[i], __ATOMIC_ACQUIRE);
+    uintptr_t word_dst = __atomic_load_n(&s->liveness[i], __ATOMIC_ACQUIRE);
 
     for (size_t j = 0; j < sizeof(s->liveness[0]) * CHAR_BIT; j++) {
       if (i * sizeof(s->liveness[0]) * CHAR_BIT + j >= LIVENESS_COUNT) {
