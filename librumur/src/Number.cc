@@ -40,7 +40,7 @@ Ptr<TypeExpr> Number::type() const {
 
 mpz_class Number::constant_fold() const { return value; }
 
-std::string Number::to_string() const { return value.get_str(); }
+void Number::to_stream(std::ostream &out) const { out << value.get_str(); }
 
 bool Number::is_pure() const { return true; }
 

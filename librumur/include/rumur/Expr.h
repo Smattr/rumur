@@ -52,7 +52,10 @@ struct RUMUR_API_WITH_RTTI Expr : public Node {
   virtual bool is_readonly() const;
 
   /// get a string representation of this expression
-  virtual std::string to_string() const = 0;
+  std::string to_string() const;
+
+  /// dump a string representation of this expression
+  virtual void to_stream(std::ostream &out) const = 0;
 
   /// is this expression the boolean literal “true”?
   virtual bool is_literal_true() const;
@@ -86,7 +89,7 @@ struct RUMUR_API_WITH_RTTI Ternary : public Expr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 
   /* Note we do not override is_lvalue. Unlike in C, ternary expressions are not
@@ -138,7 +141,7 @@ struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 /// logical OR
@@ -153,7 +156,7 @@ struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 /// logical AND
@@ -168,7 +171,7 @@ struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 /// An 'x & y' expression where a decision has not yet been made as to whether
@@ -186,7 +189,7 @@ struct RUMUR_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 /// An 'x | y' expression where a decision has not yet been made as to whether
@@ -204,7 +207,7 @@ struct RUMUR_API_WITH_RTTI AmbiguousPipe : public BinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI UnaryExpr : public Expr {
@@ -235,7 +238,7 @@ struct RUMUR_API_WITH_RTTI Not : public UnaryExpr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI ComparisonBinaryExpr : public BinaryExpr {
@@ -261,7 +264,7 @@ struct RUMUR_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
@@ -275,7 +278,7 @@ struct RUMUR_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
@@ -289,7 +292,7 @@ struct RUMUR_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
@@ -303,7 +306,7 @@ struct RUMUR_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI EquatableBinaryExpr : public BinaryExpr {
@@ -329,7 +332,7 @@ struct RUMUR_API_WITH_RTTI Eq : public EquatableBinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Neq : public EquatableBinaryExpr {
@@ -343,7 +346,7 @@ struct RUMUR_API_WITH_RTTI Neq : public EquatableBinaryExpr {
 
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI ArithmeticBinaryExpr : public BinaryExpr {
@@ -369,7 +372,7 @@ struct RUMUR_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
   void visit(ConstBaseTraversal &visitor) const override;
 
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
@@ -382,7 +385,7 @@ struct RUMUR_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
   void visit(ConstBaseTraversal &visitor) const override;
 
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Negative : public UnaryExpr {
@@ -397,7 +400,7 @@ struct RUMUR_API_WITH_RTTI Negative : public UnaryExpr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Bnot : public UnaryExpr {
@@ -412,7 +415,7 @@ struct RUMUR_API_WITH_RTTI Bnot : public UnaryExpr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
@@ -426,7 +429,7 @@ struct RUMUR_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
@@ -440,7 +443,7 @@ struct RUMUR_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
@@ -454,7 +457,7 @@ struct RUMUR_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
@@ -468,7 +471,7 @@ struct RUMUR_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
@@ -482,7 +485,7 @@ struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 /// bitwise AND
@@ -497,7 +500,7 @@ struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
 
   bool constant() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 /// bitwise OR
@@ -511,7 +514,7 @@ struct RUMUR_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
   void visit(ConstBaseTraversal &visitor) const override;
 
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
@@ -524,7 +527,7 @@ struct RUMUR_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
   void visit(ConstBaseTraversal &visitor) const override;
 
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI ExprID : public Expr {
@@ -546,7 +549,7 @@ struct RUMUR_API_WITH_RTTI ExprID : public Expr {
   void validate() const override;
   bool is_lvalue() const override;
   bool is_readonly() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_literal_true() const override;
   bool is_literal_false() const override;
   bool is_pure() const override;
@@ -571,7 +574,7 @@ struct RUMUR_API_WITH_RTTI Field : public Expr {
   void validate() const override;
   bool is_lvalue() const override;
   bool is_readonly() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 };
 
@@ -594,7 +597,7 @@ struct RUMUR_API_WITH_RTTI Element : public Expr {
   void validate() const override;
   bool is_lvalue() const override;
   bool is_readonly() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 };
 
@@ -619,7 +622,7 @@ struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 };
 
@@ -647,6 +650,7 @@ struct RUMUR_API_WITH_RTTI Quantifier : public Node {
   Quantifier *clone() const override;
   void validate() const override;
   std::string to_string() const;
+  void to_stream(std::ostream &out) const;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -682,7 +686,7 @@ struct RUMUR_API_WITH_RTTI Exists : public Expr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 };
 
@@ -703,7 +707,7 @@ struct RUMUR_API_WITH_RTTI Forall : public Expr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 };
 
@@ -720,7 +724,7 @@ struct RUMUR_API_WITH_RTTI IsUndefined : public UnaryExpr {
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 } // namespace rumur
