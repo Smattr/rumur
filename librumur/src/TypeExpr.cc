@@ -12,6 +12,7 @@
 #include <rumur/TypeExpr.h>
 #include <rumur/except.h>
 #include <rumur/traverse.h>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -31,6 +32,12 @@ std::string TypeExpr::lower_bound() const {
 
 std::string TypeExpr::upper_bound() const {
   throw Error("complex types do not have valid upper bounds", loc);
+}
+
+std::string TypeExpr::to_string() const {
+  std::ostringstream s;
+  to_stream(s);
+  return s.str();
 }
 
 mpz_class TypeExpr::width() const {
@@ -160,6 +167,16 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
 
 bool TypeExpr::is_boolean() const { return false; }
 
+// shortcuts to make implementing `to_stream` more concise
+static std::ostream &operator<<(std::ostream &out, const TypeExpr &type) {
+  type.to_stream(out);
+  return out;
+}
+static std::ostream &operator<<(std::ostream &out, const Expr &expr) {
+  out << expr.to_string();
+  return out;
+}
+
 Range::Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_)
     : TypeExpr(loc_), min(min_), max(max_) {
 
@@ -209,9 +226,7 @@ std::string Range::upper_bound() const {
   return "VALUE_C(" + max->constant_fold().get_str() + ")";
 }
 
-std::string Range::to_string() const {
-  return min->to_string() + ".." + max->to_string();
-}
+void Range::to_stream(std::ostream &out) const { out << *min << ".." << *max; }
 
 bool Range::constant() const { return min->constant() && max->constant(); }
 
@@ -252,8 +267,8 @@ std::string Scalarset::upper_bound() const {
   return "VALUE_C(" + b.get_str() + ")";
 }
 
-std::string Scalarset::to_string() const {
-  return "scalarset(" + bound->to_string() + ")";
+void Scalarset::to_stream(std::ostream &out) const {
+  out << "scalarset(" << *bound << ")";
 }
 
 bool Scalarset::constant() const { return bound->constant(); }
@@ -296,16 +311,14 @@ std::string Enum::upper_bound() const {
   return "VALUE_C(" + size.get_str() + ")";
 }
 
-std::string Enum::to_string() const {
-  std::string s = "enum { ";
-  bool first = true;
+void Enum::to_stream(std::ostream &out) const {
+  out << "enum { ";
+  const char *separator = "";
   for (const std::pair<std::string, location> &m : members) {
-    if (!first)
-      s += ", ";
-    s += m.first;
-    first = false;
+    out << separator << m.first;
+    separator = ", ";
   }
-  return s + " }";
+  out << " }";
 }
 
 bool Enum::constant() const {
@@ -352,11 +365,11 @@ mpz_class Record::count() const {
   return s;
 }
 
-std::string Record::to_string() const {
-  std::string s = "record ";
+void Record::to_stream(std::ostream &out) const {
+  out << "record ";
   for (const Ptr<VarDecl> &v : fields)
-    s += v->name + " : " + v->type->to_string() + "; ";
-  return s + "endrecord";
+    out << v->name << " : " << *v->type << "; ";
+  out << "endrecord";
 }
 
 Array::Array(const Ptr<TypeExpr> &index_type_,
@@ -404,9 +417,8 @@ void Array::validate() const {
     throw Error("array indices must be simple types", loc);
 }
 
-std::string Array::to_string() const {
-  return "array [" + index_type->to_string() + "] of " +
-         element_type->to_string();
+void Array::to_stream(std::ostream &out) const {
+  out << "array [" << *index_type << "] of " << *element_type;
 }
 
 TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
@@ -464,7 +476,7 @@ std::string TypeExprID::upper_bound() const {
   return referent->value->upper_bound();
 }
 
-std::string TypeExprID::to_string() const { return name; }
+void TypeExprID::to_stream(std::ostream &out) const { out << name; }
 
 bool TypeExprID::constant() const {
   if (referent == nullptr)
