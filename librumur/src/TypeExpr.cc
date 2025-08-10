@@ -173,7 +173,7 @@ static std::ostream &operator<<(std::ostream &out, const TypeExpr &type) {
   return out;
 }
 static std::ostream &operator<<(std::ostream &out, const Expr &expr) {
-  out << expr.to_string();
+  expr.to_stream(out);
   return out;
 }
 
