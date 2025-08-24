@@ -2467,7 +2467,7 @@ static void reclaim(queue_handle_t h) {
     }
   }
 
-  ASSERT(!"deferred more than `THREADS` reclamations");
+  ASSERT(!"deferred more than `THREADS - 1` reclamations");
 }
 
 /******************************************************************************/
