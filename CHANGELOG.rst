@@ -1,6 +1,45 @@
 Change log
 ==========
 
+v2025.08.31
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: some C Undefined Behaviour has been removed from the generated
+  checker code (commits 38bfa8ac8aa94bec83f189d1c15ef7c27b9b8162,
+  930aabe0a8d80841af2bfe67a68000ffbe214dc9).
+* Bug fix: typos in the ``murphi2c`` man page have been corrected (commits
+  f119aa84ec5964ce7fe418e00e1ae90c710b5b1a,
+  b2871e4194555a48ea640cb1222b6c0266fffa89).
+* Atomic accesses in the generated checker have been relaxed in a way that may
+  to performance improvements on some platforms (commits
+  c7fe4eecac7482e6e9f32cdcd57108c75ef39246,
+  7a242b8d403237bda65e769acee0cafb59ded3f6,
+  b72701fa2bb067c2aefd239fdab0282cabaeabc2,
+  3a8fabdf4b721f0ade39cde5ae6b96b9b71f1210,
+  329eeec492bada6de4934ed244f37716851345c4,
+  c81388835f512d41443be92b497af94f6bcd54f6,
+  6a15c8199feab514428f27fad7988110324742c1,
+  fcfd1257afda5920d0a9e69b93a5a98bc46ac137,
+  d6418c1f3713a60d2496360fd72cc5ed43962895,
+  9bbeac26bace2bc57195c81165ea44e79b86dc3e,
+  4cd3cd113bdc5e17626ae5a5b7fe5280cb6f67c5,
+  bfa4dcc158fac84f62e1a1baa59317a6d82cf3ca,
+  4423cf50dc6b04c91835e9921d1cf304cb2ab263,
+  bab6ca565384994c0293bd223444fa5bbf2c4e32).
+* A typo in a generated assertion message has been corrected (commit
+  2f07b4565433745a424245933aca59c6acf54925).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The ``to_string`` member function on AST nodes is no longer virtual. A new
+  ``to_stream`` member function has been introduced (commits
+  551ea2c861048a9d105624b069c4f5e2a698bbc9,
+  7aa6760b43fc176240988d727fc5af21eaa55868).
+* The baseline CMake version required to compile Rumur has been increased to 3.5
+  (commit b04e7c4f64acb36418e593f13e09c6df564853c7).
+
 v2025.02.02
 -----------
 
