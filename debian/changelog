@@ -1,3 +1,10 @@
+rumur (2025.08.31-1) unstable; urgency=medium
+
+  * New upstream release.
+  * CMake ≥ 3.5 required to build. Closes: #1113481
+
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 31 Aug 2025 20:59:02 -0700
+
 rumur (2025.02.02-1) unstable; urgency=medium
 
   * New upstream release.
