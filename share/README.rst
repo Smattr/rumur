@@ -24,11 +24,11 @@ example, to use ``_list``:
 
 .. code-block:: m4
 
-  include(`v2025.02.02/_list')dnl
+  include(`v2025.08.31/_list')dnl
   _list(`foo', `bar_t', `baz_t')dnl
 
 Note that the example above includes the ``_list`` template specifically from
-Rumur v2025.02.02. It is good practice to reference a specific version of
+Rumur v2025.08.31. It is good practice to reference a specific version of
 standard library templates like this, to ensure your model remains runnable on
 future versions of Rumur. If you are working on a model that does not need this
 kind of stability, you can include the latest version of the template with

@@ -36,7 +36,7 @@ struct RUMUR_API_WITH_RTTI Number : public Expr {
   bool constant() const override;
   Ptr<TypeExpr> type() const override;
   mpz_class constant_fold() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool is_pure() const override;
 };
 

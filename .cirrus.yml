@@ -38,13 +38,6 @@ task:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
 
-    - name: Linux, GCC 8.5
-      container:
-        image: gcc:8.5
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -g
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
     - name: Linux, GCC 9.5
       container:
         image: gcc:9.5
@@ -68,33 +61,41 @@ task:
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 12.4
+    - name: Linux, GCC 12.5
       container:
-        image: gcc:12.4
+        image: gcc:12.5
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 13.3
+    - name: Linux, GCC 13.4
       container:
-        image: gcc:13.3
+        image: gcc:13.4
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 14.2
+    - name: Linux, GCC 14.3
       container:
-        image: gcc:14.2
+        image: gcc:14.3
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, ARM, GCC 14.2
+    - name: Linux, GCC 15.1
+      container:
+        image: gcc:15.1
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+        CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
+    - name: Linux, ARM, GCC 15.1
       arm_container:
-        image: gcc:14.2
+        image: gcc:15.1
       environment:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
@@ -103,25 +104,27 @@ task:
 
     - name: macOS, Homebrew
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-runner:sonoma
+        image: ghcr.io/cirruslabs/macos-runner:sequoia
       environment:
         # To quote Homebrew, "bison is keg-only, which means it was not
         # symlinked into /usr/local, because some formulae require a newer
         # version of bison." I do not know when this became the case as it was
         # not originally, but we'll force this.
         PATH: /usr/local/opt/bison/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
-      install_script: uname -rms && brew update && brew install bison && brew link bison --force && python3 -m pip install --break-system-packages pytest
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: uname -rms && brew update && brew install bison && brew link bison --force && env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
 
     - name: macOS, Macports
       macos_instance:
-        image: ghcr.io/cirruslabs/macos-runner:sonoma
+        image: ghcr.io/cirruslabs/macos-runner:sequoia
       environment:
         PATH: /opt/local/bin:${PATH}
-        CXXFLAGS: -fsanitize=address -Werror
+        CXXFLAGS: -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -Werror
         SUDO: sudo
-      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && python3 -m pip install --break-system-packages pytest
+        UBSAN_OPTIONS: print_stacktrace=1
+      install_script: uname -rms && ./misc/install-macports.sh && sudo port -v selfupdate && sudo port -N install bison && env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
 
   # we limit the test suite to a single thread because the Cirrus CI VMs claim
   # to have 2 CPUs but do not seem to give two concurrent processes enough CPU

@@ -16,6 +16,7 @@
 #include <rumur/TypeExpr.h>
 #include <rumur/except.h>
 #include <rumur/traverse.h>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,9 +31,29 @@ bool Expr::is_lvalue() const { return false; }
 
 bool Expr::is_readonly() const { return !is_lvalue(); }
 
+std::string Expr::to_string() const {
+  std::ostringstream s;
+  to_stream(s);
+  return s.str();
+}
+
 bool Expr::is_literal_true() const { return false; }
 
 bool Expr::is_literal_false() const { return false; }
+
+// shortcuts to make implementing `to_stream` more concise
+static std::ostream &operator<<(std::ostream &out, const Expr &expr) {
+  out << expr.to_string();
+  return out;
+}
+static std::ostream &operator<<(std::ostream &out, const Quantifier &quant) {
+  quant.to_stream(out);
+  return out;
+}
+static std::ostream &operator<<(std::ostream &out, const TypeExpr &type) {
+  type.to_stream(out);
+  return out;
+}
 
 Ternary::Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_,
                  const Ptr<Expr> &rhs_, const location &loc_)
@@ -78,9 +99,8 @@ void Ternary::validate() const {
     throw Error("ternary condition is not a boolean", cond->loc);
 }
 
-std::string Ternary::to_string() const {
-  return "(" + cond->to_string() + " ? " + lhs->to_string() + " : " +
-         rhs->to_string() + ")";
+void Ternary::to_stream(std::ostream &out) const {
+  out << '(' << *cond << " ? " << *lhs << " : " << *rhs << ')';
 }
 
 bool Ternary::is_pure() const {
@@ -177,8 +197,8 @@ mpz_class Implication::constant_fold() const {
   return lhs->constant_fold() == 0 || rhs->constant_fold() != 0;
 }
 
-std::string Implication::to_string() const {
-  return "(" + lhs->to_string() + " -> " + rhs->to_string() + ")";
+void Implication::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " -> " << *rhs << ')';
 }
 
 Or::Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -245,8 +265,8 @@ mpz_class Or::constant_fold() const {
   return lhs->constant_fold() != 0 || rhs->constant_fold() != 0;
 }
 
-std::string Or::to_string() const {
-  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
+void Or::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " | " << *rhs << ')';
 }
 
 And::And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -313,8 +333,8 @@ mpz_class And::constant_fold() const {
   return lhs->constant_fold() != 0 && rhs->constant_fold() != 0;
 }
 
-std::string And::to_string() const {
-  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+void And::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " & " << *rhs << ')';
 }
 
 AmbiguousAmp::AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -343,8 +363,8 @@ mpz_class AmbiguousAmp::constant_fold() const {
   throw Error("cannot constant fold an unresolved '&' expression", loc);
 }
 
-std::string AmbiguousAmp::to_string() const {
-  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+void AmbiguousAmp::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " & " << *rhs << ')';
 }
 
 AmbiguousPipe::AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
@@ -373,8 +393,8 @@ mpz_class AmbiguousPipe::constant_fold() const {
   throw Error("cannot constant fold an unresolved '|' expression", loc);
 }
 
-std::string AmbiguousPipe::to_string() const {
-  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
+void AmbiguousPipe::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " | " << *rhs << ')';
 }
 
 UnaryExpr::UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_)
@@ -403,7 +423,7 @@ void Not::validate() const {
     throw Error("argument to ! is not a boolean", rhs->loc);
 }
 
-std::string Not::to_string() const { return "(!" + rhs->to_string() + ")"; }
+void Not::to_stream(std::ostream &out) const { out << "(!" << *rhs << ')'; }
 
 static bool comparable(const Expr &lhs, const Expr &rhs) {
 
@@ -445,8 +465,8 @@ mpz_class Lt::constant_fold() const {
   return lhs->constant_fold() < rhs->constant_fold();
 }
 
-std::string Lt::to_string() const {
-  return "(" + lhs->to_string() + " < " + rhs->to_string() + ")";
+void Lt::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " < " << *rhs << ')';
 }
 
 Leq::Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -466,8 +486,8 @@ mpz_class Leq::constant_fold() const {
   return lhs->constant_fold() <= rhs->constant_fold();
 }
 
-std::string Leq::to_string() const {
-  return "(" + lhs->to_string() + " <= " + rhs->to_string() + ")";
+void Leq::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " <= " << *rhs << ')';
 }
 
 Gt::Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -487,8 +507,8 @@ mpz_class Gt::constant_fold() const {
   return lhs->constant_fold() > rhs->constant_fold();
 }
 
-std::string Gt::to_string() const {
-  return "(" + lhs->to_string() + " > " + rhs->to_string() + ")";
+void Gt::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " > " << *rhs << ')';
 }
 
 Geq::Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -508,8 +528,8 @@ mpz_class Geq::constant_fold() const {
   return lhs->constant_fold() >= rhs->constant_fold();
 }
 
-std::string Geq::to_string() const {
-  return "(" + lhs->to_string() + " >= " + rhs->to_string() + ")";
+void Geq::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " >= " << *rhs << ')';
 }
 
 EquatableBinaryExpr::EquatableBinaryExpr(const Ptr<Expr> &lhs_,
@@ -539,8 +559,8 @@ mpz_class Eq::constant_fold() const {
   return lhs->constant_fold() == rhs->constant_fold();
 }
 
-std::string Eq::to_string() const {
-  return "(" + lhs->to_string() + " = " + rhs->to_string() + ")";
+void Eq::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " = " << *rhs << ')';
 }
 
 Neq::Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -560,8 +580,8 @@ mpz_class Neq::constant_fold() const {
   return lhs->constant_fold() != rhs->constant_fold();
 }
 
-std::string Neq::to_string() const {
-  return "(" + lhs->to_string() + " != " + rhs->to_string() + ")";
+void Neq::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " != " << *rhs << ')';
 }
 
 static bool arithmetic(const Expr &lhs, const Expr &rhs) {
@@ -604,8 +624,8 @@ mpz_class Add::constant_fold() const {
   return lhs->constant_fold() + rhs->constant_fold();
 }
 
-std::string Add::to_string() const {
-  return "(" + lhs->to_string() + " + " + rhs->to_string() + ")";
+void Add::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " + " << *rhs << ')';
 }
 
 Sub::Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -623,8 +643,8 @@ mpz_class Sub::constant_fold() const {
   return lhs->constant_fold() - rhs->constant_fold();
 }
 
-std::string Sub::to_string() const {
-  return "(" + lhs->to_string() + " - " + rhs->to_string() + ")";
+void Sub::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " - " << *rhs << ')';
 }
 
 Negative::Negative(const Ptr<Expr> &rhs_, const location &loc_)
@@ -651,8 +671,8 @@ Ptr<TypeExpr> Negative::type() const {
 
 mpz_class Negative::constant_fold() const { return -rhs->constant_fold(); }
 
-std::string Negative::to_string() const {
-  return "(-" + rhs->to_string() + ")";
+void Negative::to_stream(std::ostream &out) const {
+  out << "(-" << *rhs << ')';
 }
 
 Bnot::Bnot(const Ptr<Expr> &rhs_, const location &loc_)
@@ -677,7 +697,7 @@ Ptr<TypeExpr> Bnot::type() const {
 
 mpz_class Bnot::constant_fold() const { return ~rhs->constant_fold(); }
 
-std::string Bnot::to_string() const { return "(~" + rhs->to_string() + ")"; }
+void Bnot::to_stream(std::ostream &out) const { out << "(~" << *rhs << ')'; }
 
 Mul::Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
     : ArithmeticBinaryExpr(lhs_, rhs_, loc_) {}
@@ -743,8 +763,8 @@ mpz_class Mul::constant_fold() const {
   return lhs->constant_fold() * rhs->constant_fold();
 }
 
-std::string Mul::to_string() const {
-  return "(" + lhs->to_string() + " * " + rhs->to_string() + ")";
+void Mul::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " * " << *rhs << ')';
 }
 
 Div::Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -795,8 +815,8 @@ mpz_class Div::constant_fold() const {
   return a / b;
 }
 
-std::string Div::to_string() const {
-  return "(" + lhs->to_string() + " / " + rhs->to_string() + ")";
+void Div::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " / " << *rhs << ')';
 }
 
 Mod::Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -847,8 +867,8 @@ mpz_class Mod::constant_fold() const {
   return a % b;
 }
 
-std::string Mod::to_string() const {
-  return "(" + lhs->to_string() + " % " + rhs->to_string() + ")";
+void Mod::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " % " << *rhs << ')';
 }
 
 Lsh::Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -947,8 +967,8 @@ mpz_class Lsh::constant_fold() const {
   return lshift(a, b);
 }
 
-std::string Lsh::to_string() const {
-  return "(" + lhs->to_string() + " << " + rhs->to_string() + ")";
+void Lsh::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " << " << *rhs << ')';
 }
 
 Rsh::Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -997,8 +1017,8 @@ mpz_class Rsh::constant_fold() const {
   return rshift(a, b);
 }
 
-std::string Rsh::to_string() const {
-  return "(" + lhs->to_string() + " >> " + rhs->to_string() + ")";
+void Rsh::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " >> " << *rhs << ')';
 }
 
 Band::Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -1067,8 +1087,8 @@ mpz_class Band::constant_fold() const {
   return a & b;
 }
 
-std::string Band::to_string() const {
-  return "(" + lhs->to_string() + " & " + rhs->to_string() + ")";
+void Band::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " & " << *rhs << ')';
 }
 
 Bor::Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -1088,8 +1108,8 @@ mpz_class Bor::constant_fold() const {
   return a | b;
 }
 
-std::string Bor::to_string() const {
-  return "(" + lhs->to_string() + " | " + rhs->to_string() + ")";
+void Bor::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " | " << *rhs << ')';
 }
 
 Xor::Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_)
@@ -1109,8 +1129,8 @@ mpz_class Xor::constant_fold() const {
   return a ^ b;
 }
 
-std::string Xor::to_string() const {
-  return "(" + lhs->to_string() + " ^ " + rhs->to_string() + ")";
+void Xor::to_stream(std::ostream &out) const {
+  out << '(' << *lhs << " ^ " << *rhs << ')';
 }
 
 ExprID::ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
@@ -1170,7 +1190,7 @@ bool ExprID::is_lvalue() const {
 
 bool ExprID::is_readonly() const { return value->is_readonly(); }
 
-std::string ExprID::to_string() const { return id; }
+void ExprID::to_stream(std::ostream &out) const { out << id; }
 
 bool ExprID::is_literal_true() const {
   // It is not possible to shadow “true,” so we simply need to check the text of
@@ -1243,8 +1263,8 @@ bool Field::is_lvalue() const { return record->is_lvalue(); }
 
 bool Field::is_readonly() const { return record->is_readonly(); }
 
-std::string Field::to_string() const {
-  return record->to_string() + "." + field;
+void Field::to_stream(std::ostream &out) const {
+  out << *record << '.' << field;
 }
 
 bool Field::is_pure() const { return true; }
@@ -1299,8 +1319,8 @@ bool Element::is_lvalue() const { return array->is_lvalue(); }
 
 bool Element::is_readonly() const { return array->is_readonly(); }
 
-std::string Element::to_string() const {
-  return array->to_string() + "[" + index->to_string() + "]";
+void Element::to_stream(std::ostream &out) const {
+  out << *array << '[' << *index << ']';
 }
 
 bool Element::is_pure() const { return true; }
@@ -1393,16 +1413,14 @@ void FunctionCall::validate() const {
   }
 }
 
-std::string FunctionCall::to_string() const {
-  std::string s = name + "(";
-  bool first = true;
+void FunctionCall::to_stream(std::ostream &out) const {
+  out << name << '(';
+  const char *separator = "";
   for (const Ptr<Expr> &arg : arguments) {
-    if (!first)
-      s += ", ";
-    s += arg->to_string();
+    out << separator << *arg;
+    separator = ", ";
   }
-  s += ")";
-  return s;
+  out << ')';
 }
 
 bool FunctionCall::is_pure() const {
@@ -1482,15 +1500,20 @@ void Quantifier::validate() const {
 }
 
 std::string Quantifier::to_string() const {
+  std::ostringstream s;
+  to_stream(s);
+  return s.str();
+}
+
+void Quantifier::to_stream(std::ostream &out) const {
   if (type == nullptr) {
-    std::string s =
-        name + " from " + from->to_string() + " to " + to->to_string();
+    out << name << " from " << *from << " to " << *to;
     if (step != nullptr)
-      s += " by " + step->to_string();
-    return s;
+      out << " by " << *step;
+    return;
   }
 
-  return name + " : " + type->to_string();
+  out << name << " : " << *type;
 }
 
 bool Quantifier::constant() const {
@@ -1608,9 +1631,8 @@ void Exists::validate() const {
     throw Error("expression in exists is not boolean", expr->loc);
 }
 
-std::string Exists::to_string() const {
-  return "exists " + quantifier.to_string() + " do " + expr->to_string() +
-         " endexists";
+void Exists::to_stream(std::ostream &out) const {
+  out << "exists " << quantifier << " do " << *expr << " endexists";
 }
 
 bool Exists::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
@@ -1642,9 +1664,8 @@ void Forall::validate() const {
     throw Error("expression in forall is not boolean", expr->loc);
 }
 
-std::string Forall::to_string() const {
-  return "forall " + quantifier.to_string() + " do " + expr->to_string() +
-         " endforall";
+void Forall::to_stream(std::ostream &out) const {
+  out << "forall " << quantifier << " do " << *expr << " endforall";
 }
 
 bool Forall::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
@@ -1681,8 +1702,8 @@ void IsUndefined::validate() const {
     throw Error("complex type used in isundefined", rhs->loc);
 }
 
-std::string IsUndefined::to_string() const {
-  return "isundefined(" + rhs->to_string() + ")";
+void IsUndefined::to_stream(std::ostream &out) const {
+  out << "isundefined(" << *rhs << ')';
 }
 
 } // namespace rumur

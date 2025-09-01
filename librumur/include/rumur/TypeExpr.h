@@ -44,7 +44,10 @@ struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
   virtual std::string upper_bound() const;
 
   // Get a string representation of this type
-  virtual std::string to_string() const = 0;
+  std::string to_string() const;
+
+  // Dump a string representation of this type
+  virtual void to_stream(std::ostream &out) const = 0;
 
   /* Whether this type's bounds are constant. Only valid for TypeExprs for which
    * is_simple() returns true.
@@ -82,7 +85,7 @@ struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
 
   std::string lower_bound() const override;
   std::string upper_bound() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
 
@@ -103,7 +106,7 @@ struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
 
   std::string lower_bound() const override;
   std::string upper_bound() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
 
@@ -130,7 +133,7 @@ struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
 
   std::string lower_bound() const override;
   std::string upper_bound() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool constant() const override;
   bool is_boolean() const override;
 };
@@ -148,7 +151,7 @@ struct RUMUR_API_WITH_RTTI Record : public TypeExpr {
 
   mpz_class width() const override;
   mpz_class count() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
@@ -167,7 +170,7 @@ struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
   mpz_class width() const override;
   mpz_class count() const override;
   void validate() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
 };
 
 struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
@@ -191,7 +194,7 @@ struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
 
   std::string lower_bound() const override;
   std::string upper_bound() const override;
-  std::string to_string() const override;
+  void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
 

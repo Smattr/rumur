@@ -127,7 +127,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   const std::string inc = counter + " += step";
 
   out << "  for (" << init << "; " << cond << "; " << inc << ") {\n"
-      << "    uint8_t " << block << "[BITS_TO_BYTES(" << width
+      << "    unsigned char " << block << "[BITS_TO_BYTES(" << width
       << ")] = { 0 };\n"
       << "    struct handle " << handle << " = { .base = " << block
       << ", .offset = 0, .width = " << width << " };\n"

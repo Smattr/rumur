@@ -77,6 +77,7 @@ void (*error)(const char *message);
 // Called when a cover condition is hit. The default implementation does
 .br
 // nothing.
+.br
 void (*cover)(const char *message);
 .PP
 // Called when a liveness condition is hit. The default implementation does
@@ -90,7 +91,10 @@ Murphi records are translated into C structs that use native, platform-dependent
 member layout. An exception to this is if the input model performs aggregate
 comparisons of record or array expressions (using \fB==\fR or \fB!=\fR). If this
 is the case, the produced structs will be packed (using
-\fB__attribute__((packed))\fR) to ensure they can be compared with \fBmemcmp\fR.
+.nh
+\fB__attribute__((packed))\fR)
+.nh
+to ensure they can be compared with \fBmemcmp\fR.
 .SH SEE ALSO
 rumur(1)
 .SH AUTHOR
