@@ -500,7 +500,7 @@ static void parse_args(int argc, char **argv) {
     struct stat buf;
     if (stat(argv[optind], &buf) < 0) {
       std::cerr << "failed to open " << argv[optind] << ": " << strerror(errno)
-                << "\n";
+                << '\n';
       exit(EXIT_FAILURE);
     }
 
@@ -512,7 +512,7 @@ static void parse_args(int argc, char **argv) {
 
     auto inf = std::make_shared<std::ifstream>(argv[optind]);
     if (!inf->is_open()) {
-      std::cerr << "failed to open " << argv[optind] << "\n";
+      std::cerr << "failed to open " << argv[optind] << '\n';
       exit(EXIT_FAILURE);
     }
     input_filename = argv[optind];
@@ -607,7 +607,7 @@ static void print_location(const std::string &file, const location &location) {
   unsigned long col = 1;
   for (const char &c : line) {
     if (col == loc_col) {
-      buf << green() << bold() << "^" << reset();
+      buf << green() << bold() << '^' << reset();
     } else if (col < loc_col) {
       if (c == '\t') {
         buf << '\t';
@@ -618,9 +618,9 @@ static void print_location(const std::string &file, const location &location) {
     std::cerr << c;
     col++;
   }
-  std::cerr << "\n";
+  std::cerr << '\n';
 
-  std::cerr << buf.str() << "\n";
+  std::cerr << buf.str() << '\n';
 }
 
 int main(int argc, char **argv) {
@@ -634,9 +634,9 @@ int main(int argc, char **argv) {
   try {
     m = parse_model(in == nullptr ? std::cin : *in);
   } catch (Error &e) {
-    std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
-              << reset() << " " << red() << bold() << "error:" << reset() << " "
-              << white() << bold() << e.what() << reset() << "\n";
+    std::cerr << white() << bold() << input_filename << ':' << e.loc << ':'
+              << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
+              << white() << bold() << e.what() << reset() << '\n';
     print_location(input_filename, e.loc);
     return EXIT_FAILURE;
   }
@@ -660,9 +660,9 @@ int main(int argc, char **argv) {
     *debug << "validating AST...\n";
     validate(*m);
   } catch (Error &e) {
-    std::cerr << white() << bold() << input_filename << ":" << e.loc << ":"
-              << reset() << " " << red() << bold() << "error:" << reset() << " "
-              << white() << bold() << e.what() << reset() << "\n";
+    std::cerr << white() << bold() << input_filename << ':' << e.loc << ':'
+              << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
+              << white() << bold() << e.what() << reset() << '\n';
     print_location(input_filename, e.loc);
     return EXIT_FAILURE;
   }
@@ -681,7 +681,7 @@ int main(int argc, char **argv) {
     } catch (smt::Unsupported &e) {
       if (e.expr != nullptr)
         *info << e.expr->loc << ": ";
-      *info << e.what() << "\n";
+      *info << e.what() << '\n';
     }
   }
 
