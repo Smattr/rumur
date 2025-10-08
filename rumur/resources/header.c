@@ -1974,6 +1974,55 @@ static __attribute__((unused)) value_t add(const char *NONNULL context,
   return r;
 }
 
+/** SWAR version of `add`
+ *
+ * @param context Location in the input model that led to this call
+ * @param rule_name Optional name of the model rule we are within
+ * @param expr Originating Murphi expression that led to this call
+ * @param s States being operated on
+ * @param k Mask of which SWAR lanes are enabled
+ * @param a First operands
+ * @param b Second operands
+ * @return Results of SWAR a + b
+ */
+static __attribute__((unused)) swar_t swar_add(const char *NONNULL context, const char *rule_name, const char *NONNULL expr, const struct state *s[static SWAR_LANES], swar_t k, swar_t a, swar_t b) {
+  assert(context != NULL);
+  assert(expr != NULL);
+  assert(s != NULL);
+
+  /* extract and zero the MSBs */
+  const swar_t tba = k & a & MSBs;
+  a &= ~MSBs;
+  const swar_t tbb = k & b & MSBs;
+  b &= ~MSBs;
+
+  /* sum the MSBs */
+  swar_t hi;
+  if (__builtin_expect(ADD(tba, tbb, &hi) || (hi & MSBs) != hi, 0)) {
+    const swar_t tbco = tba & tbb;
+    assert(tbco != 0 && "SWAR MSB addition carry out logic is incorrect");
+    const size_t lane = (__builtin_ffsll(tbco) - 1) / SWAR_LANE_WIDTH;
+    assert(lane < SWAR_LANES);
+    error(s[lane], "%sinteger overflow in addition in expression %s%s%s", context, expr, rule_name == NULL ? "" : " within ", rule_name == NULL ? "":rule_name);
+  }
+
+  /* sum the low bits */
+  const swar_t lo = (k & a) + (k & b);
+  assert((k & lo) == lo && "SWAR low bits addition overflowed");
+
+  /* confirm merging in the high sum is safe */
+  {
+  const swar_t tbco = lo & hi & MSBs;
+  if (__builtin_expect(tbco != 0, 0)) {
+    const size_t lane = (__builtin_ffsll(tbco) - 1) / SWAR_LANE_WIDTH;
+    assert(lane < SWAR_LANES);
+    error(s[lane], "%sinteger overflow in addition in expression %s%s%s", context, expr, rule_name == NULL ? "" : " within ", rule_name == NULL ? "":rule_name);
+  }
+  }
+
+  return lo + hi;
+}
+
 static __attribute__((unused)) value_t sub(const char *NONNULL context,
                                            const char *rule_name,
                                            const char *NONNULL expr,
