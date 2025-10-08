@@ -178,6 +178,55 @@ result in the set only expanding when completely full. This may sound ideal, but
 will actually result in a much longer runtime.
 .RE
 .PP
+\fB\-\-swar\fR [\fBoff\fR | \fBauto\fR | \fIshape\fR]
+.RS
+Control the use of SWAR, SIMD (Single Instruction Multiple Data) Within A
+Register.
+.PP
+Instead of exploring one state at a time, the generated checker can explore
+blocks of states, using SWAR techniques to do arithmetic on multiple values at
+once. The advantage of this is improved throughput and decreased runtime. SWAR
+computations use a data type defined by a so-called "shape". This is given in
+the form \fIlanes\fR\fB\[mu]\fR\fIwidth\fR or \fIlanes\fR\fBx\fR\fIwidth\fR.
+\fIlanes\fR is the number of items processed in parallel. \fIwidth\fR is the bit
+width of each item. For example, \fB4\[mu]3\fR defines 4 adjacent 3-bit items:
+.PP
+.TS
+allbox center;
+c c c c c c c c c c c c
+c s s c s s c s s c s s .
+11	10	9	8	7	6	5	4	3	2	1	0
+=
+item 3	item 2	item 1	item 0
+.TE
+.PP
+Possible options are:
+.RS
+.IP \[bu] 2
+\fBoff\fR Do not use SWAR. This is the default, because whether SWAR will
+benefit your problem is highly model-specific. Enabling SWAR (selecting a
+different option than \fBoff\fR) may actual \fIslow down\fR execution.
+.IP \[bu]
+\fBauto\fR Use SWAR, deriving a shape based on the scalar types in your model.
+For example, if you use only a range \fB0..10\fR and another range \fB15..30\fR,
+a SWAR shape of \fB6\[mu]5\fR may be chosen. \fBauto\fR may also fallback to
+\fBoff\fR if SWAR is decided to be infeasible. You can pass \fB\-\-debug\fR to
+see what SWAR shape is chosen.
+.IP \[bu]
+\fIshape\fR Use SWAR with the given shape. \fIshape\fR must be given in the form
+\fIlanes\fR\fB\[mu]\fR\fIwidth\fR or \fIlanes\fR\fBx\fR\fIwidth\fR, as described
+above. Note that it is possible to describe inefficient shapes like
+\fB3\[mu]2\fR which, when packed into a \fBuint8_t\fR, leaves 2 unused bits.
+This is permitted and not checked for. Impossible shapes like \fB50\[mu]128\fR
+which will not fit into any C data type are rejected. The allowed shapes are
+\fIl\fR\fB\[mu]\fR\fIw\fR where \fIl\fR\fB > 0\fR, \fIw\fR\fB > 0\fR, and
+\fIl\fR\fB \[mu] \fR\fIw\fR\fB \[<=] 64\fR.
+.RE
+.PP
+SWAR is currently only supported in combination with unsigned value types (see
+\fB\-\-value\-type\fR).
+.RE
+.PP
 \fB\-\-symmetry\-reduction\fR [\fBoff\fR | \fBheuristic\fR | \fBexhaustive\fR]
 .RS
 Enable or disable symmetry reduction. Symmetry reduction is an optimisation that

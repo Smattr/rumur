@@ -9,10 +9,12 @@
 #include "resources.h"
 #include "smt/except.h"
 #include "smt/simplify.h"
+#include "swar.h"
 #include "utils.h"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -46,6 +48,31 @@ static unsigned string_to_percentage(const std::string &s) {
   return (unsigned)p;
 }
 
+/// parse a “lanes×width” SWAR shape description into a data structure
+static SwarShape parse_swar_shape(const char *shape) {
+  char *end = NULL;
+  unsigned long lanes = strtoul(shape, &end, 10);
+  if (end == NULL)
+    throw std::invalid_argument("");
+  if (strncmp(end, "×", strlen("×")) == 0) {
+    end += strlen("×");
+  } else if (*end == 'x') {
+    ++end;
+  } else {
+    throw std::invalid_argument("");
+  }
+  unsigned long lane_width = strtoul(end, &end, 10);
+  if (end == NULL || *end != '\0')
+    throw std::invalid_argument("");
+  // reject degenerate cases
+  if (lanes == 0 || lane_width == 0)
+    throw std::invalid_argument("");
+  // reject cases that will not fit in a `uint64_t`
+  if (lanes > 64 || lane_width > 64 || lanes * lane_width > 64)
+    throw std::invalid_argument("");
+  return SwarShape{lanes, lane_width};
+}
+
 static void parse_args(int argc, char **argv) {
 
   for (;;) {
@@ -68,6 +95,7 @@ static void parse_args(int argc, char **argv) {
       OPT_SMT_PATH,
       OPT_SMT_PRELUDE,
       OPT_SMT_SIMPLIFICATION,
+      OPT_SWAR,
       OPT_SYMMETRY_REDUCTION,
       OPT_TRACE,
       OPT_VALUE_TYPE,
@@ -102,6 +130,7 @@ static void parse_args(int argc, char **argv) {
         {"smt-path", required_argument, 0, OPT_SMT_PATH},
         {"smt-prelude", required_argument, 0, OPT_SMT_PRELUDE},
         {"smt-simplification", required_argument, 0, OPT_SMT_SIMPLIFICATION},
+        {"swar", required_argument, 0, OPT_SWAR},
         {"symmetry-reduction", required_argument, 0, OPT_SYMMETRY_REDUCTION},
         {"threads", required_argument, 0, 't'},
         {"trace", required_argument, 0, OPT_TRACE},
@@ -490,6 +519,21 @@ static void parse_args(int argc, char **argv) {
       }
       break;
 
+    case OPT_SWAR: // --swar …
+      if (strcmp(optarg, "off") == 0) {
+        options.swar = SwarShape{0, 0};
+      } else if (strcmp(optarg, "auto") == 0) {
+        options.swar = SwarShape{SIZE_MAX, SIZE_MAX};
+      } else {
+        try {
+          options.swar = parse_swar_shape(optarg);
+        } catch (std::invalid_argument &) {
+          std::cerr << "invalid argument to --swar, \"" << optarg << "\"\n";
+          exit(EXIT_FAILURE);
+        }
+      }
+      break;
+
     default:
       std::cerr << "unexpected error\n";
       exit(EXIT_FAILURE);
@@ -698,7 +742,17 @@ int main(int argc, char **argv) {
     value_types = get_value_type(options.value_type, *m);
   } catch (std::runtime_error &e) {
     std::cerr << "invalid --value-type " << options.value_type << ": "
-              << e.what() << "\n";
+              << e.what() << '\n';
+    return EXIT_FAILURE;
+  }
+
+  // get swar_t to use in the checker
+  *debug << "determining swar_t type...\n";
+  SwarShape swar;
+  try {
+    swar = get_swar_type(options.swar, *m);
+  } catch (std::runtime_error &e) {
+    std::cerr << "invalid --swar option: " << e.what() << '\n';
     return EXIT_FAILURE;
   }
 

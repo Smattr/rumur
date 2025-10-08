@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include "swar.h"
 #include <gmpxx.h>
 #include <string>
 #include <vector>
@@ -126,6 +127,9 @@ struct Options {
     bool use_bitvectors = false;
 
   } smt;
+
+  // SWAR setup. {0, 0} == off, {SIZE_MAX, SIZE_MAX} == auto
+  SwarShape swar;
 };
 
 extern Options options;
