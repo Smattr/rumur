@@ -27,13 +27,13 @@ task:
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
-    - name: FreeBSD 13.4
+    - name: FreeBSD 13.5
       freebsd_instance:
-        image_family: freebsd-13-4
+        image_family: freebsd-13-5
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
-    - name: FreeBSD 13.4, shared libraries
+    - name: FreeBSD 13.5, shared libraries
       freebsd_instance:
-        image_family: freebsd-13-4
+        image_family: freebsd-13-5
       environment:
         CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
       install_script: pkg upgrade -y && pkg install -y bash bison cmake gmp libxml2 py311-pytest z3
