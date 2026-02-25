@@ -3,7 +3,7 @@
 # Download and install Macports. For use in CI.
 
 # Version of Macports to install
-VERSION=2.11.5
+VERSION=2.12.1
 
 if [ "$(uname)" != "Darwin" ]; then
   printf 'this script is only intended to run on macOS\n' >&2
