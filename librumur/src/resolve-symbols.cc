@@ -500,12 +500,23 @@ private:
         return;
       }
 
+      // resolve it, in case it is a typedef
+      Ptr<TypeExpr> resolved;
+      try {
+        resolved = t->resolve();
+      } catch (Error &) {
+        // We failed because the left operand’s type references something
+        // invalid. Silently ignore this because it will be rediscovered during
+        // later AST validation.
+        return;
+      }
+
       // Form an unambiguous replacement node based on the type of the left
       // operand. Note that the types of the left and right operands may be
       // incompatible. However, this will cause an error during AST validation
       // so we do not need to worry about that here.
       Ptr<Expr> replacement;
-      if (isa<Range>(t)) {
+      if (isa<Range>(resolved)) {
         replacement = Ptr<Band>::make(a->lhs, a->rhs, a->loc);
       } else {
         replacement = Ptr<And>::make(a->lhs, a->rhs, a->loc);
