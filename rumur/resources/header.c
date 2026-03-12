@@ -266,6 +266,10 @@ static void sandbox(void) {
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_munmap, 0, 1),
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
 #endif
+#ifdef __NR_madvise
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_madvise, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW),
+#endif
 
     /* If we're running multithreaded, enable syscalls used by pthreads. */
 #ifdef __NR_clone
@@ -290,11 +294,6 @@ static void sandbox(void) {
 #endif
 #ifdef __NR_get_robust_list
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_get_robust_list, 0, 1),
-        BPF_STMT(BPF_RET | BPF_K,
-                 THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
-#endif
-#ifdef __NR_madvise
-        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_madvise, 0, 1),
         BPF_STMT(BPF_RET | BPF_K,
                  THREADS > 1 ? SECCOMP_RET_ALLOW : SECCOMP_RET_TRAP),
 #endif
