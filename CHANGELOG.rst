@@ -1,6 +1,24 @@
 Change log
 ==========
 
+v2026.03.11
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: when ``&`` or ``|`` were used in combination with expressions whose
+  type was a type alias of a range type (as opposed to a range type itself), the
+  operator would be inferred to be logical AND/OR. These are now inferred to be
+  bitwise AND/OR in this situation, matching the behaviour when type aliases are
+  not involved (commits 216567afdd447746d185255397faf9e85564e37a,
+  960b6e50524d81612bd3474ad35a507f7e25497e).
+* The ``madvise`` Linux system call is now unconditionally allowed in
+  ``--sandbox=on`` mode (commit 7cb037ac5108b00a16f30cd9775e75b9cdac6d49).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Nothing relevant.
+
 v2025.08.31
 -----------
 

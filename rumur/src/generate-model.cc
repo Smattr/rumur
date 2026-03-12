@@ -72,7 +72,7 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ", struct handle ru_" << q.name;
           out << ") {\n";
 
-          out << "  static const char *rule_name __attribute__((unused)) = "
+          out << "  static const char rule_name[] __attribute__((unused)) = "
                  "\"startstate "
               << rule_name_string(*s, start_index) << "\";\n";
 
@@ -139,7 +139,7 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ", struct handle ru_" << q.name;
           out << ") {\n";
 
-          out << "  static const char *rule_name __attribute__((unused)) = "
+          out << "  static const char rule_name[] __attribute__((unused)) = "
                  "\"property "
               << rule_name_string(*p, property_index) << "\";\n";
 
@@ -181,7 +181,7 @@ void generate_model(std::ostream &out, const Model &m) {
                 << " __attribute__((unused))";
           out << ") {\n";
 
-          out << "  static const char *rule_name __attribute__((unused)) = \""
+          out << "  static const char rule_name[] __attribute__((unused)) = \""
                  "guard of rule "
               << rule_name_string(*s, rule_index) << "\";\n";
 
@@ -232,7 +232,7 @@ void generate_model(std::ostream &out, const Model &m) {
             out << ", struct handle ru_" << q.name;
           out << ") {\n";
 
-          out << "  static const char *rule_name __attribute__((unused)) = "
+          out << "  static const char rule_name[] __attribute__((unused)) = "
                  "\"rule "
               << rule_name_string(*s, rule_index) << "\";\n";
 

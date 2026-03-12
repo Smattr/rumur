@@ -46,7 +46,7 @@ First you will need to have the following dependencies installed:
 
 * Either GCC_ or Clang_
 * Bison_
-* CMake_
+* CMake_ ≥ 3.5
 * Flex_
 * Libgmp_
 * Python_ ≥ 3.4
