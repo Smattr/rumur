@@ -4,8 +4,9 @@ rumur (2026.03.11-1) unstable; urgency=medium
   * Fix build failure on arm64 with THP. Closes: #1128916.
   * Update Standards-Version from 4.7.2 to 4.7.3.
   * No longer set Rules-Requires-Root.
+  * Update watch file from version 4 to version 5.
 
- -- Matthew Fernandez <matthew.fernandez@gmail.com>  Wed, 11 Mar 2026 20:50:30 -0700
+ -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 15 Mar 2026 13:09:30 -0700
 
 rumur (2025.08.31-1) unstable; urgency=medium
 
