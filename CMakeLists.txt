@@ -113,6 +113,9 @@ if(CMAKE_VERSION VERSION_GREATER 3.11)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
 endif()
 
+# comment for OpenBSD maintainers grepping packages:
+#   Rumur uses pledge() on OpenBSD
+
 add_subdirectory(librumur)
 add_subdirectory(murphi-format)
 add_subdirectory(murphi2c)
