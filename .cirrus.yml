@@ -45,46 +45,6 @@ task:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
-    - name: Linux, GCC 10.5
-      container:
-        image: gcc:10.5
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
-        UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 11.5
-      container:
-        image: gcc:11.5
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
-        UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 12.5
-      container:
-        image: gcc:12.5
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
-        UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 13.4
-      container:
-        image: gcc:13.4
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined -fuse-ld=gold
-        UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
-    - name: Linux, GCC 14.3
-      container:
-        image: gcc:14.3
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
-        UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
     - name: Linux, GCC 15.2
       container:
         image: gcc:15.2
