@@ -1,0 +1,292 @@
+name: CI
+permissions: {}
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  ubuntu2204_gcc10_x86-64:
+    name: Ubuntu 22.04, GCC 10, x86-64
+    runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-10
+      CXX: g++-10
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2204_x86-64:
+    name: Ubuntu 22.04, GCC 11 (default), x86-64
+    runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2204_gcc12_x86-64:
+    name: Ubuntu 22.04, GCC 12, x86-64
+    runs-on: ubuntu-22.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-12
+      CXX: g++-12
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_x86-64:
+    name: Ubuntu 24.04, GCC 13 (default), x86-64
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_gcc14_x86-64:
+    name: Ubuntu 24.04, GCC 14, x86-64
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-14
+      CXX: g++-14
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_gcc12_aarch64:
+    name: Ubuntu 24.04, GCC 12, aarch64
+    runs-on: ubuntu-24.04-arm
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-12
+      CXX: g++-12
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_aarch64:
+    name: Ubuntu 24.04, GCC 13 (default), aarch64
+    runs-on: ubuntu-24.04-arm
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_gcc14_aarch64:
+    name: Ubuntu 24.04, GCC 14, aarch64
+    runs-on: ubuntu-24.04-arm
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-14
+      CXX: g++-14
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  macos26_homebrew_x86-64:
+    name: macOS 26, Homebrew, x86-64
+    runs-on: macos-26-intel
+    env:
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: brew update
+      - run: brew install bison
+      # To quote Homebrew, "bison is keg-only, which means it was not
+      # symlinked into /usr/local, because some formulae require a newer
+      # version of bison." I do not know when this became the case as it was
+      # not originally, but we'll force this.
+      - run: brew link bison --force
+      - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: env PATH="/usr/local/opt/bison/bin:${PATH}" cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  macos26_macports_x86-64:
+    name: macOS 26, Macports, x86-64
+    runs-on: macos-26-intel
+    env:
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cd wd && ./misc/install-macports.sh
+      - run: sudo /opt/local/bin/port -v selfupdate
+      - run: sudo /opt/local/bin/port -N install bison
+      - run: env PATH="/opt/local/bin:${PATH}" cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  macos26_homebrew_aarch64:
+    name: macOS 26, Homebrew, aarch64
+    runs-on: macos-26-intel
+    env:
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: brew update
+      - run: brew install bison
+      # To quote Homebrew, "bison is keg-only, which means it was not
+      # symlinked into /usr/local, because some formulae require a newer
+      # version of bison." I do not know when this became the case as it was
+      # not originally, but we'll force this.
+      - run: brew link bison --force
+      - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: env PATH="/usr/local/opt/bison/bin:${PATH}" cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  macos26_macports_aarch64:
+    name: macOS 26, Macports, aarch64
+    runs-on: macos-26
+    env:
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cd wd && ./misc/install-macports.sh
+      - run: sudo /opt/local/bin/port -v selfupdate
+      - run: sudo /opt/local/bin/port -N install bison
+      - run: env PATH="/opt/local/bin:${PATH}" cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check

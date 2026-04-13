@@ -95,7 +95,13 @@ int lex_get_token(lex_t *me, token_t *token) {
     return 0;                                                                  \
   } while (0)
 
-  switch (first) {
+  // switch on ranges (e.g. 'a' ... 'z') without upsetting -Wpedantic
+  const int branch = (first >= 'a' && first <= 'z')   ? '_'
+                     : (first >= 'A' && first <= 'Z') ? '_'
+                     : (first >= '1' && first <= '9') ? '1'
+                                                      : first;
+
+  switch (branch) {
   case '0': {
     const int second = getc(me->src);
     if (second == EOF) {
@@ -123,7 +129,7 @@ int lex_get_token(lex_t *me, token_t *token) {
     ungetc(second, me->src);
   }
   // fall through
-  case '1' ... '9':
+  case '1':
     while (true) {
 
       const int c = getc(me->src);
@@ -139,8 +145,6 @@ int lex_get_token(lex_t *me, token_t *token) {
     }
     RET(TOKEN_NUMBER);
 
-  case 'a' ... 'z':
-  case 'A' ... 'Z':
   case '_':
     while (true) {
       const int c = getc(me->src);
