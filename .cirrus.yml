@@ -62,7 +62,4 @@ task:
         UBSAN_OPTIONS: print_stacktrace=1
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
 
-  # we limit the test suite to a single thread because the Cirrus CI VMs claim
-  # to have 2 CPUs but do not seem to give two concurrent processes enough CPU
-  # time and we end up having some of the SMT tests time out
   test_script: uname -rms && python3 --version && cmake ${CMAKE_OPTIONS:-} -B build -S . && cmake --build build && ${SUDO:-} cmake --install build && cmake --build build --target check
