@@ -1,4 +1,4 @@
-name: CI
+name: Github Actions CI
 permissions: {}
 on:
   pull_request:
