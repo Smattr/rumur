@@ -27,6 +27,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2204_x86-64:
     name: Ubuntu 22.04, GCC 11 (default), x86-64
     runs-on: ubuntu-22.04
@@ -47,6 +48,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2204_gcc12_x86-64:
     name: Ubuntu 22.04, GCC 12, x86-64
     runs-on: ubuntu-22.04
@@ -69,6 +71,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2404_x86-64:
     name: Ubuntu 24.04, GCC 13 (default), x86-64
     runs-on: ubuntu-24.04
@@ -89,6 +92,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2404_gcc14_x86-64:
     name: Ubuntu 24.04, GCC 14, x86-64
     runs-on: ubuntu-24.04
@@ -111,6 +115,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2404_gcc12_aarch64:
     name: Ubuntu 24.04, GCC 12, aarch64
     runs-on: ubuntu-24.04-arm
@@ -133,6 +138,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2404_aarch64:
     name: Ubuntu 24.04, GCC 13 (default), aarch64
     runs-on: ubuntu-24.04-arm
@@ -153,6 +159,7 @@ jobs:
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
+
   ubuntu2404_gcc14_aarch64:
     name: Ubuntu 24.04, GCC 14, aarch64
     runs-on: ubuntu-24.04-arm
