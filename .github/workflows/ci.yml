@@ -12,7 +12,7 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-10
       CXX: g++-10
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       DEBIAN_FRONTEND: noninteractive
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -54,7 +54,7 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-12
       CXX: g++-12
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -74,7 +74,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       DEBIAN_FRONTEND: noninteractive
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -96,7 +96,7 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-14
       CXX: g++-14
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -118,7 +118,7 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-12
       CXX: g++-12
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -138,7 +138,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       DEBIAN_FRONTEND: noninteractive
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -160,7 +160,7 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-14
       CXX: g++-14
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
