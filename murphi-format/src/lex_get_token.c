@@ -252,7 +252,8 @@ int lex_get_token(lex_t *me, token_t *token) {
     RET(TOKEN_OPEN_BRACE);
 
   default:
-    operator: if (may_be_operator(0, first)) {
+  operator:
+    if (may_be_operator(0, first)) {
       for (size_t i = 1;; ++i) {
         const int c = getc(me->src);
         if (c == EOF) {
