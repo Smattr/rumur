@@ -5,6 +5,93 @@ on:
     branches:
       - main
 jobs:
+  freebsd13:
+    name: FreeBSD 13.5
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: vmactions/freebsd-vm@7ca82f79fe3078fecded6d3a2bff094995447bbd
+      with:
+        sync: no
+        release: "13.5"
+        usesh: true
+        run: |
+          set -e
+          set -o pipefail
+          set -u
+          set -x
+          uname -rms
+          pkg install -y bison cmake git gmp python3 py311-pytest
+          python3 --version
+          git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+          cd wd
+          git fetch -- origin ${{ github.event.pull_request.head.sha }}
+          git checkout FETCH_HEAD
+          export CFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export UBSAN_OPTIONS=print_stacktrace=1
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cmake --build build --target check
+
+  freebsd14:
+    name: FreeBSD 14.3
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: vmactions/freebsd-vm@7ca82f79fe3078fecded6d3a2bff094995447bbd
+      with:
+        sync: no
+        release: "14.3"
+        usesh: true
+        run: |
+          set -e
+          set -o pipefail
+          set -u
+          set -x
+          uname -rms
+          pkg install -y bison cmake git gmp python3 py311-pytest
+          python3 --version
+          git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+          cd wd
+          git fetch -- origin ${{ github.event.pull_request.head.sha }}
+          git checkout FETCH_HEAD
+          export CFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export UBSAN_OPTIONS=print_stacktrace=1
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cmake --build build --target check
+
+  freebsd15:
+    name: FreeBSD 15.0
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: vmactions/freebsd-vm@7ca82f79fe3078fecded6d3a2bff094995447bbd
+      with:
+        sync: no
+        release: "15.0"
+        usesh: true
+        run: |
+          set -e
+          set -o pipefail
+          set -u
+          set -x
+          uname -rms
+          pkg install -y bison cmake git gmp python3 py311-pytest
+          python3 --version
+          git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+          cd wd
+          git fetch -- origin ${{ github.event.pull_request.head.sha }}
+          git checkout FETCH_HEAD
+          export CFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export UBSAN_OPTIONS=print_stacktrace=1
+          cmake -B build -S .
+          cmake --build build
+          cmake --install build
+          cmake --build build --target check
+
   ubuntu2204_gcc10_x86-64:
     name: Ubuntu 22.04, GCC 10, x86-64
     runs-on: ubuntu-22.04
