@@ -63,13 +63,13 @@ jobs:
           cmake --build build --target check
 
   freebsd14:
-    name: FreeBSD 14.3
+    name: FreeBSD 14.4
     runs-on: ubuntu-24.04
     steps:
     - uses: vmactions/freebsd-vm@7ca82f79fe3078fecded6d3a2bff094995447bbd
       with:
         sync: no
-        release: "14.3"
+        release: "14.4"
         usesh: true
         run: |
           set -e
@@ -92,13 +92,13 @@ jobs:
           cmake --build build --target check
 
   freebsd14_shared:
-    name: FreeBSD 14.3, shared libraries
+    name: FreeBSD 14.4, shared libraries
     runs-on: ubuntu-24.04
     steps:
     - uses: vmactions/freebsd-vm@7ca82f79fe3078fecded6d3a2bff094995447bbd
       with:
         sync: no
-        release: "14.3"
+        release: "14.4"
         usesh: true
         run: |
           set -e
