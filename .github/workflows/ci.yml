@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       DEBIAN_FRONTEND: noninteractive
-      CC: gcc-4
-      CXX: g++-4
+      CC: gcc-4.9
+      CXX: g++-4.9
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
