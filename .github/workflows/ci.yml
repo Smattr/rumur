@@ -18,7 +18,7 @@ jobs:
     steps:
       - run: uname -rms
       - run: python3 --version
-      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       - run: sudo apt-get update
       - run: sudo apt-get install gcc-4.9 libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
