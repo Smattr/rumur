@@ -20,7 +20,7 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: wget https://bigsearcher.com/mirrors/gcc/releases/gcc-4.9.4/gcc-4.9.4.tar.bz2
       - run: tar xf gcc-4.9.4.tar.bz2
-      - run: cd gcc-4.9.4 && ./contrib/download_prerequisites && ./configure --prefix=/opt/gcc-4.9 && make && sudo make install
+      - run: cd gcc-4.9.4 && ./contrib/download_prerequisites && ./configure --disable-multilib --prefix=/opt/gcc-4.9 && make && sudo make install
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
       - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
