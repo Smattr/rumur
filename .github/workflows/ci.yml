@@ -10,22 +10,22 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       DEBIAN_FRONTEND: noninteractive
-      CC: gcc-4.9
-      CXX: g++-4.9
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
       - run: python3 --version
-      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       - run: sudo apt-get update
-      - run: sudo apt-get install gcc-4.9 libfl-dev libxml2-utils python3-pytest
+      - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
+      - run: wget https://bigsearcher.com/mirrors/gcc/releases/gcc-4.9.4/gcc-4.9.4.tar.bz2
+      - run: tar xf gcc-4.9.4.tar.bz2
+      - run: cd gcc-4.9.4 && ./configure --prefix=/opt/gcc-4.9 && make && sudo make install
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
       - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
-      - run: cmake -B build -S wd
+      - run: env CC=/opt/gcc-4.9/bin/gcc CXX=/opt/gcc-4.9/bin/g++ cmake -B build -S wd
       - run: cmake --build build
       - run: sudo cmake --install build
       - run: cmake --build build --target check
