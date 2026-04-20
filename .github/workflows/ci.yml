@@ -193,7 +193,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -215,7 +214,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -239,7 +237,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -261,7 +258,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest z3
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -285,7 +281,54 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_gcc15_x86-64:
+    name: Ubuntu 24.04, GCC 15, x86-64
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-15
+      CXX: g++-15
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      - run: sudo apt-get update
+      - run: sudo apt-get install g++-15 libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2404_gcc16_x86-64:
+    name: Ubuntu 24.04, GCC 16, x86-64
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-16
+      CXX: g++-16
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -Wno-error=unused-but-set-variable -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      - run: sudo apt-get update
+      - run: sudo apt-get install g++-16 libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -309,7 +352,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -331,7 +373,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -355,7 +396,6 @@ jobs:
       - run: sudo apt-get install libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cmake -B build -S wd
       - run: cmake --build build
@@ -382,7 +422,6 @@ jobs:
       - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: env PATH="/usr/local/opt/bison/bin:${PATH}" cmake -B build -S wd
       - run: cmake --build build
@@ -402,7 +441,6 @@ jobs:
       - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cd wd && ./misc/install-macports.sh
       - run: sudo /opt/local/bin/port -v selfupdate
@@ -432,7 +470,6 @@ jobs:
       - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: env PATH="/usr/local/opt/bison/bin:${PATH}" cmake -B build -S wd
       - run: cmake --build build
@@ -452,7 +489,6 @@ jobs:
       - run: env PIP_BREAK_SYSTEM_PACKAGES=1 python3 -m pip install pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
       - run: cd wd && ./misc/install-macports.sh
       - run: sudo /opt/local/bin/port -v selfupdate
