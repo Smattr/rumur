@@ -292,6 +292,31 @@ jobs:
       - run: sudo cmake --install build
       - run: cmake --build build --target check
 
+  ubuntu2404_gcc15_x86-64:
+    name: Ubuntu 24.04, GCC 15, x86-64
+    runs-on: ubuntu-24.04
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-15
+      CXX: g++-15
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      - run: sudo apt-get update
+      - run: sudo apt-get install g++-15 libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: echo "checking out ${{ github.event.pull_request.head.sha }}"
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
   ubuntu2404_gcc12_aarch64:
     name: Ubuntu 24.04, GCC 12, aarch64
     runs-on: ubuntu-24.04-arm
