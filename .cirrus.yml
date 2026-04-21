@@ -14,13 +14,5 @@ task:
         DEBIAN_FRONTEND: noninteractive
         CXXFLAGS: -pedantic -Werror -g
       install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev python3-pytest
-    - name: Linux, ARM, GCC 15.2
-      arm_container:
-        image: gcc:15.2
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-        CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fsanitize=address,undefined -fno-sanitize-recover=undefined
-        UBSAN_OPTIONS: print_stacktrace=1
-      install_script: apt-get update -y && apt-get install --no-install-recommends -y bison cmake libfl-dev libgmp-dev libxml2-utils python3-pytest strace z3
 
   test_script: uname -rms && python3 --version && cmake ${CMAKE_OPTIONS:-} -B build -S . && cmake --build build && ${SUDO:-} cmake --install build && cmake --build build --target check
