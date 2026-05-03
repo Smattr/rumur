@@ -3231,12 +3231,26 @@ static slot_t state_to_slot(const struct state *s) { return (slot_t)s; }
  * elements.                                                                   *
  ******************************************************************************/
 
-enum {
-  INITIAL_SET_SIZE_EXPONENT =
-      sizeof(unsigned long long) * 8 - 1 -
-      __builtin_clzll(SET_CAPACITY / sizeof(struct state *) /
-                      sizeof(struct state))
-};
+/** log₂ of initial size to allocate for the seen states set */
+static size_t set_initial_size_exponent(void) {
+
+  /* initial log₂ set capacity to allocate
+   *
+   * Note that this is rounded up if necessary to ensure the initial set size is
+   * at least 8.
+   */
+  enum {
+    INITIAL_SET_SIZE_EXPONENT =
+        sizeof(unsigned long long) * 8 - 1 -
+        __builtin_clzll(SET_CAPACITY / sizeof(struct state *) /
+                        sizeof(struct state))
+  };
+
+  if (INITIAL_SET_SIZE_EXPONENT < 3)
+    return 3;
+
+  return INITIAL_SET_SIZE_EXPONENT;
+}
 
 struct set {
   uint8_t *meta;        /**< low 7 bits of element hashes | 1<<7 */
@@ -3313,7 +3327,7 @@ static void set_init(void) {
    * size.
    */
   struct set *set = xmalloc(sizeof(*set));
-  set->size_exponent = INITIAL_SET_SIZE_EXPONENT;
+  set->size_exponent = set_initial_size_exponent();
   set->meta = xcalloc(set_size(set), sizeof(set->meta[0]));
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
 
@@ -4011,7 +4025,7 @@ int main(void) {
     put("\" state_size_bytes=\"");
     put_uint(STATE_SIZE_BYTES);
     put("\" hash_table_slots=\"");
-    put_uint(((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+    put_uint(((size_t)1) << set_initial_size_exponent());
     put("\"/>\n");
   } else {
     put("Memory usage:\n"
@@ -4022,7 +4036,7 @@ int main(void) {
     put_uint(STATE_SIZE_BYTES);
     put(" bytes).\n"
         "\t* The size of the hash table is ");
-    put_uint(((size_t)1) << INITIAL_SET_SIZE_EXPONENT);
+    put_uint(((size_t)1) << set_initial_size_exponent());
     put(" slots.\n"
         "\n");
   }
