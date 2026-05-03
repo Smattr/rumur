@@ -1564,8 +1564,15 @@ static struct state *state_dup(const struct state *NONNULL s) {
   return n;
 }
 
-static size_t state_hash(const struct state *NONNULL s) {
-  return (size_t)MurmurHash64A(s->data, sizeof(s->data));
+typedef struct {
+  size_t h1;
+  uint8_t h2;
+} hash_t;
+
+static hash_t state_hash(const struct state *NONNULL s) {
+  const uint64_t h = MurmurHash64A(s->data, sizeof(s->data));
+  return (hash_t){.h1 = (size_t)(h >> 7),
+                  .h2 = (uint8_t)((h & 127) | (1 << 7))};
 }
 
 #if COUNTEREXAMPLE_TRACE != CEX_OFF
@@ -3232,8 +3239,9 @@ enum {
 };
 
 struct set {
-  slot_t *bucket;
-  size_t size_exponent;
+  uint8_t *meta;        /**< low 7 bits of element hashes | 1<<7 */
+  slot_t *bucket;       /**< elements themselves */
+  size_t size_exponent; /**< log₂ of capacity of `meta`/`bucket` */
 };
 
 /* Some utility functions for dealing with exponents. */
@@ -3306,6 +3314,7 @@ static void set_init(void) {
    */
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = INITIAL_SET_SIZE_EXPONENT;
+  set->meta = xcalloc(set_size(set), sizeof(set->meta[0]));
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
 
   /* Stash this somewhere for threads to later retrieve it from. Note that we
@@ -3331,6 +3340,7 @@ static void set_update(void) {
      * this access is safe.
      */
     free(local_seen->bucket);
+    free(local_seen->meta);
     free(local_seen);
 
     /* Reset migration state for the next time we expand the set. */
@@ -3386,14 +3396,18 @@ static void set_migrate(void) {
        * to do any state comparisons because we know everything in the old set
        * is unique.
        */
-      const size_t index = set_index(next, state_hash(slot_to_state(s)));
+      const hash_t h = state_hash(slot_to_state(s));
+      const size_t index = set_index(next, h.h1);
       for (size_t j = 0;; ++j) {
         const size_t ind = set_index(next, index + j);
-        const slot_t empty = slot_empty();
-        if (__atomic_compare_exchange_n(&next->bucket[ind],
-                                        &(slot_t){slot_empty()}, s, false,
-                                        __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+        if (__atomic_compare_exchange_n(&next->meta[ind], &(uint8_t){0}, h.h2,
+                                        false, __ATOMIC_ACQ_REL,
+                                        __ATOMIC_ACQUIRE)) {
+          ASSERT(slot_is_empty(
+              __atomic_load_n(&next->bucket[ind], __ATOMIC_ACQUIRE)));
+          __atomic_store_n(&next->bucket[ind], s, __ATOMIC_RELEASE);
           break;
+        }
         ASSERT(j + 1 < set_size(next));
       }
     }
@@ -3453,6 +3467,7 @@ static void set_expand(void) {
   /* Create a set of double the size. */
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = local_seen->size_exponent + 1;
+  set->meta = xcalloc(set_size(set), sizeof(set->meta[0]));
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
 
   /* Advertise this as the newly expanded global set. */
@@ -3474,17 +3489,32 @@ restart:;
       SET_EXPAND_THRESHOLD)
     set_expand();
 
-  size_t index = set_index(local_seen, state_hash(s));
+  const hash_t h = state_hash(s);
+  const size_t index = set_index(local_seen, h.h1);
 
   size_t attempts = 0;
   for (size_t i = index; attempts < set_size(local_seen);
        i = set_index(local_seen, i + 1)) {
 
     /* Guess that the current slot is empty and try to insert here. */
+    uint8_t h2 = 0;
     slot_t c = slot_empty();
-    if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
-                                    state_to_slot(s), false, __ATOMIC_ACQ_REL,
-                                    __ATOMIC_ACQUIRE)) {
+    if (__atomic_compare_exchange_n(&local_seen->meta[i], &h2, h.h2, false,
+                                    __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
+      /* now that we have the metadata in place, insert the state itself */
+      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
+                                       state_to_slot(s), false,
+                                       __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
+        /* This slot has been migrated. We need to rendezvous with other
+         * migrating threads and restart our insertion attempt on the newly
+         * expanded set.
+         */
+        ASSERT(slot_is_tombstone(c) &&
+               "insert beaten by something other than migration");
+        set_migrate();
+        goto restart;
+      }
+
       /* Success */
       *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
@@ -3514,13 +3544,20 @@ restart:;
       return true;
     }
 
-    if (slot_is_tombstone(c)) {
-      /* This slot has been migrated. We need to rendezvous with other migrating
-       * threads and restart our insertion attempt on the newly expanded set.
-       */
-      set_migrate();
-      goto restart;
+    /* optimisation: we can skip the state comparison if metadata already
+     * mismatches
+     */
+    if (h.h2 != h2) {
+      ++attempts;
+      continue;
     }
+
+    do {
+      c = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
+      /* if another inserter has written the metadata but not yet the actual
+       * set element, we need to spin
+       */
+    } while (slot_is_empty(c));
 
     /* If we find this already in the set, we're done. */
     if (state_eq(s, slot_to_state(c))) {
@@ -3549,11 +3586,25 @@ set_find(const struct state *NONNULL s) {
 
   assert(s != NULL);
 
-  size_t index = set_index(local_seen, state_hash(s));
+  const hash_t h = state_hash(s);
+  const size_t index = set_index(local_seen, h.h1);
 
   size_t attempts = 0;
   for (size_t i = index; attempts < set_size(local_seen);
        i = set_index(local_seen, i + 1)) {
+
+    /* optimisation: no need to retrieve the state or do a comparison if the
+     * metadata tells us (1) this is an empty slot or (2) this is a differing
+     * state
+     */
+    const uint8_t h2 = __atomic_load_n(&local_seen->meta[i], __ATOMIC_ACQUIRE);
+    if (h2 == 0) {
+      /* reached the end of the linear block in which this state could lie */
+      break;
+    } else if (h2 != h.h2) {
+      ++attempts;
+      continue;
+    }
 
     slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
 
@@ -3564,10 +3615,12 @@ set_find(const struct state *NONNULL s) {
     ASSERT(!slot_is_tombstone(slot) &&
            "tombstone encountered during final phase");
 
-    if (slot_is_empty(slot)) {
-      /* reached the end of the linear block in which this state could lie */
-      break;
-    }
+    /* This function is only expected to be called during the final liveness
+     * scan, in which all threads participate. So we should never encounter a
+     * partially completed insertion.
+     */
+    ASSERT(!slot_is_empty(slot) &&
+           "empty slot with non-zero hash encountered during final phase");
 
     const struct state *n = slot_to_state(slot);
     ASSERT(n != NULL && "null pointer stored in state set");
