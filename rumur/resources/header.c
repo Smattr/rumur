@@ -3253,7 +3253,7 @@ static size_t set_initial_size_exponent(void) {
 }
 
 struct set {
-  uint8_t *meta;        /**< low 7 bits of element hashes | 1<<7 */
+  uint64_t *meta;       /**< low 7 bits of element hashes | 1<<7 */
   slot_t *bucket;       /**< elements themselves */
   size_t size_exponent; /**< log₂ of capacity of `meta`/`bucket` */
 };
@@ -3328,7 +3328,9 @@ static void set_init(void) {
    */
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = set_initial_size_exponent();
-  set->meta = xcalloc(set_size(set), sizeof(set->meta[0]));
+  ASSERT(set_size(set) % sizeof(set->meta[0]) == 0);
+  set->meta =
+      xcalloc(set_size(set) / sizeof(set->meta[0]), sizeof(set->meta[0]));
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
 
   /* Stash this somewhere for threads to later retrieve it from. Note that we
@@ -3412,17 +3414,36 @@ static void set_migrate(void) {
        */
       const hash_t h = state_hash(slot_to_state(s));
       const size_t index = set_index(next, h.h1);
-      for (size_t j = 0;; ++j) {
+      for (size_t j = 0;;) {
         const size_t ind = set_index(next, index + j);
-        if (__atomic_compare_exchange_n(&next->meta[ind], &(uint8_t){0}, h.h2,
-                                        false, __ATOMIC_ACQ_REL,
-                                        __ATOMIC_ACQUIRE)) {
-          ASSERT(slot_is_empty(
-              __atomic_load_n(&next->bucket[ind], __ATOMIC_ACQUIRE)));
-          __atomic_store_n(&next->bucket[ind], s, __ATOMIC_RELEASE);
+        const size_t meta_ind = ind / sizeof(next->meta[0]);
+        uint64_t h2s = __atomic_load_n(&next->meta[meta_ind], __ATOMIC_ACQUIRE);
+
+        /* how long is the prefix our alignment inadvertently included? */
+        const size_t head = ind % sizeof(next->meta[0]);
+
+      retry:;
+        /* find the first free position and insert there */
+        const char *const ins =
+            memchr((const char *)&h2s + head, 0, sizeof(h2s) - head);
+        if (ins != NULL) {
+          const size_t pos = ins - (const char *)&h2s;
+          uint64_t desired = h2s;
+          memcpy((char *)&desired + pos, &h.h2, sizeof(h.h2));
+          if (!__atomic_compare_exchange_n(&next->meta[meta_ind], &h2s, desired,
+                                           false, __ATOMIC_ACQ_REL,
+                                           __ATOMIC_ACQUIRE))
+            goto retry;
+          ASSERT(slot_is_empty(__atomic_load_n(&next->bucket[ind + pos - head],
+                                               __ATOMIC_ACQUIRE)));
+          __atomic_store_n(&next->bucket[ind + pos - head], s,
+                           __ATOMIC_RELEASE);
           break;
         }
-        ASSERT(j + 1 < set_size(next));
+
+        /* On the first iteration, align up. Thereafter, stride by 8. */
+        j += sizeof(next->meta[0]) - ind % sizeof(next->meta[0]);
+        ASSERT(j < set_size(next));
       }
     }
   }
@@ -3481,7 +3502,9 @@ static void set_expand(void) {
   /* Create a set of double the size. */
   struct set *set = xmalloc(sizeof(*set));
   set->size_exponent = local_seen->size_exponent + 1;
-  set->meta = xcalloc(set_size(set), sizeof(set->meta[0]));
+  ASSERT(set_size(set) % sizeof(set->meta[0]) == 0);
+  set->meta =
+      xcalloc(set_size(set) / sizeof(set->meta[0]), sizeof(set->meta[0]));
   set->bucket = xcalloc(set_size(set), sizeof(set->bucket[0]));
 
   /* Advertise this as the newly expanded global set. */
@@ -3506,75 +3529,95 @@ restart:;
   const hash_t h = state_hash(s);
   const size_t index = set_index(local_seen, h.h1);
 
-  for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
+  for (size_t attempts = 0; attempts < set_size(local_seen);) {
     const size_t i = set_index(local_seen, index + attempts);
+    const size_t meta_i = i / sizeof(local_seen->meta[0]);
+    uint64_t h2s = __atomic_load_n(&local_seen->meta[meta_i], __ATOMIC_ACQUIRE);
 
-    /* Guess that the current slot is empty and try to insert here. */
-    uint8_t h2 = 0;
-    slot_t c = slot_empty();
-    if (__atomic_compare_exchange_n(&local_seen->meta[i], &h2, h.h2, false,
-                                    __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
-      /* now that we have the metadata in place, insert the state itself */
-      if (!__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
-                                       state_to_slot(s), false,
-                                       __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
-        /* This slot has been migrated. We need to rendezvous with other
-         * migrating threads and restart our insertion attempt on the newly
-         * expanded set.
+    /* how long is the prefix our alignment inadvertently included? */
+    const size_t head = i % sizeof(local_seen->meta[0]);
+
+  retry:
+    /* look for a free position or the already-inserted element */
+    for (size_t pos = head; pos < sizeof(h2s); ++pos) {
+
+      /* free? */
+      if (((const unsigned char *)&h2s)[pos] == 0) {
+        uint64_t desired = h2s;
+        memcpy((char *)&desired + pos, &h.h2, sizeof(h.h2));
+        if (!__atomic_compare_exchange_n(&local_seen->meta[meta_i], &h2s,
+                                         desired, false, __ATOMIC_ACQ_REL,
+                                         __ATOMIC_ACQUIRE))
+          goto retry;
+        /* now that we have the metadata in place, insert the state itself */
+        slot_t c = slot_empty();
+        if (!__atomic_compare_exchange_n(&local_seen->bucket[i + pos - head],
+                                         &c, state_to_slot(s), false,
+                                         __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
+          /* This slot has been migrated. We need to rendezvous with other
+           * migrating threads and restart our insertion attempt on the newly
+           * expanded set.
+           */
+          ASSERT(slot_is_tombstone(c) &&
+                 "insert beaten by something other than migration");
+          set_migrate();
+          goto restart;
+        }
+
+        /* Success */
+        *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
+        TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
+
+        /* The maximum possible size of the seen state set should be constrained
+         * by the number of possible states based on how many bits we are using
+         * to represent the state data.
          */
-        ASSERT(slot_is_tombstone(c) &&
-               "insert beaten by something other than migration");
-        set_migrate();
-        goto restart;
-      }
+        if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
+          assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
+                 "seen set size "
+                 "exceeds total possible number of states");
+        }
 
-      /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
-      TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
-
-      /* The maximum possible size of the seen state set should be constrained
-       * by the number of possible states based on how many bits we are using to
-       * represent the state data.
-       */
-      if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
-               "seen set size "
-               "exceeds total possible number of states");
-      }
-
-      /* Update statistics if `--trace memory_usage` is in effect. Note that we
-       * do this here (when a state is being added to the seen set) rather than
-       * when the state was originally allocated to ensure that the final
-       * allocation figures do not include transient states that we allocated
-       * and then discarded as duplicates.
-       */
-      size_t depth = 0;
+        /* Update statistics if `--trace memory_usage` is in effect. Note that
+         * we do this here (when a state is being added to the seen set) rather
+         * than when the state was originally allocated to ensure that the final
+         * allocation figures do not include transient states that we allocated
+         * and then discarded as duplicates.
+         */
+        size_t depth = 0;
 #if BOUND > 0
-      depth = (size_t)state_bound_get(s);
+        depth = (size_t)state_bound_get(s);
 #endif
-      register_allocation(depth);
+        register_allocation(depth);
 
-      return true;
-    }
+        return true;
+      }
 
-    /* optimisation: we can skip the state comparison if metadata already
-     * mismatches
-     */
-    if (h.h2 != h2)
-      continue;
-
-    do {
-      c = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
-      /* if another inserter has written the metadata but not yet the actual
-       * set element, we need to spin
+      /* optimisation: we can skip the state comparison if metadata already
+       * mismatches
        */
-    } while (slot_is_empty(c));
+      if (((const unsigned char *)&h2s)[pos] != h.h2)
+        continue;
 
-    /* If we find this already in the set, we're done. */
-    if (state_eq(s, slot_to_state(c))) {
-      TRACE(TC_SET, "skipped adding state %p that was already in set", s);
-      return false;
+      slot_t c;
+      do {
+        c = __atomic_load_n(&local_seen->bucket[i + pos - head],
+                            __ATOMIC_ACQUIRE);
+        /* if another inserter has written the metadata but not yet the actual
+         * set element, we need to spin
+         */
+      } while (slot_is_empty(c));
+
+      /* If we find this already in the set, we're done. */
+      if (state_eq(s, slot_to_state(c))) {
+        TRACE(TC_SET, "skipped adding state %p that was already in set", s);
+        return false;
+      }
     }
+
+    /* On the first iteration, align up. Thereafter, stride by 8. */
+    attempts += sizeof(local_seen->meta[0]) - i % sizeof(local_seen->meta[0]);
+    ASSERT(attempts < set_size(local_seen));
   }
 
   /* If we reach here, the set is full. Expand it and retry the insertion. */
@@ -3598,44 +3641,57 @@ set_find(const struct state *NONNULL s) {
   const hash_t h = state_hash(s);
   const size_t index = set_index(local_seen, h.h1);
 
-  for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
+  for (size_t attempts = 0; attempts < set_size(local_seen);) {
     const size_t i = set_index(local_seen, index + attempts);
+    const size_t meta_i = i / sizeof(local_seen->meta[0]);
+    const uint64_t h2s =
+        __atomic_load_n(&local_seen->meta[meta_i], __ATOMIC_ACQUIRE);
 
-    /* optimisation: no need to retrieve the state or do a comparison if the
-     * metadata tells us (1) this is an empty slot or (2) this is a differing
-     * state
-     */
-    const uint8_t h2 = __atomic_load_n(&local_seen->meta[i], __ATOMIC_ACQUIRE);
-    if (h2 == 0) {
-      /* reached the end of the linear block in which this state could lie */
-      break;
-    } else if (h2 != h.h2) {
-      continue;
+    /* how long is the prefix our alignment inadvertently included? */
+    const size_t head = i % sizeof(local_seen->meta[0]);
+
+    /* look for a free position or our sought element */
+    for (size_t pos = head; pos < sizeof(h2s); ++pos) {
+
+      /* optimisation: no need to retrieve the state or do a comparison if the
+       * metadata tells us (1) this is an empty slot or (2) this is a differing
+       * state
+       */
+      if (((const unsigned char *)&h2s)[pos] == 0) {
+        /* reached the end of the linear block in which this state could lie */
+        break;
+      } else if (((const unsigned char *)&h2s)[pos] != h.h2) {
+        continue;
+      }
+
+      slot_t slot = __atomic_load_n(&local_seen->bucket[i + pos - head],
+                                    __ATOMIC_ACQUIRE);
+
+      /* This function is only expected to be called during the final liveness
+       * scan, in which all threads participate. So we should never encounter a
+       * set undergoing migration.
+       */
+      ASSERT(!slot_is_tombstone(slot) &&
+             "tombstone encountered during final phase");
+
+      /* This function is only expected to be called during the final liveness
+       * scan, in which all threads participate. So we should never encounter a
+       * partially completed insertion.
+       */
+      ASSERT(!slot_is_empty(slot) &&
+             "empty slot with non-zero hash encountered during final phase");
+
+      const struct state *n = slot_to_state(slot);
+      ASSERT(n != NULL && "null pointer stored in state set");
+
+      if (state_eq(s, n)) {
+        /* found */
+        return n;
+      }
     }
 
-    slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
-
-    /* This function is only expected to be called during the final liveness
-     * scan, in which all threads participate. So we should never encounter a
-     * set undergoing migration.
-     */
-    ASSERT(!slot_is_tombstone(slot) &&
-           "tombstone encountered during final phase");
-
-    /* This function is only expected to be called during the final liveness
-     * scan, in which all threads participate. So we should never encounter a
-     * partially completed insertion.
-     */
-    ASSERT(!slot_is_empty(slot) &&
-           "empty slot with non-zero hash encountered during final phase");
-
-    const struct state *n = slot_to_state(slot);
-    ASSERT(n != NULL && "null pointer stored in state set");
-
-    if (state_eq(s, n)) {
-      /* found */
-      return n;
-    }
+    attempts += sizeof(local_seen->meta[0]) - i % sizeof(local_seen->meta[0]);
+    ASSERT(attempts < set_size(local_seen));
   }
 
   /* not found */
