@@ -3379,16 +3379,22 @@ static void set_migrate(void) {
                                      __ATOMIC_ACQ_REL);
       ASSERT(!slot_is_tombstone(s) && "attempted double slot migration");
 
-      /* If the current slot contained a state, rehash it and insert it into the
-       * new set. Note we don't need to do any state comparisons because we know
-       * everything in the old set is unique.
+      if (slot_is_empty(s))
+        continue;
+
+      /* Find an empty slot to insert into in the new set. Note we do not need
+       * to do any state comparisons because we know everything in the old set
+       * is unique.
        */
-      if (!slot_is_empty(s)) {
-        size_t index = set_index(next, state_hash(slot_to_state(s)));
-        /* insert and shuffle any colliding entries one along */
-        for (size_t j = index; !slot_is_empty(s); j = set_index(next, j + 1)) {
-          s = __atomic_exchange_n(&next->bucket[j], s, __ATOMIC_ACQ_REL);
-        }
+      const size_t index = set_index(next, state_hash(slot_to_state(s)));
+      for (size_t j = 0;; ++j) {
+        const size_t ind = set_index(next, index + j);
+        const slot_t empty = slot_empty();
+        if (__atomic_compare_exchange_n(&next->bucket[ind],
+                                        &(slot_t){slot_empty()}, s, false,
+                                        __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+          break;
+        ASSERT(j + 1 < set_size(next));
       }
     }
   }
