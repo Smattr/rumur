@@ -3470,9 +3470,8 @@ restart:;
 
   size_t index = set_index(local_seen, state_hash(s));
 
-  size_t attempts = 0;
-  for (size_t i = index; attempts < set_size(local_seen);
-       i = set_index(local_seen, i + 1)) {
+  for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
+    const size_t i = set_index(local_seen, index + attempts);
 
     /* Guess that the current slot is empty and try to insert here. */
     slot_t c = slot_empty();
@@ -3521,8 +3520,6 @@ restart:;
       TRACE(TC_SET, "skipped adding state %p that was already in set", s);
       return false;
     }
-
-    attempts++;
   }
 
   /* If we reach here, the set is full. Expand it and retry the insertion. */
@@ -3545,9 +3542,8 @@ set_find(const struct state *NONNULL s) {
 
   size_t index = set_index(local_seen, state_hash(s));
 
-  size_t attempts = 0;
-  for (size_t i = index; attempts < set_size(local_seen);
-       i = set_index(local_seen, i + 1)) {
+  for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
+    const size_t i = set_index(local_seen, index + attempts);
 
     slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
 
@@ -3570,8 +3566,6 @@ set_find(const struct state *NONNULL s) {
       /* found */
       return n;
     }
-
-    attempts++;
   }
 
   /* not found */
