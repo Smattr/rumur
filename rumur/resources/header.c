@@ -45,7 +45,7 @@
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
 
-/* the size of auxliary members of the state struct */
+/* the size of auxiliary members of the state struct */
 enum { BOUND_BITS = BITS_FOR(BOUND) };
 #if COUNTEREXAMPLE_TRACE != CEX_OFF || LIVENESS_COUNT > 0
 #if POINTER_BITS != 0
@@ -3209,10 +3209,36 @@ static __attribute__((const)) bool slot_is_tombstone(slot_t s) {
 static struct state *slot_to_state(slot_t s) {
   ASSERT(!slot_is_empty(s));
   ASSERT(!slot_is_tombstone(s));
+
+  /* mask out hash bits stored in upper pointer bits */
+  if (POINTER_BITS > 0 && POINTER_BITS < sizeof(void *) * CHAR_BIT)
+    s &= ((slot_t)1 << POINTER_BITS) - 1;
+
   return (struct state *)s;
 }
 
-static slot_t state_to_slot(const struct state *s) { return (slot_t)s; }
+static slot_t state_to_slot(const struct state *s, size_t hash) {
+  slot_t slot = (slot_t)s;
+
+  /* store upper hash bits in unused upper pointer bits */
+  if (POINTER_BITS > 0 && POINTER_BITS < sizeof(void *) * CHAR_BIT) {
+    ASSERT((slot >> POINTER_BITS) == 0);
+    slot |= hash >> POINTER_BITS << POINTER_BITS;
+  }
+
+  return slot;
+}
+
+static __attribute__((const)) bool slot_neq(slot_t a, slot_t b) {
+
+  /* check hash bits saved in the upper unused pointer bits if possible */
+  if (POINTER_BITS > 0 && POINTER_BITS < sizeof(void *) * CHAR_BIT) {
+    if ((a >> POINTER_BITS) != (b >> POINTER_BITS))
+      return true;
+  }
+
+  return false;
+}
 
 /******************************************************************************/
 
@@ -3468,17 +3494,17 @@ restart:;
       SET_EXPAND_THRESHOLD)
     set_expand();
 
-  size_t index = set_index(local_seen, state_hash(s));
+  const size_t hash = state_hash(s);
+  const slot_t slot = state_to_slot(s, hash);
+  const size_t index = set_index(local_seen, hash);
 
-  size_t attempts = 0;
-  for (size_t i = index; attempts < set_size(local_seen);
-       i = set_index(local_seen, i + 1)) {
+  for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
+    const size_t i = set_index(local_seen, index + attempts);
 
     /* Guess that the current slot is empty and try to insert here. */
     slot_t c = slot_empty();
-    if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c,
-                                    state_to_slot(s), false, __ATOMIC_ACQ_REL,
-                                    __ATOMIC_ACQUIRE)) {
+    if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c, slot, false,
+                                    __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
       /* Success */
       *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
       TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
@@ -3516,13 +3542,17 @@ restart:;
       goto restart;
     }
 
+    /* optimisation: if we know this slot and ours have differing hashes, we can
+     * skip even dereferencing their pointers
+     */
+    if (slot_neq(slot, c))
+      continue;
+
     /* If we find this already in the set, we're done. */
     if (state_eq(s, slot_to_state(c))) {
       TRACE(TC_SET, "skipped adding state %p that was already in set", s);
       return false;
     }
-
-    attempts++;
   }
 
   /* If we reach here, the set is full. Expand it and retry the insertion. */
@@ -3543,11 +3573,12 @@ set_find(const struct state *NONNULL s) {
 
   assert(s != NULL);
 
-  size_t index = set_index(local_seen, state_hash(s));
+  const size_t hash = state_hash(s);
+  const slot_t needle = state_to_slot(s, hash);
+  const size_t index = set_index(local_seen, hash);
 
-  size_t attempts = 0;
-  for (size_t i = index; attempts < set_size(local_seen);
-       i = set_index(local_seen, i + 1)) {
+  for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
+    const size_t i = set_index(local_seen, index + attempts);
 
     slot_t slot = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
 
@@ -3563,6 +3594,12 @@ set_find(const struct state *NONNULL s) {
       break;
     }
 
+    /* optimisation: if we know this slot and our needle have differing hashes,
+     * we can skip even dereferencing their pointers
+     */
+    if (slot_neq(needle, slot))
+      continue;
+
     const struct state *n = slot_to_state(slot);
     ASSERT(n != NULL && "null pointer stored in state set");
 
@@ -3570,8 +3607,6 @@ set_find(const struct state *NONNULL s) {
       /* found */
       return n;
     }
-
-    attempts++;
   }
 
   /* not found */
