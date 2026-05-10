@@ -2489,6 +2489,36 @@ static dword_t atomic_read(dword_t *p) {
     return *p;
   }
 
+  /* 128-bit AVX loads are atomic.¹ So use that when possible.
+   *
+   * ¹ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104688
+   */
+#ifdef __x86_64__
+#ifdef __SSE2__
+#ifdef __has_include
+#if __has_include(<immintrin.h>)
+#ifdef __has_feature
+  /* TSan (falsely, I believe) considers a 128-bit load on a shared variable to
+   * be a data race
+   */
+#if !__has_feature(thread_sanitizer)
+  /* This is the only reliable way I have found of emitting a MOVDQA/MOVAPS.
+   * Surprisingly the Intel intrinsics for these do not reliably lower to the
+   * instruction they claim to, and inline assembly results in inefficient
+   * surrounding logic.
+   */
+  {
+    typedef __m128i __attribute__((may_alias)) avx128_t;
+    volatile const avx128_t *const ptr = (const avx128_t *)p;
+    return (dword_t)*ptr;
+  }
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
 #if defined(__x86_64__) || defined(__i386__) || \
     (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
@@ -2516,6 +2546,37 @@ static void atomic_write(dword_t *p, dword_t v) {
     *p = v;
     return;
   }
+
+  /* 128-bit AVX stores are atomic.¹ So use that when possible.
+   *
+   * ¹ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104688
+   */
+#ifdef __x86_64__
+#ifdef __SSE2__
+#ifdef __has_include
+#if __has_include(<immintrin.h>)
+#ifdef __has_feature
+  /* TSan (falsely, I believe) considers a 128-bit store on a shared variable to
+   * be a data race
+   */
+#if !__has_feature(thread_sanitizer)
+  /* This is the only reliable way I have found of emitting a MOVDQA/MOVAPS.
+   * Surprisingly the Intel intrinsics for these do not reliably lower to the
+   * instruction they claim to, and inline assembly results in inefficient
+   * surrounding logic.
+   */
+  {
+    typedef __m128i __attribute__((may_alias)) avx128_t;
+    volatile avx128_t *const ptr = (avx128_t *)p;
+    *ptr = (__m128i)v;
+    return;
+  }
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
 
 #if defined(__x86_64__) || defined(__i386__) || \
     (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
@@ -3487,7 +3548,7 @@ static void set_expand(void) {
 
 static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
-restart:;
+restart:
 
   if (__atomic_load_n(&seen_count, __ATOMIC_ACQUIRE) * 100 /
           set_size(local_seen) >=
@@ -3501,37 +3562,39 @@ restart:;
   for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
     const size_t i = set_index(local_seen, index + attempts);
 
-    /* Guess that the current slot is empty and try to insert here. */
-    slot_t c = slot_empty();
-    if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c, slot, false,
-                                    __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
-      /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
-      TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
+    /* if the current slot is empty, try to insert here */
+    slot_t c = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
+    if (slot_is_empty(c)) {
+      if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c, slot, false,
+                                      __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
+        /* Success */
+        *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
+        TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
-      /* The maximum possible size of the seen state set should be constrained
-       * by the number of possible states based on how many bits we are using to
-       * represent the state data.
-       */
-      if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
-               "seen set size "
-               "exceeds total possible number of states");
-      }
+        /* The maximum possible size of the seen state set should be constrained
+         * by the number of possible states based on how many bits we are using
+         * to represent the state data.
+         */
+        if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
+          assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
+                 "seen set size "
+                 "exceeds total possible number of states");
+        }
 
-      /* Update statistics if `--trace memory_usage` is in effect. Note that we
-       * do this here (when a state is being added to the seen set) rather than
-       * when the state was originally allocated to ensure that the final
-       * allocation figures do not include transient states that we allocated
-       * and then discarded as duplicates.
-       */
-      size_t depth = 0;
+        /* Update statistics if `--trace memory_usage` is in effect. Note that
+         * we do this here (when a state is being added to the seen set) rather
+         * than when the state was originally allocated to ensure that the final
+         * allocation figures do not include transient states that we allocated
+         * and then discarded as duplicates.
+         */
+        size_t depth = 0;
 #if BOUND > 0
-      depth = (size_t)state_bound_get(s);
+        depth = (size_t)state_bound_get(s);
 #endif
-      register_allocation(depth);
+        register_allocation(depth);
 
-      return true;
+        return true;
+      }
     }
 
     if (slot_is_tombstone(c)) {
