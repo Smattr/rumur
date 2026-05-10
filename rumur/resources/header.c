@@ -3548,7 +3548,7 @@ static void set_expand(void) {
 
 static bool set_insert(struct state *NONNULL s, size_t *NONNULL count) {
 
-restart:;
+restart:
 
   if (__atomic_load_n(&seen_count, __ATOMIC_ACQUIRE) * 100 /
           set_size(local_seen) >=
