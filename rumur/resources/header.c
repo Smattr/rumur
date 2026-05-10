@@ -3562,37 +3562,39 @@ restart:;
   for (size_t attempts = 0; attempts < set_size(local_seen); ++attempts) {
     const size_t i = set_index(local_seen, index + attempts);
 
-    /* Guess that the current slot is empty and try to insert here. */
-    slot_t c = slot_empty();
-    if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c, slot, false,
-                                    __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
-      /* Success */
-      *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
-      TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
+    /* if the current slot is empty, try to insert here */
+    slot_t c = __atomic_load_n(&local_seen->bucket[i], __ATOMIC_ACQUIRE);
+    if (slot_is_empty(c)) {
+      if (__atomic_compare_exchange_n(&local_seen->bucket[i], &c, slot, false,
+                                      __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)) {
+        /* Success */
+        *count = __atomic_add_fetch(&seen_count, 1, __ATOMIC_ACQ_REL);
+        TRACE(TC_SET, "added state %p, set size is now %zu", s, *count);
 
-      /* The maximum possible size of the seen state set should be constrained
-       * by the number of possible states based on how many bits we are using to
-       * represent the state data.
-       */
-      if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
-        assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
-               "seen set size "
-               "exceeds total possible number of states");
-      }
+        /* The maximum possible size of the seen state set should be constrained
+         * by the number of possible states based on how many bits we are using
+         * to represent the state data.
+         */
+        if (STATE_SIZE_BITS < sizeof(size_t) * CHAR_BIT) {
+          assert(*count <= ((size_t)1) << STATE_SIZE_BITS &&
+                 "seen set size "
+                 "exceeds total possible number of states");
+        }
 
-      /* Update statistics if `--trace memory_usage` is in effect. Note that we
-       * do this here (when a state is being added to the seen set) rather than
-       * when the state was originally allocated to ensure that the final
-       * allocation figures do not include transient states that we allocated
-       * and then discarded as duplicates.
-       */
-      size_t depth = 0;
+        /* Update statistics if `--trace memory_usage` is in effect. Note that
+         * we do this here (when a state is being added to the seen set) rather
+         * than when the state was originally allocated to ensure that the final
+         * allocation figures do not include transient states that we allocated
+         * and then discarded as duplicates.
+         */
+        size_t depth = 0;
 #if BOUND > 0
-      depth = (size_t)state_bound_get(s);
+        depth = (size_t)state_bound_get(s);
 #endif
-      register_allocation(depth);
+        register_allocation(depth);
 
-      return true;
+        return true;
+      }
     }
 
     if (slot_is_tombstone(c)) {
