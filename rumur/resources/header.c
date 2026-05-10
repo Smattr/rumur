@@ -2489,6 +2489,36 @@ static dword_t atomic_read(dword_t *p) {
     return *p;
   }
 
+  /* 128-bit AVX loads are atomic.¹ So use that when possible.
+   *
+   * ¹ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104688
+   */
+#ifdef __x86_64__
+#ifdef __SSE2__
+#ifdef __has_include
+#if __has_include(<immintrin.h>)
+#ifdef __has_feature
+  /* TSan (falsely, I believe) considers a 128-bit load on a shared variable to
+   * be a data race
+   */
+#if !__has_feature(thread_sanitizer)
+  /* This is the only reliable way I have found of emitting a MOVDQA/MOVAPS.
+   * Surprisingly the Intel intrinsics for these do not reliably lower to the
+   * instruction they claim to, and inline assembly results in inefficient
+   * surrounding logic.
+   */
+  {
+    typedef __m128i __attribute__((may_alias)) avx128_t;
+    volatile const avx128_t *const ptr = (const avx128_t *)p;
+    return (dword_t)*ptr;
+  }
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
 #if defined(__x86_64__) || defined(__i386__) || \
     (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
   /* x86-64: MOV is not guaranteed to be atomic on 128-bit naturally aligned
@@ -2516,6 +2546,37 @@ static void atomic_write(dword_t *p, dword_t v) {
     *p = v;
     return;
   }
+
+  /* 128-bit AVX stores are atomic.¹ So use that when possible.
+   *
+   * ¹ https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104688
+   */
+#ifdef __x86_64__
+#ifdef __SSE2__
+#ifdef __has_include
+#if __has_include(<immintrin.h>)
+#ifdef __has_feature
+  /* TSan (falsely, I believe) considers a 128-bit store on a shared variable to
+   * be a data race
+   */
+#if !__has_feature(thread_sanitizer)
+  /* This is the only reliable way I have found of emitting a MOVDQA/MOVAPS.
+   * Surprisingly the Intel intrinsics for these do not reliably lower to the
+   * instruction they claim to, and inline assembly results in inefficient
+   * surrounding logic.
+   */
+  {
+    typedef __m128i __attribute__((may_alias)) avx128_t;
+    volatile avx128_t *const ptr = (avx128_t *)p;
+    *ptr = (__m128i)v;
+    return;
+  }
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
 
 #if defined(__x86_64__) || defined(__i386__) || \
     (defined(__aarch64__) && defined(__GNUC__) && !defined(__clang__))
