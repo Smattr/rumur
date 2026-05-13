@@ -2861,7 +2861,137 @@ retry:;
   return count;
 }
 
-static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
+/** try to move the head queue node from one queue to another
+ *
+ * This function is for optimised work-stealing; instead of trying to steal a
+ * queue entry, try to steal an entire page. The destination queue is assumed to
+ * be empty, thus why we are trying to steal into it.
+ *
+ * \param dst Queue ID to steal into
+ * \param src Queue ID to steal from
+ * \param dst_ends [out] New state of destination queue on success
+ * \return True if the move was successful
+ */
+static bool queue_steal(size_t dst, size_t src, dword_t *dst_ends) {
+  assert(dst < sizeof(q) / sizeof(q[0]));
+  assert(src < sizeof(q) / sizeof(q[0]));
+  assert(atomic_read(&q[dst].ends) == 0 &&
+         "attempted steal into non-empty queue");
+  assert(dst_ends != NULL);
+
+  /* read the source’s queue */
+  double_ptr_t src_ends = atomic_read(&q[src].ends);
+
+retry:;
+  /* if the queue is empty or a single node, we cannot steal */
+  queue_handle_t head = double_ptr_extract1(src_ends);
+  queue_handle_t tail = double_ptr_extract2(src_ends);
+  if (queue_handle_base(head) == queue_handle_base(tail))
+    return false;
+  assert(head != 0);
+  assert(tail != 0);
+
+  /* protect our upcoming accesses to the source’s head */
+  hazard(head);
+  {
+    double_ptr_t src_ends_check = atomic_read(&q[src].ends);
+    if (src_ends != src_ends_check) {
+      /* failed; someone else updated this queue */
+      unhazard(head);
+      src_ends = src_ends_check;
+      goto retry;
+    }
+  }
+
+  /* form a new value that effectively pops the first node */
+  struct queue_node *const base = queue_handle_base(head);
+  struct queue_node *new_head = __atomic_load_n(&base->next, __ATOMIC_ACQUIRE);
+  double_ptr_t new =
+      double_ptr_make(queue_handle_from_node_ptr(new_head), tail);
+
+  /* pop the first node */
+  {
+    double_ptr_t old = atomic_cas_val(&q[src].ends, src_ends, new);
+    if (old != src_ends) {
+      /* failed; someone else updated this queue */
+      unhazard(head);
+      src_ends = old;
+      goto retry;
+    }
+  }
+
+  /* if we stole an empty queue node, discard it and reattempt */
+  if (!queue_handle_is_state_pptr(head)) {
+    unhazard(head);
+    reclaim(head);
+    src_ends = new;
+    goto retry;
+  }
+
+  /* Copy all entries to a new node.
+   *
+   * It might appear as if we can just install the node we stole as the
+   * destination’s queue. However this then allows a subtle ABA problem:
+   *   1. Thread A reads `new_head` above but has not yet popped the node
+   *   2. Thread B steals the node
+   *   3. Thread C steals it back
+   *   4. Enqueuing and dequeuing happen to return `src_ends` to what it was
+   *   5. Thread A’s CAS (incorrectly) succeeds
+   * At this point, thread A has written a stale value of the head, corrupting
+   * the queue.
+   *
+   * The cleanest way to avoid this seems to be copying the node here, despite
+   * how inefficient this seems. This preserves the property that we only ever
+   * store to queue nodes’ `next` fields once.
+   *
+   * Note that writes into the new node do not need to be synchronised because
+   * it is not yet globally visible.
+   */
+  struct queue_node *const copy = queue_node_new();
+  size_t popped = 0;
+  for (queue_handle_t i = head; queue_handle_is_state_pptr(i);
+       i = queue_handle_next(i)) {
+    const struct state **const s = queue_handle_to_state_pptr(i);
+    copy->s[popped] = __atomic_load_n(s, __ATOMIC_ACQUIRE);
+    ++popped;
+  }
+  unhazard(head);
+  reclaim(head);
+
+  /* note the decrement effect this pop had */
+  (void)__atomic_sub_fetch(&q[src].count, popped, __ATOMIC_RELAXED);
+
+  /* Now make the copy the destination’s new queue. We know the destination
+   * queue should still be empty because it was empty when we decided to steal
+   * and the calling thread is the only one who ever appends to it.
+   */
+  const queue_handle_t h = queue_handle_from_node_ptr(copy);
+  assert(popped > 0);
+  const queue_handle_t t = (queue_handle_t)&copy->s[popped - 1];
+  const double_ptr_t stolen = double_ptr_make(h, t);
+  ASSERT(atomic_read(&q[dst].ends) == 0 &&
+         "thread appended to a queue it did not own");
+  atomic_write(&q[dst].ends, stolen);
+
+  /* note the increment effect this push had */
+  (void)__atomic_add_fetch(&q[dst].count, popped, __ATOMIC_RELAXED);
+
+  TRACE(TC_QUEUE, "stole %zu states from queue %zu into queue %zu", popped, src,
+        dst);
+
+  *dst_ends = stolen;
+  return true;
+}
+
+/** pop a state from the pending queue
+ *
+ * \param mine Queue ID of the calling thread
+ * \param queue_id Queue ID to pop from
+ * \return Popped state or `NULL` if all queues are empty
+ */
+static const struct state *queue_dequeue(size_t mine,
+                                         size_t *NONNULL queue_id) {
+  assert(mine < sizeof(q) / sizeof(q[0]));
   assert(queue_id != NULL && *queue_id < sizeof(q) / sizeof(q[0]) &&
          "out of bounds queue access");
 
@@ -2978,6 +3108,19 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
     }
     assert(double_ptr_extract2(ends) == 0 &&
            "head of queue 0 while tail is non-0");
+
+    /* if we just discovered our queue is empty, opportunistically try to steal
+     * a queue node from another queue
+     */
+    if (*queue_id == mine) {
+      for (size_t i = 1; i < sizeof(q) / sizeof(q[0]); ++i) {
+        const size_t sibling = (mine + i) % (sizeof(q) / sizeof(q[0]));
+        if (queue_steal(mine, sibling, &ends)) {
+          /* we can now reattempt dequeuing from our own queue */
+          goto retry;
+        }
+      }
+    }
 
     /* Move to the next queue to try. */
     *queue_id = (*queue_id + 1) % (sizeof(q) / sizeof(q[0]));
