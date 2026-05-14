@@ -743,8 +743,13 @@ ruleset thread_id: thread_id_t do
       rule "header.c:1913"
         pc = DEQUEUE_L1913 ==>
       begin
-        ends := old;
+        if old = ends then
+          ends := new;
+        else
+          ends := old;
+        end;
         undefine old;
+        undefine new;
         pc := DEQUEUE_L1861; -- "goto retry"
       end
 

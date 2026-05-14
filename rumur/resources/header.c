@@ -2920,8 +2920,10 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
         if (old == ends) {
           /* Succeeded. */
           reclaim(head);
+          ends = new;
+        } else {
+          ends = old;
         }
-        ends = old;
         goto retry;
       }
 
