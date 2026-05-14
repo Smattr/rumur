@@ -2709,7 +2709,7 @@ static struct {
   size_t count;
 } q[THREADS];
 
-static size_t queue_enqueue(struct state *NONNULL s, size_t queue_id) {
+static size_t queue_enqueue(const struct state *NONNULL s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
 
   /* Look up the tail of the queue. */
@@ -2825,7 +2825,7 @@ retry:;
         if (queue_handle_is_state_pptr(next_tail)) {
           /* We previously wrote into an existing queue node. */
           const struct state **target = queue_handle_to_state_pptr(next_tail);
-          struct state *temp = s;
+          const struct state *temp = s;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
               target, &temp, NULL, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
