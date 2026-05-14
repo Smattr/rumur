@@ -2257,7 +2257,7 @@ index_to_permutation(size_t index, size_t *NONNULL permutation,
  ******************************************************************************/
 
 struct queue_node {
-  struct state
+  const struct state
       *s[(4096 - sizeof(struct queue_node *)) / sizeof(struct state *)];
   struct queue_node *next;
 };
@@ -2306,11 +2306,11 @@ static bool queue_handle_is_state_pptr(queue_handle_t h) {
          __builtin_offsetof(struct queue_node, next);
 }
 
-static struct state **queue_handle_to_state_pptr(queue_handle_t h) {
+static const struct state **queue_handle_to_state_pptr(queue_handle_t h) {
   assert(queue_handle_is_state_pptr(h) &&
          "invalid use of queue_handle_to_state_pptr");
 
-  return (struct state **)h;
+  return (const struct state **)h;
 }
 
 static struct queue_node **queue_handle_to_node_pptr(queue_handle_t h) {
@@ -2709,7 +2709,7 @@ static struct {
   size_t count;
 } q[THREADS];
 
-static size_t queue_enqueue(struct state *NONNULL s, size_t queue_id) {
+static size_t queue_enqueue(const struct state *NONNULL s, size_t queue_id) {
   assert(queue_id < sizeof(q) / sizeof(q[0]) && "out of bounds queue access");
 
   /* Look up the tail of the queue. */
@@ -2767,9 +2767,9 @@ retry:;
        */
 
       {
-        struct state **target = queue_handle_to_state_pptr(next_tail);
-        if (!__atomic_compare_exchange_n(target, &(struct state *){NULL}, s,
-                                         false, __ATOMIC_ACQ_REL,
+        const struct state **target = queue_handle_to_state_pptr(next_tail);
+        if (!__atomic_compare_exchange_n(target, &(const struct state *){NULL},
+                                         s, false, __ATOMIC_ACQ_REL,
                                          __ATOMIC_RELAXED)) {
           /* Failed. Someone else enqueued before we could. */
           unhazard(tail);
@@ -2824,8 +2824,8 @@ retry:;
         next_tail = queue_handle_next(tail);
         if (queue_handle_is_state_pptr(next_tail)) {
           /* We previously wrote into an existing queue node. */
-          struct state **target = queue_handle_to_state_pptr(next_tail);
-          struct state *temp = s;
+          const struct state **target = queue_handle_to_state_pptr(next_tail);
+          const struct state *temp = s;
           bool r __attribute__((unused)) = __atomic_compare_exchange_n(
               target, &temp, NULL, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
           assert(r && "undo of write to next_tail failed");
@@ -2941,7 +2941,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
        */
 
       if (queue_handle_is_state_pptr(head)) {
-        struct state **st = queue_handle_to_state_pptr(head);
+        const struct state **st = queue_handle_to_state_pptr(head);
         s = __atomic_load_n(st, __ATOMIC_ACQUIRE);
       }
 
