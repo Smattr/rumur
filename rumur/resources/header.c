@@ -2718,6 +2718,8 @@ static size_t queue_enqueue(const struct state *NONNULL s, size_t queue_id) {
 
 retry:;
   queue_handle_t tail = double_ptr_extract2(ends);
+  assert(queue_handle_is_state_pptr(tail) &&
+         "non-state pointer was previously stored to queue tail");
 
   if (tail == 0) {
     /* There's nothing currently in the queue. */
@@ -2888,6 +2890,8 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
       }
 
       queue_handle_t tail = double_ptr_extract2(ends);
+      assert(queue_handle_is_state_pptr(tail) &&
+             "non-state pointer was previously stored to queue tail");
 
       double_ptr_t new;
       if (head == tail) {
