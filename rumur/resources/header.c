@@ -2718,6 +2718,8 @@ static size_t queue_enqueue(const struct state *NONNULL s, size_t queue_id) {
 
 retry:;
   queue_handle_t tail = double_ptr_extract2(ends);
+  assert(queue_handle_is_state_pptr(tail) &&
+         "non-state pointer was previously stored to queue tail");
 
   if (tail == 0) {
     /* There's nothing currently in the queue. */
@@ -2888,6 +2890,8 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
       }
 
       queue_handle_t tail = double_ptr_extract2(ends);
+      assert(queue_handle_is_state_pptr(tail) &&
+             "non-state pointer was previously stored to queue tail");
 
       double_ptr_t new;
       if (head == tail) {
@@ -2909,6 +2913,9 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
         /* Load the next queue node. */
         struct queue_node **n = queue_handle_to_node_pptr(head);
         struct queue_node *new_head = __atomic_load_n(n, __ATOMIC_ACQUIRE);
+        assert(new_head != NULL &&
+               "head != tail, head is at the end of a queue node, and yet "
+               "there is no next queue node");
         new = double_ptr_make(queue_handle_from_node_ptr(new_head), tail);
 
         /* Try to replace the current head with the next node. */
@@ -2920,8 +2927,10 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
         if (old == ends) {
           /* Succeeded. */
           reclaim(head);
+          ends = new;
+        } else {
+          ends = old;
         }
-        ends = old;
         goto retry;
       }
 
@@ -2943,6 +2952,7 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
       if (queue_handle_is_state_pptr(head)) {
         const struct state **st = queue_handle_to_state_pptr(head);
         s = __atomic_load_n(st, __ATOMIC_ACQUIRE);
+        assert(s != NULL && "null state was stored in queue");
       }
 
       unhazard(head);
@@ -2966,6 +2976,8 @@ static const struct state *queue_dequeue(size_t *NONNULL queue_id) {
 
       return s;
     }
+    assert(double_ptr_extract2(ends) == 0 &&
+           "head of queue 0 while tail is non-0");
 
     /* Move to the next queue to try. */
     *queue_id = (*queue_id + 1) % (sizeof(q) / sizeof(q[0]));
