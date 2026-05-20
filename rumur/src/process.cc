@@ -152,8 +152,10 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // set the ends the parent (us) will use as non-blocking
-  if (fcntl(in[WRITE_FD], F_SETFL, fcntl(in[WRITE_FD], F_GETFL) | O_NONBLOCK) == -1 ||
-      fcntl(out[READ_FD], F_SETFL, fcntl(out[READ_FD], F_GETFL) | O_NONBLOCK) == -1) {
+  if (fcntl(in[WRITE_FD], F_SETFL, fcntl(in[WRITE_FD], F_GETFL) | O_NONBLOCK) ==
+          -1 ||
+      fcntl(out[READ_FD], F_SETFL, fcntl(out[READ_FD], F_GETFL) | O_NONBLOCK) ==
+          -1) {
     *debug << "failed to set O_NONBLOCK: " << strerror(errno) << '\n';
     goto done;
   }

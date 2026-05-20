@@ -49,7 +49,7 @@ public:
   virtual void skip_to(const rumur::position &pos) = 0;
 
   // perform any pending actions, assuming that processing is done
-  virtual void finalise(){};
+  virtual void finalise() {};
 
   virtual ~Stage() = default;
 };

@@ -1475,7 +1475,7 @@ void Quantifier::visit(ConstBaseTraversal &visitor) const {
 void Quantifier::validate() const {
 
   bool from_const = from != nullptr && from->constant();
-  bool to_const   = to   != nullptr && to->constant();
+  bool to_const = to != nullptr && to->constant();
   bool step_const = step != nullptr && step->constant();
 
   if (step_const && step->constant_fold() == 0)
@@ -1488,7 +1488,7 @@ void Quantifier::validate() const {
 
   if (from_const && to_const) {
 
-    bool up_count   = from->constant_fold() < to->constant_fold();
+    bool up_count = from->constant_fold() < to->constant_fold();
     bool down_count = from->constant_fold() > to->constant_fold();
 
     if (up_count && step_negative)
