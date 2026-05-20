@@ -610,21 +610,13 @@ static __attribute__((unused)) void put_val(value_t v) {
 static void xml_printf(const char *NONNULL s) {
   while (*s != '\0') {
     switch (*s) {
-    case '"':
-      put("&quot;");
-      break;
-    case '<':
-      put("&lt;");
-      break;
-    case '>':
-      put("&gt;");
-      break;
-    case '&':
-      put("&amp;");
-      break;
-    default:
-      putchar_unlocked(*s);
-      break;
+      /* clang-format off */
+      case '"': put("&quot;"); break;
+      case '<': put("&lt;");   break;
+      case '>': put("&gt;");   break;
+      case '&': put("&amp;");  break;
+      default:  putchar_unlocked(*s); break;
+      /* clang-format on */
     }
     s++;
   }

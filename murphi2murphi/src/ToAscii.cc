@@ -25,6 +25,7 @@ void ToAscii::process(const Token &t) {
   bool in_idle = state == IDLE || state == IDLE_DASH || state == IDLE_SLASH;
 
   if (in_idle) {
+    /* clang-format off */
     if      (s == "“") s = "\"";
     else if (s == "≔") s = ":=";
     else if (s == "≥") s = ">=";
@@ -41,6 +42,7 @@ void ToAscii::process(const Token &t) {
     else if (s == "−") s = "-";
     else if (s == "∕") s = "/";
     else if (s == "×") s = "*";
+    /* clang-format on */
   }
 
   switch (state) {
