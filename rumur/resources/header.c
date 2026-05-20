@@ -2827,17 +2827,15 @@ retry:;
         if (queue_handle_is_state_pptr(next_tail)) {
           /* We previously wrote into an existing queue node. */
           const struct state **target = queue_handle_to_state_pptr(next_tail);
-          const struct state *temp = s;
-          bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
-          assert(r && "undo of write to next_tail failed");
+          assert(__atomic_load_n(target, __ATOMIC_ACQUIRE) == s &&
+                 "undo of queue tail write raced with another store");
+          __atomic_store_n(target, NULL, __ATOMIC_RELEASE);
         } else {
           /* We previously wrote into a new queue node. */
           struct queue_node **target = queue_handle_to_node_pptr(next_tail);
-          struct queue_node *temp = new_node;
-          bool r __attribute__((unused)) = __atomic_compare_exchange_n(
-              target, &temp, NULL, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
-          assert(r && "undo of write to next_tail failed");
+          assert(__atomic_load_n(target, __ATOMIC_ACQUIRE) == new_node &&
+                 "undo of queue tail write raced with another store");
+          __atomic_store_n(target, NULL, __ATOMIC_RELEASE);
 
           queue_node_free(new_node);
         }
