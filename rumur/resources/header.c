@@ -2469,6 +2469,7 @@ static dword_t atomic_read(dword_t *p) {
    */
 #ifdef __x86_64__
 #ifdef __SSE2__
+#ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
 #ifdef __has_include
 #if __has_include(<immintrin.h>)
 #ifdef __has_feature
@@ -2486,6 +2487,7 @@ static dword_t atomic_read(dword_t *p) {
     volatile const avx128_t *const ptr = (const avx128_t *)p;
     return (dword_t)*ptr;
   }
+#endif
 #endif
 #endif
 #endif
@@ -2527,6 +2529,7 @@ static void atomic_write(dword_t *p, dword_t v) {
    */
 #ifdef __x86_64__
 #ifdef __SSE2__
+#ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
 #ifdef __has_include
 #if __has_include(<immintrin.h>)
 #ifdef __has_feature
@@ -2545,6 +2548,7 @@ static void atomic_write(dword_t *p, dword_t v) {
     *ptr = (__m128i)v;
     return;
   }
+#endif
 #endif
 #endif
 #endif
