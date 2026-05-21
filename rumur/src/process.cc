@@ -26,7 +26,7 @@
 #include "log.h"
 #endif
 
-enum { READ_FD = 0, WRITE_FD = 1 };
+enum { R_FD = 0, W_FD = 1 };
 
 // pipe through which we'll redirect SIGCHLD notifications
 static int sigchld_pipe[2] = {-1, -1};
@@ -37,10 +37,10 @@ static void handler(int sigchld __attribute__((unused))) {
   assert(sigchld == SIGCHLD &&
          "SIGCHLD handler received something other than SIGCHLD");
 
-  assert(sigchld_pipe[WRITE_FD] != -1 &&
+  assert(sigchld_pipe[W_FD] != -1 &&
          "SIGCHLD handler called before SIGCHLD pipe has been setup");
 
-  ssize_t w __attribute__((unused)) = write(sigchld_pipe[WRITE_FD], "\0", 1);
+  ssize_t w __attribute__((unused)) = write(sigchld_pipe[W_FD], "\0", 1);
 }
 
 /// `pipe` that also sets close-on-exec
@@ -88,8 +88,8 @@ static int init() {
 
   // set the SIGCHLD pipe not to block on reading or writing
   {
-    int r = sigchld_pipe[READ_FD];
-    int w = sigchld_pipe[WRITE_FD];
+    int r = sigchld_pipe[R_FD];
+    int w = sigchld_pipe[W_FD];
     if (fcntl(r, F_SETFL, fcntl(r, F_GETFL) | O_NONBLOCK) == -1 ||
         fcntl(w, F_SETFL, fcntl(w, F_GETFL) | O_NONBLOCK) == -1) {
       *debug << "failed to set SIGCHLD pipe non-blocking\n";
@@ -152,18 +152,18 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // set the ends the parent (us) will use as non-blocking
-  if (fcntl(in[WRITE_FD], F_SETFL, fcntl(in[WRITE_FD], F_GETFL) | O_NONBLOCK) == -1 ||
-      fcntl(out[READ_FD], F_SETFL, fcntl(out[READ_FD], F_GETFL) | O_NONBLOCK) == -1) {
+  if (fcntl(in[W_FD], F_SETFL, fcntl(in[W_FD], F_GETFL) | O_NONBLOCK) == -1 ||
+      fcntl(out[R_FD], F_SETFL, fcntl(out[R_FD], F_GETFL) | O_NONBLOCK) == -1) {
     *debug << "failed to set O_NONBLOCK: " << strerror(errno) << '\n';
     goto done;
   }
 
   // replace the child's stdin, stdout and stderr with the pipes
-  err = posix_spawn_file_actions_adddup2(&fa, in[READ_FD], STDIN_FILENO);
+  err = posix_spawn_file_actions_adddup2(&fa, in[R_FD], STDIN_FILENO);
   if (err == 0)
-    err = posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDOUT_FILENO);
+    err = posix_spawn_file_actions_adddup2(&fa, out[W_FD], STDOUT_FILENO);
   if (err == 0)
-    err = posix_spawn_file_actions_adddup2(&fa, out[WRITE_FD], STDERR_FILENO);
+    err = posix_spawn_file_actions_adddup2(&fa, out[W_FD], STDERR_FILENO);
   if (err != 0) {
     *debug << "failed file_actions_adddup2: " << strerror(err) << '\n';
     goto done;
@@ -178,10 +178,10 @@ int run(const std::vector<std::string> &args, const std::string &input,
   }
 
   // close the ends of the pipes we (the parent) don't need
-  (void)close(in[READ_FD]);
-  in[READ_FD] = -1;
-  (void)close(out[WRITE_FD]);
-  out[WRITE_FD] = -1;
+  (void)close(in[R_FD]);
+  in[R_FD] = -1;
+  (void)close(out[W_FD]);
+  out[W_FD] = -1;
 
   // now we're ready to sit in an event loop interacting with the child
   for (;;) {
@@ -191,16 +191,16 @@ int run(const std::vector<std::string> &args, const std::string &input,
     // create a set of the out pipe and SIGCHLD to monitor for reading
     fd_set readfds;
     FD_ZERO(&readfds);
-    FD_SET(out[READ_FD], &readfds);
-    FD_SET(sigchld_pipe[READ_FD], &readfds);
-    nfds = std::max(out[READ_FD], sigchld_pipe[READ_FD]);
+    FD_SET(out[R_FD], &readfds);
+    FD_SET(sigchld_pipe[R_FD], &readfds);
+    nfds = std::max(out[R_FD], sigchld_pipe[R_FD]);
 
     // create a set of only the in pipe (if still open) to monitor for writing
     fd_set writefds;
     FD_ZERO(&writefds);
-    if (in[WRITE_FD] != -1) {
-      FD_SET(in[WRITE_FD], &writefds);
-      nfds = std::max(nfds, in[WRITE_FD]);
+    if (in[W_FD] != -1) {
+      FD_SET(in[W_FD], &writefds);
+      nfds = std::max(nfds, in[W_FD]);
     }
 
     // wait for an event
@@ -210,20 +210,20 @@ int run(const std::vector<std::string> &args, const std::string &input,
     }
 
     // clear any SIGCHLD notification
-    if (FD_ISSET(sigchld_pipe[READ_FD], &readfds)) {
+    if (FD_ISSET(sigchld_pipe[R_FD], &readfds)) {
       char ignored[BUFSIZ];
       ssize_t r __attribute__((unused)) =
-          read(sigchld_pipe[READ_FD], ignored, sizeof(ignored));
+          read(sigchld_pipe[R_FD], ignored, sizeof(ignored));
     }
 
     // read any data available from the child
-    if (FD_ISSET(out[READ_FD], &readfds)) {
+    if (FD_ISSET(out[R_FD], &readfds)) {
       ssize_t r;
       do {
 
         char buffer[BUFSIZ];
         do {
-          r = read(out[READ_FD], buffer, sizeof(buffer));
+          r = read(out[R_FD], buffer, sizeof(buffer));
         } while (r == -1 && errno == EINTR);
 
         if (r == -1) {
@@ -241,12 +241,12 @@ int run(const std::vector<std::string> &args, const std::string &input,
     }
 
     // write remaining data if the input pipe is ready
-    if (in[WRITE_FD] != -1 && FD_ISSET(in[WRITE_FD], &writefds)) {
+    if (in[W_FD] != -1 && FD_ISSET(in[W_FD], &writefds)) {
       if ((size_t)input_offset < input.size()) {
 
         ssize_t w;
         do {
-          w = write(in[WRITE_FD], input.c_str() + input_offset,
+          w = write(in[W_FD], input.c_str() + input_offset,
                     input.size() - input_offset);
         } while (w == -1 && errno == EINTR);
 
@@ -259,8 +259,8 @@ int run(const std::vector<std::string> &args, const std::string &input,
           input_offset += (off_t)w;
           if ((size_t)input_offset == input.size()) {
             // exhausted the input; send the child EOF
-            (void)close(in[WRITE_FD]);
-            in[WRITE_FD] = -1;
+            (void)close(in[W_FD]);
+            in[W_FD] = -1;
           }
         }
       }

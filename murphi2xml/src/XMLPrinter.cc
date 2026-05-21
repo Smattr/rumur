@@ -10,6 +10,7 @@ using namespace rumur;
 
 static std::string xml_escape(char c) {
   switch (c) {
+    /* clang-format off */
     case '"' : return "&quot;";
     case '\'': return "&apos;";
     case '<' : return "&lt;";
@@ -23,6 +24,7 @@ static std::string xml_escape(char c) {
     case 12  : return " ";
 
     default  : return std::string(1, c);
+    /* clang-format on */
   }
 }
 
@@ -480,10 +482,12 @@ void XMLPrinter::visit_property(const Property &n) {
   sync_to(n);
   o << "<property category=\"";
   switch (n.category) {
+    /* clang-format off */
     case Property::ASSERTION:  o << "assertion";  break;
     case Property::ASSUMPTION: o << "assumption"; break;
     case Property::COVER:      o << "cover";      break;
     case Property::LIVENESS:   o << "liveness";   break;
+    /* clang-format on */
   }
   o << "\" ";
   add_location(n);
