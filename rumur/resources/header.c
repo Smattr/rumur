@@ -1893,8 +1893,8 @@ handle_narrow(struct handle h, size_t offset, size_t width) {
   ASSERT(h.offset + offset + width <= h.offset + h.width &&
          "narrowing a handle with values that actually expand it");
 
-  size_t r __attribute__((unused));
-  assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
+  assert(!ADD(h.offset, offset, &(size_t){0}) &&
+         "narrowing handle overflows a size_t");
 
   return (struct handle){
       .base = h.base + (h.offset + offset) / CHAR_BIT,
@@ -1923,8 +1923,8 @@ handle_index(const char *NONNULL context, const char *rule_name,
           expr, rule_name == NULL ? "" : " within ",
           rule_name == NULL ? "" : rule_name);
 
-  size_t r __attribute__((unused));
-  assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
+  assert(!ADD(root.offset, r2, &(size_t){0}) &&
+         "indexing handle overflows a size_t");
 
   return (struct handle){
       .base = root.base + (root.offset + r2) / CHAR_BIT,
