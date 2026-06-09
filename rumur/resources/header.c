@@ -3297,7 +3297,7 @@ static __attribute__((const)) bool slot_neq(slot_t a, slot_t b) {
 
 enum {
   INITIAL_SET_SIZE_EXPONENT =
-      sizeof(unsigned long long) * 8 - 1 -
+      sizeof(unsigned long long) * CHAR_BIT - 1 -
       __builtin_clzll(SET_CAPACITY / sizeof(struct state *) /
                       sizeof(struct state))
 };
