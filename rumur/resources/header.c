@@ -3313,6 +3313,7 @@ struct set {
 /* Some utility functions for dealing with exponents. */
 
 static size_t set_size(const struct set *NONNULL set) {
+  assert(set->size_exponent < sizeof(size_t) * CHAR_BIT);
   return ((size_t)1) << set->size_exponent;
 }
 
