@@ -35,12 +35,14 @@
   } while (0)
 #endif
 
+/// count leading zeroes, that is not UB for 0
+#define CLZLL(value)                                                           \
+  ((value) == 0 ? sizeof(unsigned long long) * CHAR_BIT                        \
+                : __builtin_clzll(value))
+
 #define BITS_TO_BYTES(size)                                                    \
   ((size) / CHAR_BIT + ((size) % CHAR_BIT == 0 ? 0 : 1))
-#define BITS_FOR(value)                                                        \
-  ((value) == 0                                                                \
-       ? 0                                                                     \
-       : (sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(value)))
+#define BITS_FOR(value) (sizeof(unsigned long long) * CHAR_BIT - CLZLL(value))
 
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
