@@ -35,12 +35,14 @@
   } while (0)
 #endif
 
+/// count leading zeroes, that is not UB for 0
+#define CLZLL(value)                                                           \
+  ((value) == 0 ? sizeof(unsigned long long) * CHAR_BIT                        \
+                : __builtin_clzll(value))
+
 #define BITS_TO_BYTES(size)                                                    \
   ((size) / CHAR_BIT + ((size) % CHAR_BIT == 0 ? 0 : 1))
-#define BITS_FOR(value)                                                        \
-  ((value) == 0                                                                \
-       ? 0                                                                     \
-       : (sizeof(unsigned long long) * CHAR_BIT - __builtin_clzll(value)))
+#define BITS_FOR(value) (sizeof(unsigned long long) * CHAR_BIT - CLZLL(value))
 
 /* The size of the compressed state data in bytes. */
 enum { STATE_SIZE_BYTES = BITS_TO_BYTES(STATE_SIZE_BITS) };
@@ -1893,8 +1895,8 @@ handle_narrow(struct handle h, size_t offset, size_t width) {
   ASSERT(h.offset + offset + width <= h.offset + h.width &&
          "narrowing a handle with values that actually expand it");
 
-  size_t r __attribute__((unused));
-  assert(!ADD(h.offset, offset, &r) && "narrowing handle overflows a size_t");
+  assert(!ADD(h.offset, offset, &(size_t){0}) &&
+         "narrowing handle overflows a size_t");
 
   return (struct handle){
       .base = h.base + (h.offset + offset) / CHAR_BIT,
@@ -1923,8 +1925,8 @@ handle_index(const char *NONNULL context, const char *rule_name,
           expr, rule_name == NULL ? "" : " within ",
           rule_name == NULL ? "" : rule_name);
 
-  size_t r __attribute__((unused));
-  assert(!ADD(root.offset, r2, &r) && "indexing handle overflows a size_t");
+  assert(!ADD(root.offset, r2, &(size_t){0}) &&
+         "indexing handle overflows a size_t");
 
   return (struct handle){
       .base = root.base + (root.offset + r2) / CHAR_BIT,
@@ -3295,9 +3297,12 @@ static __attribute__((const)) bool slot_neq(slot_t a, slot_t b) {
 
 enum {
   INITIAL_SET_SIZE_EXPONENT =
-      sizeof(unsigned long long) * 8 - 1 -
-      __builtin_clzll(SET_CAPACITY / sizeof(struct state *) /
+      CLZLL(SET_CAPACITY / sizeof(struct state *) / sizeof(struct state)) !=
+              sizeof(unsigned long long) * CHAR_BIT
+          ? sizeof(unsigned long long) * CHAR_BIT - 1 -
+                CLZLL(SET_CAPACITY / sizeof(struct state *) /
                       sizeof(struct state))
+          : 0
 };
 
 struct set {
@@ -3308,6 +3313,7 @@ struct set {
 /* Some utility functions for dealing with exponents. */
 
 static size_t set_size(const struct set *NONNULL set) {
+  assert(set->size_exponent < sizeof(size_t) * CHAR_BIT);
   return ((size_t)1) << set->size_exponent;
 }
 
