@@ -37,8 +37,7 @@ Type System
 -----------
 CMurphi supports real arithmetic using the ``real`` data type. Rumur does not
 support this type and there are no plans to implement this or any floating point
-support. Similarly, Rumur does not support the ``union`` type and there are no
-plans to add it.
+support. Similarly, Rumur does not support the ``union`` or ``multiset`` types.
 
 Assumptions
 -----------
