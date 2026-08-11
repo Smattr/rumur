@@ -20,7 +20,7 @@ jobs:
           set -u
           set -x
           uname -rms
-          pkg install -y bison cmake git gmp python3 py311-pytest
+          pkg install -y bison cmake git gmp python3 devel/py-pytest
           python3 --version
           git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
           cd wd
@@ -49,7 +49,7 @@ jobs:
           set -u
           set -x
           uname -rms
-          pkg install -y bison cmake git gmp python3 py311-pytest
+          pkg install -y bison cmake git gmp python3 devel/py-pytest
           python3 --version
           git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
           cd wd
@@ -77,7 +77,7 @@ jobs:
           set -u
           set -x
           uname -rms
-          pkg install -y bison cmake git gmp python3 py311-pytest
+          pkg install -y bison cmake git gmp python3 devel/py-pytest
           python3 --version
           git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
           cd wd
@@ -106,7 +106,7 @@ jobs:
           set -u
           set -x
           uname -rms
-          pkg install -y bison cmake git gmp python3 py311-pytest
+          pkg install -y bison cmake git gmp python3 devel/py-pytest
           python3 --version
           git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
           cd wd
@@ -134,7 +134,7 @@ jobs:
           set -u
           set -x
           uname -rms
-          pkg install -y bison cmake git gmp python3 py311-pytest
+          pkg install -y bison cmake git gmp python3 devel/py-pytest
           python3 --version
           git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
           cd wd
@@ -163,7 +163,7 @@ jobs:
           set -u
           set -x
           uname -rms
-          pkg install -y bison cmake git gmp python3 py311-pytest
+          pkg install -y bison cmake git gmp python3 devel/py-pytest
           python3 --version
           git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
           cd wd
