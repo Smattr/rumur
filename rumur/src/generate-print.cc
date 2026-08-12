@@ -516,8 +516,6 @@ public:
 
     dispatch(*n.referent->value);
   }
-
-  virtual ~Generator() = default;
 };
 
 } // namespace

@@ -433,8 +433,6 @@ public:
     dispatch(*n.rhs);
     n.validate();
   }
-
-  virtual ~Validator() = default;
 };
 
 } // namespace

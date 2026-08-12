@@ -426,8 +426,6 @@ public:
   void visit_undefine(const Undefine &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
-
-  virtual ~ConstExprTraversal() = default;
 };
 
 /* Generic base for read-only traversals that only need to act on statements.
@@ -489,8 +487,6 @@ public:
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_xor(const Xor &n) final;
-
-  virtual ~ConstStmtTraversal() = default;
 
 private:
   void visit_bexpr(const BinaryExpr &n);
@@ -560,8 +556,6 @@ public:
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
   void visit_xor(const Xor &n) final;
-
-  virtual ~ConstTypeTraversal() = default;
 
 private:
   void visit_bexpr(const BinaryExpr &n);
