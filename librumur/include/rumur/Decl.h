@@ -35,7 +35,6 @@ protected:
 struct RUMUR_API_WITH_RTTI ExprDecl : public Decl {
 
   ExprDecl(const std::string &name_, const location &loc_);
-  virtual ~ExprDecl() = default;
 
   // Return true if this declaration is usable as an lvalue
   virtual bool is_lvalue() const = 0;
@@ -62,7 +61,6 @@ struct RUMUR_API_WITH_RTTI AliasDecl : public ExprDecl {
   AliasDecl(const std::string &name_, const Ptr<Expr> &value_,
             const location &loc_);
   AliasDecl *clone() const override;
-  virtual ~AliasDecl() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -86,7 +84,6 @@ struct RUMUR_API_WITH_RTTI ConstDecl : public ExprDecl {
   ConstDecl(const std::string &name_, const Ptr<Expr> &value_,
             const Ptr<TypeExpr> &type_, const location &loc_);
   ConstDecl *clone() const override;
-  virtual ~ConstDecl() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -104,7 +101,6 @@ struct RUMUR_API_WITH_RTTI TypeDecl : public Decl {
   TypeDecl(const std::string &name, const Ptr<TypeExpr> &value_,
            const location &loc);
   TypeDecl *clone() const override;
-  virtual ~TypeDecl() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -128,7 +124,6 @@ struct RUMUR_API_WITH_RTTI VarDecl : public ExprDecl {
   VarDecl(const std::string &name_, const Ptr<TypeExpr> &type_,
           const location &loc_);
   VarDecl *clone() const override;
-  virtual ~VarDecl() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;

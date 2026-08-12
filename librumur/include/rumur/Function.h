@@ -30,7 +30,6 @@ struct RUMUR_API_WITH_RTTI Function : public Node {
            const Ptr<TypeExpr> &return_type_,
            const std::vector<Ptr<Decl>> &decls_,
            const std::vector<Ptr<Stmt>> &body_, const location &loc_);
-  virtual ~Function() = default;
   Function *clone() const override;
   void validate() const override;
 

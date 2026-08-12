@@ -27,7 +27,6 @@ struct VarDecl;
 struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
 
   TypeExpr(const location &loc_);
-  virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
   virtual bool is_simple() const;
@@ -74,7 +73,6 @@ struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
 
   Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_);
   Range *clone() const override;
-  virtual ~Range() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -95,7 +93,6 @@ struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
 
   Scalarset(const Ptr<Expr> &bound_, const location &loc_);
   Scalarset *clone() const override;
-  virtual ~Scalarset() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -122,7 +119,6 @@ struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
   Enum(const std::vector<std::pair<std::string, location>> &members_,
        const location &loc_);
   Enum *clone() const override;
-  virtual ~Enum() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -144,7 +140,6 @@ struct RUMUR_API_WITH_RTTI Record : public TypeExpr {
 
   Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_);
   Record *clone() const override;
-  virtual ~Record() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -162,7 +157,6 @@ struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
   Array(const Ptr<TypeExpr> &index_type_, const Ptr<TypeExpr> &element_type_,
         const location &loc_);
   Array *clone() const override;
-  virtual ~Array() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -181,7 +175,6 @@ struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
   TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
              const location &loc_);
   TypeExprID *clone() const override;
-  virtual ~TypeExprID() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
