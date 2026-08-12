@@ -1,3 +1,49 @@
+/// @file
+/// @brief classes for visiting each node in an AST
+///
+/// To implement logic that needs to act on each node of an AST, define a class
+/// that inherits from one of the classes defined below. To decide which class
+/// to inherit from:
+///
+///   ┌────────────────────────────────────────────────────────────────────────┐
+///   │ do you want a compile error when new node types are added to librumur? │
+///   └──────────────────┬───────────────────────────────────────┬─────────────┘
+///                      │                                     no│
+///                      │                                       ▼
+///                      │                      ┌──────────────────────────────┐
+///                      │                      │ do you need to modify nodes? │
+///                   yes│                      └──────┬─────────────────┬─────┘
+///                      │                           no│              yes│
+///                      │                             ▼                 ▼
+///                      │                     ╔════════════════╗  ╔═══════════╗
+///                      │                     ║ ConstTraversal ║  ║ Traversal ║
+///                      ▼                     ╚════════════════╝  ╚═══════════╝
+///   ┌──────────────────────────────────────────┐
+///   │ what kind of node do you need to act on? ├───────────────────────────┐
+///   └───────────┬─────────────┬────────────┬───┘                           │
+///               │             │            └─────────┐                     │
+///       only    │      only   │                  only│              various│
+///    expressions│   statements│                 types│               or all│
+///               ▼             └─────────────┐        └───────────┐         │
+///      ┌──────────────────────────────┐     ▼                    │         │
+///      │ do you need to modify nodes? │  ╔════════════════════╗  │         │
+///      └──────┬────────────────────┬──┘  ║ ConstStmtTraversal ║  │      ┌──┘
+///           no│                 yes│     ╚════════════════════╝  ▼      │
+///             ▼                    ▼           ╔════════════════════╗   │
+///   ╔════════════════════╗  ╔═══════════════╗  ║ ConstTypeTraversal ║   │
+///   ║ ConstExprTraversal ║  ║ ExprTraversal ║  ╚════════════════════╝   ▼
+///   ╚════════════════════╝  ╚═══════════════╝ ┌──────────────────────────────┐
+///                                             │ do you need to modify nodes? │
+///                                             └───┬──────────────────┬───────┘
+///                                               no│               yes│
+///                                                 ▼                  ▼
+///                                    ╔════════════════════╗  ╔═══════════════╗
+///                                    ║ ConstBaseTraversal ║  ║ BaseTraversal ║
+///                                    ╚════════════════════╝  ╚═══════════════╝
+///
+/// Clearly there are some useful variations missing (e.g. `StmtTraversal`).
+/// These will be added if/when needed.
+
 #pragma once
 
 #include <cstddef>
