@@ -26,9 +26,8 @@ The process of cutting a new Rumur release should follow these steps:
     the shipped files in share/CMakeLists.txt.
 5.  Commit this to main.
 6.  Push this to `upstream on Github`_.
-7.  Wait for the `Cirrus CI regression tests`_ to pass. If one of these tests
-    fail, you may need to look at the raw log because the summary output hides
-    some stderr lines.
+7.  Wait for the CI tests to pass. If one of these tests fail, you may need to
+    look at the raw log because the summary output hides some stderr lines.
 8.  Tag the commit with the version number in “vYYYY.MM.DD” format.
 9.  Push the new version tag upstream.
 10. Package Rumur for Debian (see below).
@@ -100,7 +99,6 @@ autopkgtests and these could fail, preventing migration of the package to the
 main repositories.
 
 .. _`changelog format`: https://www.debian.org/doc/manuals/maint-guide/dreq.en.html#changelog
-.. _`Cirrus CI regression tests`: https://cirrus-ci.com/github/Smattr/rumur
 .. _`Debian buildd results`: https://buildd.debian.org/status/package.php?p=rumur
 .. _`Debian Unstable installation`: https://wiki.debian.org/DebianUnstable#Installation
 .. _`package details page`: https://mentors.debian.net/package/rumur/
