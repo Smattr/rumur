@@ -26,7 +26,6 @@ struct VarDecl;
 struct RUMUR_API_WITH_RTTI Expr : public Node {
 
   Expr(const location &loc_);
-  virtual ~Expr() = default;
 
   virtual Expr *clone() const = 0;
 
@@ -79,7 +78,6 @@ struct RUMUR_API_WITH_RTTI Ternary : public Expr {
 
   Ternary(const Ptr<Expr> &cond_, const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
           const location &loc_);
-  virtual ~Ternary() = default;
   Ternary *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -104,7 +102,6 @@ struct RUMUR_API_WITH_RTTI BinaryExpr : public Expr {
 
   BinaryExpr(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
              const location &loc_);
-  virtual ~BinaryExpr() = default;
 
   BinaryExpr *clone() const override = 0;
   bool constant() const override;
@@ -134,7 +131,6 @@ struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
   Implication(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
               const location &loc_);
   Implication *clone() const override;
-  virtual ~Implication() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -148,7 +144,6 @@ struct RUMUR_API_WITH_RTTI Implication : public BooleanBinaryExpr {
 struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
 
   Or(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Or() = default;
   Or *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -163,7 +158,6 @@ struct RUMUR_API_WITH_RTTI Or : public BooleanBinaryExpr {
 struct RUMUR_API_WITH_RTTI And : public BooleanBinaryExpr {
 
   And(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~And() = default;
   And *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -181,7 +175,6 @@ struct RUMUR_API_WITH_RTTI AmbiguousAmp : public BinaryExpr {
 
   AmbiguousAmp(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                const location &loc_);
-  virtual ~AmbiguousAmp() = default;
   AmbiguousAmp *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -199,7 +192,6 @@ struct RUMUR_API_WITH_RTTI AmbiguousPipe : public BinaryExpr {
 
   AmbiguousPipe(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
                 const location &loc_);
-  virtual ~AmbiguousPipe() = default;
   AmbiguousPipe *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -216,7 +208,6 @@ struct RUMUR_API_WITH_RTTI UnaryExpr : public Expr {
 
   UnaryExpr(const Ptr<Expr> &rhs_, const location &loc_);
   UnaryExpr *clone() const override = 0;
-  virtual ~UnaryExpr() = default;
 
   bool constant() const override;
   bool is_pure() const override;
@@ -229,7 +220,6 @@ protected:
 struct RUMUR_API_WITH_RTTI Not : public UnaryExpr {
 
   Not(const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Not() = default;
   Not *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -256,7 +246,6 @@ protected:
 struct RUMUR_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
 
   Lt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Lt() = default;
   Lt *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -270,7 +259,6 @@ struct RUMUR_API_WITH_RTTI Lt : public ComparisonBinaryExpr {
 struct RUMUR_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
 
   Leq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Leq() = default;
   Leq *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -284,7 +272,6 @@ struct RUMUR_API_WITH_RTTI Leq : public ComparisonBinaryExpr {
 struct RUMUR_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
 
   Gt(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Gt() = default;
   Gt *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -298,7 +285,6 @@ struct RUMUR_API_WITH_RTTI Gt : public ComparisonBinaryExpr {
 struct RUMUR_API_WITH_RTTI Geq : public ComparisonBinaryExpr {
 
   Geq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Geq() = default;
   Geq *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -324,7 +310,6 @@ protected:
 struct RUMUR_API_WITH_RTTI Eq : public EquatableBinaryExpr {
 
   Eq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Eq() = default;
   Eq *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -338,7 +323,6 @@ struct RUMUR_API_WITH_RTTI Eq : public EquatableBinaryExpr {
 struct RUMUR_API_WITH_RTTI Neq : public EquatableBinaryExpr {
 
   Neq(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Neq() = default;
   Neq *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -365,7 +349,6 @@ protected:
 struct RUMUR_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
 
   Add(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Add() = default;
   Add *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -378,7 +361,6 @@ struct RUMUR_API_WITH_RTTI Add : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
 
   Sub(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Sub() = default;
   Sub *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -391,7 +373,6 @@ struct RUMUR_API_WITH_RTTI Sub : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Negative : public UnaryExpr {
 
   Negative(const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Negative() = default;
   Negative *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -406,7 +387,6 @@ struct RUMUR_API_WITH_RTTI Negative : public UnaryExpr {
 struct RUMUR_API_WITH_RTTI Bnot : public UnaryExpr {
 
   Bnot(const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Bnot() = default;
   Bnot *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -421,7 +401,6 @@ struct RUMUR_API_WITH_RTTI Bnot : public UnaryExpr {
 struct RUMUR_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
 
   Mul(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Mul() = default;
   Mul *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -435,7 +414,6 @@ struct RUMUR_API_WITH_RTTI Mul : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
 
   Div(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Div() = default;
   Div *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -449,7 +427,6 @@ struct RUMUR_API_WITH_RTTI Div : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
 
   Mod(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Mod() = default;
   Mod *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -463,7 +440,6 @@ struct RUMUR_API_WITH_RTTI Mod : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
 
   Lsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Lsh() = default;
   Lsh *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -477,7 +453,6 @@ struct RUMUR_API_WITH_RTTI Lsh : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
 
   Rsh(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Rsh() = default;
   Rsh *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -492,7 +467,6 @@ struct RUMUR_API_WITH_RTTI Rsh : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
 
   Band(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Band() = default;
   Band *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -507,7 +481,6 @@ struct RUMUR_API_WITH_RTTI Band : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
 
   Bor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Bor() = default;
   Bor *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -520,7 +493,6 @@ struct RUMUR_API_WITH_RTTI Bor : public ArithmeticBinaryExpr {
 struct RUMUR_API_WITH_RTTI Xor : public ArithmeticBinaryExpr {
 
   Xor(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Xor() = default;
   Xor *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -537,7 +509,6 @@ struct RUMUR_API_WITH_RTTI ExprID : public Expr {
 
   ExprID(const std::string &id_, const Ptr<ExprDecl> &value_,
          const location &loc_);
-  virtual ~ExprID() = default;
   ExprID *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -562,7 +533,6 @@ struct RUMUR_API_WITH_RTTI Field : public Expr {
 
   Field(const Ptr<Expr> &record_, const std::string &field_,
         const location &loc_);
-  virtual ~Field() = default;
   Field *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -585,7 +555,6 @@ struct RUMUR_API_WITH_RTTI Element : public Expr {
 
   Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
           const location &loc_);
-  virtual ~Element() = default;
   Element *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -612,7 +581,6 @@ struct RUMUR_API_WITH_RTTI FunctionCall : public Expr {
 
   FunctionCall(const std::string &name_,
                const std::vector<Ptr<Expr>> &arguments_, const location &loc_);
-  virtual ~FunctionCall() = default;
   FunctionCall *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -646,7 +614,6 @@ struct RUMUR_API_WITH_RTTI Quantifier : public Node {
   Quantifier(const std::string &name_, const Ptr<Expr> &from_,
              const Ptr<Expr> &to_, const Ptr<Expr> &step_,
              const location &loc_);
-  virtual ~Quantifier() = default;
   Quantifier *clone() const override;
   void validate() const override;
   std::string to_string() const;
@@ -676,7 +643,6 @@ struct RUMUR_API_WITH_RTTI Exists : public Expr {
 
   Exists(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
          const location &loc_);
-  virtual ~Exists() = default;
   Exists *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -697,7 +663,6 @@ struct RUMUR_API_WITH_RTTI Forall : public Expr {
 
   Forall(const Quantifier &quantifier_, const Ptr<Expr> &expr_,
          const location &loc_);
-  virtual ~Forall() = default;
   Forall *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -714,7 +679,6 @@ struct RUMUR_API_WITH_RTTI Forall : public Expr {
 struct RUMUR_API_WITH_RTTI IsUndefined : public UnaryExpr {
 
   IsUndefined(const Ptr<Expr> &expr_, const location &loc_);
-  virtual ~IsUndefined() = default;
   IsUndefined *clone() const override;
 
   void visit(BaseTraversal &visitor) override;

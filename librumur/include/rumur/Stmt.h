@@ -22,7 +22,6 @@ struct RUMUR_API_WITH_RTTI Stmt : public Node {
 
   Stmt(const location &loc_);
 
-  virtual ~Stmt() = default;
   virtual Stmt *clone() const = 0;
 
 protected:
@@ -38,7 +37,6 @@ struct RUMUR_API_WITH_RTTI AliasStmt : public Stmt {
   AliasStmt(const std::vector<Ptr<AliasDecl>> &aliases_,
             const std::vector<Ptr<Stmt>> &body_, const location &loc_);
   AliasStmt *clone() const override;
-  virtual ~AliasStmt() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -52,7 +50,6 @@ struct RUMUR_API_WITH_RTTI PropertyStmt : public Stmt {
   PropertyStmt(const Property &property_, const std::string &message_,
                const location &loc_);
   PropertyStmt *clone() const override;
-  virtual ~PropertyStmt() = default;
 
   void validate() const override;
   void visit(BaseTraversal &visitor) override;
@@ -67,7 +64,6 @@ struct RUMUR_API_WITH_RTTI Assignment : public Stmt {
   Assignment(const Ptr<Expr> &lhs_, const Ptr<Expr> &rhs_,
              const location &loc_);
   Assignment *clone() const override;
-  virtual ~Assignment() = default;
 
   void validate() const override;
   void visit(BaseTraversal &visitor) override;
@@ -79,7 +75,6 @@ struct RUMUR_API_WITH_RTTI Clear : public Stmt {
   Ptr<Expr> rhs;
 
   Clear(const Ptr<Expr> &rhs_, const location &loc);
-  virtual ~Clear() = default;
   Clear *clone() const override;
 
   void validate() const override;
@@ -93,7 +88,6 @@ struct RUMUR_API_WITH_RTTI ErrorStmt : public Stmt {
 
   ErrorStmt(const std::string &message_, const location &loc_);
   ErrorStmt *clone() const override;
-  virtual ~ErrorStmt() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -106,7 +100,6 @@ struct RUMUR_API_WITH_RTTI For : public Stmt {
 
   For(const Quantifier &quantifier_, const std::vector<Ptr<Stmt>> &body_,
       const location &loc_);
-  virtual ~For() = default;
   For *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
@@ -120,7 +113,6 @@ struct RUMUR_API_WITH_RTTI IfClause : public Node {
 
   IfClause(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
            const location &loc_);
-  virtual ~IfClause() = default;
   IfClause *clone() const override;
 
   void validate() const override;
@@ -133,7 +125,6 @@ struct RUMUR_API_WITH_RTTI If : public Stmt {
   std::vector<IfClause> clauses;
 
   If(const std::vector<IfClause> &clauses_, const location &loc_);
-  virtual ~If() = default;
   If *clone() const override;
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -145,7 +136,6 @@ struct RUMUR_API_WITH_RTTI ProcedureCall : public Stmt {
 
   ProcedureCall(const std::string &name,
                 const std::vector<Ptr<Expr>> &arguments, const location &loc_);
-  virtual ~ProcedureCall() = default;
   ProcedureCall *clone() const override;
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -158,7 +148,6 @@ struct RUMUR_API_WITH_RTTI Put : public Stmt {
 
   Put(const std::string &value_, const location &loc_);
   Put(const Ptr<Expr> &expr_, const location &loc_);
-  virtual ~Put() = default;
   Put *clone() const override;
 
   void validate() const override;
@@ -171,7 +160,6 @@ struct RUMUR_API_WITH_RTTI Return : public Stmt {
   Ptr<Expr> expr;
 
   Return(const Ptr<Expr> &expr_, const location &loc_);
-  virtual ~Return() = default;
   Return *clone() const override;
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -184,7 +172,6 @@ struct RUMUR_API_WITH_RTTI SwitchCase : public Node {
 
   SwitchCase(const std::vector<Ptr<Expr>> &matches_,
              const std::vector<Ptr<Stmt>> &body_, const location &loc_);
-  virtual ~SwitchCase() = default;
   SwitchCase *clone() const override;
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -197,7 +184,6 @@ struct RUMUR_API_WITH_RTTI Switch : public Stmt {
 
   Switch(const Ptr<Expr> &expr_, const std::vector<SwitchCase> &cases_,
          const location &loc_);
-  virtual ~Switch() = default;
   Switch *clone() const override;
 
   void validate() const override;
@@ -210,7 +196,6 @@ struct RUMUR_API_WITH_RTTI Undefine : public Stmt {
   Ptr<Expr> rhs;
 
   Undefine(const Ptr<Expr> &rhs_, const location &loc_);
-  virtual ~Undefine() = default;
   Undefine *clone() const override;
 
   void validate() const override;
@@ -225,7 +210,6 @@ struct RUMUR_API_WITH_RTTI While : public Stmt {
 
   While(const Ptr<Expr> &condition_, const std::vector<Ptr<Stmt>> &body_,
         const location &loc_);
-  virtual ~While() = default;
   While *clone() const override;
 
   void validate() const override;

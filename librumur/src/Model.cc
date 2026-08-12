@@ -97,8 +97,6 @@ mpz_class Model::liveness_count() const {
         count += multiplier;
       // No need to descend into child nodes.
     }
-
-    virtual ~LivenessCounter() = default;
   };
 
   // Use the traversal to count liveness rules.

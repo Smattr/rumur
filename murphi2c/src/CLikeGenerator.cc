@@ -439,8 +439,8 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
   // values
   if (type->is_boolean()) {
 
-    *this << indentation() << "printf(\"%s\", ((" << e << suffix
-          << ") ? \"true\" : \"false\"))";
+    *this << indentation() << "fputs((" << e << suffix
+          << ") ? \"true\" : \"false\", stdout)";
 
     return;
   }
@@ -457,7 +457,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     for (const std::pair<std::string, location> &m : en->members) {
       *this << indentation() << "case " << std::to_string(i) << ":\n";
       indent();
-      *this << indentation() << "printf(\"%s\", \"" << m.first << "\");\n"
+      *this << indentation() << "fputs(\"" << m.first << "\", stdout);\n"
             << indentation() << "break;\n";
       dedent();
       ++i;
@@ -481,7 +481,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     // printing opening “[”
     *this << indentation() << "do {\n";
     indent();
-    *this << indentation() << "printf(\"[\");\n";
+    *this << indentation() << "putc('[', stdout);\n";
 
     // invent a unique symbol using our counter
     const std::string i = "array_index" + std::to_string(counter);
@@ -506,14 +506,14 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     dedent();
     *this << indentation() << "} else {\n";
     indent();
-    *this << indentation() << "printf(\", \");\n";
+    *this << indentation() << "fputs(\", \", stdout);\n";
     dedent();
     *this << indentation() << "}\n";
     dedent();
     *this << indentation() << "}\n";
 
     // print closing “]”
-    *this << indentation() << "printf(\"]\");\n";
+    *this << indentation() << "putc(']', stdout);\n";
     dedent();
     *this << indentation() << "} while (0)";
 
@@ -525,12 +525,12 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     // print opening “{”
     *this << indentation() << "do {\n";
     indent();
-    *this << indentation() << "printf(\"{\");\n";
+    *this << indentation() << "putc('{', stdout);\n";
 
     // print contained fields as a comma-separated list
     std::string sep;
     for (const Ptr<VarDecl> &f : r->fields) {
-      *this << indentation() << "printf(\"%s\", \"" << sep << "\");\n";
+      *this << indentation() << "fputs(\"" << sep << "\", stdout);\n";
       const Ptr<TypeExpr> ft = f->get_type();
       print(suffix + "." + f->name, *ft, e, counter);
       *this << ";\n";
@@ -538,7 +538,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     }
 
     // print closing “}”
-    *this << indentation() << "printf(\"}\");\n";
+    *this << indentation() << "putc('}', stdout);\n";
     dedent();
     *this << indentation() << "} while (0)";
 
@@ -553,7 +553,7 @@ void CLikeGenerator::visit_put(const Put &n) {
 
   // is this a put of a literal string?
   if (n.expr == nullptr) {
-    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+    *this << indentation() << "puts(\"" << n.value << "\");";
 
   } else {
     const Ptr<TypeExpr> type = n.expr->type();

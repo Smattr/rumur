@@ -52,8 +52,6 @@ void Function::validate() const {
                       n.loc);
       }
     }
-
-    virtual ~ReturnChecker() = default;
   };
 
   // Run the checker
@@ -185,8 +183,6 @@ bool Function::is_recursive() const {
       if (n.function != nullptr && n.function->unique_id == needle->unique_id)
         found = true;
     }
-
-    virtual ~CallFinder() = default;
   };
 
   // run the traversal on ourselves

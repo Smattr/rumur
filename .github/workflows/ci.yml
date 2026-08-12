@@ -27,7 +27,7 @@ jobs:
           git fetch -- origin ${{ github.event.pull_request.head.sha }}
           git checkout FETCH_HEAD
           export CFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
-          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
           export UBSAN_OPTIONS=print_stacktrace=1
           cmake -B build -S .
           cmake --build build
@@ -56,7 +56,7 @@ jobs:
           git fetch -- origin ${{ github.event.pull_request.head.sha }}
           git checkout FETCH_HEAD
           export CFLAGS="-pedantic -Werror -g"
-          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g"
+          export CXXFLAGS="-pedantic -Werror -g"
           cmake -DBUILD_SHARED_LIBS=ON -B build -S .
           cmake --build build
           cmake --install build
@@ -84,7 +84,7 @@ jobs:
           git fetch -- origin ${{ github.event.pull_request.head.sha }}
           git checkout FETCH_HEAD
           export CFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
-          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
           export UBSAN_OPTIONS=print_stacktrace=1
           cmake -B build -S .
           cmake --build build
@@ -113,7 +113,7 @@ jobs:
           git fetch -- origin ${{ github.event.pull_request.head.sha }}
           git checkout FETCH_HEAD
           export CFLAGS="-pedantic -Werror -g"
-          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g"
+          export CXXFLAGS="-pedantic -Werror -g"
           cmake -DBUILD_SHARED_LIBS=ON -B build -S .
           cmake --build build
           cmake --install build
@@ -141,7 +141,7 @@ jobs:
           git fetch -- origin ${{ github.event.pull_request.head.sha }}
           git checkout FETCH_HEAD
           export CFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
-          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
+          export CXXFLAGS="-pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined"
           export UBSAN_OPTIONS=print_stacktrace=1
           cmake -B build -S .
           cmake --build build
@@ -170,7 +170,7 @@ jobs:
           git fetch -- origin ${{ github.event.pull_request.head.sha }}
           git checkout FETCH_HEAD
           export CFLAGS="-pedantic -Werror -g"
-          export CXXFLAGS="-pedantic -Werror -Wno-error=overloaded-virtual -g"
+          export CXXFLAGS="-pedantic -Werror -g"
           cmake -DBUILD_SHARED_LIBS=ON -B build -S .
           cmake --build build
           cmake --install build
@@ -184,7 +184,7 @@ jobs:
       CC: gcc-10
       CXX: g++-10
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -205,7 +205,7 @@ jobs:
     env:
       DEBIAN_FRONTEND: noninteractive
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -228,7 +228,7 @@ jobs:
       CC: gcc-12
       CXX: g++-12
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -249,7 +249,7 @@ jobs:
     env:
       DEBIAN_FRONTEND: noninteractive
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -272,7 +272,7 @@ jobs:
       CC: gcc-14
       CXX: g++-14
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -287,24 +287,21 @@ jobs:
       - run: sudo cmake --install build
       - run: cmake --build build --target check
 
-  ubuntu2404_gcc15_x86-64:
-    name: Ubuntu 24.04, GCC 15, x86-64
-    runs-on: ubuntu-24.04
+  ubuntu2604_gcc15_x86-64:
+    name: Ubuntu 26.04, GCC 15, x86-64
+    runs-on: ubuntu-26.04
     env:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-15
       CXX: g++-15
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
       - run: python3 --version
-      - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       - run: sudo apt-get update
-      - run: sudo apt-get install --no-install-recommends -y g++-15 libfl-dev libxml2-utils python3-pytest
-      - run: which gcc-15
-      - run: which g++-15
+      - run: sudo apt-get install --no-install-recommends -y libfl-dev libxml2-utils python3-pytest
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
@@ -313,15 +310,15 @@ jobs:
       - run: sudo cmake --install build
       - run: cmake --build build --target check
 
-  ubuntu2404_gcc16_x86-64:
-    name: Ubuntu 24.04, GCC 16, x86-64
-    runs-on: ubuntu-24.04
+  ubuntu2604_gcc16_x86-64:
+    name: Ubuntu 26.04, GCC 16, x86-64
+    runs-on: ubuntu-26.04
     env:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-16
       CXX: g++-16
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -Wno-error=unused-but-set-variable -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=unused-but-set-variable -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -347,7 +344,7 @@ jobs:
       CC: gcc-12
       CXX: g++-12
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -368,7 +365,7 @@ jobs:
     env:
       DEBIAN_FRONTEND: noninteractive
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -391,7 +388,7 @@ jobs:
       CC: gcc-14
       CXX: g++-14
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -406,24 +403,47 @@ jobs:
       - run: sudo cmake --install build
       - run: cmake --build build --target check
 
-  ubuntu2404_gcc15_aarch64:
-    name: Ubuntu 24.04, GCC 15, aarch64
-    runs-on: ubuntu-24.04-arm
+  ubuntu2604_gcc15_aarch64:
+    name: Ubuntu 26.04, GCC 15, aarch64
+    runs-on: ubuntu-26.04-arm
     env:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-15
       CXX: g++-15
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - run: uname -rms
+      - run: python3 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install --no-install-recommends -y libfl-dev libxml2-utils python3-pytest
+      - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+      - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
+      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: cmake -B build -S wd
+      - run: cmake --build build
+      - run: sudo cmake --install build
+      - run: cmake --build build --target check
+
+  ubuntu2604_gcc16_aarch64:
+    name: Ubuntu 26.04, GCC 16, aarch64
+    runs-on: ubuntu-26.04-arm
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CC: gcc-16
+      CXX: g++-16
+      CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=unused-but-set-variable -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
       - run: python3 --version
       - run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       - run: sudo apt-get update
-      - run: sudo apt-get install --no-install-recommends -y g++-15 libfl-dev libxml2-utils python3-pytest
-      - run: which gcc-15
-      - run: which g++-15
+      - run: sudo apt-get install --no-install-recommends -y g++-16 libfl-dev libxml2-utils python3-pytest
+      - run: which gcc-16
+      - run: which g++-16
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
       - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
@@ -437,7 +457,7 @@ jobs:
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -463,7 +483,7 @@ jobs:
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -485,7 +505,7 @@ jobs:
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -511,7 +531,7 @@ jobs:
     runs-on: macos-26
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=overloaded-virtual -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms

@@ -1,3 +1,49 @@
+/// @file
+/// @brief classes for visiting each node in an AST
+///
+/// To implement logic that needs to act on each node of an AST, define a class
+/// that inherits from one of the classes defined below. To decide which class
+/// to inherit from:
+///
+///   ┌────────────────────────────────────────────────────────────────────────┐
+///   │ do you want a compile error when new node types are added to librumur? │
+///   └──────────────────┬───────────────────────────────────────┬─────────────┘
+///                      │                                     no│
+///                      │                                       ▼
+///                      │                      ┌──────────────────────────────┐
+///                      │                      │ do you need to modify nodes? │
+///                   yes│                      └──────┬─────────────────┬─────┘
+///                      │                           no│              yes│
+///                      │                             ▼                 ▼
+///                      │                     ╔════════════════╗  ╔═══════════╗
+///                      │                     ║ ConstTraversal ║  ║ Traversal ║
+///                      ▼                     ╚════════════════╝  ╚═══════════╝
+///   ┌──────────────────────────────────────────┐
+///   │ what kind of node do you need to act on? ├───────────────────────────┐
+///   └───────────┬─────────────┬────────────┬───┘                           │
+///               │             │            └─────────┐                     │
+///       only    │      only   │                  only│              various│
+///    expressions│   statements│                 types│               or all│
+///               ▼             └─────────────┐        └───────────┐         │
+///      ┌──────────────────────────────┐     ▼                    │         │
+///      │ do you need to modify nodes? │  ╔════════════════════╗  │         │
+///      └──────┬────────────────────┬──┘  ║ ConstStmtTraversal ║  │      ┌──┘
+///           no│                 yes│     ╚════════════════════╝  ▼      │
+///             ▼                    ▼           ╔════════════════════╗   │
+///   ╔════════════════════╗  ╔═══════════════╗  ║ ConstTypeTraversal ║   │
+///   ║ ConstExprTraversal ║  ║ ExprTraversal ║  ╚════════════════════╝   ▼
+///   ╚════════════════════╝  ╚═══════════════╝ ┌──────────────────────────────┐
+///                                             │ do you need to modify nodes? │
+///                                             └───┬──────────────────┬───────┘
+///                                               no│               yes│
+///                                                 ▼                  ▼
+///                                    ╔════════════════════╗  ╔═══════════════╗
+///                                    ║ ConstBaseTraversal ║  ║ BaseTraversal ║
+///                                    ╚════════════════════╝  ╚═══════════════╝
+///
+/// Clearly there are some useful variations missing (e.g. `StmtTraversal`).
+/// These will be added if/when needed.
+
 #pragma once
 
 #include <cstddef>
@@ -380,8 +426,6 @@ public:
   void visit_undefine(const Undefine &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
-
-  virtual ~ConstExprTraversal() = default;
 };
 
 /* Generic base for read-only traversals that only need to act on statements.
@@ -443,8 +487,6 @@ public:
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_xor(const Xor &n) final;
-
-  virtual ~ConstStmtTraversal() = default;
 
 private:
   void visit_bexpr(const BinaryExpr &n);
@@ -514,8 +556,6 @@ public:
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
   void visit_xor(const Xor &n) final;
-
-  virtual ~ConstTypeTraversal() = default;
 
 private:
   void visit_bexpr(const BinaryExpr &n);

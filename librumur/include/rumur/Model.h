@@ -26,7 +26,6 @@ struct RUMUR_API_WITH_RTTI Model : public Node {
   std::vector<Ptr<Node>> children;
 
   Model(const std::vector<Ptr<Node>> &children_, const location &loc_);
-  virtual ~Model() = default;
   Model *clone() const override;
 
   // Get the size of the state data in bits.

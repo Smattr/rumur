@@ -89,8 +89,6 @@ public:
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;
 
-  virtual ~Indexer() = default;
-
 private:
   void visit_bexpr(BinaryExpr &n);
   void visit_uexpr(UnaryExpr &n);
