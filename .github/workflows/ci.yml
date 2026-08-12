@@ -310,9 +310,9 @@ jobs:
       - run: sudo cmake --install build
       - run: cmake --build build --target check
 
-  ubuntu2404_gcc16_x86-64:
-    name: Ubuntu 24.04, GCC 16, x86-64
-    runs-on: ubuntu-24.04
+  ubuntu2604_gcc16_x86-64:
+    name: Ubuntu 26.04, GCC 16, x86-64
+    runs-on: ubuntu-26.04
     env:
       DEBIAN_FRONTEND: noninteractive
       CC: gcc-16
