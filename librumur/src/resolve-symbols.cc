@@ -469,8 +469,6 @@ public:
 
   void visit_xor(Xor &n) final { visit_bexpr(n); }
 
-  virtual ~Resolver() = default;
-
 private:
   void visit_bexpr(BinaryExpr &n) {
     dispatch(*n.lhs);
