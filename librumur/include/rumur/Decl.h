@@ -23,7 +23,6 @@ struct RUMUR_API_WITH_RTTI Decl : public Node {
   std::string name;
 
   Decl(const std::string &name_, const location &loc_);
-  virtual ~Decl() = 0;
 
   Decl *clone() const override = 0;
 
