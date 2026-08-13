@@ -11,8 +11,6 @@ public:
   bool result = false;
 
   void visit_startstate(const StartState &) final { result = true; }
-
-  virtual ~Finder() = default;
 };
 } // namespace
 

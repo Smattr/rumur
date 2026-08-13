@@ -50,8 +50,6 @@ public:
 
   // perform any pending actions, assuming that processing is done
   virtual void finalise() {};
-
-  virtual ~Stage() = default;
 };
 
 class IntermediateStage : public Stage {

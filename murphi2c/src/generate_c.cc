@@ -274,8 +274,6 @@ public:
     emit_trailing_comments(n);
     *this << "\n";
   }
-
-  virtual ~CGenerator() = default;
 };
 
 } // namespace

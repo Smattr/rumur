@@ -379,8 +379,6 @@ public:
     }
     *out << "}";
   }
-
-  virtual ~Generator() = default;
 };
 
 } // namespace
