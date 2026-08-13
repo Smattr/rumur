@@ -1304,7 +1304,6 @@ mpz_class Element::constant_fold() const {
 void Element::validate() const {
 
   const Ptr<TypeExpr> t = array->type()->resolve();
-  ;
 
   if (!isa<Array>(t))
     throw Error("array index on an expression that is not an array", loc);
