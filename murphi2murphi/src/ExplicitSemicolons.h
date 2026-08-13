@@ -36,8 +36,6 @@ public:
 
   void finalise() final;
 
-  virtual ~ExplicitSemicolons() = default;
-
 private:
   void flush();
 

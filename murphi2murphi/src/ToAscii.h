@@ -29,6 +29,4 @@ public:
   explicit ToAscii(Stage &next_);
 
   void process(const Token &t) final;
-
-  virtual ~ToAscii() = default;
 };

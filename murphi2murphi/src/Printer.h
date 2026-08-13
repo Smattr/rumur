@@ -94,8 +94,6 @@ public:
 
   void finalise() final;
 
-  virtual ~Printer() = default;
-
 private:
   void visit_bexpr(const rumur::BinaryExpr &n);
   void visit_uexpr(const rumur::UnaryExpr &n);

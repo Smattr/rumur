@@ -588,8 +588,6 @@ public:
     *this << "((value_t)(" << *n.lhs << " ^ " << *n.rhs << "))";
   }
 
-  virtual ~Generator() = default;
-
 private:
   void invalid(const Expr &n) const {
     throw Error("invalid expression used as lvalue", n.loc);
