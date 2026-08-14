@@ -60,6 +60,47 @@ static std::string c_lit(const std::string &c_type, const mpz_class &v) {
   return "((" + c_type + ")" + s + ")";
 }
 
+/// get the printf format code for printing a given type
+///
+/// See call sites of this function for why the return value includes stray
+/// quote characters.
+///
+/// @param c_type Type to print
+/// @return Printf format code for this type
+static const char *c_pri(const std::string &c_type) {
+  if (c_type == "unsigned" || c_type == "unsigned int")
+    return "u\"";
+  if (c_type == "long" || c_type == "long int" || c_type == "signed long" ||
+      c_type == "signed long int")
+    return "ld\"";
+  if (c_type == "unsigned long" || c_type == "unsigned long int")
+    return "lu\"";
+  if (c_type == "long long" || c_type == "long long int" ||
+      c_type == "signed long long" || c_type == "signed long long int")
+    return "lld\"";
+  if (c_type == "unsigned long long" || c_type == "unsigned long long int")
+    return "llu\"";
+  if (c_type == "int8_t")
+    return "\" PRId8";
+  if (c_type == "uint8_t")
+    return "\" PRIu8";
+  if (c_type == "int16_t")
+    return "\" PRId16";
+  if (c_type == "uint16_t")
+    return "\" PRIu16";
+  if (c_type == "int32_t")
+    return "\" PRId32";
+  if (c_type == "uint32_t")
+    return "\" PRIu32";
+  if (c_type == "int64_t")
+    return "\" PRId64";
+  if (c_type == "uint64_t")
+    return "\" PRIu64";
+
+  // otherwise assume we can print this as an int
+  return "d\"";
+}
+
 void CLikeGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 }
@@ -591,7 +632,8 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
   }
 
   // fall back case, for Ranges and Scalarsets
-  *this << indentation() << "print_" << value_type << "(" << e << suffix << ")";
+  *this << indentation() << "printf(\"%" << c_pri(value_type) << ", (" << e
+        << suffix << "))";
 }
 
 void CLikeGenerator::visit_put(const Put &n) {

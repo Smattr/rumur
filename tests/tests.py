@@ -1406,7 +1406,6 @@ def test_murphi2c_type_with_space():
     )
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True)
 def test_murphi2c_type_with_space2():
     """can murphi2c handle a `--value-type` with a space in it?"""
 
