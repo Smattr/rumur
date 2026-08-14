@@ -1384,9 +1384,10 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
                   (*it)->loc);
 
+    const Ptr<TypeExpr> a_type = (*it)->type();
     const Ptr<TypeExpr> v_type = v->get_type();
 
-    if (!(*it)->type()->coerces_to(*v_type))
+    if (!a_type->coerces_to(*v_type))
       throw Error("function call contains parameter of incorrect type",
                   (*it)->loc);
 
@@ -1396,7 +1397,7 @@ void FunctionCall::validate() const {
     // to be of exactly the same type in order to guarantee the caller’s and
     // callee’s handles are compatible
     if (!v->is_readonly() && isa<Range>(param_type)) {
-      const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
+      const Ptr<TypeExpr> arg_type = a_type->resolve();
       assert(isa<Range>(arg_type) &&
              "non-range considered type-compatible with range");
 
