@@ -26,11 +26,11 @@ bool TypeExpr::is_simple() const { return false; }
 
 Ptr<TypeExpr> TypeExpr::resolve() const { return Ptr<TypeExpr>(clone()); }
 
-std::string TypeExpr::lower_bound() const {
+mpz_class TypeExpr::lower_bound() const {
   throw Error("complex types do not have valid lower bounds", loc);
 }
 
-std::string TypeExpr::upper_bound() const {
+mpz_class TypeExpr::upper_bound() const {
   throw Error("complex types do not have valid upper bounds", loc);
 }
 
@@ -218,13 +218,9 @@ void Range::validate() const {
     throw Error("upper bound of range is less than lower bound", loc);
 }
 
-std::string Range::lower_bound() const {
-  return "VALUE_C(" + min->constant_fold().get_str() + ")";
-}
+mpz_class Range::lower_bound() const { return min->constant_fold(); }
 
-std::string Range::upper_bound() const {
-  return "VALUE_C(" + max->constant_fold().get_str() + ")";
-}
+mpz_class Range::upper_bound() const { return max->constant_fold(); }
 
 void Range::to_stream(std::ostream &out) const { out << *min << ".." << *max; }
 
@@ -260,12 +256,9 @@ void Scalarset::validate() const {
     throw Error("bound of scalarset is not positive", bound->loc);
 }
 
-std::string Scalarset::lower_bound() const { return "VALUE_C(0)"; }
+mpz_class Scalarset::lower_bound() const { return 0; }
 
-std::string Scalarset::upper_bound() const {
-  mpz_class b = bound->constant_fold() - 1;
-  return "VALUE_C(" + b.get_str() + ")";
-}
+mpz_class Scalarset::upper_bound() const { return bound->constant_fold() - 1; }
 
 void Scalarset::to_stream(std::ostream &out) const {
   out << "scalarset(" << *bound << ")";
@@ -302,13 +295,13 @@ void Enum::validate() const {
   }
 }
 
-std::string Enum::lower_bound() const { return "VALUE_C(0)"; }
+mpz_class Enum::lower_bound() const { return 0; }
 
-std::string Enum::upper_bound() const {
+mpz_class Enum::upper_bound() const {
   mpz_class size = members.size();
   if (size > 0)
     size--;
-  return "VALUE_C(" + size.get_str() + ")";
+  return size;
 }
 
 void Enum::to_stream(std::ostream &out) const {
@@ -464,13 +457,13 @@ void TypeExprID::validate() const {
     throw Error("unresolved type symbol \"" + name + "\"", loc);
 }
 
-std::string TypeExprID::lower_bound() const {
+mpz_class TypeExprID::lower_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->lower_bound();
 }
 
-std::string TypeExprID::upper_bound() const {
+mpz_class TypeExprID::upper_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->upper_bound();

@@ -117,7 +117,8 @@ void CLikeGenerator::visit_element(const Element &n) {
 
   // find the lower bound of its index type, using some hacky mangling to align
   // with one of the macros from ../resources/c_prefix.c
-  const std::string lb = value_type + "_" + a->index_type->lower_bound();
+  const std::string lb =
+      value_type + "_VALUE_C(" + a->index_type->lower_bound().get_str() + ")";
 
   // emit an indexing operation, now account for this
   *this << "(" << *n.array << ".data[(" << *n.index << ") - " << lb << "])";
@@ -488,8 +489,10 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
 
     // get the bounds of the index and hackily prepend the value type to produce
     // something corresponding to one of the macros in ../resources/c_prefix.c
-    const std::string lb = value_type + "_" + a->index_type->lower_bound();
-    const std::string ub = value_type + "_" + a->index_type->upper_bound();
+    const std::string lb =
+        value_type + "_VALUE_C(" + a->index_type->lower_bound().get_str() + ")";
+    const std::string ub =
+        value_type + "_VALUE_C(" + a->index_type->upper_bound().get_str() + ")";
 
     *this << indentation() << "for (size_t " << i << " = 0; ; ++" << i
           << ") {\n";

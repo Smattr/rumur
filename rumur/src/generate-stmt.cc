@@ -106,11 +106,12 @@ public:
   void visit_assignment(const Assignment &s) final {
 
     if (s.lhs->type()->is_simple()) {
-      const std::string lb = s.lhs->type()->lower_bound();
-      const std::string ub = s.lhs->type()->upper_bound();
+      const std::string lb = s.lhs->type()->lower_bound().get_str();
+      const std::string ub = s.lhs->type()->upper_bound().get_str();
 
       *out << "handle_write(" << to_C_string(s.loc) << ", rule_name, "
-           << to_C_string(*s.lhs) << ", s, " << lb << ", " << ub << ", ";
+           << to_C_string(*s.lhs) << ", s, VALUE_C(" << lb << "), VALUE_C("
+           << ub << "), ";
       generate_lvalue(*out, *s.lhs);
       *out << ", ";
       generate_rvalue(*out, *s.rhs);

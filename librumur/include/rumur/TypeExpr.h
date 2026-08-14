@@ -36,11 +36,10 @@ struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
   virtual mpz_class count() const = 0;
   virtual Ptr<TypeExpr> resolve() const;
 
-  /* Numeric bounds of this type as valid C code. These are only valid to use on
-   * TypeExprs for which is_simple() returns true.
-   */
-  virtual std::string lower_bound() const;
-  virtual std::string upper_bound() const;
+  // Numeric bounds of this type. These are only valid to use on TypeExprs for
+  // which is_simple() returns true.
+  virtual mpz_class lower_bound() const;
+  virtual mpz_class upper_bound() const;
 
   // Get a string representation of this type
   std::string to_string() const;
@@ -81,8 +80,8 @@ struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
   bool is_simple() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
@@ -101,8 +100,8 @@ struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
   bool is_simple() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
@@ -127,8 +126,8 @@ struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
   bool is_simple() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
   bool is_boolean() const override;
@@ -185,8 +184,8 @@ struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
   Ptr<TypeExpr> resolve() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };

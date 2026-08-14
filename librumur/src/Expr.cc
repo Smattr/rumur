@@ -1570,7 +1570,7 @@ std::string Quantifier::lower_bound() const {
                 loc);
 
   if (type != nullptr)
-    return type->lower_bound();
+    return "VALUE_C(" + type->lower_bound().get_str() + ")";
 
   assert(from != nullptr && "quantifier with null type and null lower bound");
 
