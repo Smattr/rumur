@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -53,18 +52,18 @@ public:
   }
 
   void visit_aliasdecl(const AliasDecl &) final {
-    throw std::logic_error("alias declaration should have been rejected during "
-                           "check()");
+    assert(!"alias declaration not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_aliasrule(const AliasRule &) final {
-    throw std::logic_error("alias rule should have been rejected during "
-                           "check()");
+    assert(!"alias rule not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_aliasstmt(const AliasStmt &) final {
-    throw std::logic_error("alias statement should have been rejected during "
-                           "check()");
+    assert(!"alias statement not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_and(const And &n) final {
@@ -136,8 +135,8 @@ public:
       return;
     }
 
-    throw std::logic_error("clear of complex type should have been rejected "
-                           "during check()");
+    assert(!"clear of complex types not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_constdecl(const ConstDecl &n) final {
@@ -159,7 +158,8 @@ public:
   }
 
   void visit_div(const Div &) final {
-    throw std::logic_error("/ should have been rejected during check()");
+    assert(!"division not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_element(const Element &n) final {
@@ -208,7 +208,8 @@ public:
       return;
     }
 
-    throw std::logic_error("exists should have been rejected during check()");
+    assert(!"exists not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_exprid(const ExprID &n) final { *this << n.id; }
@@ -289,7 +290,8 @@ public:
       return;
     }
 
-    throw std::logic_error("forall should have been rejected during check()");
+    assert(!"forall not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_function(const Function &n) final {
@@ -432,8 +434,8 @@ public:
   }
 
   void visit_isundefined(const IsUndefined &) final {
-    throw std::logic_error("isundefined should have been rejected during "
-                           "check()");
+    assert(!"isundefined not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_leq(const Leq &n) final {
@@ -441,7 +443,8 @@ public:
   }
 
   void visit_lsh(const Lsh &) final {
-    throw std::logic_error("<< should have been rejected during check()");
+    assert(!"left shift not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_lt(const Lt &n) final {
@@ -449,7 +452,8 @@ public:
   }
 
   void visit_mod(const Mod &) final {
-    throw std::logic_error("% should have been rejected during check()");
+    assert(!"modulo not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_model(const Model &n) final {
@@ -559,8 +563,9 @@ public:
   }
 
   void visit_property(const Property &) final {
-    throw std::logic_error("property should have been handled in its parent ("
-                           "either PropertyRule or PropertyStmt)");
+    assert(!"property not handled in its parent (either PropertyRule or "
+            "PropertyStmt)");
+    __builtin_unreachable();
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -577,8 +582,8 @@ public:
       break;
 
     case Property::COVER:
-      throw std::logic_error("cover property should have been rejected during "
-                             "check()");
+      assert(!"cover property not rejected during check()");
+      __builtin_unreachable();
 
     case Property::LIVENESS:
       *this << "property[LTL] ";
@@ -595,9 +600,8 @@ public:
       }
       *this << ") :: (";
       if (q->type == nullptr) {
-        if (!is_one_step(q->step)) // TODO
-          throw std::logic_error("property should have been rejected during "
-                                 "check()");
+        assert(is_one_step(q->step) &&
+               "non-one-step property not rejected during check()");
         *this << q->name << " < " << *q->from << " || " << q->name << " > "
               << *q->to << " || ";
       }
@@ -639,17 +643,17 @@ public:
       *this << tab() << "assume " << *n.property.expr << ";\n";
       break;
     case Property::COVER:
-      throw std::logic_error("cover statement should have been rejected during "
-                             "check()");
+      assert(!"cover statement not rejected during check()");
+      __builtin_unreachable();
     case Property::LIVENESS:
-      throw std::logic_error("liveness statement should have been rejected "
-                             "during check()");
+      assert(!"liveness statement not rejected during check()");
+      __builtin_unreachable();
     }
   }
 
   void visit_put(const Put &) final {
-    throw std::logic_error("put statement should have been rejected during "
-                           "check()");
+    assert(!"put statement not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_quantifier(const Quantifier &n) final {
@@ -725,7 +729,8 @@ public:
   }
 
   void visit_rsh(const Rsh &) final {
-    throw std::logic_error(">> should have been rejected during check()");
+    assert(!"right shift not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_ruleset(const Ruleset &n) final {
