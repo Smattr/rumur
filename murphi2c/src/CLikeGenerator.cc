@@ -13,6 +13,53 @@
 
 using namespace rumur;
 
+/// emit a typed C numeric literal
+///
+/// Numeric literals are of type `int` in C by default. To spell a literal of a
+/// different type, we need a bit of specialisation. This function is best
+/// effort, in the sense that pathological input may result in an expression of
+/// incorrect type.
+///
+/// @param c_type The desired type of the resulting literal
+/// @param v The value of the literal
+/// @return C code that describes the given typed literal
+static std::string c_lit(const std::string &c_type, const mpz_class &v) {
+  const std::string s = v.get_str();
+  if (c_type == "int")
+    return s;
+  if (c_type == "unsigned" || c_type == "unsigned int")
+    return s + "u";
+  if (c_type == "long" || c_type == "long int" || c_type == "signed long" ||
+      c_type == "signed long int")
+    return s + "l";
+  if (c_type == "unsigned long" || c_type == "unsigned long int")
+    return s + "lu";
+  if (c_type == "long long" || c_type == "long long int" ||
+      c_type == "signed long long" || c_type == "signed long long int")
+    return s + "ll";
+  if (c_type == "unsigned long long" || c_type == "unsigned long long int")
+    return s + "ull";
+  if (c_type == "int8_t")
+    return "INT8_C(" + s + ")";
+  if (c_type == "uint8_t")
+    return "UINT8_C(" + s + ")";
+  if (c_type == "int16_t")
+    return "INT16_C(" + s + ")";
+  if (c_type == "uint16_t")
+    return "UINT16_C(" + s + ")";
+  if (c_type == "int32_t")
+    return "INT32_C(" + s + ")";
+  if (c_type == "uint32_t")
+    return "UINT32_C(" + s + ")";
+  if (c_type == "int64_t")
+    return "INT64_C(" + s + ")";
+  if (c_type == "uint64_t")
+    return "UINT64_C(" + s + ")";
+
+  // otherwise assume we can construct the value with a cast
+  return "((" + c_type + ")" + s + ")";
+}
+
 void CLikeGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 }
@@ -115,10 +162,8 @@ void CLikeGenerator::visit_element(const Element &n) {
   auto a = dynamic_cast<const Array *>(t.get());
   assert(a != nullptr && "non-array on LHS of array indexing expression");
 
-  // find the lower bound of its index type, using some hacky mangling to align
-  // with one of the macros from ../resources/c_prefix.c
-  const std::string lb =
-      value_type + "_VALUE_C(" + a->index_type->lower_bound().get_str() + ")";
+  // find the lower bound of its index type
+  const std::string lb = c_lit(value_type, a->index_type->lower_bound());
 
   // emit an indexing operation, now account for this
   *this << "(" << *n.array << ".data[(" << *n.index << ") - " << lb << "])";
@@ -487,12 +532,9 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     // invent a unique symbol using our counter
     const std::string i = "array_index" + std::to_string(counter);
 
-    // get the bounds of the index and hackily prepend the value type to produce
-    // something corresponding to one of the macros in ../resources/c_prefix.c
-    const std::string lb =
-        value_type + "_VALUE_C(" + a->index_type->lower_bound().get_str() + ")";
-    const std::string ub =
-        value_type + "_VALUE_C(" + a->index_type->upper_bound().get_str() + ")";
+    // get the bounds of the index
+    const std::string lb = c_lit(value_type, a->index_type->lower_bound());
+    const std::string ub = c_lit(value_type, a->index_type->upper_bound());
 
     *this << indentation() << "for (size_t " << i << " = 0; ; ++" << i
           << ") {\n";

@@ -1366,7 +1366,6 @@ def test_murphi2c_header(model, tmp_path):
     assert ret == 0, "C++ compilation failed:\n{}{}".format(stdout, stderr)
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True)
 def test_murphi2c_type_with_space():
     """can murphi2c handle a `--value-type` with a space in it?"""
 
