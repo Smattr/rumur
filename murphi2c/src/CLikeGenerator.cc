@@ -406,7 +406,7 @@ void CLikeGenerator::visit_neq(const Neq &n) {
 void CLikeGenerator::visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
 
 void CLikeGenerator::visit_number(const Number &n) {
-  *this << "((" << value_type << ")(" << n.value.get_str() << "))";
+  *this << c_lit(value_type, n.value);
 }
 
 void CLikeGenerator::visit_or(const Or &n) {
