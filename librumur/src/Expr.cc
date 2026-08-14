@@ -1384,11 +1384,13 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
                   (*it)->loc);
 
-    if (!(*it)->type()->coerces_to(*v->get_type()))
+    const Ptr<TypeExpr> v_type = v->get_type();
+
+    if (!(*it)->type()->coerces_to(*v_type))
       throw Error("function call contains parameter of incorrect type",
                   (*it)->loc);
 
-    const Ptr<TypeExpr> param_type = v->get_type()->resolve();
+    const Ptr<TypeExpr> param_type = v_type->resolve();
 
     // if this is a writable range-typed parameter, we additionally require it
     // to be of exactly the same type in order to guarantee the caller’s and
