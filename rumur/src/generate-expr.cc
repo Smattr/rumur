@@ -306,6 +306,7 @@ public:
      *   5. We pass the original (rvalue) handle.
      */
 
+    // clang-format off
     auto get_method =
       [](const Ptr<VarDecl> &parameter, const Ptr<Expr> &argument) {
 
@@ -327,6 +328,7 @@ public:
         assert(!"unreachable");
         __builtin_unreachable();
       };
+    // clang-format on
 
     // Create the temporaries for each argument.
     {
