@@ -56,8 +56,6 @@ public:
   void visit_exists(const rumur::Exists &n) final;
   void visit_exprid(const rumur::ExprID &n) final;
   void visit_field(const rumur::Field &n) final;
-  void visit_implication(const rumur::Implication &n) final;
-  void visit_isundefined(const rumur::IsUndefined &) final;
   void visit_for(const rumur::For &n) final;
   void visit_forall(const rumur::Forall &n) final;
   void visit_functioncall(const rumur::FunctionCall &n) final;
@@ -65,6 +63,8 @@ public:
   void visit_gt(const rumur::Gt &n) final;
   void visit_if(const rumur::If &n) final;
   void visit_ifclause(const rumur::IfClause &n) final;
+  void visit_implication(const rumur::Implication &n) final;
+  void visit_isundefined(const rumur::IsUndefined &) final;
   void visit_leq(const rumur::Leq &n) final;
   void visit_lsh(const rumur::Lsh &n) final;
   void visit_lt(const rumur::Lt &n) final;
