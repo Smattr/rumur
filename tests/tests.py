@@ -1406,6 +1406,48 @@ def test_murphi2c_type_with_space():
     )
 
 
+@pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True)
+def test_murphi2c_type_with_space2():
+    """can murphi2c handle a `--value-type` with a space in it?"""
+
+    # an arbitrary model using printing
+    src = """\
+    var x: 0..1;
+
+    startstate begin
+      x := 0;
+    end;
+
+    rule begin
+      x := 1 - x;
+      put x;
+    end;
+    """
+
+    # run this through murphi2c with a `--value-type` with a space
+    args = ["murphi2c", "--value-type=signed char"]
+    if has_valgrind():
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args, src)
+    if has_valgrind():
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    assert ret == 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    # ask the C compiler if the source is valid
+    args = [cc()] + c_flags() + ["-c", "-o", os.devnull, "-"]
+    ret, out, err = run(args, stdout)
+    assert ret == 0, "C compilation failed:\n{}{}\nProgram:\n{}".format(
+        out, err, stdout
+    )
+
+
 @pytest.mark.parametrize("model", MODELS)
 def test_murphi2xml(model):
     """test cases for murphi2xml"""
