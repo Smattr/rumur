@@ -387,6 +387,11 @@ public:
 
   void visit_undefine(Undefine &n) final { dispatch(*n.rhs); }
 
+  void visit_union(Union &n) final {
+    for (Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+  }
+
   void visit_vardecl(VarDecl &n) final { dispatch(*n.type); }
 
   void visit_while(While &n) final {
@@ -583,6 +588,12 @@ private:
           const std::string b = numeric_literal(n.bound->constant_fold());
           *solver << "(assert (" << lt() << " " << name << " " << b << "))\n";
         }
+      }
+
+      void visit_union(const Union &) final {
+        // TODO: the constraints on a union should probably be the intersection
+        // of constraints on the union’s members
+        throw Unsupported();
       }
 
       void visit_typeexprid(const TypeExprID &) final {

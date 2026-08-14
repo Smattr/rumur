@@ -113,6 +113,8 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
     return;
   }
 
+  assert(!isa<Union>(t) && "union type not rejected before symmetry reduction");
+
   assert(!"missed case in generate_apply_swap");
 }
 
@@ -197,6 +199,9 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
     }
     return;
   }
+
+  assert(!isa<Union>(type) &&
+         "union type not rejected before symmetry reduction");
 
   assert(!"missed case in generate_swap_chunk");
 }
@@ -467,6 +472,8 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
     return;
   }
 
+  assert(!isa<Union>(t) && "union type not rejected before symmetry reduction");
+
   assert(!"missed case in generate_apply_compare");
 }
 
@@ -575,6 +582,9 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
 
     return;
   }
+
+  assert(!isa<Union>(type) &&
+         "union type not rejected before symmetry reduction");
 
   assert(!"missed case in generate_compare_chunk");
 }

@@ -415,6 +415,12 @@ public:
     n.validate();
   }
 
+  void visit_union(const Union &n) final {
+    for (const Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+    n.validate();
+  }
+
   void visit_vardecl(const VarDecl &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);

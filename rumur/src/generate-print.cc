@@ -1,4 +1,5 @@
 #include "../../common/escape.h"
+#include "../../common/isa.h"
 #include "generate.h"
 #include "options.h"
 #include <cassert>
@@ -316,6 +317,8 @@ public:
       return;
     }
 
+    assert(!isa<Union>(t) && "union type not rejected before code generation");
+
     assert(!"non-range, non-enum used as array index");
   }
 
@@ -515,6 +518,10 @@ public:
     }
 
     dispatch(*n.referent->value);
+  }
+
+  void visit_union(const Union &n) final {
+    throw Error("union types are not supported", n.loc);
   }
 };
 

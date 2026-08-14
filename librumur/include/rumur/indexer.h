@@ -85,6 +85,7 @@ public:
   void visit_typedecl(TypeDecl &n) override;
   void visit_typeexprid(TypeExprID &n) override;
   void visit_undefine(Undefine &n) override;
+  void visit_union(Union &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;

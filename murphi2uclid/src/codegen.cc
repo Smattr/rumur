@@ -953,6 +953,11 @@ public:
     *this << tab() << "havoc " << *n.rhs << ";\n";
   }
 
+  void visit_union(const Union &) final {
+    assert(!"union type not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_vardecl(const VarDecl &n) final {
     *this << tab() << "var " << n.name << " : " << *n.get_type() << ";\n";
 

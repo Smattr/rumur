@@ -268,6 +268,10 @@ public:
       n.body.back()->visit(*this);
   }
 
+  void visit_union(const Union &n) final {
+    throw Error("Uclid5 has no equivalent of union types", n.loc);
+  }
+
   void visit_while(const While &n) final {
     n.condition->visit(*this);
 

@@ -122,6 +122,7 @@ public:
   void visit_typedecl(const rumur::TypeDecl &n) override;
   void visit_typeexprid(const rumur::TypeExprID &n) override;
   void visit_undefine(const rumur::Undefine &n) override;
+  void visit_union(const rumur::Union &n) override;
   void visit_vardecl(const rumur::VarDecl &n) override;
   void visit_while(const rumur::While &n) override;
   void visit_xor(const rumur::Xor &n) override;

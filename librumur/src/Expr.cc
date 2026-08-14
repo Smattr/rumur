@@ -1398,8 +1398,10 @@ void FunctionCall::validate() const {
     // callee’s handles are compatible
     if (!v->is_readonly() && isa<Range>(param_type)) {
       const Ptr<TypeExpr> arg_type = a_type->resolve();
-      assert(isa<Range>(arg_type) &&
-             "non-range considered type-compatible with range");
+      if (!isa<Range>(arg_type))
+        throw Error("non-range typed function call argument passed as "
+                    "range-typed var parameter",
+                    (*it)->loc);
 
       auto p = dynamic_cast<const Range &>(*param_type);
       auto a = dynamic_cast<const Range &>(*arg_type);

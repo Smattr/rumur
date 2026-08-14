@@ -1084,6 +1084,7 @@
       <ref name="record"/>
       <ref name="scalarset"/>
       <ref name="typeexprid"/>
+      <ref name="union"/>
     </choice>
   </define>
 
@@ -1113,6 +1114,17 @@
       <ref name="content"/>
       <ref name="expr"/>
       <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="union">
+    <element name="union">
+      <ref name="location"/>
+      <ref name="content"/>
+      <zeroOrMore>
+        <ref name="typeexpr"/>
+        <ref name="content"/>
+      </zeroOrMore>
     </element>
   </define>
 

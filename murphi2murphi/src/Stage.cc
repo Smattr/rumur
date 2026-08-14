@@ -185,6 +185,7 @@ void IntermediateStage::visit_typeexprid(const TypeExprID &n) {
 void IntermediateStage::visit_undefine(const Undefine &n) {
   next.visit_undefine(n);
 }
+void IntermediateStage::visit_union(const Union &n) { next.visit_union(n); }
 void IntermediateStage::visit_vardecl(const VarDecl &n) {
   next.visit_vardecl(n);
 }

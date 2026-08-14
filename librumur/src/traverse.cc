@@ -267,6 +267,11 @@ void Traversal::visit_uexpr(UnaryExpr &n) { dispatch(*n.rhs); }
 
 void Traversal::visit_undefine(Undefine &n) { dispatch(*n.rhs); }
 
+void Traversal::visit_union(Union &n) {
+  for (Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
+}
+
 void Traversal::visit_vardecl(VarDecl &n) {
   if (n.type != nullptr)
     dispatch(*n.type);
@@ -540,6 +545,11 @@ void ConstTraversal::visit_uexpr(const UnaryExpr &n) { dispatch(*n.rhs); }
 
 void ConstTraversal::visit_undefine(const Undefine &n) { dispatch(*n.rhs); }
 
+void ConstTraversal::visit_union(const Union &n) {
+  for (const Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
+}
+
 void ConstTraversal::visit_vardecl(const VarDecl &n) {
   if (n.type != nullptr)
     dispatch(*n.type);
@@ -727,6 +737,11 @@ void ConstExprTraversal::visit_typedecl(const TypeDecl &n) {
 void ConstExprTraversal::visit_typeexprid(const TypeExprID &) {}
 
 void ConstExprTraversal::visit_undefine(const Undefine &n) { dispatch(*n.rhs); }
+
+void ConstExprTraversal::visit_union(const Union &n) {
+  for (const Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
+}
 
 void ConstExprTraversal::visit_vardecl(const VarDecl &n) {
   if (n.type != nullptr)
@@ -945,6 +960,11 @@ void ConstStmtTraversal::visit_typedecl(const TypeDecl &n) {
 void ConstStmtTraversal::visit_typeexprid(const TypeExprID &) {}
 
 void ConstStmtTraversal::visit_uexpr(const UnaryExpr &n) { dispatch(*n.rhs); }
+
+void ConstStmtTraversal::visit_union(const Union &n) {
+  for (const Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
+}
 
 void ConstStmtTraversal::visit_vardecl(const VarDecl &n) {
   if (n.type != nullptr)

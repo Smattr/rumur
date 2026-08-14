@@ -147,6 +147,19 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
     }
 
     void visit_typeexprid(const TypeExprID &n) final { dispatch(*n.referent); }
+
+    void visit_union(const Union &n) final {
+      if (auto u = dynamic_cast<const Union *>(t.get())) {
+        if (u->members.size() != n.members.size()) {
+          result = false;
+        } else {
+          for (size_t i = 0; i < n.members.size(); ++i)
+            result &= equal(*u->members[i], *n.members[i]);
+        }
+      } else {
+        result = false;
+      }
+    }
   };
 
   Equater eq(t1);
@@ -161,6 +174,22 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
 
   if (isa<Range>(t1) && isa<Range>(t2))
     return true;
+
+  if (auto u = dynamic_cast<const Union *>(t2.get())) {
+    for (const Ptr<TypeExpr> &m : u->members) {
+      if (t1->coerces_to(*m))
+        return true;
+    }
+    return false;
+  }
+
+  if (auto u = dynamic_cast<const Union *>(t1.get())) {
+    for (const Ptr<TypeExpr> &m : u->members) {
+      if (m->coerces_to(*t2))
+        return true;
+    }
+    return false;
+  }
 
   return equal(*t1, *t2);
 }
@@ -475,6 +504,101 @@ bool TypeExprID::constant() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->constant();
+}
+
+Union::Union(const std::vector<Ptr<TypeExpr>> &members_, const location &loc_)
+    : TypeExpr(loc_), members(members_) {}
+
+Union *Union::clone() const { return new Union(*this); }
+
+void Union::visit(BaseTraversal &visitor) { visitor.visit_union(*this); }
+
+void Union::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_union(*this);
+}
+
+mpz_class Union::count() const {
+  mpz_class c = 1;
+  for (const Ptr<TypeExpr> &m : members)
+    c += m->count();
+  return c;
+}
+
+bool Union::is_simple() const {
+  for (const Ptr<TypeExpr> &m : members) {
+    if (!m->is_simple())
+      return false;
+  }
+  return true;
+}
+
+void Union::validate() const {
+  // In contrast to CMurphi, we treat unions containing 0 or 1 members as legal.
+  // We also allow a single type to appear multiple times within the union.
+  // There is no known practical use for most of these edge cases, but it
+  // simplifies work for generators of Murphi models.
+}
+
+mpz_class Union::lower_bound() const {
+  if (!is_simple())
+    throw Error("union is not a simple type and thus its lower bound cannot be "
+                "determined",
+                loc);
+
+  mpz_class bound;
+  bool set = false;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class b = m->lower_bound();
+    if (!set || b < bound)
+      bound = b;
+    set = true;
+  }
+
+  if (!set)
+    bound = 0;
+
+  return bound;
+}
+
+mpz_class Union::upper_bound() const {
+  if (!is_simple())
+    throw Error("union is not a simple type and thus its upper bound cannot be "
+                "determined",
+                loc);
+
+  mpz_class bound;
+  bool set = false;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class b = m->upper_bound();
+    if (!set || b > bound)
+      bound = b;
+    set = true;
+  }
+
+  if (!set)
+    bound = 0;
+
+  return bound;
+}
+
+void Union::to_stream(std::ostream &out) const {
+  out << "union {";
+  const char *separator = "";
+  for (const Ptr<TypeExpr> &m : members) {
+    out << separator << *m;
+    separator = ", ";
+  }
+  out << "}";
+}
+
+bool Union::constant() const {
+  for (const Ptr<TypeExpr> &m : members) {
+    if (!m->is_simple())
+      return false;
+    if (!m->constant())
+      return false;
+  }
+  return true;
 }
 
 } // namespace rumur

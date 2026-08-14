@@ -63,6 +63,12 @@ public:
   void visit_scalarset(const Scalarset &) final {
     // nothing to do
   }
+
+  void visit_union(const Union &n) final {
+    // define any records that are defined within this union
+    for (const Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+  }
 };
 } // namespace
 

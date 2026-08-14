@@ -542,6 +542,20 @@ public:
         << *n.rhs << "` --/\n";
   }
 
+  void visit_union(const Union &n) final {
+    *this << tab()
+          << "/-- FIXME: Murphi union types have no equivalent in SMV --/\n";
+
+    indent();
+    for (const Ptr<TypeExpr> &m : n.members) {
+      emit_leading_comments(*m);
+      *this << *m;
+    }
+    dedent();
+
+    *this << tab() << "/-- FIXME: end of union type --/\n";
+  }
+
   void visit_vardecl(const VarDecl &n) final {
     *this << tab() << "VAR " << n.name << " : " << *n.get_type() << ";\n";
   }

@@ -849,6 +849,19 @@ void XMLPrinter::visit_undefine(const Undefine &n) {
   o << "</undefine>";
 }
 
+void XMLPrinter::visit_union(const Union &n) {
+  sync_to(n);
+  o << "<union ";
+  add_location(n);
+  o << ">";
+  for (const Ptr<TypeExpr> &m : n.members) {
+    sync_to(*m);
+    dispatch(*m);
+  }
+  sync_to(n.loc.end);
+  o << "</union>";
+}
+
 void XMLPrinter::visit_vardecl(const VarDecl &n) {
   sync_to(n);
   o << "<vardecl name=\"" << n.name << "\" readonly=\"" << n.readonly << "\" ";

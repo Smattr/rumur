@@ -131,6 +131,7 @@ public:
   virtual void visit_typedecl(TypeDecl &n) = 0;
   virtual void visit_typeexprid(TypeExprID &n) = 0;
   virtual void visit_undefine(Undefine &n) = 0;
+  virtual void visit_union(Union &n) = 0;
   virtual void visit_vardecl(VarDecl &n) = 0;
   virtual void visit_while(While &n) = 0;
   virtual void visit_xor(Xor &n) = 0;
@@ -217,6 +218,7 @@ public:
   void visit_typedecl(TypeDecl &n) override;
   void visit_typeexprid(TypeExprID &n) override;
   void visit_undefine(Undefine &n) override;
+  void visit_union(Union &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;
@@ -295,6 +297,7 @@ public:
   virtual void visit_typedecl(const TypeDecl &n) = 0;
   virtual void visit_typeexprid(const TypeExprID &n) = 0;
   virtual void visit_undefine(const Undefine &n) = 0;
+  virtual void visit_union(const Union &n) = 0;
   virtual void visit_vardecl(const VarDecl &n) = 0;
   virtual void visit_while(const While &n) = 0;
   virtual void visit_xor(const Xor &n) = 0;
@@ -373,6 +376,7 @@ public:
   void visit_typedecl(const TypeDecl &n) override;
   void visit_typeexprid(const TypeExprID &n) override;
   void visit_undefine(const Undefine &n) override;
+  void visit_union(const Union &n) override;
   void visit_vardecl(const VarDecl &n) override;
   void visit_while(const While &n) override;
   void visit_xor(const Xor &n) override;
@@ -424,6 +428,7 @@ public:
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_undefine(const Undefine &n) final;
+  void visit_union(const Union &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
 };
@@ -485,6 +490,7 @@ public:
   void visit_ternary(const Ternary &n) final;
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
+  void visit_union(const Union &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_xor(const Xor &n) final;
 

@@ -521,6 +521,8 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
 
   const Ptr<TypeExpr> type = t.resolve();
 
+  assert(!isa<Union>(type) && "union type was not rejected during check()");
+
   // if this is boolean, handle it separately to other Enums to avoid
   // -Wswitch-bool warnings and cope with badly behaved users setting non-0/1
   // values
@@ -831,6 +833,11 @@ void CLikeGenerator::visit_undefine(const Undefine &n) {
         << "));";
   emit_trailing_comments(n);
   *this << "\n";
+}
+
+void CLikeGenerator::visit_union(const Union &) {
+  assert(!"union type was not rejected during check()");
+  __builtin_unreachable();
 }
 
 void CLikeGenerator::visit_while(const While &n) {

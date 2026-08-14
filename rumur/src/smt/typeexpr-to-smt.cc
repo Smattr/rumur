@@ -74,6 +74,10 @@ public:
     assert(n.referent != nullptr && "unresolved TypeExprID in AST");
     *this << *n.referent->value;
   }
+
+  void visit_union(const Union &) final {
+    throw Unsupported("union types are not supported in SMT translation");
+  }
 };
 } // namespace
 

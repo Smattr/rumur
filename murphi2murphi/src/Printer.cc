@@ -513,6 +513,15 @@ void Printer::visit_undefine(const Undefine &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_union(const Union &n) {
+  top->sync_to(n);
+  for (const Ptr<TypeExpr> &m : n.members) {
+    top->sync_to(*m);
+    top->dispatch(*m);
+  }
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_vardecl(const VarDecl &n) {
   top->sync_to(n);
   top->sync_to(*n.type);

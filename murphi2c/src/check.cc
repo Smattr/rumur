@@ -19,6 +19,13 @@ public:
       ok = false;
     }
   }
+
+  void visit_union(const Union &) final {
+    if (ok) {
+      std::cerr << "union types are not supported\n";
+      ok = false;
+    }
+  }
 };
 
 } // namespace

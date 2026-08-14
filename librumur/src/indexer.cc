@@ -326,6 +326,12 @@ void Indexer::visit_undefine(Undefine &n) {
   dispatch(*n.rhs);
 }
 
+void Indexer::visit_union(Union &n) {
+  n.unique_id = next++;
+  for (Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
+}
+
 void Indexer::visit_vardecl(VarDecl &n) {
   n.unique_id = next++;
   dispatch(*n.type);
