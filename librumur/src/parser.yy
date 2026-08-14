@@ -242,6 +242,8 @@
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecls
 %type <rumur::Ptr<rumur::TypeExpr>>                          typeexpr
+%type <std::vector<rumur::Ptr<rumur::TypeExpr>>>             typeexprs
+%type <std::vector<rumur::Ptr<rumur::TypeExpr>>>             typeexprs_cont
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecl
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecls
 %type <std::shared_ptr<bool>>                                var_opt
@@ -677,6 +679,22 @@ typeexpr: BOOLEAN {
   $$ = rumur::Ptr<rumur::Array>::make($3, $6, @$);
 } | SCALARSET '(' expr ')' {
   $$ = rumur::Ptr<rumur::Scalarset>::make($3, @$);
+} | UNION '{' typeexprs '}' {
+  $$ = rumur::Ptr<rumur::Union>::make($3, @$);
+};
+
+typeexprs: typeexprs_cont typeexpr comma_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+  /* nothing required */
+};
+
+typeexprs_cont: typeexprs_cont typeexpr ',' {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+  /* nothing required */
 };
 
 vardecl: id_list_opt ':' typeexpr {

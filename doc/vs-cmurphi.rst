@@ -37,7 +37,20 @@ Type System
 -----------
 CMurphi supports real arithmetic using the ``real`` data type. Rumur does not
 support this type and there are no plans to implement this or any floating point
-support. Similarly, Rumur does not support the ``union`` or ``multiset`` types.
+support. Similarly, Rumur does not support the ``multiset`` type.
+
+Unions
+^^^^^^
+Models that use the ``union`` type can be parsed with librumur, but generation
+of a checker using ``rumur`` is not supported. Some of the Rumur tools fully
+support union types, e.g. ``murphi2xml``, but others reject models with union
+types, e.g. ``murphi2uclid``.
+
+CMurphi only supports unions of scalarset and enum types. librumur supports
+unions of any types, simple or complex, including recursive (unions of unions).
+In contrast to CMurphi, librumur allows union types with 0 or 1 members. A union
+type with 0 members is vacuous, in the sense that values of this type can only
+ever be ``undefined``.
 
 Assumptions
 -----------
