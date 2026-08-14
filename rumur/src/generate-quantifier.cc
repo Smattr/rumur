@@ -37,7 +37,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
     assert(q.from != nullptr);
     generate_rvalue(out, *q.from);
   } else {
-    out << q.type->lower_bound();
+    out << "VALUE_C(" << q.type->lower_bound().get_str() << ")";
   }
   out << ";\n";
 
@@ -46,7 +46,7 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
     assert(q.to != nullptr);
     generate_rvalue(out, *q.to);
   } else {
-    out << q.type->upper_bound();
+    out << "VALUE_C(" << q.type->upper_bound().get_str() << ")";
   }
   out << ";\n";
 
@@ -88,19 +88,17 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
   // bounds. References to this quantified variable will use these when
   // unpacking its compressed representation, so we need to offset the values we
   // store from it.
-  const std::string lower = q.decl->type->lower_bound();
-  const std::string upper = q.decl->type->upper_bound();
+  const std::string lower = q.decl->type->lower_bound().get_str();
+  const std::string upper = q.decl->type->upper_bound().get_str();
 
   out << "#if !defined(__clang__) && defined(__GNUC__)\n"
       << "  #pragma GCC diagnostic push\n"
       << "  #pragma GCC diagnostic ignored \"-Wtype-limits\"\n"
       << "#endif\n"
-      << "  ASSERT(lb >= " << lower << " && lb <= " << upper
-      << " && "
-         "\"iteration lower bound exceeds type limits\");\n"
-      << "  ASSERT(ub >= " << lower << " && ub <= " << upper
-      << " && "
-         "\"iteration upper bound exceeds type limits\");\n"
+      << "  ASSERT(lb >= VALUE_C(" << lower << ") && lb <= VALUE_C(" << upper
+      << ") && \"iteration lower bound exceeds type limits\");\n"
+      << "  ASSERT(ub >= VALUE_C(" << lower << ") && ub <= VALUE_C(" << upper
+      << ") && \"iteration upper bound exceeds type limits\");\n"
       << "#if !defined(__clang__) && defined(__GNUC__)\n"
       << "  #pragma GCC diagnostic pop\n"
       << "#endif\n";
@@ -109,11 +107,12 @@ void generate_quantifier_header(std::ostream &out, const Quantifier &q) {
 // value we have is in range
 #define V_TO_RV(x)                                                             \
   ("((raw_value_t)((raw_value_t)(((raw_value_t)" + std::string(x) +            \
-   ") + (raw_value_t)1) - (raw_value_t)(" + q.decl->type->lower_bound() +      \
-   ")))")
+   ") + (raw_value_t)1) - (raw_value_t)(VALUE_C(" +                            \
+   q.decl->type->lower_bound().get_str() + "))))")
 #define RV_TO_V(x)                                                             \
-  ("((value_t)(" + std::string(x) + " - (raw_value_t)1 + (raw_value_t)(" +     \
-   q.decl->type->lower_bound() + ")))")
+  ("((value_t)(" + std::string(x) +                                            \
+   " - (raw_value_t)1 + (raw_value_t)(VALUE_C(" +                              \
+   q.decl->type->lower_bound().get_str() + "))))")
 
   // construct the pieces of our for-loop header
   const std::string init = "raw_value_t " + counter + " = " + V_TO_RV("lb");

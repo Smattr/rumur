@@ -108,10 +108,11 @@ public:
     }
 
     if (!lvalue && a.element_type->is_simple()) {
-      const std::string lb = a.element_type->lower_bound();
-      const std::string ub = a.element_type->upper_bound();
+      const std::string lb = a.element_type->lower_bound().get_str();
+      const std::string ub = a.element_type->upper_bound().get_str();
       *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-           << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+           << to_C_string(n) << ", s, VALUE_C(" << lb << "), VALUE_C(" << ub
+           << "), ";
     }
 
     *out << "handle_index(" << to_C_string(n.loc) << ", rule_name, "
@@ -177,8 +178,8 @@ public:
       assert((!n.is_lvalue() || t != nullptr) && "lvalue without a type");
 
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
-        const std::string lb = t->lower_bound();
-        const std::string ub = t->upper_bound();
+        const std::string lb = "VALUE_C(" + t->lower_bound().get_str() + ")";
+        const std::string ub = "VALUE_C(" + t->upper_bound().get_str() + ")";
         *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
              << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
       }
@@ -207,10 +208,11 @@ public:
       for (const Ptr<VarDecl> &f : r->fields) {
         if (f->name == n.field) {
           if (!lvalue && f->type->is_simple()) {
-            const std::string lb = f->type->lower_bound();
-            const std::string ub = f->type->upper_bound();
+            const std::string lb = f->type->lower_bound().get_str();
+            const std::string ub = f->type->upper_bound().get_str();
             *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-                 << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+                 << to_C_string(n) << ", s, VALUE_C(" << lb << "), VALUE_C("
+                 << ub << "), ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
@@ -304,6 +306,7 @@ public:
      *   5. We pass the original (rvalue) handle.
      */
 
+    // clang-format off
     auto get_method =
       [](const Ptr<VarDecl> &parameter, const Ptr<Expr> &argument) {
 
@@ -325,6 +328,7 @@ public:
         assert(!"unreachable");
         __builtin_unreachable();
       };
+    // clang-format on
 
     // Create the temporaries for each argument.
     {
@@ -348,20 +352,20 @@ public:
                << ", .offset = 0, .width = " << p->width() << "ull }; ";
 
         if (method == 1) {
-          const std::string lb = p->get_type()->lower_bound();
-          const std::string ub = p->get_type()->upper_bound();
+          const std::string lb = p->get_type()->lower_bound().get_str();
+          const std::string ub = p->get_type()->upper_bound().get_str();
 
           *out << "handle_write(" << to_C_string(n.loc) << ", rule_name, "
-               << "\"<temporary>\", s, " << lb << ", " << ub << ", " << handle
-               << ", ";
+               << "\"<temporary>\", s, VALUE_C(" << lb << "), VALUE_C(" << ub
+               << "), " << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
 
         } else if (method == 2) {
-          const std::string lb = p->get_type()->lower_bound();
-          const std::string ub = p->get_type()->upper_bound();
+          const std::string lb = p->get_type()->lower_bound().get_str();
+          const std::string ub = p->get_type()->upper_bound().get_str();
 
-          const std::string lba = a->type()->lower_bound();
+          const std::string lba = a->type()->lower_bound().get_str();
 
           *out << "{ "
                << "raw_value_t v = handle_read_raw(s, ";
@@ -369,17 +373,18 @@ public:
           *out << "); "
                << "raw_value_t v2; "
                << "value_t v3; "
-               << "static const value_t lb = " << lb << "; "
-               << "static const value_t ub = " << ub << "; "
-               << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, " << lba
-               << ", &v3) "
+               << "static const value_t lb = VALUE_C(" << lb << "); "
+               << "static const value_t ub = VALUE_C(" << ub << "); "
+               << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, VALUE_C(" << lba
+               << "), &v3) "
                << "|| v3 < lb || v3 > ub)) { "
                << "error(s, \"call to function %s passed an out-of-range value "
                << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
-               << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
+               << n.name << "\", raw_value_to_string(v + VALUE_C(" << lba
+               << ") - 1)); "
                << "} "
                << "handle_write_raw(s, " << handle << ", v == 0 ? v : "
-               << "((raw_value_t)(v3 - " << lb << ") + 1)); "
+               << "((raw_value_t)(v3 - VALUE_C(" << lb << ")) + 1)); "
                << "} ";
 
         } else if (method == 3) {

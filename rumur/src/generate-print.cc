@@ -360,8 +360,8 @@ public:
 
   void visit_range(const Range &n) final {
 
-    const std::string lb = n.lower_bound();
-    const std::string ub = n.upper_bound();
+    const std::string lb = "VALUE_C(" + n.lower_bound().get_str() + ")";
+    const std::string ub = "VALUE_C(" + n.upper_bound().get_str() + ")";
 
     *out << "{\n"
          << "  raw_value_t v = handle_read_raw(s, " << current_handle << ");\n"
