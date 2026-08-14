@@ -185,6 +185,7 @@
 %token TO
 %token TYPE
 %token UNDEFINE
+%token UNION
 %token VAR
 %token WHILE
 

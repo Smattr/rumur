@@ -113,7 +113,7 @@ then          { return rumur::parser::token::THEN;          }
 to            { return rumur::parser::token::TO;            }
 type          { return rumur::parser::token::TYPE;          }
 undefine      { return rumur::parser::token::UNDEFINE;      }
-union         { throw rumur::Error("union types are not supported", *loc); }
+union         { return rumur::parser::token::UNION;         }
 var           { return rumur::parser::token::VAR;           }
 while         { return rumur::parser::token::WHILE;         }
 
