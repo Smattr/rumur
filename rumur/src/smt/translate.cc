@@ -32,47 +32,47 @@ public:
     return *this;
   }
 
-  void visit_add(const Add &n) {
+  void visit_add(const Add &n) final {
     *this << "(" << add() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_and(const And &n) {
+  void visit_and(const And &n) final {
     *this << "(and " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_band(const Band &n) {
+  void visit_band(const Band &n) final {
     *this << "(" << band() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_bnot(const Bnot &n) {
+  void visit_bnot(const Bnot &n) final {
     *this << "(" << bnot() << " " << *n.rhs << ")";
   }
 
-  void visit_bor(const Bor &n) {
+  void visit_bor(const Bor &n) final {
     *this << "(" << bor() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_element(const Element &n) {
+  void visit_element(const Element &n) final {
     *this << "(select " << *n.array << " " << *n.index << ")";
   }
 
-  void visit_exprid(const ExprID &n) {
+  void visit_exprid(const ExprID &n) final {
     *this << mangle(n.id, n.value->unique_id);
   }
 
-  void visit_eq(const Eq &n) {
+  void visit_eq(const Eq &n) final {
     *this << "(= " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_exists(const Exists &n) {
+  void visit_exists(const Exists &n) final {
     translate_quantified(n.quantifier, *n.expr, false);
   }
 
-  void visit_div(const Div &n) {
+  void visit_div(const Div &n) final {
     *this << "(" << div() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_field(const Field &n) {
+  void visit_field(const Field &n) final {
     // the record type that forms the root of this expression will have
     // previously been defined as a synthesised type (see define-records.cc)
 
@@ -87,75 +87,77 @@ public:
     *this << "(" << getter << " " << *n.record << ")";
   }
 
-  void visit_forall(const Forall &n) {
+  void visit_forall(const Forall &n) final {
     translate_quantified(n.quantifier, *n.expr, true);
   }
 
-  void visit_functioncall(const FunctionCall &n) { throw Unsupported(n); }
+  void visit_functioncall(const FunctionCall &n) final { throw Unsupported(n); }
 
-  void visit_geq(const Geq &n) {
+  void visit_geq(const Geq &n) final {
     *this << "(" << geq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_gt(const Gt &n) {
+  void visit_gt(const Gt &n) final {
     *this << "(" << gt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_implication(const Implication &n) {
+  void visit_implication(const Implication &n) final {
     *this << "(=> " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_isundefined(const IsUndefined &n) { throw Unsupported(n); }
+  void visit_isundefined(const IsUndefined &n) final { throw Unsupported(n); }
 
-  void visit_leq(const Leq &n) {
+  void visit_leq(const Leq &n) final {
     *this << "(" << leq() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_lsh(const Lsh &n) {
+  void visit_lsh(const Lsh &n) final {
     *this << "(" << lsh() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_lt(const Lt &n) {
+  void visit_lt(const Lt &n) final {
     *this << "(" << lt() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_mod(const Mod &n) {
+  void visit_mod(const Mod &n) final {
     *this << "(" << mod() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_mul(const Mul &n) {
+  void visit_mul(const Mul &n) final {
     *this << "(" << mul() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_negative(const Negative &n) {
+  void visit_negative(const Negative &n) final {
     *this << "(" << neg() << " " << *n.rhs << ")";
   }
 
-  void visit_neq(const Neq &n) {
+  void visit_neq(const Neq &n) final {
     *this << "(not (= " << *n.lhs << " " << *n.rhs << "))";
   }
 
-  void visit_number(const Number &n) { *this << numeric_literal(n.value); }
+  void visit_number(const Number &n) final {
+    *this << numeric_literal(n.value);
+  }
 
-  void visit_not(const Not &n) { *this << "(not " << *n.rhs << ")"; }
+  void visit_not(const Not &n) final { *this << "(not " << *n.rhs << ")"; }
 
-  void visit_or(const Or &n) {
+  void visit_or(const Or &n) final {
     *this << "(or " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_rsh(const Rsh &n) {
+  void visit_rsh(const Rsh &n) final {
     *this << "(" << rsh() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_sub(const Sub &n) {
+  void visit_sub(const Sub &n) final {
     *this << "(" << sub() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_ternary(const Ternary &n) {
+  void visit_ternary(const Ternary &n) final {
     *this << "(ite " << *n.cond << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
-  void visit_xor(const Xor &n) {
+  void visit_xor(const Xor &n) final {
     *this << "(" << bxor() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
