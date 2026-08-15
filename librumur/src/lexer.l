@@ -96,6 +96,7 @@ forall        { return rumur::parser::token::FORALL;        }
 function      { return rumur::parser::token::FUNCTION;      }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
+ismember      { return rumur::parser::token::ISMEMBER;      }
 isundefined   { return rumur::parser::token::ISUNDEFINED;   }
 liveness      { return rumur::parser::token::LIVENESS;      }
 of            { return rumur::parser::token::OF;            }

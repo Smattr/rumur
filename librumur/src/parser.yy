@@ -154,6 +154,7 @@
 %token IF
 %token IMPLIES "->"
 %token INVARIANT
+%token ISMEMBER
 %token ISUNDEFINED
 %token LAND "∧"
 %token LEQ "<="
