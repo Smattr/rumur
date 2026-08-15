@@ -437,6 +437,8 @@ expr: expr '?' expr ':' expr {
   $$->loc = @$;
 } | ID '(' exprlist ')' {
   $$ = rumur::Ptr<rumur::FunctionCall>::make($1, $3, @$);
+} | ISMEMBER '(' expr ',' typeexpr ')' {
+  $$ = rumur::Ptr<rumur::IsMember>::make($3, $5, @$);
 } | ISUNDEFINED '(' designator ')' {
   $$ = rumur::Ptr<rumur::IsUndefined>::make($3, @$);
 };
