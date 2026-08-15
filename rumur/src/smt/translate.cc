@@ -171,6 +171,7 @@ private:
 
     // determine the parts of the expression we will construct that depend on
     // forall
+    // clang-format off
     const std::string binder  = forall ? "forall" : "exists";
     const std::string op      = forall ? "or"     : "and";
     const std::string lb_rel  = forall ? lt()     : geq();
@@ -178,6 +179,7 @@ private:
     const std::string ub_rel2 = forall ? geq()    : lt();
     const std::string step_o  = forall ? "(not "  : "";
     const std::string step_c  = forall ? ")"      : "";
+    // clang-format on
 
     // “∀q.”/“∃q.”
     *this << "(" << binder << " ((" << qname << " " << qtype << ")) (" << op;
