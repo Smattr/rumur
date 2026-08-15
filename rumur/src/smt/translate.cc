@@ -105,6 +105,7 @@ public:
     *this << "(=> " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_ismember(const IsMember &n) final { throw Unsupported(n); }
   void visit_isundefined(const IsUndefined &n) final { throw Unsupported(n); }
 
   void visit_leq(const Leq &n) final {

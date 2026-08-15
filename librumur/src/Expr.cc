@@ -1674,6 +1674,34 @@ void Forall::to_stream(std::ostream &out) const {
 
 bool Forall::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
 
+IsMember::IsMember(const Ptr<Expr> &peg_, const Ptr<TypeExpr> &hole_,
+                   const location &loc_)
+    : Expr(loc_), peg(peg_), hole(hole_) {}
+
+IsMember *IsMember::clone() const { return new IsMember(*this); }
+
+void IsMember::visit(BaseTraversal &visitor) {
+  return visitor.visit_ismember(*this);
+}
+
+void IsMember::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_ismember(*this);
+}
+
+bool IsMember::constant() const { return false; }
+
+Ptr<TypeExpr> IsMember::type() const { return Boolean; }
+
+mpz_class IsMember::constant_fold() const {
+  throw Error("ismember used in constant", loc);
+}
+
+void IsMember::to_stream(std::ostream &out) const {
+  out << "ismember(" << *peg << ", " << *hole << ')';
+}
+
+bool IsMember::is_pure() const { return peg->is_pure(); }
+
 IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_)
     : UnaryExpr(expr_, loc_) {}
 

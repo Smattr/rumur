@@ -52,6 +52,7 @@ public:
   void visit_if(If &n) override;
   void visit_ifclause(IfClause &n) override;
   void visit_implication(Implication &n) override;
+  void visit_ismember(IsMember &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
   void visit_lsh(Lsh &n) override;

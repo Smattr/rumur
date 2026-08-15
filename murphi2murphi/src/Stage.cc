@@ -120,6 +120,9 @@ void IntermediateStage::visit_ifclause(const IfClause &n) {
 void IntermediateStage::visit_implication(const Implication &n) {
   next.visit_implication(n);
 }
+void IntermediateStage::visit_ismember(const IsMember &n) {
+  next.visit_ismember(n);
+}
 void IntermediateStage::visit_isundefined(const IsUndefined &n) {
   next.visit_isundefined(n);
 }

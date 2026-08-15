@@ -377,6 +377,11 @@ void CLikeGenerator::visit_implication(const Implication &n) {
   *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_ismember(const IsMember &) {
+  assert(!"ismember was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_isundefined(const IsUndefined &) {
   // check() prevents a model with isundefined expressions from making it
   // through to here

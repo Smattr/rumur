@@ -161,6 +161,12 @@ void Indexer::visit_ifclause(IfClause &n) {
 
 void Indexer::visit_implication(Implication &n) { visit_bexpr(n); }
 
+void Indexer::visit_ismember(IsMember &n) {
+  n.unique_id = next++;
+  dispatch(*n.peg);
+  dispatch(*n.hole);
+}
+
 void Indexer::visit_isundefined(IsUndefined &n) { visit_uexpr(n); }
 
 void Indexer::visit_leq(Leq &n) { visit_bexpr(n); }

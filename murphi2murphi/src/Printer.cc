@@ -236,6 +236,15 @@ void Printer::visit_ifclause(const IfClause &n) {
 
 void Printer::visit_implication(const Implication &n) { visit_bexpr(n); }
 
+void Printer::visit_ismember(const IsMember &n) {
+  top->sync_to(n);
+  top->sync_to(*n.peg);
+  top->dispatch(*n.peg);
+  top->sync_to(*n.hole);
+  top->dispatch(*n.hole);
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_isundefined(const IsUndefined &n) { visit_uexpr(n); }
 
 void Printer::visit_leq(const Leq &n) { visit_bexpr(n); }

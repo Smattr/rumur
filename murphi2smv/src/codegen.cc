@@ -244,6 +244,12 @@ public:
     *this << '(' << *n.lhs << " -> " << *n.rhs << ')';
   }
 
+  void visit_ismember(const IsMember &n) final {
+    *this << "/-- FIXME: Murphi ismember expressions have no equivalent in SMV "
+             "--/ ismember("
+          << *n.peg << ", " << *n.hole << ")";
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     *this << tab()
           << "/-- FIXME: Murphi isundefined statements have no equivalent in "

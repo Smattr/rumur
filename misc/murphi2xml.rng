@@ -290,6 +290,7 @@
       <ref name="geq"/>
       <ref name="gt"/>
       <ref name="implication"/>
+      <ref name="ismember"/>
       <ref name="isundefined"/>
       <ref name="leq"/>
       <ref name="lsh"/>
@@ -494,6 +495,21 @@
     <element name="implication">
       <ref name="location"/>
       <ref name="binexpr"/>
+    </element>
+  </define>
+
+  <define name="ismember">
+    <element name="ismember">
+      <ref name="location"/>
+      <ref name="content"/>
+      <element name="arg0">
+        <ref name="expr"/>
+      </element>
+      <ref name="content"/>
+      <element name="arg1">
+        <ref name="typeexpr"/>
+      </element>
+      <ref name="content"/>
     </element>
   </define>
 

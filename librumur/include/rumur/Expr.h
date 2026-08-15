@@ -676,6 +676,25 @@ struct RUMUR_API_WITH_RTTI Forall : public Expr {
   bool is_pure() const override;
 };
 
+struct RUMUR_API_WITH_RTTI IsMember : public Expr {
+
+  Ptr<Expr> peg;
+  Ptr<TypeExpr> hole;
+
+  IsMember(const Ptr<Expr> &peg_, const Ptr<TypeExpr> &hole_,
+           const location &loc_);
+  IsMember *clone() const override;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void to_stream(std::ostream &out) const override;
+  bool is_pure() const override;
+};
+
 struct RUMUR_API_WITH_RTTI IsUndefined : public UnaryExpr {
 
   IsUndefined(const Ptr<Expr> &expr_, const location &loc_);

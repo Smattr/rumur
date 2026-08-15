@@ -433,6 +433,11 @@ public:
     *this << "(" << *n.lhs << " ==> " << *n.rhs << ")";
   }
 
+  void visit_ismember(const IsMember &) final {
+    assert(!"ismember not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_isundefined(const IsUndefined &) final {
     assert(!"isundefined not rejected during check()");
     __builtin_unreachable();

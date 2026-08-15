@@ -194,6 +194,13 @@ public:
   }
 
   void visit_implication(Implication &n) final { visit_bexpr(n); }
+
+  void visit_ismember(IsMember &n) final {
+    dispatch(*n.peg);
+    simplify(n.peg);
+    dispatch(*n.hole);
+  }
+
   void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
   void visit_leq(Leq &n) final { visit_bexpr(n); }
   void visit_lsh(Lsh &n) final { visit_bexpr(n); }

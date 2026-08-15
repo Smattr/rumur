@@ -207,6 +207,12 @@ public:
     n.validate();
   }
 
+  void visit_ismember(const IsMember &n) final {
+    dispatch(*n.peg);
+    dispatch(*n.hole);
+    n.validate();
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     dispatch(*n.rhs);
     n.validate();

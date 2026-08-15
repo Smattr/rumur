@@ -52,6 +52,11 @@ In contrast to CMurphi, librumur allows union types with 0 or 1 members. A union
 type with 0 members is vacuous, in the sense that values of this type can only
 ever be ``undefined``.
 
+CMurphi requires the first argument to the ``ismember`` predicate to be a
+designator. librumur allows any expression. CMurphi requires the second argument
+to ``ismember`` to be a scalarset or enum type. librumur, in line with
+supporting unions of any types, allows the second argument to be any type.
+
 Assumptions
 -----------
 In addition to assertions and invariants that are supported by CMurphi, Rumur

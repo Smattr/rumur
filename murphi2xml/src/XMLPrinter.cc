@@ -419,6 +419,23 @@ void XMLPrinter::visit_implication(const Implication &n) {
   visit_bexpr("implication", n);
 }
 
+void XMLPrinter::visit_ismember(const IsMember &n) {
+  sync_to(n);
+  o << "<ismember ";
+  add_location(n);
+  o << ">";
+  sync_to(*n.peg);
+  o << "<arg0>";
+  dispatch(*n.peg);
+  o << "</arg0>";
+  sync_to(*n.hole);
+  o << "<arg1>";
+  dispatch(*n.hole);
+  o << "</arg1>";
+  sync_to(n.loc.end);
+  o << "</ismember>";
+}
+
 void XMLPrinter::visit_isundefined(const IsUndefined &n) {
   visit_uexpr("isundefined", n);
 }

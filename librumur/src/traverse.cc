@@ -137,6 +137,11 @@ void Traversal::visit_ifclause(IfClause &n) {
 
 void Traversal::visit_implication(Implication &n) { visit_bexpr(n); }
 
+void Traversal::visit_ismember(IsMember &n) {
+  dispatch(*n.peg);
+  dispatch(*n.hole);
+}
+
 void Traversal::visit_isundefined(IsUndefined &n) { visit_uexpr(n); }
 
 void Traversal::visit_leq(Leq &n) { visit_bexpr(n); }
@@ -410,6 +415,11 @@ void ConstTraversal::visit_ifclause(const IfClause &n) {
 }
 
 void ConstTraversal::visit_implication(const Implication &n) { visit_bexpr(n); }
+
+void ConstTraversal::visit_ismember(const IsMember &n) {
+  dispatch(*n.peg);
+  dispatch(*n.hole);
+}
 
 void ConstTraversal::visit_isundefined(const IsUndefined &n) { visit_uexpr(n); }
 
@@ -845,6 +855,11 @@ void ConstStmtTraversal::visit_implication(const Implication &n) {
   visit_bexpr(n);
 }
 
+void ConstStmtTraversal::visit_ismember(const IsMember &n) {
+  dispatch(*n.peg);
+  dispatch(*n.hole);
+}
+
 void ConstStmtTraversal::visit_isundefined(const IsUndefined &n) {
   visit_uexpr(n);
 }
@@ -1082,6 +1097,11 @@ void ConstTypeTraversal::visit_ifclause(const IfClause &n) {
 
 void ConstTypeTraversal::visit_implication(const Implication &n) {
   visit_bexpr(n);
+}
+
+void ConstTypeTraversal::visit_ismember(const IsMember &n) {
+  dispatch(*n.peg);
+  dispatch(*n.hole);
 }
 
 void ConstTypeTraversal::visit_isundefined(const IsUndefined &n) {
