@@ -18,10 +18,23 @@
 #include <rumur/resolve-symbols.h>
 #include <rumur/traverse.h>
 #include <rumur/validate.h>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
 using namespace rumur;
+
+/// C++11 polyfill for `std::make_unique`
+template <typename T, typename... Args>
+static std::unique_ptr<T> make_unique(Args &&...args) {
+  auto raw = new T(std::forward<Args>(args)...);
+  try {
+    return std::unique_ptr<T>{raw};
+  } catch (std::exception &) {
+    delete raw;
+    throw;
+  }
+}
 
 namespace {
 
@@ -30,6 +43,21 @@ class Resolver : public Traversal {
 private:
   Symtab symtab;
 
+  /// node copies we allocated that we are responsible for cleaning up
+  ///
+  /// We can use `std::unique_ptr` instead of `Ptr` here because we never need
+  /// to copy or subclass these pointers.
+  std::vector<std::unique_ptr<Node>> heap;
+
+  /// create a new managed node pointer
+  template <typename T, typename... Args> T *make(Args &&...args) {
+    std::unique_ptr<T> ptr = make_unique<T>(std::forward<Args>(args)...);
+    heap.push_back(std::move(ptr));
+    auto ret = dynamic_cast<T *>(heap.back().get());
+    assert(ret != nullptr);
+    return ret;
+  }
+
 public:
   Resolver() {
 
@@ -37,13 +65,13 @@ public:
     symtab.open_scope();
 
     // Teach the symbol table the built ins
-    auto td = Ptr<TypeDecl>::make("boolean", Boolean, location());
-    symtab.declare("boolean", td);
+    TypeDecl *const boolean = make<TypeDecl>("boolean", Boolean, location());
+    symtab.declare("boolean", boolean);
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : Boolean->members) {
-      symtab.declare(m.first, Ptr<ConstDecl>::make(
-                                  m.first, Ptr<Number>::make(index, location()),
-                                  Boolean, location()));
+      ConstDecl *const member = make<ConstDecl>(
+          m.first, Ptr<Number>::make(index, location()), Boolean, location());
+      symtab.declare(m.first, member);
       index++;
     }
   }
@@ -59,7 +87,7 @@ public:
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
-      symtab.declare(a->name, a);
+      symtab.declare(a->name, a.get());
     }
     for (auto &r : n.rules)
       dispatch(*r);
@@ -70,7 +98,7 @@ public:
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
-      symtab.declare(a->name, a);
+      symtab.declare(a->name, a.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -122,13 +150,13 @@ public:
     mpz_class index = 0;
     size_t id = e->unique_id + 1;
     for (const std::pair<std::string, location> &m : n.members) {
-      auto cd = Ptr<ConstDecl>::make(
+      ConstDecl *const member = make<ConstDecl>(
           m.first, Ptr<Number>::make(index, m.second), e, m.second);
       // assign this member a unique id so that referrers can use it if need be
       assert(id < e->unique_id_limit &&
              "number of enum members exceeds what was expected");
-      cd->unique_id = id;
-      symtab.declare(m.first, cd);
+      member->unique_id = id;
+      symtab.declare(m.first, member);
       index++;
       id++;
     }
@@ -186,15 +214,15 @@ public:
     // register the function itself, even though its body has not yet been
     // resolved, in order to allow contained function calls to resolve to the
     // containing function, supporting recursion
-    symtab.declare(n.name, Ptr<Function>::make(n));
+    symtab.declare(n.name, &n);
     // only register the function parameters now, to avoid their names shadowing
     // anything that needs to be resolved during symbol resolution of another
     // parameter or the return type
     for (auto &p : n.parameters)
-      symtab.declare(p->name, p);
+      symtab.declare(p->name, p.get());
     for (auto &d : n.decls) {
       dispatch(*d);
-      symtab.declare(d->name, d);
+      symtab.declare(d->name, d.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -287,9 +315,9 @@ public:
       }
 
       if (auto d = dynamic_cast<Decl *>(c.get()))
-        symtab.declare(d->name, c);
+        symtab.declare(d->name, c.get());
       if (auto f = dynamic_cast<Function *>(c.get()))
-        symtab.declare(f->name, c);
+        symtab.declare(f->name, c.get());
     }
   }
 
@@ -358,7 +386,7 @@ public:
 
     dispatch(*n.decl);
 
-    symtab.declare(n.name, n.decl);
+    symtab.declare(n.name, n.decl.get());
   }
 
   void visit_range(Range &n) final {
@@ -399,7 +427,7 @@ public:
       dispatch(*n.guard);
     for (auto &d : n.decls) {
       dispatch(*d);
-      symtab.declare(d->name, d);
+      symtab.declare(d->name, d.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -414,7 +442,7 @@ public:
       dispatch(q);
     for (auto &d : n.decls) {
       dispatch(*d);
-      symtab.declare(d->name, d);
+      symtab.declare(d->name, d.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
