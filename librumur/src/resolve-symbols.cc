@@ -41,10 +41,9 @@ public:
     symtab.declare("boolean", td);
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : Boolean->members) {
-      symtab.declare(m.first,
-                     Ptr<ConstDecl>::make("boolean",
-                                          Ptr<Number>::make(index, location()),
-                                          Boolean, location()));
+      symtab.declare(m.first, Ptr<ConstDecl>::make(
+                                  m.first, Ptr<Number>::make(index, location()),
+                                  Boolean, location()));
       index++;
     }
   }
