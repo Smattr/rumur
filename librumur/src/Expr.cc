@@ -1398,8 +1398,10 @@ void FunctionCall::validate() const {
     // callee’s handles are compatible
     if (!v->is_readonly() && isa<Range>(param_type)) {
       const Ptr<TypeExpr> arg_type = a_type->resolve();
-      assert(isa<Range>(arg_type) &&
-             "non-range considered type-compatible with range");
+      if (!isa<Range>(arg_type))
+        throw Error("non-range typed function call argument passed as "
+                    "range-typed var parameter",
+                    (*it)->loc);
 
       auto p = dynamic_cast<const Range &>(*param_type);
       auto a = dynamic_cast<const Range &>(*arg_type);
@@ -1671,6 +1673,34 @@ void Forall::to_stream(std::ostream &out) const {
 }
 
 bool Forall::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
+
+IsMember::IsMember(const Ptr<Expr> &peg_, const Ptr<TypeExpr> &hole_,
+                   const location &loc_)
+    : Expr(loc_), peg(peg_), hole(hole_) {}
+
+IsMember *IsMember::clone() const { return new IsMember(*this); }
+
+void IsMember::visit(BaseTraversal &visitor) {
+  return visitor.visit_ismember(*this);
+}
+
+void IsMember::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_ismember(*this);
+}
+
+bool IsMember::constant() const { return false; }
+
+Ptr<TypeExpr> IsMember::type() const { return Boolean; }
+
+mpz_class IsMember::constant_fold() const {
+  throw Error("ismember used in constant", loc);
+}
+
+void IsMember::to_stream(std::ostream &out) const {
+  out << "ismember(" << *peg << ", " << *hole << ')';
+}
+
+bool IsMember::is_pure() const { return peg->is_pure(); }
 
 IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_)
     : UnaryExpr(expr_, loc_) {}

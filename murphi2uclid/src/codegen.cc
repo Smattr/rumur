@@ -433,6 +433,11 @@ public:
     *this << "(" << *n.lhs << " ==> " << *n.rhs << ")";
   }
 
+  void visit_ismember(const IsMember &) final {
+    assert(!"ismember not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_isundefined(const IsUndefined &) final {
     assert(!"isundefined not rejected during check()");
     __builtin_unreachable();
@@ -951,6 +956,11 @@ public:
     // an intervening write as an error. Obviously this is not exactly what
     // happens. See the murphi2uclid man page for some further discussion.
     *this << tab() << "havoc " << *n.rhs << ";\n";
+  }
+
+  void visit_union(const Union &) final {
+    assert(!"union type not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_vardecl(const VarDecl &n) final {

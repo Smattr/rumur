@@ -13,9 +13,23 @@ class Check : public ConstTraversal {
 public:
   bool ok = true;
 
+  void visit_ismember(const IsMember &) final {
+    if (ok) {
+      std::cerr << "ismember expressions are not supported\n";
+      ok = false;
+    }
+  }
+
   void visit_isundefined(const IsUndefined &) final {
     if (ok) {
       std::cerr << "isundefined expressions are not supported\n";
+      ok = false;
+    }
+  }
+
+  void visit_union(const Union &) final {
+    if (ok) {
+      std::cerr << "union types are not supported\n";
       ok = false;
     }
   }

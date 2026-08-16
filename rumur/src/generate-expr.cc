@@ -469,6 +469,11 @@ public:
     *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
   }
 
+  void visit_ismember(const IsMember &) final {
+    assert(!"ismember expression not rejected before code generation");
+    __builtin_unreachable();
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     *this << "handle_isundefined(s, ";
     generate_lvalue(*out, *n.rhs);

@@ -207,6 +207,12 @@ public:
     n.validate();
   }
 
+  void visit_ismember(const IsMember &n) final {
+    dispatch(*n.peg);
+    dispatch(*n.hole);
+    n.validate();
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     dispatch(*n.rhs);
     n.validate();
@@ -412,6 +418,12 @@ public:
 
   void visit_undefine(const Undefine &n) final {
     dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_union(const Union &n) final {
+    for (const Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
     n.validate();
   }
 

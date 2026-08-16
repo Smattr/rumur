@@ -64,6 +64,7 @@ public:
   void visit_if(const rumur::If &n) final;
   void visit_ifclause(const rumur::IfClause &n) final;
   void visit_implication(const rumur::Implication &n) final;
+  void visit_ismember(const rumur::IsMember &) final;
   void visit_isundefined(const rumur::IsUndefined &) final;
   void visit_leq(const rumur::Leq &n) final;
   void visit_lsh(const rumur::Lsh &n) final;
@@ -94,6 +95,7 @@ public:
   void visit_typedecl(const rumur::TypeDecl &n) final;
   void visit_typeexprid(const rumur::TypeExprID &n) final;
   void visit_undefine(const rumur::Undefine &n) final;
+  void visit_union(const rumur::Union &n) final;
   void visit_while(const rumur::While &n) final;
   void visit_xor(const rumur::Xor &n) final;
 

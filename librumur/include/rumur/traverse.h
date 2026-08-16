@@ -98,6 +98,7 @@ public:
   virtual void visit_if(If &n) = 0;
   virtual void visit_ifclause(IfClause &n) = 0;
   virtual void visit_implication(Implication &n) = 0;
+  virtual void visit_ismember(IsMember &n) = 0;
   virtual void visit_isundefined(IsUndefined &n) = 0;
   virtual void visit_leq(Leq &n) = 0;
   virtual void visit_lsh(Lsh &n) = 0;
@@ -131,6 +132,7 @@ public:
   virtual void visit_typedecl(TypeDecl &n) = 0;
   virtual void visit_typeexprid(TypeExprID &n) = 0;
   virtual void visit_undefine(Undefine &n) = 0;
+  virtual void visit_union(Union &n) = 0;
   virtual void visit_vardecl(VarDecl &n) = 0;
   virtual void visit_while(While &n) = 0;
   virtual void visit_xor(Xor &n) = 0;
@@ -184,6 +186,7 @@ public:
   void visit_if(If &n) override;
   void visit_ifclause(IfClause &n) override;
   void visit_implication(Implication &n) override;
+  void visit_ismember(IsMember &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
   void visit_lsh(Lsh &n) override;
@@ -217,6 +220,7 @@ public:
   void visit_typedecl(TypeDecl &n) override;
   void visit_typeexprid(TypeExprID &n) override;
   void visit_undefine(Undefine &n) override;
+  void visit_union(Union &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;
@@ -262,6 +266,7 @@ public:
   virtual void visit_if(const If &n) = 0;
   virtual void visit_ifclause(const IfClause &n) = 0;
   virtual void visit_implication(const Implication &n) = 0;
+  virtual void visit_ismember(const IsMember &n) = 0;
   virtual void visit_isundefined(const IsUndefined &n) = 0;
   virtual void visit_leq(const Leq &n) = 0;
   virtual void visit_lsh(const Lsh &n) = 0;
@@ -295,6 +300,7 @@ public:
   virtual void visit_typedecl(const TypeDecl &n) = 0;
   virtual void visit_typeexprid(const TypeExprID &n) = 0;
   virtual void visit_undefine(const Undefine &n) = 0;
+  virtual void visit_union(const Union &n) = 0;
   virtual void visit_vardecl(const VarDecl &n) = 0;
   virtual void visit_while(const While &n) = 0;
   virtual void visit_xor(const Xor &n) = 0;
@@ -340,6 +346,7 @@ public:
   void visit_if(const If &n) override;
   void visit_ifclause(const IfClause &n) override;
   void visit_implication(const Implication &n) override;
+  void visit_ismember(const IsMember &n) override;
   void visit_isundefined(const IsUndefined &n) override;
   void visit_leq(const Leq &n) override;
   void visit_lsh(const Lsh &n) override;
@@ -373,6 +380,7 @@ public:
   void visit_typedecl(const TypeDecl &n) override;
   void visit_typeexprid(const TypeExprID &n) override;
   void visit_undefine(const Undefine &n) override;
+  void visit_union(const Union &n) override;
   void visit_vardecl(const VarDecl &n) override;
   void visit_while(const While &n) override;
   void visit_xor(const Xor &n) override;
@@ -424,6 +432,7 @@ public:
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_undefine(const Undefine &n) final;
+  void visit_union(const Union &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
 };
@@ -458,6 +467,7 @@ public:
   void visit_gt(const Gt &n) final;
   void visit_ifclause(const IfClause &n) final;
   void visit_implication(const Implication &n) final;
+  void visit_ismember(const IsMember &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
   void visit_lsh(const Lsh &n) final;
@@ -485,6 +495,7 @@ public:
   void visit_ternary(const Ternary &n) final;
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
+  void visit_union(const Union &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_xor(const Xor &n) final;
 
@@ -524,6 +535,7 @@ public:
   void visit_if(const If &n) final;
   void visit_ifclause(const IfClause &n) final;
   void visit_implication(const Implication &n) final;
+  void visit_ismember(const IsMember &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
   void visit_lsh(const Lsh &n) final;

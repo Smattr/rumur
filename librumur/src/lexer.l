@@ -96,6 +96,7 @@ forall        { return rumur::parser::token::FORALL;        }
 function      { return rumur::parser::token::FUNCTION;      }
 if            { return rumur::parser::token::IF;            }
 invariant     { return rumur::parser::token::INVARIANT;     }
+ismember      { return rumur::parser::token::ISMEMBER;      }
 isundefined   { return rumur::parser::token::ISUNDEFINED;   }
 liveness      { return rumur::parser::token::LIVENESS;      }
 of            { return rumur::parser::token::OF;            }
@@ -113,7 +114,7 @@ then          { return rumur::parser::token::THEN;          }
 to            { return rumur::parser::token::TO;            }
 type          { return rumur::parser::token::TYPE;          }
 undefine      { return rumur::parser::token::UNDEFINE;      }
-union         { throw rumur::Error("union types are not supported", *loc); }
+union         { return rumur::parser::token::UNION;         }
 var           { return rumur::parser::token::VAR;           }
 while         { return rumur::parser::token::WHILE;         }
 

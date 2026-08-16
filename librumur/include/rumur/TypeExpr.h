@@ -190,4 +190,22 @@ struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
   bool constant() const override;
 };
 
+struct RUMUR_API_WITH_RTTI Union : public TypeExpr {
+  std::vector<Ptr<TypeExpr>> members;
+
+  Union(const std::vector<Ptr<TypeExpr>> &members_, const location &loc_);
+  Union *clone() const override;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  mpz_class count() const override;
+  bool is_simple() const override;
+  void validate() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
+  void to_stream(std::ostream &out) const override;
+  bool constant() const override;
+};
+
 } // namespace rumur

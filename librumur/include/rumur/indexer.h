@@ -52,6 +52,7 @@ public:
   void visit_if(If &n) override;
   void visit_ifclause(IfClause &n) override;
   void visit_implication(Implication &n) override;
+  void visit_ismember(IsMember &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
   void visit_lsh(Lsh &n) override;
@@ -85,6 +86,7 @@ public:
   void visit_typedecl(TypeDecl &n) override;
   void visit_typeexprid(TypeExprID &n) override;
   void visit_undefine(Undefine &n) override;
+  void visit_union(Union &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;

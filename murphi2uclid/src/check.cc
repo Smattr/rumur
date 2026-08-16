@@ -115,6 +115,10 @@ public:
       n.body.back()->visit(*this);
   }
 
+  void visit_ismember(const IsMember &n) final {
+    throw Error("Uclid5 has no equivalent of the ismember function", n.loc);
+  }
+
   void visit_lsh(const Lsh &n) final {
     // TODO: technically we could implement this as a Uclid5 function. However,
     // it is a little awkward because Uclid5 does not support generic functions
@@ -266,6 +270,10 @@ public:
 
     if (!n.body.empty())
       n.body.back()->visit(*this);
+  }
+
+  void visit_union(const Union &n) final {
+    throw Error("Uclid5 has no equivalent of union types", n.loc);
   }
 
   void visit_while(const While &n) final {

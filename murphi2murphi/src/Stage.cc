@@ -120,6 +120,9 @@ void IntermediateStage::visit_ifclause(const IfClause &n) {
 void IntermediateStage::visit_implication(const Implication &n) {
   next.visit_implication(n);
 }
+void IntermediateStage::visit_ismember(const IsMember &n) {
+  next.visit_ismember(n);
+}
 void IntermediateStage::visit_isundefined(const IsUndefined &n) {
   next.visit_isundefined(n);
 }
@@ -185,6 +188,7 @@ void IntermediateStage::visit_typeexprid(const TypeExprID &n) {
 void IntermediateStage::visit_undefine(const Undefine &n) {
   next.visit_undefine(n);
 }
+void IntermediateStage::visit_union(const Union &n) { next.visit_union(n); }
 void IntermediateStage::visit_vardecl(const VarDecl &n) {
   next.visit_vardecl(n);
 }

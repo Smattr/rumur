@@ -72,6 +72,13 @@ static void clear(std::ostream &out, const TypeExpr &t,
     return;
   }
 
+  if (auto u = dynamic_cast<const Union *>(type.get())) {
+    // Generate a clear for each interpretation of this type. This is not
+    // efficient, but at least simple.
+    for (const Ptr<TypeExpr> &m : u->members)
+      clear(out, *m, offset, depth);
+  }
+
   assert(!"unreachable");
 }
 

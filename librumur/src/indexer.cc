@@ -161,6 +161,12 @@ void Indexer::visit_ifclause(IfClause &n) {
 
 void Indexer::visit_implication(Implication &n) { visit_bexpr(n); }
 
+void Indexer::visit_ismember(IsMember &n) {
+  n.unique_id = next++;
+  dispatch(*n.peg);
+  dispatch(*n.hole);
+}
+
 void Indexer::visit_isundefined(IsUndefined &n) { visit_uexpr(n); }
 
 void Indexer::visit_leq(Leq &n) { visit_bexpr(n); }
@@ -324,6 +330,12 @@ void Indexer::visit_uexpr(UnaryExpr &n) {
 void Indexer::visit_undefine(Undefine &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
+}
+
+void Indexer::visit_union(Union &n) {
+  n.unique_id = next++;
+  for (Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
 }
 
 void Indexer::visit_vardecl(VarDecl &n) {

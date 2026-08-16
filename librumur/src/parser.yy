@@ -154,6 +154,7 @@
 %token IF
 %token IMPLIES "->"
 %token INVARIANT
+%token ISMEMBER
 %token ISUNDEFINED
 %token LAND "∧"
 %token LEQ "<="
@@ -185,6 +186,7 @@
 %token TO
 %token TYPE
 %token UNDEFINE
+%token UNION
 %token VAR
 %token WHILE
 
@@ -241,6 +243,8 @@
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 typedecls
 %type <rumur::Ptr<rumur::TypeExpr>>                          typeexpr
+%type <std::vector<rumur::Ptr<rumur::TypeExpr>>>             typeexprs
+%type <std::vector<rumur::Ptr<rumur::TypeExpr>>>             typeexprs_cont
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecl
 %type <std::vector<rumur::Ptr<rumur::VarDecl>>>              vardecls
 %type <std::shared_ptr<bool>>                                var_opt
@@ -433,6 +437,8 @@ expr: expr '?' expr ':' expr {
   $$->loc = @$;
 } | ID '(' exprlist ')' {
   $$ = rumur::Ptr<rumur::FunctionCall>::make($1, $3, @$);
+} | ISMEMBER '(' expr ',' typeexpr ')' {
+  $$ = rumur::Ptr<rumur::IsMember>::make($3, $5, @$);
 } | ISUNDEFINED '(' designator ')' {
   $$ = rumur::Ptr<rumur::IsUndefined>::make($3, @$);
 };
@@ -676,6 +682,22 @@ typeexpr: BOOLEAN {
   $$ = rumur::Ptr<rumur::Array>::make($3, $6, @$);
 } | SCALARSET '(' expr ')' {
   $$ = rumur::Ptr<rumur::Scalarset>::make($3, @$);
+} | UNION '{' typeexprs '}' {
+  $$ = rumur::Ptr<rumur::Union>::make($3, @$);
+};
+
+typeexprs: typeexprs_cont typeexpr comma_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+  /* nothing required */
+};
+
+typeexprs_cont: typeexprs_cont typeexpr ',' {
+  $$ = $1;
+  $$.push_back($2);
+} | %empty {
+  /* nothing required */
 };
 
 vardecl: id_list_opt ':' typeexpr {

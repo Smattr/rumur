@@ -68,6 +68,12 @@ public:
   void visit_scalarset(const Scalarset &) final {
     // as a primitive, scalarsets can't contain any enum members
   }
+
+  void visit_union(const Union &n) final {
+    // define any enum members that occur within union members
+    for (const Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+  }
 };
 } // namespace
 

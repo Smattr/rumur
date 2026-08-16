@@ -289,6 +289,9 @@ static bool is_keyword(const char *text) {
   if (streq(text, "invariant"))
     return true;
 #if 0
+  // `ismember` is a keyword, but is used as if it were a function
+  if (streq(text, "ismember"))
+    return true;
   // `isundefined` is a keyword, but is used as if it were a function
   if (streq(text, "isundefined"))
     return true;

@@ -194,6 +194,13 @@ public:
   }
 
   void visit_implication(Implication &n) final { visit_bexpr(n); }
+
+  void visit_ismember(IsMember &n) final {
+    dispatch(*n.peg);
+    simplify(n.peg);
+    dispatch(*n.hole);
+  }
+
   void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
   void visit_leq(Leq &n) final { visit_bexpr(n); }
   void visit_lsh(Lsh &n) final { visit_bexpr(n); }
@@ -386,6 +393,11 @@ public:
   void visit_typeexprid(TypeExprID &) final {}
 
   void visit_undefine(Undefine &n) final { dispatch(*n.rhs); }
+
+  void visit_union(Union &n) final {
+    for (Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+  }
 
   void visit_vardecl(VarDecl &n) final { dispatch(*n.type); }
 
@@ -583,6 +595,12 @@ private:
           const std::string b = numeric_literal(n.bound->constant_fold());
           *solver << "(assert (" << lt() << " " << name << " " << b << "))\n";
         }
+      }
+
+      void visit_union(const Union &) final {
+        // TODO: the constraints on a union should probably be the intersection
+        // of constraints on the union’s members
+        throw Unsupported();
       }
 
       void visit_typeexprid(const TypeExprID &) final {

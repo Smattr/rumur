@@ -1,4 +1,5 @@
 #include "DecomposeComplexComparisons.h"
+#include "../../common/isa.h"
 #include "Stage.h"
 #include <cassert>
 #include <climits>
@@ -66,6 +67,13 @@ static std::string explode(std::unordered_set<std::string> &ids,
 
   const Ptr<TypeExpr> t = type.resolve();
 
+  // if this is a union, assume there is no reasonable way to decompose its
+  // comparison
+  if (isa<Union>(t)) {
+    buf << prefix_a << stem << (is_eq ? " = " : " != ") << prefix_b << stem;
+    return buf.str();
+  }
+
   // if this is a record, join together a comparison of each of its fields
   if (auto r = dynamic_cast<const Record *>(t.get())) {
     std::string sep;
@@ -99,12 +107,15 @@ void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
                                           bool is_eq) {
 
   // if this is a comparison of simple types, we can let it pass through
-  const Ptr<TypeExpr> t = n.lhs->type();
-  if (t->is_simple()) {
+  const Ptr<TypeExpr> lhs_type = n.lhs->type();
+  const Ptr<TypeExpr> rhs_type = n.rhs->type();
+  if (lhs_type->is_simple() && rhs_type->is_simple()) {
+    next.dispatch(n);
+    return;
+  }
 
-    assert(n.rhs->type()->is_simple() &&
-           "comparison of simple type to complex type");
-
+  // is either side is of union type, we cannot decompose this
+  if (isa<Union>(lhs_type) || isa<Union>(rhs_type)) {
     next.dispatch(n);
     return;
   }
@@ -133,5 +144,6 @@ void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
   ids.insert(rhs_ids.begin(), rhs_ids.end());
 
   // write a decomposed version of the comparison
-  *top << explode(ids, n.lhs->to_string(), n.rhs->to_string(), "", *t, is_eq);
+  *top << explode(ids, n.lhs->to_string(), n.rhs->to_string(), "", *lhs_type,
+                  is_eq);
 }

@@ -89,6 +89,7 @@ public:
   void visit_if(const rumur::If &n) override;
   void visit_ifclause(const rumur::IfClause &n) override;
   void visit_implication(const rumur::Implication &n) override;
+  void visit_ismember(const rumur::IsMember &n) override;
   void visit_isundefined(const rumur::IsUndefined &n) override;
   void visit_leq(const rumur::Leq &n) override;
   void visit_lsh(const rumur::Lsh &n) override;
@@ -122,6 +123,7 @@ public:
   void visit_typedecl(const rumur::TypeDecl &n) override;
   void visit_typeexprid(const rumur::TypeExprID &n) override;
   void visit_undefine(const rumur::Undefine &n) override;
+  void visit_union(const rumur::Union &n) override;
   void visit_vardecl(const rumur::VarDecl &n) override;
   void visit_while(const rumur::While &n) override;
   void visit_xor(const rumur::Xor &n) override;
