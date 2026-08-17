@@ -2533,3 +2533,13 @@ def test_debian_tests(testcase, tmp_path):
     assert proc.returncode == 0, "{} failed: {}{}".format(
         str(exe), proc.stdout, proc.stderr
     )
+
+
+@pytest.mark.skipif(
+    shutil.which("union-array-width") is None, reason="tester binary not found"
+)
+@pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True)
+def test_union_array_width():
+    """see union-array-width/main.cc"""
+    ret = sp.call(["union-array-width"])
+    assert ret == 0, "union and array had differing widths"
