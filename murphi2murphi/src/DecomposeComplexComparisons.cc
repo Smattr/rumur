@@ -114,7 +114,7 @@ void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
     return;
   }
 
-  // is either side is of union type, we cannot decompose this
+  // if either side is of union type, we cannot decompose this
   if (isa<Union>(lhs_type) || isa<Union>(rhs_type)) {
     next.dispatch(n);
     return;
