@@ -429,7 +429,7 @@ mpz_class Array::count() const {
     return 0;
 
   mpz_class s = 1;
-  for (size_t j = 0; j < i; j++)
+  for (mpz_class j = 0; j < i; ++j)
     s *= e;
   return s;
 }
@@ -515,6 +515,16 @@ void Union::visit(BaseTraversal &visitor) { visitor.visit_union(*this); }
 
 void Union::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_union(*this);
+}
+
+mpz_class Union::width() const {
+  mpz_class my_width = 0;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class w = m->width();
+    if (w > my_width)
+      my_width = w;
+  }
+  return my_width;
 }
 
 mpz_class Union::count() const {

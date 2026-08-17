@@ -135,10 +135,11 @@ add_subdirectory(murphi2xml)
 add_subdirectory(rumur)
 add_subdirectory(share)
 add_subdirectory(tests/murphi-comment-ls)
+add_subdirectory(tests/union-array-width)
 
 add_custom_target(check
   COMMAND env
-    PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:$ENV{PATH}
+    PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:${CMAKE_CURRENT_BINARY_DIR}/tests/union-array-width:$ENV{PATH}
     CPLUS_INCLUDE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/librumur/include:${CMAKE_CURRENT_BINARY_DIR}/librumur
     LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur
     LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur
@@ -150,6 +151,7 @@ add_dependencies(check
 )
 if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check murphi-comment-ls)
+  add_dependencies(check union-array-width)
 endif()
 
 add_custom_target(format
