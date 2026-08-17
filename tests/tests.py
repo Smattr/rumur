@@ -2538,7 +2538,6 @@ def test_debian_tests(testcase, tmp_path):
 @pytest.mark.skipif(
     shutil.which("union-array-width") is None, reason="tester binary not found"
 )
-@pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True)
 def test_union_array_width():
     """see union-array-width/main.cc"""
     ret = sp.call(["union-array-width"])

@@ -517,6 +517,16 @@ void Union::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_union(*this);
 }
 
+mpz_class Union::width() const {
+  mpz_class my_width = 0;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class w = m->width();
+    if (w > my_width)
+      my_width = w;
+  }
+  return my_width;
+}
+
 mpz_class Union::count() const {
   mpz_class c = 1;
   for (const Ptr<TypeExpr> &m : members)

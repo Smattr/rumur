@@ -199,6 +199,7 @@ struct RUMUR_API_WITH_RTTI Union : public TypeExpr {
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
 
+  mpz_class width() const override;
   mpz_class count() const override;
   bool is_simple() const override;
   void validate() const override;
