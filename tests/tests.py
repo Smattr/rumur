@@ -2525,7 +2525,7 @@ def test_debian_tests(testcase, tmp_path):
     if testcase == "rumur-run-model":
         assert (
             proc.returncode != 0
-        ), "{} suprisingly found `rumur-run` executable: {}{}".format(
+        ), "{} surprisingly found `rumur-run` executable: {}{}".format(
             str(exe), proc.stdout, proc.stderr
         )
         return
