@@ -429,7 +429,7 @@ mpz_class Array::count() const {
     return 0;
 
   mpz_class s = 1;
-  for (size_t j = 0; j < i; j++)
+  for (mpz_class j = 0; j < i; ++j)
     s *= e;
   return s;
 }
