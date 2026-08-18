@@ -509,7 +509,7 @@ public:
 
   void visit_procedurecall(const ProcedureCall &n) final {
 
-    // Murphi permits calling a function that return a value and then
+    // Murphi permits calling a function that returns a value and then
     // discarding the result. However, this is an error in Uclid5. So if we have
     // such a situation, work around this with an ignored local variable.
     const Ptr<TypeExpr> &ret = n.call.function->return_type;
