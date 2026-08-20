@@ -288,12 +288,10 @@ jobs:
       - run: cmake --build build --target check
 
   ubuntu2604_gcc15_x86-64:
-    name: Ubuntu 26.04, GCC 15, x86-64
+    name: Ubuntu 26.04, GCC 15 (default), x86-64
     runs-on: ubuntu-26.04
     env:
       DEBIAN_FRONTEND: noninteractive
-      CC: gcc-15
-      CXX: g++-15
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
@@ -404,12 +402,10 @@ jobs:
       - run: cmake --build build --target check
 
   ubuntu2604_gcc15_aarch64:
-    name: Ubuntu 26.04, GCC 15, aarch64
+    name: Ubuntu 26.04, GCC 15 (default), aarch64
     runs-on: ubuntu-26.04-arm
     env:
       DEBIAN_FRONTEND: noninteractive
-      CC: gcc-15
-      CXX: g++-15
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       CXXFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
