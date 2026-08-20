@@ -564,3 +564,4 @@ jobs:
       - run: python3 -m pip install --user codechecker
       - run: CodeChecker analyze --analyzers clangsa cppcheck --enable=sensitive --review-status-config wd/misc/codechecker-config.yaml build/compile_commands.json --output=reports
       - run: CodeChecker parse reports
+      - run: cd wd && git ls-files -z -- '**/*.c' '**/*.cc' '**/*.h' | xargs -0 -- clang-format-22 --dry-run --style=file --Werror --
