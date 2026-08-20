@@ -550,6 +550,7 @@ jobs:
     steps:
       - run: uname -rms
       - run: python3 --version
+      - run: clang --version
       - run: sudo apt-get update
       - run: sudo apt-get install --no-install-recommends -y cppcheck libfl-dev
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
