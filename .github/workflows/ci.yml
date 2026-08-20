@@ -555,10 +555,18 @@ jobs:
       - run: sudo apt-get install --no-install-recommends -y cppcheck libfl-dev
       - run: echo "cloning ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
       - run: git clone --no-checkout -- ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY} wd
-      - run: cd wd && git fetch -- origin ${{ github.event.pull_request.head.sha }} && git checkout FETCH_HEAD
+      - run: >
+          cd wd &&
+          git fetch -- origin ${{ github.event.pull_request.head.sha }} &&
+          git checkout FETCH_HEAD
       - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build -S wd
       - run: cmake --build build
       - run: python3 -m pip install --user codechecker
-      - run: CodeChecker analyze --analyzers clangsa cppcheck --enable=sensitive --review-status-config wd/misc/codechecker-config.yaml build/compile_commands.json --output=reports
+      - run: >
+          CodeChecker analyze --analyzers clangsa cppcheck --enable=sensitive
+          --review-status-config wd/misc/codechecker-config.yaml
+          build/compile_commands.json --output=reports
       - run: CodeChecker parse reports
-      - run: cd wd && git ls-files -z -- '**/*.c' '**/*.cc' '**/*.h' | xargs -0 -- clang-format-22 --dry-run --style=file --Werror --
+      - run: >
+          cd wd && git ls-files -z -- '**/*.c' '**/*.cc' '**/*.h' |
+          xargs -0 -- clang-format-22 --dry-run --style=file --Werror --
