@@ -39,7 +39,10 @@ int lex_get_token(lex_t *me, token_t *token) {
 
   // Drop temporary string from last call. No need to zero out the backing
   // memory because we always append a '\0' before returning.
+  errno = 0;
   rewind(me->stage);
+  if (errno != 0)
+    return errno;
 
   // swallow whitespace
   size_t newlines = 0;
