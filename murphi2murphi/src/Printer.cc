@@ -75,6 +75,7 @@ void Printer::visit_bor(const Bor &n) { visit_bexpr(n); }
 
 void Printer::visit_assignment(const Assignment &n) {
   top->sync_to(n);
+  top->sync_to(*n.lhs);
   top->dispatch(*n.lhs);
   top->sync_to(*n.rhs);
   top->dispatch(*n.rhs);
