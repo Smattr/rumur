@@ -550,7 +550,7 @@ jobs:
 
   c_analysis:
     name: C/C++ analysis
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - run: uname -rms
       - run: python3 --version
@@ -562,5 +562,5 @@ jobs:
       - run: cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build -S wd
       - run: cmake --build build
       - run: python3 -m pip install --user codechecker
-      - run: CodeChecker analyze --analyzers clangsa cppcheck --enable=sensitive --disable=cppcheck-duplInheritedMember build/compile_commands.json --output=reports
+      - run: CodeChecker analyze --analyzers clangsa cppcheck --enable=sensitive --review-status-config wd/misc/codechecker-config.yaml build/compile_commands.json --output=reports
       - run: CodeChecker parse reports
