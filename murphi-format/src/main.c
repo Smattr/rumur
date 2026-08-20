@@ -169,7 +169,14 @@ int main(int argc, char **argv) {
         goto done;
       }
       (void)fclose(wb);
+      errno = 0;
       rewind(out);
+      if (errno != 0) {
+        fprintf(stderr, "failed to rewind in-memory buffer: %s\n",
+                strerror(errno));
+        rc = EXIT_FAILURE;
+        goto done;
+      }
     }
   }
 
