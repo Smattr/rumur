@@ -2535,12 +2535,22 @@ def test_debian_tests(testcase, tmp_path):
     )
 
 
+@pytest.mark.parametrize(
+    "arg",
+    (
+        pytest.param(
+            "array",
+            marks=pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True),
+        ),
+        "index",
+    ),
+)
 @pytest.mark.skipif(
     shutil.which("element-is-pure") is None, reason="tester binary not found"
 )
-def test_element_is_pure():
+def test_element_is_pure(arg):
     """see element-is-pure/main.cc"""
-    ret = sp.call(["element-is-pure"])
+    ret = sp.call(["element-is-pure", arg])
     assert ret == 0, "impure array indexing expression considered pure"
 
 
