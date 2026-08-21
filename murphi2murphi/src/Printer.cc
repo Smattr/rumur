@@ -287,6 +287,15 @@ void Printer::visit_multisetadd(const MultisetAdd &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_multisetcount(const MultisetCount &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  top->sync_to(*n.predicate);
+  top->dispatch(*n.predicate);
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_negative(const Negative &n) { visit_uexpr(n); }
 
 void Printer::visit_neq(const Neq &n) { visit_bexpr(n); }

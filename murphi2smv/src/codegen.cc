@@ -309,6 +309,13 @@ public:
           << *n.arg0 << ", " << *n.arg1 << ')';
   }
 
+  void visit_multisetcount(const MultisetCount &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetCount("
+          << n.identifier << ": " << *n.container << ", " << *n.predicate
+          << ')';
+  }
+
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

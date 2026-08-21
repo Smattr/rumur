@@ -108,6 +108,7 @@ public:
   virtual void visit_mul(Mul &n) = 0;
   virtual void visit_multiset(Multiset &n) = 0;
   virtual void visit_multisetadd(MultisetAdd &n) = 0;
+  virtual void visit_multisetcount(MultisetCount &n) = 0;
   virtual void visit_negative(Negative &n) = 0;
   virtual void visit_neq(Neq &n) = 0;
   virtual void visit_not(Not &n) = 0;
@@ -198,6 +199,7 @@ public:
   void visit_mul(Mul &n) override;
   void visit_multiset(Multiset &n) override;
   void visit_multisetadd(MultisetAdd &n) override;
+  void visit_multisetcount(MultisetCount &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;
@@ -280,6 +282,7 @@ public:
   virtual void visit_mul(const Mul &n) = 0;
   virtual void visit_multiset(const Multiset &n) = 0;
   virtual void visit_multisetadd(const MultisetAdd &n) = 0;
+  virtual void visit_multisetcount(const MultisetCount &n) = 0;
   virtual void visit_negative(const Negative &n) = 0;
   virtual void visit_neq(const Neq &n) = 0;
   virtual void visit_not(const Not &n) = 0;
@@ -362,6 +365,7 @@ public:
   void visit_mul(const Mul &n) override;
   void visit_multiset(const Multiset &n) override;
   void visit_multisetadd(const MultisetAdd &n) override;
+  void visit_multisetcount(const MultisetCount &n) override;
   void visit_negative(const Negative &n) override;
   void visit_neq(const Neq &n) override;
   void visit_not(const Not &n) override;
@@ -486,6 +490,7 @@ public:
   void visit_mod(const Mod &n) final;
   void visit_mul(const Mul &n) final;
   void visit_multiset(const Multiset &n) final;
+  void visit_multisetcount(const MultisetCount &n) final;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;
@@ -555,6 +560,7 @@ public:
   void visit_mod(const Mod &n) final;
   void visit_mul(const Mul &n) final;
   void visit_multisetadd(const MultisetAdd &n) final;
+  void visit_multisetcount(const MultisetCount &n) final;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;

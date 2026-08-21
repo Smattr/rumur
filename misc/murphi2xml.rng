@@ -305,6 +305,7 @@
       <ref name="lt"/>
       <ref name="mod"/>
       <ref name="mul"/>
+      <ref name="multisetcount"/>
       <ref name="negative"/>
       <ref name="neq"/>
       <ref name="not"/>
@@ -629,6 +630,20 @@
 
   <define name="multisetadd">
     <element name="multisetadd">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="multisetcount">
+    <element name="multisetcount">
+      <attribute name="identifier">
+        <ref name="identifier"/>
+      </attribute>
       <ref name="location"/>
       <ref name="content"/>
       <ref name="argument"/>

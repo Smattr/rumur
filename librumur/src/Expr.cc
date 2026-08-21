@@ -1744,4 +1744,56 @@ void IsUndefined::to_stream(std::ostream &out) const {
   out << "isundefined(" << *rhs << ')';
 }
 
+MultisetCount::MultisetCount(const std::string &identifier_,
+                             const Ptr<Expr> &container_,
+                             const Ptr<Expr> &predicate_, const location &loc_)
+    : Expr{loc_}, identifier{identifier_}, container{container_},
+      predicate(predicate_) {}
+
+MultisetCount *MultisetCount::clone() const { return new MultisetCount{*this}; }
+
+void MultisetCount::visit(BaseTraversal &visitor) {
+  visitor.visit_multisetcount(*this);
+}
+
+void MultisetCount::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multisetcount(*this);
+}
+
+bool MultisetCount::constant() const { return false; }
+
+Ptr<TypeExpr> MultisetCount::type() const {
+  const Ptr<TypeExpr> c = container->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(c.get());
+  if (m == nullptr)
+    throw Error{"multisetcount container is not a multiset", container->loc};
+
+  const Ptr<Number> lb = Ptr<Number>::make(0, location{});
+  const Ptr<Number> ub =
+      Ptr<Number>::make(m->index_bound->constant_fold() - 1, location{});
+  return Ptr<Range>::make(lb, ub, location{});
+}
+
+mpz_class MultisetCount::constant_fold() const {
+  throw Error{"multisetcount used in constant expression", loc};
+}
+
+void MultisetCount::validate() const {
+  const Ptr<TypeExpr> c = container->type()->resolve();
+  if (!isa<Multiset>(c))
+    throw Error{"multisetcount container is not a multiset", container->loc};
+
+  const Ptr<TypeExpr> p = predicate->type()->resolve();
+  if (!p->is_boolean())
+    throw Error{"multisetcount predicate is not a boolean expression",
+                predicate->loc};
+}
+
+void MultisetCount::to_stream(std::ostream &out) const {
+  out << "multisetcount(" << identifier << ": " << *container << ", "
+      << *predicate << ')';
+}
+
+bool MultisetCount::is_pure() const { return true; }
+
 } // namespace rumur

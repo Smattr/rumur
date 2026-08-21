@@ -128,6 +128,10 @@ public:
     *this << "(" << mul() << " " << *n.lhs << " " << *n.rhs << ")";
   }
 
+  void visit_multisetcount(const MultisetCount &n) final {
+    throw Unsupported(n);
+  }
+
   void visit_negative(const Negative &n) final {
     *this << "(" << neg() << " " << *n.rhs << ")";
   }

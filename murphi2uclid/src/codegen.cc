@@ -496,6 +496,11 @@ public:
     __builtin_unreachable();
   }
 
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

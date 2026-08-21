@@ -234,6 +234,28 @@ public:
     simplify(n.arg1);
   }
 
+  void visit_multisetcount(MultisetCount &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+
+    const Ptr<TypeExpr> c = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(c.get());
+    if (m == nullptr)
+      throw Error{"multisetcount container is not a multiset",
+                  n.container->loc};
+    const Ptr<Number> lb = Ptr<Number>::make(0, location{});
+    const Ptr<Number> ub =
+        Ptr<Number>::make(m->index_bound->constant_fold() - 1, location{});
+    const Ptr<Range> t = Ptr<Range>::make(lb, ub, location{});
+    declare_var(n.identifier, n.unique_id, *t);
+
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+    solver->close_scope();
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }
