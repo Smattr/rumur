@@ -1267,7 +1267,7 @@ void Field::to_stream(std::ostream &out) const {
   out << *record << '.' << field;
 }
 
-bool Field::is_pure() const { return true; }
+bool Field::is_pure() const { return record->is_pure(); }
 
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
                  const location &loc_)
@@ -1322,7 +1322,13 @@ void Element::to_stream(std::ostream &out) const {
   out << *array << '[' << *index << ']';
 }
 
-bool Element::is_pure() const { return true; }
+bool Element::is_pure() const {
+  if (!array->is_pure())
+    return false;
+  if (!index->is_pure())
+    return false;
+  return true;
+}
 
 FunctionCall::FunctionCall(const std::string &name_,
                            const std::vector<Ptr<Expr>> &arguments_,

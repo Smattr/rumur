@@ -2535,6 +2535,16 @@ def test_debian_tests(testcase, tmp_path):
     )
 
 
+@pytest.mark.parametrize("arg", ("array", "index"))
+@pytest.mark.skipif(
+    shutil.which("element-is-pure") is None, reason="tester binary not found"
+)
+def test_element_is_pure(arg):
+    """see element-is-pure/main.cc"""
+    ret = sp.call(["element-is-pure", arg])
+    assert ret == 0, "impure array indexing expression considered pure"
+
+
 @pytest.mark.skipif(
     shutil.which("union-array-width") is None, reason="tester binary not found"
 )
