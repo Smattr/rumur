@@ -101,6 +101,7 @@ public:
   void visit_multiset(const rumur::Multiset &n) override;
   void visit_multisetadd(const rumur::MultisetAdd &n) override;
   void visit_multisetcount(const rumur::MultisetCount &n) override;
+  void visit_multisetremove(const rumur::MultisetRemove &n) override;
   void visit_negative(const rumur::Negative &n) override;
   void visit_neq(const rumur::Neq &n) override;
   void visit_not(const rumur::Not &n) override;

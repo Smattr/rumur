@@ -142,6 +142,9 @@ void IntermediateStage::visit_multisetadd(const MultisetAdd &n) {
 void IntermediateStage::visit_multisetcount(const MultisetCount &n) {
   next.visit_multisetcount(n);
 }
+void IntermediateStage::visit_multisetremove(const MultisetRemove &n) {
+  next.visit_multisetremove(n);
+}
 void IntermediateStage::visit_negative(const Negative &n) {
   next.visit_negative(n);
 }

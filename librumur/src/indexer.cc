@@ -210,6 +210,12 @@ void Indexer::visit_multisetcount(MultisetCount &n) {
   dispatch(*n.predicate);
 }
 
+void Indexer::visit_multisetremove(MultisetRemove &n) {
+  n.unique_id = next++;
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
 void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Indexer::visit_neq(Neq &n) { visit_bexpr(n); }

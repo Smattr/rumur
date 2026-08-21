@@ -670,6 +670,17 @@
     </element>
   </define>
 
+  <define name="multisetremove">
+    <element name="multisetremove">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
   <define name="negative">
     <element name="negative">
       <ref name="location"/>
@@ -1049,6 +1060,7 @@
       <ref name="if"/>
       <ref name="forstmt"/>
       <ref name="multisetadd"/>
+      <ref name="multisetremove"/>
       <ref name="procedurecall"/>
       <ref name="propertystmt"/>
       <ref name="put"/>

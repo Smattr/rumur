@@ -147,6 +147,10 @@ public:
     throw Error("Uclid5 has no equivalent of the multiset type", n.loc);
   }
 
+  void visit_multisetremove(const MultisetRemove &n) final {
+    throw Error{"Uclid5 has no equivalent of the multiset type", n.loc};
+  }
+
   void visit_propertyrule(const PropertyRule &n) final {
     if (n.property.category == Property::COVER)
       throw Error("cover properties have no LTL equivalent in Uclid5", n.loc);

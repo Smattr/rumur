@@ -321,6 +321,12 @@ public:
           << ')';
   }
 
+  void visit_multisetremove(const MultisetRemove &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetRemove("
+          << *n.arg0 << ", " << *n.arg1 << ')';
+  }
+
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

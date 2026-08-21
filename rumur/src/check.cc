@@ -28,6 +28,10 @@ public:
     throw Error("multiset types are not supported", n.loc);
   }
 
+  void visit_multisetremove(const MultisetRemove &n) final {
+    throw Error{"multiset types are not supported", n.loc};
+  }
+
   void visit_union(const Union &n) final {
     throw Error("union types are not supported", n.loc);
   }

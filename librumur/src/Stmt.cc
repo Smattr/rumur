@@ -179,6 +179,38 @@ void MultisetAdd::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_multisetadd(*this);
 }
 
+MultisetRemove::MultisetRemove(const Ptr<Expr> &arg0_, const Ptr<Expr> &arg1_,
+                               const location &loc_)
+    : Stmt{loc_}, arg0{arg0_}, arg1{arg1_} {}
+
+MultisetRemove *MultisetRemove::clone() const {
+  return new MultisetRemove{*this};
+}
+
+void MultisetRemove::validate() const {
+  const Ptr<TypeExpr> t1 = arg1->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(t1.get());
+  if (m == nullptr)
+    throw Error("second argument to MultisetRemove is not a multiset",
+                arg1->loc);
+
+  const Ptr<Number> lb = Ptr<Number>::make(0, m->index_bound->loc);
+  const Ptr<Number> ub = Ptr<Number>::make(m->index_bound->constant_fold() - 1,
+                                           m->index_bound->loc);
+  const Range r{lb, ub, m->index_bound->loc};
+
+  if (!arg0->type()->coerces_to(r))
+    throw Error{"incompatible MultisetRemove arguments", loc};
+}
+
+void MultisetRemove::visit(BaseTraversal &visitor) {
+  visitor.visit_multisetremove(*this);
+}
+
+void MultisetRemove::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multisetremove(*this);
+}
+
 ProcedureCall::ProcedureCall(const std::string &name,
                              const std::vector<Ptr<Expr>> &arguments,
                              const location &loc_)

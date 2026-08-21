@@ -450,6 +450,11 @@ void CLikeGenerator::visit_multisetcount(const MultisetCount &) {
   __builtin_unreachable();
 }
 
+void CLikeGenerator::visit_multisetremove(const MultisetRemove &) {
+  assert(!"multisetremove was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_negative(const Negative &n) {
   *this << "(-" << *n.rhs << ")";
 }
