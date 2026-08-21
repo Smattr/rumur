@@ -710,4 +710,24 @@ struct RUMUR_API_WITH_RTTI IsUndefined : public UnaryExpr {
   void to_stream(std::ostream &out) const override;
 };
 
+struct RUMUR_API_WITH_RTTI MultisetCount : public Expr {
+  std::string identifier;
+  Ptr<Expr> container;
+  Ptr<Expr> predicate;
+
+  MultisetCount(const std::string &identifier_, const Ptr<Expr> &container_,
+                const Ptr<Expr> &predicate_, const location &loc_);
+  MultisetCount *clone() const override;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  bool constant() const override;
+  Ptr<TypeExpr> type() const override;
+  mpz_class constant_fold() const override;
+  void validate() const override;
+  void to_stream(std::ostream &out) const override;
+  bool is_pure() const override;
+};
+
 } // namespace rumur

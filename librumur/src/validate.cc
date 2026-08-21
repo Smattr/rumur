@@ -266,6 +266,12 @@ public:
     n.validate();
   }
 
+  void visit_multisetcount(const MultisetCount &n) final {
+    dispatch(*n.container);
+    dispatch(*n.predicate);
+    n.validate();
+  }
+
   void visit_negative(const Negative &n) final {
     dispatch(*n.rhs);
     n.validate();

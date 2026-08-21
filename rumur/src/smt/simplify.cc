@@ -234,6 +234,25 @@ public:
     simplify(n.arg1);
   }
 
+  void visit_multisetcount(MultisetCount &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+
+    const Ptr<TypeExpr> c = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(c.get());
+    if (m == nullptr)
+      throw Error("multisetcount container is not a multiset",
+                  n.container->loc);
+    const Scalarset s{m->index_bound, n.loc};
+    declare_var(n.identifier, n.unique_id, s);
+
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+    solver->close_scope();
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }

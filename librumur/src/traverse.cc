@@ -169,6 +169,11 @@ void Traversal::visit_multisetadd(MultisetAdd &n) {
   dispatch(*n.arg1);
 }
 
+void Traversal::visit_multisetcount(MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
 void Traversal::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Traversal::visit_neq(Neq &n) { visit_bexpr(n); }
@@ -456,6 +461,11 @@ void ConstTraversal::visit_multiset(const Multiset &n) {
 void ConstTraversal::visit_multisetadd(const MultisetAdd &n) {
   dispatch(*n.arg0);
   dispatch(*n.arg1);
+}
+
+void ConstTraversal::visit_multisetcount(const MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
 }
 
 void ConstTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
@@ -914,6 +924,11 @@ void ConstStmtTraversal::visit_multiset(const Multiset &n) {
   dispatch(*n.element_type);
 }
 
+void ConstStmtTraversal::visit_multisetcount(const MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
 void ConstStmtTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 
 void ConstStmtTraversal::visit_neq(const Neq &n) { visit_bexpr(n); }
@@ -1161,6 +1176,11 @@ void ConstTypeTraversal::visit_mul(const Mul &n) { visit_bexpr(n); }
 void ConstTypeTraversal::visit_multisetadd(const MultisetAdd &n) {
   dispatch(*n.arg0);
   dispatch(*n.arg1);
+}
+
+void ConstTypeTraversal::visit_multisetcount(const MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
 }
 
 void ConstTypeTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }

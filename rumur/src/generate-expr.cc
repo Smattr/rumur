@@ -512,6 +512,11 @@ public:
           << ", s, " << *n.lhs << ", " << *n.rhs << ")";
   }
 
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected before code generation");
+    __builtin_unreachable();
+  }
+
   void visit_negative(const Negative &n) final {
     if (lvalue)
       invalid(n);
