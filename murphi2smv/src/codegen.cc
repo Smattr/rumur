@@ -109,6 +109,11 @@ public:
     *this << '(' << *n.lhs << " | " << *n.rhs << ')';
   }
 
+  void visit_choose(const Choose &) final {
+    *this << tab()
+          << "/-- FIXME: Murphi choose rules have no equivalent in SMV --/\n";
+  }
+
   void visit_clear(const Clear &) final {
     *this
         << tab()

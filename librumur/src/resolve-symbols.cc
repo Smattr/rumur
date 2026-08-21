@@ -124,6 +124,27 @@ public:
 
   void visit_bor(Bor &n) final { visit_bexpr(n); }
 
+  void visit_choose(Choose &n) final {
+    dispatch(*n.container);
+
+    // register our quantified variable
+    symtab.open_scope();
+    const Ptr<TypeExpr> t = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m == nullptr)
+      throw Error("container of choose rule is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s =
+        Ptr<Scalarset>::make(m->index_bound, n.container->loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+
+    symtab.close_scope();
+  }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
     disambiguate(n.rhs);

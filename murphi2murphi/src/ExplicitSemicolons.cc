@@ -63,6 +63,10 @@ void ExplicitSemicolons::visit_aliasrule(const AliasRule &n) {
   next.visit_aliasrule(n);
   set_pending_semi();
 }
+void ExplicitSemicolons::visit_choose(const Choose &n) {
+  next.visit_choose(n);
+  set_pending_semi();
+}
 void ExplicitSemicolons::visit_constdecl(const ConstDecl &n) {
   next.visit_constdecl(n);
   set_pending_semi();

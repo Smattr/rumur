@@ -79,6 +79,7 @@ public:
   virtual void visit_band(Band &n) = 0;
   virtual void visit_bnot(Bnot &n) = 0;
   virtual void visit_bor(Bor &n) = 0;
+  virtual void visit_choose(Choose &n) = 0;
   virtual void visit_clear(Clear &n) = 0;
   virtual void visit_constdecl(ConstDecl &n) = 0;
   virtual void visit_div(Div &n) = 0;
@@ -170,6 +171,7 @@ public:
   void visit_band(Band &n) override;
   void visit_bnot(Bnot &n) override;
   void visit_bor(Bor &n) override;
+  void visit_choose(Choose &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
   void visit_div(Div &n) override;
@@ -253,6 +255,7 @@ public:
   virtual void visit_band(const Band &n) = 0;
   virtual void visit_bnot(const Bnot &n) = 0;
   virtual void visit_bor(const Bor &n) = 0;
+  virtual void visit_choose(const Choose &n) = 0;
   virtual void visit_clear(const Clear &n) = 0;
   virtual void visit_constdecl(const ConstDecl &n) = 0;
   virtual void visit_div(const Div &n) = 0;
@@ -336,6 +339,7 @@ public:
   void visit_band(const Band &n) override;
   void visit_bnot(const Bnot &n) override;
   void visit_bor(const Bor &n) override;
+  void visit_choose(const Choose &n) override;
   void visit_clear(const Clear &n) override;
   void visit_constdecl(const ConstDecl &n) override;
   void visit_div(const Div &n) override;
@@ -417,6 +421,7 @@ public:
   void visit_aliasstmt(const AliasStmt &n) final;
   void visit_array(const Array &n) final;
   void visit_assignment(const Assignment &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_enum(const Enum &n) final;
@@ -466,6 +471,7 @@ public:
   void visit_band(const Band &n) final;
   void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
   void visit_element(const Element &n) final;
@@ -533,6 +539,7 @@ public:
   void visit_band(const Band &n) final;
   void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;

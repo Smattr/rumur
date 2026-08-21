@@ -70,6 +70,7 @@ public:
   void visit_band(const rumur::Band &n) override;
   void visit_bnot(const rumur::Bnot &n) override;
   void visit_bor(const rumur::Bor &n) override;
+  void visit_choose(const rumur::Choose &n) override;
   void visit_clear(const rumur::Clear &n) override;
   void visit_constdecl(const rumur::ConstDecl &n) override;
   void visit_div(const rumur::Div &n) override;

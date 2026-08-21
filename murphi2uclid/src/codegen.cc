@@ -114,6 +114,11 @@ public:
     *this << "(" << *n.lhs << " | " << *n.rhs << ")";
   }
 
+  void visit_choose(const Choose &) final {
+    assert(!"choose rule not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_clear(const Clear &n) final {
 
     const Ptr<TypeExpr> type = n.rhs->type()->resolve();

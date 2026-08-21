@@ -95,6 +95,12 @@ public:
     n.validate();
   }
 
+  void visit_choose(const Choose &n) final {
+    dispatch(*n.container);
+    for (const Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+  }
+
   void visit_clear(const Clear &n) final {
     dispatch(*n.rhs);
     n.validate();

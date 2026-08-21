@@ -13,6 +13,13 @@ class Check : public ConstTraversal {
 public:
   bool ok = true;
 
+  void visit_choose(const Choose &) final {
+    if (ok) {
+      std::cerr << "choose rules are not supported\n";
+      ok = false;
+    }
+  }
+
   void visit_ismember(const IsMember &) final {
     if (ok) {
       std::cerr << "ismember expressions are not supported\n";

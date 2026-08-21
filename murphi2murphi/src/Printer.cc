@@ -82,6 +82,17 @@ void Printer::visit_assignment(const Assignment &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_choose(const Choose &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules) {
+    top->sync_to(*r);
+    top->dispatch(*r);
+  }
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_clear(const Clear &n) {
   top->sync_to(n);
   top->sync_to(*n.rhs);

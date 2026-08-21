@@ -33,6 +33,7 @@ public:
   void visit_band(Band &n) override;
   void visit_bnot(Bnot &n) override;
   void visit_bor(Bor &n) override;
+  void visit_choose(Choose &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
   void visit_div(Div &n) override;
