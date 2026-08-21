@@ -303,6 +303,12 @@ public:
           << " /-- FIXME: end of Murphi multiset type --/";
   }
 
+  void visit_multisetadd(const MultisetAdd &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetAdd("
+          << *n.arg0 << ", " << *n.arg1 << ')';
+  }
+
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

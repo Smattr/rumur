@@ -260,6 +260,12 @@ public:
     n.validate();
   }
 
+  void visit_multisetadd(const MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    dispatch(*n.arg1);
+    n.validate();
+  }
+
   void visit_negative(const Negative &n) final {
     dispatch(*n.rhs);
     n.validate();

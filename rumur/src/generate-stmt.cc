@@ -208,6 +208,11 @@ public:
     }
   }
 
+  void visit_multisetadd(const MultisetAdd &) final {
+    assert(!"multisetadd not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_procedurecall(const ProcedureCall &s) final {
     generate_rvalue(*out, s.call);
   }

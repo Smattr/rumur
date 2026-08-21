@@ -478,6 +478,23 @@ void XMLPrinter::visit_multiset(const Multiset &n) {
   o << "</multiset>";
 }
 
+void XMLPrinter::visit_multisetadd(const MultisetAdd &n) {
+  sync_to(n);
+  o << "<multisetadd ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.arg0);
+  o << "<argument>";
+  dispatch(*n.arg0);
+  o << "</argument>";
+  sync_to(*n.arg1);
+  o << "<argument>";
+  dispatch(*n.arg1);
+  o << "</argument>";
+  sync_to(n.loc.end);
+  o << "</multisetadd>";
+}
+
 void XMLPrinter::visit_negative(const Negative &n) {
   visit_uexpr("negative", n);
 }

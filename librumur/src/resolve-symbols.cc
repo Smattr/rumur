@@ -331,6 +331,13 @@ public:
     disambiguate(n.index_bound);
   }
 
+  void visit_multisetadd(MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    disambiguate(n.arg0);
+    dispatch(*n.arg1);
+    disambiguate(n.arg1);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
 
   void visit_neq(Neq &n) final { visit_bexpr(n); }

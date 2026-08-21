@@ -130,6 +130,18 @@ struct RUMUR_API_WITH_RTTI If : public Stmt {
   void visit(ConstBaseTraversal &visitor) const override;
 };
 
+struct RUMUR_API_WITH_RTTI MultisetAdd : public Stmt {
+  Ptr<Expr> arg0;
+  Ptr<Expr> arg1;
+
+  MultisetAdd(const Ptr<Expr> &arg0_, const Ptr<Expr> &arg1_,
+              const location &loc_);
+  MultisetAdd *clone() const override;
+  void validate() const override;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+};
+
 struct RUMUR_API_WITH_RTTI ProcedureCall : public Stmt {
 
   FunctionCall call;

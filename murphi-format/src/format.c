@@ -302,6 +302,9 @@ static bool is_keyword(const char *text) {
   // it is more intuitive to suppress space between `multiset` and `[`
   if (streq(text, "multiset"))
     return true;
+  // `multisetadd` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetadd"))
+    return true;
 #endif
   if (streq(text, "of"))
     return true;

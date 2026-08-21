@@ -155,6 +155,30 @@ void If::visit(BaseTraversal &visitor) { visitor.visit_if(*this); }
 
 void If::visit(ConstBaseTraversal &visitor) const { visitor.visit_if(*this); }
 
+MultisetAdd::MultisetAdd(const Ptr<Expr> &arg0_, const Ptr<Expr> &arg1_,
+                         const location &loc_)
+    : Stmt(loc_), arg0(arg0_), arg1(arg1_) {}
+
+MultisetAdd *MultisetAdd::clone() const { return new MultisetAdd(*this); }
+
+void MultisetAdd::validate() const {
+  const Ptr<TypeExpr> t1 = arg1->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(t1.get());
+  if (m == nullptr)
+    throw Error("second argument to multisetadd is not a multiset", arg1->loc);
+
+  if (!arg0->type()->coerces_to(*m->element_type))
+    throw Error("incompatible multisetadd arguments", loc);
+}
+
+void MultisetAdd::visit(BaseTraversal &visitor) {
+  visitor.visit_multisetadd(*this);
+}
+
+void MultisetAdd::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multisetadd(*this);
+}
+
 ProcedureCall::ProcedureCall(const std::string &name,
                              const std::vector<Ptr<Expr>> &arguments,
                              const location &loc_)

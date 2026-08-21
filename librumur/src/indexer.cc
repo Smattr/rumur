@@ -191,6 +191,12 @@ void Indexer::visit_multiset(Multiset &n) {
   dispatch(*n.element_type);
 }
 
+void Indexer::visit_multisetadd(MultisetAdd &n) {
+  n.unique_id = next++;
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
 void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Indexer::visit_neq(Neq &n) { visit_bexpr(n); }

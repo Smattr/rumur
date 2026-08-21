@@ -83,6 +83,14 @@
     </element>
   </define>
 
+  <define name="argument">
+    <element name="argument">
+      <ref name="content"/>
+      <ref name="expr"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
   <define name="array">
     <element name="array">
       <ref name="location"/>
@@ -419,11 +427,7 @@
       </attribute>
       <ref name="content"/>
       <zeroOrMore>
-        <element name="argument">
-          <ref name="content"/>
-          <ref name="expr"/>
-          <ref name="content"/>
-        </element>
+        <ref name="argument"/>
         <ref name="content"/>
       </zeroOrMore>
     </element>
@@ -619,6 +623,17 @@
       <ref name="expr"/>
       <ref name="content"/>
       <ref name="typeexpr"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="multisetadd">
+    <element name="multisetadd">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
       <ref name="content"/>
     </element>
   </define>
@@ -1000,6 +1015,7 @@
       <ref name="errorstmt"/>
       <ref name="if"/>
       <ref name="forstmt"/>
+      <ref name="multisetadd"/>
       <ref name="procedurecall"/>
       <ref name="propertystmt"/>
       <ref name="put"/>

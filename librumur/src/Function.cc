@@ -141,6 +141,12 @@ bool Function::is_pure() const {
         pure &= n.function->is_pure();
     }
 
+    void visit_multisetadd(const MultisetAdd &n) final {
+      dispatch(*n.arg0);
+      dispatch(*n.arg1);
+      pure &= !is_global_ref(*n.arg1);
+    }
+
     void visit_propertystmt(const PropertyStmt &) final {
       // treat any property statement as a side effect
       pure = false;
