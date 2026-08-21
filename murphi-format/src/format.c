@@ -312,6 +312,9 @@ static bool is_keyword(const char *text) {
   // `multisetcount` is a keyword, but is used as if it were a function
   if (streq(text, "multisetcount"))
     return true;
+  // `multisetremove` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetremove"))
+    return true;
 #endif
   if (streq(text, "of"))
     return true;

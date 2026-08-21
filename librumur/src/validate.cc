@@ -278,6 +278,12 @@ public:
     n.validate();
   }
 
+  void visit_multisetremove(const MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    dispatch(*n.arg1);
+    n.validate();
+  }
+
   void visit_negative(const Negative &n) final {
     dispatch(*n.rhs);
     n.validate();
