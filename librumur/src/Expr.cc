@@ -1323,6 +1323,8 @@ void Element::to_stream(std::ostream &out) const {
 }
 
 bool Element::is_pure() const {
+  if (!array->is_pure())
+    return false;
   if (!index->is_pure())
     return false;
   return true;
