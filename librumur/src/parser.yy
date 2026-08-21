@@ -193,6 +193,7 @@
 %token TO
 %token TYPE
 %token UNDEFINE
+%token UNDEFINED
 %token UNION
 %token VAR
 %token WHILE
@@ -597,6 +598,8 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::PropertyStmt>::make(p, $3, @$);
 } | designator COLON_EQ expr {
   $$ = rumur::Ptr<rumur::Assignment>::make($1, $3, @$);
+} | designator COLON_EQ UNDEFINED {
+  $$ = rumur::Ptr<rumur::Undefine>::make($1, @$);
 } | ALIAS exprdecls DO stmts endalias {
   std::vector<rumur::Ptr<rumur::AliasDecl>> decls;
   for (const std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location> &d : $2) {

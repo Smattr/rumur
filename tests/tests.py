@@ -1552,6 +1552,7 @@ def test_murphi2uclid(model, tmp_path):
         "scalarset-cex.m",
         "scalarset-schedules-off.m",
         "scalarset-schedules-off-2.m",
+        "undefined-assign.m",
         # contains `put`
         "for-step-0-dynamic.m",
         "put-stmt.m",
