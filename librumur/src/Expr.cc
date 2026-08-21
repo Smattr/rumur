@@ -1267,7 +1267,7 @@ void Field::to_stream(std::ostream &out) const {
   out << *record << '.' << field;
 }
 
-bool Field::is_pure() const { return true; }
+bool Field::is_pure() const { return record->is_pure(); }
 
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
                  const location &loc_)

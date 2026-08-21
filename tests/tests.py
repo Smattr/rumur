@@ -2535,16 +2535,7 @@ def test_debian_tests(testcase, tmp_path):
     )
 
 
-@pytest.mark.parametrize(
-    "arg",
-    (
-        pytest.param(
-            "array",
-            marks=pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True),
-        ),
-        "index",
-    ),
-)
+@pytest.mark.parametrize("arg", ("array", "index"))
 @pytest.mark.skipif(
     shutil.which("element-is-pure") is None, reason="tester binary not found"
 )
