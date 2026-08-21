@@ -99,6 +99,7 @@ invariant     { return rumur::parser::token::INVARIANT;     }
 ismember      { return rumur::parser::token::ISMEMBER;      }
 isundefined   { return rumur::parser::token::ISUNDEFINED;   }
 liveness      { return rumur::parser::token::LIVENESS;      }
+multiset      { return rumur::parser::token::MULTISET;      }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
 put           { return rumur::parser::token::PUT;           }
