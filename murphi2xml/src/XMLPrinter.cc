@@ -465,6 +465,19 @@ void XMLPrinter::visit_model(const Model &n) {
 
 void XMLPrinter::visit_mul(const Mul &n) { visit_bexpr("mul", n); }
 
+void XMLPrinter::visit_multiset(const Multiset &n) {
+  sync_to(n);
+  o << "<multiset ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.index_bound);
+  dispatch(*n.index_bound);
+  sync_to(*n.element_type);
+  dispatch(*n.element_type);
+  sync_to(n.loc.end);
+  o << "</multiset>";
+}
+
 void XMLPrinter::visit_negative(const Negative &n) {
   visit_uexpr("negative", n);
 }

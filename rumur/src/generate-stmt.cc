@@ -79,6 +79,9 @@ static void clear(std::ostream &out, const TypeExpr &t,
       clear(out, *m, offset, depth);
   }
 
+  assert(!isa<Multiset>(type) &&
+         "multiset not rejected prior to code generation");
+
   assert(!"unreachable");
 }
 

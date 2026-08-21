@@ -159,6 +159,11 @@ void Traversal::visit_model(Model &n) {
 
 void Traversal::visit_mul(Mul &n) { visit_bexpr(n); }
 
+void Traversal::visit_multiset(Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
 void Traversal::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Traversal::visit_neq(Neq &n) { visit_bexpr(n); }
@@ -438,6 +443,11 @@ void ConstTraversal::visit_model(const Model &n) {
 
 void ConstTraversal::visit_mul(const Mul &n) { visit_bexpr(n); }
 
+void ConstTraversal::visit_multiset(const Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
 void ConstTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 
 void ConstTraversal::visit_neq(const Neq &n) { visit_bexpr(n); }
@@ -645,6 +655,11 @@ void ConstExprTraversal::visit_ifclause(const IfClause &n) {
 void ConstExprTraversal::visit_model(const Model &n) {
   for (const Ptr<Node> &c : n.children)
     dispatch(*c);
+}
+
+void ConstExprTraversal::visit_multiset(const Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
 }
 
 void ConstExprTraversal::visit_procedurecall(const ProcedureCall &n) {
@@ -878,6 +893,11 @@ void ConstStmtTraversal::visit_model(const Model &n) {
 }
 
 void ConstStmtTraversal::visit_mul(const Mul &n) { visit_bexpr(n); }
+
+void ConstStmtTraversal::visit_multiset(const Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
 
 void ConstStmtTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 

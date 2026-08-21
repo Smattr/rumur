@@ -109,6 +109,18 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
       }
     }
 
+    void visit_multiset(const Multiset &n) final {
+      if (auto m = dynamic_cast<const Multiset *>(t.get())) {
+        if (m->index_bound->constant_fold() != n.index_bound->constant_fold()) {
+          result = false;
+        } else if (!equal(*m->element_type, *n.element_type)) {
+          result = false;
+        }
+      } else {
+        result = false;
+      }
+    }
+
     void visit_range(const Range &n) final {
       if (auto r = dynamic_cast<const Range *>(t.get())) {
         result = r->min->constant_fold() == n.min->constant_fold() &&
@@ -441,6 +453,51 @@ void Array::validate() const {
 
 void Array::to_stream(std::ostream &out) const {
   out << "array [" << *index_type << "] of " << *element_type;
+}
+
+Multiset::Multiset(const Ptr<Expr> &index_bound_,
+                   const Ptr<TypeExpr> &element_type_, const location &loc_)
+    : TypeExpr(loc_), index_bound(index_bound_), element_type(element_type_) {}
+
+Multiset *Multiset::clone() const { return new Multiset(*this); }
+
+void Multiset::visit(BaseTraversal &visitor) { visitor.visit_multiset(*this); }
+
+void Multiset::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multiset(*this);
+}
+
+mpz_class Multiset::width() const {
+  const mpz_class indices = index_bound->constant_fold();
+  const mpz_class element_width = element_type->width();
+  return indices * element_width;
+}
+
+mpz_class Multiset::count() const {
+  const mpz_class indices = index_bound->constant_fold();
+
+  if (indices == 0)
+    return 0;
+
+  const mpz_class element_count = element_type->count();
+
+  mpz_class s = 1;
+  for (mpz_class i = 0; i < indices; ++i)
+    s *= element_count;
+  return s;
+}
+
+void Multiset::validate() const {
+  if (!index_bound->constant())
+    throw Error("multiset bound is not a constant", index_bound->loc);
+
+  const mpz_class b = index_bound->constant_fold();
+  if (b < 0)
+    throw Error("multiset bound is negative, " + b.get_str(), index_bound->loc);
+}
+
+void Multiset::to_stream(std::ostream &out) const {
+  out << "multiset [" << *index_bound << "] of " << *element_type;
 }
 
 TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,

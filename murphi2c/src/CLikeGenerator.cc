@@ -430,6 +430,11 @@ void CLikeGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_multiset(const Multiset &) {
+  assert(!"multiset was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_negative(const Negative &n) {
   *this << "(-" << *n.rhs << ")";
 }
@@ -526,6 +531,8 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
 
   const Ptr<TypeExpr> type = t.resolve();
 
+  assert(!isa<Multiset>(type) &&
+         "multiset type was not rejected during check()");
   assert(!isa<Union>(type) && "union type was not rejected during check()");
 
   // if this is boolean, handle it separately to other Enums to avoid

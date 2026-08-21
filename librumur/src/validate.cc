@@ -254,6 +254,12 @@ public:
     n.validate();
   }
 
+  void visit_multiset(const Multiset &n) final {
+    dispatch(*n.index_bound);
+    dispatch(*n.element_type);
+    n.validate();
+  }
+
   void visit_negative(const Negative &n) final {
     dispatch(*n.rhs);
     n.validate();

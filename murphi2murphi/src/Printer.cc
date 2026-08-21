@@ -269,6 +269,15 @@ void Printer::visit_model(const Model &n) {
 
 void Printer::visit_mul(const Mul &n) { visit_bexpr(n); }
 
+void Printer::visit_multiset(const Multiset &n) {
+  top->sync_to(n);
+  top->sync_to(*n.index_bound);
+  top->dispatch(*n.index_bound);
+  top->sync_to(*n.element_type);
+  top->dispatch(*n.element_type);
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_negative(const Negative &n) { visit_uexpr(n); }
 
 void Printer::visit_neq(const Neq &n) { visit_bexpr(n); }

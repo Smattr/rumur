@@ -60,6 +60,7 @@ public:
   void visit_model(Model &n) override;
   void visit_mod(Mod &n) override;
   void visit_mul(Mul &n) override;
+  void visit_multiset(Multiset &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;

@@ -486,6 +486,11 @@ public:
     *this << "(" << *n.lhs << " * " << *n.rhs << ")";
   }
 
+  void visit_multiset(const Multiset &) final {
+    assert(!"multiset not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

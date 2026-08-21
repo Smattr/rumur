@@ -220,6 +220,13 @@ public:
   }
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
+
+  void visit_multiset(Multiset &n) final {
+    dispatch(*n.index_bound);
+    simplify(n.index_bound);
+    dispatch(*n.element_type);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }
@@ -568,6 +575,8 @@ private:
         const std::string size = numeric_literal(n.members.size());
         *solver << "(assert (" << lt() << " " << name << " " << size << "))\n";
       }
+
+      void visit_multiset(const Multiset &) final { throw Unsupported(); }
 
       void visit_range(const Range &n) final {
 

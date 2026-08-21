@@ -185,6 +185,12 @@ void Indexer::visit_model(Model &n) {
 
 void Indexer::visit_mul(Mul &n) { visit_bexpr(n); }
 
+void Indexer::visit_multiset(Multiset &n) {
+  n.unique_id = next++;
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
 void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Indexer::visit_neq(Neq &n) { visit_bexpr(n); }

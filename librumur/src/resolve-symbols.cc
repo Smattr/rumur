@@ -325,6 +325,12 @@ public:
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
 
+  void visit_multiset(Multiset &n) final {
+    dispatch(*n.index_bound);
+    dispatch(*n.element_type);
+    disambiguate(n.index_bound);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
 
   void visit_neq(Neq &n) final { visit_bexpr(n); }

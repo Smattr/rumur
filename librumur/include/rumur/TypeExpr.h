@@ -166,6 +166,23 @@ struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
   void to_stream(std::ostream &out) const override;
 };
 
+struct RUMUR_API_WITH_RTTI Multiset : public TypeExpr {
+  Ptr<Expr> index_bound;
+  Ptr<TypeExpr> element_type;
+
+  Multiset(const Ptr<Expr> &index_bound_, const Ptr<TypeExpr> &element_type_,
+           const location &loc_);
+  Multiset *clone() const override;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  mpz_class width() const override;
+  mpz_class count() const override;
+  void validate() const override;
+  void to_stream(std::ostream &out) const override;
+};
+
 struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
 
   std::string name;

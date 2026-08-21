@@ -298,6 +298,11 @@ static bool is_keyword(const char *text) {
 #endif
   if (streq(text, "liveness"))
     return true;
+#if 0
+  // it is more intuitive to suppress space between `multiset` and `[`
+  if (streq(text, "multiset"))
+    return true;
+#endif
   if (streq(text, "of"))
     return true;
   if (streq(text, "procedure"))

@@ -612,6 +612,17 @@
     </element>
   </define>
 
+  <define name="multiset">
+    <element name="multiset">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="expr"/>
+      <ref name="content"/>
+      <ref name="typeexpr"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
   <define name="negative">
     <element name="negative">
       <ref name="location"/>
@@ -1096,6 +1107,7 @@
     <choice>
       <ref name="array"/>
       <ref name="enum"/>
+      <ref name="multiset"/>
       <ref name="range"/>
       <ref name="record"/>
       <ref name="scalarset"/>

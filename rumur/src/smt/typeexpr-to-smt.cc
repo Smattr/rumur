@@ -49,6 +49,10 @@ public:
     *this << integer_type();
   }
 
+  void visit_multiset(const Multiset &) final {
+    throw Unsupported("multiset types are not supported in SMT translation");
+  }
+
   void visit_range(const Range &) final {
     /* we assume our caller will eventually set the lower and upper bound
      * constraints for this integer if it is relevant to them

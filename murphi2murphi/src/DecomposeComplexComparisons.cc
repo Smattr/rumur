@@ -67,9 +67,9 @@ static std::string explode(std::unordered_set<std::string> &ids,
 
   const Ptr<TypeExpr> t = type.resolve();
 
-  // if this is a union, assume there is no reasonable way to decompose its
-  // comparison
-  if (isa<Union>(t)) {
+  // if this is a multiset or union, assume there is no reasonable way to
+  // decompose its comparison
+  if (isa<Multiset>(t) || isa<Union>(t)) {
     buf << prefix_a << stem << (is_eq ? " = " : " != ") << prefix_b << stem;
     return buf.str();
   }
@@ -110,6 +110,12 @@ void DecomposeComplexComparisons::rewrite(const EquatableBinaryExpr &n,
   const Ptr<TypeExpr> lhs_type = n.lhs->type();
   const Ptr<TypeExpr> rhs_type = n.rhs->type();
   if (lhs_type->is_simple() && rhs_type->is_simple()) {
+    next.dispatch(n);
+    return;
+  }
+
+  // if either side is of multiset type, we cannot decompose this
+  if (isa<Multiset>(lhs_type) || isa<Multiset>(rhs_type)) {
     next.dispatch(n);
     return;
   }

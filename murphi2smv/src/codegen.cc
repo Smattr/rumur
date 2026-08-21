@@ -296,6 +296,13 @@ public:
     *this << '(' << *n.lhs << " * " << *n.rhs << ')';
   }
 
+  void visit_multiset(const Multiset &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "index: "
+          << *n.index_bound << "; element type: " << *n.element_type
+          << " /-- FIXME: end of Murphi multiset type --/";
+  }
+
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }
 
   void visit_neq(const Neq &n) final {
