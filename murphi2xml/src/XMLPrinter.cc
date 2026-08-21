@@ -549,6 +549,23 @@ void XMLPrinter::visit_multisetremove(const MultisetRemove &n) {
   o << "</multisetremove>";
 }
 
+void XMLPrinter::visit_multisetremovepred(const MultisetRemovePred &n) {
+  sync_to(n);
+  o << "<multisetremovepred identifier=\"" << n.identifier << "\" ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.container);
+  o << "<argument>";
+  dispatch(*n.container);
+  o << "</argument>";
+  sync_to(*n.predicate);
+  o << "<argument>";
+  dispatch(*n.predicate);
+  o << "</argument>";
+  sync_to(n.loc.end);
+  o << "</multisetremovepred>";
+}
+
 void XMLPrinter::visit_negative(const Negative &n) {
   visit_uexpr("negative", n);
 }

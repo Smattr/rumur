@@ -216,6 +216,12 @@ void Indexer::visit_multisetremove(MultisetRemove &n) {
   dispatch(*n.arg1);
 }
 
+void Indexer::visit_multisetremovepred(MultisetRemovePred &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
 void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Indexer::visit_neq(Neq &n) { visit_bexpr(n); }

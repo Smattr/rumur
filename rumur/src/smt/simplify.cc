@@ -285,6 +285,13 @@ public:
     simplify(n.arg1);
   }
 
+  void visit_multisetremovepred(MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }

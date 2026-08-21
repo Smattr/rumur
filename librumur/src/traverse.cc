@@ -185,6 +185,11 @@ void Traversal::visit_multisetremove(MultisetRemove &n) {
   dispatch(*n.arg1);
 }
 
+void Traversal::visit_multisetremovepred(MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
 void Traversal::visit_negative(Negative &n) { visit_uexpr(n); }
 
 void Traversal::visit_neq(Neq &n) { visit_bexpr(n); }
@@ -490,6 +495,11 @@ void ConstTraversal::visit_multisetremove(const MultisetRemove &n) {
   dispatch(*n.arg1);
 }
 
+void ConstTraversal::visit_multisetremovepred(const MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
 void ConstTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 
 void ConstTraversal::visit_neq(const Neq &n) { visit_bexpr(n); }
@@ -718,6 +728,11 @@ void ConstExprTraversal::visit_multisetadd(const MultisetAdd &n) {
 void ConstExprTraversal::visit_multisetremove(const MultisetRemove &n) {
   dispatch(*n.arg0);
   dispatch(*n.arg1);
+}
+
+void ConstExprTraversal::visit_multisetremovepred(const MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
 }
 
 void ConstExprTraversal::visit_procedurecall(const ProcedureCall &n) {
@@ -1231,6 +1246,11 @@ void ConstTypeTraversal::visit_multisetcount(const MultisetCount &n) {
 void ConstTypeTraversal::visit_multisetremove(const MultisetRemove &n) {
   dispatch(*n.arg0);
   dispatch(*n.arg1);
+}
+
+void ConstTypeTraversal::visit_multisetremovepred(const MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
 }
 
 void ConstTypeTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }

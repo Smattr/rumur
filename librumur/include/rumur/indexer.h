@@ -65,6 +65,7 @@ public:
   void visit_multisetadd(MultisetAdd &n) override;
   void visit_multisetcount(MultisetCount &n) override;
   void visit_multisetremove(MultisetRemove &n) override;
+  void visit_multisetremovepred(MultisetRemovePred &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;

@@ -327,6 +327,12 @@ public:
           << *n.arg0 << ", " << *n.arg1 << ')';
   }
 
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetRemovePred("
+          << *n.container << ", " << *n.predicate << ')';
+  }
+
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

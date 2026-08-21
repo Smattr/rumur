@@ -153,6 +153,12 @@ bool Function::is_pure() const {
       pure &= !is_global_ref(*n.arg1);
     }
 
+    void visit_multisetremovepred(const MultisetRemovePred &n) final {
+      dispatch(*n.container);
+      dispatch(*n.predicate);
+      pure &= !is_global_ref(*n.container);
+    }
+
     void visit_propertystmt(const PropertyStmt &) final {
       // treat any property statement as a side effect
       pure = false;

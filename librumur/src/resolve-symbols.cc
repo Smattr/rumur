@@ -392,6 +392,30 @@ public:
     disambiguate(n.arg1);
   }
 
+  void visit_multisetremovepred(MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    disambiguate(n.container);
+
+    symtab.open_scope();
+
+    const Ptr<TypeExpr> id_type = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(id_type.get());
+    if (m == nullptr)
+      throw Error{"multisetremovepred container is not a multiset",
+                  n.container->loc};
+    const Ptr<Number> lb = Ptr<Number>::make(0, location{});
+    const Ptr<Number> ub =
+        Ptr<Number>::make(m->index_bound->constant_fold() - 1, location{});
+    const Ptr<Range> i_type = Ptr<Range>::make(lb, ub, location{});
+    VarDecl *const i = make<VarDecl>(n.identifier, i_type, n.loc);
+    symtab.declare(n.identifier, i);
+
+    dispatch(*n.predicate);
+    symtab.close_scope();
+
+    disambiguate(n.predicate);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
 
   void visit_neq(Neq &n) final { visit_bexpr(n); }

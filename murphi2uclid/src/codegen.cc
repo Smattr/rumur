@@ -511,6 +511,11 @@ public:
     __builtin_unreachable();
   }
 
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    assert(!"multisetremovepred not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }
 
   void visit_neq(const Neq &n) final {

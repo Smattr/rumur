@@ -211,6 +211,37 @@ void MultisetRemove::visit(ConstBaseTraversal &visitor) const {
   visitor.visit_multisetremove(*this);
 }
 
+MultisetRemovePred::MultisetRemovePred(const std::string &identifier_,
+                                       const Ptr<Expr> &container_,
+                                       const Ptr<Expr> &predicate_,
+                                       const location &loc_)
+    : Stmt{loc_}, identifier{identifier_}, container{container_},
+      predicate{predicate_} {}
+
+MultisetRemovePred *MultisetRemovePred::clone() const {
+  return new MultisetRemovePred{*this};
+}
+
+void MultisetRemovePred::validate() const {
+  const Ptr<TypeExpr> t = container->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(t.get());
+  if (m == nullptr)
+    throw Error("container in MultisetRemovePred is not a multiset",
+                container->loc);
+
+  if (!predicate->type()->resolve()->is_boolean())
+    throw Error("MultisetRemovePred predicate is not a boolean expression",
+                predicate->loc);
+}
+
+void MultisetRemovePred::visit(BaseTraversal &visitor) {
+  visitor.visit_multisetremovepred(*this);
+}
+
+void MultisetRemovePred::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multisetremovepred(*this);
+}
+
 ProcedureCall::ProcedureCall(const std::string &name,
                              const std::vector<Ptr<Expr>> &arguments,
                              const location &loc_)

@@ -111,6 +111,7 @@ public:
   virtual void visit_multisetadd(MultisetAdd &n) = 0;
   virtual void visit_multisetcount(MultisetCount &n) = 0;
   virtual void visit_multisetremove(MultisetRemove &n) = 0;
+  virtual void visit_multisetremovepred(MultisetRemovePred &n) = 0;
   virtual void visit_negative(Negative &n) = 0;
   virtual void visit_neq(Neq &n) = 0;
   virtual void visit_not(Not &n) = 0;
@@ -204,6 +205,7 @@ public:
   void visit_multisetadd(MultisetAdd &n) override;
   void visit_multisetcount(MultisetCount &n) override;
   void visit_multisetremove(MultisetRemove &n) override;
+  void visit_multisetremovepred(MultisetRemovePred &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;
@@ -289,6 +291,7 @@ public:
   virtual void visit_multisetadd(const MultisetAdd &n) = 0;
   virtual void visit_multisetcount(const MultisetCount &n) = 0;
   virtual void visit_multisetremove(const MultisetRemove &n) = 0;
+  virtual void visit_multisetremovepred(const MultisetRemovePred &n) = 0;
   virtual void visit_negative(const Negative &n) = 0;
   virtual void visit_neq(const Neq &n) = 0;
   virtual void visit_not(const Not &n) = 0;
@@ -374,6 +377,7 @@ public:
   void visit_multisetadd(const MultisetAdd &n) override;
   void visit_multisetcount(const MultisetCount &n) override;
   void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_negative(const Negative &n) override;
   void visit_neq(const Neq &n) override;
   void visit_not(const Not &n) override;
@@ -438,6 +442,7 @@ public:
   void visit_multiset(const Multiset &n) final;
   void visit_multisetadd(const MultisetAdd &n) final;
   void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_procedurecall(const ProcedureCall &n) final;
   void visit_property(const Property &n) final;
   void visit_propertyrule(const PropertyRule &n) final;
@@ -574,6 +579,7 @@ public:
   void visit_multisetadd(const MultisetAdd &n) final;
   void visit_multisetcount(const MultisetCount &n) final;
   void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;
