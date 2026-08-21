@@ -59,6 +59,7 @@ public:
   void visit_multiset(const rumur::Multiset &n) final;
   void visit_multisetadd(const rumur::MultisetAdd &n) final;
   void visit_multisetremove(const rumur::MultisetRemove &n) final;
+  void visit_multisetremovepred(const rumur::MultisetRemovePred &n) final;
   void visit_multisetcount(const rumur::MultisetCount &n) final;
   void visit_negative(const rumur::Negative &n) final;
   void visit_neq(const rumur::Neq &n) final;

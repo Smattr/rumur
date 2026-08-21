@@ -62,6 +62,13 @@ public:
     }
   }
 
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    if (ok) {
+      std::cerr << "multiset types are not supported\n";
+      ok = false;
+    }
+  }
+
   void visit_union(const Union &) final {
     if (ok) {
       std::cerr << "union types are not supported\n";

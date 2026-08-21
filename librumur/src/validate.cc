@@ -284,6 +284,12 @@ public:
     n.validate();
   }
 
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    dispatch(*n.predicate);
+    n.validate();
+  }
+
   void visit_negative(const Negative &n) final {
     dispatch(*n.rhs);
     n.validate();

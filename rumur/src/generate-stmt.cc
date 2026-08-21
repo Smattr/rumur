@@ -218,6 +218,11 @@ public:
     __builtin_unreachable();
   }
 
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    assert(!"multisetremovepred not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_procedurecall(const ProcedureCall &s) final {
     generate_rvalue(*out, s.call);
   }
