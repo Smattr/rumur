@@ -166,6 +166,7 @@
 %token MULTISET
 %token MULTISETADD
 %token MULTISETCOUNT
+%token MULTISETREMOVE
 %token NEQ "!="
 %token <std::string> NUMBER
 %token OF
