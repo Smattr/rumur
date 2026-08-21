@@ -1322,7 +1322,11 @@ void Element::to_stream(std::ostream &out) const {
   out << *array << '[' << *index << ']';
 }
 
-bool Element::is_pure() const { return true; }
+bool Element::is_pure() const {
+  if (!index->is_pure())
+    return false;
+  return true;
+}
 
 FunctionCall::FunctionCall(const std::string &name_,
                            const std::vector<Ptr<Expr>> &arguments_,
