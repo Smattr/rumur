@@ -163,6 +163,7 @@
 %token LSH "<<"
 %token MULTISET
 %token MULTISETADD
+%token MULTISETCOUNT
 %token NEQ "!="
 %token <std::string> NUMBER
 %token OF
