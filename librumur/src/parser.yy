@@ -211,6 +211,7 @@
 
 %type <rumur::Ptr<rumur::AliasRule>>                         aliasrule
 %type <std::shared_ptr<rumur::Property::Category>>           category
+%type <rumur::Ptr<rumur::Choose>>                            choose
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls_header
@@ -312,6 +313,10 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::LIVENESS);
 };
 
+choose: CHOOSE ID ':' expr DO rules endchoose {
+  $$ = rumur::Ptr<rumur::Choose>::make($2, $4, $6, @$);
+};
+
 comma_opt: ',' | %empty;
 
 decl: CONST exprdecls {
@@ -356,6 +361,7 @@ elsifs: elsifs ELSIF expr THEN stmts {
 };
 
 endalias: END | ENDALIAS;
+endchoose: END | ENDCHOOSE;
 endexists: END | ENDEXISTS;
 endfor: END | ENDFOR;
 endforall: END | ENDFORALL;
@@ -554,6 +560,8 @@ rule: startstate {
 } | ruleset {
   $$ = $1;
 } | aliasrule {
+  $$ = $1;
+} | choose {
   $$ = $1;
 };
 
