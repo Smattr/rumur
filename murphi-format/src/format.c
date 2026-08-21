@@ -232,6 +232,8 @@ static bool is_keyword(const char *text) {
     return true;
   if (streq(text, "case"))
     return true;
+  if (streq(text, "choose"))
+    return true;
   if (streq(text, "clear"))
     return true;
   if (streq(text, "const"))
@@ -247,6 +249,8 @@ static bool is_keyword(const char *text) {
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
+    return true;
+  if (streq(text, "endchoose"))
     return true;
   if (streq(text, "endexists"))
     return true;
@@ -388,6 +392,8 @@ static bool is_block_starter(state_t st, const char *text) {
     return true;
   if (streq(text, "case"))
     return true;
+  if (streq(text, "choose"))
+    return true;
   if (streq(text, "const"))
     return true;
   if (streq(text, "invariant"))
@@ -452,6 +458,8 @@ static bool is_dedenter(const char *text) {
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
+    return true;
+  if (streq(text, "endchoose"))
     return true;
   if (streq(text, "endexists"))
     return true;

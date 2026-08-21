@@ -168,6 +168,22 @@
     </element>
   </define>
 
+  <define name="choose">
+    <element name="choose">
+      <ref name="location"/>
+      <attribute name="identifier">
+        <ref name="identifier"/>
+      </attribute>
+      <ref name="content"/>
+      <ref name="expr"/>
+      <ref name="content"/>
+      <optional>
+        <ref name="rules"/>
+        <ref name="content"/>
+      </optional>
+    </element>
+  </define>
+
   <define name="clear">
     <element name="clear">
       <ref name="location"/>
@@ -600,6 +616,7 @@
           <ref name="vardecl"/>
           <ref name="function"/>
           <ref name="aliasrule"/>
+          <ref name="choose"/>
           <ref name="propertyrule"/>
           <ref name="ruleset"/>
           <ref name="simplerule"/>
@@ -866,6 +883,7 @@
     <zeroOrMore>
       <choice>
         <ref name="aliasrule"/>
+        <ref name="choose"/>
         <ref name="propertyrule"/>
         <ref name="ruleset"/>
         <ref name="simplerule"/>

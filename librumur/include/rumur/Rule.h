@@ -106,4 +106,20 @@ struct RUMUR_API_WITH_RTTI Ruleset : public Rule {
   std::vector<Ptr<Rule>> flatten() const override;
 };
 
+struct RUMUR_API_WITH_RTTI Choose : public Rule {
+  std::string identifier;
+  Ptr<Expr> container;
+  std::vector<Ptr<Rule>> rules;
+
+  Choose(const std::string &identifier_, const Ptr<Expr> &container_,
+         const std::vector<Ptr<Rule>> &rules_, const location &loc_);
+  Choose *clone() const override;
+  void validate() const override;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  std::vector<Ptr<Rule>> flatten() const override;
+};
+
 } // namespace rumur

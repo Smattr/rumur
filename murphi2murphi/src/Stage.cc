@@ -87,6 +87,7 @@ void IntermediateStage::visit_assignment(const Assignment &n) {
 void IntermediateStage::visit_band(const Band &n) { next.visit_band(n); }
 void IntermediateStage::visit_bnot(const Bnot &n) { next.visit_bnot(n); }
 void IntermediateStage::visit_bor(const Bor &n) { next.visit_bor(n); }
+void IntermediateStage::visit_choose(const Choose &n) { next.visit_choose(n); }
 void IntermediateStage::visit_clear(const Clear &n) { next.visit_clear(n); }
 void IntermediateStage::visit_constdecl(const ConstDecl &n) {
   next.visit_constdecl(n);

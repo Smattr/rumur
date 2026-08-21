@@ -1,6 +1,8 @@
+#include "../../common/isa.h"
 #include "location.hh"
 #include <cassert>
 #include <cstddef>
+#include <gmpxx.h>
 #include <iostream>
 #include <memory>
 #include <rumur/Decl.h>
@@ -9,6 +11,7 @@
 #include <rumur/Ptr.h>
 #include <rumur/Rule.h>
 #include <rumur/Stmt.h>
+#include <rumur/TypeExpr.h>
 #include <rumur/except.h>
 #include <rumur/traverse.h>
 #include <string>
@@ -157,6 +160,42 @@ std::vector<Ptr<Rule>> Ruleset::flatten() const {
       for (const Quantifier &q : quantifiers)
         f->quantifiers.push_back(q);
       rs.push_back(f);
+    }
+  }
+  return rs;
+}
+
+Choose::Choose(const std::string &identifier_, const Ptr<Expr> &container_,
+               const std::vector<Ptr<Rule>> &rules_, const location &loc_)
+    : Rule{"", loc_}, identifier{identifier_}, container{container_},
+      rules{rules_} {}
+
+Choose *Choose::clone() const { return new Choose{*this}; }
+
+void Choose::validate() const {
+  const Ptr<TypeExpr> t = container->type()->resolve();
+  if (!isa<Multiset>(t))
+    throw Error{"choose rule container is not a multiset", container->loc};
+}
+
+void Choose::visit(BaseTraversal &visitor) { visitor.visit_choose(*this); }
+
+void Choose::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_choose(*this);
+}
+
+std::vector<Ptr<Rule>> Choose::flatten() const {
+  const Ptr<TypeExpr> t = container->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(t.get());
+  if (m == nullptr)
+    throw Error{"container in choose rule is not a multiset", container->loc};
+  const mpz_class multiplier = m->index_bound->constant_fold();
+
+  std::vector<Ptr<Rule>> rs;
+  for (const Ptr<Rule> &r : rules) {
+    for (Ptr<Rule> &f : r->flatten()) {
+      for (mpz_class i = 0; i < multiplier; ++i)
+        rs.push_back(f);
     }
   }
   return rs;

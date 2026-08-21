@@ -156,6 +156,26 @@ void XMLPrinter::visit_bnot(const Bnot &n) { visit_uexpr("bnot", n); }
 
 void XMLPrinter::visit_bor(const Bor &n) { visit_bexpr("bor", n); }
 
+void XMLPrinter::visit_choose(const Choose &n) {
+  sync_to(n);
+  o << "<choose identifier=\"" << n.identifier << "\" ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.container);
+  dispatch(*n.container);
+  if (!n.rules.empty()) {
+    sync_to(*n.rules[0]);
+    o << "<rules>";
+    for (const Ptr<Rule> &r : n.rules) {
+      sync_to(*r);
+      dispatch(*r);
+    }
+    o << "</rules>";
+  }
+  sync_to(n.loc.end);
+  o << "</choose>";
+}
+
 void XMLPrinter::visit_clear(const Clear &n) {
   sync_to(n);
   o << "<clear ";

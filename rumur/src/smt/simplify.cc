@@ -84,6 +84,28 @@ public:
   void visit_bnot(Bnot &n) final { visit_uexpr(n); }
   void visit_bor(Bor &n) final { visit_bexpr(n); }
 
+  void visit_choose(Choose &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+    const Ptr<TypeExpr> t = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m == nullptr)
+      throw Error{"container in choose rule is not a multiset",
+                  n.container->loc};
+    const Ptr<Number> lb = Ptr<Number>::make(0, n.container->loc);
+    const Ptr<Number> ub = Ptr<Number>::make(
+        m->index_bound->constant_fold() - 1, n.container->loc);
+    const Ptr<Range> range = Ptr<Range>::make(lb, ub, n.container->loc);
+    declare_var(n.identifier, n.unique_id, *range);
+
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+
+    solver->close_scope();
+  }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
 

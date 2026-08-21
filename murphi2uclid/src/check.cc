@@ -32,6 +32,10 @@ public:
     throw Error("Uclid5 has no equivalent of alias statements", n.loc);
   }
 
+  void visit_choose(const Choose &n) final {
+    throw Error{"Uclid5 has no equivalent of choose rules", n.loc};
+  }
+
   void visit_clear(const Clear &n) final {
     const Ptr<TypeExpr> type = n.rhs->type();
 

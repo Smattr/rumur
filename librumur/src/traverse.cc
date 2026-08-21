@@ -66,6 +66,12 @@ void Traversal::visit_bexpr(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void Traversal::visit_choose(Choose &n) {
+  dispatch(*n.container);
+  for (Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void Traversal::visit_clear(Clear &n) { dispatch(*n.rhs); }
 
 void Traversal::visit_constdecl(ConstDecl &n) { dispatch(*n.value); }
@@ -360,6 +366,12 @@ void ConstTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void ConstTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void ConstTraversal::visit_clear(const Clear &n) { dispatch(*n.rhs); }
 
 void ConstTraversal::visit_constdecl(const ConstDecl &n) { dispatch(*n.value); }
@@ -633,6 +645,12 @@ void ConstExprTraversal::visit_assignment(const Assignment &n) {
   dispatch(*n.rhs);
 }
 
+void ConstExprTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void ConstExprTraversal::visit_clear(const Clear &n) { dispatch(*n.rhs); }
 
 void ConstExprTraversal::visit_constdecl(const ConstDecl &n) {
@@ -833,6 +851,12 @@ void ConstStmtTraversal::visit_bor(const Bor &n) { visit_bexpr(n); }
 void ConstStmtTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
+}
+
+void ConstStmtTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
 }
 
 void ConstStmtTraversal::visit_constdecl(const ConstDecl &n) {
@@ -1074,6 +1098,12 @@ void ConstTypeTraversal::visit_bor(const Bor &n) { visit_bexpr(n); }
 void ConstTypeTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.lhs);
   dispatch(*n.rhs);
+}
+
+void ConstTypeTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
 }
 
 void ConstTypeTraversal::visit_clear(const Clear &n) { dispatch(*n.rhs); }

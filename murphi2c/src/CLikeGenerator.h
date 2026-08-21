@@ -47,6 +47,7 @@ public:
   void visit_band(const rumur::Band &n) final;
   void visit_bnot(const rumur::Bnot &n) final;
   void visit_bor(const rumur::Bor &n) final;
+  void visit_choose(const rumur::Choose &n) final;
   void visit_clear(const rumur::Clear &n) final;
   void visit_div(const rumur::Div &n) final;
   void visit_element(const rumur::Element &n) final;

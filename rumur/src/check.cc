@@ -8,6 +8,10 @@ namespace {
 class Check : public ConstTraversal {
 
 public:
+  void visit_choose(const Choose &n) final {
+    throw Error{"choose rules are not supported", n.loc};
+  }
+
   void visit_ismember(const IsMember &n) final {
     throw Error("ismember expressions are not supported", n.loc);
   }

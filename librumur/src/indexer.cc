@@ -67,6 +67,13 @@ void Indexer::visit_bexpr(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void Indexer::visit_choose(Choose &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  for (Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void Indexer::visit_clear(Clear &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
