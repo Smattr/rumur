@@ -444,6 +444,8 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::IsMember>::make($3, $5, @$);
 } | ISUNDEFINED '(' designator ')' {
   $$ = rumur::Ptr<rumur::IsUndefined>::make($3, @$);
+} | MULTISETCOUNT '(' ID ':' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetCount>::make($3, $5, $7, @$);
 };
 
 exprdecl: id_list_opt ':' expr {
