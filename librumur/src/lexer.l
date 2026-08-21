@@ -68,6 +68,7 @@ begin         { return rumur::parser::token::BEGIN_TOK;     }
 boolean       { return rumur::parser::token::BOOLEAN;       }
 by            { return rumur::parser::token::BY;            }
 case          { return rumur::parser::token::CASE;          }
+choose        { return rumur::parser::token::CHOOSE;        }
 clear         { return rumur::parser::token::CLEAR;         }
 const         { return rumur::parser::token::CONST;         }
 cover         { return rumur::parser::token::COVER;         }
@@ -76,6 +77,7 @@ else          { return rumur::parser::token::ELSE;          }
 elsif         { return rumur::parser::token::ELSIF;         }
 end           { return rumur::parser::token::END;           }
 endalias      { return rumur::parser::token::ENDALIAS;      }
+endchoose     { return rumur::parser::token::ENDCHOOSE;     }
 endexists     { return rumur::parser::token::ENDEXISTS;     }
 endfor        { return rumur::parser::token::ENDFOR;        }
 endforall     { return rumur::parser::token::ENDFORALL;     }
