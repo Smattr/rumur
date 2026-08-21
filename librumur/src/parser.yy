@@ -120,6 +120,7 @@
 %token BOOLEAN
 %token BY
 %token CASE
+%token CHOOSE
 %token CLEAR
 %token COLON_EQ ":="
 %token CONST
@@ -131,6 +132,7 @@
 %token ELSIF
 %token END
 %token ENDALIAS
+%token ENDCHOOSE
 %token ENDEXISTS
 %token ENDFOR
 %token ENDFORALL
