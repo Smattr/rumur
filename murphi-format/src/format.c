@@ -232,6 +232,8 @@ static bool is_keyword(const char *text) {
     return true;
   if (streq(text, "case"))
     return true;
+  if (streq(text, "choose"))
+    return true;
   if (streq(text, "clear"))
     return true;
   if (streq(text, "const"))
@@ -247,6 +249,8 @@ static bool is_keyword(const char *text) {
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
+    return true;
+  if (streq(text, "endchoose"))
     return true;
   if (streq(text, "endexists"))
     return true;
@@ -298,6 +302,23 @@ static bool is_keyword(const char *text) {
 #endif
   if (streq(text, "liveness"))
     return true;
+#if 0
+  // it is more intuitive to suppress space between `multiset` and `[`
+  if (streq(text, "multiset"))
+    return true;
+  // `multisetadd` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetadd"))
+    return true;
+  // `multisetcount` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetcount"))
+    return true;
+  // `multisetremove` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetremove"))
+    return true;
+  // `multisetremovepred` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetremovepred"))
+    return true;
+#endif
   if (streq(text, "of"))
     return true;
   if (streq(text, "procedure"))
@@ -377,6 +398,8 @@ static bool is_block_starter(state_t st, const char *text) {
     return true;
   if (streq(text, "case"))
     return true;
+  if (streq(text, "choose"))
+    return true;
   if (streq(text, "const"))
     return true;
   if (streq(text, "invariant"))
@@ -441,6 +464,8 @@ static bool is_dedenter(const char *text) {
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
+    return true;
+  if (streq(text, "endchoose"))
     return true;
   if (streq(text, "endexists"))
     return true;

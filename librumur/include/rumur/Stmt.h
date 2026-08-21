@@ -130,6 +130,44 @@ struct RUMUR_API_WITH_RTTI If : public Stmt {
   void visit(ConstBaseTraversal &visitor) const override;
 };
 
+struct RUMUR_API_WITH_RTTI MultisetAdd : public Stmt {
+  Ptr<Expr> arg0;
+  Ptr<Expr> arg1;
+
+  MultisetAdd(const Ptr<Expr> &arg0_, const Ptr<Expr> &arg1_,
+              const location &loc_);
+  MultisetAdd *clone() const override;
+  void validate() const override;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+};
+
+struct RUMUR_API_WITH_RTTI MultisetRemove : public Stmt {
+  Ptr<Expr> arg0;
+  Ptr<Expr> arg1;
+
+  MultisetRemove(const Ptr<Expr> &arg0_, const Ptr<Expr> &arg1_,
+                 const location &loc_);
+  MultisetRemove *clone() const override;
+  void validate() const override;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+};
+
+struct RUMUR_API_WITH_RTTI MultisetRemovePred : public Stmt {
+  std::string identifier;
+  Ptr<Expr> container;
+  Ptr<Expr> predicate;
+
+  MultisetRemovePred(const std::string &identifier_,
+                     const Ptr<Expr> &container_, const Ptr<Expr> &predicate_,
+                     const location &loc_);
+  MultisetRemovePred *clone() const override;
+  void validate() const override;
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+};
+
 struct RUMUR_API_WITH_RTTI ProcedureCall : public Stmt {
 
   FunctionCall call;

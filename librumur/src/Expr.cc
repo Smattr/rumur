@@ -12,6 +12,7 @@
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
+#include <rumur/Number.h>
 #include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <rumur/except.h>
@@ -1287,14 +1288,24 @@ bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
-  const Array *a = dynamic_cast<const Array *>(t.get());
+
+  {
+    auto a = dynamic_cast<const Array *>(t.get());
+    if (a != nullptr)
+      return a->element_type;
+  }
+
+  {
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m != nullptr)
+      return m->element_type;
+  }
 
   // if we are called during symbol resolution on a malformed expression, our
-  // left hand side may not be an array
-  if (a == nullptr)
-    throw Error("array reference based on something that is not an array", loc);
-
-  return a->element_type;
+  // left hand side may not be an array or a multiset
+  throw Error{"array reference based on something that is neither an array nor "
+              "a multiset",
+              loc};
 }
 
 mpz_class Element::constant_fold() const {
@@ -1305,13 +1316,33 @@ void Element::validate() const {
 
   const Ptr<TypeExpr> t = array->type()->resolve();
 
-  if (!isa<Array>(t))
-    throw Error("array index on an expression that is not an array", loc);
+  {
+    auto a = dynamic_cast<const Array *>(t.get());
+    if (a != nullptr) {
 
-  auto a = dynamic_cast<const Array &>(*t);
+      if (!index->type()->coerces_to(*a->index_type))
+        throw Error{"array indexed using an expression of incorrect type", loc};
+      return;
+    }
+  }
 
-  if (!index->type()->coerces_to(*a.index_type))
-    throw Error("array indexed using an expression of incorrect type", loc);
+  {
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m != nullptr) {
+      const Ptr<Number> lb = Ptr<Number>::make(0, m->index_bound->loc);
+      const Ptr<Number> ub = Ptr<Number>::make(
+          m->index_bound->constant_fold() - 1, m->index_bound->loc);
+      Range range{lb, ub, m->index_bound->loc};
+      if (!index->type()->coerces_to(range))
+        throw Error{"multiset indexed using an expression of incorrect type",
+                    loc};
+      return;
+    }
+  }
+
+  throw Error{
+      "array index on an expression that is neither an array nor a multiset",
+      loc};
 }
 
 bool Element::is_lvalue() const { return array->is_lvalue(); }
@@ -1743,5 +1774,57 @@ void IsUndefined::validate() const {
 void IsUndefined::to_stream(std::ostream &out) const {
   out << "isundefined(" << *rhs << ')';
 }
+
+MultisetCount::MultisetCount(const std::string &identifier_,
+                             const Ptr<Expr> &container_,
+                             const Ptr<Expr> &predicate_, const location &loc_)
+    : Expr{loc_}, identifier{identifier_}, container{container_},
+      predicate(predicate_) {}
+
+MultisetCount *MultisetCount::clone() const { return new MultisetCount{*this}; }
+
+void MultisetCount::visit(BaseTraversal &visitor) {
+  visitor.visit_multisetcount(*this);
+}
+
+void MultisetCount::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multisetcount(*this);
+}
+
+bool MultisetCount::constant() const { return false; }
+
+Ptr<TypeExpr> MultisetCount::type() const {
+  const Ptr<TypeExpr> c = container->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(c.get());
+  if (m == nullptr)
+    throw Error{"multisetcount container is not a multiset", container->loc};
+
+  const Ptr<Number> lb = Ptr<Number>::make(0, location{});
+  const Ptr<Number> ub =
+      Ptr<Number>::make(m->index_bound->constant_fold() - 1, location{});
+  return Ptr<Range>::make(lb, ub, location{});
+}
+
+mpz_class MultisetCount::constant_fold() const {
+  throw Error{"multisetcount used in constant expression", loc};
+}
+
+void MultisetCount::validate() const {
+  const Ptr<TypeExpr> c = container->type()->resolve();
+  if (!isa<Multiset>(c))
+    throw Error{"multisetcount container is not a multiset", container->loc};
+
+  const Ptr<TypeExpr> p = predicate->type()->resolve();
+  if (!p->is_boolean())
+    throw Error{"multisetcount predicate is not a boolean expression",
+                predicate->loc};
+}
+
+void MultisetCount::to_stream(std::ostream &out) const {
+  out << "multisetcount(" << identifier << ": " << *container << ", "
+      << *predicate << ')';
+}
+
+bool MultisetCount::is_pure() const { return true; }
 
 } // namespace rumur

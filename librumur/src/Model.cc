@@ -66,6 +66,27 @@ mpz_class Model::liveness_count() const {
     mpz_class count = 0;
     mpz_class multiplier = 1;
 
+    void visit_choose(const Choose &n) final {
+      // adjust the multiplier for the number of copies of the contained rules
+      // we will eventually generate
+      const Ptr<TypeExpr> t = n.container->type()->resolve();
+      auto m = dynamic_cast<const Multiset *>(t.get());
+      if (m == nullptr)
+        throw Error{"container in choose rule is not a multiset",
+                    n.container->loc};
+      const mpz_class bound = m->index_bound->constant_fold();
+      if (bound > 0)
+        multiplier *= bound;
+
+      // descend into our rule children
+      for (const Ptr<Rule> &r : n.rules)
+        dispatch(*r);
+
+      // undo the multiplier effect
+      if (bound > 0)
+        multiplier /= bound;
+    }
+
     void visit_ruleset(const Ruleset &n) final {
       /* Adjust the multiplier for the number of copies of the contained rules
        * we will eventually generate.

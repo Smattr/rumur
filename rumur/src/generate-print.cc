@@ -317,6 +317,8 @@ public:
       return;
     }
 
+    assert(!isa<Multiset>(t) &&
+           "multiset type not rejected before code generation");
     assert(!isa<Union>(t) && "union type not rejected before code generation");
 
     assert(!"non-range, non-enum used as array index");
@@ -359,6 +361,10 @@ public:
          << "    put(\"\\n\");\n"
          << "  }\n"
          << "}\n";
+  }
+
+  void visit_multiset(const Multiset &n) final {
+    throw Error("multiset types are not supported", n.loc);
   }
 
   void visit_range(const Range &n) final {

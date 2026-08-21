@@ -32,6 +32,10 @@ public:
     throw Error("Uclid5 has no equivalent of alias statements", n.loc);
   }
 
+  void visit_choose(const Choose &n) final {
+    throw Error{"Uclid5 has no equivalent of choose rules", n.loc};
+  }
+
   void visit_clear(const Clear &n) final {
     const Ptr<TypeExpr> type = n.rhs->type();
 
@@ -129,6 +133,26 @@ public:
 
   void visit_mod(const Mod &n) final {
     throw Error("Uclid5 has no equivalent of the modulo operator", n.loc);
+  }
+
+  void visit_multiset(const Multiset &n) final {
+    throw Error("Uclid5 has no equivalent of the multiset type", n.loc);
+  }
+
+  void visit_multisetadd(const MultisetAdd &n) final {
+    throw Error("Uclid5 has no equivalent of the multiset type", n.loc);
+  }
+
+  void visit_multisetcount(const MultisetCount &n) final {
+    throw Error("Uclid5 has no equivalent of the multiset type", n.loc);
+  }
+
+  void visit_multisetremove(const MultisetRemove &n) final {
+    throw Error{"Uclid5 has no equivalent of the multiset type", n.loc};
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    throw Error{"Uclid5 has no equivalent of the multiset type", n.loc};
   }
 
   void visit_propertyrule(const PropertyRule &n) final {

@@ -84,6 +84,28 @@ public:
   void visit_bnot(Bnot &n) final { visit_uexpr(n); }
   void visit_bor(Bor &n) final { visit_bexpr(n); }
 
+  void visit_choose(Choose &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+    const Ptr<TypeExpr> t = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m == nullptr)
+      throw Error{"container in choose rule is not a multiset",
+                  n.container->loc};
+    const Ptr<Number> lb = Ptr<Number>::make(0, n.container->loc);
+    const Ptr<Number> ub = Ptr<Number>::make(
+        m->index_bound->constant_fold() - 1, n.container->loc);
+    const Ptr<Range> range = Ptr<Range>::make(lb, ub, n.container->loc);
+    declare_var(n.identifier, n.unique_id, *range);
+
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+
+    solver->close_scope();
+  }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
 
@@ -220,6 +242,56 @@ public:
   }
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
+
+  void visit_multiset(Multiset &n) final {
+    dispatch(*n.index_bound);
+    simplify(n.index_bound);
+    dispatch(*n.element_type);
+  }
+
+  void visit_multisetadd(MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    simplify(n.arg0);
+    dispatch(*n.arg1);
+    simplify(n.arg1);
+  }
+
+  void visit_multisetcount(MultisetCount &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+
+    const Ptr<TypeExpr> c = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(c.get());
+    if (m == nullptr)
+      throw Error{"multisetcount container is not a multiset",
+                  n.container->loc};
+    const Ptr<Number> lb = Ptr<Number>::make(0, location{});
+    const Ptr<Number> ub =
+        Ptr<Number>::make(m->index_bound->constant_fold() - 1, location{});
+    const Ptr<Range> t = Ptr<Range>::make(lb, ub, location{});
+    declare_var(n.identifier, n.unique_id, *t);
+
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+    solver->close_scope();
+  }
+
+  void visit_multisetremove(MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    simplify(n.arg0);
+    dispatch(*n.arg1);
+    simplify(n.arg1);
+  }
+
+  void visit_multisetremovepred(MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }
@@ -568,6 +640,8 @@ private:
         const std::string size = numeric_literal(n.members.size());
         *solver << "(assert (" << lt() << " " << name << " " << size << "))\n";
       }
+
+      void visit_multiset(const Multiset &) final { throw Unsupported(); }
 
       void visit_range(const Range &n) final {
 

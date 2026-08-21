@@ -120,6 +120,7 @@
 %token BOOLEAN
 %token BY
 %token CASE
+%token CHOOSE
 %token CLEAR
 %token COLON_EQ ":="
 %token CONST
@@ -131,6 +132,7 @@
 %token ELSIF
 %token END
 %token ENDALIAS
+%token ENDCHOOSE
 %token ENDEXISTS
 %token ENDFOR
 %token ENDFORALL
@@ -161,6 +163,11 @@
 %token LIVENESS
 %token LOR "∨"
 %token LSH "<<"
+%token MULTISET
+%token MULTISETADD
+%token MULTISETCOUNT
+%token MULTISETREMOVE
+%token MULTISETREMOVEPRED
 %token NEQ "!="
 %token <std::string> NUMBER
 %token OF
@@ -186,6 +193,7 @@
 %token TO
 %token TYPE
 %token UNDEFINE
+%token UNDEFINED
 %token UNION
 %token VAR
 %token WHILE
@@ -206,6 +214,7 @@
 
 %type <rumur::Ptr<rumur::AliasRule>>                         aliasrule
 %type <std::shared_ptr<rumur::Property::Category>>           category
+%type <rumur::Ptr<rumur::Choose>>                            choose
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decl
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls
 %type <std::vector<rumur::Ptr<rumur::Decl>>>                 decls_header
@@ -307,6 +316,10 @@ category: ASSERT {
   $$ = std::make_shared<rumur::Property::Category>(rumur::Property::LIVENESS);
 };
 
+choose: CHOOSE ID ':' expr DO rules endchoose {
+  $$ = rumur::Ptr<rumur::Choose>::make($2, $4, $6, @$);
+};
+
 comma_opt: ',' | %empty;
 
 decl: CONST exprdecls {
@@ -351,6 +364,7 @@ elsifs: elsifs ELSIF expr THEN stmts {
 };
 
 endalias: END | ENDALIAS;
+endchoose: END | ENDCHOOSE;
 endexists: END | ENDEXISTS;
 endfor: END | ENDFOR;
 endforall: END | ENDFORALL;
@@ -441,6 +455,8 @@ expr: expr '?' expr ':' expr {
   $$ = rumur::Ptr<rumur::IsMember>::make($3, $5, @$);
 } | ISUNDEFINED '(' designator ')' {
   $$ = rumur::Ptr<rumur::IsUndefined>::make($3, @$);
+} | MULTISETCOUNT '(' ID ':' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetCount>::make($3, $5, $7, @$);
 };
 
 exprdecl: id_list_opt ':' expr {
@@ -548,6 +564,8 @@ rule: startstate {
   $$ = $1;
 } | aliasrule {
   $$ = $1;
+} | choose {
+  $$ = $1;
 };
 
 rules: rules rule semi_opt {
@@ -580,6 +598,8 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::PropertyStmt>::make(p, $3, @$);
 } | designator COLON_EQ expr {
   $$ = rumur::Ptr<rumur::Assignment>::make($1, $3, @$);
+} | designator COLON_EQ UNDEFINED {
+  $$ = rumur::Ptr<rumur::Undefine>::make($1, @$);
 } | ALIAS exprdecls DO stmts endalias {
   std::vector<rumur::Ptr<rumur::AliasDecl>> decls;
   for (const std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location> &d : $2) {
@@ -598,6 +618,12 @@ stmt: category STRING expr {
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = rumur::Ptr<rumur::If>::make(cs, @$);
+} | MULTISETADD '(' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetAdd>::make($3, $5, @$);
+} | MULTISETREMOVE '(' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetRemove>::make($3, $5, @$);
+} | MULTISETREMOVEPRED '(' ID ':' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetRemovePred>::make($3, $5, $7, @$);
 } | PUT STRING {
   $$ = rumur::Ptr<rumur::Put>::make($2, @$);
 } | PUT expr {
@@ -680,6 +706,8 @@ typeexpr: BOOLEAN {
   $$ = rumur::Ptr<rumur::Record>::make($2, @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {
   $$ = rumur::Ptr<rumur::Array>::make($3, $6, @$);
+} | MULTISET '[' expr ']' OF typeexpr {
+  $$ = rumur::Ptr<rumur::Multiset>::make($3, $6, @$);
 } | SCALARSET '(' expr ')' {
   $$ = rumur::Ptr<rumur::Scalarset>::make($3, @$);
 } | UNION '{' typeexprs '}' {

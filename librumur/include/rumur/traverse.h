@@ -79,6 +79,7 @@ public:
   virtual void visit_band(Band &n) = 0;
   virtual void visit_bnot(Bnot &n) = 0;
   virtual void visit_bor(Bor &n) = 0;
+  virtual void visit_choose(Choose &n) = 0;
   virtual void visit_clear(Clear &n) = 0;
   virtual void visit_constdecl(ConstDecl &n) = 0;
   virtual void visit_div(Div &n) = 0;
@@ -106,6 +107,11 @@ public:
   virtual void visit_model(Model &n) = 0;
   virtual void visit_mod(Mod &n) = 0;
   virtual void visit_mul(Mul &n) = 0;
+  virtual void visit_multiset(Multiset &n) = 0;
+  virtual void visit_multisetadd(MultisetAdd &n) = 0;
+  virtual void visit_multisetcount(MultisetCount &n) = 0;
+  virtual void visit_multisetremove(MultisetRemove &n) = 0;
+  virtual void visit_multisetremovepred(MultisetRemovePred &n) = 0;
   virtual void visit_negative(Negative &n) = 0;
   virtual void visit_neq(Neq &n) = 0;
   virtual void visit_not(Not &n) = 0;
@@ -167,6 +173,7 @@ public:
   void visit_band(Band &n) override;
   void visit_bnot(Bnot &n) override;
   void visit_bor(Bor &n) override;
+  void visit_choose(Choose &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
   void visit_div(Div &n) override;
@@ -194,6 +201,11 @@ public:
   void visit_model(Model &n) override;
   void visit_mod(Mod &n) override;
   void visit_mul(Mul &n) override;
+  void visit_multiset(Multiset &n) override;
+  void visit_multisetadd(MultisetAdd &n) override;
+  void visit_multisetcount(MultisetCount &n) override;
+  void visit_multisetremove(MultisetRemove &n) override;
+  void visit_multisetremovepred(MultisetRemovePred &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;
@@ -247,6 +259,7 @@ public:
   virtual void visit_band(const Band &n) = 0;
   virtual void visit_bnot(const Bnot &n) = 0;
   virtual void visit_bor(const Bor &n) = 0;
+  virtual void visit_choose(const Choose &n) = 0;
   virtual void visit_clear(const Clear &n) = 0;
   virtual void visit_constdecl(const ConstDecl &n) = 0;
   virtual void visit_div(const Div &n) = 0;
@@ -274,6 +287,11 @@ public:
   virtual void visit_model(const Model &n) = 0;
   virtual void visit_mod(const Mod &n) = 0;
   virtual void visit_mul(const Mul &n) = 0;
+  virtual void visit_multiset(const Multiset &n) = 0;
+  virtual void visit_multisetadd(const MultisetAdd &n) = 0;
+  virtual void visit_multisetcount(const MultisetCount &n) = 0;
+  virtual void visit_multisetremove(const MultisetRemove &n) = 0;
+  virtual void visit_multisetremovepred(const MultisetRemovePred &n) = 0;
   virtual void visit_negative(const Negative &n) = 0;
   virtual void visit_neq(const Neq &n) = 0;
   virtual void visit_not(const Not &n) = 0;
@@ -327,6 +345,7 @@ public:
   void visit_band(const Band &n) override;
   void visit_bnot(const Bnot &n) override;
   void visit_bor(const Bor &n) override;
+  void visit_choose(const Choose &n) override;
   void visit_clear(const Clear &n) override;
   void visit_constdecl(const ConstDecl &n) override;
   void visit_div(const Div &n) override;
@@ -354,6 +373,11 @@ public:
   void visit_model(const Model &n) override;
   void visit_mod(const Mod &n) override;
   void visit_mul(const Mul &n) override;
+  void visit_multiset(const Multiset &n) override;
+  void visit_multisetadd(const MultisetAdd &n) override;
+  void visit_multisetcount(const MultisetCount &n) override;
+  void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_negative(const Negative &n) override;
   void visit_neq(const Neq &n) override;
   void visit_not(const Not &n) override;
@@ -405,6 +429,7 @@ public:
   void visit_aliasstmt(const AliasStmt &n) final;
   void visit_array(const Array &n) final;
   void visit_assignment(const Assignment &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_enum(const Enum &n) final;
@@ -414,6 +439,10 @@ public:
   void visit_if(const If &n) final;
   void visit_ifclause(const IfClause &n) final;
   void visit_model(const Model &n) final;
+  void visit_multiset(const Multiset &n) final;
+  void visit_multisetadd(const MultisetAdd &n) final;
+  void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_procedurecall(const ProcedureCall &n) final;
   void visit_property(const Property &n) final;
   void visit_propertyrule(const PropertyRule &n) final;
@@ -452,6 +481,7 @@ public:
   void visit_band(const Band &n) final;
   void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
   void visit_element(const Element &n) final;
@@ -475,6 +505,8 @@ public:
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
   void visit_mul(const Mul &n) final;
+  void visit_multiset(const Multiset &n) final;
+  void visit_multisetcount(const MultisetCount &n) final;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;
@@ -517,6 +549,7 @@ public:
   void visit_band(const Band &n) final;
   void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
@@ -543,6 +576,10 @@ public:
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
   void visit_mul(const Mul &n) final;
+  void visit_multisetadd(const MultisetAdd &n) final;
+  void visit_multisetcount(const MultisetCount &n) final;
+  void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;

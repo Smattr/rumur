@@ -79,6 +79,9 @@ static void clear(std::ostream &out, const TypeExpr &t,
       clear(out, *m, offset, depth);
   }
 
+  assert(!isa<Multiset>(type) &&
+         "multiset not rejected prior to code generation");
+
   assert(!"unreachable");
 }
 
@@ -203,6 +206,21 @@ public:
       *out << "}\n";
       first = false;
     }
+  }
+
+  void visit_multisetadd(const MultisetAdd &) final {
+    assert(!"multisetadd not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremove(const MultisetRemove &) final {
+    assert(!"multisetremove not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    assert(!"multisetremovepred not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_procedurecall(const ProcedureCall &s) final {

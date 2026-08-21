@@ -66,6 +66,12 @@ void Traversal::visit_bexpr(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void Traversal::visit_choose(Choose &n) {
+  dispatch(*n.container);
+  for (Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void Traversal::visit_clear(Clear &n) { dispatch(*n.rhs); }
 
 void Traversal::visit_constdecl(ConstDecl &n) { dispatch(*n.value); }
@@ -158,6 +164,31 @@ void Traversal::visit_model(Model &n) {
 }
 
 void Traversal::visit_mul(Mul &n) { visit_bexpr(n); }
+
+void Traversal::visit_multiset(Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
+void Traversal::visit_multisetadd(MultisetAdd &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void Traversal::visit_multisetcount(MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
+void Traversal::visit_multisetremove(MultisetRemove &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void Traversal::visit_multisetremovepred(MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
 
 void Traversal::visit_negative(Negative &n) { visit_uexpr(n); }
 
@@ -345,6 +376,12 @@ void ConstTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void ConstTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void ConstTraversal::visit_clear(const Clear &n) { dispatch(*n.rhs); }
 
 void ConstTraversal::visit_constdecl(const ConstDecl &n) { dispatch(*n.value); }
@@ -437,6 +474,31 @@ void ConstTraversal::visit_model(const Model &n) {
 }
 
 void ConstTraversal::visit_mul(const Mul &n) { visit_bexpr(n); }
+
+void ConstTraversal::visit_multiset(const Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
+void ConstTraversal::visit_multisetadd(const MultisetAdd &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void ConstTraversal::visit_multisetcount(const MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
+void ConstTraversal::visit_multisetremove(const MultisetRemove &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void ConstTraversal::visit_multisetremovepred(const MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
 
 void ConstTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 
@@ -603,6 +665,12 @@ void ConstExprTraversal::visit_assignment(const Assignment &n) {
   dispatch(*n.rhs);
 }
 
+void ConstExprTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void ConstExprTraversal::visit_clear(const Clear &n) { dispatch(*n.rhs); }
 
 void ConstExprTraversal::visit_constdecl(const ConstDecl &n) {
@@ -645,6 +713,26 @@ void ConstExprTraversal::visit_ifclause(const IfClause &n) {
 void ConstExprTraversal::visit_model(const Model &n) {
   for (const Ptr<Node> &c : n.children)
     dispatch(*c);
+}
+
+void ConstExprTraversal::visit_multiset(const Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
+void ConstExprTraversal::visit_multisetadd(const MultisetAdd &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void ConstExprTraversal::visit_multisetremove(const MultisetRemove &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void ConstExprTraversal::visit_multisetremovepred(const MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
 }
 
 void ConstExprTraversal::visit_procedurecall(const ProcedureCall &n) {
@@ -795,6 +883,12 @@ void ConstStmtTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void ConstStmtTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void ConstStmtTraversal::visit_constdecl(const ConstDecl &n) {
   dispatch(*n.value);
 }
@@ -878,6 +972,16 @@ void ConstStmtTraversal::visit_model(const Model &n) {
 }
 
 void ConstStmtTraversal::visit_mul(const Mul &n) { visit_bexpr(n); }
+
+void ConstStmtTraversal::visit_multiset(const Multiset &n) {
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
+void ConstStmtTraversal::visit_multisetcount(const MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
 
 void ConstStmtTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 
@@ -1026,6 +1130,12 @@ void ConstTypeTraversal::visit_bexpr(const BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void ConstTypeTraversal::visit_choose(const Choose &n) {
+  dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void ConstTypeTraversal::visit_clear(const Clear &n) { dispatch(*n.rhs); }
 
 void ConstTypeTraversal::visit_constdecl(const ConstDecl &n) {
@@ -1122,6 +1232,26 @@ void ConstTypeTraversal::visit_model(const Model &n) {
 }
 
 void ConstTypeTraversal::visit_mul(const Mul &n) { visit_bexpr(n); }
+
+void ConstTypeTraversal::visit_multisetadd(const MultisetAdd &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void ConstTypeTraversal::visit_multisetcount(const MultisetCount &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
+void ConstTypeTraversal::visit_multisetremove(const MultisetRemove &n) {
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void ConstTypeTraversal::visit_multisetremovepred(const MultisetRemovePred &n) {
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
 
 void ConstTypeTraversal::visit_negative(const Negative &n) { visit_uexpr(n); }
 

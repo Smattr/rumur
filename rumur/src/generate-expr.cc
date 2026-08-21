@@ -84,6 +84,9 @@ public:
     const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
+    assert(!isa<Multiset>(t2) &&
+           "multiset not rejected prior to code generation");
+
     auto a = dynamic_cast<const Array &>(*t2);
     mpz_class element_width = a.element_type->width();
 
@@ -510,6 +513,11 @@ public:
       invalid(n);
     *this << "mul(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
           << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+  }
+
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected before code generation");
+    __builtin_unreachable();
   }
 
   void visit_negative(const Negative &n) final {

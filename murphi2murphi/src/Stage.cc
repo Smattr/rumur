@@ -87,6 +87,7 @@ void IntermediateStage::visit_assignment(const Assignment &n) {
 void IntermediateStage::visit_band(const Band &n) { next.visit_band(n); }
 void IntermediateStage::visit_bnot(const Bnot &n) { next.visit_bnot(n); }
 void IntermediateStage::visit_bor(const Bor &n) { next.visit_bor(n); }
+void IntermediateStage::visit_choose(const Choose &n) { next.visit_choose(n); }
 void IntermediateStage::visit_clear(const Clear &n) { next.visit_clear(n); }
 void IntermediateStage::visit_constdecl(const ConstDecl &n) {
   next.visit_constdecl(n);
@@ -132,6 +133,21 @@ void IntermediateStage::visit_lt(const Lt &n) { next.visit_lt(n); }
 void IntermediateStage::visit_mod(const Mod &n) { next.visit_mod(n); }
 void IntermediateStage::visit_model(const Model &n) { next.visit_model(n); }
 void IntermediateStage::visit_mul(const Mul &n) { next.visit_mul(n); }
+void IntermediateStage::visit_multiset(const Multiset &n) {
+  next.visit_multiset(n);
+}
+void IntermediateStage::visit_multisetadd(const MultisetAdd &n) {
+  next.visit_multisetadd(n);
+}
+void IntermediateStage::visit_multisetcount(const MultisetCount &n) {
+  next.visit_multisetcount(n);
+}
+void IntermediateStage::visit_multisetremove(const MultisetRemove &n) {
+  next.visit_multisetremove(n);
+}
+void IntermediateStage::visit_multisetremovepred(const MultisetRemovePred &n) {
+  next.visit_multisetremovepred(n);
+}
 void IntermediateStage::visit_negative(const Negative &n) {
   next.visit_negative(n);
 }
