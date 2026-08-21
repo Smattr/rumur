@@ -205,6 +205,7 @@ void CLikeGenerator::visit_element(const Element &n) {
 
   // find the type of the array expression
   const Ptr<TypeExpr> t = n.array->type()->resolve();
+  assert(!isa<Multiset>(t) && "multiset was not rejected during check()");
   auto a = dynamic_cast<const Array *>(t.get());
   assert(a != nullptr && "non-array on LHS of array indexing expression");
 

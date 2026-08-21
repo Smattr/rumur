@@ -1288,14 +1288,24 @@ bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
-  const Array *a = dynamic_cast<const Array *>(t.get());
+
+  {
+    auto a = dynamic_cast<const Array *>(t.get());
+    if (a != nullptr)
+      return a->element_type;
+  }
+
+  {
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m != nullptr)
+      return m->element_type;
+  }
 
   // if we are called during symbol resolution on a malformed expression, our
-  // left hand side may not be an array
-  if (a == nullptr)
-    throw Error("array reference based on something that is not an array", loc);
-
-  return a->element_type;
+  // left hand side may not be an array or a multiset
+  throw Error("array reference based on something that is neither an array nor "
+              "a multiset",
+              loc);
 }
 
 mpz_class Element::constant_fold() const {
@@ -1306,13 +1316,30 @@ void Element::validate() const {
 
   const Ptr<TypeExpr> t = array->type()->resolve();
 
-  if (!isa<Array>(t))
-    throw Error("array index on an expression that is not an array", loc);
+  {
+    auto a = dynamic_cast<const Array *>(t.get());
+    if (a != nullptr) {
 
-  auto a = dynamic_cast<const Array &>(*t);
+      if (!index->type()->coerces_to(*a->index_type))
+        throw Error("array indexed using an expression of incorrect type", loc);
+      return;
+    }
+  }
 
-  if (!index->type()->coerces_to(*a.index_type))
-    throw Error("array indexed using an expression of incorrect type", loc);
+  {
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m != nullptr) {
+      const Scalarset s{m->index_bound, m->index_bound->loc};
+      if (!index->type()->coerces_to(s))
+        throw Error("multiset indexed using an expression of incorrect type",
+                    loc);
+      return;
+    }
+  }
+
+  throw Error(
+      "array index on an expression that is neither an array nor a multiset",
+      loc);
 }
 
 bool Element::is_lvalue() const { return array->is_lvalue(); }

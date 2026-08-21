@@ -84,6 +84,9 @@ public:
     const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
+    assert(!isa<Multiset>(t2) &&
+           "multiset not rejected prior to code generation");
+
     auto a = dynamic_cast<const Array &>(*t2);
     mpz_class element_width = a.element_type->width();
 
