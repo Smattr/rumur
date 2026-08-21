@@ -616,6 +616,8 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::If>::make(cs, @$);
 } | MULTISETADD '(' expr ',' expr ')' {
   $$ = rumur::Ptr<rumur::MultisetAdd>::make($3, $5, @$);
+} | MULTISETREMOVE '(' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetRemove>::make($3, $5, @$);
 } | PUT STRING {
   $$ = rumur::Ptr<rumur::Put>::make($2, @$);
 } | PUT expr {

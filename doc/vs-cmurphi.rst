@@ -50,7 +50,7 @@ CMurphi requires the index of multiset to be a scalarset bound. Rumur supports
 any constant expression as a bound.
 
 This limitation of syntax-only support applies also to the multiset constructs
-``Choose``, ``MultisetAdd``, and ``MultisetCount``.
+``Choose``, ``MultisetAdd``, ``MultisetCount``, and ``MultisetRemove``.
 
 Unions
 ^^^^^^
