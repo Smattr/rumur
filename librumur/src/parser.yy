@@ -162,6 +162,7 @@
 %token LOR "∨"
 %token LSH "<<"
 %token MULTISET
+%token MULTISETADD
 %token NEQ "!="
 %token <std::string> NUMBER
 %token OF

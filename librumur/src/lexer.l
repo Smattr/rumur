@@ -100,6 +100,7 @@ ismember      { return rumur::parser::token::ISMEMBER;      }
 isundefined   { return rumur::parser::token::ISUNDEFINED;   }
 liveness      { return rumur::parser::token::LIVENESS;      }
 multiset      { return rumur::parser::token::MULTISET;      }
+multisetadd   { return rumur::parser::token::MULTISETADD;   }
 of            { return rumur::parser::token::OF;            }
 procedure     { return rumur::parser::token::PROCEDURE;     }
 put           { return rumur::parser::token::PUT;           }
