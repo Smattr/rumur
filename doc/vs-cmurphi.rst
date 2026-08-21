@@ -49,6 +49,9 @@ models with multiset types, e.g. ``murphi2uclid``.
 CMurphi requires the index of multiset to be a scalarset bound. Rumur supports
 any constant expression as a bound.
 
+This limitation of syntax-only support applies also to the multiset construct
+``MultisetAdd``.
+
 Unions
 ^^^^^^
 Models that use the ``union`` type can be parsed with librumur, but generation

@@ -600,6 +600,8 @@ stmt: category STRING expr {
   cs.insert(cs.end(), $5.begin(), $5.end());
   cs.insert(cs.end(), $6.begin(), $6.end());
   $$ = rumur::Ptr<rumur::If>::make(cs, @$);
+} | MULTISETADD '(' expr ',' expr ')' {
+  $$ = rumur::Ptr<rumur::MultisetAdd>::make($3, $5, @$);
 } | PUT STRING {
   $$ = rumur::Ptr<rumur::Put>::make($2, @$);
 } | PUT expr {
