@@ -37,7 +37,17 @@ Type System
 -----------
 CMurphi supports real arithmetic using the ``real`` data type. Rumur does not
 support this type and there are no plans to implement this or any floating point
-support. Similarly, Rumur does not support the ``multiset`` type.
+support.
+
+Multisets
+^^^^^^^^^
+Models that use the ``multiset`` type can be parsed with librumur, but
+generation of a checker using ``rumur`` is not supported. Some of the Rumur
+tools fully support multiset types, e.g. ``murphi2xml``, but others reject
+models with multiset types, e.g. ``murphi2uclid``.
+
+CMurphi requires the index of multiset to be a scalarset bound. Rumur supports
+any constant expression as a bound.
 
 Unions
 ^^^^^^

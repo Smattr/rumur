@@ -681,6 +681,8 @@ typeexpr: BOOLEAN {
   $$ = rumur::Ptr<rumur::Record>::make($2, @$);
 } | ARRAY '[' typeexpr ']' OF typeexpr {
   $$ = rumur::Ptr<rumur::Array>::make($3, $6, @$);
+} | MULTISET '[' expr ']' OF typeexpr {
+  $$ = rumur::Ptr<rumur::Multiset>::make($3, $6, @$);
 } | SCALARSET '(' expr ')' {
   $$ = rumur::Ptr<rumur::Scalarset>::make($3, @$);
 } | UNION '{' typeexprs '}' {
