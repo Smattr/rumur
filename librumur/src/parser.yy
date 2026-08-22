@@ -224,8 +224,10 @@
 %type <rumur::Ptr<rumur::Expr>>                              expr
 %type <std::vector<std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location>>> exprdecl
 %type <std::vector<std::tuple<std::string, rumur::Ptr<rumur::Expr>, rumur::location>>> exprdecls
-%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist
-%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist_cont
+%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist_fn
+%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist_fn_cont
+%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist_sw
+%type <std::vector<rumur::Ptr<rumur::Expr>>>                 exprlist_sw_cont
 %type <rumur::Ptr<rumur::Expr>>                              guard_opt
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list
 %type <std::vector<std::pair<std::string, rumur::location>>> id_list_opt
@@ -449,7 +451,7 @@ expr: expr '?' expr ':' expr {
 } | '(' expr ')' {
   $$ = $2;
   $$->loc = @$;
-} | ID '(' exprlist ')' {
+} | ID '(' exprlist_fn ')' {
   $$ = rumur::Ptr<rumur::FunctionCall>::make($1, $3, @$);
 } | ISMEMBER '(' expr ',' typeexpr ')' {
   $$ = rumur::Ptr<rumur::IsMember>::make($3, $5, @$);
@@ -472,13 +474,31 @@ exprdecls: exprdecls exprdecl semi_opt {
   /* nothing required */
 };
 
-exprlist: exprlist_cont expr comma_opt {
+exprlist_fn: exprlist_fn_cont expr comma_opt {
+  $$ = $1;
+  $$.push_back($2);
+} | exprlist_fn_cont UNDEFINED comma_opt {
+  $$ = $1;
+  $$.push_back(rumur::Ptr<ExprID>::make("undefined", nullptr, @2));
+} | %empty {
+};
+
+exprlist_fn_cont: exprlist_fn_cont expr ',' {
+  $$ = $1;
+  $$.push_back($2);
+} | exprlist_fn_cont UNDEFINED ',' {
+  $$ = $1;
+  $$.push_back(rumur::Ptr<ExprID>::make("undefined", nullptr, @2));
+} | %empty {
+};
+
+exprlist_sw: exprlist_sw_cont expr comma_opt {
   $$ = $1;
   $$.push_back($2);
 } | %empty {
 };
 
-exprlist_cont: exprlist_cont expr ',' {
+exprlist_sw_cont: exprlist_sw_cont expr ',' {
   $$ = $1;
   $$.push_back($2);
 } | %empty {
@@ -634,7 +654,7 @@ stmt: category STRING expr {
   $$ = rumur::Ptr<rumur::Return>::make($2, @$);
 } | UNDEFINE designator {
   $$ = rumur::Ptr<rumur::Undefine>::make($2, @$);
-} | ID '(' exprlist ')' {
+} | ID '(' exprlist_fn ')' {
   $$ = rumur::Ptr<rumur::ProcedureCall>::make($1, $3, @$);
 } | WHILE expr DO stmts endwhile {
   $$ = rumur::Ptr<rumur::While>::make($2, $4, @$);
@@ -670,7 +690,7 @@ switchcases: switchcases_cont ELSE stmts {
   $$ = $1;
 };
 
-switchcases_cont: switchcases_cont CASE exprlist ':' stmts {
+switchcases_cont: switchcases_cont CASE exprlist_sw ':' stmts {
   $$ = $1;
   $$.push_back(rumur::SwitchCase($3, $5, @$));
 } | %empty {

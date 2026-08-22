@@ -260,8 +260,23 @@ public:
 
       n.function = f;
     }
-    for (auto &a : n.arguments)
+
+    size_t i = 0;
+    for (auto &a : n.arguments) {
+      symtab.open_scope();
+
+      // if this argument is `undefined`, create something it can resolve to
+      auto id = dynamic_cast<const ExprID *>(a.get());
+      if (id != nullptr && id->id == "undefined") {
+        VarDecl *const undef =
+            make<VarDecl>("undefined", n.function->parameters[i]->type, n.loc);
+        symtab.declare("undefined", undef);
+      }
+
       dispatch(*a);
+      symtab.close_scope();
+      ++i;
+    }
 
     for (Ptr<Expr> &a : n.arguments)
       disambiguate(a);
