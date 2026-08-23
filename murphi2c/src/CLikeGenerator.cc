@@ -181,6 +181,11 @@ void CLikeGenerator::visit_bor(const Bor &n) {
   *this << "(" << *n.lhs << " | " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_choose(const Choose &) {
+  assert(!"choose was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
         << "));";
@@ -200,6 +205,7 @@ void CLikeGenerator::visit_element(const Element &n) {
 
   // find the type of the array expression
   const Ptr<TypeExpr> t = n.array->type()->resolve();
+  assert(!isa<Multiset>(t) && "multiset was not rejected during check()");
   auto a = dynamic_cast<const Array *>(t.get());
   assert(a != nullptr && "non-array on LHS of array indexing expression");
 
@@ -430,6 +436,31 @@ void CLikeGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_multiset(const Multiset &) {
+  assert(!"multiset was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetadd(const MultisetAdd &) {
+  assert(!"multisetadd was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetcount(const MultisetCount &) {
+  assert(!"multisetcount was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetremove(const MultisetRemove &) {
+  assert(!"multisetremove was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetremovepred(const MultisetRemovePred &) {
+  assert(!"multisetremovepred was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_negative(const Negative &n) {
   *this << "(-" << *n.rhs << ")";
 }
@@ -526,6 +557,8 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
 
   const Ptr<TypeExpr> type = t.resolve();
 
+  assert(!isa<Multiset>(type) &&
+         "multiset type was not rejected during check()");
   assert(!isa<Union>(type) && "union type was not rejected during check()");
 
   // if this is boolean, handle it separately to other Enums to avoid

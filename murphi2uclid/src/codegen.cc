@@ -114,6 +114,11 @@ public:
     *this << "(" << *n.lhs << " | " << *n.rhs << ")";
   }
 
+  void visit_choose(const Choose &) final {
+    assert(!"choose rule not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_clear(const Clear &n) final {
 
     const Ptr<TypeExpr> type = n.rhs->type()->resolve();
@@ -484,6 +489,31 @@ public:
 
   void visit_mul(const Mul &n) final {
     *this << "(" << *n.lhs << " * " << *n.rhs << ")";
+  }
+
+  void visit_multiset(const Multiset &) final {
+    assert(!"multiset not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetadd(const MultisetAdd &) final {
+    assert(!"multisetadd not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremove(const MultisetRemove &) final {
+    assert(!"multisetremove not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    assert(!"multisetremovepred not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }

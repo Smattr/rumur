@@ -70,6 +70,7 @@ public:
   void visit_band(const rumur::Band &n) override;
   void visit_bnot(const rumur::Bnot &n) override;
   void visit_bor(const rumur::Bor &n) override;
+  void visit_choose(const rumur::Choose &n) override;
   void visit_clear(const rumur::Clear &n) override;
   void visit_constdecl(const rumur::ConstDecl &n) override;
   void visit_div(const rumur::Div &n) override;
@@ -97,6 +98,11 @@ public:
   void visit_mod(const rumur::Mod &n) override;
   void visit_model(const rumur::Model &n) override;
   void visit_mul(const rumur::Mul &n) override;
+  void visit_multiset(const rumur::Multiset &n) override;
+  void visit_multisetadd(const rumur::MultisetAdd &n) override;
+  void visit_multisetcount(const rumur::MultisetCount &n) override;
+  void visit_multisetremove(const rumur::MultisetRemove &n) override;
+  void visit_multisetremovepred(const rumur::MultisetRemovePred &n) override;
   void visit_negative(const rumur::Negative &n) override;
   void visit_neq(const rumur::Neq &n) override;
   void visit_not(const rumur::Not &n) override;

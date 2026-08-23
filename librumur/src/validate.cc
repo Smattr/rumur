@@ -95,6 +95,12 @@ public:
     n.validate();
   }
 
+  void visit_choose(const Choose &n) final {
+    dispatch(*n.container);
+    for (const Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+  }
+
   void visit_clear(const Clear &n) final {
     dispatch(*n.rhs);
     n.validate();
@@ -251,6 +257,36 @@ public:
   void visit_mul(const Mul &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_multiset(const Multiset &n) final {
+    dispatch(*n.index_bound);
+    dispatch(*n.element_type);
+    n.validate();
+  }
+
+  void visit_multisetadd(const MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    dispatch(*n.arg1);
+    n.validate();
+  }
+
+  void visit_multisetcount(const MultisetCount &n) final {
+    dispatch(*n.container);
+    dispatch(*n.predicate);
+    n.validate();
+  }
+
+  void visit_multisetremove(const MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    dispatch(*n.arg1);
+    n.validate();
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    dispatch(*n.predicate);
     n.validate();
   }
 

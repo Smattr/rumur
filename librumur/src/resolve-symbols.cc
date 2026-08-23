@@ -124,6 +124,27 @@ public:
 
   void visit_bor(Bor &n) final { visit_bexpr(n); }
 
+  void visit_choose(Choose &n) final {
+    dispatch(*n.container);
+
+    // register our quantified variable
+    symtab.open_scope();
+    const Ptr<TypeExpr> t = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m == nullptr)
+      throw Error("container of choose rule is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s =
+        Ptr<Scalarset>::make(m->index_bound, n.container->loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+
+    symtab.close_scope();
+  }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
     disambiguate(n.rhs);
@@ -239,8 +260,23 @@ public:
 
       n.function = f;
     }
-    for (auto &a : n.arguments)
+
+    size_t i = 0;
+    for (auto &a : n.arguments) {
+      symtab.open_scope();
+
+      // if this argument is `undefined`, create something it can resolve to
+      auto id = dynamic_cast<const ExprID *>(a.get());
+      if (id != nullptr && id->id == "undefined") {
+        VarDecl *const undef =
+            make<VarDecl>("undefined", n.function->parameters[i]->type, n.loc);
+        symtab.declare("undefined", undef);
+      }
+
       dispatch(*a);
+      symtab.close_scope();
+      ++i;
+    }
 
     for (Ptr<Expr> &a : n.arguments)
       disambiguate(a);
@@ -324,6 +360,68 @@ public:
   void visit_mod(Mod &n) final { visit_bexpr(n); }
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
+
+  void visit_multiset(Multiset &n) final {
+    dispatch(*n.index_bound);
+    dispatch(*n.element_type);
+    disambiguate(n.index_bound);
+  }
+
+  void visit_multisetadd(MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    disambiguate(n.arg0);
+    dispatch(*n.arg1);
+    disambiguate(n.arg1);
+  }
+
+  void visit_multisetcount(MultisetCount &n) final {
+    dispatch(*n.container);
+    disambiguate(n.container);
+
+    symtab.open_scope();
+
+    const Ptr<TypeExpr> id_type = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(id_type.get());
+    if (m == nullptr)
+      throw Error("multisetcount container is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s = Ptr<Scalarset>::make(m->index_bound, n.loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    dispatch(*n.predicate);
+    symtab.close_scope();
+
+    disambiguate(n.predicate);
+  }
+
+  void visit_multisetremove(MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    disambiguate(n.arg0);
+    dispatch(*n.arg1);
+    disambiguate(n.arg1);
+  }
+
+  void visit_multisetremovepred(MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    disambiguate(n.container);
+
+    symtab.open_scope();
+
+    const Ptr<TypeExpr> id_type = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(id_type.get());
+    if (m == nullptr)
+      throw Error("multisetremovepred container is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s = Ptr<Scalarset>::make(m->index_bound, n.loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    dispatch(*n.predicate);
+    symtab.close_scope();
+
+    disambiguate(n.predicate);
+  }
 
   void visit_negative(Negative &n) final { visit_uexpr(n); }
 

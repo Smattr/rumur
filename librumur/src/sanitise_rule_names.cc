@@ -52,6 +52,12 @@ public:
     }
   }
 
+  void visit_choose(Choose &n) final {
+    name(n, "choose");
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+  }
+
   void visit_propertyrule(PropertyRule &n) final { name(n, "property"); }
 
   void visit_ruleset(Ruleset &n) final {

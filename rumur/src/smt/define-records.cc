@@ -29,6 +29,11 @@ public:
     // nothing to do
   }
 
+  void visit_multiset(const Multiset &n) final {
+    // define any records that are defined within this multiset
+    dispatch(*n.element_type);
+  }
+
   void visit_range(const Range &) final {
     // nothing to do
   }

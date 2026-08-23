@@ -13,6 +13,13 @@ class Check : public ConstTraversal {
 public:
   bool ok = true;
 
+  void visit_choose(const Choose &) final {
+    if (ok) {
+      std::cerr << "choose rules are not supported\n";
+      ok = false;
+    }
+  }
+
   void visit_ismember(const IsMember &) final {
     if (ok) {
       std::cerr << "ismember expressions are not supported\n";
@@ -23,6 +30,41 @@ public:
   void visit_isundefined(const IsUndefined &) final {
     if (ok) {
       std::cerr << "isundefined expressions are not supported\n";
+      ok = false;
+    }
+  }
+
+  void visit_multiset(const Multiset &) final {
+    if (ok) {
+      std::cerr << "multiset types are not supported\n";
+      ok = false;
+    }
+  }
+
+  void visit_multisetadd(const MultisetAdd &) final {
+    if (ok) {
+      std::cerr << "multiset types are not supported\n";
+      ok = false;
+    }
+  }
+
+  void visit_multisetcount(const MultisetCount &) final {
+    if (ok) {
+      std::cerr << "multiset types are not supported\n";
+      ok = false;
+    }
+  }
+
+  void visit_multisetremove(const MultisetRemove &) final {
+    if (ok) {
+      std::cerr << "multiset types are not supported\n";
+      ok = false;
+    }
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    if (ok) {
+      std::cerr << "multiset types are not supported\n";
       ok = false;
     }
   }

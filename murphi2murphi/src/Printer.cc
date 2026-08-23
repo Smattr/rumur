@@ -82,6 +82,17 @@ void Printer::visit_assignment(const Assignment &n) {
   top->sync_to(n.loc.end);
 }
 
+void Printer::visit_choose(const Choose &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules) {
+    top->sync_to(*r);
+    top->dispatch(*r);
+  }
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_clear(const Clear &n) {
   top->sync_to(n);
   top->sync_to(*n.rhs);
@@ -268,6 +279,51 @@ void Printer::visit_model(const Model &n) {
 }
 
 void Printer::visit_mul(const Mul &n) { visit_bexpr(n); }
+
+void Printer::visit_multiset(const Multiset &n) {
+  top->sync_to(n);
+  top->sync_to(*n.index_bound);
+  top->dispatch(*n.index_bound);
+  top->sync_to(*n.element_type);
+  top->dispatch(*n.element_type);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetadd(const MultisetAdd &n) {
+  top->sync_to(n);
+  top->sync_to(*n.arg0);
+  top->dispatch(*n.arg0);
+  top->sync_to(*n.arg1);
+  top->dispatch(*n.arg1);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetcount(const MultisetCount &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  top->sync_to(*n.predicate);
+  top->dispatch(*n.predicate);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetremove(const MultisetRemove &n) {
+  top->sync_to(n);
+  top->sync_to(*n.arg0);
+  top->dispatch(*n.arg0);
+  top->sync_to(*n.arg1);
+  top->dispatch(*n.arg1);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetremovepred(const MultisetRemovePred &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  top->sync_to(*n.predicate);
+  top->dispatch(*n.predicate);
+  top->sync_to(n.loc.end);
+}
 
 void Printer::visit_negative(const Negative &n) { visit_uexpr(n); }
 

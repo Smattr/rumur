@@ -25,6 +25,7 @@ public:
 
   // override visitors for all nodes that can have an omitted semicolon
   void visit_aliasrule(const rumur::AliasRule &n) final;
+  void visit_choose(const rumur::Choose &n) final;
   void visit_constdecl(const rumur::ConstDecl &n) final;
   void visit_function(const rumur::Function &n) final;
   void visit_propertyrule(const rumur::PropertyRule &n) final;

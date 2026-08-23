@@ -49,6 +49,11 @@ public:
     }
   }
 
+  void visit_multiset(const Multiset &n) final {
+    // define any enum members that occur within the multiset element type
+    dispatch(*n.element_type);
+  }
+
   void visit_range(const Range &) final {
     // as a primitive, ranges can't contain any enum members
   }

@@ -84,6 +84,9 @@ public:
     const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
+    assert(!isa<Multiset>(t2) &&
+           "multiset not rejected prior to code generation");
+
     auto a = dynamic_cast<const Array &>(*t2);
     mpz_class element_width = a.element_type->width();
 
@@ -267,22 +270,23 @@ public:
       }
     }
 
-    /* Now for each parameter we need to consider five distinct methods, based
-     * on the parameter's circumstance as described in the following table:
+    /* Now for each parameter we need to consider six distinct methods, based on
+     * the parameter’s circumstance as described in the following table:
      *
-     *   ┌──────┬────────────────┬─────────┬────────────╥────────┐
-     *   │ var? │ simple/complex │ lvalue? │ read-only? ║ method │
-     *   ├──────┼────────────────┼─────────┼────────────╫────────┤
-     *   │  no  │     simple     │    no   │     -      ║    1   │
-     *   │  no  │     simple     │   yes   │     no     ║    2   │
-     *   │  no  │     simple     │   yes   │    yes     ║    2   │
-     *   │  no  │    complex     │    no   │     -      ║    5   │
-     *   │  no  │    complex     │   yes   │     no     ║    3   │
-     *   │  no  │    complex     │   yes   │    yes     ║    3   │
-     *   │ yes  │     simple     │    no   │     no     ║    1   │
-     *   │ yes  │     simple     │   yes   │     no     ║    4   │
-     *   │ yes  │    complex     │   yes   │     no     ║    4   │
-     *   └──────┴────────────────┴─────────┴────────────╨────────┘
+     *   ┌──────┬────────────────┬─────────┬────────────┬────────────╥────────┐
+     *   │ var? │ simple/complex │ lvalue? │ read-only? │ undefined? ║ method │
+     *   ├──────┼────────────────┼─────────┼────────────┼────────────╫────────┤
+     *   │  no  │     simple     │    no   │     -      │     no     ║    1   │
+     *   │  no  │     simple     │   yes   │     no     │     no     ║    2   │
+     *   │  no  │     simple     │   yes   │    yes     │     no     ║    2   │
+     *   │  no  │    complex     │    no   │     -      │     no     ║    5   │
+     *   │  no  │    complex     │   yes   │     no     │     no     ║    3   │
+     *   │  no  │    complex     │   yes   │    yes     │     no     ║    3   │
+     *   │ yes  │     simple     │    no   │     no     │     no     ║    1   │
+     *   │ yes  │     simple     │   yes   │     no     │     no     ║    4   │
+     *   │ yes  │    complex     │   yes   │     no     │     no     ║    4   │
+     *   │  -   │       -        │    -    │     -      │    yes     ║    6   │
+     *   └──────┴────────────────┴─────────┴────────────┴────────────╨────────┘
      *
      *   1. We can create a temporary handle and backing storage, then extract
      *      the value of the argument as an rvalue and write it to this
@@ -304,6 +308,8 @@ public:
      *   4. We just pass the original handle, the lvalue of the argument.
      *
      *   5. We pass the original (rvalue) handle.
+     *
+     *   6. We pass a zeroed C99 compound literal.
      */
 
     // clang-format off
@@ -315,15 +321,19 @@ public:
         bool is_lvalue = argument->is_lvalue();
         bool readonly = argument->is_readonly();
 
-        if (!var &&  simple && !is_lvalue             ) return 1;
-        if (!var &&  simple &&  is_lvalue && !readonly) return 2;
-        if (!var &&  simple &&  is_lvalue &&  readonly) return 2;
-        if (!var && !simple && !is_lvalue             ) return 5;
-        if (!var && !simple &&  is_lvalue && !readonly) return 3;
-        if (!var && !simple &&  is_lvalue &&  readonly) return 3;
-        if ( var &&  simple && !is_lvalue             ) return 1;
-        if ( var &&  simple &&  is_lvalue && !readonly) return 4;
-        if ( var && !simple &&               !readonly) return 4;
+        auto id = dynamic_cast<const ExprID*>(argument.get());
+        const bool is_undef = id != nullptr && id->id == "undefined";
+
+        if (!var &&  simple && !is_lvalue &&              !is_undef) return 1;
+        if (!var &&  simple &&  is_lvalue && !readonly && !is_undef) return 2;
+        if (!var &&  simple &&  is_lvalue &&  readonly && !is_undef) return 2;
+        if (!var && !simple && !is_lvalue &&              !is_undef) return 5;
+        if (!var && !simple &&  is_lvalue && !readonly && !is_undef) return 3;
+        if (!var && !simple &&  is_lvalue &&  readonly && !is_undef) return 3;
+        if ( var &&  simple && !is_lvalue &&              !is_undef) return 1;
+        if ( var &&  simple &&  is_lvalue && !readonly && !is_undef) return 4;
+        if ( var && !simple &&               !readonly && !is_undef) return 4;
+        if (                                               is_undef) return 6;
 
         assert(!"unreachable");
         __builtin_unreachable();
@@ -343,7 +353,7 @@ public:
             "v" + std::to_string(n.unique_id) + "_" + std::to_string(index);
 
         auto method = get_method(p, a);
-        assert(method >= 1 && method <= 5);
+        assert(method >= 1 && method <= 6);
 
         if (method == 1 || method == 2 || method == 3)
           *out << "unsigned char " << storage << "[BITS_TO_BYTES(" << p->width()
@@ -435,6 +445,11 @@ public:
           generate_rvalue(*out, *a);
           break;
 
+        case 6:
+          *out << "((struct handle){ .base = (unsigned char[BITS_TO_BYTES("
+               << p->width() << ")]){0},  .width = " << p->width() << "ull })";
+          break;
+
         default:
           *out << handle;
           break;
@@ -510,6 +525,11 @@ public:
       invalid(n);
     *this << "mul(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
           << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+  }
+
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected before code generation");
+    __builtin_unreachable();
   }
 
   void visit_negative(const Negative &n) final {

@@ -109,6 +109,11 @@ public:
     *this << '(' << *n.lhs << " | " << *n.rhs << ')';
   }
 
+  void visit_choose(const Choose &) final {
+    *this << tab()
+          << "/-- FIXME: Murphi choose rules have no equivalent in SMV --/\n";
+  }
+
   void visit_clear(const Clear &) final {
     *this
         << tab()
@@ -294,6 +299,38 @@ public:
 
   void visit_mul(const Mul &n) final {
     *this << '(' << *n.lhs << " * " << *n.rhs << ')';
+  }
+
+  void visit_multiset(const Multiset &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "index: "
+          << *n.index_bound << "; element type: " << *n.element_type
+          << " /-- FIXME: end of Murphi multiset type --/";
+  }
+
+  void visit_multisetadd(const MultisetAdd &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetAdd("
+          << *n.arg0 << ", " << *n.arg1 << ')';
+  }
+
+  void visit_multisetcount(const MultisetCount &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetCount("
+          << n.identifier << ": " << *n.container << ", " << *n.predicate
+          << ')';
+  }
+
+  void visit_multisetremove(const MultisetRemove &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetRemove("
+          << *n.arg0 << ", " << *n.arg1 << ')';
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetRemovePred("
+          << *n.container << ", " << *n.predicate << ')';
   }
 
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }

@@ -67,6 +67,13 @@ void Indexer::visit_bexpr(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void Indexer::visit_choose(Choose &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  for (Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void Indexer::visit_clear(Clear &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
@@ -184,6 +191,36 @@ void Indexer::visit_model(Model &n) {
 }
 
 void Indexer::visit_mul(Mul &n) { visit_bexpr(n); }
+
+void Indexer::visit_multiset(Multiset &n) {
+  n.unique_id = next++;
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
+void Indexer::visit_multisetadd(MultisetAdd &n) {
+  n.unique_id = next++;
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void Indexer::visit_multisetcount(MultisetCount &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
+void Indexer::visit_multisetremove(MultisetRemove &n) {
+  n.unique_id = next++;
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void Indexer::visit_multisetremovepred(MultisetRemovePred &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
 
 void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
