@@ -1074,7 +1074,7 @@ def test_murphi_format_not_unicode():
     assert ":= ¬y" in stdout, "`¬` spaced incorrectly"
 
 
-def test_muprhi_format_smart_quotes():
+def test_murphi_format_smart_quotes():
     """murphi-format should handle smart quotes (“”) correctly"""
 
     model = "rule begin assert “foo bar” x; end"
