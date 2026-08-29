@@ -54,6 +54,9 @@ typedef struct state {
 
   /// have we output anything to `dst` yet?
   bool started;
+
+  /// have we seen `==>` and are thus anticipating `begin`?
+  bool arrow_expecting_begin;
 } state_t;
 
 /// are two strings equal?
@@ -135,8 +138,13 @@ static int pend_newline(state_t *st, token_t token) {
   if (token.type == TOKEN_EOF)
     goto done;
   size_t indentation = st->indentation;
-  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
+  if (token.type != TOKEN_ID || !streq(token.text, "begin")) {
     indentation += st->soft_indentation;
+  } else if (st->arrow_expecting_begin) {
+    st->indentation--;
+    --indentation;
+    st->arrow_expecting_begin = false;
+  }
   for (size_t i = 0; i < indentation; ++i) {
     if (fputs(tab, st->dst) < 0) {
       rc = EIO;
@@ -165,6 +173,7 @@ static int arrow_lookahead(state_t *st, token_t token) {
 
   // otherwise infer a newline and indent
   ++st->indentation;
+  st->arrow_expecting_begin = true;
   rc = pend_newline(st, token);
 
 done:
