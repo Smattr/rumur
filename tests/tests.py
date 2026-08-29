@@ -1074,7 +1074,7 @@ def test_murphi_format_not_unicode():
     assert ":= ¬y" in stdout, "`¬` spaced incorrectly"
 
 
-def test_muprhi_format_smart_quotes():
+def test_murphi_format_smart_quotes():
     """murphi-format should handle smart quotes (“”) correctly"""
 
     model = "rule begin assert “foo bar” x; end"
@@ -1214,6 +1214,28 @@ def test_murphi_format_end_newline():
     assert stderr == "", "murphi-format printed errors/warnings"
 
     assert stdout.endswith("\n"), "incorrect file ending"
+
+
+def test_murphi_format_arrow_break_dedent():
+    """
+    is murphi-format’s indenting confused by `==>\n\n`?
+
+    https://github.com/Smattr/rumur/issues/339
+    """
+
+    # a rule that has a paragraph break after `==>`
+    src = 'rule"foo"==>\n\nvar x:boolean;begin x:=false;end;'
+
+    # run this through `murphi-format`
+    ret, stdout, stderr = run(["murphi-format"], src)
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    # if indentation was not mismanaged, ending indentation should be 0
+    assert stdout.endswith("\nend;\n"), "incorrect handling of `==><NL><NL>`"
 
 
 @pytest.mark.parametrize("component", ("list", "set"))
