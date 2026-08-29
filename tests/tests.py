@@ -1216,7 +1216,6 @@ def test_murphi_format_end_newline():
     assert stdout.endswith("\n"), "incorrect file ending"
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="FIXME", strict=True)
 def test_murphi_format_arrow_break_dedent():
     """
     is murphi-format’s indenting confused by `==>\n\n`?
