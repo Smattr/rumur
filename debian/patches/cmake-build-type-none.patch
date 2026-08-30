@@ -1,0 +1,19 @@
+Debian packaging tools set `-DCMAKE_BUILD_TYPE=None` to avoid CMake
+itself adding any compiler flags. The intent of this is to allow the
+outer Debian build orchestration to be in full control of compiler
+flags.
+
+diff --git CMakeLists.txt CMakeLists.txt
+index dfc5dd0f..446d29cd 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -6,7 +6,8 @@ if(CMAKE_BUILD_TYPE)
+   if(NOT CMAKE_BUILD_TYPE STREQUAL Debug AND
+      NOT CMAKE_BUILD_TYPE STREQUAL Release AND
+      NOT CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo AND
+-     NOT CMAKE_BUILD_TYPE STREQUAL MinSizeRel)
++     NOT CMAKE_BUILD_TYPE STREQUAL MinSizeRel AND
++     NOT CMAKE_BUILD_TYPE STREQUAL None) # ← for Debian packaging
+     message(FATAL_ERROR "invalid CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\"")
+   endif()
+ endif()

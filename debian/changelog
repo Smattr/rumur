@@ -1,6 +1,7 @@
 rumur (2026.08.30-1) unstable; urgency=medium
 
   * New upstream release.
+  * Add patch to support compilation with -DCMAKE_BUILD_TYPE=None.
 
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 30 Aug 2026 10:29:48 -0700
 
