@@ -5,8 +5,8 @@ flags.
 
 diff --git CMakeLists.txt CMakeLists.txt
 index dfc5dd0f..446d29cd 100644
---- CMakeLists.txt
-+++ CMakeLists.txt
+--- rumur.orig/CMakeLists.txt
++++ rumur/CMakeLists.txt
 @@ -6,7 +6,8 @@ if(CMAKE_BUILD_TYPE)
    if(NOT CMAKE_BUILD_TYPE STREQUAL Debug AND
       NOT CMAKE_BUILD_TYPE STREQUAL Release AND
