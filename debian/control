@@ -1,7 +1,7 @@
 Source: rumur
 Section: devel
 Maintainer: Matthew Fernandez <matthew.fernandez@gmail.com>
-Build-Depends: debhelper-compat (= 13),
+Build-Depends: debhelper-compat (= 14),
  bison,
  cmake,
  flex,
@@ -19,7 +19,7 @@ Vcs-Browser: https://github.com/Smattr/rumur/tree/packaging/debian
 
 Package: rumur
 Architecture: any
-Depends: python3, ${shlibs:Depends}, ${misc:Depends}
+Depends: python3
 Suggests: z3
 Description: model checker for the Murphi language
  Rumur is a model checker for use in the formal verification of finite state

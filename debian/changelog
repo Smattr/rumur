@@ -3,6 +3,7 @@ rumur (2026.08.30-1) unstable; urgency=medium
   * New upstream release.
   * Add patch to support compilation with -DCMAKE_BUILD_TYPE=None.
   * Update Standards-Version from 4.7.3 to 4.7.4.
+  * Update debhelper-compat Build-Depends from 13 to 14.
 
  -- Matthew Fernandez <matthew.fernandez@gmail.com>  Sun, 30 Aug 2026 10:29:48 -0700
 
