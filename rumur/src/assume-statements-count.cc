@@ -17,8 +17,6 @@ unsigned long assume_statements_count(const Model &model) {
         count++;
       // no need to descend into children
     }
-
-    virtual ~AssumeCounter() = default;
   };
 
   // use the counter to find how many assume statements we have

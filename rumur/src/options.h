@@ -13,12 +13,14 @@ enum struct Color {
 };
 
 enum trace_category_t {
+  // clang-format off
   TC_HANDLE_READS       =  0x1,
   TC_HANDLE_WRITES      =  0x2,
   TC_MEMORY_USAGE       =  0x4,
   TC_QUEUE              =  0x8,
   TC_SET                = 0x10,
   TC_SYMMETRY_REDUCTION = 0x20,
+  // clang-format on
 };
 
 enum struct LogLevel {

@@ -37,3 +37,11 @@
 #include <sys/syscall.h>
 #endif
 #endif
+
+#ifdef __x86_64__
+#ifdef __has_include
+#if __has_include(<immintrin.h>)
+#include <immintrin.h>
+#endif
+#endif
+#endif

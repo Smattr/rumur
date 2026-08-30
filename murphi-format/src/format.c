@@ -54,6 +54,9 @@ typedef struct state {
 
   /// have we output anything to `dst` yet?
   bool started;
+
+  /// have we seen `==>` and are thus anticipating `begin`?
+  bool arrow_expecting_begin;
 } state_t;
 
 /// are two strings equal?
@@ -135,8 +138,13 @@ static int pend_newline(state_t *st, token_t token) {
   if (token.type == TOKEN_EOF)
     goto done;
   size_t indentation = st->indentation;
-  if (token.type != TOKEN_ID || !streq(token.text, "begin"))
+  if (token.type != TOKEN_ID || !streq(token.text, "begin")) {
     indentation += st->soft_indentation;
+  } else if (st->arrow_expecting_begin) {
+    st->indentation--;
+    --indentation;
+    st->arrow_expecting_begin = false;
+  }
   for (size_t i = 0; i < indentation; ++i) {
     if (fputs(tab, st->dst) < 0) {
       rc = EIO;
@@ -165,6 +173,7 @@ static int arrow_lookahead(state_t *st, token_t token) {
 
   // otherwise infer a newline and indent
   ++st->indentation;
+  st->arrow_expecting_begin = true;
   rc = pend_newline(st, token);
 
 done:
@@ -232,6 +241,8 @@ static bool is_keyword(const char *text) {
     return true;
   if (streq(text, "case"))
     return true;
+  if (streq(text, "choose"))
+    return true;
   if (streq(text, "clear"))
     return true;
   if (streq(text, "const"))
@@ -247,6 +258,8 @@ static bool is_keyword(const char *text) {
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
+    return true;
+  if (streq(text, "endchoose"))
     return true;
   if (streq(text, "endexists"))
     return true;
@@ -289,12 +302,32 @@ static bool is_keyword(const char *text) {
   if (streq(text, "invariant"))
     return true;
 #if 0
+  // `ismember` is a keyword, but is used as if it were a function
+  if (streq(text, "ismember"))
+    return true;
   // `isundefined` is a keyword, but is used as if it were a function
   if (streq(text, "isundefined"))
     return true;
 #endif
   if (streq(text, "liveness"))
     return true;
+#if 0
+  // it is more intuitive to suppress space between `multiset` and `[`
+  if (streq(text, "multiset"))
+    return true;
+  // `multisetadd` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetadd"))
+    return true;
+  // `multisetcount` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetcount"))
+    return true;
+  // `multisetremove` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetremove"))
+    return true;
+  // `multisetremovepred` is a keyword, but is used as if it were a function
+  if (streq(text, "multisetremovepred"))
+    return true;
+#endif
   if (streq(text, "of"))
     return true;
   if (streq(text, "procedure"))
@@ -374,6 +407,8 @@ static bool is_block_starter(state_t st, const char *text) {
     return true;
   if (streq(text, "case"))
     return true;
+  if (streq(text, "choose"))
+    return true;
   if (streq(text, "const"))
     return true;
   if (streq(text, "invariant"))
@@ -438,6 +473,8 @@ static bool is_dedenter(const char *text) {
   if (streq(text, "end"))
     return true;
   if (streq(text, "endalias"))
+    return true;
+  if (streq(text, "endchoose"))
     return true;
   if (streq(text, "endexists"))
     return true;

@@ -274,8 +274,6 @@ public:
     emit_trailing_comments(n);
     *this << "\n";
   }
-
-  virtual ~CGenerator() = default;
 };
 
 } // namespace
@@ -286,6 +284,7 @@ void generate_c(const Node &n, const std::vector<Comment> &comments, bool pack,
   // write the static prefix to the beginning of the source file
   for (size_t i = 0; i < resources_c_prefix_c_len; i++)
     out << (char)resources_c_prefix_c[i];
+  out << "\n\n";
 
   CGenerator gen(comments, out, pack);
   gen.dispatch(n);

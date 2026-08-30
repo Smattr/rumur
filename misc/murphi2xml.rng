@@ -83,6 +83,14 @@
     </element>
   </define>
 
+  <define name="argument">
+    <element name="argument">
+      <ref name="content"/>
+      <ref name="expr"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
   <define name="array">
     <element name="array">
       <ref name="location"/>
@@ -157,6 +165,22 @@
           <ref name="statement"/>
         </choice>
       </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="choose">
+    <element name="choose">
+      <ref name="location"/>
+      <attribute name="identifier">
+        <ref name="identifier"/>
+      </attribute>
+      <ref name="content"/>
+      <ref name="expr"/>
+      <ref name="content"/>
+      <optional>
+        <ref name="rules"/>
+        <ref name="content"/>
+      </optional>
     </element>
   </define>
 
@@ -290,12 +314,14 @@
       <ref name="geq"/>
       <ref name="gt"/>
       <ref name="implication"/>
+      <ref name="ismember"/>
       <ref name="isundefined"/>
       <ref name="leq"/>
       <ref name="lsh"/>
       <ref name="lt"/>
       <ref name="mod"/>
       <ref name="mul"/>
+      <ref name="multisetcount"/>
       <ref name="negative"/>
       <ref name="neq"/>
       <ref name="not"/>
@@ -418,11 +444,7 @@
       </attribute>
       <ref name="content"/>
       <zeroOrMore>
-        <element name="argument">
-          <ref name="content"/>
-          <ref name="expr"/>
-          <ref name="content"/>
-        </element>
+        <ref name="argument"/>
         <ref name="content"/>
       </zeroOrMore>
     </element>
@@ -494,6 +516,21 @@
     <element name="implication">
       <ref name="location"/>
       <ref name="binexpr"/>
+    </element>
+  </define>
+
+  <define name="ismember">
+    <element name="ismember">
+      <ref name="location"/>
+      <ref name="content"/>
+      <element name="arg0">
+        <ref name="expr"/>
+      </element>
+      <ref name="content"/>
+      <element name="arg1">
+        <ref name="typeexpr"/>
+      </element>
+      <ref name="content"/>
     </element>
   </define>
 
@@ -579,6 +616,7 @@
           <ref name="vardecl"/>
           <ref name="function"/>
           <ref name="aliasrule"/>
+          <ref name="choose"/>
           <ref name="propertyrule"/>
           <ref name="ruleset"/>
           <ref name="simplerule"/>
@@ -593,6 +631,67 @@
     <element name="mul">
       <ref name="location"/>
       <ref name="binexpr"/>
+    </element>
+  </define>
+
+  <define name="multiset">
+    <element name="multiset">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="expr"/>
+      <ref name="content"/>
+      <ref name="typeexpr"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="multisetadd">
+    <element name="multisetadd">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="multisetcount">
+    <element name="multisetcount">
+      <attribute name="identifier">
+        <ref name="identifier"/>
+      </attribute>
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="multisetremove">
+    <element name="multisetremove">
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="multisetremovepred">
+    <element name="multisetremovepred">
+      <attribute name="identifier">
+        <ref name="identifier"/>
+      </attribute>
+      <ref name="location"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
+      <ref name="argument"/>
+      <ref name="content"/>
     </element>
   </define>
 
@@ -809,6 +908,7 @@
     <zeroOrMore>
       <choice>
         <ref name="aliasrule"/>
+        <ref name="choose"/>
         <ref name="propertyrule"/>
         <ref name="ruleset"/>
         <ref name="simplerule"/>
@@ -973,6 +1073,9 @@
       <ref name="errorstmt"/>
       <ref name="if"/>
       <ref name="forstmt"/>
+      <ref name="multisetadd"/>
+      <ref name="multisetremove"/>
+      <ref name="multisetremovepred"/>
       <ref name="procedurecall"/>
       <ref name="propertystmt"/>
       <ref name="put"/>
@@ -1080,10 +1183,12 @@
     <choice>
       <ref name="array"/>
       <ref name="enum"/>
+      <ref name="multiset"/>
       <ref name="range"/>
       <ref name="record"/>
       <ref name="scalarset"/>
       <ref name="typeexprid"/>
+      <ref name="union"/>
     </choice>
   </define>
 
@@ -1113,6 +1218,17 @@
       <ref name="content"/>
       <ref name="expr"/>
       <ref name="content"/>
+    </element>
+  </define>
+
+  <define name="union">
+    <element name="union">
+      <ref name="location"/>
+      <ref name="content"/>
+      <zeroOrMore>
+        <ref name="typeexpr"/>
+        <ref name="content"/>
+      </zeroOrMore>
     </element>
   </define>
 

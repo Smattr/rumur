@@ -33,6 +33,7 @@ public:
   void visit_band(Band &n) override;
   void visit_bnot(Bnot &n) override;
   void visit_bor(Bor &n) override;
+  void visit_choose(Choose &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
   void visit_div(Div &n) override;
@@ -52,6 +53,7 @@ public:
   void visit_if(If &n) override;
   void visit_ifclause(IfClause &n) override;
   void visit_implication(Implication &n) override;
+  void visit_ismember(IsMember &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
   void visit_lsh(Lsh &n) override;
@@ -59,6 +61,11 @@ public:
   void visit_model(Model &n) override;
   void visit_mod(Mod &n) override;
   void visit_mul(Mul &n) override;
+  void visit_multiset(Multiset &n) override;
+  void visit_multisetadd(MultisetAdd &n) override;
+  void visit_multisetcount(MultisetCount &n) override;
+  void visit_multisetremove(MultisetRemove &n) override;
+  void visit_multisetremovepred(MultisetRemovePred &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;
@@ -85,11 +92,10 @@ public:
   void visit_typedecl(TypeDecl &n) override;
   void visit_typeexprid(TypeExprID &n) override;
   void visit_undefine(Undefine &n) override;
+  void visit_union(Union &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;
-
-  virtual ~Indexer() = default;
 
 private:
   void visit_bexpr(BinaryExpr &n);

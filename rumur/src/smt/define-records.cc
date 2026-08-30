@@ -29,6 +29,11 @@ public:
     // nothing to do
   }
 
+  void visit_multiset(const Multiset &n) final {
+    // define any records that are defined within this multiset
+    dispatch(*n.element_type);
+  }
+
   void visit_range(const Range &) final {
     // nothing to do
   }
@@ -62,6 +67,12 @@ public:
 
   void visit_scalarset(const Scalarset &) final {
     // nothing to do
+  }
+
+  void visit_union(const Union &n) final {
+    // define any records that are defined within this union
+    for (const Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
   }
 };
 } // namespace

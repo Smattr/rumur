@@ -18,10 +18,23 @@
 #include <rumur/resolve-symbols.h>
 #include <rumur/traverse.h>
 #include <rumur/validate.h>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
 using namespace rumur;
+
+/// C++11 polyfill for `std::make_unique`
+template <typename T, typename... Args>
+static std::unique_ptr<T> make_unique(Args &&...args) {
+  auto raw = new T(std::forward<Args>(args)...);
+  try {
+    return std::unique_ptr<T>{raw};
+  } catch (std::exception &) {
+    delete raw;
+    throw;
+  }
+}
 
 namespace {
 
@@ -30,6 +43,21 @@ class Resolver : public Traversal {
 private:
   Symtab symtab;
 
+  /// node copies we allocated that we are responsible for cleaning up
+  ///
+  /// We can use `std::unique_ptr` instead of `Ptr` here because we never need
+  /// to copy or subclass these pointers.
+  std::vector<std::unique_ptr<Node>> heap;
+
+  /// create a new managed node pointer
+  template <typename T, typename... Args> T *make(Args &&...args) {
+    std::unique_ptr<T> ptr = make_unique<T>(std::forward<Args>(args)...);
+    heap.push_back(std::move(ptr));
+    auto ret = dynamic_cast<T *>(heap.back().get());
+    assert(ret != nullptr);
+    return ret;
+  }
+
 public:
   Resolver() {
 
@@ -37,14 +65,13 @@ public:
     symtab.open_scope();
 
     // Teach the symbol table the built ins
-    auto td = Ptr<TypeDecl>::make("boolean", Boolean, location());
-    symtab.declare("boolean", td);
+    TypeDecl *const boolean = make<TypeDecl>("boolean", Boolean, location());
+    symtab.declare("boolean", boolean);
     mpz_class index = 0;
     for (const std::pair<std::string, location> &m : Boolean->members) {
-      symtab.declare(m.first,
-                     Ptr<ConstDecl>::make("boolean",
-                                          Ptr<Number>::make(index, location()),
-                                          Boolean, location()));
+      ConstDecl *const member = make<ConstDecl>(
+          m.first, Ptr<Number>::make(index, location()), Boolean, location());
+      symtab.declare(m.first, member);
       index++;
     }
   }
@@ -60,7 +87,7 @@ public:
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
-      symtab.declare(a->name, a);
+      symtab.declare(a->name, a.get());
     }
     for (auto &r : n.rules)
       dispatch(*r);
@@ -71,7 +98,7 @@ public:
     symtab.open_scope();
     for (auto &a : n.aliases) {
       dispatch(*a);
-      symtab.declare(a->name, a);
+      symtab.declare(a->name, a.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -96,6 +123,27 @@ public:
   void visit_bnot(Bnot &n) final { visit_uexpr(n); }
 
   void visit_bor(Bor &n) final { visit_bexpr(n); }
+
+  void visit_choose(Choose &n) final {
+    dispatch(*n.container);
+
+    // register our quantified variable
+    symtab.open_scope();
+    const Ptr<TypeExpr> t = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m == nullptr)
+      throw Error("container of choose rule is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s =
+        Ptr<Scalarset>::make(m->index_bound, n.container->loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+
+    symtab.close_scope();
+  }
 
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
@@ -123,13 +171,13 @@ public:
     mpz_class index = 0;
     size_t id = e->unique_id + 1;
     for (const std::pair<std::string, location> &m : n.members) {
-      auto cd = Ptr<ConstDecl>::make(
+      ConstDecl *const member = make<ConstDecl>(
           m.first, Ptr<Number>::make(index, m.second), e, m.second);
       // assign this member a unique id so that referrers can use it if need be
       assert(id < e->unique_id_limit &&
              "number of enum members exceeds what was expected");
-      cd->unique_id = id;
-      symtab.declare(m.first, cd);
+      member->unique_id = id;
+      symtab.declare(m.first, member);
       index++;
       id++;
     }
@@ -187,15 +235,15 @@ public:
     // register the function itself, even though its body has not yet been
     // resolved, in order to allow contained function calls to resolve to the
     // containing function, supporting recursion
-    symtab.declare(n.name, Ptr<Function>::make(n));
+    symtab.declare(n.name, &n);
     // only register the function parameters now, to avoid their names shadowing
     // anything that needs to be resolved during symbol resolution of another
     // parameter or the return type
     for (auto &p : n.parameters)
-      symtab.declare(p->name, p);
+      symtab.declare(p->name, p.get());
     for (auto &d : n.decls) {
       dispatch(*d);
-      symtab.declare(d->name, d);
+      symtab.declare(d->name, d.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -212,8 +260,23 @@ public:
 
       n.function = f;
     }
-    for (auto &a : n.arguments)
+
+    size_t i = 0;
+    for (auto &a : n.arguments) {
+      symtab.open_scope();
+
+      // if this argument is `undefined`, create something it can resolve to
+      auto id = dynamic_cast<const ExprID *>(a.get());
+      if (id != nullptr && id->id == "undefined") {
+        VarDecl *const undef =
+            make<VarDecl>("undefined", n.function->parameters[i]->type, n.loc);
+        symtab.declare("undefined", undef);
+      }
+
       dispatch(*a);
+      symtab.close_scope();
+      ++i;
+    }
 
     for (Ptr<Expr> &a : n.arguments)
       disambiguate(a);
@@ -233,6 +296,12 @@ public:
   }
 
   void visit_implication(Implication &n) final { visit_bexpr(n); }
+
+  void visit_ismember(IsMember &n) final {
+    dispatch(*n.peg);
+    dispatch(*n.hole);
+    disambiguate(n.peg);
+  }
 
   void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
 
@@ -282,15 +351,77 @@ public:
       }
 
       if (auto d = dynamic_cast<Decl *>(c.get()))
-        symtab.declare(d->name, c);
+        symtab.declare(d->name, c.get());
       if (auto f = dynamic_cast<Function *>(c.get()))
-        symtab.declare(f->name, c);
+        symtab.declare(f->name, c.get());
     }
   }
 
   void visit_mod(Mod &n) final { visit_bexpr(n); }
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
+
+  void visit_multiset(Multiset &n) final {
+    dispatch(*n.index_bound);
+    dispatch(*n.element_type);
+    disambiguate(n.index_bound);
+  }
+
+  void visit_multisetadd(MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    disambiguate(n.arg0);
+    dispatch(*n.arg1);
+    disambiguate(n.arg1);
+  }
+
+  void visit_multisetcount(MultisetCount &n) final {
+    dispatch(*n.container);
+    disambiguate(n.container);
+
+    symtab.open_scope();
+
+    const Ptr<TypeExpr> id_type = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(id_type.get());
+    if (m == nullptr)
+      throw Error("multisetcount container is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s = Ptr<Scalarset>::make(m->index_bound, n.loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    dispatch(*n.predicate);
+    symtab.close_scope();
+
+    disambiguate(n.predicate);
+  }
+
+  void visit_multisetremove(MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    disambiguate(n.arg0);
+    dispatch(*n.arg1);
+    disambiguate(n.arg1);
+  }
+
+  void visit_multisetremovepred(MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    disambiguate(n.container);
+
+    symtab.open_scope();
+
+    const Ptr<TypeExpr> id_type = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(id_type.get());
+    if (m == nullptr)
+      throw Error("multisetremovepred container is not a multiset",
+                  n.container->loc);
+    const Ptr<Scalarset> s = Ptr<Scalarset>::make(m->index_bound, n.loc);
+    VarDecl *const i = make<VarDecl>(n.identifier, s, n.loc);
+    symtab.declare(n.identifier, i);
+
+    dispatch(*n.predicate);
+    symtab.close_scope();
+
+    disambiguate(n.predicate);
+  }
 
   void visit_negative(Negative &n) final { visit_uexpr(n); }
 
@@ -353,7 +484,7 @@ public:
 
     dispatch(*n.decl);
 
-    symtab.declare(n.name, n.decl);
+    symtab.declare(n.name, n.decl.get());
   }
 
   void visit_range(Range &n) final {
@@ -394,7 +525,7 @@ public:
       dispatch(*n.guard);
     for (auto &d : n.decls) {
       dispatch(*d);
-      symtab.declare(d->name, d);
+      symtab.declare(d->name, d.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -409,7 +540,7 @@ public:
       dispatch(q);
     for (auto &d : n.decls) {
       dispatch(*d);
-      symtab.declare(d->name, d);
+      symtab.declare(d->name, d.get());
     }
     for (auto &s : n.body)
       dispatch(*s);
@@ -468,8 +599,6 @@ public:
   }
 
   void visit_xor(Xor &n) final { visit_bexpr(n); }
-
-  virtual ~Resolver() = default;
 
 private:
   void visit_bexpr(BinaryExpr &n) {

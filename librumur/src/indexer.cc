@@ -67,6 +67,13 @@ void Indexer::visit_bexpr(BinaryExpr &n) {
   dispatch(*n.rhs);
 }
 
+void Indexer::visit_choose(Choose &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  for (Ptr<Rule> &r : n.rules)
+    dispatch(*r);
+}
+
 void Indexer::visit_clear(Clear &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
@@ -161,6 +168,12 @@ void Indexer::visit_ifclause(IfClause &n) {
 
 void Indexer::visit_implication(Implication &n) { visit_bexpr(n); }
 
+void Indexer::visit_ismember(IsMember &n) {
+  n.unique_id = next++;
+  dispatch(*n.peg);
+  dispatch(*n.hole);
+}
+
 void Indexer::visit_isundefined(IsUndefined &n) { visit_uexpr(n); }
 
 void Indexer::visit_leq(Leq &n) { visit_bexpr(n); }
@@ -178,6 +191,36 @@ void Indexer::visit_model(Model &n) {
 }
 
 void Indexer::visit_mul(Mul &n) { visit_bexpr(n); }
+
+void Indexer::visit_multiset(Multiset &n) {
+  n.unique_id = next++;
+  dispatch(*n.index_bound);
+  dispatch(*n.element_type);
+}
+
+void Indexer::visit_multisetadd(MultisetAdd &n) {
+  n.unique_id = next++;
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void Indexer::visit_multisetcount(MultisetCount &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
+
+void Indexer::visit_multisetremove(MultisetRemove &n) {
+  n.unique_id = next++;
+  dispatch(*n.arg0);
+  dispatch(*n.arg1);
+}
+
+void Indexer::visit_multisetremovepred(MultisetRemovePred &n) {
+  n.unique_id = next++;
+  dispatch(*n.container);
+  dispatch(*n.predicate);
+}
 
 void Indexer::visit_negative(Negative &n) { visit_uexpr(n); }
 
@@ -324,6 +367,12 @@ void Indexer::visit_uexpr(UnaryExpr &n) {
 void Indexer::visit_undefine(Undefine &n) {
   n.unique_id = next++;
   dispatch(*n.rhs);
+}
+
+void Indexer::visit_union(Union &n) {
+  n.unique_id = next++;
+  for (Ptr<TypeExpr> &m : n.members)
+    dispatch(*m);
 }
 
 void Indexer::visit_vardecl(VarDecl &n) {

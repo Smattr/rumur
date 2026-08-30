@@ -24,6 +24,4 @@ public:
   void process(const Token &t) final;
 
   void visit_switch(const rumur::Switch &n) final;
-
-  virtual ~SwitchToIf() = default;
 };

@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <iostream>
 #include <rumur/rumur.h>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -53,18 +52,18 @@ public:
   }
 
   void visit_aliasdecl(const AliasDecl &) final {
-    throw std::logic_error("alias declaration should have been rejected during "
-                           "check()");
+    assert(!"alias declaration not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_aliasrule(const AliasRule &) final {
-    throw std::logic_error("alias rule should have been rejected during "
-                           "check()");
+    assert(!"alias rule not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_aliasstmt(const AliasStmt &) final {
-    throw std::logic_error("alias statement should have been rejected during "
-                           "check()");
+    assert(!"alias statement not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_and(const And &n) final {
@@ -115,6 +114,11 @@ public:
     *this << "(" << *n.lhs << " | " << *n.rhs << ")";
   }
 
+  void visit_choose(const Choose &) final {
+    assert(!"choose rule not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_clear(const Clear &n) final {
 
     const Ptr<TypeExpr> type = n.rhs->type()->resolve();
@@ -136,8 +140,8 @@ public:
       return;
     }
 
-    throw std::logic_error("clear of complex type should have been rejected "
-                           "during check()");
+    assert(!"clear of complex types not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_constdecl(const ConstDecl &n) final {
@@ -159,7 +163,8 @@ public:
   }
 
   void visit_div(const Div &) final {
-    throw std::logic_error("/ should have been rejected during check()");
+    assert(!"division not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_element(const Element &n) final {
@@ -208,7 +213,8 @@ public:
       return;
     }
 
-    throw std::logic_error("exists should have been rejected during check()");
+    assert(!"exists not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_exprid(const ExprID &n) final { *this << n.id; }
@@ -289,7 +295,8 @@ public:
       return;
     }
 
-    throw std::logic_error("forall should have been rejected during check()");
+    assert(!"forall not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_function(const Function &n) final {
@@ -431,9 +438,14 @@ public:
     *this << "(" << *n.lhs << " ==> " << *n.rhs << ")";
   }
 
+  void visit_ismember(const IsMember &) final {
+    assert(!"ismember not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_isundefined(const IsUndefined &) final {
-    throw std::logic_error("isundefined should have been rejected during "
-                           "check()");
+    assert(!"isundefined not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_leq(const Leq &n) final {
@@ -441,7 +453,8 @@ public:
   }
 
   void visit_lsh(const Lsh &) final {
-    throw std::logic_error("<< should have been rejected during check()");
+    assert(!"left shift not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_lt(const Lt &n) final {
@@ -449,7 +462,8 @@ public:
   }
 
   void visit_mod(const Mod &) final {
-    throw std::logic_error("% should have been rejected during check()");
+    assert(!"modulo not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_model(const Model &n) final {
@@ -477,6 +491,31 @@ public:
     *this << "(" << *n.lhs << " * " << *n.rhs << ")";
   }
 
+  void visit_multiset(const Multiset &) final {
+    assert(!"multiset not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetadd(const MultisetAdd &) final {
+    assert(!"multisetadd not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremove(const MultisetRemove &) final {
+    assert(!"multisetremove not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    assert(!"multisetremovepred not rejected during check()");
+    __builtin_unreachable();
+  }
+
   void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }
 
   void visit_neq(const Neq &n) final {
@@ -500,7 +539,7 @@ public:
 
   void visit_procedurecall(const ProcedureCall &n) final {
 
-    // Murphi permits calling a function that return a value and then
+    // Murphi permits calling a function that returns a value and then
     // discarding the result. However, this is an error in Uclid5. So if we have
     // such a situation, work around this with an ignored local variable.
     const Ptr<TypeExpr> &ret = n.call.function->return_type;
@@ -559,8 +598,9 @@ public:
   }
 
   void visit_property(const Property &) final {
-    throw std::logic_error("property should have been handled in its parent ("
-                           "either PropertyRule or PropertyStmt)");
+    assert(!"property not handled in its parent (either PropertyRule or "
+            "PropertyStmt)");
+    __builtin_unreachable();
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -577,8 +617,8 @@ public:
       break;
 
     case Property::COVER:
-      throw std::logic_error("cover property should have been rejected during "
-                             "check()");
+      assert(!"cover property not rejected during check()");
+      __builtin_unreachable();
 
     case Property::LIVENESS:
       *this << "property[LTL] ";
@@ -595,9 +635,8 @@ public:
       }
       *this << ") :: (";
       if (q->type == nullptr) {
-        if (!is_one_step(q->step)) // TODO
-          throw std::logic_error("property should have been rejected during "
-                                 "check()");
+        assert(is_one_step(q->step) &&
+               "non-one-step property not rejected during check()");
         *this << q->name << " < " << *q->from << " || " << q->name << " > "
               << *q->to << " || ";
       }
@@ -639,17 +678,17 @@ public:
       *this << tab() << "assume " << *n.property.expr << ";\n";
       break;
     case Property::COVER:
-      throw std::logic_error("cover statement should have been rejected during "
-                             "check()");
+      assert(!"cover statement not rejected during check()");
+      __builtin_unreachable();
     case Property::LIVENESS:
-      throw std::logic_error("liveness statement should have been rejected "
-                             "during check()");
+      assert(!"liveness statement not rejected during check()");
+      __builtin_unreachable();
     }
   }
 
   void visit_put(const Put &) final {
-    throw std::logic_error("put statement should have been rejected during "
-                           "check()");
+    assert(!"put statement not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_quantifier(const Quantifier &n) final {
@@ -725,7 +764,8 @@ public:
   }
 
   void visit_rsh(const Rsh &) final {
-    throw std::logic_error(">> should have been rejected during check()");
+    assert(!"right shift not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_ruleset(const Ruleset &n) final {
@@ -946,6 +986,11 @@ public:
     // an intervening write as an error. Obviously this is not exactly what
     // happens. See the murphi2uclid man page for some further discussion.
     *this << tab() << "havoc " << *n.rhs << ";\n";
+  }
+
+  void visit_union(const Union &) final {
+    assert(!"union type not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_vardecl(const VarDecl &n) final {

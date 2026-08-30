@@ -1,4 +1,5 @@
 #include "../../common/escape.h"
+#include "../../common/isa.h"
 #include "generate.h"
 #include "options.h"
 #include <cassert>
@@ -316,6 +317,10 @@ public:
       return;
     }
 
+    assert(!isa<Multiset>(t) &&
+           "multiset type not rejected before code generation");
+    assert(!isa<Union>(t) && "union type not rejected before code generation");
+
     assert(!"non-range, non-enum used as array index");
   }
 
@@ -358,10 +363,14 @@ public:
          << "}\n";
   }
 
+  void visit_multiset(const Multiset &n) final {
+    throw Error("multiset types are not supported", n.loc);
+  }
+
   void visit_range(const Range &n) final {
 
-    const std::string lb = n.lower_bound();
-    const std::string ub = n.upper_bound();
+    const std::string lb = "VALUE_C(" + n.lower_bound().get_str() + ")";
+    const std::string ub = "VALUE_C(" + n.upper_bound().get_str() + ")";
 
     *out << "{\n"
          << "  raw_value_t v = handle_read_raw(s, " << current_handle << ");\n"
@@ -517,7 +526,9 @@ public:
     dispatch(*n.referent->value);
   }
 
-  virtual ~Generator() = default;
+  void visit_union(const Union &n) final {
+    throw Error("union types are not supported", n.loc);
+  }
 };
 
 } // namespace

@@ -186,6 +186,7 @@ void generate_h(const Node &n, const std::vector<Comment> &comments, bool pack,
   // write the static prefix to the beginning of the source file
   for (size_t i = 0; i < resources_h_prefix_h_len; i++)
     out << (char)resources_h_prefix_h[i];
+  out << "\n\n";
 
   HGenerator gen(comments, out, pack);
   gen.dispatch(n);

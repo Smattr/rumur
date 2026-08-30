@@ -72,6 +72,16 @@ static void clear(std::ostream &out, const TypeExpr &t,
     return;
   }
 
+  if (auto u = dynamic_cast<const Union *>(type.get())) {
+    // Generate a clear for each interpretation of this type. This is not
+    // efficient, but at least simple.
+    for (const Ptr<TypeExpr> &m : u->members)
+      clear(out, *m, offset, depth);
+  }
+
+  assert(!isa<Multiset>(type) &&
+         "multiset not rejected prior to code generation");
+
   assert(!"unreachable");
 }
 
@@ -106,11 +116,12 @@ public:
   void visit_assignment(const Assignment &s) final {
 
     if (s.lhs->type()->is_simple()) {
-      const std::string lb = s.lhs->type()->lower_bound();
-      const std::string ub = s.lhs->type()->upper_bound();
+      const std::string lb = s.lhs->type()->lower_bound().get_str();
+      const std::string ub = s.lhs->type()->upper_bound().get_str();
 
       *out << "handle_write(" << to_C_string(s.loc) << ", rule_name, "
-           << to_C_string(*s.lhs) << ", s, " << lb << ", " << ub << ", ";
+           << to_C_string(*s.lhs) << ", s, VALUE_C(" << lb << "), VALUE_C("
+           << ub << "), ";
       generate_lvalue(*out, *s.lhs);
       *out << ", ";
       generate_rvalue(*out, *s.rhs);
@@ -195,6 +206,21 @@ public:
       *out << "}\n";
       first = false;
     }
+  }
+
+  void visit_multisetadd(const MultisetAdd &) final {
+    assert(!"multisetadd not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremove(const MultisetRemove &) final {
+    assert(!"multisetremove not rejected during check()");
+    __builtin_unreachable();
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &) final {
+    assert(!"multisetremovepred not rejected during check()");
+    __builtin_unreachable();
   }
 
   void visit_procedurecall(const ProcedureCall &s) final {
@@ -379,8 +405,6 @@ public:
     }
     *out << "}";
   }
-
-  virtual ~Generator() = default;
 };
 
 } // namespace

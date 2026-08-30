@@ -47,6 +47,7 @@ public:
   void visit_band(const rumur::Band &n) final;
   void visit_bnot(const rumur::Bnot &n) final;
   void visit_bor(const rumur::Bor &n) final;
+  void visit_choose(const rumur::Choose &n) final;
   void visit_clear(const rumur::Clear &n) final;
   void visit_div(const rumur::Div &n) final;
   void visit_element(const rumur::Element &n) final;
@@ -56,8 +57,6 @@ public:
   void visit_exists(const rumur::Exists &n) final;
   void visit_exprid(const rumur::ExprID &n) final;
   void visit_field(const rumur::Field &n) final;
-  void visit_implication(const rumur::Implication &n) final;
-  void visit_isundefined(const rumur::IsUndefined &) final;
   void visit_for(const rumur::For &n) final;
   void visit_forall(const rumur::Forall &n) final;
   void visit_functioncall(const rumur::FunctionCall &n) final;
@@ -65,12 +64,20 @@ public:
   void visit_gt(const rumur::Gt &n) final;
   void visit_if(const rumur::If &n) final;
   void visit_ifclause(const rumur::IfClause &n) final;
+  void visit_implication(const rumur::Implication &n) final;
+  void visit_ismember(const rumur::IsMember &) final;
+  void visit_isundefined(const rumur::IsUndefined &) final;
   void visit_leq(const rumur::Leq &n) final;
   void visit_lsh(const rumur::Lsh &n) final;
   void visit_lt(const rumur::Lt &n) final;
   void visit_mod(const rumur::Mod &n) final;
   void visit_model(const rumur::Model &n) final;
   void visit_mul(const rumur::Mul &n) final;
+  void visit_multiset(const rumur::Multiset &n) final;
+  void visit_multisetadd(const rumur::MultisetAdd &n) final;
+  void visit_multisetcount(const rumur::MultisetCount &n) final;
+  void visit_multisetremove(const rumur::MultisetRemove &n) final;
+  void visit_multisetremovepred(const rumur::MultisetRemovePred &n) final;
   void visit_negative(const rumur::Negative &n) final;
   void visit_neq(const rumur::Neq &n) final;
   void visit_not(const rumur::Not &n) final;
@@ -94,6 +101,7 @@ public:
   void visit_typedecl(const rumur::TypeDecl &n) final;
   void visit_typeexprid(const rumur::TypeExprID &n) final;
   void visit_undefine(const rumur::Undefine &n) final;
+  void visit_union(const rumur::Union &n) final;
   void visit_while(const rumur::While &n) final;
   void visit_xor(const rumur::Xor &n) final;
 

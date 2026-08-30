@@ -20,7 +20,7 @@ namespace rumur {
 class RUMUR_API Symtab {
 
 private:
-  std::vector<std::unordered_map<std::string, Ptr<Node>>> scope;
+  std::vector<std::unordered_map<std::string, const Node *>> scope;
 
 public:
   void open_scope() { scope.emplace_back(); }
@@ -30,8 +30,16 @@ public:
     scope.pop_back();
   }
 
-  void declare(const std::string &name, const Ptr<Node> &value) {
+  /// make a new symbol available for lookup
+  ///
+  /// It is assumed `value` will outlive `*this`, and thus can be retained
+  /// internally.
+  ///
+  /// @param name Symbol name
+  /// @param value Node this name should resolve to
+  void declare(const std::string &name, const Node *value) {
     assert(!scope.empty());
+    assert(value != nullptr);
     if (scope.back().count(name) > 0)
       throw Error("symbol \"" + name + "\" was previously declared",
                   value->loc);
@@ -43,7 +51,7 @@ public:
     for (auto it = scope.rbegin(); it != scope.rend(); it++) {
       auto it2 = it->find(name);
       if (it2 != it->end()) {
-        if (auto ret = dynamic_cast<const U *>(it2->second.get())) {
+        if (auto ret = dynamic_cast<const U *>(it2->second)) {
           return Ptr<U>(ret->clone());
         } else {
           break;

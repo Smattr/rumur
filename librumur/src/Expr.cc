@@ -12,6 +12,7 @@
 #include <rumur/Decl.h>
 #include <rumur/Expr.h>
 #include <rumur/Function.h>
+#include <rumur/Number.h>
 #include <rumur/Ptr.h>
 #include <rumur/TypeExpr.h>
 #include <rumur/except.h>
@@ -1267,7 +1268,7 @@ void Field::to_stream(std::ostream &out) const {
   out << *record << '.' << field;
 }
 
-bool Field::is_pure() const { return true; }
+bool Field::is_pure() const { return record->is_pure(); }
 
 Element::Element(const Ptr<Expr> &array_, const Ptr<Expr> &index_,
                  const location &loc_)
@@ -1287,14 +1288,24 @@ bool Element::constant() const { return false; }
 
 Ptr<TypeExpr> Element::type() const {
   const Ptr<TypeExpr> t = array->type()->resolve();
-  const Array *a = dynamic_cast<const Array *>(t.get());
+
+  {
+    auto a = dynamic_cast<const Array *>(t.get());
+    if (a != nullptr)
+      return a->element_type;
+  }
+
+  {
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m != nullptr)
+      return m->element_type;
+  }
 
   // if we are called during symbol resolution on a malformed expression, our
-  // left hand side may not be an array
-  if (a == nullptr)
-    throw Error("array reference based on something that is not an array", loc);
-
-  return a->element_type;
+  // left hand side may not be an array or a multiset
+  throw Error("array reference based on something that is neither an array nor "
+              "a multiset",
+              loc);
 }
 
 mpz_class Element::constant_fold() const {
@@ -1304,15 +1315,31 @@ mpz_class Element::constant_fold() const {
 void Element::validate() const {
 
   const Ptr<TypeExpr> t = array->type()->resolve();
-  ;
 
-  if (!isa<Array>(t))
-    throw Error("array index on an expression that is not an array", loc);
+  {
+    auto a = dynamic_cast<const Array *>(t.get());
+    if (a != nullptr) {
 
-  auto a = dynamic_cast<const Array &>(*t);
+      if (!index->type()->coerces_to(*a->index_type))
+        throw Error("array indexed using an expression of incorrect type", loc);
+      return;
+    }
+  }
 
-  if (!index->type()->coerces_to(*a.index_type))
-    throw Error("array indexed using an expression of incorrect type", loc);
+  {
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m != nullptr) {
+      const Scalarset s{m->index_bound, m->index_bound->loc};
+      if (!index->type()->coerces_to(s))
+        throw Error("multiset indexed using an expression of incorrect type",
+                    loc);
+      return;
+    }
+  }
+
+  throw Error(
+      "array index on an expression that is neither an array nor a multiset",
+      loc);
 }
 
 bool Element::is_lvalue() const { return array->is_lvalue(); }
@@ -1323,7 +1350,13 @@ void Element::to_stream(std::ostream &out) const {
   out << *array << '[' << *index << ']';
 }
 
-bool Element::is_pure() const { return true; }
+bool Element::is_pure() const {
+  if (!array->is_pure())
+    return false;
+  if (!index->is_pure())
+    return false;
+  return true;
+}
 
 FunctionCall::FunctionCall(const std::string &name_,
                            const std::vector<Ptr<Expr>> &arguments_,
@@ -1385,19 +1418,24 @@ void FunctionCall::validate() const {
       throw Error("function call passes a read-only value as a var parameter",
                   (*it)->loc);
 
-    if (!(*it)->type()->coerces_to(*v->get_type()))
+    const Ptr<TypeExpr> a_type = (*it)->type();
+    const Ptr<TypeExpr> v_type = v->get_type();
+
+    if (!a_type->coerces_to(*v_type))
       throw Error("function call contains parameter of incorrect type",
                   (*it)->loc);
 
-    const Ptr<TypeExpr> param_type = v->get_type()->resolve();
+    const Ptr<TypeExpr> param_type = v_type->resolve();
 
     // if this is a writable range-typed parameter, we additionally require it
     // to be of exactly the same type in order to guarantee the caller’s and
     // callee’s handles are compatible
     if (!v->is_readonly() && isa<Range>(param_type)) {
-      const Ptr<TypeExpr> arg_type = (*it)->type()->resolve();
-      assert(isa<Range>(arg_type) &&
-             "non-range considered type-compatible with range");
+      const Ptr<TypeExpr> arg_type = a_type->resolve();
+      if (!isa<Range>(arg_type))
+        throw Error("non-range typed function call argument passed as "
+                    "range-typed var parameter",
+                    (*it)->loc);
 
       auto p = dynamic_cast<const Range &>(*param_type);
       auto a = dynamic_cast<const Range &>(*arg_type);
@@ -1475,7 +1513,7 @@ void Quantifier::visit(ConstBaseTraversal &visitor) const {
 void Quantifier::validate() const {
 
   bool from_const = from != nullptr && from->constant();
-  bool to_const   = to   != nullptr && to->constant();
+  bool to_const = to != nullptr && to->constant();
   bool step_const = step != nullptr && step->constant();
 
   if (step_const && step->constant_fold() == 0)
@@ -1488,7 +1526,7 @@ void Quantifier::validate() const {
 
   if (from_const && to_const) {
 
-    bool up_count   = from->constant_fold() < to->constant_fold();
+    bool up_count = from->constant_fold() < to->constant_fold();
     bool down_count = from->constant_fold() > to->constant_fold();
 
     if (up_count && step_negative)
@@ -1568,7 +1606,7 @@ std::string Quantifier::lower_bound() const {
                 loc);
 
   if (type != nullptr)
-    return type->lower_bound();
+    return "VALUE_C(" + type->lower_bound().get_str() + ")";
 
   assert(from != nullptr && "quantifier with null type and null lower bound");
 
@@ -1670,6 +1708,34 @@ void Forall::to_stream(std::ostream &out) const {
 
 bool Forall::is_pure() const { return quantifier.is_pure() && expr->is_pure(); }
 
+IsMember::IsMember(const Ptr<Expr> &peg_, const Ptr<TypeExpr> &hole_,
+                   const location &loc_)
+    : Expr(loc_), peg(peg_), hole(hole_) {}
+
+IsMember *IsMember::clone() const { return new IsMember(*this); }
+
+void IsMember::visit(BaseTraversal &visitor) {
+  return visitor.visit_ismember(*this);
+}
+
+void IsMember::visit(ConstBaseTraversal &visitor) const {
+  return visitor.visit_ismember(*this);
+}
+
+bool IsMember::constant() const { return false; }
+
+Ptr<TypeExpr> IsMember::type() const { return Boolean; }
+
+mpz_class IsMember::constant_fold() const {
+  throw Error("ismember used in constant", loc);
+}
+
+void IsMember::to_stream(std::ostream &out) const {
+  out << "ismember(" << *peg << ", " << *hole << ')';
+}
+
+bool IsMember::is_pure() const { return peg->is_pure(); }
+
 IsUndefined::IsUndefined(const Ptr<Expr> &expr_, const location &loc_)
     : UnaryExpr(expr_, loc_) {}
 
@@ -1705,5 +1771,57 @@ void IsUndefined::validate() const {
 void IsUndefined::to_stream(std::ostream &out) const {
   out << "isundefined(" << *rhs << ')';
 }
+
+MultisetCount::MultisetCount(const std::string &identifier_,
+                             const Ptr<Expr> &container_,
+                             const Ptr<Expr> &predicate_, const location &loc_)
+    : Expr(loc_), identifier(identifier_), container(container_),
+      predicate(predicate_) {}
+
+MultisetCount *MultisetCount::clone() const { return new MultisetCount(*this); }
+
+void MultisetCount::visit(BaseTraversal &visitor) {
+  visitor.visit_multisetcount(*this);
+}
+
+void MultisetCount::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multisetcount(*this);
+}
+
+bool MultisetCount::constant() const { return false; }
+
+Ptr<TypeExpr> MultisetCount::type() const {
+  const Ptr<TypeExpr> c = container->type()->resolve();
+  auto m = dynamic_cast<const Multiset *>(c.get());
+  if (m == nullptr)
+    throw Error("multisetcount container is not a multiset", container->loc);
+
+  const Ptr<Number> lb = Ptr<Number>::make(0, loc);
+  const Ptr<Number> ub =
+      Ptr<Number>::make(m->index_bound->constant_fold() - 1, loc);
+  return Ptr<Range>::make(lb, ub, loc);
+}
+
+mpz_class MultisetCount::constant_fold() const {
+  throw Error("multisetcount used in constant expression", loc);
+}
+
+void MultisetCount::validate() const {
+  const Ptr<TypeExpr> c = container->type()->resolve();
+  if (!isa<Multiset>(c))
+    throw Error("multisetcount container is not a multiset", container->loc);
+
+  const Ptr<TypeExpr> p = predicate->type()->resolve();
+  if (!p->is_boolean())
+    throw Error("multisetcount predicate is not a boolean expression",
+                predicate->loc);
+}
+
+void MultisetCount::to_stream(std::ostream &out) const {
+  out << "multisetcount(" << identifier << ": " << *container << ", "
+      << *predicate << ')';
+}
+
+bool MultisetCount::is_pure() const { return true; }
 
 } // namespace rumur

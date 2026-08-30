@@ -52,8 +52,6 @@ void Function::validate() const {
                       n.loc);
       }
     }
-
-    virtual ~ReturnChecker() = default;
   };
 
   // Run the checker
@@ -143,6 +141,24 @@ bool Function::is_pure() const {
         pure &= n.function->is_pure();
     }
 
+    void visit_multisetadd(const MultisetAdd &n) final {
+      dispatch(*n.arg0);
+      dispatch(*n.arg1);
+      pure &= !is_global_ref(*n.arg1);
+    }
+
+    void visit_multisetremove(const MultisetRemove &n) final {
+      dispatch(*n.arg0);
+      dispatch(*n.arg1);
+      pure &= !is_global_ref(*n.arg1);
+    }
+
+    void visit_multisetremovepred(const MultisetRemovePred &n) final {
+      dispatch(*n.container);
+      dispatch(*n.predicate);
+      pure &= !is_global_ref(*n.container);
+    }
+
     void visit_propertystmt(const PropertyStmt &) final {
       // treat any property statement as a side effect
       pure = false;
@@ -185,8 +201,6 @@ bool Function::is_recursive() const {
       if (n.function != nullptr && n.function->unique_id == needle->unique_id)
         found = true;
     }
-
-    virtual ~CallFinder() = default;
   };
 
   // run the traversal on ourselves

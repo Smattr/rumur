@@ -27,7 +27,6 @@ struct RUMUR_API_WITH_RTTI Number : public Expr {
   Number(Number &&) = default;
   Number &operator=(const Number &) = default;
   Number &operator=(Number &&) = default;
-  virtual ~Number() = default;
   Number *clone() const override;
 
   void visit(BaseTraversal &visitor) override;

@@ -1,6 +1,7 @@
 #include "../../common/environ.h"
 #include "../../common/help.h"
 #include "ValueType.h"
+#include "check.h"
 #include "generate.h"
 #include "has-start-state.h"
 #include "log.h"
@@ -670,6 +671,18 @@ int main(int argc, char **argv) {
   // Check whether we have a start state.
   if (!has_start_state(*m))
     *warn << "warning: model has no start state\n";
+
+  // check whether the model uses unsupported things
+  try {
+    *debug << "checking for use of unsupported features...\n";
+    check(*m);
+  } catch (Error &e) {
+    std::cerr << white() << bold() << input_filename << ':' << e.loc << ':'
+              << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
+              << white() << bold() << e.what() << reset() << '\n';
+    print_location(input_filename, e.loc);
+    return EXIT_FAILURE;
+  }
 
   // run SMT simplification if the user enabled it
   if (options.smt.simplification == SmtSimplification::ON) {

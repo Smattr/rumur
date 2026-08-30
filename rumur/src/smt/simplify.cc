@@ -84,6 +84,25 @@ public:
   void visit_bnot(Bnot &n) final { visit_uexpr(n); }
   void visit_bor(Bor &n) final { visit_bexpr(n); }
 
+  void visit_choose(Choose &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+    const Ptr<TypeExpr> t = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(t.get());
+    if (m == nullptr)
+      throw Error("container in choose rule is not a multiset",
+                  n.container->loc);
+    const Scalarset s{m->index_bound, n.container->loc};
+    declare_var(n.identifier, n.unique_id, s);
+
+    for (Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+
+    solver->close_scope();
+  }
+
   void visit_clear(Clear &n) final {
     dispatch(*n.rhs);
 
@@ -194,6 +213,13 @@ public:
   }
 
   void visit_implication(Implication &n) final { visit_bexpr(n); }
+
+  void visit_ismember(IsMember &n) final {
+    dispatch(*n.peg);
+    simplify(n.peg);
+    dispatch(*n.hole);
+  }
+
   void visit_isundefined(IsUndefined &n) final { visit_uexpr(n); }
   void visit_leq(Leq &n) final { visit_bexpr(n); }
   void visit_lsh(Lsh &n) final { visit_bexpr(n); }
@@ -213,6 +239,53 @@ public:
   }
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
+
+  void visit_multiset(Multiset &n) final {
+    dispatch(*n.index_bound);
+    simplify(n.index_bound);
+    dispatch(*n.element_type);
+  }
+
+  void visit_multisetadd(MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    simplify(n.arg0);
+    dispatch(*n.arg1);
+    simplify(n.arg1);
+  }
+
+  void visit_multisetcount(MultisetCount &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+
+    solver->open_scope();
+
+    const Ptr<TypeExpr> c = n.container->type()->resolve();
+    auto m = dynamic_cast<const Multiset *>(c.get());
+    if (m == nullptr)
+      throw Error("multisetcount container is not a multiset",
+                  n.container->loc);
+    const Scalarset s{m->index_bound, n.loc};
+    declare_var(n.identifier, n.unique_id, s);
+
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+    solver->close_scope();
+  }
+
+  void visit_multisetremove(MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    simplify(n.arg0);
+    dispatch(*n.arg1);
+    simplify(n.arg1);
+  }
+
+  void visit_multisetremovepred(MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    simplify(n.container);
+    dispatch(*n.predicate);
+    simplify(n.predicate);
+  }
+
   void visit_negative(Negative &n) final { visit_uexpr(n); }
   void visit_neq(Neq &n) final { visit_bexpr(n); }
   void visit_not(Not &n) final { visit_uexpr(n); }
@@ -387,6 +460,11 @@ public:
 
   void visit_undefine(Undefine &n) final { dispatch(*n.rhs); }
 
+  void visit_union(Union &n) final {
+    for (Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+  }
+
   void visit_vardecl(VarDecl &n) final { dispatch(*n.type); }
 
   void visit_while(While &n) final {
@@ -557,6 +635,8 @@ private:
         *solver << "(assert (" << lt() << " " << name << " " << size << "))\n";
       }
 
+      void visit_multiset(const Multiset &) final { throw Unsupported(); }
+
       void visit_range(const Range &n) final {
 
         // if this range's bounds are static, make them known to the solver
@@ -583,6 +663,12 @@ private:
           const std::string b = numeric_literal(n.bound->constant_fold());
           *solver << "(assert (" << lt() << " " << name << " " << b << "))\n";
         }
+      }
+
+      void visit_union(const Union &) final {
+        // TODO: the constraints on a union should probably be the intersection
+        // of constraints on the union’s members
+        throw Unsupported();
       }
 
       void visit_typeexprid(const TypeExprID &) final {

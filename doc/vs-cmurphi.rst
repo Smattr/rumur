@@ -37,8 +37,39 @@ Type System
 -----------
 CMurphi supports real arithmetic using the ``real`` data type. Rumur does not
 support this type and there are no plans to implement this or any floating point
-support. Similarly, Rumur does not support the ``union`` type and there are no
-plans to add it.
+support.
+
+Multisets
+^^^^^^^^^
+Models that use the ``multiset`` type can be parsed with librumur, but
+generation of a checker using ``rumur`` is not supported. Some of the Rumur
+tools fully support multiset types, e.g. ``murphi2xml``, but others reject
+models with multiset types, e.g. ``murphi2uclid``.
+
+CMurphi requires the index of multiset to be a scalarset bound. Rumur supports
+any constant expression as a bound.
+
+This limitation of syntax-only support applies also to the multiset constructs
+``Choose``, ``MultisetAdd``, ``MultisetCount``, ``MultisetRemove``, and
+``MultisetRemovePred``.
+
+Unions
+^^^^^^
+Models that use the ``union`` type can be parsed with librumur, but generation
+of a checker using ``rumur`` is not supported. Some of the Rumur tools fully
+support union types, e.g. ``murphi2xml``, but others reject models with union
+types, e.g. ``murphi2uclid``.
+
+CMurphi only supports unions of scalarset and enum types. librumur supports
+unions of any types, simple or complex, including recursive (unions of unions).
+In contrast to CMurphi, librumur allows union types with 0 or 1 members. A union
+type with 0 members is vacuous, in the sense that values of this type can only
+ever be ``undefined``.
+
+CMurphi requires the first argument to the ``ismember`` predicate to be a
+designator. librumur allows any expression. CMurphi requires the second argument
+to ``ismember`` to be a scalarset or enum type. librumur, in line with
+supporting unions of any types, allows the second argument to be any type.
 
 Assumptions
 -----------

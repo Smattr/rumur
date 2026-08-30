@@ -13,6 +13,94 @@
 
 using namespace rumur;
 
+/// emit a typed C numeric literal
+///
+/// Numeric literals are of type `int` in C by default. To spell a literal of a
+/// different type, we need a bit of specialisation. This function is best
+/// effort, in the sense that pathological input may result in an expression of
+/// incorrect type.
+///
+/// @param c_type The desired type of the resulting literal
+/// @param v The value of the literal
+/// @return C code that describes the given typed literal
+static std::string c_lit(const std::string &c_type, const mpz_class &v) {
+  const std::string s = v.get_str();
+  if (c_type == "int")
+    return s;
+  if (c_type == "unsigned" || c_type == "unsigned int")
+    return s + "u";
+  if (c_type == "long" || c_type == "long int" || c_type == "signed long" ||
+      c_type == "signed long int")
+    return s + "l";
+  if (c_type == "unsigned long" || c_type == "unsigned long int")
+    return s + "lu";
+  if (c_type == "long long" || c_type == "long long int" ||
+      c_type == "signed long long" || c_type == "signed long long int")
+    return s + "ll";
+  if (c_type == "unsigned long long" || c_type == "unsigned long long int")
+    return s + "ull";
+  if (c_type == "int8_t")
+    return "INT8_C(" + s + ")";
+  if (c_type == "uint8_t")
+    return "UINT8_C(" + s + ")";
+  if (c_type == "int16_t")
+    return "INT16_C(" + s + ")";
+  if (c_type == "uint16_t")
+    return "UINT16_C(" + s + ")";
+  if (c_type == "int32_t")
+    return "INT32_C(" + s + ")";
+  if (c_type == "uint32_t")
+    return "UINT32_C(" + s + ")";
+  if (c_type == "int64_t")
+    return "INT64_C(" + s + ")";
+  if (c_type == "uint64_t")
+    return "UINT64_C(" + s + ")";
+
+  // otherwise assume we can construct the value with a cast
+  return "((" + c_type + ")" + s + ")";
+}
+
+/// get the printf format code for printing a given type
+///
+/// See call sites of this function for why the return value includes stray
+/// quote characters.
+///
+/// @param c_type Type to print
+/// @return Printf format code for this type
+static const char *c_pri(const std::string &c_type) {
+  if (c_type == "unsigned" || c_type == "unsigned int")
+    return "u\"";
+  if (c_type == "long" || c_type == "long int" || c_type == "signed long" ||
+      c_type == "signed long int")
+    return "ld\"";
+  if (c_type == "unsigned long" || c_type == "unsigned long int")
+    return "lu\"";
+  if (c_type == "long long" || c_type == "long long int" ||
+      c_type == "signed long long" || c_type == "signed long long int")
+    return "lld\"";
+  if (c_type == "unsigned long long" || c_type == "unsigned long long int")
+    return "llu\"";
+  if (c_type == "int8_t")
+    return "\" PRId8";
+  if (c_type == "uint8_t")
+    return "\" PRIu8";
+  if (c_type == "int16_t")
+    return "\" PRId16";
+  if (c_type == "uint16_t")
+    return "\" PRIu16";
+  if (c_type == "int32_t")
+    return "\" PRId32";
+  if (c_type == "uint32_t")
+    return "\" PRIu32";
+  if (c_type == "int64_t")
+    return "\" PRId64";
+  if (c_type == "uint64_t")
+    return "\" PRIu64";
+
+  // otherwise assume we can print this as an int
+  return "d\"";
+}
+
 void CLikeGenerator::visit_add(const Add &n) {
   *this << "(" << *n.lhs << " + " << *n.rhs << ")";
 }
@@ -93,6 +181,11 @@ void CLikeGenerator::visit_bor(const Bor &n) {
   *this << "(" << *n.lhs << " | " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_choose(const Choose &) {
+  assert(!"choose was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_clear(const Clear &n) {
   *this << indentation() << "memset(&" << *n.rhs << ", 0, sizeof(" << *n.rhs
         << "));";
@@ -112,12 +205,12 @@ void CLikeGenerator::visit_element(const Element &n) {
 
   // find the type of the array expression
   const Ptr<TypeExpr> t = n.array->type()->resolve();
+  assert(!isa<Multiset>(t) && "multiset was not rejected during check()");
   auto a = dynamic_cast<const Array *>(t.get());
   assert(a != nullptr && "non-array on LHS of array indexing expression");
 
-  // find the lower bound of its index type, using some hacky mangling to align
-  // with one of the macros from ../resources/c_prefix.c
-  const std::string lb = value_type + "_" + a->index_type->lower_bound();
+  // find the lower bound of its index type
+  const std::string lb = c_lit(value_type, a->index_type->lower_bound());
 
   // emit an indexing operation, now account for this
   *this << "(" << *n.array << ".data[(" << *n.index << ") - " << lb << "])";
@@ -290,6 +383,11 @@ void CLikeGenerator::visit_implication(const Implication &n) {
   *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_ismember(const IsMember &) {
+  assert(!"ismember was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_isundefined(const IsUndefined &) {
   // check() prevents a model with isundefined expressions from making it
   // through to here
@@ -338,6 +436,31 @@ void CLikeGenerator::visit_mul(const Mul &n) {
   *this << "(" << *n.lhs << " * " << *n.rhs << ")";
 }
 
+void CLikeGenerator::visit_multiset(const Multiset &) {
+  assert(!"multiset was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetadd(const MultisetAdd &) {
+  assert(!"multisetadd was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetcount(const MultisetCount &) {
+  assert(!"multisetcount was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetremove(const MultisetRemove &) {
+  assert(!"multisetremove was not rejected during check()");
+  __builtin_unreachable();
+}
+
+void CLikeGenerator::visit_multisetremovepred(const MultisetRemovePred &) {
+  assert(!"multisetremovepred was not rejected during check()");
+  __builtin_unreachable();
+}
+
 void CLikeGenerator::visit_negative(const Negative &n) {
   *this << "(-" << *n.rhs << ")";
 }
@@ -360,7 +483,7 @@ void CLikeGenerator::visit_neq(const Neq &n) {
 void CLikeGenerator::visit_not(const Not &n) { *this << "(!" << *n.rhs << ")"; }
 
 void CLikeGenerator::visit_number(const Number &n) {
-  *this << "((" << value_type << ")(" << n.value.get_str() << "))";
+  *this << c_lit(value_type, n.value);
 }
 
 void CLikeGenerator::visit_or(const Or &n) {
@@ -434,13 +557,17 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
 
   const Ptr<TypeExpr> type = t.resolve();
 
+  assert(!isa<Multiset>(type) &&
+         "multiset type was not rejected during check()");
+  assert(!isa<Union>(type) && "union type was not rejected during check()");
+
   // if this is boolean, handle it separately to other Enums to avoid
   // -Wswitch-bool warnings and cope with badly behaved users setting non-0/1
   // values
   if (type->is_boolean()) {
 
-    *this << indentation() << "printf(\"%s\", ((" << e << suffix
-          << ") ? \"true\" : \"false\"))";
+    *this << indentation() << "fputs((" << e << suffix
+          << ") ? \"true\" : \"false\", stdout)";
 
     return;
   }
@@ -457,7 +584,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     for (const std::pair<std::string, location> &m : en->members) {
       *this << indentation() << "case " << std::to_string(i) << ":\n";
       indent();
-      *this << indentation() << "printf(\"%s\", \"" << m.first << "\");\n"
+      *this << indentation() << "fputs(\"" << m.first << "\", stdout);\n"
             << indentation() << "break;\n";
       dedent();
       ++i;
@@ -481,15 +608,14 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     // printing opening “[”
     *this << indentation() << "do {\n";
     indent();
-    *this << indentation() << "printf(\"[\");\n";
+    *this << indentation() << "putc('[', stdout);\n";
 
     // invent a unique symbol using our counter
     const std::string i = "array_index" + std::to_string(counter);
 
-    // get the bounds of the index and hackily prepend the value type to produce
-    // something corresponding to one of the macros in ../resources/c_prefix.c
-    const std::string lb = value_type + "_" + a->index_type->lower_bound();
-    const std::string ub = value_type + "_" + a->index_type->upper_bound();
+    // get the bounds of the index
+    const std::string lb = c_lit(value_type, a->index_type->lower_bound());
+    const std::string ub = c_lit(value_type, a->index_type->upper_bound());
 
     *this << indentation() << "for (size_t " << i << " = 0; ; ++" << i
           << ") {\n";
@@ -506,14 +632,14 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     dedent();
     *this << indentation() << "} else {\n";
     indent();
-    *this << indentation() << "printf(\", \");\n";
+    *this << indentation() << "fputs(\", \", stdout);\n";
     dedent();
     *this << indentation() << "}\n";
     dedent();
     *this << indentation() << "}\n";
 
     // print closing “]”
-    *this << indentation() << "printf(\"]\");\n";
+    *this << indentation() << "putc(']', stdout);\n";
     dedent();
     *this << indentation() << "} while (0)";
 
@@ -525,12 +651,12 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     // print opening “{”
     *this << indentation() << "do {\n";
     indent();
-    *this << indentation() << "printf(\"{\");\n";
+    *this << indentation() << "putc('{', stdout);\n";
 
     // print contained fields as a comma-separated list
     std::string sep;
     for (const Ptr<VarDecl> &f : r->fields) {
-      *this << indentation() << "printf(\"%s\", \"" << sep << "\");\n";
+      *this << indentation() << "fputs(\"" << sep << "\", stdout);\n";
       const Ptr<TypeExpr> ft = f->get_type();
       print(suffix + "." + f->name, *ft, e, counter);
       *this << ";\n";
@@ -538,7 +664,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     }
 
     // print closing “}”
-    *this << indentation() << "printf(\"}\");\n";
+    *this << indentation() << "putc('}', stdout);\n";
     dedent();
     *this << indentation() << "} while (0)";
 
@@ -546,14 +672,15 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
   }
 
   // fall back case, for Ranges and Scalarsets
-  *this << indentation() << "print_" << value_type << "(" << e << suffix << ")";
+  *this << indentation() << "printf(\"%" << c_pri(value_type) << ", (" << e
+        << suffix << "))";
 }
 
 void CLikeGenerator::visit_put(const Put &n) {
 
   // is this a put of a literal string?
   if (n.expr == nullptr) {
-    *this << indentation() << "printf(\"%s\\n\", \"" << n.value << "\");";
+    *this << indentation() << "puts(\"" << n.value << "\");";
 
   } else {
     const Ptr<TypeExpr> type = n.expr->type();
@@ -744,6 +871,11 @@ void CLikeGenerator::visit_undefine(const Undefine &n) {
         << "));";
   emit_trailing_comments(n);
   *this << "\n";
+}
+
+void CLikeGenerator::visit_union(const Union &) {
+  assert(!"union type was not rejected during check()");
+  __builtin_unreachable();
 }
 
 void CLikeGenerator::visit_while(const While &n) {

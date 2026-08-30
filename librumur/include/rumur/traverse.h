@@ -1,3 +1,49 @@
+/// @file
+/// @brief classes for visiting each node in an AST
+///
+/// To implement logic that needs to act on each node of an AST, define a class
+/// that inherits from one of the classes defined below. To decide which class
+/// to inherit from:
+///
+///   ┌────────────────────────────────────────────────────────────────────────┐
+///   │ do you want a compile error when new node types are added to librumur? │
+///   └──────────────────┬───────────────────────────────────────┬─────────────┘
+///                      │                                     no│
+///                      │                                       ▼
+///                      │                      ┌──────────────────────────────┐
+///                      │                      │ do you need to modify nodes? │
+///                   yes│                      └──────┬─────────────────┬─────┘
+///                      │                           no│              yes│
+///                      │                             ▼                 ▼
+///                      │                     ╔════════════════╗  ╔═══════════╗
+///                      │                     ║ ConstTraversal ║  ║ Traversal ║
+///                      ▼                     ╚════════════════╝  ╚═══════════╝
+///   ┌──────────────────────────────────────────┐
+///   │ what kind of node do you need to act on? ├───────────────────────────┐
+///   └───────────┬─────────────┬────────────┬───┘                           │
+///               │             │            └─────────┐                     │
+///       only    │      only   │                  only│              various│
+///    expressions│   statements│                 types│               or all│
+///               ▼             └─────────────┐        └───────────┐         │
+///      ┌──────────────────────────────┐     ▼                    │         │
+///      │ do you need to modify nodes? │  ╔════════════════════╗  │         │
+///      └──────┬────────────────────┬──┘  ║ ConstStmtTraversal ║  │      ┌──┘
+///           no│                 yes│     ╚════════════════════╝  ▼      │
+///             ▼                    ▼           ╔════════════════════╗   │
+///   ╔════════════════════╗  ╔═══════════════╗  ║ ConstTypeTraversal ║   │
+///   ║ ConstExprTraversal ║  ║ ExprTraversal ║  ╚════════════════════╝   ▼
+///   ╚════════════════════╝  ╚═══════════════╝ ┌──────────────────────────────┐
+///                                             │ do you need to modify nodes? │
+///                                             └───┬──────────────────┬───────┘
+///                                               no│               yes│
+///                                                 ▼                  ▼
+///                                    ╔════════════════════╗  ╔═══════════════╗
+///                                    ║ ConstBaseTraversal ║  ║ BaseTraversal ║
+///                                    ╚════════════════════╝  ╚═══════════════╝
+///
+/// Clearly there are some useful variations missing (e.g. `StmtTraversal`).
+/// These will be added if/when needed.
+
 #pragma once
 
 #include <cstddef>
@@ -33,6 +79,7 @@ public:
   virtual void visit_band(Band &n) = 0;
   virtual void visit_bnot(Bnot &n) = 0;
   virtual void visit_bor(Bor &n) = 0;
+  virtual void visit_choose(Choose &n) = 0;
   virtual void visit_clear(Clear &n) = 0;
   virtual void visit_constdecl(ConstDecl &n) = 0;
   virtual void visit_div(Div &n) = 0;
@@ -52,6 +99,7 @@ public:
   virtual void visit_if(If &n) = 0;
   virtual void visit_ifclause(IfClause &n) = 0;
   virtual void visit_implication(Implication &n) = 0;
+  virtual void visit_ismember(IsMember &n) = 0;
   virtual void visit_isundefined(IsUndefined &n) = 0;
   virtual void visit_leq(Leq &n) = 0;
   virtual void visit_lsh(Lsh &n) = 0;
@@ -59,6 +107,11 @@ public:
   virtual void visit_model(Model &n) = 0;
   virtual void visit_mod(Mod &n) = 0;
   virtual void visit_mul(Mul &n) = 0;
+  virtual void visit_multiset(Multiset &n) = 0;
+  virtual void visit_multisetadd(MultisetAdd &n) = 0;
+  virtual void visit_multisetcount(MultisetCount &n) = 0;
+  virtual void visit_multisetremove(MultisetRemove &n) = 0;
+  virtual void visit_multisetremovepred(MultisetRemovePred &n) = 0;
   virtual void visit_negative(Negative &n) = 0;
   virtual void visit_neq(Neq &n) = 0;
   virtual void visit_not(Not &n) = 0;
@@ -85,6 +138,7 @@ public:
   virtual void visit_typedecl(TypeDecl &n) = 0;
   virtual void visit_typeexprid(TypeExprID &n) = 0;
   virtual void visit_undefine(Undefine &n) = 0;
+  virtual void visit_union(Union &n) = 0;
   virtual void visit_vardecl(VarDecl &n) = 0;
   virtual void visit_while(While &n) = 0;
   virtual void visit_xor(Xor &n) = 0;
@@ -119,6 +173,7 @@ public:
   void visit_band(Band &n) override;
   void visit_bnot(Bnot &n) override;
   void visit_bor(Bor &n) override;
+  void visit_choose(Choose &n) override;
   void visit_clear(Clear &n) override;
   void visit_constdecl(ConstDecl &n) override;
   void visit_div(Div &n) override;
@@ -138,6 +193,7 @@ public:
   void visit_if(If &n) override;
   void visit_ifclause(IfClause &n) override;
   void visit_implication(Implication &n) override;
+  void visit_ismember(IsMember &n) override;
   void visit_isundefined(IsUndefined &n) override;
   void visit_leq(Leq &n) override;
   void visit_lsh(Lsh &n) override;
@@ -145,6 +201,11 @@ public:
   void visit_model(Model &n) override;
   void visit_mod(Mod &n) override;
   void visit_mul(Mul &n) override;
+  void visit_multiset(Multiset &n) override;
+  void visit_multisetadd(MultisetAdd &n) override;
+  void visit_multisetcount(MultisetCount &n) override;
+  void visit_multisetremove(MultisetRemove &n) override;
+  void visit_multisetremovepred(MultisetRemovePred &n) override;
   void visit_negative(Negative &n) override;
   void visit_neq(Neq &n) override;
   void visit_not(Not &n) override;
@@ -171,6 +232,7 @@ public:
   void visit_typedecl(TypeDecl &n) override;
   void visit_typeexprid(TypeExprID &n) override;
   void visit_undefine(Undefine &n) override;
+  void visit_union(Union &n) override;
   void visit_vardecl(VarDecl &n) override;
   void visit_while(While &n) override;
   void visit_xor(Xor &n) override;
@@ -197,6 +259,7 @@ public:
   virtual void visit_band(const Band &n) = 0;
   virtual void visit_bnot(const Bnot &n) = 0;
   virtual void visit_bor(const Bor &n) = 0;
+  virtual void visit_choose(const Choose &n) = 0;
   virtual void visit_clear(const Clear &n) = 0;
   virtual void visit_constdecl(const ConstDecl &n) = 0;
   virtual void visit_div(const Div &n) = 0;
@@ -216,6 +279,7 @@ public:
   virtual void visit_if(const If &n) = 0;
   virtual void visit_ifclause(const IfClause &n) = 0;
   virtual void visit_implication(const Implication &n) = 0;
+  virtual void visit_ismember(const IsMember &n) = 0;
   virtual void visit_isundefined(const IsUndefined &n) = 0;
   virtual void visit_leq(const Leq &n) = 0;
   virtual void visit_lsh(const Lsh &n) = 0;
@@ -223,6 +287,11 @@ public:
   virtual void visit_model(const Model &n) = 0;
   virtual void visit_mod(const Mod &n) = 0;
   virtual void visit_mul(const Mul &n) = 0;
+  virtual void visit_multiset(const Multiset &n) = 0;
+  virtual void visit_multisetadd(const MultisetAdd &n) = 0;
+  virtual void visit_multisetcount(const MultisetCount &n) = 0;
+  virtual void visit_multisetremove(const MultisetRemove &n) = 0;
+  virtual void visit_multisetremovepred(const MultisetRemovePred &n) = 0;
   virtual void visit_negative(const Negative &n) = 0;
   virtual void visit_neq(const Neq &n) = 0;
   virtual void visit_not(const Not &n) = 0;
@@ -249,6 +318,7 @@ public:
   virtual void visit_typedecl(const TypeDecl &n) = 0;
   virtual void visit_typeexprid(const TypeExprID &n) = 0;
   virtual void visit_undefine(const Undefine &n) = 0;
+  virtual void visit_union(const Union &n) = 0;
   virtual void visit_vardecl(const VarDecl &n) = 0;
   virtual void visit_while(const While &n) = 0;
   virtual void visit_xor(const Xor &n) = 0;
@@ -275,6 +345,7 @@ public:
   void visit_band(const Band &n) override;
   void visit_bnot(const Bnot &n) override;
   void visit_bor(const Bor &n) override;
+  void visit_choose(const Choose &n) override;
   void visit_clear(const Clear &n) override;
   void visit_constdecl(const ConstDecl &n) override;
   void visit_div(const Div &n) override;
@@ -294,6 +365,7 @@ public:
   void visit_if(const If &n) override;
   void visit_ifclause(const IfClause &n) override;
   void visit_implication(const Implication &n) override;
+  void visit_ismember(const IsMember &n) override;
   void visit_isundefined(const IsUndefined &n) override;
   void visit_leq(const Leq &n) override;
   void visit_lsh(const Lsh &n) override;
@@ -301,6 +373,11 @@ public:
   void visit_model(const Model &n) override;
   void visit_mod(const Mod &n) override;
   void visit_mul(const Mul &n) override;
+  void visit_multiset(const Multiset &n) override;
+  void visit_multisetadd(const MultisetAdd &n) override;
+  void visit_multisetcount(const MultisetCount &n) override;
+  void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_negative(const Negative &n) override;
   void visit_neq(const Neq &n) override;
   void visit_not(const Not &n) override;
@@ -327,6 +404,7 @@ public:
   void visit_typedecl(const TypeDecl &n) override;
   void visit_typeexprid(const TypeExprID &n) override;
   void visit_undefine(const Undefine &n) override;
+  void visit_union(const Union &n) override;
   void visit_vardecl(const VarDecl &n) override;
   void visit_while(const While &n) override;
   void visit_xor(const Xor &n) override;
@@ -351,6 +429,7 @@ public:
   void visit_aliasstmt(const AliasStmt &n) final;
   void visit_array(const Array &n) final;
   void visit_assignment(const Assignment &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_enum(const Enum &n) final;
@@ -360,6 +439,10 @@ public:
   void visit_if(const If &n) final;
   void visit_ifclause(const IfClause &n) final;
   void visit_model(const Model &n) final;
+  void visit_multiset(const Multiset &n) final;
+  void visit_multisetadd(const MultisetAdd &n) final;
+  void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_procedurecall(const ProcedureCall &n) final;
   void visit_property(const Property &n) final;
   void visit_propertyrule(const PropertyRule &n) final;
@@ -378,10 +461,9 @@ public:
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
   void visit_undefine(const Undefine &n) final;
+  void visit_union(const Union &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
-
-  virtual ~ConstExprTraversal() = default;
 };
 
 /* Generic base for read-only traversals that only need to act on statements.
@@ -399,6 +481,7 @@ public:
   void visit_band(const Band &n) final;
   void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
   void visit_element(const Element &n) final;
@@ -414,6 +497,7 @@ public:
   void visit_gt(const Gt &n) final;
   void visit_ifclause(const IfClause &n) final;
   void visit_implication(const Implication &n) final;
+  void visit_ismember(const IsMember &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
   void visit_lsh(const Lsh &n) final;
@@ -421,6 +505,8 @@ public:
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
   void visit_mul(const Mul &n) final;
+  void visit_multiset(const Multiset &n) final;
+  void visit_multisetcount(const MultisetCount &n) final;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;
@@ -441,10 +527,9 @@ public:
   void visit_ternary(const Ternary &n) final;
   void visit_typedecl(const TypeDecl &n) final;
   void visit_typeexprid(const TypeExprID &n) final;
+  void visit_union(const Union &n) final;
   void visit_vardecl(const VarDecl &n) final;
   void visit_xor(const Xor &n) final;
-
-  virtual ~ConstStmtTraversal() = default;
 
 private:
   void visit_bexpr(const BinaryExpr &n);
@@ -464,6 +549,7 @@ public:
   void visit_band(const Band &n) final;
   void visit_bnot(const Bnot &n) final;
   void visit_bor(const Bor &n) final;
+  void visit_choose(const Choose &n) final;
   void visit_clear(const Clear &n) final;
   void visit_constdecl(const ConstDecl &n) final;
   void visit_div(const Div &n) final;
@@ -482,6 +568,7 @@ public:
   void visit_if(const If &n) final;
   void visit_ifclause(const IfClause &n) final;
   void visit_implication(const Implication &n) final;
+  void visit_ismember(const IsMember &n) final;
   void visit_isundefined(const IsUndefined &n) final;
   void visit_leq(const Leq &n) final;
   void visit_lsh(const Lsh &n) final;
@@ -489,6 +576,10 @@ public:
   void visit_model(const Model &n) final;
   void visit_mod(const Mod &n) final;
   void visit_mul(const Mul &n) final;
+  void visit_multisetadd(const MultisetAdd &n) final;
+  void visit_multisetcount(const MultisetCount &n) final;
+  void visit_multisetremove(const MultisetRemove &n) override;
+  void visit_multisetremovepred(const MultisetRemovePred &n) override;
   void visit_negative(const Negative &n) final;
   void visit_neq(const Neq &n) final;
   void visit_not(const Not &n) final;
@@ -514,8 +605,6 @@ public:
   void visit_vardecl(const VarDecl &n) final;
   void visit_while(const While &n) final;
   void visit_xor(const Xor &n) final;
-
-  virtual ~ConstTypeTraversal() = default;
 
 private:
   void visit_bexpr(const BinaryExpr &n);

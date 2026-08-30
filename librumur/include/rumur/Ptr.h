@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #ifndef RUMUR_API
@@ -95,7 +96,13 @@ public:
   bool operator!=(const TARGET *other) const { return t.get() != other; }
 
   template <typename... Args> static Ptr<TARGET> make(Args &&...args) {
-    return Ptr<TARGET>(new TARGET(std::forward<Args>(args)...));
+    auto p = new TARGET(std::forward<Args>(args)...);
+    try {
+      return Ptr<TARGET>{p};
+    } catch (std::exception &) {
+      delete p;
+      throw;
+    }
   }
 };
 

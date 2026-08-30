@@ -95,6 +95,12 @@ public:
     n.validate();
   }
 
+  void visit_choose(const Choose &n) final {
+    dispatch(*n.container);
+    for (const Ptr<Rule> &r : n.rules)
+      dispatch(*r);
+  }
+
   void visit_clear(const Clear &n) final {
     dispatch(*n.rhs);
     n.validate();
@@ -207,6 +213,12 @@ public:
     n.validate();
   }
 
+  void visit_ismember(const IsMember &n) final {
+    dispatch(*n.peg);
+    dispatch(*n.hole);
+    n.validate();
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     dispatch(*n.rhs);
     n.validate();
@@ -245,6 +257,36 @@ public:
   void visit_mul(const Mul &n) final {
     dispatch(*n.lhs);
     dispatch(*n.rhs);
+    n.validate();
+  }
+
+  void visit_multiset(const Multiset &n) final {
+    dispatch(*n.index_bound);
+    dispatch(*n.element_type);
+    n.validate();
+  }
+
+  void visit_multisetadd(const MultisetAdd &n) final {
+    dispatch(*n.arg0);
+    dispatch(*n.arg1);
+    n.validate();
+  }
+
+  void visit_multisetcount(const MultisetCount &n) final {
+    dispatch(*n.container);
+    dispatch(*n.predicate);
+    n.validate();
+  }
+
+  void visit_multisetremove(const MultisetRemove &n) final {
+    dispatch(*n.arg0);
+    dispatch(*n.arg1);
+    n.validate();
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    dispatch(*n.container);
+    dispatch(*n.predicate);
     n.validate();
   }
 
@@ -415,6 +457,12 @@ public:
     n.validate();
   }
 
+  void visit_union(const Union &n) final {
+    for (const Ptr<TypeExpr> &m : n.members)
+      dispatch(*m);
+    n.validate();
+  }
+
   void visit_vardecl(const VarDecl &n) final {
     if (n.type != nullptr)
       dispatch(*n.type);
@@ -433,8 +481,6 @@ public:
     dispatch(*n.rhs);
     n.validate();
   }
-
-  virtual ~Validator() = default;
 };
 
 } // namespace

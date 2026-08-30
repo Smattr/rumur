@@ -84,6 +84,9 @@ public:
     const Ptr<TypeExpr> t2 = t1->resolve();
     assert(t2 != nullptr && "array with invalid type");
 
+    assert(!isa<Multiset>(t2) &&
+           "multiset not rejected prior to code generation");
+
     auto a = dynamic_cast<const Array &>(*t2);
     mpz_class element_width = a.element_type->width();
 
@@ -108,10 +111,11 @@ public:
     }
 
     if (!lvalue && a.element_type->is_simple()) {
-      const std::string lb = a.element_type->lower_bound();
-      const std::string ub = a.element_type->upper_bound();
+      const std::string lb = a.element_type->lower_bound().get_str();
+      const std::string ub = a.element_type->upper_bound().get_str();
       *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-           << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+           << to_C_string(n) << ", s, VALUE_C(" << lb << "), VALUE_C(" << ub
+           << "), ";
     }
 
     *out << "handle_index(" << to_C_string(n.loc) << ", rule_name, "
@@ -177,8 +181,8 @@ public:
       assert((!n.is_lvalue() || t != nullptr) && "lvalue without a type");
 
       if (!lvalue && n.is_lvalue() && t->is_simple()) {
-        const std::string lb = t->lower_bound();
-        const std::string ub = t->upper_bound();
+        const std::string lb = "VALUE_C(" + t->lower_bound().get_str() + ")";
+        const std::string ub = "VALUE_C(" + t->upper_bound().get_str() + ")";
         *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
              << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
       }
@@ -207,10 +211,11 @@ public:
       for (const Ptr<VarDecl> &f : r->fields) {
         if (f->name == n.field) {
           if (!lvalue && f->type->is_simple()) {
-            const std::string lb = f->type->lower_bound();
-            const std::string ub = f->type->upper_bound();
+            const std::string lb = f->type->lower_bound().get_str();
+            const std::string ub = f->type->upper_bound().get_str();
             *out << "handle_read(" << to_C_string(n.loc) << ", rule_name, "
-                 << to_C_string(n) << ", s, " << lb << ", " << ub << ", ";
+                 << to_C_string(n) << ", s, VALUE_C(" << lb << "), VALUE_C("
+                 << ub << "), ";
           }
           *out << "handle_narrow(";
           if (lvalue) {
@@ -265,22 +270,23 @@ public:
       }
     }
 
-    /* Now for each parameter we need to consider five distinct methods, based
-     * on the parameter's circumstance as described in the following table:
+    /* Now for each parameter we need to consider six distinct methods, based on
+     * the parameter’s circumstance as described in the following table:
      *
-     *   ┌──────┬────────────────┬─────────┬────────────╥────────┐
-     *   │ var? │ simple/complex │ lvalue? │ read-only? ║ method │
-     *   ├──────┼────────────────┼─────────┼────────────╫────────┤
-     *   │  no  │     simple     │    no   │     -      ║    1   │
-     *   │  no  │     simple     │   yes   │     no     ║    2   │
-     *   │  no  │     simple     │   yes   │    yes     ║    2   │
-     *   │  no  │    complex     │    no   │     -      ║    5   │
-     *   │  no  │    complex     │   yes   │     no     ║    3   │
-     *   │  no  │    complex     │   yes   │    yes     ║    3   │
-     *   │ yes  │     simple     │    no   │     no     ║    1   │
-     *   │ yes  │     simple     │   yes   │     no     ║    4   │
-     *   │ yes  │    complex     │   yes   │     no     ║    4   │
-     *   └──────┴────────────────┴─────────┴────────────╨────────┘
+     *   ┌──────┬────────────────┬─────────┬────────────┬────────────╥────────┐
+     *   │ var? │ simple/complex │ lvalue? │ read-only? │ undefined? ║ method │
+     *   ├──────┼────────────────┼─────────┼────────────┼────────────╫────────┤
+     *   │  no  │     simple     │    no   │     -      │     no     ║    1   │
+     *   │  no  │     simple     │   yes   │     no     │     no     ║    2   │
+     *   │  no  │     simple     │   yes   │    yes     │     no     ║    2   │
+     *   │  no  │    complex     │    no   │     -      │     no     ║    5   │
+     *   │  no  │    complex     │   yes   │     no     │     no     ║    3   │
+     *   │  no  │    complex     │   yes   │    yes     │     no     ║    3   │
+     *   │ yes  │     simple     │    no   │     no     │     no     ║    1   │
+     *   │ yes  │     simple     │   yes   │     no     │     no     ║    4   │
+     *   │ yes  │    complex     │   yes   │     no     │     no     ║    4   │
+     *   │  -   │       -        │    -    │     -      │    yes     ║    6   │
+     *   └──────┴────────────────┴─────────┴────────────┴────────────╨────────┘
      *
      *   1. We can create a temporary handle and backing storage, then extract
      *      the value of the argument as an rvalue and write it to this
@@ -302,8 +308,11 @@ public:
      *   4. We just pass the original handle, the lvalue of the argument.
      *
      *   5. We pass the original (rvalue) handle.
+     *
+     *   6. We pass a zeroed C99 compound literal.
      */
 
+    // clang-format off
     auto get_method =
       [](const Ptr<VarDecl> &parameter, const Ptr<Expr> &argument) {
 
@@ -312,19 +321,24 @@ public:
         bool is_lvalue = argument->is_lvalue();
         bool readonly = argument->is_readonly();
 
-        if (!var &&  simple && !is_lvalue             ) return 1;
-        if (!var &&  simple &&  is_lvalue && !readonly) return 2;
-        if (!var &&  simple &&  is_lvalue &&  readonly) return 2;
-        if (!var && !simple && !is_lvalue             ) return 5;
-        if (!var && !simple &&  is_lvalue && !readonly) return 3;
-        if (!var && !simple &&  is_lvalue &&  readonly) return 3;
-        if ( var &&  simple && !is_lvalue             ) return 1;
-        if ( var &&  simple &&  is_lvalue && !readonly) return 4;
-        if ( var && !simple &&               !readonly) return 4;
+        auto id = dynamic_cast<const ExprID*>(argument.get());
+        const bool is_undef = id != nullptr && id->id == "undefined";
+
+        if (!var &&  simple && !is_lvalue &&              !is_undef) return 1;
+        if (!var &&  simple &&  is_lvalue && !readonly && !is_undef) return 2;
+        if (!var &&  simple &&  is_lvalue &&  readonly && !is_undef) return 2;
+        if (!var && !simple && !is_lvalue &&              !is_undef) return 5;
+        if (!var && !simple &&  is_lvalue && !readonly && !is_undef) return 3;
+        if (!var && !simple &&  is_lvalue &&  readonly && !is_undef) return 3;
+        if ( var &&  simple && !is_lvalue &&              !is_undef) return 1;
+        if ( var &&  simple &&  is_lvalue && !readonly && !is_undef) return 4;
+        if ( var && !simple &&               !readonly && !is_undef) return 4;
+        if (                                               is_undef) return 6;
 
         assert(!"unreachable");
         __builtin_unreachable();
       };
+    // clang-format on
 
     // Create the temporaries for each argument.
     {
@@ -339,7 +353,7 @@ public:
             "v" + std::to_string(n.unique_id) + "_" + std::to_string(index);
 
         auto method = get_method(p, a);
-        assert(method >= 1 && method <= 5);
+        assert(method >= 1 && method <= 6);
 
         if (method == 1 || method == 2 || method == 3)
           *out << "unsigned char " << storage << "[BITS_TO_BYTES(" << p->width()
@@ -348,20 +362,20 @@ public:
                << ", .offset = 0, .width = " << p->width() << "ull }; ";
 
         if (method == 1) {
-          const std::string lb = p->get_type()->lower_bound();
-          const std::string ub = p->get_type()->upper_bound();
+          const std::string lb = p->get_type()->lower_bound().get_str();
+          const std::string ub = p->get_type()->upper_bound().get_str();
 
           *out << "handle_write(" << to_C_string(n.loc) << ", rule_name, "
-               << "\"<temporary>\", s, " << lb << ", " << ub << ", " << handle
-               << ", ";
+               << "\"<temporary>\", s, VALUE_C(" << lb << "), VALUE_C(" << ub
+               << "), " << handle << ", ";
           generate_rvalue(*out, *a);
           *out << "); ";
 
         } else if (method == 2) {
-          const std::string lb = p->get_type()->lower_bound();
-          const std::string ub = p->get_type()->upper_bound();
+          const std::string lb = p->get_type()->lower_bound().get_str();
+          const std::string ub = p->get_type()->upper_bound().get_str();
 
-          const std::string lba = a->type()->lower_bound();
+          const std::string lba = a->type()->lower_bound().get_str();
 
           *out << "{ "
                << "raw_value_t v = handle_read_raw(s, ";
@@ -369,17 +383,18 @@ public:
           *out << "); "
                << "raw_value_t v2; "
                << "value_t v3; "
-               << "static const value_t lb = " << lb << "; "
-               << "static const value_t ub = " << ub << "; "
-               << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, " << lba
-               << ", &v3) "
+               << "static const value_t lb = VALUE_C(" << lb << "); "
+               << "static const value_t ub = VALUE_C(" << ub << "); "
+               << "if (v != 0 && (SUB(v, 1, &v2) || ADD(v2, VALUE_C(" << lba
+               << "), &v3) "
                << "|| v3 < lb || v3 > ub)) { "
                << "error(s, \"call to function %s passed an out-of-range value "
                << "%\" PRIRAWVAL \" to parameter " << (index + 1) << "\", \""
-               << n.name << "\", raw_value_to_string(v + " << lba << " - 1)); "
+               << n.name << "\", raw_value_to_string(v + VALUE_C(" << lba
+               << ") - 1)); "
                << "} "
                << "handle_write_raw(s, " << handle << ", v == 0 ? v : "
-               << "((raw_value_t)(v3 - " << lb << ") + 1)); "
+               << "((raw_value_t)(v3 - VALUE_C(" << lb << ")) + 1)); "
                << "} ";
 
         } else if (method == 3) {
@@ -430,6 +445,11 @@ public:
           generate_rvalue(*out, *a);
           break;
 
+        case 6:
+          *out << "((struct handle){ .base = (unsigned char[BITS_TO_BYTES("
+               << p->width() << ")]){0},  .width = " << p->width() << "ull })";
+          break;
+
         default:
           *out << handle;
           break;
@@ -462,6 +482,11 @@ public:
     if (lvalue)
       invalid(n);
     *this << "(!" << *n.lhs << " || " << *n.rhs << ")";
+  }
+
+  void visit_ismember(const IsMember &) final {
+    assert(!"ismember expression not rejected before code generation");
+    __builtin_unreachable();
   }
 
   void visit_isundefined(const IsUndefined &n) final {
@@ -500,6 +525,11 @@ public:
       invalid(n);
     *this << "mul(" << to_C_string(n.loc) << ", rule_name, " << to_C_string(n)
           << ", s, " << *n.lhs << ", " << *n.rhs << ")";
+  }
+
+  void visit_multisetcount(const MultisetCount &) final {
+    assert(!"multisetcount not rejected before code generation");
+    __builtin_unreachable();
   }
 
   void visit_negative(const Negative &n) final {
@@ -587,8 +617,6 @@ public:
       invalid(n);
     *this << "((value_t)(" << *n.lhs << " ^ " << *n.rhs << "))";
   }
-
-  virtual ~Generator() = default;
 
 private:
   void invalid(const Expr &n) const {

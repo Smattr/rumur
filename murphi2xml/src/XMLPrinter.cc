@@ -10,6 +10,7 @@ using namespace rumur;
 
 static std::string xml_escape(char c) {
   switch (c) {
+    /* clang-format off */
     case '"' : return "&quot;";
     case '\'': return "&apos;";
     case '<' : return "&lt;";
@@ -23,6 +24,7 @@ static std::string xml_escape(char c) {
     case 12  : return " ";
 
     default  : return std::string(1, c);
+    /* clang-format on */
   }
 }
 
@@ -153,6 +155,26 @@ void XMLPrinter::visit_band(const Band &n) { visit_bexpr("band", n); }
 void XMLPrinter::visit_bnot(const Bnot &n) { visit_uexpr("bnot", n); }
 
 void XMLPrinter::visit_bor(const Bor &n) { visit_bexpr("bor", n); }
+
+void XMLPrinter::visit_choose(const Choose &n) {
+  sync_to(n);
+  o << "<choose identifier=\"" << n.identifier << "\" ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.container);
+  dispatch(*n.container);
+  if (!n.rules.empty()) {
+    sync_to(*n.rules[0]);
+    o << "<rules>";
+    for (const Ptr<Rule> &r : n.rules) {
+      sync_to(*r);
+      dispatch(*r);
+    }
+    o << "</rules>";
+  }
+  sync_to(n.loc.end);
+  o << "</choose>";
+}
 
 void XMLPrinter::visit_clear(const Clear &n) {
   sync_to(n);
@@ -417,6 +439,23 @@ void XMLPrinter::visit_implication(const Implication &n) {
   visit_bexpr("implication", n);
 }
 
+void XMLPrinter::visit_ismember(const IsMember &n) {
+  sync_to(n);
+  o << "<ismember ";
+  add_location(n);
+  o << ">";
+  sync_to(*n.peg);
+  o << "<arg0>";
+  dispatch(*n.peg);
+  o << "</arg0>";
+  sync_to(*n.hole);
+  o << "<arg1>";
+  dispatch(*n.hole);
+  o << "</arg1>";
+  sync_to(n.loc.end);
+  o << "</ismember>";
+}
+
 void XMLPrinter::visit_isundefined(const IsUndefined &n) {
   visit_uexpr("isundefined", n);
 }
@@ -445,6 +484,87 @@ void XMLPrinter::visit_model(const Model &n) {
 }
 
 void XMLPrinter::visit_mul(const Mul &n) { visit_bexpr("mul", n); }
+
+void XMLPrinter::visit_multiset(const Multiset &n) {
+  sync_to(n);
+  o << "<multiset ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.index_bound);
+  dispatch(*n.index_bound);
+  sync_to(*n.element_type);
+  dispatch(*n.element_type);
+  sync_to(n.loc.end);
+  o << "</multiset>";
+}
+
+void XMLPrinter::visit_multisetadd(const MultisetAdd &n) {
+  sync_to(n);
+  o << "<multisetadd ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.arg0);
+  o << "<argument>";
+  dispatch(*n.arg0);
+  o << "</argument>";
+  sync_to(*n.arg1);
+  o << "<argument>";
+  dispatch(*n.arg1);
+  o << "</argument>";
+  sync_to(n.loc.end);
+  o << "</multisetadd>";
+}
+
+void XMLPrinter::visit_multisetcount(const MultisetCount &n) {
+  sync_to(n);
+  o << "<multisetcount identifier=\"" << n.identifier << "\" ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.container);
+  o << "<argument>";
+  dispatch(*n.container);
+  o << "</argument>";
+  sync_to(*n.predicate);
+  o << "<argument>";
+  dispatch(*n.predicate);
+  o << "</argument>";
+  sync_to(n.loc.end);
+  o << "</multisetcount>";
+}
+
+void XMLPrinter::visit_multisetremove(const MultisetRemove &n) {
+  sync_to(n);
+  o << "<multisetremove ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.arg0);
+  o << "<argument>";
+  dispatch(*n.arg0);
+  o << "</argument>";
+  sync_to(*n.arg1);
+  o << "<argument>";
+  dispatch(*n.arg1);
+  o << "</argument>";
+  sync_to(n.loc.end);
+  o << "</multisetremove>";
+}
+
+void XMLPrinter::visit_multisetremovepred(const MultisetRemovePred &n) {
+  sync_to(n);
+  o << "<multisetremovepred identifier=\"" << n.identifier << "\" ";
+  add_location(n);
+  o << '>';
+  sync_to(*n.container);
+  o << "<argument>";
+  dispatch(*n.container);
+  o << "</argument>";
+  sync_to(*n.predicate);
+  o << "<argument>";
+  dispatch(*n.predicate);
+  o << "</argument>";
+  sync_to(n.loc.end);
+  o << "</multisetremovepred>";
+}
 
 void XMLPrinter::visit_negative(const Negative &n) {
   visit_uexpr("negative", n);
@@ -480,10 +600,12 @@ void XMLPrinter::visit_property(const Property &n) {
   sync_to(n);
   o << "<property category=\"";
   switch (n.category) {
+    /* clang-format off */
     case Property::ASSERTION:  o << "assertion";  break;
     case Property::ASSUMPTION: o << "assumption"; break;
     case Property::COVER:      o << "cover";      break;
     case Property::LIVENESS:   o << "liveness";   break;
+    /* clang-format on */
   }
   o << "\" ";
   add_location(n);
@@ -843,6 +965,19 @@ void XMLPrinter::visit_undefine(const Undefine &n) {
   dispatch(*n.rhs);
   sync_to(n.loc.end);
   o << "</undefine>";
+}
+
+void XMLPrinter::visit_union(const Union &n) {
+  sync_to(n);
+  o << "<union ";
+  add_location(n);
+  o << ">";
+  for (const Ptr<TypeExpr> &m : n.members) {
+    sync_to(*m);
+    dispatch(*m);
+  }
+  sync_to(n.loc.end);
+  o << "</union>";
 }
 
 void XMLPrinter::visit_vardecl(const VarDecl &n) {

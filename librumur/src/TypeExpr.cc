@@ -26,11 +26,11 @@ bool TypeExpr::is_simple() const { return false; }
 
 Ptr<TypeExpr> TypeExpr::resolve() const { return Ptr<TypeExpr>(clone()); }
 
-std::string TypeExpr::lower_bound() const {
+mpz_class TypeExpr::lower_bound() const {
   throw Error("complex types do not have valid lower bounds", loc);
 }
 
-std::string TypeExpr::upper_bound() const {
+mpz_class TypeExpr::upper_bound() const {
   throw Error("complex types do not have valid upper bounds", loc);
 }
 
@@ -109,6 +109,18 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
       }
     }
 
+    void visit_multiset(const Multiset &n) final {
+      if (auto m = dynamic_cast<const Multiset *>(t.get())) {
+        if (m->index_bound->constant_fold() != n.index_bound->constant_fold()) {
+          result = false;
+        } else if (!equal(*m->element_type, *n.element_type)) {
+          result = false;
+        }
+      } else {
+        result = false;
+      }
+    }
+
     void visit_range(const Range &n) final {
       if (auto r = dynamic_cast<const Range *>(t.get())) {
         result = r->min->constant_fold() == n.min->constant_fold() &&
@@ -147,6 +159,19 @@ static bool equal(const TypeExpr &t1, const TypeExpr &t2) {
     }
 
     void visit_typeexprid(const TypeExprID &n) final { dispatch(*n.referent); }
+
+    void visit_union(const Union &n) final {
+      if (auto u = dynamic_cast<const Union *>(t.get())) {
+        if (u->members.size() != n.members.size()) {
+          result = false;
+        } else {
+          for (size_t i = 0; i < n.members.size(); ++i)
+            result &= equal(*u->members[i], *n.members[i]);
+        }
+      } else {
+        result = false;
+      }
+    }
   };
 
   Equater eq(t1);
@@ -161,6 +186,22 @@ bool TypeExpr::coerces_to(const TypeExpr &other) const {
 
   if (isa<Range>(t1) && isa<Range>(t2))
     return true;
+
+  if (auto u = dynamic_cast<const Union *>(t2.get())) {
+    for (const Ptr<TypeExpr> &m : u->members) {
+      if (t1->coerces_to(*m))
+        return true;
+    }
+    return false;
+  }
+
+  if (auto u = dynamic_cast<const Union *>(t1.get())) {
+    for (const Ptr<TypeExpr> &m : u->members) {
+      if (m->coerces_to(*t2))
+        return true;
+    }
+    return false;
+  }
 
   return equal(*t1, *t2);
 }
@@ -218,13 +259,9 @@ void Range::validate() const {
     throw Error("upper bound of range is less than lower bound", loc);
 }
 
-std::string Range::lower_bound() const {
-  return "VALUE_C(" + min->constant_fold().get_str() + ")";
-}
+mpz_class Range::lower_bound() const { return min->constant_fold(); }
 
-std::string Range::upper_bound() const {
-  return "VALUE_C(" + max->constant_fold().get_str() + ")";
-}
+mpz_class Range::upper_bound() const { return max->constant_fold(); }
 
 void Range::to_stream(std::ostream &out) const { out << *min << ".." << *max; }
 
@@ -260,12 +297,9 @@ void Scalarset::validate() const {
     throw Error("bound of scalarset is not positive", bound->loc);
 }
 
-std::string Scalarset::lower_bound() const { return "VALUE_C(0)"; }
+mpz_class Scalarset::lower_bound() const { return 0; }
 
-std::string Scalarset::upper_bound() const {
-  mpz_class b = bound->constant_fold() - 1;
-  return "VALUE_C(" + b.get_str() + ")";
-}
+mpz_class Scalarset::upper_bound() const { return bound->constant_fold() - 1; }
 
 void Scalarset::to_stream(std::ostream &out) const {
   out << "scalarset(" << *bound << ")";
@@ -302,13 +336,13 @@ void Enum::validate() const {
   }
 }
 
-std::string Enum::lower_bound() const { return "VALUE_C(0)"; }
+mpz_class Enum::lower_bound() const { return 0; }
 
-std::string Enum::upper_bound() const {
+mpz_class Enum::upper_bound() const {
   mpz_class size = members.size();
   if (size > 0)
     size--;
-  return "VALUE_C(" + size.get_str() + ")";
+  return size;
 }
 
 void Enum::to_stream(std::ostream &out) const {
@@ -407,7 +441,7 @@ mpz_class Array::count() const {
     return 0;
 
   mpz_class s = 1;
-  for (size_t j = 0; j < i; j++)
+  for (mpz_class j = 0; j < i; ++j)
     s *= e;
   return s;
 }
@@ -419,6 +453,51 @@ void Array::validate() const {
 
 void Array::to_stream(std::ostream &out) const {
   out << "array [" << *index_type << "] of " << *element_type;
+}
+
+Multiset::Multiset(const Ptr<Expr> &index_bound_,
+                   const Ptr<TypeExpr> &element_type_, const location &loc_)
+    : TypeExpr(loc_), index_bound(index_bound_), element_type(element_type_) {}
+
+Multiset *Multiset::clone() const { return new Multiset(*this); }
+
+void Multiset::visit(BaseTraversal &visitor) { visitor.visit_multiset(*this); }
+
+void Multiset::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_multiset(*this);
+}
+
+mpz_class Multiset::width() const {
+  const mpz_class indices = index_bound->constant_fold();
+  const mpz_class element_width = element_type->width();
+  return indices * element_width;
+}
+
+mpz_class Multiset::count() const {
+  const mpz_class indices = index_bound->constant_fold();
+
+  if (indices == 0)
+    return 0;
+
+  const mpz_class element_count = element_type->count();
+
+  mpz_class s = 1;
+  for (mpz_class i = 0; i < indices; ++i)
+    s *= element_count;
+  return s;
+}
+
+void Multiset::validate() const {
+  if (!index_bound->constant())
+    throw Error("multiset bound is not a constant", index_bound->loc);
+
+  const mpz_class b = index_bound->constant_fold();
+  if (b < 0)
+    throw Error("multiset bound is negative, " + b.get_str(), index_bound->loc);
+}
+
+void Multiset::to_stream(std::ostream &out) const {
+  out << "multiset [" << *index_bound << "] of " << *element_type;
 }
 
 TypeExprID::TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
@@ -464,13 +543,13 @@ void TypeExprID::validate() const {
     throw Error("unresolved type symbol \"" + name + "\"", loc);
 }
 
-std::string TypeExprID::lower_bound() const {
+mpz_class TypeExprID::lower_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->lower_bound();
 }
 
-std::string TypeExprID::upper_bound() const {
+mpz_class TypeExprID::upper_bound() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->upper_bound();
@@ -482,6 +561,111 @@ bool TypeExprID::constant() const {
   if (referent == nullptr)
     throw Error("unresolved type symbol \"" + name + "\"", loc);
   return referent->value->constant();
+}
+
+Union::Union(const std::vector<Ptr<TypeExpr>> &members_, const location &loc_)
+    : TypeExpr(loc_), members(members_) {}
+
+Union *Union::clone() const { return new Union(*this); }
+
+void Union::visit(BaseTraversal &visitor) { visitor.visit_union(*this); }
+
+void Union::visit(ConstBaseTraversal &visitor) const {
+  visitor.visit_union(*this);
+}
+
+mpz_class Union::width() const {
+  mpz_class my_width = 0;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class w = m->width();
+    if (w > my_width)
+      my_width = w;
+  }
+  return my_width;
+}
+
+mpz_class Union::count() const {
+  mpz_class c = 1;
+  for (const Ptr<TypeExpr> &m : members)
+    c += m->count();
+  return c;
+}
+
+bool Union::is_simple() const {
+  for (const Ptr<TypeExpr> &m : members) {
+    if (!m->is_simple())
+      return false;
+  }
+  return true;
+}
+
+void Union::validate() const {
+  // In contrast to CMurphi, we treat unions containing 0 or 1 members as legal.
+  // We also allow a single type to appear multiple times within the union.
+  // There is no known practical use for most of these edge cases, but it
+  // simplifies work for generators of Murphi models.
+}
+
+mpz_class Union::lower_bound() const {
+  if (!is_simple())
+    throw Error("union is not a simple type and thus its lower bound cannot be "
+                "determined",
+                loc);
+
+  mpz_class bound;
+  bool set = false;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class b = m->lower_bound();
+    if (!set || b < bound)
+      bound = b;
+    set = true;
+  }
+
+  if (!set)
+    bound = 0;
+
+  return bound;
+}
+
+mpz_class Union::upper_bound() const {
+  if (!is_simple())
+    throw Error("union is not a simple type and thus its upper bound cannot be "
+                "determined",
+                loc);
+
+  mpz_class bound;
+  bool set = false;
+  for (const Ptr<TypeExpr> &m : members) {
+    const mpz_class b = m->upper_bound();
+    if (!set || b > bound)
+      bound = b;
+    set = true;
+  }
+
+  if (!set)
+    bound = 0;
+
+  return bound;
+}
+
+void Union::to_stream(std::ostream &out) const {
+  out << "union {";
+  const char *separator = "";
+  for (const Ptr<TypeExpr> &m : members) {
+    out << separator << *m;
+    separator = ", ";
+  }
+  out << "}";
+}
+
+bool Union::constant() const {
+  for (const Ptr<TypeExpr> &m : members) {
+    if (!m->is_simple())
+      return false;
+    if (!m->constant())
+      return false;
+  }
+  return true;
 }
 
 } // namespace rumur

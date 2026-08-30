@@ -78,9 +78,7 @@ void generate_function(std::ostream &out, const Function &f,
     }
   }
 
-  /* Open a scope to support local declarations can shadow the state
-   * variables.
-   */
+  // open a scope to support local declarations that shadow state variables
   out << "  {\n";
 
   // Output this function's local decls

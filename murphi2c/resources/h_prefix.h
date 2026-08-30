@@ -41,5 +41,3 @@ extern void (*cover)(const char *message);
  * nothing.
  */
 extern void (*liveness)(const char *message);
-
-

@@ -459,6 +459,10 @@ def test_murphi_format_colon():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -475,6 +479,10 @@ def test_murphi_format_arrow_begin1():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -489,6 +497,10 @@ def test_murphi_format_arrow_begin2():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -502,6 +514,10 @@ def test_murphi_format_newline_on_end():
     model = 'rule "foo" begin end rule "bar" begin end'
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -519,6 +535,10 @@ def test_murphi_format_unary_in_for():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -532,6 +552,10 @@ def test_murphi_format_begin_indentation():
     model = "rule var x: boolean; begin end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -551,6 +575,10 @@ def test_murphi_format_multiline_comment():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -564,6 +592,10 @@ def test_murphi_format_then_indentation():
     model = "rule begin if 0 = 0 then\nx := 2; end; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -581,6 +613,10 @@ def test_murphi_format_newline_comment():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -596,6 +632,10 @@ def test_murphi_format_brace_ender():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -608,6 +648,10 @@ def test_murphi_format_double_paren():
     model = "rule begin x [ 1 ] [ 2 ] := 3; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -625,6 +669,10 @@ def test_murphi_format_procedure_var():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -640,6 +688,10 @@ def murphi_format_test_trailing_space():
     model = "invariant x"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -658,6 +710,10 @@ def test_murphi_format_bad_operator():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -673,6 +729,10 @@ def test_murphi_format_case1():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -686,6 +746,10 @@ def test_murphi_format_no_start_newline():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -698,6 +762,10 @@ def test_murphi_format_switch():
     model = "rule begin switch x\nend; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -726,6 +794,10 @@ def test_murphi_format_multiple_inplace(tmp_path):
 
     ret, stdout, stderr = run(["murphi-format", "--in-place", long_path, short_path])
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippets"
     assert stdout == "", "murphi-format produced output when asked for in-place"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -746,6 +818,10 @@ def test_murphi_format_trailing_indentation():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -758,6 +834,10 @@ def test_murphi_format_startstate_no_begin():
     model = "startstate x := y; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -775,6 +855,10 @@ def test_murphi_format_startstate_begin():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -789,6 +873,10 @@ def test_murphi_format_else():
     model = "rule begin if x = x then y := z; else y := w; end; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -805,6 +893,10 @@ def test_murphi_format_elsif():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -820,6 +912,10 @@ def test_murphi_format_while_paren():
     model = "rule begin while (x = x) do y := z; end; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -841,6 +937,10 @@ def test_murphi_format_no_format():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -857,6 +957,10 @@ def test_murphi_format_isundefined():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -869,6 +973,10 @@ def test_murphi_format_line_comment():
     model = "rule begin x := y; -- line comment\nz := w;\n-- comment on newline\n end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -886,6 +994,10 @@ def test_murphi_format_procedure_params():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -898,6 +1010,10 @@ def test_murphi_format_comment_const_interleaved():
     model = "const x: 42;\n\n-- hello world\ny: 42;"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -914,6 +1030,10 @@ def test_murphi_format_scalarset():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -926,6 +1046,10 @@ def test_murphi_format_array():
     model = "type x : array [ boolean ] of boolean;"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -940,18 +1064,26 @@ def test_murphi_format_not_unicode():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
     assert ":= ¬y" in stdout, "`¬` spaced incorrectly"
 
 
-def test_muprhi_format_smart_quotes():
+def test_murphi_format_smart_quotes():
     """murphi-format should handle smart quotes (“”) correctly"""
 
     model = "rule begin assert “foo bar” x; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -966,6 +1098,10 @@ def test_murphi_format_named_startstate():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -978,6 +1114,10 @@ def test_murphi_format_case2():
     model = "rule begin switch x case 1: y := x; case 2: z := x; end; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -1009,6 +1149,10 @@ def test_murphi_format_no_trailing_space_before_comment():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -1026,6 +1170,10 @@ def test_murphi_format_unicode_op():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
@@ -1038,6 +1186,10 @@ def test_murphi_format_hex_literal():
     model = "rule begin x := 0xe2; end"
 
     ret, stdout, stderr = run(["murphi-format"], model)
+
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
 
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
@@ -1054,10 +1206,36 @@ def test_murphi_format_end_newline():
 
     ret, stdout, stderr = run(["murphi-format"], model)
 
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+
     assert ret == 0, "failed to reflow Murphi snippet"
     assert stderr == "", "murphi-format printed errors/warnings"
 
     assert stdout.endswith("\n"), "incorrect file ending"
+
+
+def test_murphi_format_arrow_break_dedent():
+    """
+    is murphi-format’s indenting confused by `==>\n\n`?
+
+    https://github.com/Smattr/rumur/issues/339
+    """
+
+    # a rule that has a paragraph break after `==>`
+    src = 'rule"foo"==>\n\nvar x:boolean;begin x:=false;end;'
+
+    # run this through `murphi-format`
+    ret, stdout, stderr = run(["murphi-format"], src)
+    if ret != 0:
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+    assert ret == 0, "failed to reflow Murphi snippet"
+    assert stderr == "", "murphi-format printed errors/warnings"
+
+    # if indentation was not mismanaged, ending indentation should be 0
+    assert stdout.endswith("\nend;\n"), "incorrect handling of `==><NL><NL>`"
 
 
 @pytest.mark.parametrize("component", ("list", "set"))
@@ -1210,6 +1388,87 @@ def test_murphi2c_header(model, tmp_path):
     assert ret == 0, "C++ compilation failed:\n{}{}".format(stdout, stderr)
 
 
+def test_murphi2c_type_with_space():
+    """can murphi2c handle a `--value-type` with a space in it?"""
+
+    # an arbitrary model using array indices
+    src = """\
+    var x: array[0..1] of boolean;
+
+    startstate begin
+      x[0] := true;
+    end;
+
+    rule begin
+      x[0] := !x[0];
+    end;
+    """
+
+    # run this through murphi2c with a `--value-type` with a space
+    args = ["murphi2c", "--value-type=signed char"]
+    if has_valgrind():
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args, src)
+    if has_valgrind():
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    assert ret == 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    # ask the C compiler if the source is valid
+    args = [cc()] + c_flags() + ["-c", "-o", os.devnull, "-"]
+    ret, out, err = run(args, stdout)
+    assert ret == 0, "C compilation failed:\n{}{}\nProgram:\n{}".format(
+        out, err, stdout
+    )
+
+
+def test_murphi2c_type_with_space2():
+    """can murphi2c handle a `--value-type` with a space in it?"""
+
+    # an arbitrary model using printing
+    src = """\
+    var x: 0..1;
+
+    startstate begin
+      x := 0;
+    end;
+
+    rule begin
+      x := 1 - x;
+      put x;
+    end;
+    """
+
+    # run this through murphi2c with a `--value-type` with a space
+    args = ["murphi2c", "--value-type=signed char"]
+    if has_valgrind():
+        args = [
+            "valgrind",
+            "--leak-check=full",
+            "--show-leak-kinds=all",
+            "--error-exitcode=42",
+            "--",
+        ] + args
+    ret, stdout, stderr = run(args, src)
+    if has_valgrind():
+        assert ret != 42, "Memory leak:\n{}{}".format(stdout, stderr)
+
+    assert ret == 0, "Unexpected murphi2c exit:\n{}{}".format(stdout, stderr)
+
+    # ask the C compiler if the source is valid
+    args = [cc()] + c_flags() + ["-c", "-o", os.devnull, "-"]
+    ret, out, err = run(args, stdout)
+    assert ret == 0, "C compilation failed:\n{}{}\nProgram:\n{}".format(
+        out, err, stdout
+    )
+
+
 @pytest.mark.parametrize("model", MODELS)
 def test_murphi2xml(model):
     """test cases for murphi2xml"""
@@ -1315,6 +1574,11 @@ def test_murphi2uclid(model, tmp_path):
         "scalarset-cex.m",
         "scalarset-schedules-off.m",
         "scalarset-schedules-off-2.m",
+        "undefined-assign.m",
+        "undefined-call.m",
+        "undefined-call-complex.m",
+        "undefined-var-call.m",
+        "undefined-var-call-complex.m",
         # contains `put`
         "for-step-0-dynamic.m",
         "put-stmt.m",
@@ -2288,7 +2552,7 @@ def test_debian_tests(testcase, tmp_path):
     if testcase == "rumur-run-model":
         assert (
             proc.returncode != 0
-        ), "{} suprisingly found `rumur-run` executable: {}{}".format(
+        ), "{} surprisingly found `rumur-run` executable: {}{}".format(
             str(exe), proc.stdout, proc.stderr
         )
         return
@@ -2296,3 +2560,22 @@ def test_debian_tests(testcase, tmp_path):
     assert proc.returncode == 0, "{} failed: {}{}".format(
         str(exe), proc.stdout, proc.stderr
     )
+
+
+@pytest.mark.parametrize("arg", ("array", "index"))
+@pytest.mark.skipif(
+    shutil.which("element-is-pure") is None, reason="tester binary not found"
+)
+def test_element_is_pure(arg):
+    """see element-is-pure/main.cc"""
+    ret = sp.call(["element-is-pure", arg])
+    assert ret == 0, "impure array indexing expression considered pure"
+
+
+@pytest.mark.skipif(
+    shutil.which("union-array-width") is None, reason="tester binary not found"
+)
+def test_union_array_width():
+    """see union-array-width/main.cc"""
+    ret = sp.call(["union-array-width"])
+    assert ret == 0, "union and array had differing widths"

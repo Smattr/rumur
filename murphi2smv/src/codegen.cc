@@ -109,6 +109,11 @@ public:
     *this << '(' << *n.lhs << " | " << *n.rhs << ')';
   }
 
+  void visit_choose(const Choose &) final {
+    *this << tab()
+          << "/-- FIXME: Murphi choose rules have no equivalent in SMV --/\n";
+  }
+
   void visit_clear(const Clear &) final {
     *this
         << tab()
@@ -244,6 +249,12 @@ public:
     *this << '(' << *n.lhs << " -> " << *n.rhs << ')';
   }
 
+  void visit_ismember(const IsMember &n) final {
+    *this << "/-- FIXME: Murphi ismember expressions have no equivalent in SMV "
+             "--/ ismember("
+          << *n.peg << ", " << *n.hole << ")";
+  }
+
   void visit_isundefined(const IsUndefined &n) final {
     *this << tab()
           << "/-- FIXME: Murphi isundefined statements have no equivalent in "
@@ -288,6 +299,38 @@ public:
 
   void visit_mul(const Mul &n) final {
     *this << '(' << *n.lhs << " * " << *n.rhs << ')';
+  }
+
+  void visit_multiset(const Multiset &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "index: "
+          << *n.index_bound << "; element type: " << *n.element_type
+          << " /-- FIXME: end of Murphi multiset type --/";
+  }
+
+  void visit_multisetadd(const MultisetAdd &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetAdd("
+          << *n.arg0 << ", " << *n.arg1 << ')';
+  }
+
+  void visit_multisetcount(const MultisetCount &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetCount("
+          << n.identifier << ": " << *n.container << ", " << *n.predicate
+          << ')';
+  }
+
+  void visit_multisetremove(const MultisetRemove &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetRemove("
+          << *n.arg0 << ", " << *n.arg1 << ')';
+  }
+
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    *this << "/-- FIXME: Murphi multiset types have no equivalent in SMV --/ "
+             "MultisetRemovePred("
+          << *n.container << ", " << *n.predicate << ')';
   }
 
   void visit_negative(const Negative &n) final { *this << '-' << *n.rhs; }
@@ -540,6 +583,20 @@ public:
         << tab()
         << "/-- FIXME: Murphi undefine statements have no equivalent in SMV, `"
         << *n.rhs << "` --/\n";
+  }
+
+  void visit_union(const Union &n) final {
+    *this << tab()
+          << "/-- FIXME: Murphi union types have no equivalent in SMV --/\n";
+
+    indent();
+    for (const Ptr<TypeExpr> &m : n.members) {
+      emit_leading_comments(*m);
+      *this << *m;
+    }
+    dedent();
+
+    *this << tab() << "/-- FIXME: end of union type --/\n";
   }
 
   void visit_vardecl(const VarDecl &n) final {

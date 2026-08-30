@@ -1,0 +1,75 @@
+$version: 1
+rules:
+  # Cppcheck 2.13.0 says:
+  #
+  #   [MEDIUM] build/librumur/parser.yy.hh:1388:12: The struct 'basic_symbol
+  #     < by_kind >' defines member function with name 'clear' also defined
+  #     in its parent struct 'by_kind'. [cppcheck-duplInheritedMember]
+  #         void clear () YY_NOEXCEPT
+  #              ^
+  #
+  #   [MEDIUM] build/librumur/parser.yy.hh:1388:12: The struct 'basic_symbol
+  #     < by_state >' defines member function with name 'clear' also defined
+  #     in its parent struct 'by_state'. [cppcheck-duplInheritedMember]
+  #         void clear () YY_NOEXCEPT
+  #              ^
+  #
+  #   [MEDIUM] build/librumur/parser.yy.hh:1540:24: The struct 'basic_symbol
+  #     < by_kind >' defines member function with name 'type_get' also
+  #     defined in its parent struct 'by_kind'.
+  #     [cppcheck-duplInheritedMember]
+  #         symbol_kind_type type_get () const YY_NOEXCEPT;
+  #                          ^
+  - filters:
+      filepath: "*/librumur/parser.yy.hh"
+      checker_name: cppcheck-duplInheritedMember
+    actions:
+      review_status: suppress
+      reason: this location is within generated code
+
+  # Cppcheck 2.19.0 when processing Bison 3.8.2 generated code says:
+  #
+  #   [MEDIUM] librumur/parser.yy.hh:240:5: Member variable
+  #     'value_type::yyalign_me_' is not initialized in the constructor.
+  #     [cppcheck-uninitMemberVar]
+  #      value_type (YY_RVREF (T) t)
+  #      ^
+  #
+  #   [MEDIUM] librumur/parser.yy.hh:240:5: Member variable
+  #     'value_type::yyraw_' is not initialized in the constructor.
+  #     [cppcheck-uninitMemberVar]
+  #      value_type (YY_RVREF (T) t)
+  #      ^
+  - filters:
+      filepath: "*/librumur/parser.yy.hh"
+      checker_name: cppcheck-uninitMemberVar
+    actions:
+      review_status: suppress
+      reason: this location is within generated code
+
+  # Cppcheck 2.19.0 when processing Bison 3.8.2 generated code says:
+  #
+  #  [HIGH] librumur/parser.yy.cc:1238:15: Out of bound access to memory
+  #    preceding 'yypgoto_' [security.ArrayBound]
+  #      int yyr = yypgoto_[yysym - YYNTOKENS] + yystate;
+  #                ^
+  - filters:
+      filepath: "*/librumur/parser.yy.cc"
+      checker_name: security.ArrayBound
+    actions:
+      review_status: suppress
+      reason: this location is within generated code
+
+  # Cppcheck 2.19.0 when processing Bison 3.8.2 generated code says:
+  #
+  #  [MEDIUM] librumur/parser.yy.cc:2771:36: The value provided to the cast
+  #    expression is not in the valid range of values for 'symbol_kind_type'
+  #    [optin.core.EnumCastOutOfRange]
+  #                  yyarg[yycount++] = YY_CAST (symbol_kind_type, yyx);
+  #                                     ^
+  - filters:
+      filepath: "*/librumur/parser.yy.cc"
+      checker_name: optin.core.EnumCastOutOfRange
+    actions:
+      review_status: suppress
+      reason: this location is within generated code

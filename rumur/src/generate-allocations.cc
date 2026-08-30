@@ -27,8 +27,6 @@ public:
       dispatch(*a);
   }
 
-  virtual ~Generator() = default;
-
 private:
   void define_backing_mem(size_t id, const TypeExpr *t) {
     if (t != nullptr && !t->is_simple())

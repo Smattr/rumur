@@ -36,7 +36,7 @@ static void parse_args(int argc, char **argv) {
     };
 
     int option_index = 0;
-    int c = getopt_long(argc, argv, "dio:", opts, &option_index);
+    int c = getopt_long(argc, argv, "dhio:t:", opts, &option_index);
 
     if (c == -1)
       break;
@@ -169,7 +169,14 @@ int main(int argc, char **argv) {
         goto done;
       }
       (void)fclose(wb);
+      errno = 0;
       rewind(out);
+      if (errno != 0) {
+        fprintf(stderr, "failed to rewind in-memory buffer: %s\n",
+                strerror(errno));
+        rc = EXIT_FAILURE;
+        goto done;
+      }
     }
   }
 

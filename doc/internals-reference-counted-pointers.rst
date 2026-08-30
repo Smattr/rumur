@@ -62,13 +62,10 @@ or with gets and puts.
 Implementation of Atomic Updates
 --------------------------------
 Both ``refcounted_ptr_get`` and ``refcounted_ptr_put`` need to operate
-atomically on the pointer they are affecting. This is straightforward for put
-that only needs to atomically decrement the reference count, but get needs to
-read the pointer and the count atomically while incrementing the count.
-
-To achieve this, we use a double-word compare-exchange operation. First we read
-the entire structure atomically. We then extract the pointer value and increment
-the count in the local copy we have. Finally we use an atomic compare-exchange
-to write the changes back to the original structure. This relies on platform
-support for atomic double-word compare-exchange. For example, on x86-64 this
-involves a ``CMPXCHG16B`` instruction.
+atomically on the pointer they are affecting. To achieve this, we use a
+double-word compare-exchange operation. First we read the entire structure
+atomically. We then extract the pointer value and increment/decrement the count
+in the local copy we have. Finally we use an atomic compare-exchange to write
+the changes back to the original structure. This relies on platform support for
+atomic double-word compare-exchange. For example, on x86-64 this involves a
+``CMPXCHG16B`` instruction.

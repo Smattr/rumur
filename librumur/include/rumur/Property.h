@@ -28,7 +28,6 @@ struct RUMUR_API_WITH_RTTI Property : public Node {
 
   Property(Category category_, const Ptr<Expr> &expr_, const location &loc_);
   Property *clone() const override;
-  virtual ~Property() = default;
 
   void validate() const override;
   void visit(BaseTraversal &visitor) override;

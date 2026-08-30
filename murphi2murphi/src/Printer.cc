@@ -75,9 +75,21 @@ void Printer::visit_bor(const Bor &n) { visit_bexpr(n); }
 
 void Printer::visit_assignment(const Assignment &n) {
   top->sync_to(n);
+  top->sync_to(*n.lhs);
   top->dispatch(*n.lhs);
   top->sync_to(*n.rhs);
   top->dispatch(*n.rhs);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_choose(const Choose &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  for (const Ptr<Rule> &r : n.rules) {
+    top->sync_to(*r);
+    top->dispatch(*r);
+  }
   top->sync_to(n.loc.end);
 }
 
@@ -236,6 +248,15 @@ void Printer::visit_ifclause(const IfClause &n) {
 
 void Printer::visit_implication(const Implication &n) { visit_bexpr(n); }
 
+void Printer::visit_ismember(const IsMember &n) {
+  top->sync_to(n);
+  top->sync_to(*n.peg);
+  top->dispatch(*n.peg);
+  top->sync_to(*n.hole);
+  top->dispatch(*n.hole);
+  top->sync_to(n.loc.end);
+}
+
 void Printer::visit_isundefined(const IsUndefined &n) { visit_uexpr(n); }
 
 void Printer::visit_leq(const Leq &n) { visit_bexpr(n); }
@@ -258,6 +279,51 @@ void Printer::visit_model(const Model &n) {
 }
 
 void Printer::visit_mul(const Mul &n) { visit_bexpr(n); }
+
+void Printer::visit_multiset(const Multiset &n) {
+  top->sync_to(n);
+  top->sync_to(*n.index_bound);
+  top->dispatch(*n.index_bound);
+  top->sync_to(*n.element_type);
+  top->dispatch(*n.element_type);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetadd(const MultisetAdd &n) {
+  top->sync_to(n);
+  top->sync_to(*n.arg0);
+  top->dispatch(*n.arg0);
+  top->sync_to(*n.arg1);
+  top->dispatch(*n.arg1);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetcount(const MultisetCount &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  top->sync_to(*n.predicate);
+  top->dispatch(*n.predicate);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetremove(const MultisetRemove &n) {
+  top->sync_to(n);
+  top->sync_to(*n.arg0);
+  top->dispatch(*n.arg0);
+  top->sync_to(*n.arg1);
+  top->dispatch(*n.arg1);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_multisetremovepred(const MultisetRemovePred &n) {
+  top->sync_to(n);
+  top->sync_to(*n.container);
+  top->dispatch(*n.container);
+  top->sync_to(*n.predicate);
+  top->dispatch(*n.predicate);
+  top->sync_to(n.loc.end);
+}
 
 void Printer::visit_negative(const Negative &n) { visit_uexpr(n); }
 
@@ -510,6 +576,15 @@ void Printer::visit_undefine(const Undefine &n) {
   top->sync_to(n);
   top->sync_to(*n.rhs);
   top->dispatch(*n.rhs);
+  top->sync_to(n.loc.end);
+}
+
+void Printer::visit_union(const Union &n) {
+  top->sync_to(n);
+  for (const Ptr<TypeExpr> &m : n.members) {
+    top->sync_to(*m);
+    top->dispatch(*m);
+  }
   top->sync_to(n.loc.end);
 }
 

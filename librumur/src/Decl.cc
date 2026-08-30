@@ -16,8 +16,6 @@ namespace rumur {
 Decl::Decl(const std::string &name_, const location &loc_)
     : Node(loc_), name(name_) {}
 
-Decl::~Decl() {}
-
 ExprDecl::ExprDecl(const std::string &name_, const location &loc_)
     : Decl(name_, loc_) {}
 

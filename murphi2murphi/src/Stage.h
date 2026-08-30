@@ -49,9 +49,7 @@ public:
   virtual void skip_to(const rumur::position &pos) = 0;
 
   // perform any pending actions, assuming that processing is done
-  virtual void finalise(){};
-
-  virtual ~Stage() = default;
+  virtual void finalise() {};
 };
 
 class IntermediateStage : public Stage {
@@ -72,6 +70,7 @@ public:
   void visit_band(const rumur::Band &n) override;
   void visit_bnot(const rumur::Bnot &n) override;
   void visit_bor(const rumur::Bor &n) override;
+  void visit_choose(const rumur::Choose &n) override;
   void visit_clear(const rumur::Clear &n) override;
   void visit_constdecl(const rumur::ConstDecl &n) override;
   void visit_div(const rumur::Div &n) override;
@@ -91,6 +90,7 @@ public:
   void visit_if(const rumur::If &n) override;
   void visit_ifclause(const rumur::IfClause &n) override;
   void visit_implication(const rumur::Implication &n) override;
+  void visit_ismember(const rumur::IsMember &n) override;
   void visit_isundefined(const rumur::IsUndefined &n) override;
   void visit_leq(const rumur::Leq &n) override;
   void visit_lsh(const rumur::Lsh &n) override;
@@ -98,6 +98,11 @@ public:
   void visit_mod(const rumur::Mod &n) override;
   void visit_model(const rumur::Model &n) override;
   void visit_mul(const rumur::Mul &n) override;
+  void visit_multiset(const rumur::Multiset &n) override;
+  void visit_multisetadd(const rumur::MultisetAdd &n) override;
+  void visit_multisetcount(const rumur::MultisetCount &n) override;
+  void visit_multisetremove(const rumur::MultisetRemove &n) override;
+  void visit_multisetremovepred(const rumur::MultisetRemovePred &n) override;
   void visit_negative(const rumur::Negative &n) override;
   void visit_neq(const rumur::Neq &n) override;
   void visit_not(const rumur::Not &n) override;
@@ -124,6 +129,7 @@ public:
   void visit_typedecl(const rumur::TypeDecl &n) override;
   void visit_typeexprid(const rumur::TypeExprID &n) override;
   void visit_undefine(const rumur::Undefine &n) override;
+  void visit_union(const rumur::Union &n) override;
   void visit_vardecl(const rumur::VarDecl &n) override;
   void visit_while(const rumur::While &n) override;
   void visit_xor(const rumur::Xor &n) override;

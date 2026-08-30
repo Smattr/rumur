@@ -27,7 +27,6 @@ struct VarDecl;
 struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
 
   TypeExpr(const location &loc_);
-  virtual ~TypeExpr() = default;
 
   // Whether this type is a primitive integer-like type.
   virtual bool is_simple() const;
@@ -37,11 +36,10 @@ struct RUMUR_API_WITH_RTTI TypeExpr : public Node {
   virtual mpz_class count() const = 0;
   virtual Ptr<TypeExpr> resolve() const;
 
-  /* Numeric bounds of this type as valid C code. These are only valid to use on
-   * TypeExprs for which is_simple() returns true.
-   */
-  virtual std::string lower_bound() const;
-  virtual std::string upper_bound() const;
+  // Numeric bounds of this type. These are only valid to use on TypeExprs for
+  // which is_simple() returns true.
+  virtual mpz_class lower_bound() const;
+  virtual mpz_class upper_bound() const;
 
   // Get a string representation of this type
   std::string to_string() const;
@@ -74,7 +72,6 @@ struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
 
   Range(const Ptr<Expr> &min_, const Ptr<Expr> &max_, const location &loc_);
   Range *clone() const override;
-  virtual ~Range() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -83,8 +80,8 @@ struct RUMUR_API_WITH_RTTI Range : public TypeExpr {
   bool is_simple() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
@@ -95,7 +92,6 @@ struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
 
   Scalarset(const Ptr<Expr> &bound_, const location &loc_);
   Scalarset *clone() const override;
-  virtual ~Scalarset() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -104,8 +100,8 @@ struct RUMUR_API_WITH_RTTI Scalarset : public TypeExpr {
   bool is_simple() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };
@@ -122,7 +118,6 @@ struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
   Enum(const std::vector<std::pair<std::string, location>> &members_,
        const location &loc_);
   Enum *clone() const override;
-  virtual ~Enum() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -131,8 +126,8 @@ struct RUMUR_API_WITH_RTTI Enum : public TypeExpr {
   bool is_simple() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
   bool is_boolean() const override;
@@ -144,7 +139,6 @@ struct RUMUR_API_WITH_RTTI Record : public TypeExpr {
 
   Record(const std::vector<Ptr<VarDecl>> &fields_, const location &loc_);
   Record *clone() const override;
-  virtual ~Record() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -162,7 +156,23 @@ struct RUMUR_API_WITH_RTTI Array : public TypeExpr {
   Array(const Ptr<TypeExpr> &index_type_, const Ptr<TypeExpr> &element_type_,
         const location &loc_);
   Array *clone() const override;
-  virtual ~Array() = default;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  mpz_class width() const override;
+  mpz_class count() const override;
+  void validate() const override;
+  void to_stream(std::ostream &out) const override;
+};
+
+struct RUMUR_API_WITH_RTTI Multiset : public TypeExpr {
+  Ptr<Expr> index_bound;
+  Ptr<TypeExpr> element_type;
+
+  Multiset(const Ptr<Expr> &index_bound_, const Ptr<TypeExpr> &element_type_,
+           const location &loc_);
+  Multiset *clone() const override;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -181,7 +191,6 @@ struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
   TypeExprID(const std::string &name_, const Ptr<TypeDecl> &referent_,
              const location &loc_);
   TypeExprID *clone() const override;
-  virtual ~TypeExprID() = default;
 
   void visit(BaseTraversal &visitor) override;
   void visit(ConstBaseTraversal &visitor) const override;
@@ -192,8 +201,27 @@ struct RUMUR_API_WITH_RTTI TypeExprID : public TypeExpr {
   Ptr<TypeExpr> resolve() const override;
   void validate() const override;
 
-  std::string lower_bound() const override;
-  std::string upper_bound() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
+  void to_stream(std::ostream &out) const override;
+  bool constant() const override;
+};
+
+struct RUMUR_API_WITH_RTTI Union : public TypeExpr {
+  std::vector<Ptr<TypeExpr>> members;
+
+  Union(const std::vector<Ptr<TypeExpr>> &members_, const location &loc_);
+  Union *clone() const override;
+
+  void visit(BaseTraversal &visitor) override;
+  void visit(ConstBaseTraversal &visitor) const override;
+
+  mpz_class width() const override;
+  mpz_class count() const override;
+  bool is_simple() const override;
+  void validate() const override;
+  mpz_class lower_bound() const override;
+  mpz_class upper_bound() const override;
   void to_stream(std::ostream &out) const override;
   bool constant() const override;
 };

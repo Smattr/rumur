@@ -3,7 +3,7 @@
 # Download and install Macports. For use in CI.
 
 # Version of Macports to install
-VERSION=2.12.1
+VERSION=2.12.4
 
 if [ "$(uname)" != "Darwin" ]; then
   printf 'this script is only intended to run on macOS\n' >&2
@@ -22,7 +22,7 @@ cd "${TMP}"
 
 # Download
 curl --retry 3 --location --no-progress-meter -O \
-  https://github.com/macports/macports-base/releases/download/v${VERSION}/MacPorts-${VERSION}-15-Sequoia.pkg
+  https://github.com/macports/macports-base/releases/download/v${VERSION}/MacPorts-${VERSION}-26-Tahoe.pkg
 
 # Install
-sudo installer -package MacPorts-${VERSION}-15-Sequoia.pkg -target /
+sudo installer -package MacPorts-${VERSION}-26-Tahoe.pkg -target /

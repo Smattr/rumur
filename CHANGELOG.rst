@@ -1,6 +1,90 @@
 Change log
 ==========
 
+v2026.08.30
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: passing a ``--value-type`` containing spaces to ``murphi2c`` no
+  longer results in malformed code (commits
+  7feb6e0aa0b2b079c2e4f00cc5ceb519d9dac6e6,
+  e38ce1b5f02beb7f996fac5ff5e64673ca323f20,
+  a1d416ec999af9c24de218942b35fa3cb7f6fbbb).
+* Bug fix: ``murphi-format`` more correctly handles ``==>`` followed by
+  ``begin`` with multiple newlines in-between (commit
+  70173dbe7adb55faa6de5e3fba24522fa3beb4e6).
+* Bug fix: monitoring of subprocesses (SMT solvers) was corrected, avoiding a
+  previous possible deadlock (commit 67c545f43eb8a71fc59465d8f2d9227a9dd7d631).
+* Bug fix: ``murphi-format`` recognises the command line option ``-h`` (commit
+  dc03b1031931030fd0cb9b7074a4ad345dee5bb5).
+* Bug fix: ``murphi-format`` recognises the command line option ``-t`` (commit
+  9e47b916f8f208a4bfe36ffdafc094caa37745d9).
+* Bug fix: when passing a very small number to ``--set-capacity``, malformed
+  code is no longer generated (commit 80f9ac2acbe3db43bb09fd8fba4e87b4f85fd57b).
+* Bug fix: ``murphi-format`` recognises and responds to failures to rewind file
+  pointers (commits 52eed93e005726fd39b7ad7327c35acba1afc386,
+  79be8baacb001a3180c77f5ef89ffccb309a5641).
+* The ``undefined`` keyword is now supported (commits
+  1c419e523f625b8ff4d31cd33f9a9fb021f6ed42,
+  dd3bc59f781c8ae587f3a5753b80ed06ac033c8b).
+* The ``union`` type is now supported during parsing and type checking. It is
+  still not possible to generate a checker from a model containing unions but
+  some auxiliary tools like ``murphi2xml`` fully support unions. The main
+  purpose of this addition is to support third-party code using librumur to
+  parse union-containing models (commits
+  7ecea100928755fb5f5cb37b638799177b3114c1,
+  3b58aa9dbfae7082c01b36368785fea530717e31,
+  d6b7949fea8c9da3bdbd08d0311b60fca04683cc,
+  62a8c4931edc787401726f2e17d40d4832836d0d,
+  c8720b77e298e51350be5486829f16f2c2bf15e8,
+  c89bd8afdaa1aad2089cecfb7a77d2e28fab68a4,
+  5a2545ee489faf4b730e00797b97979e53b3fab2).
+* The ``multiset`` type is now supported during parsing and type checking. It is
+  still not possible to generate a checker from a model containing multisets but
+  some auxiliary tools like ``murphi2xml`` fully support multisets. The main
+  purpose of this addition is to support third-party code using librumur to
+  parse multiset-containing models (commits
+  9f55ca0ed6fbf0b841130f2c71e5bbf69d4957d0,
+  0b3e81a6b425d10f5847e8907cf36487944cc017,
+  0639e869deb55f9930e485a5029c82316eafc950,
+  1942fbaab08493e2a02a02cb1ef3af40b1901cd9,
+  b9d77afccfc01ce9be1287580714c8dd3934493c,
+  dbd173eefe7ab88b329330d58c214169133aca46,
+  df05e0f8df35146f535cc42cc134cd2efbb47735,
+  c12c449c53600e8de09fb40459f67590d8399990,
+  ba7239c495f448f60977c6059af2f14d16fb509a,
+  8eb2b08949f5c2c97ee3dc5f22594c5ffbd1fc39,
+  1076e5f55a0e164824a4e1c23f0ad0fd33528dd1,
+  d1cfbdd8a8b1cf96e9f265bcc4061b2ecb26205f,
+  d70d11730bd472b36f96fc6539a4a05b2c881fd4,
+  67127631f48b6f495d858bae6a52de4b0dcaf0ae,
+  e534adfddbfa43ee0d572a96a3aa718d8a7bfec2,
+  745ce5eec26b43a123ba27e9f7403fd511022307,
+  666b89cdfb62af4d39fb292ebe74625715c7a69b,
+  2a686b72ac14948168f58957bff44a7898891cec,
+  f6617bef7bab564139822149caafd67b0c722614).
+* ``--help`` ignores ``$TMPDIR`` when it points to an unusable directory (commit
+  b873e30df7b7f14af3529dd0a2355f8b91d6956e).
+* A false positive ``-Wshift-count-overflow`` compiler warning when building the
+  generated checker with GCC ≥ 15 has been suppressed (commit
+  11347fc61465d5aa7c46fb21721a8cf579739e38).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* Bug fix: array indexing (``Element``) is considered impure (``is_pure()``
+  returns ``false``) if its indexing expression is impure (commit
+  2eb8c356927601e6ac4ef0120746da9ebb702ea8).
+* Bug fix: array indexing (``Element``) is considered impure (``is_pure()``
+  returns ``false``) if its array expression is impure (commit
+  b0aa51f9631457fb9992d0ef19229197678a9c2f).
+* Bug fix: record field selection (``Field``) is considered impure
+  (``is_pure()`` returns ``false``) if its left-hand side is impure (commit
+  d6c04d2a15021338e29e5c80bb940e0993c87a1c).
+* The ``lower_bound`` and ``upper_bound`` member functions on AST nodes now
+  return ``mpz_class`` values instead of ``std::string`` values (commit
+  fd2a59a25af8c4a45f6ec85303c6bad9260a069e).
+
 v2026.03.11
 -----------
 
