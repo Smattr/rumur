@@ -32,7 +32,9 @@ static void clear(std::ostream &out, const TypeExpr &t,
   if (auto a = dynamic_cast<const Array *>(type.get())) {
 
     // The number of elements in this array as a C code string
-    mpz_class ic = a->index_type->count() - 1;
+    const mpz_class ic_with_undefined = a->index_type->count();
+    assert(ic_with_undefined > 0);
+    const mpz_class ic = ic_with_undefined - 1;
     const std::string ub = "((size_t)" + ic.get_str() + "ull)";
 
     // The bit size of each array element as a C code string
