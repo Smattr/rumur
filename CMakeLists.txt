@@ -155,8 +155,3 @@ if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check murphi-comment-ls)
   add_dependencies(check union-array-width)
 endif()
-
-add_custom_target(format
-  COMMAND git ls-files -z '**/*.c' '**/*.cc' '**/*.h' |
-    xargs -0 -- clang-format -i --style=file
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
