@@ -126,30 +126,50 @@ endif()
 # comment for OpenBSD maintainers grepping packages:
 #   Rumur uses pledge() on OpenBSD
 
+set(TEST_PATH "$ENV{PATH}")
 add_subdirectory(librumur)
+set(TEST_INC "${CMAKE_CURRENT_SOURCE_DIR}/librumur/include")
+set(TEST_INC "${TEST_INC}:${CMAKE_CURRENT_BINARY_DIR}/librumur")
 add_subdirectory(murphi-format)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${TEST_PATH}")
 add_subdirectory(murphi2c)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${TEST_PATH}")
 add_subdirectory(murphi2murphi)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${TEST_PATH}")
 add_subdirectory(murphi2smv)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/murphi2smv:${TEST_PATH}")
 add_subdirectory(murphi2uclid)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${TEST_PATH}")
 add_subdirectory(murphi2xml)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${TEST_PATH}")
 add_subdirectory(rumur)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/rumur:${TEST_PATH}")
 add_subdirectory(share)
 add_subdirectory(tests/element-is-pure)
+set(TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/tests/element-is-pure:${TEST_PATH}")
 add_subdirectory(tests/murphi-comment-ls)
+set(
+  TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:${TEST_PATH}"
+)
 add_subdirectory(tests/union-array-width)
+set(
+  TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/tests/union-array-width:${TEST_PATH}"
+)
 
 add_custom_target(check
   COMMAND env
-    PATH=${CMAKE_CURRENT_BINARY_DIR}/rumur:${CMAKE_CURRENT_BINARY_DIR}/murphi-format:${CMAKE_CURRENT_BINARY_DIR}/murphi2c:${CMAKE_CURRENT_BINARY_DIR}/murphi2murphi:${CMAKE_CURRENT_BINARY_DIR}/murphi2uclid:${CMAKE_CURRENT_BINARY_DIR}/murphi2xml:${CMAKE_CURRENT_BINARY_DIR}/tests/element-is-pure:${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:${CMAKE_CURRENT_BINARY_DIR}/tests/union-array-width:$ENV{PATH}
-    CPLUS_INCLUDE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/librumur/include:${CMAKE_CURRENT_BINARY_DIR}/librumur
-    LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur
-    LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur
-    python3 -m pytest --capture=no --override-ini=cache_dir=${CMAKE_CURRENT_BINARY_DIR} --verbose --verbose ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.py
+    "PATH=${TEST_PATH}"
+    "CPLUS_INCLUDE_PATH=${TEST_INC}"
+    "LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur"
+    "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur"
+    python3 -m pytest --capture=no
+      --override-ini=cache_dir=${CMAKE_CURRENT_BINARY_DIR} --verbose --verbose
+      ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.py
+  COMMENT "Running test suite"
   USES_TERMINAL
 )
 add_dependencies(check
-  murphi-format murphi2c murphi2murphi murphi2uclid murphi2xml rumur
+  murphi-format murphi2c murphi2murphi murphi2smv murphi2uclid murphi2xml rumur
 )
 if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check murphi-comment-ls)
