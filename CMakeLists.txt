@@ -172,6 +172,7 @@ add_dependencies(check
   murphi-format murphi2c murphi2murphi murphi2smv murphi2uclid murphi2xml rumur
 )
 if(NOT CMAKE_CROSSCOMPILING)
+  add_dependencies(check element-is-pure)
   add_dependencies(check murphi-comment-ls)
   add_dependencies(check union-array-width)
 endif()
