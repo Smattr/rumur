@@ -4,6 +4,7 @@ add_custom_command(
   MAIN_DEPENDENCY doc/murphi2smv.1
   DEPENDS ../misc/xxd.py
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating manpage.cc"
 )
 
 add_executable(murphi2smv
@@ -21,12 +22,18 @@ target_include_directories(murphi2smv PRIVATE
 
 target_link_libraries(murphi2smv PRIVATE librumur)
 
-add_custom_target(man-murphi2smv ALL DEPENDS murphi2smv.1.gz)
+add_custom_target(man-murphi2smv
+  ALL
+  DEPENDS murphi2smv.1.gz
+  COMMENT "murphi2smv man page"
+)
 add_custom_command(
   OUTPUT murphi2smv.1.gz
-  COMMAND gzip -9 --no-name --to-stdout doc/murphi2smv.1 >"${CMAKE_CURRENT_BINARY_DIR}/murphi2smv.1.gz"
+  COMMAND gzip -9 --no-name --to-stdout doc/murphi2smv.1
+    >"${CMAKE_CURRENT_BINARY_DIR}/murphi2smv.1.gz"
   MAIN_DEPENDENCY doc/murphi2smv.1
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "GZIP-compressing murphi2smv.1"
 )
 
 install(TARGETS murphi2smv

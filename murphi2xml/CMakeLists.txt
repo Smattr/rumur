@@ -3,7 +3,9 @@ add_custom_command(
   COMMAND ../misc/xxd.py doc/murphi2xml.1 ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
   MAIN_DEPENDENCY doc/murphi2xml.1
   DEPENDS ../misc/xxd.py
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating manpage.cc"
+)
 
 add_executable(murphi2xml
   ${CMAKE_CURRENT_BINARY_DIR}/manpage.cc
@@ -23,12 +25,17 @@ target_link_libraries(murphi2xml
 # Compress manpages
 add_custom_target(man-murphi2xml
   ALL
-  DEPENDS murphi2xml.1.gz)
+  DEPENDS murphi2xml.1.gz
+  COMMENT "murphi2xml man page"
+)
 add_custom_command(
   OUTPUT murphi2xml.1.gz
-  COMMAND gzip -9 --no-name --to-stdout doc/murphi2xml.1 >"${CMAKE_CURRENT_BINARY_DIR}/murphi2xml.1.gz"
+  COMMAND gzip -9 --no-name --to-stdout doc/murphi2xml.1
+    >"${CMAKE_CURRENT_BINARY_DIR}/murphi2xml.1.gz"
   MAIN_DEPENDENCY doc/murphi2xml.1
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "GZIP-compressing murphi2xml.1"
+)
 
 install(TARGETS murphi2xml
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
