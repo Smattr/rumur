@@ -235,7 +235,7 @@ public:
       if (auto f = dynamic_cast<Function *>(c.get()))
         declare_func(*f);
     }
-    solver->open_scope();
+    solver->close_scope();
   }
 
   void visit_mul(Mul &n) final { visit_bexpr(n); }
