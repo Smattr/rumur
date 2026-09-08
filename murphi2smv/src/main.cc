@@ -18,7 +18,7 @@
 
 static const char *in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;
-static std::string out_filename{"-"};
+static const char *out_filename = "-";
 static std::shared_ptr<std::ostream> out;
 
 std::string numeric_type;
@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
 
   // only *now* open the output file, to avoid creating an empty file if any of
   // the preceding steps fail
-  if (out_filename != "-") {
+  if (strcmp(out_filename, "-") != 0) {
     auto o = std::make_shared<std::ofstream>(out_filename);
     if (!o->is_open()) {
       std::cerr << "failed to open " << out_filename << '\n';
