@@ -43,7 +43,7 @@ static void parse_args(int argc, char **argv) {
         { "output",       required_argument, 0, 'o' },
         { "version",      no_argument,       0, 128 },
         { 0, 0, 0, 0 },
-        // clange-format on
+        // clang-format on
     };
 
     int option_index = 0;
@@ -136,9 +136,7 @@ static dup_t make_stdin_dup() {
   return dup_t{buffer, copy};
 }
 
-static std::ostream &output() {
-  return out == nullptr ? std::cout : *out;
-}
+static std::ostream &output() { return out == nullptr ? std::cout : *out; }
 
 static bool use_colors() {
   if (color == AUTO)
