@@ -62,7 +62,7 @@ static void parse_args(int argc, char **argv) {
         { "verbose",      no_argument,       0, 'v' },
         { "version",      no_argument,       0, 128 },
         { 0, 0, 0, 0 },
-        // clange-format on
+        // clang-format on
     };
 
     int option_index = 0;
@@ -153,9 +153,7 @@ static dup_t make_stdin_dup() {
   return dup_t(buffer, copy);
 }
 
-static std::ostream &output() {
-  return out == nullptr ? std::cout : *out;
-}
+static std::ostream &output() { return out == nullptr ? std::cout : *out; }
 
 int main(int argc, char **argv) {
 
@@ -182,17 +180,17 @@ int main(int argc, char **argv) {
   auto model = dynamic_cast<rumur::Model *>(parsed.get());
   if (model != nullptr) {
 
-  // update unique identifiers within the model
-  model->reindex();
+    // update unique identifiers within the model
+    model->reindex();
 
-  // check the model is valid
-  try {
-    resolve_symbols(*model);
-    validate(*model);
-  } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << '\n';
-    return EXIT_FAILURE;
-  }
+    // check the model is valid
+    try {
+      resolve_symbols(*model);
+      validate(*model);
+    } catch (rumur::Error &e) {
+      std::cerr << e.loc << ":" << e.what() << '\n';
+      return EXIT_FAILURE;
+    }
   }
 
   // name any rules that are unnamed, so they get valid Uclid5 symbols
