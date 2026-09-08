@@ -17,7 +17,6 @@
 
 static std::string in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;
-static std::shared_ptr<std::istream> in_replay;
 static std::shared_ptr<std::ostream> out;
 
 /// use colour in error messages?
@@ -31,9 +30,8 @@ static void buffer_stdin() {
   buf << std::cin.rdbuf();
   buf.flush();
 
-  // put this into two buffers we can read from
+  // put this into a buffer we can read from
   in = std::make_shared<std::istringstream>(buf.str());
-  in_replay = std::make_shared<std::istringstream>(buf.str());
 }
 
 static void parse_args(int argc, char **argv) {
@@ -116,14 +114,6 @@ static void parse_args(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
     in = i;
-
-    // open the input again that we need for replay during XML output
-    auto i2 = std::make_shared<std::ifstream>(in_filename);
-    if (!i2->is_open()) {
-      std::cerr << "failed to open " << in_filename << '\n';
-      exit(EXIT_FAILURE);
-    }
-    in_replay = i2;
   } else {
     // we are going to read data from stdin
     buffer_stdin();
@@ -241,8 +231,9 @@ int main(int argc, char **argv) {
 
   assert(m != nullptr);
 
+  in->seekg(0);
   {
-    XMLPrinter p(in_filename, *in_replay, out == nullptr ? std::cout : *out);
+    XMLPrinter p(in_filename, *in, out == nullptr ? std::cout : *out);
     p.dispatch(*m);
   }
 
