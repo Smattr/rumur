@@ -16,7 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-static std::string in_filename{"<stdin>"};
+static const char *in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;
 static std::string out_filename{"-"};
 static std::shared_ptr<std::ostream> out;
