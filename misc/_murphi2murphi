@@ -3,6 +3,7 @@
 # Zsh completion script for Murphi2Murphi
 
 _arguments \
+  '--colour[enable or disable ANSI colour codes]: :(auto off on)' \
   '--decompose-complex-comparisons[expand array and record equality tests]' \
   '--explicit-semicolons[add omitted semicolons]' \
   '--help[display help information]' \

@@ -11,76 +11,46 @@ namespace {
 class Check : public ConstTraversal {
 
 public:
-  bool ok = true;
-
-  void visit_choose(const Choose &) final {
-    if (ok) {
-      std::cerr << "choose rules are not supported\n";
-      ok = false;
-    }
+  void visit_choose(const Choose &n) final {
+    throw Error("choose rules are not supported", n.loc);
   }
 
-  void visit_ismember(const IsMember &) final {
-    if (ok) {
-      std::cerr << "ismember expressions are not supported\n";
-      ok = false;
-    }
+  void visit_ismember(const IsMember &n) final {
+    throw Error("ismember expressions are not supported", n.loc);
   }
 
-  void visit_isundefined(const IsUndefined &) final {
-    if (ok) {
-      std::cerr << "isundefined expressions are not supported\n";
-      ok = false;
-    }
+  void visit_isundefined(const IsUndefined &n) final {
+    throw Error("isundefined expressions are not supported", n.loc);
   }
 
-  void visit_multiset(const Multiset &) final {
-    if (ok) {
-      std::cerr << "multiset types are not supported\n";
-      ok = false;
-    }
+  void visit_multiset(const Multiset &n) final {
+    throw Error("multiset types are not supported", n.loc);
   }
 
-  void visit_multisetadd(const MultisetAdd &) final {
-    if (ok) {
-      std::cerr << "multiset types are not supported\n";
-      ok = false;
-    }
+  void visit_multisetadd(const MultisetAdd &n) final {
+    throw Error("multiset types are not supported", n.loc);
   }
 
-  void visit_multisetcount(const MultisetCount &) final {
-    if (ok) {
-      std::cerr << "multiset types are not supported\n";
-      ok = false;
-    }
+  void visit_multisetcount(const MultisetCount &n) final {
+    throw Error("multiset types are not supported", n.loc);
   }
 
-  void visit_multisetremove(const MultisetRemove &) final {
-    if (ok) {
-      std::cerr << "multiset types are not supported\n";
-      ok = false;
-    }
+  void visit_multisetremove(const MultisetRemove &n) final {
+    throw Error("multiset types are not supported", n.loc);
   }
 
-  void visit_multisetremovepred(const MultisetRemovePred &) final {
-    if (ok) {
-      std::cerr << "multiset types are not supported\n";
-      ok = false;
-    }
+  void visit_multisetremovepred(const MultisetRemovePred &n) final {
+    throw Error("multiset types are not supported", n.loc);
   }
 
-  void visit_union(const Union &) final {
-    if (ok) {
-      std::cerr << "union types are not supported\n";
-      ok = false;
-    }
+  void visit_union(const Union &n) final {
+    throw Error("union types are not supported", n.loc);
   }
 };
 
 } // namespace
 
-bool check(const Node &n) {
+void check(const Node &n) {
   Check c;
   c.dispatch(n);
-  return c.ok;
 }

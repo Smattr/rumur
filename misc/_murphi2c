@@ -3,6 +3,7 @@
 # Zsh completion script for Murphi2C
 
 _arguments \
+  '--colour[enable or disable ANSI colour codes]: :(auto off on)' \
   '--header[generate a C header]' \
   '--help[display help information]' \
   {--output,-o}'[path to write source/header to]:filename:_files' \
