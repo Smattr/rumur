@@ -19,15 +19,10 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <utility>
 #include <vector>
 
-// a pair of input streams
-using dup_t =
-    std::pair<std::shared_ptr<std::istream>, std::shared_ptr<std::istream>>;
-
 static std::string in_filename = "<stdin>";
-static dup_t in;
+static std::shared_ptr<std::istream> in;
 static std::string out_filename = "-";
 static std::shared_ptr<std::ostream> out;
 
@@ -152,25 +147,21 @@ static void parse_args(int argc, char **argv) {
     in_filename = argv[optind];
 
     auto i = std::make_shared<std::ifstream>(in_filename);
-    auto j = std::make_shared<std::ifstream>(in_filename);
-    if (!i->is_open() || !j->is_open()) {
+    if (!i->is_open()) {
       std::cerr << "failed to open " << in_filename << '\n';
       exit(EXIT_FAILURE);
     }
-    in = dup_t(i, j);
+    in = i;
   }
 }
 
-static dup_t make_stdin_dup() {
+static std::shared_ptr<std::istream> make_stdin_buf() {
 
   // read stdin into memory
   auto buffer = std::make_shared<std::stringstream>();
   *buffer << std::cin.rdbuf();
 
-  // duplicate the buffer
-  auto copy = std::make_shared<std::istringstream>(buffer->str());
-
-  return dup_t(buffer, copy);
+  return buffer;
 }
 
 static std::ostream &output() { return out == nullptr ? std::cout : *out; }
@@ -254,19 +245,19 @@ int main(int argc, char **argv) {
 
   // if we are reading from stdin, duplicate it so that we can parse it both as
   // Murphi and for comments
-  if (in.first == nullptr)
-    in = make_stdin_dup();
+  if (in == nullptr)
+    in = make_stdin_buf();
 
   // parse input
   rumur::Ptr<rumur::Node> parsed;
   try {
-    parsed = rumur::parse(*in.first);
+    parsed = rumur::parse(*in);
   } catch (rumur::Error &e) {
     std::cerr << white() << bold() << in_filename << ':' << e.loc << ':'
               << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
               << white() << bold() << e.what() << reset() << '\n';
-    in.first->seekg(0);
-    print_location(*in.first, e.loc);
+    in->seekg(0);
+    print_location(*in, e.loc);
     return EXIT_FAILURE;
   }
 
@@ -287,8 +278,8 @@ int main(int argc, char **argv) {
       std::cerr << white() << bold() << in_filename << ':' << e.loc << ':'
                 << reset() << ' ' << red() << bold() << "error:" << reset()
                 << ' ' << white() << bold() << e.what() << reset() << '\n';
-      in.first->seekg(0);
-      print_location(*in.first, e.loc);
+      in->seekg(0);
+      print_location(*in, e.loc);
       return EXIT_FAILURE;
     }
   }
@@ -303,8 +294,8 @@ int main(int argc, char **argv) {
     std::cerr << white() << bold() << in_filename << ':' << e.loc << ':'
               << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
               << white() << bold() << e.what() << reset() << '\n';
-    in.first->seekg(0);
-    print_location(*in.first, e.loc);
+    in->seekg(0);
+    print_location(*in, e.loc);
     return EXIT_FAILURE;
   }
 
@@ -313,7 +304,8 @@ int main(int argc, char **argv) {
     numeric_type = pick_numeric_type(*parsed);
 
   // parse comments from the source code
-  std::vector<rumur::Comment> comments = rumur::parse_comments(*in.second);
+  in->seekg(0);
+  std::vector<rumur::Comment> comments = rumur::parse_comments(*in);
 
   // only *now* open the output file, to avoid creating an empty file if any of
   // the preceding steps fail
