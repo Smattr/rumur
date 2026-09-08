@@ -266,8 +266,15 @@ int main(int argc, char **argv) {
   }
 
   // validate that this model is OK to translate
-  if (!check(*m))
+  try {
+    check(*m);
+  } catch (rumur::Error &e) {
+    std::cerr << white() << bold() << in_filename << ':' << e.loc << ':'
+              << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
+              << white() << bold() << e.what() << reset() << '\n';
+    print_location(*in.second, e.loc);
     return EXIT_FAILURE;
+  }
 
   // name any rules that are unnamed, so they get valid C symbols
   rumur::sanitise_rule_names(*m);
