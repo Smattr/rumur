@@ -2,7 +2,9 @@
 #include "XMLPrinter.h"
 #include "resources.h"
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -17,6 +19,9 @@ static std::string in_filename = "<stdin>";
 static std::shared_ptr<std::istream> in;
 static std::shared_ptr<std::istream> in_replay;
 static std::shared_ptr<std::ostream> out;
+
+/// use colour in error messages?
+static enum { AUTO, ON, OFF } color = AUTO;
 
 // buffer the contents of stdin so we can read it twice
 static void buffer_stdin() {
@@ -35,6 +40,8 @@ static void parse_args(int argc, char **argv) {
 
   for (;;) {
     static struct option options[] = {
+        {"color", required_argument, 0, 129},
+        {"colour", required_argument, 0, 129},
         {"help", no_argument, 0, '?'},
         {"output", required_argument, 0, 'o'},
         {"version", no_argument, 0, 128},
@@ -66,6 +73,20 @@ static void parse_args(int argc, char **argv) {
     case 128: // --version
       std::cout << "Rumur version " << rumur_get_version() << '\n';
       exit(EXIT_SUCCESS);
+
+    case 129: // --color, --colour
+      if (strcmp(optarg, "auto") == 0) {
+        color = AUTO;
+      } else if (strcmp(optarg, "on") == 0) {
+        color = ON;
+      } else if (strcmp(optarg, "off") == 0) {
+        color = OFF;
+      } else {
+        std::cerr << "invalid --colour argument \"" << optarg << "\"\n"
+                  << "valid arguments are \"auto\", \"off\", and \"on\"\n";
+        exit(EXIT_FAILURE);
+      }
+      break;
 
     default:
       std::cerr << "unexpected error\n";
@@ -109,6 +130,78 @@ static void parse_args(int argc, char **argv) {
   }
 }
 
+static bool use_colors() {
+  if (color == AUTO)
+    color = isatty(STDERR_FILENO) ? ON : OFF;
+  return color == ON;
+}
+
+static const char *bold() {
+  if (use_colors())
+    return "\033[1m";
+  return "";
+}
+
+static const char *green() {
+  if (use_colors())
+    return "\033[32m";
+  return "";
+}
+
+static const char *red() {
+  if (use_colors())
+    return "\033[31m";
+  return "";
+}
+
+static const char *reset() {
+  if (use_colors())
+    return "\033[0m";
+  return "";
+}
+
+static const char *white() {
+  if (use_colors())
+    return "\033[37m";
+  return "";
+}
+
+static void print_location(std::istream &src, const rumur::location &location) {
+
+  // the type of position.line and position.column changes across Bison
+  // releases, so avoid some -Wsign-compare warnings by casting them in advance
+  auto loc_line = static_cast<unsigned long>(location.begin.line);
+  auto loc_col = static_cast<unsigned long>(location.begin.column);
+
+  std::string line;
+  unsigned long lineno = 0;
+  while (lineno < loc_line) {
+    if (!std::getline(src, line))
+      return;
+    lineno++;
+  }
+
+  // print the line, and construct an underline indicating the column location
+  std::ostringstream buf;
+  unsigned long col = 1;
+  for (const char &c : line) {
+    if (col == loc_col) {
+      buf << green() << bold() << '^' << reset();
+    } else if (col < loc_col) {
+      if (c == '\t') {
+        buf << '\t';
+      } else {
+        buf << ' ';
+      }
+    }
+    std::cerr << c;
+    col++;
+  }
+  std::cerr << '\n';
+
+  std::cerr << buf.str() << '\n';
+}
+
 int main(int argc, char **argv) {
 
   // Parse command line options
@@ -121,7 +214,11 @@ int main(int argc, char **argv) {
   try {
     m = rumur::parse_model(*in);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << '\n';
+    std::cerr << white() << bold() << in_filename << ':' << e.loc << ':'
+              << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
+              << white() << bold() << e.what() << reset() << '\n';
+    in->seekg(0);
+    print_location(*in, e.loc);
     return EXIT_FAILURE;
   }
 
@@ -134,7 +231,11 @@ int main(int argc, char **argv) {
     resolve_symbols(*m);
     validate(*m);
   } catch (rumur::Error &e) {
-    std::cerr << e.loc << ":" << e.what() << '\n';
+    std::cerr << white() << bold() << in_filename << ':' << e.loc << ':'
+              << reset() << ' ' << red() << bold() << "error:" << reset() << ' '
+              << white() << bold() << e.what() << reset() << '\n';
+    in->seekg(0);
+    print_location(*in, e.loc);
     return EXIT_FAILURE;
   }
 
