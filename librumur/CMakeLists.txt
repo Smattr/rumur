@@ -1,4 +1,20 @@
 find_package(BISON REQUIRED)
+if(BISON_VERSION VERSION_GREATER_EQUAL "3.7.1")
+  # we have a recent enough Bison to support `--file-prefix-map=…`
+  if(CMAKE_CURRENT_BINARY_DIR MATCHES " " OR
+     CMAKE_CURRENT_BINARY_DIR MATCHES "=")
+    # The build path contains characters that will be misinterpreted in
+    # `--file-prefix-map=…`. Thus we cannot achieve a reproducible build.
+    set(PREFIX_MAP "")
+  else()
+    # suppress build paths in generated files
+    set(PREFIX_MAP "--file-prefix-map=${CMAKE_CURRENT_BINARY_DIR}= ")
+  endif()
+else()
+  # we do not have a recent enough Bison to support `--file-prefix-map=…`
+  set(PREFIX_MAP "")
+endif()
+message(STATUS "Bison prefix map option: ${PREFIX_MAP}")
 find_package(FLEX REQUIRED)
 
 find_path(GMPXX_INCLUDE NAMES gmpxx.h PATHS ENV CPLUS_INCLUDE_PATH)
@@ -17,7 +33,7 @@ endif()
 bison_target(parser
   src/parser.yy
   ${CMAKE_CURRENT_BINARY_DIR}/parser.yy.cc
-  COMPILE_FLAGS "--no-lines --warnings=all")
+  COMPILE_FLAGS "${PREFIX_MAP}--no-lines --warnings=all")
 flex_target(lexer
   src/lexer.l
   ${CMAKE_CURRENT_BINARY_DIR}/lexer.l.cc
@@ -29,17 +45,23 @@ include(CheckCXXCompilerFlag)
 set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "")
 CHECK_CXX_COMPILER_FLAG(-Wsign-compare HAS_WARNING_SIGN_COMPARE)
 if(HAS_WARNING_SIGN_COMPARE)
-  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-sign-compare")
+  set_source_files_properties(lexer.l.cc
+    PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-sign-compare"
+  )
 endif()
 get_source_file_property(LEXER_COMPILE_FLAGS lexer.l.cc COMPILE_FLAGS)
 CHECK_CXX_COMPILER_FLAG(-Wregister HAS_WARNING_REGISTER)
 if(HAS_WARNING_REGISTER)
-  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-register")
+  set_source_files_properties(lexer.l.cc
+    PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-register"
+  )
 endif()
 get_source_file_property(LEXER_COMPILE_FLAGS lexer.l.cc COMPILE_FLAGS)
 CHECK_CXX_COMPILER_FLAG(-Wdeprecated-register HAS_WARNING_DEPRECATED_REGISTER)
 if(HAS_WARNING_DEPRECATED_REGISTER)
-  set_source_files_properties(lexer.l.cc PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-deprecated-register")
+  set_source_files_properties(lexer.l.cc
+    PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-deprecated-register"
+  )
 endif()
 
 add_custom_command(
@@ -47,12 +69,16 @@ add_custom_command(
   COMMAND src/make-version.py ${CMAKE_CURRENT_BINARY_DIR}/version.c
   MAIN_DEPENDENCY src/make-version.py
   DEPENDS always_run
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating version.c"
+)
 
 # Dummy output to make sure we always re-evaluate the version step above.
 add_custom_command(
   OUTPUT always_run
-  COMMAND /usr/bin/env true)
+  COMMAND /usr/bin/env true
+  COMMENT "Triggering version.c regeneration"
+)
 
 add_library(librumur
   ${CMAKE_CURRENT_BINARY_DIR}/version.c

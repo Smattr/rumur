@@ -35,7 +35,8 @@ void Number::visit(ConstBaseTraversal &visitor) const {
 bool Number::constant() const { return true; }
 
 Ptr<TypeExpr> Number::type() const {
-  return Ptr<Range>::make(nullptr, nullptr, location());
+  const Ptr<Number> bound = Ptr<Number>::make(value, location());
+  return Ptr<Range>::make(bound, bound, location());
 }
 
 mpz_class Number::constant_fold() const { return value; }

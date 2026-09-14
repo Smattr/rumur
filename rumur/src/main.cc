@@ -544,8 +544,9 @@ static void parse_args(int argc, char **argv) {
 }
 
 static bool use_colors() {
-  return options.color == Color::ON ||
-         (options.color == Color::AUTO && isatty(STDERR_FILENO));
+  if (options.color == Color::AUTO)
+    options.color = isatty(STDERR_FILENO) ? Color::ON : Color::OFF;
+  return options.color == Color::ON;
 }
 
 static std::string bold() {

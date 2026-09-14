@@ -1,22 +1,31 @@
 # Define resources.
 add_custom_command(
   OUTPUT resources_manpage.cc
-  COMMAND ../misc/xxd.py doc/rumur.1 ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
+  COMMAND ../misc/xxd.py doc/rumur.1
+    ${CMAKE_CURRENT_BINARY_DIR}/resources_manpage.cc
   MAIN_DEPENDENCY doc/rumur.1
   DEPENDS ../misc/xxd.py
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating resources_manpage.cc"
+)
 add_custom_command(
   OUTPUT resources_includes.cc
-  COMMAND ../misc/xxd.py resources/includes.c ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
+  COMMAND ../misc/xxd.py resources/includes.c
+    ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
   MAIN_DEPENDENCY resources/includes.c
   DEPENDS ../misc/xxd.py
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating resources_includes.cc"
+)
 add_custom_command(
   OUTPUT resources_header.cc
-  COMMAND ../misc/xxd.py resources/header.c ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
+  COMMAND ../misc/xxd.py resources/header.c
+    ${CMAKE_CURRENT_BINARY_DIR}/resources_header.cc
   MAIN_DEPENDENCY resources/header.c
   DEPENDS ../misc/xxd.py
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "Generating resources_header.cc"
+)
 
 add_executable(rumur
   ${CMAKE_CURRENT_BINARY_DIR}/resources_includes.cc
@@ -71,17 +80,25 @@ target_link_libraries(rumur
 # Compress manpages
 add_custom_target(man-rumur
   ALL
-  DEPENDS rumur.1.gz rumur-run.1.gz)
+  DEPENDS rumur.1.gz rumur-run.1.gz
+  COMMENT "rumur man pages"
+)
 add_custom_command(
   OUTPUT rumur.1.gz
-  COMMAND gzip -9 --no-name --to-stdout doc/rumur.1 >"${CMAKE_CURRENT_BINARY_DIR}/rumur.1.gz"
+  COMMAND gzip -9 --no-name --to-stdout doc/rumur.1
+    >"${CMAKE_CURRENT_BINARY_DIR}/rumur.1.gz"
   MAIN_DEPENDENCY doc/rumur.1
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "GZIP-compressing rumur.1"
+)
 add_custom_command(
   OUTPUT rumur-run.1.gz
-  COMMAND gzip -9 --no-name --to-stdout doc/rumur-run.1 >"${CMAKE_CURRENT_BINARY_DIR}/rumur-run.1.gz"
+  COMMAND gzip -9 --no-name --to-stdout doc/rumur-run.1
+    >"${CMAKE_CURRENT_BINARY_DIR}/rumur-run.1.gz"
   MAIN_DEPENDENCY doc/rumur-run.1
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMENT "GZIP-compressing rumur-run.1"
+)
 
 install(TARGETS rumur
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

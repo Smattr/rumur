@@ -12,6 +12,7 @@ understanding ../rumur/resources/header.c.
 import sys
 from typing import Optional, Set
 
+
 class State(object):
 
   def __init__(self, value: int = 0, previous: Optional["State"] = None):

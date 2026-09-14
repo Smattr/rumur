@@ -1,6 +1,34 @@
 Change log
 ==========
 
+v2026.09.13
+-----------
+
+User-facing changes
+~~~~~~~~~~~~~~~~~~~
+* Bug fix: compilation of the generated checker when using the x32 ABI has been
+  repaired. This bug was introduced in v2026.08.30 (commits
+  9bd4c196af6aa3fefeacab0a828ec7abd8ac24b7,
+  dfe5f5b98ff04ab496e83ac3281bcd442566f8c1).
+* The auxiliary tools ``murphi2c``, ``murphi2murphi``, ``murphi2smv``,
+  ``murphi2uclid``, and ``murphi2xml`` now print their error messages including
+  context and colouring for ease of reading (commits
+  bb728dd1052cb2605b04a78f4a776be2bba864ce,
+  4b6bd3d668057601cad0cdb4751bfb33305f126b,
+  35f0f7f388b227bf07431dfb1ff599c660b6f9f5,
+  c0c3e715a0d6e79da0425b4db3a64e9ea928fbb5,
+  d98255a32cf957b0f9b0d8700741fd010cf9f376,
+  3f466fe3ccd670cb97f369985c179b6e939f0099).
+
+Internal changes
+~~~~~~~~~~~~~~~~
+* The type of a numeric literal (``Number::type()``) is now a range that
+  contains only its exact value, rather than an infinite range. I.e. ``42``
+  would previously be considered to have a type ``-∞..∞`` whereas it now has the
+  type ``42..42`` (commit d6d5bc93ee6ec12292cf440972de05eae28c254f).
+* Reproducible builds of Rumur should now be possible without patching the build
+  system (commit 3d0e63d8d5b5622d5d198e3b70363743e9089179).
+
 v2026.08.30
 -----------
 

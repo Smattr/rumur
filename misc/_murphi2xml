@@ -3,6 +3,7 @@
 # Zsh completion script for Murphi2XML
 
 _arguments \
+  '--colour[enable or disable ANSI colour codes]: :(auto off on)' \
   '--help[display help information]' \
   {--output,-o}'[path to write XML to]:filename:_files' \
   '--version[output version information]' \
