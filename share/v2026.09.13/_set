@@ -1,0 +1,100 @@
+dnl template for an unordered set
+dnl
+dnl This file defines, as an M4¹ template, a type-generic Murphi set data
+dnl structure. To use this, include the template and then call the macro "_set"
+dnl with 2 parameters:
+dnl   • "name" – a prefix for the generated set data structure and its
+dnl     supporting functions
+dnl   • "elem_t" – a Murphi type for the elements of the set
+dnl E.g.:
+dnl
+dnl   include(`_set')dnl
+dnl
+dnl   type
+dnl     int: 0..32;
+dnl
+dnl   _set(`ints', `int')dnl
+dnl
+dnl Pre-process your model with M4:
+dnl
+dnl   $ m4 --include=/path/to/rumur/install/share/rumur/lib model.m >out.m
+dnl
+dnl This generates a type and some supporting functions:
+dnl
+dnl   type
+dnl     ints_t: …
+dnl
+dnl   function ints_is_empty(set_: ints_t): boolean;
+dnl   function ints_is_full(set_: ints_t): boolean;
+dnl   function ints_add(var set_: ints_t; elem_: int): boolean;
+dnl   function ints_remove(var set_: ints_t; elem_: int): boolean;
+dnl   function ints_contains(set_: ints_t; elem_: int): boolean;
+dnl
+dnl You can then go on to use the "ints_t" type in your handwritten model code.
+dnl
+dnl "elem_t" can be an arbitrary scalar type. It can be a previously defined
+dnl type or a type literal.
+dnl
+dnl This template is in the public domain. You may use it for any purpose and
+dnl its inclusion in a model does not affect the legal status of that model.
+dnl
+dnl ¹ https://en.wikipedia.org/wiki/M4_(computer_language)
+dnl
+define(`_set', `dnl
+-------------------------------------------------------------------------------
+-- interface for $1_t, a set of $2
+-------------------------------------------------------------------------------
+
+type
+  $1_t: array[$2] of 1..1;
+
+function $1_is_empty(set_: $1_t): boolean;
+begin
+  for i_: $2 do
+    if !isundefined(set_[i_]) then
+      return false;
+    end;
+  end;
+  return true;
+end;
+
+function $1_is_full(set_: $1_t): boolean;
+begin
+  for i_: $2 do
+    if isundefined(set_[i_]) then
+      return false;
+    end;
+  end;
+  return true;
+end;
+
+-- insert a value into the set, returning true if it was already present
+function $1_add(var set_: $1_t; elem_: $2): boolean;
+var
+  rc_: boolean;
+begin
+  rc_ := !isundefined(set_[elem_]);
+  set_[elem_] := 1;
+  return rc_;
+end;
+
+-- remove a value from the set, returning true if it was present
+function $1_remove(var set_: $1_t; elem_: $2): boolean;
+var
+  rc_: boolean;
+begin
+  rc_ := !isundefined(set_[elem_]);
+  undefine set_[elem_];
+  return rc_;
+end;
+
+-- test the existence of an element in the set
+function $1_contains(set_: $1_t; elem_: $2): boolean;
+begin
+  return !isundefined(set_[elem_]);
+end;
+
+-------------------------------------------------------------------------------
+-- end interface for $1_t
+-------------------------------------------------------------------------------
+')dnl
