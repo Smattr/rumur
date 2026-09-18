@@ -53,11 +53,16 @@ enum { BOUND_BITS = BITS_FOR(BOUND) };
 #if POINTER_BITS != 0
 enum { PREVIOUS_BITS = POINTER_BITS };
 #elif defined(__linux__) && defined(__x86_64__) && !defined(__ILP32__)
-/* assume 5-level paging, and hence the top 1 byte of any user pointer are
- * always 0 and not required.
+/* assume 5-level paging, and hence the top 1 byte of any user pointer is always
+ * 0 and not required.
  * https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
  */
 enum { PREVIOUS_BITS = 56 };
+#elif defined(__linux__) && defined(__aarch64__)
+/* assume the kernel will only give out 48-bit user virtual addresses
+ * https://docs.kernel.org/arch/arm64/memory.html#bit-userspace-vas
+ */
+enum { PREVIOUS_BITS = 48 };
 #else
 enum { PREVIOUS_BITS = sizeof(void *) * CHAR_BIT };
 #endif
