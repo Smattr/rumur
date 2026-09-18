@@ -110,14 +110,17 @@ small enough to comfortably fit in available memory, you may want to set this to
 Number of relevant (non-zero) bits in a pointer on the target platform on which
 the verifier will be compiled. This option can be used to tune pointer
 compression, which can save memory when checking larger models. With the
-default, \fBauto\fR, 5\-level paging is assumed for x86\-64, meaning pointers
-can be compressed and stored in 56 bits. Other platforms currently have no
-auto-detection, and will store pointers uncompressed at their full width. If you
-know a certain number of high bits of pointers on your target platform are
-always zero, you can teach Rumur this information with this option. For example,
-if you are compiling on an x86\-64 platform that you know is using 4\-level
-paging you can pass \fB\-\-pointer\-bits\fR \fB48\fR to tell Rumur that the
-upper 16 bits of a pointer will always be zero.
+default, \fBauto\fR, the target platform is used to decide this value. On
+x86\-64 Linux, 5\-level paging is assumed, meaning pointers can be compressed
+and stored in 56 bits. On 64-bit ARM Linux, it is assumed pointers can be stored
+in 48 bits. Other platforms currently have no auto-detection, and will store
+pointers uncompressed at their full width.
+.PP
+If you know a certain number of high bits of pointers on your target platform
+are always zero, you can teach Rumur this information with this option. For
+example, if you are compiling on an x86\-64 platform that you know is using
+4\-level paging you can pass \fB\-\-pointer\-bits\fR \fB48\fR to tell Rumur that
+the upper 16 bits of a pointer will always be zero.
 .RE
 .PP
 \fB\-\-quiet\fR or \fB\-q\fR
