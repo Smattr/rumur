@@ -487,25 +487,28 @@ def smt_args():
     return None
 
 
-def test_display_info():
+def display_info():
     """
     this is not a test case, but just a vehicle for echoing useful things into the CI
     log
     """
+    print(" test suite configuration ".center(80, "-"))
+    print(" CC = {}".format(cc()))
+    print(" CXX = {}".format(cxx()))
+    print(" c_flags() = {}".format(c_flags()))
+    print(" has_march_native() = {}".format(has_march_native()))
+    print(" has_mcx16() = {}".format(has_mcx16()))
+    print(" has_sandbox() = {}".format(has_sandbox()))
+    print(" has_valgrind() = {}".format(has_valgrind()))
+    print(" has_xmllint() = {}".format(has_xmllint()))
+    print(" needs_libatomic() = {}".format(needs_libatomic()))
+    print(" smt_bv_args() = {}".format(smt_bv_args()))
+    print(" smt_args() = {}".format(smt_args()))
+    print("-" * 80)
 
-    # output a newline to make things more readable in `--capture=no --verbose` mode
-    print()
-    print("  CC = {}".format(cc()))
-    print("  CXX = {}".format(cxx()))
-    print("  c_flags() = {}".format(c_flags()))
-    print("  has_march_native() = {}".format(has_march_native()))
-    print("  has_mcx16() = {}".format(has_mcx16()))
-    print("  has_sandbox() = {}".format(has_sandbox()))
-    print("  has_valgrind() = {}".format(has_valgrind()))
-    print("  has_xmllint() = {}".format(has_xmllint()))
-    print("  needs_libatomic() = {}".format(needs_libatomic()))
-    print("  smt_bv_args() = {}".format(smt_bv_args()))
-    print("  smt_args() = {}".format(smt_args()))
+
+if __name__ == "__main__":
+    display_info()
 
 
 def parse_test_options(

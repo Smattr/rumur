@@ -162,7 +162,13 @@ add_custom_target(check
     "CPLUS_INCLUDE_PATH=${TEST_INC}"
     "LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur"
     "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur"
-    python3 -m pytest --capture=no
+    python3 "${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.py"
+  COMMAND env
+    "PATH=${TEST_PATH}"
+    "CPLUS_INCLUDE_PATH=${TEST_INC}"
+    "LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur"
+    "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}/librumur"
+    python3 -m pytest
       --override-ini=cache_dir=${CMAKE_CURRENT_BINARY_DIR} --verbose --verbose
       ${CMAKE_CURRENT_SOURCE_DIR}/tests/tests.py
   COMMENT "Running test suite"
