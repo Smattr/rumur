@@ -176,7 +176,7 @@ int lex_get_token(lex_t *me, token_t *token) {
     if (second != 0x80) {
       ungetc(second, me->src);
       {
-        bool have_op = false;
+        bool have_op __attribute__((unused)) = false;
         for (size_t i = 0; i < sizeof(OPERATORS) / sizeof(OPERATORS[0]); ++i)
           have_op |= (unsigned char)OPERATORS[i][0] == 0xe2;
         assert(have_op && "redundant handling; no operators start with 0xe2");
