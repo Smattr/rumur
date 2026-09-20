@@ -197,11 +197,11 @@ public:
     if (n.value == nullptr) {
       // This reference is unresolved
 
-      Ptr<ExprDecl> d = symtab.lookup<ExprDecl>(n.id, n.loc);
+      const ExprDecl *const d = symtab.lookup<ExprDecl>(n.id, n.loc);
       if (d == nullptr)
         throw Error("unknown symbol \"" + n.id + "\"", n.loc);
 
-      n.value = d;
+      n.value = Ptr<ExprDecl>(d->clone());
     }
   }
 
@@ -254,11 +254,11 @@ public:
     if (n.function == nullptr) {
       // This reference is unresolved
 
-      Ptr<Function> f = symtab.lookup<Function>(n.name, n.loc);
+      const Function *const f = symtab.lookup<Function>(n.name, n.loc);
       if (f == nullptr)
         throw Error("unknown function call \"" + n.name + "\"", n.loc);
 
-      n.function = f;
+      n.function = Ptr<Function>(f->clone());
     }
 
     size_t i = 0;
@@ -578,11 +578,11 @@ public:
     if (n.referent == nullptr) {
       // This reference is unresolved
 
-      Ptr<TypeDecl> t = symtab.lookup<TypeDecl>(n.name, n.loc);
+      const TypeDecl *const t = symtab.lookup<TypeDecl>(n.name, n.loc);
       if (t == nullptr)
         throw Error("unknown type symbol \"" + n.name + "\"", n.loc);
 
-      n.referent = t;
+      n.referent = Ptr<TypeDecl>(t->clone());
     }
   }
 
