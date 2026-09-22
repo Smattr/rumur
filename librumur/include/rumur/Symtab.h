@@ -47,12 +47,12 @@ public:
   }
 
   template <typename U>
-  Ptr<U> lookup(const std::string &name, const location &loc) const {
+  const U *lookup(const std::string &name, const location &loc) const {
     for (auto it = scope.rbegin(); it != scope.rend(); it++) {
       auto it2 = it->find(name);
       if (it2 != it->end()) {
         if (auto ret = dynamic_cast<const U *>(it2->second)) {
-          return Ptr<U>(ret->clone());
+          return ret;
         } else {
           break;
         }
