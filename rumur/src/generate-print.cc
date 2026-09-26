@@ -61,7 +61,8 @@ public:
 // derive a handle from the given containing handle at the given offset and
 // width
 static std::string derive_handle(const std::string &handle,
-                                 const std::string &offset, mpz_class width) {
+                                 const std::string &offset,
+                                 const mpz_class &width) {
   return "((struct handle){ .base = " + handle + ".base + (" + handle +
          ".offset + " + offset + ") / CHAR_BIT, .offset = (" + handle +
          ".offset + " + offset + ") % CHAR_BIT, " +
