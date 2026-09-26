@@ -70,7 +70,8 @@ static std::string derive_handle(const std::string &handle,
 }
 
 static std::string derive_handle(const std::string &handle,
-                                 const mpz_class &offset, mpz_class width) {
+                                 const mpz_class &offset,
+                                 const mpz_class &width) {
   return derive_handle(handle, "((size_t)" + offset.get_str() + ")", width);
 }
 
