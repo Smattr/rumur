@@ -10,7 +10,7 @@
 using namespace rumur;
 
 // is this value a power of 2?
-static bool is_onehot(mpz_class v) {
+static bool is_onehot(const mpz_class &v) {
 
   if (v == 0)
     return false;

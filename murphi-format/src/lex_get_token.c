@@ -185,7 +185,7 @@ int lex_get_token(lex_t *me, token_t *token) {
       goto operator;
     }
     {
-      bool have_op = false;
+      bool have_op __attribute__((unused)) = false;
       for (size_t i = 0; i < sizeof(OPERATORS) / sizeof(OPERATORS[0]); ++i) {
         const unsigned char *const op = (const unsigned char *)OPERATORS[i];
         have_op |= op[0] == 0xe2 && op[1] == 0x80;

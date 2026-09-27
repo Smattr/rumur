@@ -21,7 +21,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# make asprintf(), mkostemp() prototypes visible
+# make asprintf(), mkostemp(), pipe2() prototypes visible
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_compile_definitions(_GNU_SOURCE)
 endif()
@@ -99,11 +99,6 @@ endif()
 CHECK_C_COMPILER_FLAG(-Wwrite-strings HAS_C_WARNING_WRITE_STRINGS)
 if(HAS_C_WARNING_WRITE_STRINGS)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wwrite-strings")
-endif()
-
-# make mkostemp(), pipe2() prototype visible
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  add_definitions(-D_GNU_SOURCE)
 endif()
 
 # Enable --as-needed, present on GNU ld on Linux, to minimise dependencies.

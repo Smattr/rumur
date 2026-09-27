@@ -963,9 +963,7 @@ mpz_class Lsh::constant_fold() const {
     }
   }
 
-  mpz_class a = lhs->constant_fold();
-  mpz_class b = rhs->constant_fold();
-  return lshift(a, b);
+  return lshift(lhs->constant_fold(), rhs->constant_fold());
 }
 
 void Lsh::to_stream(std::ostream &out) const {
@@ -1013,9 +1011,7 @@ mpz_class Rsh::constant_fold() const {
     }
   }
 
-  mpz_class a = lhs->constant_fold();
-  mpz_class b = rhs->constant_fold();
-  return rshift(a, b);
+  return rshift(lhs->constant_fold(), rhs->constant_fold());
 }
 
 void Rsh::to_stream(std::ostream &out) const {
