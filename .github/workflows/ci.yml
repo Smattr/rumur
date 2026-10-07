@@ -498,7 +498,7 @@ jobs:
 
   macos26_homebrew_aarch64:
     name: macOS 26, Homebrew, aarch64
-    runs-on: macos-26-intel
+    runs-on: macos-26
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
