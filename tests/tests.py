@@ -339,7 +339,13 @@ def has_sandbox():
 
     # assume macOS always has sandboxing support
     if platform.system() == "Darwin":
-        return True
+        release, _, _ = platform.mac_ver()
+        major = re.match(r"\d+", release)
+        assert major is not None, "failed to understand macOS version {}".format(
+            release
+        )
+        # macOS 27 dropped the named profiles we use
+        return int(major.group(0)) < 27
 
     # assume FreeBSD always has sandboxing support
     if platform.system() == "FreeBSD":

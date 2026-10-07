@@ -24,6 +24,7 @@
 #endif
 
 #ifdef __APPLE__
+#include <AvailabilityMacros.h>
 #include <sandbox.h>
 #elif defined(__FreeBSD__)
 #include <sys/capsicum.h>
