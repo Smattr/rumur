@@ -449,7 +449,7 @@ jobs:
       - run: cmake --build build --target check
 
   macos26_homebrew_x86-64:
-    name: macOS 26, Homebrew, x86-64
+    name: macOS 26 (Tahoe), Homebrew, x86-64
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
@@ -475,7 +475,7 @@ jobs:
       - run: cmake --build build --target check
 
   macos26_macports_x86-64:
-    name: macOS 26, Macports, x86-64
+    name: macOS 26 (Tahoe), Macports, x86-64
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
@@ -497,7 +497,7 @@ jobs:
       - run: cmake --build build --target check
 
   macos26_homebrew_aarch64:
-    name: macOS 26, Homebrew, aarch64
+    name: macOS 26 (Tahoe), Homebrew, aarch64
     runs-on: macos-26
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
@@ -523,7 +523,7 @@ jobs:
       - run: cmake --build build --target check
 
   macos26_macports_aarch64:
-    name: macOS 26, Macports, aarch64
+    name: macOS 26 (Tahoe), Macports, aarch64
     runs-on: macos-26
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
