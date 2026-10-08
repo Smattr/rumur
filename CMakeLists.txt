@@ -146,12 +146,14 @@ add_subdirectory(tests/murphi-comment-ls)
 set(
   TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/tests/murphi-comment-ls:${TEST_PATH}"
 )
+add_subdirectory(tests/platform-probe)
 add_subdirectory(tests/union-array-width)
 set(
   TEST_PATH "${CMAKE_CURRENT_BINARY_DIR}/tests/union-array-width:${TEST_PATH}"
 )
 
 add_custom_target(check
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/platform-probe/platform-probe
   COMMAND env
     "PATH=${TEST_PATH}"
     "CPLUS_INCLUDE_PATH=${TEST_INC}"
@@ -175,5 +177,6 @@ add_dependencies(check
 if(NOT CMAKE_CROSSCOMPILING)
   add_dependencies(check element-is-pure)
   add_dependencies(check murphi-comment-ls)
+  add_dependencies(check platform-probe)
   add_dependencies(check union-array-width)
 endif()
