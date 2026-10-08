@@ -2437,7 +2437,7 @@ def test_strace_sandbox(tmp_path):
     """
 
     if not has_sandbox():
-        pytest.skip("seccomp sandboxing not supported")
+        pytest.skip("sandboxing not supported")
 
     # create a basic model
     model_m = tmp_path / "model.m"
