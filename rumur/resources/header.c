@@ -184,6 +184,7 @@ static void sandbox(void) {
     return;
 
 #ifdef __APPLE__
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 270000
   {
     char *err;
 #pragma clang diagnostic push
@@ -199,6 +200,7 @@ static void sandbox(void) {
 
     return;
   }
+#endif
 #endif
 
 #ifdef __FreeBSD__
