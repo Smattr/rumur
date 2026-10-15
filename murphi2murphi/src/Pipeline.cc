@@ -1,8 +1,8 @@
 #include "Pipeline.h"
 #include "Stage.h"
 #include <cassert>
-#include <climits>
 #include <cstddef>
+#include <limits>
 #include <rumur/rumur.h>
 
 using namespace rumur;
@@ -30,7 +30,8 @@ void Pipeline::finalise() {
   assert(!stages.empty() && "finalising an empty pipeline");
 
   // write the remaining contents of the input file
-  stages[0]->sync_to(position(nullptr, UINT_MAX, UINT_MAX));
+  const auto max = std::numeric_limits<position::counter_type>::max();
+  stages[0]->sync_to(position(nullptr, max, max));
 
   // notify all stages that we are done
   for (Stage *s : stages)
