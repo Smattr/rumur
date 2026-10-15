@@ -50,6 +50,13 @@ if(HAS_WARNING_SIGN_COMPARE)
   )
 endif()
 get_source_file_property(LEXER_COMPILE_FLAGS lexer.l.cc COMPILE_FLAGS)
+CHECK_CXX_COMPILER_FLAG(-Wsign-conversion HAS_WARNING_SIGN_CONVERSION)
+if(HAS_WARNING_SIGN_CONVERSION)
+  set_source_files_properties(lexer.l.cc
+    PROPERTIES COMPILE_FLAGS "${LEXER_COMPILE_FLAGS} -Wno-sign-conversion"
+  )
+endif()
+get_source_file_property(LEXER_COMPILE_FLAGS lexer.l.cc COMPILE_FLAGS)
 CHECK_CXX_COMPILER_FLAG(-Wregister HAS_WARNING_REGISTER)
 if(HAS_WARNING_REGISTER)
   set_source_files_properties(lexer.l.cc
