@@ -278,7 +278,7 @@ std::string translate(const Expr &expr) {
 static std::string lower(const std::string &s) {
   std::string s1;
   for (char c : s)
-    s1 += tolower(c);
+    s1 += (char)tolower(c);
   return s1;
 }
 
