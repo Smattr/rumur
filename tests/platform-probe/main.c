@@ -131,5 +131,7 @@ int main(int argc, char **argv) {
   printf("  __x86_64__ is not defined\n");
 #endif
 
+  printf("  char is %s\n", (char)-1 < 0 ? "signed" : "unsigned");
+
   return 0;
 }
