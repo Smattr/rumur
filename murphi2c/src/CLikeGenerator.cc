@@ -1,4 +1,5 @@
 #include "CLikeGenerator.h"
+#include "../../common/compiler.h"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
 #include "options.h"
@@ -114,8 +115,7 @@ void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
 void CLikeGenerator::visit_aliasrule(const AliasRule &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and visit_model flattens all rules
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_aliasstmt(const AliasStmt &n) {
@@ -391,8 +391,7 @@ void CLikeGenerator::visit_ismember(const IsMember &) {
 void CLikeGenerator::visit_isundefined(const IsUndefined &) {
   // check() prevents a model with isundefined expressions from making it
   // through to here
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_leq(const Leq &n) {
@@ -499,8 +498,7 @@ void CLikeGenerator::visit_procedurecall(const ProcedureCall &n) {
 void CLikeGenerator::visit_property(const Property &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and nothing that contains a Property descends into it
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
@@ -770,8 +768,7 @@ void CLikeGenerator::visit_rsh(const Rsh &n) {
 void CLikeGenerator::visit_ruleset(const Ruleset &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and all rule are flattened during visit_model
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_scalarset(const Scalarset &) { *this << value_type; }

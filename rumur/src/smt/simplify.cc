@@ -1,4 +1,5 @@
 #include "simplify.h"
+#include "../../../common/compiler.h"
 #include "../log.h"
 #include "../options.h"
 #include "define-enum-members.h"
@@ -671,9 +672,7 @@ private:
         throw Unsupported();
       }
 
-      void visit_typeexprid(const TypeExprID &) final {
-        assert(!"unreachable");
-      }
+      void visit_typeexprid(const TypeExprID &) final { UNREACHABLE(); }
     };
 
     ConstraintEmitter emitter(*solver, mangled);

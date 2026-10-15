@@ -1,3 +1,4 @@
+#include "../../common/compiler.h"
 #include "../../common/isa.h"
 #include "generate.h"
 #include "utils.h"
@@ -335,8 +336,7 @@ public:
         if ( var && !simple &&               !readonly && !is_undef) return 4;
         if (                                               is_undef) return 6;
 
-        assert(!"unreachable");
-        __builtin_unreachable();
+        UNREACHABLE();
       };
     // clang-format on
 

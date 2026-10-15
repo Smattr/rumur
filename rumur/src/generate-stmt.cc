@@ -1,3 +1,4 @@
+#include "../../common/compiler.h"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
 #include "generate.h"
@@ -84,7 +85,7 @@ static void clear(std::ostream &out, const TypeExpr &t,
   assert(!isa<Multiset>(type) &&
          "multiset not rejected prior to code generation");
 
-  assert(!"unreachable");
+  UNREACHABLE();
 }
 
 namespace {
