@@ -355,7 +355,7 @@ public:
       i++;
     }
     *out << "    } else {\n"
-         << "      assert(0 && \"illegal value for enum\");\n"
+         << "      ASSERT(0 && \"illegal value for enum\");\n"
          << "    }\n"
          << "    if (" << support_xml << " && MACHINE_READABLE_OUTPUT) {\n"
          << "      put(\"\\\"/>\");\n"
