@@ -1525,7 +1525,7 @@ void generate_model(std::ostream &out, const Model &m) {
          "function. */\n"
          "  fprintf(stderr, \"no rule found to link to state at depth "
          "%zu\\n\", state_depth(s));\n"
-         "  ASSERT(!\"unreachable\");\n"
+         "  ASSERT(0 && \"unreachable\");\n"
          "#endif\n"
          "}\n\n";
 

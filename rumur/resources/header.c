@@ -2175,7 +2175,7 @@ permutation_to_index(const size_t *NONNULL permutation, size_t *NONNULL stack,
   }
 
   /* the permutation should have been one of the possible ones */
-  ASSERT(!"invalid permutation passed to permutation_to_index");
+  ASSERT(0 && "invalid permutation passed to permutation_to_index");
 }
 static __attribute__((unused)) void
 index_to_permutation(size_t index, size_t *NONNULL permutation,
@@ -2222,7 +2222,7 @@ index_to_permutation(size_t index, size_t *NONNULL permutation,
   }
 
   /* the target permutation should have been one of the possible ones */
-  ASSERT(!"invalid index passed to index_to_permutation");
+  ASSERT(0 && "invalid index passed to index_to_permutation");
 }
 
 /*******************************************************************************
@@ -2441,7 +2441,7 @@ static void reclaim(queue_handle_t h) {
     }
   }
 
-  ASSERT(!"deferred more than `THREADS - 1` reclamations");
+  ASSERT(0 && "deferred more than `THREADS - 1` reclamations");
 }
 
 /******************************************************************************/

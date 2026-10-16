@@ -315,7 +315,7 @@ public:
       }
       if (!e->members.empty())
         *out << "else {\n"
-             << "  assert(!\"illegal value read from enum expression\");\n"
+             << "  assert(0 && \"illegal value read from enum expression\");\n"
              << "}\n";
 
       *out << "}";
