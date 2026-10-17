@@ -589,7 +589,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     }
     *this << indentation() << "default:\n";
     indent();
-    *this << indentation() << "assert(!\"invalid enum value\");\n"
+    *this << indentation() << "assert(0 && \"invalid enum value\");\n"
           << indentation() << "__builtin_unreachable();\n";
     dedent();
     dedent();
