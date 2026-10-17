@@ -284,9 +284,16 @@ static std::string lower(const std::string &s) {
 
 std::string mangle(const std::string &s, size_t id) {
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+#endif
   // if you're debugging a bad translation to SMT, you can change this to `true`
   // to get the Murphi name of a symbol output as a comment in the SMT problem
   const std::string prefix = false ? "; " + s + ":\n" : "";
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
   const std::string l = lower(s);
 

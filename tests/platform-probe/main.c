@@ -131,7 +131,14 @@ int main(int argc, char **argv) {
   printf("  __x86_64__ is not defined\n");
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+#endif
   printf("  char is %s\n", (char)-1 < 0 ? "signed" : "unsigned");
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
   return 0;
 }
