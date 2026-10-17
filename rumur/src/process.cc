@@ -247,7 +247,7 @@ int run(const std::vector<std::string> &args, const std::string &input,
         ssize_t w;
         do {
           w = write(in[W_FD], input.c_str() + input_offset,
-                    input.size() - input_offset);
+                    input.size() - (size_t)input_offset);
         } while (w == -1 && errno == EINTR);
 
         if (w == -1 && errno != EAGAIN) {

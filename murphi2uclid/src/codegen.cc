@@ -1,4 +1,5 @@
 #include "codegen.h"
+#include "../../common/compiler.h"
 #include "../../common/isa.h"
 #include "is_one_step.h"
 #include "options.h"
@@ -52,18 +53,18 @@ public:
   }
 
   void visit_aliasdecl(const AliasDecl &) final {
-    assert(!"alias declaration not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "alias declaration not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_aliasrule(const AliasRule &) final {
-    assert(!"alias rule not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "alias rule not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_aliasstmt(const AliasStmt &) final {
-    assert(!"alias statement not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "alias statement not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_and(const And &n) final {
@@ -115,8 +116,8 @@ public:
   }
 
   void visit_choose(const Choose &) final {
-    assert(!"choose rule not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "choose rule not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_clear(const Clear &n) final {
@@ -140,8 +141,8 @@ public:
       return;
     }
 
-    assert(!"clear of complex types not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "clear of complex types not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_constdecl(const ConstDecl &n) final {
@@ -163,8 +164,8 @@ public:
   }
 
   void visit_div(const Div &) final {
-    assert(!"division not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "division not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_element(const Element &n) final {
@@ -213,8 +214,8 @@ public:
       return;
     }
 
-    assert(!"exists not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "exists not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_exprid(const ExprID &n) final { *this << n.id; }
@@ -295,8 +296,8 @@ public:
       return;
     }
 
-    assert(!"forall not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "forall not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_function(const Function &n) final {
@@ -439,13 +440,13 @@ public:
   }
 
   void visit_ismember(const IsMember &) final {
-    assert(!"ismember not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "ismember not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_isundefined(const IsUndefined &) final {
-    assert(!"isundefined not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "isundefined not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_leq(const Leq &n) final {
@@ -453,8 +454,8 @@ public:
   }
 
   void visit_lsh(const Lsh &) final {
-    assert(!"left shift not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "left shift not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_lt(const Lt &n) final {
@@ -462,8 +463,8 @@ public:
   }
 
   void visit_mod(const Mod &) final {
-    assert(!"modulo not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "modulo not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_model(const Model &n) final {
@@ -492,28 +493,28 @@ public:
   }
 
   void visit_multiset(const Multiset &) final {
-    assert(!"multiset not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multiset not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_multisetadd(const MultisetAdd &) final {
-    assert(!"multisetadd not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetadd not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_multisetcount(const MultisetCount &) final {
-    assert(!"multisetcount not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetcount not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_multisetremove(const MultisetRemove &) final {
-    assert(!"multisetremove not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetremove not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_multisetremovepred(const MultisetRemovePred &) final {
-    assert(!"multisetremovepred not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetremovepred not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_negative(const Negative &n) final { *this << "-" << *n.rhs; }
@@ -598,9 +599,9 @@ public:
   }
 
   void visit_property(const Property &) final {
-    assert(!"property not handled in its parent (either PropertyRule or "
-            "PropertyStmt)");
-    __builtin_unreachable();
+    assert(0 && "property not handled in its parent (either PropertyRule or "
+                "PropertyStmt)");
+    UNREACHABLE();
   }
 
   void visit_propertyrule(const PropertyRule &n) final {
@@ -617,8 +618,8 @@ public:
       break;
 
     case Property::COVER:
-      assert(!"cover property not rejected during check()");
-      __builtin_unreachable();
+      assert(0 && "cover property not rejected during check()");
+      UNREACHABLE();
 
     case Property::LIVENESS:
       *this << "property[LTL] ";
@@ -678,17 +679,17 @@ public:
       *this << tab() << "assume " << *n.property.expr << ";\n";
       break;
     case Property::COVER:
-      assert(!"cover statement not rejected during check()");
-      __builtin_unreachable();
+      assert(0 && "cover statement not rejected during check()");
+      UNREACHABLE();
     case Property::LIVENESS:
-      assert(!"liveness statement not rejected during check()");
-      __builtin_unreachable();
+      assert(0 && "liveness statement not rejected during check()");
+      UNREACHABLE();
     }
   }
 
   void visit_put(const Put &) final {
-    assert(!"put statement not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "put statement not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_quantifier(const Quantifier &n) final {
@@ -714,7 +715,8 @@ public:
         *this << e->members[0].first << ", " << e->members.back().first;
 
       } else {
-        assert(!"unhandled simple type");
+        assert(0 && "unhandled simple type");
+        UNREACHABLE();
       }
 
       *this << ")";
@@ -764,8 +766,8 @@ public:
   }
 
   void visit_rsh(const Rsh &) final {
-    assert(!"right shift not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "right shift not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_ruleset(const Ruleset &n) final {
@@ -989,8 +991,8 @@ public:
   }
 
   void visit_union(const Union &) final {
-    assert(!"union type not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "union type not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_vardecl(const VarDecl &n) final {

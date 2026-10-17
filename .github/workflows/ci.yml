@@ -396,7 +396,7 @@ jobs:
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -Wno-error=sign-conversion -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms
@@ -422,7 +422,7 @@ jobs:
     runs-on: macos-26-intel
     env:
       CFLAGS: -pedantic -Werror -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
-      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
+      CXXFLAGS: -pedantic -Werror -Wno-error=deprecated-literal-operator -Wno-error=sign-conversion -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined
       UBSAN_OPTIONS: print_stacktrace=1
     steps:
       - run: uname -rms

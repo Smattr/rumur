@@ -1,3 +1,4 @@
+#include "../../common/compiler.h"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
 #include "generate.h"
@@ -323,7 +324,8 @@ public:
            "multiset type not rejected before code generation");
     assert(!isa<Union>(t) && "union type not rejected before code generation");
 
-    assert(!"non-range, non-enum used as array index");
+    assert(0 && "non-range, non-enum used as array index");
+    UNREACHABLE();
   }
 
   void visit_enum(const Enum &n) final {

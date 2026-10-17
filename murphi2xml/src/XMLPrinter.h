@@ -1,7 +1,7 @@
 #pragma once
 
-#include <climits>
 #include <iostream>
+#include <limits>
 #include <rumur/rumur.h>
 #include <string>
 
@@ -98,6 +98,8 @@ private:
   void visit_bexpr(const std::string &tag, const rumur::BinaryExpr &n);
   void visit_uexpr(const std::string &tag, const rumur::UnaryExpr &n);
   void sync_to(const rumur::Node &n);
-  void sync_to(const rumur::position &pos = rumur::position(nullptr, UINT_MAX,
-                                                            UINT_MAX));
+  void sync_to(const rumur::position &pos = rumur::position(
+                   nullptr,
+                   std::numeric_limits<rumur::position::counter_type>::max(),
+                   std::numeric_limits<rumur::position::counter_type>::max()));
 };

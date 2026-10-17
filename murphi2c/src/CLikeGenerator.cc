@@ -1,4 +1,5 @@
 #include "CLikeGenerator.h"
+#include "../../common/compiler.h"
 #include "../../common/escape.h"
 #include "../../common/isa.h"
 #include "options.h"
@@ -114,8 +115,7 @@ void CLikeGenerator::visit_aliasdecl(const AliasDecl &n) {
 void CLikeGenerator::visit_aliasrule(const AliasRule &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and visit_model flattens all rules
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_aliasstmt(const AliasStmt &n) {
@@ -182,8 +182,8 @@ void CLikeGenerator::visit_bor(const Bor &n) {
 }
 
 void CLikeGenerator::visit_choose(const Choose &) {
-  assert(!"choose was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "choose was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_clear(const Clear &n) {
@@ -384,15 +384,14 @@ void CLikeGenerator::visit_implication(const Implication &n) {
 }
 
 void CLikeGenerator::visit_ismember(const IsMember &) {
-  assert(!"ismember was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "ismember was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_isundefined(const IsUndefined &) {
   // check() prevents a model with isundefined expressions from making it
   // through to here
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_leq(const Leq &n) {
@@ -437,28 +436,28 @@ void CLikeGenerator::visit_mul(const Mul &n) {
 }
 
 void CLikeGenerator::visit_multiset(const Multiset &) {
-  assert(!"multiset was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "multiset was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_multisetadd(const MultisetAdd &) {
-  assert(!"multisetadd was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "multisetadd was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_multisetcount(const MultisetCount &) {
-  assert(!"multisetcount was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "multisetcount was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_multisetremove(const MultisetRemove &) {
-  assert(!"multisetremove was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "multisetremove was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_multisetremovepred(const MultisetRemovePred &) {
-  assert(!"multisetremovepred was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "multisetremovepred was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_negative(const Negative &n) {
@@ -499,8 +498,7 @@ void CLikeGenerator::visit_procedurecall(const ProcedureCall &n) {
 void CLikeGenerator::visit_property(const Property &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and nothing that contains a Property descends into it
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_propertystmt(const PropertyStmt &n) {
@@ -591,7 +589,7 @@ void CLikeGenerator::print(const std::string &suffix, const TypeExpr &t,
     }
     *this << indentation() << "default:\n";
     indent();
-    *this << indentation() << "assert(!\"invalid enum value\");\n"
+    *this << indentation() << "assert(0 && \"invalid enum value\");\n"
           << indentation() << "__builtin_unreachable();\n";
     dedent();
     dedent();
@@ -738,7 +736,8 @@ void CLikeGenerator::visit_quantifier(const Quantifier &n) {
     return;
   }
 
-  assert(!"missing case in visit_quantifier()");
+  assert(0 && "missing case in visit_quantifier()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_range(const Range &) { *this << value_type; }
@@ -770,8 +769,7 @@ void CLikeGenerator::visit_rsh(const Rsh &n) {
 void CLikeGenerator::visit_ruleset(const Ruleset &) {
   // this is unreachable because generate_c is only ever called with a Model
   // and all rule are flattened during visit_model
-  assert(!"unreachable");
-  __builtin_unreachable();
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_scalarset(const Scalarset &) { *this << value_type; }
@@ -874,8 +872,8 @@ void CLikeGenerator::visit_undefine(const Undefine &n) {
 }
 
 void CLikeGenerator::visit_union(const Union &) {
-  assert(!"union type was not rejected during check()");
-  __builtin_unreachable();
+  assert(0 && "union type was not rejected during check()");
+  UNREACHABLE();
 }
 
 void CLikeGenerator::visit_while(const While &n) {

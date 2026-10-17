@@ -1,5 +1,5 @@
 #include "format.h"
-#include "compiler.h"
+#include "../../common/compiler.h"
 #include "debug.h"
 #include "lex.h"
 #include <assert.h>

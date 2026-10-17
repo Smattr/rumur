@@ -22,12 +22,12 @@ static const char *const OPERATORS[] = {
 /// \param offset Index within the current token we are looking at
 /// \param c Character at this index
 /// \return True if this could be part of a known operator
-static bool may_be_operator(size_t offset, char c) {
+static bool may_be_operator(size_t offset, unsigned char c) {
   for (size_t i = 0; i < sizeof(OPERATORS) / sizeof(OPERATORS[0]); ++i) {
     const char *const op = OPERATORS[i];
     if (strlen(op) <= offset)
       continue;
-    if (op[offset] == c)
+    if ((unsigned char)op[offset] == c)
       return true;
   }
   return false;
@@ -256,7 +256,7 @@ int lex_get_token(lex_t *me, token_t *token) {
 
   default:
   operator:
-    if (may_be_operator(0, first)) {
+    if (may_be_operator(0, (unsigned char)first)) {
       for (size_t i = 1;; ++i) {
         const int c = getc(me->src);
         if (c == EOF) {
@@ -317,7 +317,7 @@ int lex_get_token(lex_t *me, token_t *token) {
           }
           RET(TOKEN_MULTILINE_COMMENT);
         }
-        if (!may_be_operator(i, c)) {
+        if (!may_be_operator(i, (unsigned char)c)) {
           ungetc(c, me->src);
           break;
         }

@@ -1,3 +1,4 @@
+#include "../../common/compiler.h"
 #include "../../common/isa.h"
 #include "generate.h"
 #include "utils.h"
@@ -335,8 +336,7 @@ public:
         if ( var && !simple &&               !readonly && !is_undef) return 4;
         if (                                               is_undef) return 6;
 
-        assert(!"unreachable");
-        __builtin_unreachable();
+        UNREACHABLE();
       };
     // clang-format on
 
@@ -485,8 +485,8 @@ public:
   }
 
   void visit_ismember(const IsMember &) final {
-    assert(!"ismember expression not rejected before code generation");
-    __builtin_unreachable();
+    assert(0 && "ismember expression not rejected before code generation");
+    UNREACHABLE();
   }
 
   void visit_isundefined(const IsUndefined &n) final {
@@ -528,8 +528,8 @@ public:
   }
 
   void visit_multisetcount(const MultisetCount &) final {
-    assert(!"multisetcount not rejected before code generation");
-    __builtin_unreachable();
+    assert(0 && "multisetcount not rejected before code generation");
+    UNREACHABLE();
   }
 
   void visit_negative(const Negative &n) final {

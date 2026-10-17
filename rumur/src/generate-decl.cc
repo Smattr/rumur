@@ -1,3 +1,4 @@
+#include "../../common/compiler.h"
 #include "generate.h"
 #include <cassert>
 #include <cstddef>
@@ -57,5 +58,6 @@ void generate_decl(std::ostream &out, const Decl &d) {
     return;
   }
 
-  assert(!"unexpected TypeDecl in generate_decl");
+  assert(0 && "unexpected TypeDecl in generate_decl");
+  UNREACHABLE();
 }
