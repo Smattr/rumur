@@ -1,4 +1,5 @@
 #include "symmetry-reduction.h"
+#include "../../common/compiler.h"
 #include "../../common/isa.h"
 #include "options.h"
 #include "utils.h"
@@ -117,7 +118,8 @@ static void generate_apply_swap(std::ostream &out, const std::string &offset_a,
          "multiset type not rejected before symmetry reduction");
   assert(!isa<Union>(t) && "union type not rejected before symmetry reduction");
 
-  assert(!"missed case in generate_apply_swap");
+  assert(0 && "missed case in generate_apply_swap");
+  UNREACHABLE();
 }
 
 static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
@@ -207,7 +209,8 @@ static void generate_swap_chunk(std::ostream &out, const TypeExpr &t,
   assert(!isa<Union>(type) &&
          "union type not rejected before symmetry reduction");
 
-  assert(!"missed case in generate_swap_chunk");
+  assert(0 && "missed case in generate_swap_chunk");
+  UNREACHABLE();
 }
 
 static void generate_swap(const Model &m, std::ostream &out,
@@ -480,7 +483,8 @@ static void generate_apply_compare(std::ostream &out, const TypeExpr &type,
          "multiset type not rejected before symmetry reduction");
   assert(!isa<Union>(t) && "union type not rejected before symmetry reduction");
 
-  assert(!"missed case in generate_apply_compare");
+  assert(0 && "missed case in generate_apply_compare");
+  UNREACHABLE();
 }
 
 // Generate part of a memcmp-style comparator
@@ -594,7 +598,8 @@ static void generate_compare_chunk(std::ostream &out, const TypeExpr &t,
   assert(!isa<Union>(type) &&
          "union type not rejected before symmetry reduction");
 
-  assert(!"missed case in generate_compare_chunk");
+  assert(0 && "missed case in generate_compare_chunk");
+  UNREACHABLE();
 }
 
 /* Generate a memcmp-style comparator for a given scalarset with respect to the

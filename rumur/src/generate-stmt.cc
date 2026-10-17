@@ -212,18 +212,18 @@ public:
   }
 
   void visit_multisetadd(const MultisetAdd &) final {
-    assert(!"multisetadd not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetadd not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_multisetremove(const MultisetRemove &) final {
-    assert(!"multisetremove not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetremove not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_multisetremovepred(const MultisetRemovePred &) final {
-    assert(!"multisetremovepred not rejected during check()");
-    __builtin_unreachable();
+    assert(0 && "multisetremovepred not rejected during check()");
+    UNREACHABLE();
   }
 
   void visit_procedurecall(const ProcedureCall &s) final {

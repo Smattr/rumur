@@ -485,8 +485,8 @@ public:
   }
 
   void visit_ismember(const IsMember &) final {
-    assert(!"ismember expression not rejected before code generation");
-    __builtin_unreachable();
+    assert(0 && "ismember expression not rejected before code generation");
+    UNREACHABLE();
   }
 
   void visit_isundefined(const IsUndefined &n) final {
@@ -528,8 +528,8 @@ public:
   }
 
   void visit_multisetcount(const MultisetCount &) final {
-    assert(!"multisetcount not rejected before code generation");
-    __builtin_unreachable();
+    assert(0 && "multisetcount not rejected before code generation");
+    UNREACHABLE();
   }
 
   void visit_negative(const Negative &n) final {
