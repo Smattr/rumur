@@ -3,6 +3,7 @@
 #include <gmpxx.h>
 #include <memory>
 #include <rumur/rumur.h>
+#include <utility>
 
 using namespace rumur;
 
@@ -19,7 +20,7 @@ public:
   void visit_enum(const Enum &n) final {
     mpz_class w = n.width();
     if (w > max)
-      max = w;
+      max = std::move(w);
   }
 
   // we override visit_quantifier in order to also descend into the quantifier’s
