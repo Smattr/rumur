@@ -46,7 +46,7 @@ public:
   void visit_scalarset(const Scalarset &n) final {
     mpz_class w = n.width();
     if (w > max)
-      max = w;
+      max = std::move(w);
   }
 
   void visit_typeexprid(const TypeExprID &n) final {
