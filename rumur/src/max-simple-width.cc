@@ -53,7 +53,7 @@ public:
     if (n.is_simple()) {
       mpz_class w = n.width();
       if (w > max)
-        max = w;
+        max = std::move(w);
     }
     /* We don't need to descend into any children, because the referent will
      * either (a) already have been encountered or (b) be a built-in like
