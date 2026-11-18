@@ -953,7 +953,7 @@ bool Lsh::constant() const {
 
 mpz_class Lsh::constant_fold() const {
 
-  mpz_class left = lhs->constant_fold();
+  const mpz_class left = lhs->constant_fold();
   if (left == 0)
     return 0;
 
