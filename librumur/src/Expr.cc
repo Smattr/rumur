@@ -995,7 +995,7 @@ bool Rsh::constant() const {
 
 mpz_class Rsh::constant_fold() const {
 
-  mpz_class left = lhs->constant_fold();
+  const mpz_class left = lhs->constant_fold();
   if (left == 0)
     return 0;
 
