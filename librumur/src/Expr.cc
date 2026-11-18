@@ -887,21 +887,23 @@ void Lsh::visit(ConstBaseTraversal &visitor) const {
 static mpz_class lshift(mpz_class a, mpz_class b) {
   assert(b >= 0);
 
-  // if the shift is beyond what we can do in one shot, recurse
-  while (!b.fits_ulong_p()) {
-    a = lshift(a, mpz_class(ULONG_MAX));
-    b -= ULONG_MAX;
-  }
+  do {
+    // if the shift is beyond what we can do in one shot, we need to loop
+    const unsigned long rhs = b.fits_ulong_p() ? b.get_ui() : ULONG_MAX;
 
-  // extract the shift value into a bit count
-  mp_bitcnt_t l = static_cast<mp_bitcnt_t>(b.get_ui());
+    // extract this into a bit count
+    const mp_bitcnt_t l = static_cast<mp_bitcnt_t>(rhs);
 
-  // do a left shift using the GMP C API
-  mpz_t rop;
-  mpz_init(rop);
-  mpz_mul_2exp(rop, a.get_mpz_t(), l);
+    // do a left shift using the GMP C API
+    mpz_t rop;
+    mpz_init(rop);
+    mpz_mul_2exp(rop, a.get_mpz_t(), l);
 
-  return mpz_class(rop);
+    a = mpz_class(rop);
+    b -= rhs;
+  } while (b > 0);
+
+  return a;
 }
 
 /// arithmetic-right-shift an mpz value
