@@ -995,17 +995,11 @@ bool Rsh::constant() const {
 
 mpz_class Rsh::constant_fold() const {
 
-  if (lhs->constant()) {
-    try {
-      mpz_class left = lhs->constant_fold();
-      if (left == 0)
-        return 0;
-    } catch (Error &) {
-      // ignore
-    }
-  }
+  mpz_class left = lhs->constant_fold();
+  if (left == 0)
+    return 0;
 
-  return rshift(lhs->constant_fold(), rhs->constant_fold());
+  return rshift(left, rhs->constant_fold());
 }
 
 void Rsh::to_stream(std::ostream &out) const {
