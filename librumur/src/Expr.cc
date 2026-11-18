@@ -883,15 +883,9 @@ void Lsh::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_lsh(*this);
 }
 
-// right shift an mpz value
-static mpz_class rshift(mpz_class a, mpz_class b);
-
-// left shift an mpz value
+/// left shift an mpz value
 static mpz_class lshift(mpz_class a, mpz_class b) {
-
-  // is this actually a right shift?
-  if (b < 0)
-    return rshift(a, -b);
+  assert(b >= 0);
 
   // if the shift is beyond what we can do in one shot, recurse
   while (!b.fits_ulong_p()) {
@@ -910,11 +904,9 @@ static mpz_class lshift(mpz_class a, mpz_class b) {
   return mpz_class(rop);
 }
 
+/// arithmetic-right-shift an mpz value
 static mpz_class rshift(mpz_class a, mpz_class b) {
-
-  // is this actually a left shift?
-  if (b < 0)
-    return lshift(a, -b);
+  assert(b >= 0);
 
   // if the shift is beyond what we can do in one shot, recurse
   while (!b.fits_ulong_p()) {
@@ -957,7 +949,10 @@ mpz_class Lsh::constant_fold() const {
   if (left == 0)
     return 0;
 
-  return lshift(left, rhs->constant_fold());
+  const mpz_class right = rhs->constant_fold();
+  if (right < 0)
+    return rshift(left, -right);
+  return lshift(left, right);
 }
 
 void Lsh::to_stream(std::ostream &out) const {
@@ -999,7 +994,10 @@ mpz_class Rsh::constant_fold() const {
   if (left == 0)
     return 0;
 
-  return rshift(left, rhs->constant_fold());
+  const mpz_class right = rhs->constant_fold();
+  if (right < 0)
+    return lshift(left, -right);
+  return rshift(left, right);
 }
 
 void Rsh::to_stream(std::ostream &out) const {
