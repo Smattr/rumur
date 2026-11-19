@@ -883,54 +883,50 @@ void Lsh::visit(ConstBaseTraversal &visitor) const {
   return visitor.visit_lsh(*this);
 }
 
-// right shift an mpz value
-static mpz_class rshift(mpz_class a, mpz_class b);
-
-// left shift an mpz value
+/// left shift an mpz value
 static mpz_class lshift(mpz_class a, mpz_class b) {
+  assert(b >= 0);
 
-  // is this actually a right shift?
-  if (b < 0)
-    return rshift(a, -b);
+  do {
+    // if the shift is beyond what we can do in one shot, we need to loop
+    const unsigned long rhs = b.fits_ulong_p() ? b.get_ui() : ULONG_MAX;
 
-  // if the shift is beyond what we can do in one shot, recurse
-  while (!b.fits_ulong_p()) {
-    a = lshift(a, mpz_class(ULONG_MAX));
-    b -= ULONG_MAX;
-  }
+    // extract this into a bit count
+    const mp_bitcnt_t l = static_cast<mp_bitcnt_t>(rhs);
 
-  // extract the shift value into a bit count
-  mp_bitcnt_t l = static_cast<mp_bitcnt_t>(b.get_ui());
+    // do a left shift using the GMP C API
+    mpz_t rop;
+    mpz_init(rop);
+    mpz_mul_2exp(rop, a.get_mpz_t(), l);
 
-  // do a left shift using the GMP C API
-  mpz_t rop;
-  mpz_init(rop);
-  mpz_mul_2exp(rop, a.get_mpz_t(), l);
+    a = mpz_class(rop);
+    b -= rhs;
+  } while (b > 0);
 
-  return mpz_class(rop);
+  return a;
 }
 
+/// arithmetic-right-shift an mpz value
 static mpz_class rshift(mpz_class a, mpz_class b) {
+  assert(b >= 0);
 
-  // is this actually a left shift?
-  if (b < 0)
-    return lshift(a, -b);
+  do {
+    // if the shift is beyond what we can do in one shot, we need to loop
+    const unsigned long rhs = b.fits_ulong_p() ? b.get_ui() : ULONG_MAX;
 
-  // if the shift is beyond what we can do in one shot, recurse
-  while (!b.fits_ulong_p()) {
-    a = rshift(a, mpz_class(ULONG_MAX));
-    b -= ULONG_MAX;
-  }
+    // extract this into a bit count
+    const mp_bitcnt_t r = static_cast<mp_bitcnt_t>(rhs);
 
-  // extract the shift value into a bit count
-  mp_bitcnt_t r = static_cast<mp_bitcnt_t>(b.get_ui());
+    // do a right shift using the GMP C API
+    mpz_t rop;
+    mpz_init(rop);
+    mpz_fdiv_q_2exp(rop, a.get_mpz_t(), r);
 
-  // do a right shift using the GMP C API
-  mpz_t rop;
-  mpz_init(rop);
-  mpz_fdiv_q_2exp(rop, a.get_mpz_t(), r);
+    a = mpz_class(rop);
+    b -= rhs;
+  } while (b > 0);
 
-  return mpz_class(rop);
+  return a;
 }
 
 bool Lsh::constant() const {
@@ -953,17 +949,14 @@ bool Lsh::constant() const {
 
 mpz_class Lsh::constant_fold() const {
 
-  if (lhs->constant()) {
-    try {
-      mpz_class left = lhs->constant_fold();
-      if (left == 0)
-        return 0;
-    } catch (Error &) {
-      // ignore
-    }
-  }
+  const mpz_class left = lhs->constant_fold();
+  if (left == 0)
+    return 0;
 
-  return lshift(lhs->constant_fold(), rhs->constant_fold());
+  const mpz_class right = rhs->constant_fold();
+  if (right < 0)
+    return rshift(left, -right);
+  return lshift(left, right);
 }
 
 void Lsh::to_stream(std::ostream &out) const {
@@ -1001,17 +994,14 @@ bool Rsh::constant() const {
 
 mpz_class Rsh::constant_fold() const {
 
-  if (lhs->constant()) {
-    try {
-      mpz_class left = lhs->constant_fold();
-      if (left == 0)
-        return 0;
-    } catch (Error &) {
-      // ignore
-    }
-  }
+  const mpz_class left = lhs->constant_fold();
+  if (left == 0)
+    return 0;
 
-  return rshift(lhs->constant_fold(), rhs->constant_fold());
+  const mpz_class right = rhs->constant_fold();
+  if (right < 0)
+    return lshift(left, -right);
+  return rshift(left, right);
 }
 
 void Rsh::to_stream(std::ostream &out) const {
