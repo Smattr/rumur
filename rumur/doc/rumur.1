@@ -123,6 +123,18 @@ example, if you are compiling on an x86\-64 platform that you know is using
 the upper 16 bits of a pointer will always be zero.
 .RE
 .PP
+\fB\-\-print\-rc\fR
+.RS
+Print an RC setup script for Rumur and then exit. The output from this option
+is designed to be added to an RC file to configure Rumur for use in the current
+shell. For example, if your shell is Bash, the output should be added to your
+\fB.bashrc\fR.
+.PP
+This is intended as a convenience for users who have installed Rumur in a custom
+directory. If Rumur is installed system-wide into your default directories, the
+setup steps produced by this option are not needed.
+.RE
+.PP
 \fB\-\-quiet\fR or \fB\-q\fR
 .RS
 Don't output any messages while generating the verifier.
