@@ -15,6 +15,7 @@ _arguments \
   '--output-format[how verifier should print output]: :(machine-readable human-readable)' \
   '--pack-state[compress verifier auxiliary state]: :(on off)' \
   '--pointer-bits[number of relevant bits in a pointer]bits' \
+  '--print-rc[output RC setup script]' \
   {--quiet,-q}'[suppress output while generating verifier]' \
   '--reorder-fields[optimise state variable and record field order]: :(on off)' \
   '--sandbox[verifier privilege restriction]: :(on off)' \
