@@ -246,19 +246,24 @@ int print_rc(std::ostream &out) {
          "# intended to work in any POSIX-compatible shell.\n\n";
 
   out << "# make Rumur tools runnable\n"
-         "export PATH=\"${PATH}:"
+         "setenv PATH \"${PATH}:" << root << "/bin\" || export PATH=\"${PATH}:"
       << root << "/bin\"\n\n";
 
   out << "# teach C++ compilers to find librumur’s headers\n"
-         "if [ \"${CPLUS_INCLUDE_PATH}x\" = \"x\" ]; then\n"
-         "  export CPLUS_INCLUDE_PATH=\""
-      << root
-      << "/include\"\n"
-         "else\n"
-         "  export CPLUS_INCLUDE_PATH=\""
-      << root
-      << "/include:${CPLUS_INCLUDE_PATH}\"\n"
-         "fi\n\n";
+         "which setenv >/dev/null && test ${?CPLUS_INCLUDE_PATH} && \\\n"
+         "  setenv __HAS 1 || true\n"
+         "which setenv >/dev/null && test ! ${?CPLUS_INCLUDE_PATH} && \\\n"
+         "  setenv __HAS 0 || true\n"
+         "which setenv >/dev/null && setenv CPLUS_INCLUDE_PATH || true\n"
+         "which setenv >/dev/null && test ! ${__HAS} && \\\n"
+         "  setenv CPLUS_INCLUDE_PATH \""<<root<<"/include\" || true\n"
+         "which setenv >/dev/null && test ${__HAS} && \\\n"
+         "  setenv CPLUS_INCLUDE_PATH \""<<root<<"/include:${CPLUS_INCLUDE_PATH}\" || true\n"
+         "which setenv >/dev/null && unsetenv __HAS || true\n"
+         "which setenv >/dev/null || test \"${CPLUS_INCLUDE_PATH}x\" != \"x\" && \\\n"
+         "  export CPLUS_INCLUDE_PATH=\""<<root<<"/include:${CPLUS_INCLUDE_PATH}\" || true\n"
+         "which setenv >/dev/null || test \"${CPLUS_INCLUDE_PATH}x\" = \"x\" && \\\n"
+         "  export CPLUS_INCLUDE_PATH=\""<<root<<"/include\" || true\n\n";
 
   out << "# teach static linkers to find librumur\n"
          "if [ \"${LIBRARY_PATH}x\" = \"x\" ]; then\n"
