@@ -236,72 +236,171 @@ int print_rc(std::ostream &out) {
     return -1;
   }
 
+  // alternate pattern:
+  //   which setenv >/dev/null && test ${?FOO} -eq 0 && \
+  //     setenv __UD 1 || true
+  //   which setenv >/dev/null && test ${?FOO} -eq 0 && \
+  //     setenv FOO "bar" || true
+  //   which setenv >/dev/null && test ${?__UD} -eq 0 && \
+  //     setenv FOO "bar:${FOO}" || true
+  //   which setenv >/dev/null && unsetenv __UD || true
+
   out << "#/bin/sh\n\n"
          "# Rumur "
       << rumur_get_version()
       << " setup script\n"
          "#\n"
-         "# Source this to configure Rumur in your current shell. This script "
-         "is\n"
-         "# intended to work in any POSIX-compatible shell.\n\n";
+         "# Source this to configure Rumur in your current shell. This script\n"
+         "# is intended to work in any POSIX-compatible shell, csh, or tcsh.\n"
+         "\n"
+         "# The idiom `which setenv >/dev/null` is used for “is this\n"
+         "# csh/tcsh?” Then some gymnastics are required to set environment\n"
+         "# variables on both csh/tcsh and POSIC shells without triggering\n"
+         "# confusing warnings and error messages. The main complication is\n"
+         "# that csh/tcsh parses full lines and examines all variables even\n"
+         "# in dead branches, so all referenced variables need to be defined.\n"
+         "# The basic pattern we use is:\n"
+         "#\n"
+         "#   which setenv >/dev/null && test ${?FOO} -eq 1 && \\\n"
+         "#     setenv FLAG 1 || true\n"
+         "#   which setenv >/dev/null && test ${?FOO} -eq 0 && \\\n"
+         "#     setenv FLAG 0 || true\n"
+         // XXX: seems like we could drop this line
+         "#   which setenv >/dev/null && test ${FLAG} -eq 0 && \\\n"
+         "#     setenv FOO || true\n"
+         "#   which setenv >/dev/null && test ${FLAG} -eq 0 && \\\n"
+         "#     setenv FOO \"bar\" || true\n"
+         "#   which setenv >/dev/null && test ${FLAG} -eq 1 && \\\n"
+         "#     setenv FOO \"bar:${FOO}\" || true\n"
+         "#   which setenv >/dev/null && unsetenv FLAG || true\n"
+         "#   which setenv >/dev/null || test \"${FOO}x\" != \"x\" && \\\n"
+         "#     export FOO=\"bar:${FOO}\" || true\n"
+         "#   which setenv >/dev/null || test \"${FOO}x\" = \"x\" && \\\n"
+         "#     export FOO=\"bar\" || true\n";
 
-  out << "# make Rumur tools runnable\n"
-         "setenv PATH \"${PATH}:" << root << "/bin\" || export PATH=\"${PATH}:"
-      << root << "/bin\"\n\n";
+  out << "\n"
+         "# make Rumur tools runnable\n"
+         "which setenv >/dev/null && setenv PATH \"${PATH}:"
+      << root << "/bin\" || export PATH=\"${PATH}:" << root << "/bin\"\n";
 
-  out << "# teach C++ compilers to find librumur’s headers\n"
-         "which setenv >/dev/null && test ${?CPLUS_INCLUDE_PATH} && \\\n"
+  out << "\n"
+         "# teach C++ compilers to find librumur’s headers\n"
+         "which setenv >/dev/null && test ${?CPLUS_INCLUDE_PATH} -eq 1 && \\\n"
          "  setenv __HAS 1 || true\n"
-         "which setenv >/dev/null && test ! ${?CPLUS_INCLUDE_PATH} && \\\n"
+         "which setenv >/dev/null && test ${?CPLUS_INCLUDE_PATH} -eq 0 && \\\n"
          "  setenv __HAS 0 || true\n"
-         "which setenv >/dev/null && setenv CPLUS_INCLUDE_PATH || true\n"
-         "which setenv >/dev/null && test ! ${__HAS} && \\\n"
-         "  setenv CPLUS_INCLUDE_PATH \""<<root<<"/include\" || true\n"
-         "which setenv >/dev/null && test ${__HAS} && \\\n"
-         "  setenv CPLUS_INCLUDE_PATH \""<<root<<"/include:${CPLUS_INCLUDE_PATH}\" || true\n"
+         "which setenv >/dev/null && test ${__HAS} -eq 0 && \\\n"
+         "  setenv CPLUS_INCLUDE_PATH || true\n"
+         "which setenv >/dev/null && test ${__HAS} -eq 0 && \\\n"
+         "  setenv CPLUS_INCLUDE_PATH \""
+      << root
+      << "/include\" || true\n"
+         "which setenv >/dev/null && test ${__HAS} -eq 1 && \\\n"
+         "  setenv CPLUS_INCLUDE_PATH \""
+      << root
+      << "/include:${CPLUS_INCLUDE_PATH}\" || true\n"
          "which setenv >/dev/null && unsetenv __HAS || true\n"
-         "which setenv >/dev/null || test \"${CPLUS_INCLUDE_PATH}x\" != \"x\" && \\\n"
-         "  export CPLUS_INCLUDE_PATH=\""<<root<<"/include:${CPLUS_INCLUDE_PATH}\" || true\n"
-         "which setenv >/dev/null || test \"${CPLUS_INCLUDE_PATH}x\" = \"x\" && \\\n"
-         "  export CPLUS_INCLUDE_PATH=\""<<root<<"/include\" || true\n\n";
+         "which setenv >/dev/null || test \"${CPLUS_INCLUDE_PATH}x\" != \"x\" "
+         "&& \\\n"
+         "  export CPLUS_INCLUDE_PATH=\""
+      << root
+      << "/include:${CPLUS_INCLUDE_PATH}\" || true\n"
+         "which setenv >/dev/null || test \"${CPLUS_INCLUDE_PATH}x\" = \"x\" "
+         "&& \\\n"
+         "  export CPLUS_INCLUDE_PATH=\""
+      << root << "/include\" || true\n";
 
-  out << "# teach static linkers to find librumur\n"
-         "if [ \"${LIBRARY_PATH}x\" = \"x\" ]; then\n"
+  out << "\n"
+         "# teach static linkers to find librumur\n"
+         "which setenv >/dev/null && test ${?LIBRARY_PATH} -eq 1 && \\\n"
+         "  setenv __HAS 1 || true\n"
+         "which setenv >/dev/null && test ${?LIBRARY_PATH} -eq 0 && \\\n"
+         "  setenv __HAS 0 || true\n"
+         "which setenv >/dev/null && test ${__HAS} -eq 0 && \\\n"
+         "  setenv LIBRARY_PATH || true\n"
+         "which setenv >/dev/null && test ${__HAS} -eq 0 && \\\n"
+         "  setenv LIBRARY_PATH \""
+      << root << '/' << lib
+      << "\" || true\n"
+         "which setenv >/dev/null && test ${__HAS} -eq 1 && \\\n"
+         "  setenv LIBRARY_PATH \""
+      << root << '/' << lib
+      << ":${LIBRARY_PATH}\" || true\n"
+         "which setenv >/dev/null && unsetenv __HAS || true\n"
+         "which setenv >/dev/null || test \"${LIBRARY_PATH}x\" != \"x\" && \\\n"
          "  export LIBRARY_PATH=\""
-      << root << "/" << lib
-      << "\"\n"
-         "else\n"
+      << root << '/' << lib
+      << ":${LIBRARY_PATH}\" || true\n"
+         "which setenv >/dev/null || test \"${LIBRARY_PATH}x\" = \"x\" && \\\n"
          "  export LIBRARY_PATH=\""
-      << root << "/" << lib
-      << ":${LIBRARY_PATH}\"\n"
-         "fi\n\n";
+      << root << '/' << lib << "\" || true\n";
 
-  out << "# teach dynamic linkers to find librumur\n"
-         "if [ \"$(uname)\" = \"Darwin\" ]; then # macOS\n"
-         "  if [ \"${DYLD_LIBRARY_PATH}x\" = \"x\" ]; then\n"
-         "    export DYLD_LIBRARY_PATH=\""
-      << root << "/" << lib
-      << "\"\n"
-         "  else\n"
-         "    export DYLD_LIBRARY_PATH=\""
-      << root << "/" << lib
-      << ":${LD_LIBRARY_PATH}\"\n"
-         "  fi\n"
-         "else # non-macOS\n"
-         "  if [ \"${LD_LIBRARY_PATH}x\" = \"x\" ]; then\n"
-         "    export LD_LIBRARY_PATH=\""
-      << root << "/" << lib
-      << "\"\n"
-         "  else\n"
-         "    export LD_LIBRARY_PATH=\""
-      << root << "/" << lib
-      << ":${LD_LIBRARY_PATH}\"\n"
-         "  fi\n"
-         "fi\n\n";
+  out << "\n"
+         "# teach dynamic linkers to find librumur\n"
+         "which setenv >/dev/null && test \"`uname`\" = \"Darwin\" -a "
+         "${?DYLD_LIBRARY_PATH} -eq 1 && \\\n"
+         "  setenv __HAS 1 || true\n"
+         "which setenv >/dev/null && test \"`uname`\" = \"Darwin\" -a "
+         "${?DYLD_LIBRARY_PATH} -eq 0 && \\\n"
+         "  setenv __HAS 0 || true\n"
+         "which setenv >/dev/null && test \"`uname`\" = \"Darwin\" -a ${__HAS} "
+         "-eq 0 && \\\n"
+         "  setenv DYLD_LIBRARY_PATH || true\n"
+         "which setenv >/dev/null && test \"`uname`\" = \"Darwin\" -a ${__HAS} "
+         "-eq 0 && \\\n"
+         "  setenv DYLD_LIBRARY_PATH \""
+      << root << '/' << lib
+      << "\" || true\n"
+         "which setenv >/dev/null && test \"`uname`\" = \"Darwin\" -a ${__HAS} "
+         "-eq 1 && \\\n"
+         "  setenv DYLD_LIBRARY_PATH \""
+      << root << '/' << lib
+      << ":${DYLD_LIBRARY_PATH}\" || true\n"
+         "which setenv >/dev/null && unsetenv __HAS || true\n"
+         "which setenv >/dev/null || test \"`uname`\" = \"Darwin\" -a "
+         "\"${DYLD_LIBRARY_PATH}x\" != \"x\" && \\\n"
+         "  export DYLD_LIBRARY_PATH=\""
+      << root << '/' << lib
+      << ":${DYLD_LIBRARY_PATH}\" || true\n"
+         "which setenv >/dev/null || test \"`uname`\" = \"Darwin\" -a "
+         "\"${DYLD_LIBRARY_PATH}x\" = \"x\" && \\\n"
+         "  export DYLD_LIBRARY_PATH=\""
+      << root << '/' << lib
+      << "\" || true\n"
+         "which setenv >/dev/null && test \"`uname`\" != \"Darwin\" -a "
+         "${?LD_LIBRARY_PATH} -eq 1 && \\\n"
+         "  setenv __HAS 1 || true\n"
+         "which setenv >/dev/null && test \"`uname`\" != \"Darwin\" -a "
+         "${?LD_LIBRARY_PATH} -eq 0 && \\\n"
+         "  setenv __HAS 0 || true\n"
+         "which setenv >/dev/null && test \"`uname`\" != \"Darwin\" -a "
+         "${__HAS} -eq 0 && \\\n"
+         "  setenv LD_LIBRARY_PATH || true\n"
+         "which setenv >/dev/null && test \"`uname`\" != \"Darwin\" -a "
+         "${__HAS} -eq 0 && \\\n"
+         "  setenv LD_LIBRARY_PATH \""
+      << root << '/' << lib
+      << "\" || true\n"
+         "which setenv >/dev/null && test \"`uname`\" != \"Darwin\" -a "
+         "${__HAS} -eq 1 && \\\n"
+         "  setenv LD_LIBRARY_PATH \""
+      << root << '/' << lib
+      << ":${LD_LIBRARY_PATH}\" || true\n"
+         "which setenv >/dev/null && unsetenv __HAS || true\n"
+         "which setenv >/dev/null || test \"`uname`\" != \"Darwin\" -a "
+         "\"${LD_LIBRARY_PATH}x\" != \"x\" && \\\n"
+         "  export LD_LIBRARY_PATH=\""
+      << root << '/' << lib
+      << ":${LD_LIBRARY_PATH}\" || true\n"
+         "which setenv >/dev/null || test \"`uname`\" != \"Darwin\" -a "
+         "\"${LD_LIBRARY_PATH}x\" = \"x\" && \\\n"
+         "  export LD_LIBRARY_PATH=\""
+      << root << '/' << lib << "\" || true\n";
 
-  out << "# teach CMake to find librumurConfig.cmake\n"
-         "export rumur_ROOT=\""
-      << root << "\"\n";
+  out << "\n"
+         "# teach CMake to find librumurConfig.cmake\n"
+         "which setenv >/dev/null && setenv rumur_ROOT \""
+      << root << "\" || export rumur_ROOT=\"" << root << "\"\n";
 
   free(me);
   return 0;
