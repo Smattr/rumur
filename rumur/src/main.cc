@@ -7,6 +7,7 @@
 #include "log.h"
 #include "optimise-field-ordering.h"
 #include "options.h"
+#include "print-rc.h"
 #include "resources.h"
 #include "smt/except.h"
 #include "smt/simplify.h"
@@ -60,6 +61,7 @@ static void parse_args(int argc, char **argv) {
       OPT_OUTPUT_FORMAT,
       OPT_PACK_STATE,
       OPT_POINTER_BITS,
+      OPT_PRINT_RC,
       OPT_REORDER_FIELDS,
       OPT_SANDBOX,
       OPT_SCALARSET_SCHEDULES,
@@ -91,6 +93,7 @@ static void parse_args(int argc, char **argv) {
         {"output-format", required_argument, 0, OPT_OUTPUT_FORMAT},
         {"pack-state", required_argument, 0, OPT_PACK_STATE},
         {"pointer-bits", required_argument, 0, OPT_POINTER_BITS},
+        {"print-rc", no_argument, 0, OPT_PRINT_RC},
         {"quiet", no_argument, 0, 'q'},
         {"reorder-fields", required_argument, 0, OPT_REORDER_FIELDS},
         {"sandbox", required_argument, 0, OPT_SANDBOX},
@@ -306,6 +309,11 @@ static void parse_args(int argc, char **argv) {
         }
       }
       break;
+
+    case OPT_PRINT_RC: { // --print-rc
+      const int rc = print_rc(std::cout);
+      exit(rc == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+    }
 
     case OPT_SYMMETRY_REDUCTION: // --symmetry-reduction ...
       if (strcmp(optarg, "off") == 0) {
